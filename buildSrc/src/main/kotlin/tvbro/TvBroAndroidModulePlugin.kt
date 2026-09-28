@@ -24,11 +24,6 @@ internal object TvBroAndroidModulePlugin {
         val compileSdkMinor: Int? = libs.findVersion("android-compileSdkMinor")
             .map { it.requiredVersion.toInt() }
             .orElse(null)
-        val compileSdkMajor = findVersion("android-compileSdk")
-        // Optional minor API level, e.g. 1 for API 37.1.
-        val compileSdkMinor: Int? = libs.findVersion("android-compileSdkMinor")
-            .map { it.requiredVersion.toInt() }
-            .orElse(null)
 
         with(project) {
             when (type) {
