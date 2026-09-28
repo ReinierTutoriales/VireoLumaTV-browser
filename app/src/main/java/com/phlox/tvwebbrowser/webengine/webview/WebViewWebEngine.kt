@@ -201,7 +201,6 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun onPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean {
         val isGeolocationPermissionRequest = permissionsRequests[requestCode] ?: return false
         permissionsRequests.remove(requestCode)
-        if (grantResults.isEmpty()) return true
         webView?.onPermissionsResult(permissions, grantResults, isGeolocationPermissionRequest)
         return true
     }

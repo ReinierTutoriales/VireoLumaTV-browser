@@ -266,6 +266,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                                 callback.requestPermissions(neededPermissions.toTypedArray(), false)
                             } else {
                                 webPermissionsRequest.grant(webPermissionsRequest.resources)
+                                webPermissionsRequest = null
                             }
 
                             permRequestDialog = null
@@ -601,7 +602,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     fun onPermissionsResult(permissions: Array<String>, grantResults: IntArray, typeGeo: Boolean) {
         if (typeGeo) geoPermissionsCallback?.apply {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
                 this.invoke(geoPermissionOrigin, true, true)
             } else {
                 this.invoke(geoPermissionOrigin, false, false)
@@ -614,7 +615,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             // If request is cancelled, the result arrays are empty.
             val resources = ArrayList<String>()
             for (i in permissions.indices) {
-                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.getOrNull(i) == PackageManager.PERMISSION_GRANTED) {
                     if (Manifest.permission.CAMERA == permissions[i]) {
                         resources.add(PermissionRequest.RESOURCE_VIDEO_CAPTURE)
                     } else if (Manifest.permission.RECORD_AUDIO == permissions[i]) {
