@@ -41,29 +41,49 @@ class AdblockModel : ActiveModel() {
         val now = Calendar.getInstance()
         val needUpdate = forceReload || checkDate.before(now)
         clientLoading.value = true
-        val client = AdBlockClient()
-        var success = false
+        var loadedClient: AdBlockClient? = null
+        var downloadAttempted = false
+        var updated = false
         withContext(Dispatchers.IO) ioContext@ {
             val serializedFile = File(TVBro.instance.filesDir, SERIALIZED_LIST_FILE)
-            if ((!needUpdate) && serializedFile.exists() && client.deserialize(serializedFile.absolutePath)) {
-                success = true
-                return@ioContext
+            if (!needUpdate) {
+                loadedClient = deserializeCachedList(serializedFile)
+                if (loadedClient != null) return@ioContext
             }
+            downloadAttempted = true
             try {
                 val easyList = URL(config.adBlockListURL.value).openConnection().inputStream.bufferedReader()
                   .use { it.readText() }
-                success = client.parse(easyList)
-                client.serialize(serializedFile.absolutePath)
+                val freshClient = AdBlockClient()
+                if (freshClient.parse(easyList)) {
+                    //only a successfully parsed list may replace the cached one
+                    freshClient.serialize(serializedFile.absolutePath)
+                    loadedClient = freshClient
+                    updated = true
+                    return@ioContext
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            //update failed: keep blocking with the last list that worked
+            loadedClient = deserializeCachedList(serializedFile)
         }
-        this@AdblockModel.client = client
-        config.adBlockListLastUpdate = now.timeInMillis
-        if (!success) {
+        //if nothing could be loaded keep the current client (if any) instead of replacing it with an empty one
+        loadedClient?.let { this@AdblockModel.client = it }
+        //advance the update date only after a successful download, so a failed update is retried on next load
+        if (updated) {
+            config.adBlockListLastUpdate = now.timeInMillis
+        }
+        if (downloadAttempted && !updated) {
             Toast.makeText(TVBro.instance, "Error loading ad-blocker list", Toast.LENGTH_SHORT).show()
         }
         clientLoading.value = false
+    }
+
+    private fun deserializeCachedList(serializedFile: File): AdBlockClient? {
+        if (!serializedFile.exists()) return null
+        val cachedClient = AdBlockClient()
+        return if (cachedClient.deserialize(serializedFile.absolutePath)) cachedClient else null
     }
 
     fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean {
