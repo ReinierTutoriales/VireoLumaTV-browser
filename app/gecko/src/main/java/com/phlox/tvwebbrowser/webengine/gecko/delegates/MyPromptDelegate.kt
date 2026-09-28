@@ -969,7 +969,7 @@ class MyPromptDelegate(private val webEngine: GeckoWebEngine): GeckoSession.Prom
     }
 
     fun onSlowScriptPrompt(
-        geckoSession: GeckoSession?, title: String?, reportAction: GeckoResult<SlowScriptResponse?>
+        geckoSession: GeckoSession?, title: String?, reportAction: GeckoResult<SlowScriptResponse>
     ) {
         val activity: Activity = webEngine.callback?.getActivity() ?: return
         val builder = AlertDialog.Builder(activity)
