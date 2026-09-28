@@ -497,7 +497,8 @@ class GeckoWebEngine(val tab: WebTabState): WebEngine,
         // this "second" call will be ignored by the CursorMenuView.
         uiHandler.postDelayed(
             {
-                callback?.onContextMenu(webView!!.cursorDrawerDelegate, navigationDelegate.locationURL,
+                val webView = webView ?: return@postDelayed
+                callback?.onContextMenu(webView.cursorDrawerDelegate, navigationDelegate.locationURL,
                     null, null, null, null, null, x, y)
             }, 100
         )
