@@ -260,7 +260,12 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                     return
                 }
 
-                val activity = callback.getActivity() ?: return
+                val activity = callback.getActivity()
+                if (activity == null) {
+                    request.deny()
+                    return
+                }
+                webPermissionsRequest?.deny()
                 webPermissionsRequest = request
                 permRequestDialog = AlertDialog.Builder(activity)
                         .setMessage(activity.getString(R.string.web_perm_request_confirmation, TextUtils.join("\n", request.resources)))
@@ -311,11 +316,13 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             }
 
             override fun onPermissionRequestCanceled(request: PermissionRequest) {
+                if (webPermissionsRequest !== request) return
                 permRequestDialog?.apply {
                     dismiss()
                     permRequestDialog = null
                 }
                 webPermissionsRequest = null
+                requestedWebResourcesThatDoNotNeedToGrantAndroidPermissions = null
             }
 
             override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
