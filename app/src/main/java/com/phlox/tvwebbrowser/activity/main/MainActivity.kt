@@ -133,7 +133,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         MY_PERMISSIONS_REQUEST_VOICE_SEARCH_PERMISSIONS)
     private var lastCommonRequestsCode = COMMON_REQUESTS_START_CODE
     private var downloadService: DownloadService? = null
-    private var downloadIntent: Download? = null
+    private val pendingDownloads = ArrayDeque<Download>()
+    private var downloadPermissionRequestPending = false
     var openUrlInExternalAppDialog: AlertDialog? = null
     private var linkActionsMenu: PopupMenu? = null
 
@@ -594,31 +595,36 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private fun onDownloadRequested(url: String, referer: String, originalDownloadFileName: String, userAgent: String?, mimeType: String? = null,
                                     operationAfterDownload: Download.OperationAfterDownload = Download.OperationAfterDownload.NOP,
                                     base64BlobData: String? = null, stream: InputStream?, size: Long = 0L) {
-        downloadIntent = Download(url, originalDownloadFileName, null, operationAfterDownload,
-            mimeType, referer, userAgent, base64BlobData, stream, size)
+        pendingDownloads.addLast(Download(url, originalDownloadFileName, null, operationAfterDownload,
+            mimeType, referer, userAgent, base64BlobData, stream, size))
+        if (downloadPermissionRequestPending) return
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R &&
             checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            downloadPermissionRequestPending = true
             requestPermissions(
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                 MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS
             )
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            downloadPermissionRequestPending = true
             requestPermissions(
                 arrayOf(Manifest.permission.POST_NOTIFICATIONS),
                 MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS
             )
         } else {
-            startDownload()
+            startDownloads()
         }
     }
 
-    private fun startDownload() {
-        val download = this.downloadIntent ?: return
+    private fun startDownloads() {
         val service = downloadService ?: return
-        this.downloadIntent = null
-        service.startDownload(download)
-        onDownloadStarted(download.filename)
+        while (pendingDownloads.isNotEmpty()) {
+            val download = pendingDownloads.removeFirst()
+            service.startDownload(download)
+            onDownloadStarted(download.filename)
+        }
     }
 
     override fun onTrimMemory(level: Int) {
@@ -638,15 +644,18 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         if (tabsModel.currentTab.value?.webEngine?.onPermissionsResult(requestCode, permissions, grantResults) == true) return
         if (requestCode == MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS) {
             // POST_NOTIFICATIONS only controls download progress notifications, it is not required to download.
-            // Start the pending download whatever the user answered (granted, denied or dialog interrupted).
-            startDownload()
+            downloadPermissionRequestPending = false
+            startDownloads()
             return
         }
         if (grantResults.isEmpty()) return
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS -> {
+                downloadPermissionRequestPending = false
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startDownload()
+                    startDownloads()
+                } else {
+                    pendingDownloads.clear()
                 }
             }
             else -> {
@@ -1543,7 +1552,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 return
             }
             downloadService = binder.service
-            startDownload()
+            startDownloads()
         }
 
         override fun onServiceDisconnected(p0: ComponentName?) {
