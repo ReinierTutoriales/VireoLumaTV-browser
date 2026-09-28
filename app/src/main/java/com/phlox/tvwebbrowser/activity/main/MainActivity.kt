@@ -635,14 +635,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             return
         }
         if (tabsModel.currentTab.value?.webEngine?.onPermissionsResult(requestCode, permissions, grantResults) == true) return
+        if (requestCode == MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS) {
+            // POST_NOTIFICATIONS only controls download progress notifications, it is not required to download.
+            // Start the pending download whatever the user answered (granted, denied or dialog interrupted).
+            startDownload()
+            return
+        }
         if (grantResults.isEmpty()) return
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS -> {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startDownload()
-                }
-            }
-            MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startDownload()
                 }
