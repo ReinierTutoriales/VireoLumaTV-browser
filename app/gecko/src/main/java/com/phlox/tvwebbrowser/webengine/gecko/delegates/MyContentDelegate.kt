@@ -78,7 +78,7 @@ class MyContentDelegate(private val webEngine: GeckoWebEngine): GeckoSession.Con
             element.srcUri,
             element.title,
             element.altText,
-            element.textContent,
+            element.linkText,
             webView.cursorDrawerDelegate.cursorPosition.x.toInt(),
             webView.cursorDrawerDelegate.cursorPosition.y.toInt()
         )
