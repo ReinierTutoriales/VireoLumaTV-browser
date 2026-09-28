@@ -24,6 +24,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.Process
 import android.util.Log
 import android.util.Patterns
@@ -595,6 +596,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private fun onDownloadRequested(url: String, referer: String, originalDownloadFileName: String, userAgent: String?, mimeType: String? = null,
                                     operationAfterDownload: Download.OperationAfterDownload = Download.OperationAfterDownload.NOP,
                                     base64BlobData: String? = null, stream: InputStream?, size: Long = 0L) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            // blob downloads arrive from the WebView JavaBridge thread; the queue, the permission
+            // requests and the UI below must only be touched on the main thread
+            runOnUiThread {
+                onDownloadRequested(url, referer, originalDownloadFileName, userAgent, mimeType,
+                    operationAfterDownload, base64BlobData, stream, size)
+            }
+            return
+        }
         pendingDownloads.addLast(Download(url, originalDownloadFileName, null, operationAfterDownload,
             mimeType, referer, userAgent, base64BlobData, stream, size))
         if (downloadPermissionRequestPending) return
