@@ -386,7 +386,14 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
                 }
 
                 override suspend fun clearCache(ctx: Context) {
-                    WebView(ctx).clearCache(true)
+                    //the disk cache is cleared by the shared BrowserContext, so destroying this temporary
+                    //WebView right away does not cancel it
+                    val webView = WebView(ctx)
+                    try {
+                        webView.clearCache(true)
+                    } finally {
+                        webView.destroy()
+                    }
                 }
 
                 override fun onThemeSettingUpdated(value: Config.Theme) {
