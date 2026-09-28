@@ -158,14 +158,14 @@ class MyContentDelegate(private val webEngine: GeckoWebEngine): GeckoSession.Con
             webEngine.session.promptDelegate as? MyPromptDelegate
         val activity = webEngine.callback?.getActivity() ?: return null
         if (prompt != null) {
-            val result = GeckoResult<SlowScriptResponse?>()
+            val result = GeckoResult<SlowScriptResponse>()
             if (!activeAlert) {
                 activeAlert = true
                 prompt.onSlowScriptPrompt(geckoSession, activity.getString(R.string.slow_script), result)
             }
-            return result.then<SlowScriptResponse?> { value: SlowScriptResponse? ->
+            return result.then<SlowScriptResponse> { value: SlowScriptResponse ->
                 activeAlert = false
-                GeckoResult.fromValue<SlowScriptResponse?>(value)
+                GeckoResult.fromValue(value)
             }
         }
         return null
