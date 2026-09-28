@@ -187,6 +187,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         (webView?.parent as? ViewGroup)?.removeView(webView)
         callback = null
         if (completely) {
+            webView?.destroy()
             webView = null
         }
     }
@@ -194,6 +195,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun trimMemory() {
         val webView = webView
         if (webView != null && !webView.isAttachedToWindow) {
+            webView.destroy()
             this.webView = null
         }
     }
