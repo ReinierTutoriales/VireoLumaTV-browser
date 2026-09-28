@@ -175,11 +175,4 @@ class MyContentDelegate(private val webEngine: GeckoWebEngine): GeckoSession.Con
         super.onShowDynamicToolbar(geckoSession)
     }
 
-    override fun onCookieBannerDetected(session: GeckoSession) {
-        super.onCookieBannerDetected(session)
-    }
-
-    override fun onCookieBannerHandled(session: GeckoSession) {
-        super.onCookieBannerHandled(session)
-    }
 }
