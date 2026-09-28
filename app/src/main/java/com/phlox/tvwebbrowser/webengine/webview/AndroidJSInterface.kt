@@ -9,6 +9,7 @@ import com.phlox.tvwebbrowser.TVBro
 import com.phlox.tvwebbrowser.model.Download
 import com.phlox.tvwebbrowser.utils.DownloadUtils
 import org.json.JSONArray
+import org.json.JSONObject
 
 
 class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
@@ -79,7 +80,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
             links = links.replace("'", "\\'")
             webEngine.evaluateJavascript("renderLinks('${cfg.homePageLinksMode.name}', $links)")
             webEngine.evaluateJavascript(
-                "applySearchEngine(\"${cfg.guessSearchEngineName()}\", \"${cfg.searchEngineURL.value}\")")
+                "applySearchEngine(${JSONObject.quote(cfg.guessSearchEngineName())}, ${JSONObject.quote(cfg.searchEngineURL.value)})")
         }
     }
 
