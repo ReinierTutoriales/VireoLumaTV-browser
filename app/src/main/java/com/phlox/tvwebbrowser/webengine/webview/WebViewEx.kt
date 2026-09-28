@@ -593,13 +593,10 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         webChromeClient_.onHideCustomView()
     }
 
-    fun onFilePicked(data: Intent) {
-        pickFileCallback?.apply {
-            if (data.data != null) {
-                val uris = arrayOf(data.data!!)
-                onReceiveValue(uris)
-            }
-        }
+    fun onFilePicked(resultCode: Int, data: Intent?) {
+        val callback = pickFileCallback ?: return
+        pickFileCallback = null
+        callback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
     }
 
     fun onPermissionsResult(permissions: Array<String>, grantResults: IntArray, typeGeo: Boolean) {
