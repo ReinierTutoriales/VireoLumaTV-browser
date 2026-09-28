@@ -217,8 +217,9 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     }
 
     fun trimMemory() {
+        // Keep the last captured state until saveTab() has persisted it. Clearing it here can race
+        // with the asynchronous save started when switching tabs after the engine is discarded.
         webEngine.trimMemory()
-        savedState = null
     }
 
     fun onPause() {
