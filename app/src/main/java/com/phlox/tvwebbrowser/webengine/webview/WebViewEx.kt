@@ -12,6 +12,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.media.MediaDrm
 import android.net.Uri
+import android.net.http.SslCertificate
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
@@ -66,6 +67,33 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         const val INTERNAL_SCHEME_WARNING_DOMAIN = "warning"
         const val INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT = "certificate"
         val WIDEVINE_UUID = UUID(-0x121074568629b532L,-0x5c37d8232ae2de13L)
+
+        /**
+         * Compares the actual certificates (DER bytes). SslCertificate.toString() only contains the
+         * issued-to/issued-by names, so two different certificates with the same names were treated as equal.
+         */
+        fun isSameCertificate(a: SslCertificate?, b: SslCertificate?): Boolean {
+            if (a == null || b == null) return false
+            val encodedA = encodedCertificate(a)
+            val encodedB = encodedCertificate(b)
+            if (encodedA != null && encodedB != null) return encodedA.contentEquals(encodedB)
+            //no access to the certificate bytes on this device: keep the previous (weaker) behaviour
+            return a.toString() == b.toString()
+        }
+
+        private fun encodedCertificate(cert: SslCertificate): ByteArray? {
+            return try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    cert.x509Certificate?.encoded
+                } else {
+                    //undocumented but stable AOSP key used by SslCertificate.saveState() since API 14
+                    SslCertificate.saveState(cert)?.getByteArray("x509-certificate")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Can not get encoded certificate: $e")
+                null
+            }
+        }
     }
 
     private var virtualCursorMode: Boolean = true
@@ -421,7 +449,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
             override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
                 Log.e(TAG, "onReceivedSslError url: ${error.url}")
-                if (trustSsl && lastSSLError?.certificate?.toString()?.equals(error.certificate.toString()) == true) {
+                if (trustSsl && isSameCertificate(lastSSLError?.certificate, error.certificate)) {
                     trustSsl = false
                     lastSSLError = null
                     handler.proceed()
