@@ -105,6 +105,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     private var permRequestDialog: AlertDialog? = null
     private var webPermissionsRequest: PermissionRequest? = null
     private var requestedWebResourcesThatDoNotNeedToGrantAndroidPermissions: ArrayList<String>? = null
+    //the web request the user approved and that now waits for the Android runtime permission result
+    private var androidPermissionsPendingRequest: PermissionRequest? = null
     private var geoPermissionOrigin: String? = null
     private var geoPermissionsCallback: GeolocationPermissions.Callback? = null
     var lastSSLError: SslError? = null
@@ -265,6 +267,12 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                     request.deny()
                     return
                 }
+                //a newer request replaces the previous one: close its dialog and forget its state, so neither
+                //its buttons nor its pending Android permission result can grant this new request
+                permRequestDialog?.dismiss()
+                permRequestDialog = null
+                requestedWebResourcesThatDoNotNeedToGrantAndroidPermissions = null
+                androidPermissionsPendingRequest = null
                 webPermissionsRequest?.deny()
                 webPermissionsRequest = request
                 permRequestDialog = AlertDialog.Builder(activity)
@@ -303,6 +311,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
                             if (neededPermissions.isNotEmpty()) {
                                 requestedWebResourcesThatDoNotNeedToGrantAndroidPermissions = resourcesThatDoNotNeedToGrantPerms
+                                androidPermissionsPendingRequest = webPermissionsRequest
                                 callback.requestPermissions(neededPermissions.toTypedArray(), false)
                             } else {
                                 webPermissionsRequest.grant(webPermissionsRequest.resources)
@@ -323,6 +332,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 }
                 webPermissionsRequest = null
                 requestedWebResourcesThatDoNotNeedToGrantAndroidPermissions = null
+                androidPermissionsPendingRequest = null
             }
 
             override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
@@ -657,7 +667,11 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             geoPermissionOrigin = null
 
 
-        } else webPermissionsRequest?.apply {
+        } else {
+            val pendingRequest = androidPermissionsPendingRequest ?: return
+            androidPermissionsPendingRequest = null
+            //the request was replaced (and denied) or cancelled while the system dialog was open
+            if (pendingRequest !== webPermissionsRequest) return
             // If request is cancelled, the result arrays are empty.
             val resources = ArrayList<String>()
             for (i in permissions.indices) {
@@ -674,9 +688,9 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 requestedWebResourcesThatDoNotNeedToGrantAndroidPermissions = null
             }
             if (resources.isEmpty()) {
-                this.deny()
+                pendingRequest.deny()
             } else {
-                this.grant(resources.toTypedArray())
+                pendingRequest.grant(resources.toTypedArray())
             }
             webPermissionsRequest = null
         }
