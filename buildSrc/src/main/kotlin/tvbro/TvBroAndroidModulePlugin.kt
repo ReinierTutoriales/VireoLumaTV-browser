@@ -19,6 +19,11 @@ internal object TvBroAndroidModulePlugin {
         // Helper function to get versions as integers
         fun findVersion(alias: String): Int =
             libs.findVersion(alias).get().requiredVersion.toInt()
+        val compileSdkMajor = findVersion("android-compileSdk")
+        // Optional minor API level, e.g. 1 for API 37.1.
+        val compileSdkMinor: Int? = libs.findVersion("android-compileSdkMinor")
+            .map { it.requiredVersion.toInt() }
+            .orElse(null)
 
         with(project) {
             when (type) {
@@ -29,14 +34,22 @@ internal object TvBroAndroidModulePlugin {
 
             when (type) {
                 AndroidModuleType.APPLICATION -> extensions.configure<ApplicationExtension> {
-                    compileSdk = findVersion("android-compileSdk")
+                    compileSdk {
+                        version = release(compileSdkMajor) {
+                            compileSdkMinor?.let { minorApiLevel = it }
+                        }
+                    }
                     defaultConfig {
                         minSdk = findVersion("android-minSdk")
                         targetSdk = findVersion("android-targetSdk")
                     }
                 }
                 AndroidModuleType.LIBRARY -> extensions.configure<LibraryExtension> {
-                    compileSdk = findVersion("android-compileSdk")
+                    compileSdk {
+                        version = release(compileSdkMajor) {
+                            compileSdkMinor?.let { minorApiLevel = it }
+                        }
+                    }
                     defaultConfig {
                         minSdk = findVersion("android-minSdk")
                         consumerProguardFiles("consumer-rules.pro")
