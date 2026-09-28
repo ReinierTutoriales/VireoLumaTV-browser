@@ -1,27 +1,33 @@
 //download blobs support
 if (!window.tvBroClicksListener) {
     window.tvBroClicksListener = function(e) {
-        if (e.target.tagName.toUpperCase() == "A" && e.target.attributes.href.value.toLowerCase().startsWith("blob:")) {
-            var fileName = e.target.download;
-            var url = e.target.attributes.href.value;
-            var xhr=new XMLHttpRequest();
-            xhr.open('GET', e.target.attributes.href.value, true);
-            xhr.responseType = 'blob';
-            xhr.onload = function(e) {
-                if (this.status == 200) {
-                    var blob = this.response;
-                    var reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = function() {
-                        base64data = reader.result;
+        var target = e.target;
+        if (!target || typeof target.closest !== "function") return;
+        //the click can land on an element inside the link (icon, span, button...)
+        var link = target.closest("a[href]");
+        if (!link) return;
+        var url = link.getAttribute("href");
+        if (!url || !url.toLowerCase().startsWith("blob:")) return;
+        var fileName = link.download || null;
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'blob';
+        xhr.onload = function() {
+            if (this.status == 200) {
+                var blob = this.response;
+                var reader = new FileReader();
+                reader.onload = function() {
+                    var base64data = reader.result;
+                    if (typeof base64data === "string") {
                         TVBro.takeBlobDownloadData(base64data, fileName, url, blob.type);
                     }
-                }
-            };
-            xhr.send();
-            e.stopPropagation();
-            e.preventDefault();
-        }
+                };
+                reader.readAsDataURL(blob);
+            }
+        };
+        xhr.send();
+        e.stopPropagation();
+        e.preventDefault();
     };
     document.addEventListener("click", window.tvBroClicksListener);
 }
