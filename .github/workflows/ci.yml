@@ -30,10 +30,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Unit tests
-        run: ./gradlew testGenericDebugUnitTest --stacktrace
+        run: ./gradlew testGenericGeckoExcludedDebugUnitTest --stacktrace
 
-      - name: Build debug APK
-        run: ./gradlew assembleGenericDebug --stacktrace
+      - name: Build debug APK (GeckoExcluded)
+        run: ./gradlew assembleGenericGeckoExcludedDebug --stacktrace
+
+      - name: Build debug APK (GeckoIncluded)
+        run: ./gradlew assembleGenericGeckoIncludedDebug --stacktrace
 
       - name: Upload test reports
         if: failure()
@@ -43,9 +46,16 @@ jobs:
           path: app/build/reports/tests/
           if-no-files-found: ignore
 
-      - name: Upload debug APK
+      - name: Upload debug APK (GeckoExcluded)
         uses: actions/upload-artifact@v4
         with:
-          name: tvbro-debug
-          path: app/build/outputs/apk/generic/debug/*.apk
+          name: tvbro-debug-geckoExcluded
+          path: app/build/outputs/apk/genericGeckoExcluded/debug/*.apk
+          retention-days: 7
+
+      - name: Upload debug APK (GeckoIncluded)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tvbro-debug-geckoIncluded
+          path: app/build/outputs/apk/genericGeckoIncluded/debug/*.apk
           retention-days: 7
