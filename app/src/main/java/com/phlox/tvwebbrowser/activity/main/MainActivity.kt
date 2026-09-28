@@ -648,16 +648,19 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             startDownloads()
             return
         }
+        if (requestCode == MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS) {
+            // Handled before the empty-result check: an interrupted request (empty arrays) must also release
+            // the pending flag, otherwise every later download would stay queued forever.
+            downloadPermissionRequestPending = false
+            if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+                startDownloads()
+            } else {
+                pendingDownloads.clear()
+            }
+            return
+        }
         if (grantResults.isEmpty()) return
         when (requestCode) {
-            MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS -> {
-                downloadPermissionRequestPending = false
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startDownloads()
-                } else {
-                    pendingDownloads.clear()
-                }
-            }
             else -> {
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults)
             }
