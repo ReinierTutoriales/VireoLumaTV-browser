@@ -308,6 +308,16 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
             callback?.onPageCertificateError(url)
         }
 
+        override fun onRenderProcessGone(): Boolean {
+            val deadWebView = webView ?: return true
+            (deadWebView.parent as? ViewGroup)?.removeView(deadWebView)
+            deadWebView.destroy()
+            webView = null
+            fullScreenView = null
+            callback?.onRenderProcessGone()
+            return true
+        }
+
         override fun isAd(request: WebResourceRequest, baseUri: Uri): Boolean {
             return callback?.isAd(request.url, request.requestHeaders["Accept"], baseUri) ?: false
         }

@@ -33,6 +33,7 @@ import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebBackForwardList
 import android.webkit.WebChromeClient
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -128,6 +129,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         fun onPageStarted(url: String?)
         fun onPageFinished(url: String?)
         fun onPageCertificateError(url: String?)
+        fun onRenderProcessGone(): Boolean
         fun isAdBlockingEnabled(): Boolean
         fun isDialogsBlockingEnabled(): Boolean
         fun isAd(request: WebResourceRequest, baseUri: Uri): Boolean
@@ -450,6 +452,10 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             override fun onLoadResource(view: WebView, url: String) {
                 super.onLoadResource(view, url)
                 //Log.d(TAG, "onLoadResource url: $url")
+            }
+
+            override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+                return callback.onRenderProcessGone()
             }
 
             override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {

@@ -1257,6 +1257,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             vb.vActionBar.setAddressBoxTextColor(Color.RED)
         }
 
+        override fun onRenderProcessGone() {
+            if (tabsModel.currentTab.value == tab) {
+                changeTab(tab)
+            }
+        }
+
         override fun isAd(url: Uri, acceptHeader: String?, baseUri: Uri): Boolean? {
             return adblockModel.isAd(url, acceptHeader, baseUri)
         }
