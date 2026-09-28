@@ -615,8 +615,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     private fun startDownload() {
         val download = this.downloadIntent ?: return
+        val service = downloadService ?: return
         this.downloadIntent = null
-        downloadService?.startDownload(download)
+        service.startDownload(download)
         onDownloadStarted(download.filename)
     }
 
@@ -1542,6 +1543,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 return
             }
             downloadService = binder.service
+            startDownload()
         }
 
         override fun onServiceDisconnected(p0: ComponentName?) {
