@@ -253,6 +253,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun onShowCustomView(view: View) {
+            if (fullScreenView != null) return
             callback?.onPrepareForFullscreen()
             webView?.visibility = View.GONE
             viewParent?.apply {
