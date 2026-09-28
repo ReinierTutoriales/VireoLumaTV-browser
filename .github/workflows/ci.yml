@@ -19,6 +19,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      HAS_DEBUG_KEYSTORE: ${{ secrets.DEBUG_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v6
 
@@ -31,6 +33,17 @@ jobs:
         with:
           # open-source (MIT) cache provider; v6 defaults to the commercial "enhanced" one
           cache-provider: basic
+
+      # Same debug signing key on every run, so debug APKs install over each other (adb install -r)
+      # without losing data. Skipped when the secret is unavailable (e.g. pull requests from forks).
+      - name: Restore shared debug keystore
+        if: env.HAS_DEBUG_KEYSTORE == 'true'
+        env:
+          DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p ~/.android
+          echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+          keytool -list -v -keystore ~/.android/debug.keystore -storepass android | grep "SHA256:"
 
       - name: Unit tests
         run: ./gradlew testGenericGeckoExcludedDebugUnitTest --stacktrace
