@@ -2,6 +2,8 @@ package com.phlox.tvwebbrowser.singleton
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.util.LruCache
 import android.webkit.WebChromeClient
@@ -9,8 +11,10 @@ import android.webkit.WebView
 import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.model.HostConfig
 import com.phlox.tvwebbrowser.utils.FaviconExtractor
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URL
@@ -18,9 +22,12 @@ import java.net.URL
 object FaviconsPool {
     const val FAVICONS_DIR = "favicons"
     const val FAVICON_PREFERRED_SIDE_SIZE = 120
+    //max time the temporary WebView used as last-resort favicon source stays alive
+    private const val WEBVIEW_FAVICON_TIMEOUT_MS = 20_000L
     private val TAG: String = FaviconsPool::class.java.simpleName
 
     val faviconExtractor = FaviconExtractor()
+    private val backgroundScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     var databaseDelegate: DatabaseDelegate = object : DatabaseDelegate {}
 
     interface DatabaseDelegate {
@@ -111,27 +118,55 @@ object FaviconsPool {
                 }
                 //try to get favicon from webview
                 withContext(Dispatchers.Main) {
-                    WebView(AppContext.get()).apply {
-                        webChromeClient = object : WebChromeClient() {
-                            override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
-                                super.onReceivedIcon(view, icon)
-                                if (icon != null) {
-                                    Log.d(TAG, "get: favicon received from webview for $host")
-                                    cache.put(host, icon)
-                                    runBlocking {
-                                        saveFavicon(host, icon, hostConfig)
-                                    }
-                                }
-                            }
-                        }
-                        loadUrl(urlOrHost)
-                    }
+                    loadFaviconWithTemporaryWebView(urlOrHost, host, hostConfig)
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
         return null
+    }
+
+    /**
+     * Last-resort favicon source: loads the page in a temporary WebView and keeps the icon it reports.
+     * Fire-and-forget like before (the result goes to the cache and the database, not to the caller), but the
+     * WebView is now always destroyed: after the icon arrives or after [WEBVIEW_FAVICON_TIMEOUT_MS].
+     * Must be called on the main thread.
+     */
+    private fun loadFaviconWithTemporaryWebView(url: String, host: String, hostConfig: HostConfig?) {
+        val handler = Handler(Looper.getMainLooper())
+        val webView = WebView(AppContext.get())
+        var finished = false
+        var iconHandled = false
+        val release = object : Runnable {
+            override fun run() {
+                if (finished) return
+                finished = true
+                handler.removeCallbacks(this)
+                webView.stopLoading()
+                webView.destroy()
+            }
+        }
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
+                super.onReceivedIcon(view, icon)
+                if (icon == null || iconHandled || finished) return
+                iconHandled = true
+                Log.d(TAG, "get: favicon received from webview for $host")
+                cache.put(host, icon)
+                backgroundScope.launch {
+                    try {
+                        saveFavicon(host, icon, hostConfig)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Can not save favicon for $host", e)
+                    }
+                }
+                //do not destroy the WebView from inside its own callback
+                handler.post(release)
+            }
+        }
+        handler.postDelayed(release, WEBVIEW_FAVICON_TIMEOUT_MS)
+        webView.loadUrl(url)
     }
 
     fun clear() {
