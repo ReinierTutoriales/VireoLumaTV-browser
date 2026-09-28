@@ -19,6 +19,7 @@ import com.phlox.tvwebbrowser.TVBro
 import com.phlox.tvwebbrowser.activity.downloads.ActiveDownloadsModel
 import com.phlox.tvwebbrowser.model.Download
 import com.phlox.tvwebbrowser.singleton.AppDatabase
+import com.phlox.tvwebbrowser.utils.DownloadUtils
 import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
 import java.io.File
 import java.util.*
@@ -164,6 +165,8 @@ class DownloadService : Service() {
 
     fun startDownload(download: Download) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            //file name becomes part of a filesystem path here: never allow it to leave the downloads dir
+            download.filename = DownloadUtils.sanitizeFileName(download.filename) ?: "downloadfile"
             val extPos = download.filename.lastIndexOf(".")
             val hasExt = extPos != -1
             var ext: String? = null

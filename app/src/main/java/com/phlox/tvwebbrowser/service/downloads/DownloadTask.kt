@@ -93,7 +93,8 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
 
             if (connection.headerFields.containsKey("Content-Disposition")) {
                 val mime = connection.getHeaderField("Content-Type")
-                downloadInfo.filename = DownloadUtils.guessFileName(downloadInfo.url, connection.getHeaderField("Content-Disposition"), mime)
+                downloadInfo.filename = DownloadUtils.sanitizeFileName(DownloadUtils.guessFileName(
+                    downloadInfo.url, connection.getHeaderField("Content-Disposition"), mime)) ?: "downloadfile"
                 downloadInfo.filepath = File(File(downloadInfo.filepath).parentFile, downloadInfo.filename).absolutePath
             }
 

@@ -136,6 +136,23 @@ object DownloadUtils {
         return filename + extension
     }
 
+    private val UNSAFE_FILE_NAME_CHARS = Regex("[\\x00-\\x1F\\x7F:*?\"<>|]")
+
+    /**
+     * Makes a file name coming from untrusted input (web page, server headers) safe to use as a single
+     * path segment: drops any directory part, replaces control/reserved characters and leading dots.
+     * Returns null if nothing usable remains (e.g. "..", "/", "").
+     */
+    fun sanitizeFileName(name: String?): String? {
+        if (name == null) return null
+        val cleaned = name.substringAfterLast('/').substringAfterLast('\\')
+            .replace(UNSAFE_FILE_NAME_CHARS, "_")
+            .trim()
+            .trimStart('.')
+            .trim()
+        return cleaned.ifEmpty { null }
+    }
+
     private fun parseContentDisposition(contentDisposition: String): String? {
         try {
             val m = CONTENT_DISPOSITION_PATTERN.matcher(contentDisposition)

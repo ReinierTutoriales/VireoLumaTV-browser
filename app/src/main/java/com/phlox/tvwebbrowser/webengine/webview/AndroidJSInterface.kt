@@ -101,8 +101,11 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
 
     @JavascriptInterface
     fun takeBlobDownloadData(base64BlobData: String, fileName: String?, url: String, mimetype: String) {
+        //only blob: URLs are expected here (see generic_injects.js); the file name comes from the web page
+        if (!url.startsWith("blob:", ignoreCase = true)) return
         val callback = webEngine.callback ?: return
-        val finalFileName = fileName ?: DownloadUtils.guessFileName(url, null, mimetype)
+        val finalFileName = DownloadUtils.sanitizeFileName(fileName)
+            ?: DownloadUtils.guessFileName(url, null, mimetype)
         callback.onDownloadRequested(url, "",
                 finalFileName, "TV Bro",
             mimetype, Download.OperationAfterDownload.NOP, base64BlobData)
