@@ -921,25 +921,45 @@ class MyPromptDelegate(private val webEngine: GeckoWebEngine): GeckoSession.Prom
 
     fun onFileCallbackResult(resultCode: Int, data: Intent?) {
         val res: GeckoResult<PromptResponse> = fileResponse ?: return
+        val prompt: FilePrompt = filePrompt ?: run {
+            fileResponse = null
+            return
+        }
         fileResponse = null
-        val prompt: FilePrompt = filePrompt ?: return
         filePrompt = null
+
         if (resultCode != Activity.RESULT_OK || data == null) {
             res.complete(prompt.dismiss())
             return
         }
-        val activity = webEngine.callback?.getActivity() ?: return
+        val activity = webEngine.callback?.getActivity()
+        if (activity == null) {
+            res.complete(prompt.dismiss())
+            return
+        }
+
         val uri = data.data
         val clip = data.clipData
-        if (prompt.type == FilePrompt.Type.SINGLE || (prompt.type == FilePrompt.Type.MULTIPLE && clip == null)) {
-            res.complete(prompt.confirm(activity, uri!!))
-        } else if (prompt.type == FilePrompt.Type.MULTIPLE) {
-            val count = clip!!.itemCount
-            val uris = ArrayList<Uri>(count)
-            for (i in 0 until count) {
-                uris.add(clip.getItemAt(i).uri)
+        if (prompt.type == FilePrompt.Type.SINGLE) {
+            if (uri != null) {
+                res.complete(prompt.confirm(activity, uri))
+            } else {
+                res.complete(prompt.dismiss())
             }
-            res.complete(prompt.confirm(activity, uris.toTypedArray()))
+        } else if (prompt.type == FilePrompt.Type.MULTIPLE) {
+            if (clip != null && clip.itemCount > 0) {
+                val uris = ArrayList<Uri>(clip.itemCount)
+                for (i in 0 until clip.itemCount) {
+                    uris.add(clip.getItemAt(i).uri)
+                }
+                res.complete(prompt.confirm(activity, uris.toTypedArray()))
+            } else if (uri != null) {
+                res.complete(prompt.confirm(activity, arrayOf(uri)))
+            } else {
+                res.complete(prompt.dismiss())
+            }
+        } else {
+            res.complete(prompt.dismiss())
         }
     }
 
