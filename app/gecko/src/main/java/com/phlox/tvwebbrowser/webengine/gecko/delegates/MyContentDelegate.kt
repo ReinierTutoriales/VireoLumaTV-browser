@@ -78,7 +78,7 @@ class MyContentDelegate(private val webEngine: GeckoWebEngine): GeckoSession.Con
             element.srcUri,
             element.title,
             element.altText,
-            element.linkText,
+            element.textContent,
             webView.cursorDrawerDelegate.cursorPosition.x.toInt(),
             webView.cursorDrawerDelegate.cursorPosition.y.toInt()
         )
@@ -175,4 +175,11 @@ class MyContentDelegate(private val webEngine: GeckoWebEngine): GeckoSession.Con
         super.onShowDynamicToolbar(geckoSession)
     }
 
+    override fun onCookieBannerDetected(session: GeckoSession) {
+        super.onCookieBannerDetected(session)
+    }
+
+    override fun onCookieBannerHandled(session: GeckoSession) {
+        super.onCookieBannerHandled(session)
+    }
 }

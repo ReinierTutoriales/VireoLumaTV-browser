@@ -1,5 +1,5 @@
 [versions]
-android-compileSdk = "37.1"
+android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
 agp = "9.4.1"
@@ -17,7 +17,7 @@ room = "2.8.5"
 
 junit = "4.13.2"
 robolectric = "4.16.1"
-geckoview = "155.0.20260903215306"
+geckoview = "147.0.20260212191108"
 ad-block = "0.0.4"
 segmented-button = "v1.0.0"
 pinned-section-listview = "1.0.0"
