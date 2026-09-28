@@ -266,7 +266,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                                 callback.requestPermissions(neededPermissions.toTypedArray(), false)
                             } else {
                                 webPermissionsRequest.grant(webPermissionsRequest.resources)
-                                webPermissionsRequest = null
+                                this@WebViewEx.webPermissionsRequest = null
                             }
 
                             permRequestDialog = null
