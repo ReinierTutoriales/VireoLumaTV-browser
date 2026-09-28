@@ -237,7 +237,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                         }
                         .setPositiveButton(R.string.allow) { dialog, which ->
                             val webPermissionsRequest = this@WebViewEx.webPermissionsRequest
-                            this@WebViewEx.webPermissionsRequest = null
                             if (webPermissionsRequest == null) {
                                 return@setPositiveButton
                             }
