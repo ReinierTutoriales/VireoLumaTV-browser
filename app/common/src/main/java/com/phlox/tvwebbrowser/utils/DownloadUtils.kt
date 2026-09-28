@@ -153,6 +153,15 @@ object DownloadUtils {
         return cleaned.ifEmpty { null }
     }
 
+    /**
+     * Returns the base64 payload of a data URL produced by FileReader.readAsDataURL().
+     * The media type part can't be rebuilt from Blob.type: browsers write "application/octet-stream"
+     * when Blob.type is empty. Input without the ";base64," marker is returned unchanged.
+     */
+    fun dataUrlBase64Payload(dataUrl: String): String {
+        return dataUrl.substringAfter(";base64,", dataUrl)
+    }
+
     private fun parseContentDisposition(contentDisposition: String): String? {
         try {
             val m = CONTENT_DISPOSITION_PATTERN.matcher(contentDisposition)

@@ -141,7 +141,7 @@ class BlobDownloadTask(override var downloadInfo: Download, val blobBase64Data: 
         downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
 
         try {
-            val blobAsBytes: ByteArray = Base64.decode(blobBase64Data.replaceFirst("data:${downloadInfo.mimeType};base64,", ""), 0)
+            val blobAsBytes: ByteArray = Base64.decode(DownloadUtils.dataUrlBase64Payload(blobBase64Data), 0)
             val output = prepareDownloadOutput(downloadInfo)
             output.buffered().use{ it.write(blobAsBytes) }
             downloadInfo.size = blobAsBytes.size.toLong()
