@@ -408,12 +408,10 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
         webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-                Log.d(TAG, "shouldOverrideUrlLoading url: ${request.url}")
                 return callback.shouldOverrideUrlLoading(request.url.toString())
             }
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-                Log.d(TAG, "shouldInterceptRequest url: ${request.url}")
                 val currentPageUrl = currentOriginalUrl
 
                 if (currentPageUrl != null && currentPageUrl.toString().startsWith(Config.HOME_PAGE_URL,
