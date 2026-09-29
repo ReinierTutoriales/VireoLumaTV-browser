@@ -51,6 +51,9 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleGenericDebug --stacktrace
 
+      - name: Validate release build
+        run: ./gradlew assembleGenericRelease --stacktrace
+
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v6
