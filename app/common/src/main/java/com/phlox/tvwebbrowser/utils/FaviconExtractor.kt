@@ -6,6 +6,7 @@ import android.webkit.MimeTypeMap
 import java.io.BufferedReader
 import java.io.Reader
 import java.net.URL
+import java.net.URLConnection
 import java.util.regex.Pattern
 
 
@@ -15,6 +16,8 @@ class FaviconExtractor {
         const val DEFAULT_ICON_TYPE = "image/x-icon"
         const val DEFAULT_ICON_SIZE = 16
         const val DEFAULT_ICON_SIZE_STRING = "${DEFAULT_ICON_SIZE}x$DEFAULT_ICON_SIZE"
+        private const val CONNECTION_TIMEOUT_MS = 5_000
+        private const val READ_TIMEOUT_MS = 10_000
     }
 
     private val headerClosingTagsPattern: Pattern = Pattern.compile("<\\s*(?:body|/\\s*head)(?:\\s+|>)")
@@ -74,11 +77,12 @@ class FaviconExtractor {
      * @throws java.io.IOException
      */
     fun extractFavIconsFromURL(url: URL): ArrayList<IconInfo> {
-        val (result, manifestHref) = url.openConnection().inputStream.bufferedReader().use { extractFavIconsFromHTML(url, it) }
+        val (result, manifestHref) = url.openTimedConnection().getInputStream().bufferedReader()
+            .use { extractFavIconsFromHTML(url, it) }
         if (manifestHref != null) {
             val manifestURL = URL(url, manifestHref)
             try {
-                val manifestIcons = manifestURL.openConnection().inputStream.bufferedReader()
+                val manifestIcons = manifestURL.openTimedConnection().getInputStream().bufferedReader()
                     .use { extractFavIconsFromWebManifest(manifestURL, it) }
                 result.addAll(manifestIcons)
             } catch (e: Exception) {
@@ -262,5 +266,12 @@ class FaviconExtractor {
 
 
         return Pair(iconInfos, manifestHref)
+    }
+
+    private fun URL.openTimedConnection(): URLConnection {
+        return openConnection().apply {
+            connectTimeout = CONNECTION_TIMEOUT_MS
+            readTimeout = READ_TIMEOUT_MS
+        }
     }
 }
