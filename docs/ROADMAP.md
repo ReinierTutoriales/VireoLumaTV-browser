@@ -1,242 +1,411 @@
-# TV Bro (fork) — Hoja de ruta: Gecko + bloqueo de anuncios
+# TV Bro fork — Roadmap de estabilización WebView-only
 
-Documento de trabajo de la rama `fixes/audit`. Recoge qué está hecho, qué falta, en qué
-orden, cómo se valida cada fase y qué no se debe tocar antes de tiempo.
+Documento de trabajo de la rama `fixes/audit`.
 
-Estado de referencia: HEAD `ef0eeb5`, 48 commits por delante de `master`, 0 por detrás.
+Este roadmap reemplaza el plan anterior centrado en Gecko. El fork actual está orientado a
+un APK WebView-only, con Gecko eliminado del build: módulo, flavor y dependencia. La prioridad
+es estabilizar, medir en el onn y reducir deuda técnica sin mezclar problemas en commits grandes.
 
-## Leyenda
+## Estado de referencia
 
-| Marca | Significado |
+Rama principal de trabajo:
+
+| Rama | Estado |
 |---|---|
-| ✅ Cerrado | Aplicado y con CI verde |
-| ⏳ Pendiente | Aún no aplicado |
-| 📺 Requiere dispositivo | Solo se valida en el onn 4K Pro (2026); la CI no lo cubre |
-| 🔍 Solo auditoría | Lectura de código o documentación, sin commit |
+| `fixes/audit` | Rama de integración actual |
+| HEAD actual verificado | `c928c3e` |
+| Línea base W0 | `f2ed4ecb3656759e41b6813b939d4ee2aacd369d` |
+| W0 tag recomendado | `w0-baseline` pendiente de crear |
+| APK objetivo | `genericRelease` firmado para instalación en onn |
+| `applicationId` | `com.phlox.tvwebbrowser` |
+
+Historial reciente relevante:
+
+| Commit / PR | Estado | Descripción |
+|---|---:|---|
+| `f2ed4ec` | ✅ Integrado | PR #1, rebase de `01cb1bf`; incluye PR #2. Línea base W0 |
+| PR #2 | ✅ Mergeado | CI valida release con `assembleGenericRelease`; workaround temporal de cadena Gecko |
+| PR #3 | ✅ Mergeado | Timeouts y límites en red de favicons; dos commits preservados por rebase |
+| PR #4 | ⏳ Abierto | Logs calientes en release; falta borrar dos `Log.d` de `WebViewEx.kt` |
+
+La línea base W0 debe medirse desde `f2ed4ecb3656759e41b6813b939d4ee2aacd369d`.
+No es imprescindible que exista el tag para medir, pero el tag evita errores manuales.
+
+Crear tag cuando haya PC disponible:
+
+```bash
+git tag w0-baseline f2ed4ecb3656759e41b6813b939d4ee2aacd369d
+git push origin w0-baseline
+```
 
 ## Reglas de trabajo
 
-1. **Un problema → un commit → CI → informe → parada.** No se encadena el siguiente
-   cambio hasta que el anterior tenga la CI en verde y se haya informado.
-2. Cada afirmación técnica se valida contra documentación oficial, código fuente o el
-   estado real del dispositivo antes de actuar.
-3. CI verde demuestra compilación y tests, **no** el comportamiento en ejecución. Los
-   cambios de ciclo de vida, UI, permisos, multimedia o red requieren prueba en el onn.
-4. Nada de squash durante la estabilización. La limpieza del historial se hace al final
-   (ver [Integración final](#integración-final)).
-5. No se añade deuda técnica a este documento sin respaldo en código, CI o pruebas.
+1. Un problema → un commit o PR pequeño → CI → revisión → decisión.
+2. No mezclar refactors, comportamiento, traducciones y CI en el mismo cambio salvo que sea
+   estrictamente necesario para desbloquear la validación.
+3. CI verde demuestra compilación, tests y release validation; no demuestra comportamiento en
+   el onn.
+4. Los cambios que afecten memoria, renderizado, fullscreen, WebView lifecycle, bloqueo de
+   anuncios o descargas requieren prueba física cuando estén en el camino de ejecución.
+5. Si una edición requiere hunk sobre archivo grande, hacerla desde PC o IDE. No sustituir
+   archivos grandes completos por API si la herramienta no puede garantizar contenido íntegro.
+6. No tocar `gecko:` en `WebTabState`; es compatibilidad de estado anterior y no forma parte
+   de la retirada de Gecko.
+7. Mantener `fixes/audit` como integración; no reescribir historial remoto hasta decidir la
+   limpieza final.
 
-## Estado actual
+## Estado técnico actual
 
-Documenta el estado de la rama con sus commits relevantes. No es un changelog exhaustivo:
-los `fixup!`, los intentos revertidos y el commit vacío se tratan en sus propias secciones.
+### WebView-only
 
-### Correcciones funcionales y de seguridad (✅ CI verde, 📺 pendiente de prueba física salvo indicación)
+Gecko fue eliminado del build en `43c10f3`: módulo `:app:gecko`, flavor `webengine` y
+dependencia de Mozilla. El objetivo actual es un APK WebView-only.
 
-| Commit | Cambio |
+La limpieza de UI y cadenas relacionadas con el selector de motor queda pendiente porque
+requiere cambios en varios archivos y traducciones.
+
+No hacer todavía por API remota:
+
+| Pieza | Motivo |
 |---|---|
-| `e16ac99`, `a452204` (+ fixup `4ab4ed3`) | Permisos de cámara/micrófono en WebView: resolución y cancelación |
-| `2aa5cfa`, `ee8950f` | Selector de archivos WebView: resultado y cancelación |
-| `ff9b7ba` | Descargas en Android 13+ aunque se deniegue POST_NOTIFICATIONS |
-| `a29c672` | `destroy()` de WebViews descartados |
-| `a5e92aa` | Saneo de nombres de archivo de descargas (path traversal en Android < 11) |
-| `55738a1` | Escapado de valores del buscador inyectados en la página de inicio |
-| `7473542` | Comparación real del certificado al confiar en un error SSL |
-| `a487f39` | Decodificación de descargas blob con `Blob.type` vacío |
-| `c79bd82` | Manejador de clics de descargas blob en `generic_injects.js` |
-| `22eb9d4` | `FaviconsPool`: WebView temporal siempre destruido, con timeout, sin `runBlocking` |
-| `e91a079` | WebView temporal de `clearCache()` destruido |
-| `5182cbd` | Acceso nullable al GeckoView tras pulsación larga |
-| `2b2ad62` (+ fixup `7b8a4cc`) | Peticiones de pantalla completa duplicadas. 📺 Pendiente: entrar/salir 3 veces en la misma pestaña |
-| `b7fa247` | Conservar el estado de la pestaña al recortar memoria |
-| `bfdf8a5` | Avisos repetidos de script lento en Gecko |
-| `7b5b996` | Resultados del selector de archivos en Gecko sin `!!` |
-| `76fd3a4` | Recuperación tras la muerte del proceso de renderizado de WebView |
-| `de8946a` | Descargas pendientes hasta que el servicio conecte (CI verde; sin revisión de código detallada) |
-| `ab5e278` | Cola de descargas mientras hay permisos pendientes |
-| `8444c1a` | Peticiones de permisos web solapadas (parcial; completado en `50331af`) |
-| `a993c10` | Liberar el indicador de permiso si la petición se interrumpe |
-| `6a4ff07` | Descargas blob procesadas en el hilo principal |
-| `50331af` | Resultado del permiso de Android ligado a la petición web que lo pidió. 📺 Pendiente: prueba de micrófono |
-| `e233283` | A.1: conservar la última lista de bloqueo válida si falla la actualización |
+| `MainSettingsView.kt` | Selector en mitad de archivo; requiere edición por hunk |
+| `view_settings_main.xml` | Layout grande; requiere edición por hunk |
+| `Config.kt` | Limpieza de constantes y funciones; `isWebEngineNotSet()` no tiene usos |
+| `WebEngineFactory` | Todavía tiene referencias en estado/versiones/factory; es refactor |
+| Strings localizadas | Borrar cadena Gecko/WebView implica tocar múltiples XML localizados |
 
-### Toolchain y dependencias (✅ CI verde)
+### CI
 
-| Commit | Cambio |
+PR #2 añadió validación de release:
+
+```bash
+./gradlew assembleGenericRelease --stacktrace
+```
+
+Esto atrapó el fallo release-only de `lintVitalGenericRelease` causado por traducciones
+stale de `settings_engine_change_gecko_msg`.
+
+Workaround actual:
+
+| Archivo | Estado |
 |---|---|
-| `e5043cb` | Workflow de CI: tests unitarios + APK debug de ambos motores |
-| `935a943` | AndroidX estables (AppCompat 1.8.0, WebKit 1.17.1, ConstraintLayout 2.2.2, Lifecycle 2.11.0, Room 2.8.5) |
-| `9739695` | KSP 2.3.12 |
-| `bf01e17` | AGP 9.4.1 + Gradle 9.6.0 |
-| `c2e9268` | Kotlin 2.4.20 |
-| `62ad09c` (+ fixups `279a8d7`, `d28f5bc`) | Nulabilidad de `SlowScriptResponse` en Gecko exigida por Kotlin 2.4 |
-| `36d99aa` | kotlinx-coroutines 1.11.0 |
-| `d359ab9` | `distributionSha256Sum` de Gradle 9.6.0 (comprobado con descarga real en la CI) |
-| `df8c216` | G0: acciones de `ci.yml` en Node 24 (`setup-gradle` v6 con `cache-provider: basic`) |
-| `d9e5ac8` | Acciones de `release.yml` en Node 24 (ver [limitaciones](#limitaciones-de-validación-de-releaseyml)) |
-| `ef0eeb5` | Eliminado el alias de plugin `kotlin-android` sin uso |
+| `app/src/main/res/values/strings.xml` | Contiene `settings_engine_change_gecko_msg` con `translatable="false"` |
+| 9 locales | Siguen teniendo traducciones stale de esa cadena |
+| Release lint | Verde con AGP 9.4.1 |
 
-### Intentos revertidos (documentados para no repetirlos igual)
+Ese workaround es temporal. Se debe retirar junto con la limpieza real del selector de motor
+y las traducciones asociadas.
 
-| Commits | Intento | Por qué falló |
+### Favicons
+
+PR #1 y PR #3 dejaron el flujo de favicons más seguro:
+
+| Área | Estado |
+|---|---|
+| Manifest parsing | Endurecido |
+| HTML favicon discovery | Con timeouts |
+| Web manifest fetch | Con timeouts |
+| Icon download | Con timeouts |
+| Doble conexión por icono | Eliminada |
+| Streams | Cerrados con `use {}` |
+| `inSampleSize` | Mínimo 1 |
+| Tamaño máximo de icono | Limitado |
+| CI | Verde |
+
+Observaciones no bloqueantes:
+
+- `readTimeout` no es timeout global de descarga; es por operación de lectura.
+- Si hiciera falta límite total, usar `withTimeout` alrededor de la operación completa.
+- La descarga a `ByteArray` puede tener pico transitorio de memoria; asumible por ahora, pero
+  medible en W0/W1 si aparecen síntomas.
+
+### Logs calientes / adblock
+
+PR #4 está abierto y no está listo para merge.
+
+Hecho en PR #4:
+
+| Commit | Estado | Descripción |
+|---|---:|---|
+| `23d0201` | ⚠️ Parcial | Añadió reglas R8 para quitar logs no críticos |
+| `761ed8d` | ✅ Correcto | Quitó log por request en `HomePageHelper` |
+| `7906a72` | ✅ Correcto | Preservó `Log.i` en release; solo se eliminan `Log.v` y `Log.d` |
+
+Pendiente en PR #4:
+
+Borrar exactamente estas dos líneas en `WebViewEx.kt`:
+
+```kotlin
+Log.d(TAG, "shouldOverrideUrlLoading url: ${request.url}")
+Log.d(TAG, "shouldInterceptRequest url: ${request.url}")
+```
+
+Motivo:
+
+- `HomePageHelper.shouldInterceptRequest` solo corre en la página de inicio.
+- El hot path real de páginas normales es `WebViewEx.shouldInterceptRequest`.
+- R8 puede eliminar la llamada a `Log.d`, pero no es una garantía suficiente para evitar toda
+  evaluación de argumentos si hay llamadas con posible efecto o coste.
+- `Log.i` debe sobrevivir en release para W0, porque reporta estado de listas de adblock.
+
+Parche:
+
+```text
+0001-Remove-per-request-debug-logs-from-WebView-client.patch
+```
+
+Ese parche está fuera del repo; es regenerable borrando esas dos líneas sobre `7906a72`.
+
+Verificación esperada:
+
+```text
+Blob antes:   f3cb7a4216bed350da904a1b65f29a63a439072e
+Blob después: c9b937ee4322ecea83abc9d0fdf0f5ef2afa634a
+```
+
+Aplicación local recomendada:
+
+```bash
+git switch perf/adblock-hotpath-logs
+git pull --ff-only
+git rev-parse HEAD:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt
+git am 0001-Remove-per-request-debug-logs-from-WebView-client.patch
+git rev-parse HEAD:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt
+git push
+```
+
+## W0 — Línea base física en onn
+
+W0 es obligatorio antes de atribuir mejoras de memoria o fluidez.
+
+### Base
+
+Medir primero desde:
+
+```text
+f2ed4ecb3656759e41b6813b939d4ee2aacd369d
+```
+
+Opcional, si existe tag:
+
+```text
+w0-baseline
+```
+
+### Firma
+
+El debug y release comparten `applicationId`. Si el onn tiene instalado un debug firmado con
+el debug keystore compartido, un release firmado con otra clave fallará con:
+
+```text
+INSTALL_FAILED_UPDATE_INCOMPATIBLE
+```
+
+Para W0 se recomienda firmar el release con el mismo debug keystore que usa la CI. La firma no
+afecta al rendimiento y permite `adb install -r` conservando datos.
+
+Comprobar huella local:
+
+```powershell
+keytool -list -v -keystore "%USERPROFILE%\.android\debug.keystore" -storepass android | findstr SHA256
+```
+
+Huella CI:
+
+```text
+Copiar del log del paso "Restore shared debug keystore" de cualquier run reciente.
+```
+
+No asumir una huella no verificada.
+
+### Arranque
+
+No usar `pm clear` para W0. Borrar datos fuerza redescarga de listas de adblock y contamina
+la medición.
+
+Usar arranque frío:
+
+```bash
+adb shell am force-stop com.phlox.tvwebbrowser
+```
+
+Abrir manualmente la app o con `monkey` si procede.
+
+### Procesos WebView
+
+No medir solo:
+
+```bash
+adb shell dumpsys meminfo com.phlox.tvwebbrowser
+```
+
+Desde Android 8, WebView usa renderer/sandbox process. Hay que medir app + renderer.
+
+Confirmar procesos reales:
+
+```powershell
+adb shell ps -A -o PID,RSS,NAME | findstr /i "tvwebbrowser sandboxed webview"
+```
+
+Capturar memoria por PID:
+
+```bash
+adb shell dumpsys meminfo <PID>
+```
+
+Guardar una captura por cada PID relevante que devuelva `ps`.
+
+### Logcat
+
+Filtro recomendado:
+
+```powershell
+adb logcat -c
+adb logcat | findstr /i "tvbro webview chromium render favicon adblock crash exception lowmemorykiller lmkd"
+```
+
+`lowmemorykiller`/`lmkd` es obligatorio; en el onn fue el síntoma principal con Gecko.
+
+### Escenarios W0
+
+Mantener orden y espera fija. Esperar aproximadamente 30 s antes de cada medición.
+
+| Escenario | Acción | Archivo sugerido |
 |---|---|---|
-| `90e9211`, `8b4e988` → revert `208e0dd` | Eliminar el flavor `geckoExcluded` | `:app:gecko` exige `minSdk 26`; `VersionSettingsView` depende de `BuildConfig.FLAVOR_appstore` y `BuildConfig.FLAVOR_webengine` |
-| `156fdb3`, `3ebb562` → revert `02b3e1d` | GeckoView 155 | Callbacks de cookie banner eliminados; GeckoView 155 exige compilar contra API 37.1 (y arrastra androidx.core 1.19.0); `buildSrc` trata `compileSdk` como entero (`For input string: "37.1"`) |
+| W0-idle | App recién abierta, sin navegar | `meminfo-w0-idle.txt` |
+| W0-1tab | Abrir sitio ligero | `meminfo-w0-1tab.txt` |
+| W0-4tabs | Abrir lista fija de 4 sitios | `meminfo-w0-4tabs.txt` |
+| W0-after-close | Cerrar pestañas o volver a reposo | `meminfo-w0-after-close.txt` |
+| W0-adblock | Verificar lista cargada y bloqueo básico | `logcat-w0-adblock.txt` |
+| W0-fullscreen | Entrar/salir fullscreen 3 veces | `logcat-w0-fullscreen.txt` |
 
-## Hechos confirmados, hipótesis y decisiones pendientes
+Lista fija inicial:
 
-**Hechos confirmados**
-- GeckoView sigue en `147.0.20260212191108`; `compileSdk 36`, `minSdk 24`.
-- El proyecto ya usa el Kotlin integrado de AGP 9 (no aplica `org.jetbrains.kotlin.android`).
-- `ContextElement.textContent` ya no existe en el código fuente actual de GeckoView (existe
-  `linkText`); TV Bro lo usa en `MyContentDelegate.kt`. Pendiente de contrastar con la
-  etiqueta exacta de la 155 en G3.
-- El motor de bloqueo (`com.github.truefedex:ad-block:0.0.4`, clase `com.brave.adblock.AdBlockClient`)
-  solo se usa para bloqueo de red: `parse`, `serialize`, `deserialize`, `matches`.
-  Lista por defecto: EasyList únicamente.
-- La CI solo ejecuta los tests unitarios de `GeckoExcluded`.
-- La CI no configura una clave debug persistente; los runners efímeros pueden generar claves
-  distintas entre runs, y en ese caso instalar un APK de otro run obliga a desinstalar y se
-  pierden los datos.
+1. `youtube.com`
+2. `google.com`
+3. `wikipedia.org`
+4. sitio pesado de noticias o streaming reproducible
 
-**Hipótesis (sin confirmar)**
-- **A.2:** el puerto `tvbro_bg` de la extensión Gecko queda ligado al `GeckoWebEngine` que
-  lo registró; al cambiar de pestaña, `onDetachFromWindow()` pone `callback = null` y las
-  peticiones de todas las pestañas esperarían el timeout de 1,5 s sin bloquearse. 📺
-- Arquitectura del onn: se asume sistema de 32 bits por reseñas; **no** se decide nada de
-  ABI hasta tener `adb shell getprop ro.product.cpu.abilist`.
+No cambiar lista entre ramas si se quiere comparar.
 
-**Decisiones pendientes**
-- Motor de bloqueo en Gecko: reparar el puente actual o WebExtension/uBlock Origin (G7).
-- Eliminar WebView como fallback (solo con datos de G5).
-- ABI del APK (solo con la salida real de ADB).
+## PRs abiertos
 
-## Plan por fases (orden operativo)
+### PR #4 — Strip hot-path debug logs in release
 
-### G0 — CI en Node 24 ✅
-`df8c216` (`ci.yml`) y `d9e5ac8` (`release.yml`). Limpieza del alias: `ef0eeb5`.
+Estado: abierto, no listo.
 
-### Documentación ⏳
-Este archivo, como commit solo de documentación.
+Requisitos antes de merge:
 
-### G1 — `compileSdk` con versión menor ⏳ 🔍
-Antes del commit, verificar contra la documentación oficial de AGP 9.4.1:
-1. La sintaxis oficial para declarar `compileSdk` 37.1 (sin parser improvisado).
-2. Que AGP 9.4.1 soporta API 37/37.1 como `compileSdk`. Si no, G2 requiere antes otra
-   actualización de AGP.
+- aplicar parche de `WebViewEx.kt`;
+- CI verde;
+- revisar que `Log.i` sigue visible en release;
+- merge con rebase, no squash, para conservar commits de corrección.
 
-Commit: solo `buildSrc`. `android-compileSdk` sigue en `36`. CI y parada.
+### PRs ya mergeados
 
-### G2 — `compileSdk` 37.1 con GeckoView 147 ⏳
-Separar las dos variables que se mezclaron en el intento revertido. No se tocan
-`targetSdk` ni `minSdk`. Salida: ambos motores compilan con CI verde.
+| PR | Estado | Notas |
+|---|---:|---|
+| #1 | ✅ Mergeado | Rebase merge; GitHub reescribió hash pero patch-id preservado |
+| #2 | ✅ Mergeado | Squash; mezcla CI + workaround string Gecko |
+| #3 | ✅ Mergeado | Rebase merge; dos commits preservados y patch-id idéntico |
 
-### G3 — Auditoría GeckoView 148 → 155 🔍
-Sin commit. Cruzar los changelogs/API oficiales con `MyContentDelegate`, `MyPromptDelegate`,
-`MyPermissionDelegate`, `MyNavigationDelegate`, `MyMediaDelegate`, `MyProgressDelegate`,
-WebExtensions, descargas, selector de archivos, pantalla completa, estado de sesión,
-runtime settings, DRM y menú contextual. Producto: matriz API → cambio → afectado → acción.
-Incompatibilidades ya conocidas: `ContextElement.textContent` y
-`onCookieBannerDetected`/`onCookieBannerHandled`. No se asume que sean las únicas.
+## Siguiente orden operativo
 
-### G4 — GeckoView 155 ⏳
-Solo la versión y las adaptaciones demostradas en G3. Fuera de este commit: optimizaciones,
-preferencias experimentales, uBlock Origin, eliminar WebView, ABI, refactors de delegados.
+### 1. Completar PR #4
 
-### Clave debug fija en CI ⏳
-Antes de G5: firmar los APK debug de la CI con una clave fija (secreto del repositorio) para
-poder instalar builds sucesivos con `adb install -r` sin perder datos. Necesario para probar
-la restauración de estado entre builds.
+Pendiente solo por edición local/hunk:
 
-### G5 — Certificación física de Gecko 155 📺
-En el onn: navegación y redirecciones; varias pestañas; restauración tras reiniciar;
-vídeo HTML5 (reproducir, pausa, seek); pantalla completa repetida y con Atrás; DRM
-(Widevine) real; permisos (micrófono, cámara, geolocalización: aceptar, rechazar, cancelar);
-selector de archivos (único, múltiple, cancelar); descargas (normales, blob, cancelación);
-estabilidad con varias pestañas y presión de memoria.
-**WebView se mantiene como fallback como mínimo hasta superar G5.**
+- borrar dos `Log.d` de `WebViewEx.kt`;
+- esperar CI;
+- mergear por rebase.
 
-### G6 — Endurecimiento de Gecko ⏳
-- Diálogo de script lento: al cerrar con Atrás, completar con `CONTINUE`
-  (`setOnCancelListener`); hoy queda `activeAlert` en `true` y los avisos siguientes se
-  aceptan solos.
-- Auditoría de `MyPromptDelegate` y `MyPermissionDelegate` (aún no auditados): cada callback
-  asíncrono debe completarse exactamente una vez.
-Un commit por problema.
+No intentar sustituir `WebViewEx.kt` completo por API.
 
-### G7 — Motor de bloqueo ⏳
-**Entrada obligatoria:** resultado de la prueba A.2 en el onn (porcentaje en
-`d3ward.github.io/toolz/adblock.html` en pasos A/B/C/D y log de
-`AppWebExtensionBackgroundPortDelegate`/`onBlockedAd`).
+### 2. Ejecutar W0
 
-Alternativas a evaluar (ninguna decidida):
-- **A — Mejorar el motor actual:** corregir A.2, clasificación de recursos, ciclo de vida del
-  puerto, varias listas. Mantiene el puente JS↔Kotlin por petición.
-- **B — WebExtension (p. ej. uBlock Origin):** bloqueo dentro de Gecko sin ida y vuelta a
-  Kotlin, con filtros cosméticos y scriptlets. Requiere verificar en la documentación de
-  GeckoView 155 qué admite para extensiones embebidas y medir la memoria.
+Desde `f2ed4ec` o `w0-baseline`.
 
-Medición obligatoria con `adb shell dumpsys meminfo com.phlox.tvwebbrowser`: Gecko sin
-bloqueo avanzado, con él, y con varias pestañas. No se declara viable ninguna opción en un
-box de 3 GB sin medirla. La UI de ajustes se decide después de demostrar la arquitectura.
+Objetivo: línea base real antes de comparar ramas actuales.
 
-### G8 — Gecko como arquitectura principal ⏳
-Solo tras G5 y G7. Migración coordinada: primero el código que depende de
-`BuildConfig.FLAVOR_webengine`, después `minSdk 26`, después simplificar flavors.
-ABI: primero `ro.product.cpu.abilist` del onn, después build (`armeabi-v7a` solo si procede).
+### 3. Medir rama actual
 
-### G9 — Rendimiento de Gecko 📺
-Medir antes de optimizar: arranque, primera y segunda navegación, cambio de pestaña, memoria
-con 1/3/5 pestañas, vídeo, bloqueo activado/desactivado. Una optimización sin mejora medible
-no entra.
+En la misma sesión física del onn, medir también `fixes/audit` actual para comparar contra W0.
 
-## Trabajo independiente (cuando no interfiera con una migración)
+### 4. Adblock runtime
 
-Respaldado por la auditoría del código:
-- **S1** ⏳ Quitar `Log.d`/`Log.i` por petición en el camino del bloqueo (WebView y Gecko).
-- **S2** ⏳ Timeouts de conexión/lectura en la descarga de la lista de bloqueo y publicación
-  segura entre hilos del `AdBlockClient` (hoy no es `@Volatile`).
-- **U1b** ⏳ Regenerar `gradle-wrapper.jar` y los scripts `gradlew` desde la distribución
-  oficial (ejecutando `gradle wrapper` en un runner), sin fabricarlos a mano.
+Separar en commits:
 
-WebView queda como fallback; sus mejoras de bloqueo (no evaluar el documento principal,
-ajuste de la pestaña que origina la petición, tipos de recurso, `baseHost`, contador con el
-ajuste por pestaña) solo se abordan si Gecko no resulta ser la plataforma definitiva.
+| Commit | Cambio |
+|---|---|
+| A | Aislar fallo por lista: una lista rota no debe descartar todas |
+| B | Validación física con logcat y página de prueba |
 
-## Deuda conocida (con respaldo en código)
+No declarar solucionado el bloqueo hasta verificar en onn. El motor `ad-block 0.0.4` puede seguir
+fallando aunque las listas carguen.
 
-- Consultas Room en el hilo principal (`allowMainThreadQueries()`).
-- Safe Browsing ligado al ajuste del bloqueador.
-- Migraciones Room 2→3→4 ausentes (solo afecta a instalaciones muy antiguas).
-- Descargas fallidas en Android 11+: `cancelDownloadIfNeeded()` pone `IS_PENDING=0` al archivo
-  parcial si no fue cancelado, publicándolo como si estuviera completo.
-- Si el renderer muere en pantalla completa, la vista de pantalla completa no se retira.
-- Selector de archivos Gecko en modo único: si el resultado solo trae `clipData`, se descarta.
-- Descargas blob iniciadas con `a.click()` sobre un enlace fuera del DOM no se interceptan.
-- `release.yml` no declara `permissions: contents: write`.
-- Auto-actualizador del flavor `generic` apunta al repositorio original; `applicationId`
-  igual al de TV Bro original (identidad del fork, bloque propio).
+### 5. Limpieza selector motor y strings
 
-## Limitaciones de validación de `release.yml`
+Solo desde PC/IDE.
 
-Solo se ejecuta manualmente y crea una release real firmada con el keystore. Hoy está
-validado por estructura (actionlint) y por no romper la CI. Su ejecución real queda
-pendiente de la primera release verdadera del fork.
+Debe incluir en una rama propia:
 
-## Calidad (después de estabilizar Gecko)
+- retirar UI del selector si ya no hay alternativas visibles;
+- retirar cadena Gecko default añadida como workaround;
+- retirar las 9 traducciones stale de `settings_engine_change_gecko_msg`;
+- evaluar si `settings_engine_change_webview_msg` queda muerto y, si se elimina, borrar también
+  sus traducciones;
+- no tocar `gecko:` en `WebTabState`.
 
-Android Lint en CI; StrictMode y LeakCanary en debug; tests unitarios también para
-`GeckoIncluded`.
+### 6. Revisión de updater
 
-## Integración final
+`latest_version.json` apunta a APK `geckoIncluded` de `truefedex`, variante que ya no existe
+en este fork y que además estaría firmada con otra clave. Esa actualización fallaría al instalarse.
 
-Al terminar la estabilización: actualizar la referencia de `origin/master` y hacer el rebase
-interactivo con `--autosquash` contra el HEAD de `origin/master` vigente en ese momento.
-- `--autosquash` integra los `fixup!`: `4ab4ed3` → `a452204`, `7b8a4cc` → `2b2ad62`,
-  `279a8d7` y `d28f5bc` → `62ad09c`.
-- `ee8950f` no es un `fixup!`: hay que marcarlo a mano como `fixup` de `2aa5cfa`
-  (misma corrección del selector de archivos partida en dos commits).
-- **`b27067d` es un commit vacío** y debe eliminarse a mano (git conserva por defecto los
-  commits que nacen vacíos).
-- Los intentos revertidos pueden eliminarse junto con sus reverts una vez demostrado el árbol
-  final.
+Pendiente:
+
+- definir canal de actualización propio del fork;
+- apuntar a APK real generado por este repo;
+- revisar firma esperada;
+- no publicar update metadata hasta tener release firmada y probada.
+
+### 7. Revisión de historial
+
+Pendiente para integración final.
+
+Problemas conocidos:
+
+| Punto | Estado |
+|---|---|
+| `43c10f3` | Commit grande/no atómico |
+| `ee63b43` | Squash con CI + workaround string Gecko |
+| `b27067d` | Commit vacío |
+| `fixup!` commits | Revisar si quedan en la historia final |
+| reverts pareados | Decidir si se conservan por trazabilidad o se reescribe rama limpia |
+
+No reescribir `fixes/audit` remoto sin decisión explícita.
+
+## Deuda conocida
+
+| Área | Deuda |
+|---|---|
+| W0 | Falta medición física en onn |
+| Release signing | Falta confirmar keystore local vs CI |
+| PR #4 | Falta hunk en `WebViewEx.kt` |
+| Selector motor | UI/string cleanup pendiente |
+| Strings Gecko | Workaround temporal en default + traducciones stale |
+| Adblock | Falta aislar fallo por lista y comprobar bloqueo real |
+| Logs | `Log.d` hot-path de `WebViewEx.kt` pendiente |
+| Historial | Rebase/limpieza final pendiente |
+| Updater | `latest_version.json` apunta a `geckoIncluded` de `truefedex`, variante inexistente en el fork y con firma incompatible |
+| Config | `isWebEngineNotSet()` no tiene uso conocido |
+
+## No tocar por ahora
+
+| Área | Motivo |
+|---|---|
+| WebView lifecycle | Ya hay destrucción en detach/trim/renderGone; no duplicar sin evidencia |
+| Fullscreen | Ya hay rechazo de segunda custom view; falta prueba física, no cambio de código |
+| `WebTabState` `gecko:` | Compatibilidad de estados antiguos |
+| Selector motor por API | Requiere edición por hunk en archivos grandes |
+| Traducciones por API | Riesgo de codificación y cambios masivos |
+| Historial remoto | Decisión final pendiente |
