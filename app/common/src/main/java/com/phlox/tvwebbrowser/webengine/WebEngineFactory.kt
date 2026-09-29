@@ -1,9 +1,7 @@
 package com.phlox.tvwebbrowser.webengine
 
 import android.content.Context
-import android.util.Log
 import androidx.annotation.UiThread
-import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.Config
 import com.phlox.tvwebbrowser.model.WebTabState
 import com.phlox.tvwebbrowser.widgets.cursor.CursorLayout
@@ -38,19 +36,10 @@ object WebEngineFactory {
 
     @UiThread
     suspend fun initialize(context: Context, webViewContainer: CursorLayout) {
-        val config = AppContext.provideConfig()
-        var webEngineProvider = engineProviders.find { it.name == config.webEngine }
-        if (webEngineProvider == null && engineProviders.isNotEmpty()) {
-            webEngineProvider = engineProviders[0]
-            Log.w(TAG, "WebEngineProvider with name ${config.webEngine} not found, using ${webEngineProvider.name}")
-            config.webEngine = webEngineProvider.name
-        }
-        if (webEngineProvider != null) {
-            webEngineProvider.callback.initialize(context, webViewContainer)
-            initializedProvider = webEngineProvider
-        } else {
-            throw IllegalArgumentException("WebEngineProvider with name ${config.webEngine} not found")
-        }
+        val webEngineProvider = engineProviders.firstOrNull()
+            ?: throw IllegalArgumentException("No WebEngineProvider registered")
+        webEngineProvider.callback.initialize(context, webViewContainer)
+        initializedProvider = webEngineProvider
     }
 
     fun createWebEngine(tab: WebTabState): WebEngine {
