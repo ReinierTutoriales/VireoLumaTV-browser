@@ -166,8 +166,6 @@
     <item>Neueste Geschichte</item>
     <item>Meist besuchte</item>
   </string-array>
-  <string name="web_browser_engine_temporary_setting">Webbrowser-Engine</string>
-  <string name="need_restart_message">Starten Sie die App neu, um die Änderungen zu übernehmen</string>
   <string name="restart">Neu starten</string>
   <string name="yes">Ja</string>
   <string name="no">NEIN</string>
@@ -175,8 +173,6 @@
   <string name="site_asks_to_open_unknown_url_message">Möchten Sie diese URL in einer externen App öffnen?</string>
   <string name="err_no_app_to_handle_url">Kann keine geeignete Anwendung finden, um diese URL zu verarbeiten</string>
   <string name="home_page_links">Links auf der Homepage</string>
-  <string name="settings_engine_change_gecko_msg">GeckoView lädt etwas langsamer als WebView. Möchtest du fortfahren\?</string>
-  <string name="settings_engine_change_webview_msg">WebView wird unabhängig von der Haupt-App aktualisiert. Möchtest du fortfahren\?</string>
   <string name="http_auth_title">Authentifizierung erforderlich</string>
   <string name="play_pause">Wiedergabe/Pause</string>
   <string name="media_stop">Medien stoppen</string>
