@@ -91,6 +91,17 @@ class AdblockModel : ActiveModel() {
                     if (resolvedLists.isEmpty()) {
                         Log.w(TAG, "No usable adblock filter list text available")
                     } else {
+                        if (resolvedLists.all { it.source == FilterListSource.CACHE }) {
+                            val cachedClient = deserializeCachedList(serializedFile)
+                            if (cachedClient != null) {
+                                loadedClient = cachedClient
+                                updated = true
+                                partialUpdate = true
+                                Log.i(TAG, "Using serialized adblock list because all downloads fell back to cached text")
+                                return@ioContext
+                            }
+                            Log.w(TAG, "Serialized adblock list unavailable; compiling cached filter list text")
+                        }
                         val combinedFilterList = buildCombinedFilterList(resolvedLists)
                         val freshClient = engine.compile(combinedFilterList)
                         if (freshClient != null) {
