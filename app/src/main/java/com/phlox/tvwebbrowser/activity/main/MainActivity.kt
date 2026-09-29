@@ -1305,10 +1305,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
 
-        override fun onBlockedAd(uri: String) {
-            Log.i(TAG, "onBlockedAd: $uri")
+        override fun onBlockedAds(count: Int) {
             if (!config.adBlockEnabled) return
-            tab.blockedAds++
+            tab.blockedAds += count
+            Log.i(TAG, "onBlockedAds: +$count (page total ${tab.blockedAds})")
             vb.tvBlockedAdCounter.visibility = if (tab.blockedAds > 0) View.VISIBLE else View.GONE
             vb.tvBlockedAdCounter.text = tab.blockedAds.toString()
         }

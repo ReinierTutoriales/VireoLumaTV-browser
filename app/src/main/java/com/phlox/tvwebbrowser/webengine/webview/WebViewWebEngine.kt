@@ -369,8 +369,8 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
             return callback?.isDialogsBlockingEnabled() ?: false
         }
 
-        override fun onBlockedAd(url: Uri) {
-            callback?.onBlockedAd(url.toString())
+        override fun onBlockedAds(count: Int) {
+            callback?.onBlockedAds(count)
         }
 
         override fun onBlockedDialog(newTab: Boolean) {
