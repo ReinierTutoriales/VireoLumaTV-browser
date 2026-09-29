@@ -221,14 +221,15 @@ class AdblockModel : ActiveModel() {
     }
 
     private fun isValidFilterList(filterList: FilterList, content: String): Boolean {
-        val trimmedStart = content.trimStart()
+        val normalizedContent = content.removePrefix("\uFEFF")
+        val trimmedStart = normalizedContent.trimStart()
         if (looksLikeHtml(trimmedStart)) return false
-        val lineCount = content.lineSequence().count()
+        val lineCount = normalizedContent.lineSequence().count()
         if (filterList.requiresAdblockHeader) {
-            val firstNonBlankLine = content.lineSequence().firstOrNull { it.isNotBlank() } ?: return false
+            val firstNonBlankLine = normalizedContent.lineSequence().firstOrNull { it.isNotBlank() } ?: return false
             return firstNonBlankLine.startsWith("[Adblock Plus") && lineCount >= MIN_DEFAULT_FILTER_LINES
         }
-        return content.isNotBlank() && lineCount >= MIN_CUSTOM_FILTER_LINES
+        return normalizedContent.isNotBlank() && lineCount >= MIN_CUSTOM_FILTER_LINES
     }
 
     private fun looksLikeHtml(trimmedStart: String): Boolean {
