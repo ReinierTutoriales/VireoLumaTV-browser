@@ -167,7 +167,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             setSupportZoom(true)
             builtInZoomControls = true
             displayZoomControls = false
-            setSupportZoom(true)
             domStorageEnabled = true
             allowContentAccess = false
             cacheMode = WebSettings.LOAD_DEFAULT
@@ -177,7 +176,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             setSupportMultipleWindows(true)
             setNeedInitialFocus(false)
 
-            domStorageEnabled = true
             if (config.webEngineDebug) {
                 setWebContentsDebuggingEnabled(true)
             }
