@@ -1,0 +1,83 @@
+name: Apply patch queue
+
+# Push a branch named patchq/<target-branch> containing .patchq/*.patch
+# (git format-patch output) and optionally .patchq/expect with lines:
+#   pre  <path> <blob-sha>
+#   post <path> <blob-sha>
+# The workflow verifies pre blobs, applies the patches with `git am`,
+# verifies post blobs, pushes <target-branch>, deletes the queue branch
+# and dispatches CI on the target.
+
+on:
+  push:
+    branches:
+      - 'patchq/**'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: patchq-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve branches
+        run: |
+          QUEUE="${GITHUB_REF#refs/heads/}"
+          TARGET="${QUEUE#patchq/}"
+          echo "QUEUE=$QUEUE" >> "$GITHUB_ENV"
+          echo "TARGET=$TARGET" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TARGET }}
+          fetch-depth: 0
+
+      - name: Extract queue
+        run: |
+          git fetch origin "$QUEUE"
+          mkdir -p "$RUNNER_TEMP/q"
+          git archive FETCH_HEAD .patchq | tar -x -C "$RUNNER_TEMP/q"
+          ls "$RUNNER_TEMP/q/.patchq"/*.patch
+
+      - name: Verify pre blobs
+        run: |
+          f="$RUNNER_TEMP/q/.patchq/expect"
+          [ -f "$f" ] || exit 0
+          grep '^pre ' "$f" | while read -r _ path sha; do
+            got=$(git rev-parse "HEAD:$path")
+            echo "pre  $path $got"
+            [ "$got" = "$sha" ] || { echo "::error::pre blob mismatch $path"; exit 1; }
+          done
+
+      - name: Apply patches
+        run: |
+          git config user.name "ReinierTutoriales"
+          git config user.email "86568548+ReinierTutoriales@users.noreply.github.com"
+          git am --keep-cr "$RUNNER_TEMP"/q/.patchq/*.patch
+
+      - name: Verify post blobs
+        run: |
+          f="$RUNNER_TEMP/q/.patchq/expect"
+          [ -f "$f" ] || exit 0
+          grep '^post ' "$f" | while read -r _ path sha; do
+            got=$(git rev-parse "HEAD:$path")
+            echo "post $path $got"
+            [ "$got" = "$sha" ] || { echo "::error::post blob mismatch $path"; exit 1; }
+          done
+
+      - name: Push target and clean queue
+        run: |
+          git log --oneline -5
+          git push origin "HEAD:refs/heads/$TARGET"
+          git push origin --delete "$QUEUE"
+
+      - name: Dispatch CI on target
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci.yml --ref "$TARGET"
