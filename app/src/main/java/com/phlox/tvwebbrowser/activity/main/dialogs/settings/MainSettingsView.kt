@@ -2,21 +2,17 @@ package com.phlox.tvwebbrowser.activity.main.dialogs.settings
 
 import android.app.AlertDialog
 import android.content.Context
-import android.os.Build
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.EditText
 import android.widget.ScrollView
 import android.widget.SeekBar
-import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.webkit.WebViewFeature
 import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.Config
 import com.phlox.tvwebbrowser.R
@@ -28,7 +24,6 @@ import com.phlox.tvwebbrowser.databinding.ViewSettingsMainBinding
 import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
 import com.phlox.tvwebbrowser.utils.activity
 import com.phlox.tvwebbrowser.webengine.WebEngineFactory
-import com.phlox.tvwebbrowser.webengine.webview.WebViewWebEngine
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -73,49 +68,41 @@ class MainSettingsView @JvmOverloads constructor(
     }
 
     private fun initWebBrowserEngineSettingsUI() {
-        if (WebEngineFactory.getProviders().size == 1) {
+        val supportedWebEngines = WebEngineFactory.getProviders().map { it.name }
+        if (supportedWebEngines.size == 1) {
             vb.llWebEngine.visibility = View.GONE
             return
         }
 
-        val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, Config.SupportedWebEngines)
+        val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, supportedWebEngines)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         vb.spWebEngine.adapter = adapter
 
-        vb.spWebEngine.setSelection(Config.SupportedWebEngines.indexOf(config.webEngine), false)
+        val selected = supportedWebEngines.indexOf(config.webEngine).let { if (it == -1) 0 else it }
+        vb.spWebEngine.setSelection(selected, false)
 
         vb.spWebEngine.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                if (config.webEngine == Config.SupportedWebEngines[position]) return
-                if (Config.SupportedWebEngines[position] == Config.ENGINE_GECKO_VIEW && !Config.canRecommendGeckoView()) {
-                    AlertDialog.Builder(context)
-                        .setTitle(R.string.warning)
-                        .setMessage(R.string.settings_engine_change_gecko_msg)
-                        .setPositiveButton(R.string.ok) { _, _ ->
-                            config.webEngine = Config.SupportedWebEngines[position]
-                            showRestartDialog()
-                        }
-                        .setNegativeButton(R.string.cancel) { _, _ ->
-                            vb.spWebEngine.setSelection(Config.SupportedWebEngines.indexOf(config.webEngine), false)
-                        }
-                        .show()
-                    return
-                } else if (Config.SupportedWebEngines[position] == Config.ENGINE_WEB_VIEW) {
+                val selectedEngine = supportedWebEngines[position]
+                if (config.webEngine == selectedEngine) return
+                if (selectedEngine == Config.ENGINE_WEB_VIEW) {
                     AlertDialog.Builder(context)
                         .setTitle(R.string.warning)
                         .setMessage(R.string.settings_engine_change_webview_msg)
                         .setPositiveButton(R.string.ok) { _, _ ->
-                            config.webEngine = Config.SupportedWebEngines[position]
+                            config.webEngine = selectedEngine
                             showRestartDialog()
                         }
                         .setNegativeButton(R.string.cancel) { _, _ ->
-                            vb.spWebEngine.setSelection(Config.SupportedWebEngines.indexOf(config.webEngine), false)
+                            val current = supportedWebEngines.indexOf(config.webEngine)
+                                .let { if (it == -1) 0 else it }
+                            vb.spWebEngine.setSelection(current, false)
                         }
                         .show()
                     return
                 }
-                config.webEngine = Config.SupportedWebEngines[position]
+                config.webEngine = selectedEngine
                 showRestartDialog()
             }
 

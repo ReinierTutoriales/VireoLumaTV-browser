@@ -13,6 +13,7 @@ import android.webkit.WebView
 import androidx.webkit.WebViewCompat
 import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.Config
+import com.phlox.tvwebbrowser.R
 import com.phlox.tvwebbrowser.model.WebTabState
 import com.phlox.tvwebbrowser.utils.Utils
 import com.phlox.tvwebbrowser.webengine.WebEngine
@@ -148,6 +149,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
     override fun hideFullscreenView() {
         webView?.hideCustomView()
+        if (fullScreenView != null) {
+            exitFullscreenView(restoreBrowserControls = true)
+        }
     }
 
     override fun togglePlayback() {
@@ -183,6 +187,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun onDetachFromWindow(completely: Boolean, destroyTab: Boolean) {
+        exitFullscreenView(restoreBrowserControls = false)
         onPause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
         callback = null
@@ -195,6 +200,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun trimMemory() {
         val webView = webView
         if (webView != null && !webView.isAttachedToWindow) {
+            exitFullscreenView(restoreBrowserControls = false)
             webView.destroy()
             this.webView = null
         }
@@ -235,6 +241,50 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         return viewParent?.cursorDrawerDelegate
     }
 
+    private fun enterFullscreenView(view: View) {
+        if (fullScreenView != null) {
+            (view.parent as? ViewGroup)?.removeView(view)
+            return
+        }
+        callback?.onPrepareForFullscreen()
+        webView?.visibility = View.GONE
+        webView?.setVirtualCursorMode(false)
+        viewParent?.cursorEnabled = false
+        (view.parent as? ViewGroup)?.removeView(view)
+        viewParent?.addView(
+            view,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+        fullScreenView = view
+        view.requestFocus()
+    }
+
+    private fun exitFullscreenView(restoreBrowserControls: Boolean) {
+        val fullscreenView = fullScreenView
+        fullScreenView = null
+        (fullscreenView?.parent as? ViewGroup)?.removeView(fullscreenView)
+        webView?.visibility = View.VISIBLE
+        webView?.setVirtualCursorMode(true)
+        callback?.onExitFullscreen()
+        viewParent?.cursorEnabled = true
+        if (restoreBrowserControls) {
+            restoreBrowserControlsAfterFullscreen()
+        }
+    }
+
+    private fun restoreBrowserControlsAfterFullscreen() {
+        val activity = callback?.getActivity() ?: return
+        activity.window.decorView.post {
+            activity.findViewById<View>(R.id.flWebViewContainer)?.visibility = View.VISIBLE
+            activity.findViewById<View>(R.id.rlActionBar)?.visibility = View.VISIBLE
+            activity.findViewById<View>(R.id.llBottomPanel)?.visibility = View.VISIBLE
+            activity.findViewById<View>(R.id.vActionBar)?.requestFocus()
+        }
+    }
+
     private val webViewCallback = object : WebViewEx.Callback {
         override fun getActivity(): Activity? {
             return callback?.getActivity()
@@ -253,22 +303,11 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun onShowCustomView(view: View) {
-            if (fullScreenView != null) return
-            callback?.onPrepareForFullscreen()
-            webView?.visibility = View.GONE
-            viewParent?.apply {
-                addView(view)
-            }
-            fullScreenView = view
+            enterFullscreenView(view)
         }
 
         override fun onHideCustomView() {
-            if (fullScreenView != null) {
-                viewParent?.removeView(fullScreenView)
-                fullScreenView = null
-            }
-            webView?.visibility = View.VISIBLE
-            callback?.onExitFullscreen()
+            exitFullscreenView(restoreBrowserControls = true)
         }
 
         override fun onProgressChanged(newProgress: Int) {
@@ -309,11 +348,11 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun onRenderProcessGone(): Boolean {
+            exitFullscreenView(restoreBrowserControls = false)
             val deadWebView = webView ?: return true
             (deadWebView.parent as? ViewGroup)?.removeView(deadWebView)
             deadWebView.destroy()
             webView = null
-            fullScreenView = null
             callback?.onRenderProcessGone()
             return true
         }

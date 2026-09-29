@@ -69,7 +69,3 @@ object WebEngineFactory {
         return initializedProvider.callback.getWebEngineVersionString()
     }
 }
-
-fun WebEngine.isGecko(): Boolean {
-    return this.getWebEngineName() == Config.ENGINE_GECKO_VIEW
-}

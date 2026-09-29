@@ -1,13 +1,15 @@
 # TV Bro
 
-Simple web browser optimized to use with TV remote
+Simple web browser optimized to use with TV remote.
+
+This fork is WebView-only. The GeckoView engine, Gecko build variant, and Gecko module sources have been removed to keep the app smaller, simpler, and more predictable on low-memory Android TV hardware.
 
 Features:
-- working with TV remote
+- works with TV remote
 - tabs and bookmarks support
 - voice search support
 - switch user agent support
-- use Android builtin web rendering engine (WebKit/Blink based)
+- uses Android built-in web rendering engine (WebView / WebKit-Blink based)
 - built-in download manager
 - browsing history
 - shortcuts

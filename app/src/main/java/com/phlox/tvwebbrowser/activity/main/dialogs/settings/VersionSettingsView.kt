@@ -50,10 +50,11 @@ class VersionSettingsView @JvmOverloads constructor(
     init {
         vb.tvVersion.text = context.getString(R.string.version_s, BuildConfig.VERSION_NAME)
 
+        val registeredEngines = WebEngineFactory.getProviders().joinToString("/") { it.name }
         vb.tvBuildFlavor.text = context.getString(
             R.string.build_flavor_s,
-            BuildConfig.FLAVOR_appstore,
-            BuildConfig.FLAVOR_webengine
+            BuildConfig.FLAVOR,
+            registeredEngines
         )
 
         val engineVersion = "Engine: " + WebEngineFactory.getWebEngineVersionString()
