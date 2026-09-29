@@ -1,6 +1,7 @@
 package com.phlox.tvwebbrowser.utils
 
 import android.util.JsonReader
+import android.util.JsonToken
 import android.webkit.MimeTypeMap
 import java.io.BufferedReader
 import java.io.Reader
@@ -103,44 +104,89 @@ class FaviconExtractor {
         val iconInfos = ArrayList<IconInfo>()
         val jsonReader = JsonReader(manifest)
         jsonReader.isLenient = true
-        jsonReader.use {
-            jsonReader.beginObject()
-            while (jsonReader.hasNext()) {
-                val name = jsonReader.nextName()
-                if (name == "icons") {
-                    jsonReader.beginArray()
-                    while (jsonReader.hasNext()) {
-                        jsonReader.beginObject()
-                        var src: String? = null
-                        var type: String? = null
-                        var sizes: String? = null
-                        while (jsonReader.hasNext()) {
-                            when (jsonReader.nextName()) {
-                                "src" -> {
-                                    src = jsonReader.nextString()
-                                }
-                                "sizes" -> {
-                                    sizes = jsonReader.nextString()
-                                }
-                                "type" -> {
-                                    type = jsonReader.nextString()
-                                }
-                            }
-                        }
-                        jsonReader.endObject()
-                        if (src != null) {
-                            iconInfos.add(IconInfo(src, type, null, sizes, manifestURL))
-                        }
-                    }
-                    jsonReader.endArray()
-                    return@use
-                } else {
+        try {
+            jsonReader.use {
+                if (jsonReader.peek() != JsonToken.BEGIN_OBJECT) {
                     jsonReader.skipValue()
+                    return iconInfos
+                }
+                jsonReader.beginObject()
+                while (jsonReader.hasNext()) {
+                    val name = nextNameOrSkip(jsonReader) ?: continue
+                    if (name == "icons") {
+                        readManifestIcons(jsonReader, manifestURL, iconInfos)
+                        return@use
+                    } else {
+                        jsonReader.skipValue()
+                    }
+                }
+                jsonReader.endObject()
+            }
+        } catch (e: Exception) {
+            // Web manifests are third-party input. Ignore malformed manifests and keep the HTML/default favicon fallback.
+            e.printStackTrace()
+        }
+        return iconInfos
+    }
+
+    private fun readManifestIcons(
+        jsonReader: JsonReader,
+        manifestURL: URL?,
+        iconInfos: ArrayList<IconInfo>
+    ) {
+        if (jsonReader.peek() != JsonToken.BEGIN_ARRAY) {
+            jsonReader.skipValue()
+            return
+        }
+        jsonReader.beginArray()
+        while (jsonReader.hasNext()) {
+            if (jsonReader.peek() != JsonToken.BEGIN_OBJECT) {
+                jsonReader.skipValue()
+                continue
+            }
+            jsonReader.beginObject()
+            var src: String? = null
+            var type: String? = null
+            var sizes: String? = null
+            while (jsonReader.hasNext()) {
+                when (nextNameOrSkip(jsonReader)) {
+                    "src" -> src = nextStringOrSkip(jsonReader)
+                    "sizes" -> sizes = nextStringOrSkip(jsonReader)
+                    "type" -> type = nextStringOrSkip(jsonReader)
+                    null -> Unit
+                    else -> jsonReader.skipValue()
                 }
             }
             jsonReader.endObject()
+            if (src != null) {
+                iconInfos.add(IconInfo(src, type, null, sizes, manifestURL))
+            }
         }
-        return iconInfos
+        jsonReader.endArray()
+    }
+
+    private fun nextNameOrSkip(jsonReader: JsonReader): String? {
+        if (jsonReader.peek() != JsonToken.NAME) {
+            jsonReader.skipValue()
+            return null
+        }
+        return jsonReader.nextName()
+    }
+
+    private fun nextStringOrSkip(jsonReader: JsonReader): String? {
+        return when (jsonReader.peek()) {
+            JsonToken.STRING,
+            JsonToken.NUMBER -> jsonReader.nextString()
+            JsonToken.BOOLEAN -> jsonReader.nextBoolean().toString()
+            JsonToken.NULL -> {
+                jsonReader.nextNull()
+                null
+            }
+            else -> {
+                jsonReader.skipValue()
+                null
+            }
+        }
     }
 
     /**
