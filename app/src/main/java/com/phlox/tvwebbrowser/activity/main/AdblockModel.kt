@@ -3,12 +3,12 @@ package com.phlox.tvwebbrowser.activity.main
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import com.brave.adblock.AdBlockClient
-import com.brave.adblock.AdBlockClient.FilterOption
-import com.brave.adblock.Utils
 import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.Config
 import com.phlox.tvwebbrowser.TVBro
+import com.phlox.tvwebbrowser.adblock.BraveAdBlockEngine
+import com.phlox.tvwebbrowser.adblock.ContentBlocker
+import com.phlox.tvwebbrowser.adblock.ContentBlockerEngine
 import com.phlox.tvwebbrowser.utils.activemodel.ActiveModel
 import com.phlox.tvwebbrowser.utils.observable.ObservableValue
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +22,6 @@ class AdblockModel : ActiveModel() {
     companion object {
         val TAG: String = AdblockModel::class.java.simpleName
 
-        const val SERIALIZED_LIST_FILE = "adblock_ser.dat"
         const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 30 //30 days
         private const val DOWNLOAD_CONNECT_TIMEOUT_MS = 10_000
         private const val DOWNLOAD_READ_TIMEOUT_MS = 15_000
@@ -35,8 +34,9 @@ class AdblockModel : ActiveModel() {
         val url: String
     )
 
+    private val engine: ContentBlockerEngine = BraveAdBlockEngine()
     private val clientLock = Any()
-    private var client: AdBlockClient? = null
+    private var client: ContentBlocker? = null
     val clientLoading = ObservableValue(false)
     val config = AppContext.provideConfig()
 
@@ -53,12 +53,12 @@ class AdblockModel : ActiveModel() {
         val now = Calendar.getInstance()
         val needUpdate = forceReload || checkDate.before(now)
         clientLoading.value = true
-        var loadedClient: AdBlockClient? = null
+        var loadedClient: ContentBlocker? = null
         var downloadAttempted = false
         var updated = false
         try {
             withContext(Dispatchers.IO) ioContext@ {
-                val serializedFile = File(TVBro.instance.filesDir, SERIALIZED_LIST_FILE)
+                val serializedFile = File(TVBro.instance.filesDir, engine.cacheFileName)
                 val filterLists = getConfiguredFilterLists()
                 if (!needUpdate) {
                     loadedClient = deserializeCachedList(serializedFile)
@@ -77,10 +77,10 @@ class AdblockModel : ActiveModel() {
                             appendLine(downloadFilterList(filterList))
                         }
                     }
-                    val freshClient = AdBlockClient()
-                    if (freshClient.parse(combinedFilterList)) {
+                    val freshClient = engine.compile(combinedFilterList)
+                    if (freshClient != null) {
                         //only a successfully parsed complete list set may replace the cached one
-                        freshClient.serialize(serializedFile.absolutePath)
+                        freshClient.serialize(serializedFile)
                         loadedClient = freshClient
                         updated = true
                         Log.i(TAG, "Downloaded and parsed adblock lists: ${filterLists.joinToString { it.name }}")
@@ -136,70 +136,20 @@ class AdblockModel : ActiveModel() {
         return connection.inputStream.bufferedReader().use { it.readText() }
     }
 
-    private fun deserializeCachedList(serializedFile: File): AdBlockClient? {
-        if (!serializedFile.exists()) return null
-        val cachedClient = AdBlockClient()
-        return if (cachedClient.deserialize(serializedFile.absolutePath)) cachedClient else null
+    private fun deserializeCachedList(serializedFile: File): ContentBlocker? {
+        return engine.deserialize(serializedFile)
     }
 
     fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean {
         val baseHost = baseUri.host ?: return false
-        val filterOption = try {
-            mapRequestToFilterOption(url, type)
-        } catch (e: Exception) {
-            return false
-        }
         val result = try {
             synchronized(clientLock) {
-                client?.matches(url.toString(), filterOption, baseHost) ?: false
+                client?.shouldBlock(url, type, baseHost) ?: false
             }
         } catch (e: Exception) {
             e.printStackTrace()
             false
         }
         return result
-    }
-
-    private fun mapRequestToFilterOption(url: Uri?, type: String?): FilterOption? {
-        if (type != null) {
-            if (type == "image" || type.contains("image/")) {
-                return FilterOption.IMAGE
-            }
-            if (type == "style" || type.contains("/css")) {
-                return FilterOption.CSS
-            }
-            if (type == "script" || type.contains("javascript")) {
-                return FilterOption.SCRIPT
-            }
-            if (type.contains("video/")) {
-                return FilterOption.OBJECT
-            }
-        }
-        if (url != null) {
-            if (Utils.uriHasExtension(url, "css")) {
-                return FilterOption.CSS
-            }
-            if (Utils.uriHasExtension(url, "js")) {
-                return FilterOption.SCRIPT
-            }
-            if (Utils.uriHasExtension(
-                    url,
-                    "png",
-                    "jpg",
-                    "jpeg",
-                    "webp",
-                    "svg",
-                    "gif",
-                    "bmp",
-                    "tiff"
-                )
-            ) {
-                return FilterOption.IMAGE
-            }
-            if (Utils.uriHasExtension(url, "mp4", "mov", "avi")) {
-                return FilterOption.OBJECT
-            }
-        }
-        return FilterOption.UNKNOWN
     }
 }
