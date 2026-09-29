@@ -450,7 +450,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
                 val ad = currentPageUrl?.let { callback.isAd(request, it)} ?: false
                 return if (ad) {
-                    Log.d(TAG, "Blocked ads request: ${request.url}")
                     //coalesce: only the first blocked request of a burst schedules a UI report
                     if (pendingBlockedAds.getAndIncrement() == 0) {
                         uiHandler.postDelayed(reportBlockedAdsRunnable, BLOCKED_ADS_REPORT_DELAY_MS)
