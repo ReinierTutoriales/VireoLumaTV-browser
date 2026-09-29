@@ -30,7 +30,6 @@ class Config(val prefs: SharedPreferences) {
         const val DIRECT_NAVIGATION_MODE_HINT_SUPPRESS_KEY = "direct_navigation_mode_hint_suppress"
         const val HOME_PAGE_MODE = "home_page_mode"
         const val HOME_PAGE_SUGGESTIONS_MODE = "home_page_suggestions_mode"
-        const val WEB_ENGINE = "web_engine"
         const val ALLOW_AUTOPLAY_MEDIA = "allow_autoplay_media"
         const val WEBVIEW_USE_ALGORITHMIC_DARKENING_WITH_DARK_UI_MODE_KEY =
             "webview_use_algorithmic_darkening_with_dark_ui_mode"
@@ -43,15 +42,12 @@ class Config(val prefs: SharedPreferences) {
         const val APP_WEB_EXTENSION_VERSION_KEY = "app_web_extension_version"
         const val APP_VERSION_CODE_MARK_KEY = "app_version_code_mark"
 
-        const val ENGINE_WEB_VIEW = "WebView"
-
         const val DEFAULT_ADBLOCK_LIST_URL = "https://easylist.to/easylist/easylist.txt"
         val SearchEnginesTitles = arrayOf("Google", "Bing", "Yahoo!", "DuckDuckGo", "Yandex", "Startpage", "Custom")
         val SearchEnginesNames = arrayOf("google", "bing", "yahoo", "ddg", "yandex", "startpage", "custom")
         val SearchEnginesURLs = listOf("https://www.google.com/search?q=[query]", "https://www.bing.com/search?q=[query]",
             "https://search.yahoo.com/search?p=[query]", "https://duckduckgo.com/?q=[query]",
             "https://yandex.com/search/?text=[query]", "https://www.startpage.com/sp/search?query=[query]", "")
-        val SupportedWebEngines = arrayOf(ENGINE_WEB_VIEW)
         const val HOME_PAGE_URL = "https://tvbro.phlox.dev/appcontent/home/"
         //const val HOME_PAGE_URL = "http://10.0.2.2:5000/appcontent/home/"
     }
@@ -161,19 +157,6 @@ class Config(val prefs: SharedPreferences) {
 
     var searchEngineURL = ObservableStringPreference(SearchEnginesURLs[0], SEARCH_ENGINE_URL_PREF_KEY)
 
-    var webEngine: String
-        get() {
-            val storedEngine = prefs.getString(WEB_ENGINE, null)
-            if (storedEngine !in SupportedWebEngines) {
-                prefs.edit().putString(WEB_ENGINE, ENGINE_WEB_VIEW).apply()
-                return ENGINE_WEB_VIEW
-            }
-            return storedEngine!!
-        }
-        set(value) {
-            prefs.edit().putString(WEB_ENGINE, value).apply()
-        }
-
     var allowAutoplayMedia: Boolean
         get() = prefs.getBoolean(ALLOW_AUTOPLAY_MEDIA, false)
         set(value) {
@@ -243,10 +226,6 @@ class Config(val prefs: SharedPreferences) {
         set(value) {
             prefs.edit().putInt(APP_VERSION_CODE_MARK_KEY, value).apply()
         }
-
-    fun isWebEngineNotSet(): Boolean {
-        return !prefs.contains(WEB_ENGINE)
-    }
 
     fun guessSearchEngineName(): String {
         val url = searchEngineURL.value
