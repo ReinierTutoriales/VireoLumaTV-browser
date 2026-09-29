@@ -16,7 +16,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.InputStream
 import java.net.URL
 
 object FaviconsPool {
@@ -24,6 +26,9 @@ object FaviconsPool {
     const val FAVICON_PREFERRED_SIDE_SIZE = 120
     //max time the temporary WebView used as last-resort favicon source stays alive
     private const val WEBVIEW_FAVICON_TIMEOUT_MS = 20_000L
+    private const val FAVICON_CONNECT_TIMEOUT_MS = 5_000
+    private const val FAVICON_READ_TIMEOUT_MS = 10_000
+    private const val MAX_FAVICON_BYTES = 2 * 1024 * 1024
     private val TAG: String = FaviconsPool::class.java.simpleName
 
     val faviconExtractor = FaviconExtractor()
@@ -200,23 +205,47 @@ object FaviconsPool {
     }
 
     private suspend fun downloadIcon(iconInfo: FaviconExtractor.IconInfo): Bitmap? = withContext(Dispatchers.IO) {
-        val url = URL(iconInfo.src)
-        val connection = url.openConnection()
-        connection.connect()
-        val input = connection.getInputStream()
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-        BitmapFactory.decodeStream(input, null, options)
-        input.close()
+        val iconBytes = readIconBytes(iconInfo.src) ?: return@withContext null
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size, options)
         val width = options.outWidth
         val height = options.outHeight
-        val scale = Math.max(width / 512, height / 512)
+        if (width <= 0 || height <= 0) {
+            return@withContext null
+        }
+        val sampleSize = maxOf(width / 512, height / 512, 1)
         options.inJustDecodeBounds = false
-        options.inSampleSize = scale
-        val input2 = url.openConnection().getInputStream()
-        val bitmap = BitmapFactory.decodeStream(input2, null, options)
-        input2.close()
-        return@withContext bitmap
+        options.inSampleSize = sampleSize
+        return@withContext BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size, options)
+    }
+
+    private fun readIconBytes(iconSrc: String): ByteArray? {
+        val connection = URL(iconSrc).openConnection().apply {
+            connectTimeout = FAVICON_CONNECT_TIMEOUT_MS
+            readTimeout = FAVICON_READ_TIMEOUT_MS
+        }
+        connection.getInputStream().use { input ->
+            return input.readUpTo(MAX_FAVICON_BYTES)
+        }
+    }
+
+    private fun InputStream.readUpTo(maxBytes: Int): ByteArray? {
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        var total = 0
+        while (true) {
+            val count = read(buffer)
+            if (count == -1) {
+                return output.toByteArray()
+            }
+            total += count
+            if (total > maxBytes) {
+                return null
+            }
+            output.write(buffer, 0, count)
+        }
     }
 
     private fun chooseNearestSizeIcon(icons: List<FaviconExtractor.IconInfo>, w: Int, h: Int): FaviconExtractor.IconInfo? {
