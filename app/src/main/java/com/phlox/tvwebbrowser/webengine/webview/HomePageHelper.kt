@@ -1,7 +1,6 @@
 package com.phlox.tvwebbrowser.webengine.webview
 
 import android.graphics.Bitmap
-import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -10,10 +9,7 @@ import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayOutputStream
 
 object HomePageHelper {
-    private val TAG = HomePageHelper::class.java.simpleName
-
     fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-        Log.d(TAG, "shouldInterceptRequest: " + request.url)
         val url = request.url.toString()
         //check is scheme is favicon
         if (request.url.scheme == "favicon") {
@@ -22,7 +18,6 @@ object HomePageHelper {
                 FaviconsPool.get(host)
             }
             if (favicon != null) {
-                Log.d(TAG, "shouldInterceptRequest: favicon found for $host")
                 val bytes = ByteArrayOutputStream()
                 favicon.compress(Bitmap.CompressFormat.PNG, 100, bytes)
                 return WebResourceResponse("image/png",
