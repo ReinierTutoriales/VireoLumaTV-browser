@@ -16,7 +16,6 @@ import androidx.lifecycle.lifecycleScope
 import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.Config
 import com.phlox.tvwebbrowser.R
-import com.phlox.tvwebbrowser.TVBro
 import com.phlox.tvwebbrowser.activity.main.AdblockModel
 import com.phlox.tvwebbrowser.activity.main.MainActivity
 import com.phlox.tvwebbrowser.activity.main.SettingsModel
@@ -37,8 +36,6 @@ class MainSettingsView @JvmOverloads constructor(
     var config = AppContext.provideConfig()
 
     init {
-        initWebBrowserEngineSettingsUI()
-
         initHomePageAndSearchEngineConfigUI()
 
         initUAStringConfigUI(context)
@@ -65,62 +62,6 @@ class MainSettingsView @JvmOverloads constructor(
                 Toast.makeText(context, android.R.string.ok, Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun initWebBrowserEngineSettingsUI() {
-        val supportedWebEngines = WebEngineFactory.getProviders().map { it.name }
-        if (supportedWebEngines.size == 1) {
-            vb.llWebEngine.visibility = View.GONE
-            return
-        }
-
-        val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, supportedWebEngines)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        vb.spWebEngine.adapter = adapter
-
-        val selected = supportedWebEngines.indexOf(config.webEngine).let { if (it == -1) 0 else it }
-        vb.spWebEngine.setSelection(selected, false)
-
-        vb.spWebEngine.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                val selectedEngine = supportedWebEngines[position]
-                if (config.webEngine == selectedEngine) return
-                if (selectedEngine == Config.ENGINE_WEB_VIEW) {
-                    AlertDialog.Builder(context)
-                        .setTitle(R.string.warning)
-                        .setMessage(R.string.settings_engine_change_webview_msg)
-                        .setPositiveButton(R.string.ok) { _, _ ->
-                            config.webEngine = selectedEngine
-                            showRestartDialog()
-                        }
-                        .setNegativeButton(R.string.cancel) { _, _ ->
-                            val current = supportedWebEngines.indexOf(config.webEngine)
-                                .let { if (it == -1) 0 else it }
-                            vb.spWebEngine.setSelection(current, false)
-                        }
-                        .show()
-                    return
-                }
-                config.webEngine = selectedEngine
-                showRestartDialog()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-    }
-
-    private fun showRestartDialog() {
-        AlertDialog.Builder(context)
-            .setTitle(R.string.need_restart)
-            .setMessage(R.string.need_restart_message)
-            .setPositiveButton(R.string.exit) { _, _ ->
-                TVBro.instance.needToExitProcessAfterMainActivityFinish = true
-                TVBro.instance.needRestartMainActivityAfterExitingProcess = true
-                activity!!.finish()
-            }
-            .setCancelable(false)
-            .show()
     }
 
     private fun initThemeSettingsUI() {
