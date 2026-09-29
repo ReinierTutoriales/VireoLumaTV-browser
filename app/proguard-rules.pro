@@ -23,6 +23,11 @@
    private *;
 }
 
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+}
 
 #-keepclasseswithmembers class com.phlox.tvwebbrowser.model.** {
 #    <fields>;
