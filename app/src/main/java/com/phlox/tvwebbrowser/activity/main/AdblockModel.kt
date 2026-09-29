@@ -23,15 +23,31 @@ class AdblockModel : ActiveModel() {
         val TAG: String = AdblockModel::class.java.simpleName
 
         const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 30 //30 days
+        private const val PARTIAL_UPDATE_RETRY_MINUTES = 60 * 24 //1 day
         private const val DOWNLOAD_CONNECT_TIMEOUT_MS = 10_000
         private const val DOWNLOAD_READ_TIMEOUT_MS = 15_000
+        private const val MIN_DEFAULT_FILTER_LINES = 100
+        private const val MIN_CUSTOM_FILTER_LINES = 1
         private const val EASY_PRIVACY_URL = "https://easylist.to/easylist/easyprivacy.txt"
         private const val EASY_LIST_SPANISH_URL = "https://easylist-downloads.adblockplus.org/easylistspanish.txt"
     }
 
     private data class FilterList(
         val name: String,
-        val url: String
+        val url: String,
+        val cacheFileName: String,
+        val requiresAdblockHeader: Boolean
+    )
+
+    private enum class FilterListSource {
+        DOWNLOAD,
+        CACHE
+    }
+
+    private data class ResolvedFilterList(
+        val filterList: FilterList,
+        val content: String,
+        val source: FilterListSource
     )
 
     private val engine: ContentBlockerEngine = BraveAdBlockEngine()
@@ -56,6 +72,7 @@ class AdblockModel : ActiveModel() {
         var loadedClient: ContentBlocker? = null
         var downloadAttempted = false
         var updated = false
+        var partialUpdate = false
         try {
             withContext(Dispatchers.IO) ioContext@ {
                 val serializedFile = File(TVBro.instance.filesDir, engine.cacheFileName)
@@ -70,27 +87,31 @@ class AdblockModel : ActiveModel() {
                 }
                 downloadAttempted = true
                 try {
-                    val combinedFilterList = buildString {
-                        filterLists.forEach { filterList ->
-                            Log.i(TAG, "Downloading adblock list: ${filterList.name}")
-                            appendLine("! ${filterList.name}")
-                            appendLine(downloadFilterList(filterList))
+                    val resolvedLists = resolveFilterLists(filterLists)
+                    if (resolvedLists.isEmpty()) {
+                        Log.w(TAG, "No usable adblock filter list text available")
+                    } else {
+                        val combinedFilterList = buildCombinedFilterList(resolvedLists)
+                        val freshClient = engine.compile(combinedFilterList)
+                        if (freshClient != null) {
+                            freshClient.serialize(serializedFile)
+                            loadedClient = freshClient
+                            updated = true
+                            partialUpdate = resolvedLists.size < filterLists.size ||
+                                    resolvedLists.any { it.source != FilterListSource.DOWNLOAD }
+                            Log.i(
+                                TAG,
+                                "Compiled adblock lists. Downloaded: ${resolvedLists.namesFrom(FilterListSource.DOWNLOAD)}; " +
+                                        "cached: ${resolvedLists.namesFrom(FilterListSource.CACHE)}"
+                            )
+                            return@ioContext
                         }
+                        Log.w(TAG, "Adblock engine rejected filter lists: ${resolvedLists.joinToString { it.filterList.name }}")
                     }
-                    val freshClient = engine.compile(combinedFilterList)
-                    if (freshClient != null) {
-                        //only a successfully parsed complete list set may replace the cached one
-                        freshClient.serialize(serializedFile)
-                        loadedClient = freshClient
-                        updated = true
-                        Log.i(TAG, "Downloaded and parsed adblock lists: ${filterLists.joinToString { it.name }}")
-                        return@ioContext
-                    }
-                    Log.w(TAG, "Downloaded adblock lists could not be parsed: ${filterLists.joinToString { it.name }}")
                 } catch (e: Exception) {
-                    Log.w(TAG, "Can not download complete adblock list set", e)
+                    Log.w(TAG, "Can not prepare adblock filter lists", e)
                 }
-                //update failed: keep blocking with the last list that worked
+                //update failed: keep blocking with the last serialized list that worked
                 loadedClient = deserializeCachedList(serializedFile)
                 if (loadedClient != null) {
                     Log.i(TAG, "Using cached adblock list after update failure")
@@ -104,11 +125,14 @@ class AdblockModel : ActiveModel() {
                     this@AdblockModel.client = it
                 }
             }
-            //advance the update date only after a successful download, so a failed update is retried on next load
             if (updated) {
-                config.adBlockListLastUpdate = now.timeInMillis
+                if (partialUpdate) {
+                    scheduleRetryAfterPartialUpdate(now.timeInMillis)
+                } else {
+                    config.adBlockListLastUpdate = now.timeInMillis
+                }
             }
-            if (downloadAttempted && !updated) {
+            if (downloadAttempted && loadedClient == null && !hasCurrentClient()) {
                 Toast.makeText(TVBro.instance, "Error loading ad-blocker list", Toast.LENGTH_SHORT).show()
             }
         } finally {
@@ -119,13 +143,62 @@ class AdblockModel : ActiveModel() {
     private fun getConfiguredFilterLists(): List<FilterList> {
         val configuredUrl = config.adBlockListURL.value
         if (configuredUrl != Config.DEFAULT_ADBLOCK_LIST_URL) {
-            return listOf(FilterList("Custom", configuredUrl))
+            val customCacheSuffix = configuredUrl.hashCode().toString().replace("-", "m")
+            return listOf(
+                FilterList(
+                    "Custom",
+                    configuredUrl,
+                    "adblock_list_custom_$customCacheSuffix.txt",
+                    requiresAdblockHeader = false
+                )
+            )
         }
         return listOf(
-            FilterList("EasyList", Config.DEFAULT_ADBLOCK_LIST_URL),
-            FilterList("EasyPrivacy", EASY_PRIVACY_URL),
-            FilterList("EasyList Spanish", EASY_LIST_SPANISH_URL)
+            FilterList(
+                "EasyList",
+                Config.DEFAULT_ADBLOCK_LIST_URL,
+                "adblock_list_easylist.txt",
+                requiresAdblockHeader = true
+            ),
+            FilterList(
+                "EasyPrivacy",
+                EASY_PRIVACY_URL,
+                "adblock_list_easyprivacy.txt",
+                requiresAdblockHeader = true
+            ),
+            FilterList(
+                "EasyList Spanish",
+                EASY_LIST_SPANISH_URL,
+                "adblock_list_easylist_spanish.txt",
+                requiresAdblockHeader = true
+            )
         )
+    }
+
+    private fun resolveFilterLists(filterLists: List<FilterList>): List<ResolvedFilterList> {
+        return filterLists.mapNotNull { filterList ->
+            val cacheFile = File(TVBro.instance.filesDir, filterList.cacheFileName)
+            try {
+                Log.i(TAG, "Downloading adblock list: ${filterList.name}")
+                val downloadedText = downloadFilterList(filterList)
+                if (!isValidFilterList(filterList, downloadedText)) {
+                    throw IllegalArgumentException("Invalid adblock list content: ${filterList.name}")
+                }
+                cacheFile.writeText(downloadedText)
+                Log.i(TAG, "Downloaded valid adblock list: ${filterList.name}")
+                ResolvedFilterList(filterList, downloadedText, FilterListSource.DOWNLOAD)
+            } catch (e: Exception) {
+                Log.w(TAG, "Can not download valid adblock list: ${filterList.name}", e)
+                val cachedText = readCachedFilterList(filterList, cacheFile)
+                if (cachedText != null) {
+                    Log.i(TAG, "Using cached adblock list text: ${filterList.name}")
+                    ResolvedFilterList(filterList, cachedText, FilterListSource.CACHE)
+                } else {
+                    Log.w(TAG, "No usable adblock list text: ${filterList.name}")
+                    null
+                }
+            }
+        }
     }
 
     private fun downloadFilterList(filterList: FilterList): String {
@@ -136,8 +209,62 @@ class AdblockModel : ActiveModel() {
         return connection.inputStream.bufferedReader().use { it.readText() }
     }
 
+    private fun readCachedFilterList(filterList: FilterList, cacheFile: File): String? {
+        if (!cacheFile.exists()) return null
+        return try {
+            val cachedText = cacheFile.readText()
+            if (isValidFilterList(filterList, cachedText)) cachedText else null
+        } catch (e: Exception) {
+            Log.w(TAG, "Can not read cached adblock list text: ${filterList.name}", e)
+            null
+        }
+    }
+
+    private fun isValidFilterList(filterList: FilterList, content: String): Boolean {
+        val trimmedStart = content.trimStart()
+        if (looksLikeHtml(trimmedStart)) return false
+        val lineCount = content.lineSequence().count()
+        if (filterList.requiresAdblockHeader) {
+            val firstNonBlankLine = content.lineSequence().firstOrNull { it.isNotBlank() } ?: return false
+            return firstNonBlankLine.startsWith("[Adblock Plus") && lineCount >= MIN_DEFAULT_FILTER_LINES
+        }
+        return content.isNotBlank() && lineCount >= MIN_CUSTOM_FILTER_LINES
+    }
+
+    private fun looksLikeHtml(trimmedStart: String): Boolean {
+        val lowerStart = trimmedStart.lowercase(Locale.US)
+        return lowerStart.startsWith("<!doctype html") || lowerStart.startsWith("<html")
+    }
+
+    private fun buildCombinedFilterList(resolvedLists: List<ResolvedFilterList>): String {
+        return buildString {
+            resolvedLists.forEach { resolvedList ->
+                appendLine("! ${resolvedList.filterList.name}")
+                appendLine(resolvedList.content)
+            }
+        }
+    }
+
+    private fun List<ResolvedFilterList>.namesFrom(source: FilterListSource): String {
+        return filter { it.source == source }
+            .joinToString { it.filterList.name }
+            .ifBlank { "none" }
+    }
+
+    private fun scheduleRetryAfterPartialUpdate(nowMillis: Long) {
+        val autoUpdateIntervalMillis = AUTO_UPDATE_INTERVAL_MINUTES * 60_000L
+        val partialRetryMillis = PARTIAL_UPDATE_RETRY_MINUTES * 60_000L
+        config.adBlockListLastUpdate = nowMillis - autoUpdateIntervalMillis + partialRetryMillis
+    }
+
     private fun deserializeCachedList(serializedFile: File): ContentBlocker? {
         return engine.deserialize(serializedFile)
+    }
+
+    private fun hasCurrentClient(): Boolean {
+        return synchronized(clientLock) {
+            client != null
+        }
     }
 
     fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean {
