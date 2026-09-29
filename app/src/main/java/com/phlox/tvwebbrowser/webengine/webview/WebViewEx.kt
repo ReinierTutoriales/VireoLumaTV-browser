@@ -54,6 +54,7 @@ import com.phlox.tvwebbrowser.utils.DPADNavigationEventsAdapter
 import com.phlox.tvwebbrowser.utils.Utils
 import java.net.URLEncoder
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 
 
 /**
@@ -65,6 +66,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         val TAG = WebViewEx::class.java.simpleName
         const val WEB_VIEW_TAG = "TV Bro WebView"
         const val INTERNAL_SCHEME = "internal://"
+        //blocked requests are reported to the UI at most once per this interval
+        private const val BLOCKED_ADS_REPORT_DELAY_MS = 250L
         const val INTERNAL_SCHEME_WARNING_DOMAIN = "warning"
         const val INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT = "certificate"
         val WIDEVINE_UUID = UUID(-0x121074568629b532L,-0x5c37d8232ae2de13L)
@@ -113,6 +116,11 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     var trustSsl: Boolean = false
     var currentOriginalUrl: Uri? = null
     private val uiHandler = Handler(Looper.getMainLooper())
+    private val pendingBlockedAds = AtomicInteger(0)
+    private val reportBlockedAdsRunnable = Runnable {
+        val count = pendingBlockedAds.getAndSet(0)
+        if (count > 0) callback.onBlockedAds(count)
+    }
     private val config = AppContext.provideConfig()
 
     interface Callback {
@@ -135,7 +143,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         fun isAdBlockingEnabled(): Boolean
         fun isDialogsBlockingEnabled(): Boolean
         fun isAd(request: WebResourceRequest, baseUri: Uri): Boolean
-        fun onBlockedAd(url: Uri)
+        fun onBlockedAds(count: Int)
         fun onBlockedDialog(newTab: Boolean)
         fun onCreateWindow(dialog: Boolean, userGesture: Boolean): WebViewEx?
         fun closeWindow(window: WebView)
@@ -443,7 +451,10 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 val ad = currentPageUrl?.let { callback.isAd(request, it)} ?: false
                 return if (ad) {
                     Log.d(TAG, "Blocked ads request: ${request.url}")
-                    uiHandler.post { callback.onBlockedAd(request.url) }
+                    //coalesce: only the first blocked request of a burst schedules a UI report
+                    if (pendingBlockedAds.getAndIncrement() == 0) {
+                        uiHandler.postDelayed(reportBlockedAdsRunnable, BLOCKED_ADS_REPORT_DELAY_MS)
+                    }
                     val response = WebResourceResponse("text/plain", "utf-8", "".byteInputStream())
                     response.setStatusCodeAndReasonPhrase(403, "Blocked")
                     response
