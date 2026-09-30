@@ -7,12 +7,16 @@ import org.junit.Test
 class AdblockFilterListValidatorTest {
     @Test
     fun defaultListRequiresAdblockHeaderAndMinimumLines() {
-        val content = buildString {
-            appendLine("[Adblock Plus 2.0]")
-            repeat(99) { appendLine("||example$it.com^") }
-        }
+        val content = defaultListWithRules(99)
 
         assertTrue(AdblockFilterListValidator.isValid(content, requiresAdblockHeader = true))
+    }
+
+    @Test
+    fun defaultListRejectsOneLineBelowMinimum() {
+        val content = defaultListWithRules(98)
+
+        assertFalse(AdblockFilterListValidator.isValid(content, requiresAdblockHeader = true))
     }
 
     @Test
@@ -37,11 +41,7 @@ class AdblockFilterListValidatorTest {
 
     @Test
     fun defaultListAcceptsUtf8BomBeforeHeader() {
-        val content = buildString {
-            append("\uFEFF")
-            appendLine("[Adblock Plus 2.0]")
-            repeat(99) { appendLine("||example$it.com^") }
-        }
+        val content = "\uFEFF" + defaultListWithRules(99)
 
         assertTrue(AdblockFilterListValidator.isValid(content, requiresAdblockHeader = true))
     }
@@ -60,5 +60,11 @@ class AdblockFilterListValidatorTest {
     fun rejectsHtmlResponses() {
         assertFalse(AdblockFilterListValidator.isValid("<!doctype html><html></html>", requiresAdblockHeader = false))
         assertFalse(AdblockFilterListValidator.isValid("  <html></html>", requiresAdblockHeader = false))
+    }
+
+    private fun defaultListWithRules(ruleCount: Int): String {
+        return listOf("[Adblock Plus 2.0]")
+            .plus((0 until ruleCount).map { "||example$it.com^" })
+            .joinToString("\n")
     }
 }
