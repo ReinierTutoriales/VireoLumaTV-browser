@@ -60,6 +60,7 @@ android {
     productFlavors {
         create("generic") {
             dimension = "appstore"
+            //disabled until this fork has its own update channel and release key
             buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "false")
         }
         create("google") {
