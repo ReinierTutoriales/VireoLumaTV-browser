@@ -1373,6 +1373,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
             try {
                 startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                e.printStackTrace()
+                Toast.makeText(this@MainActivity, R.string.err_no_app_to_handle_url, Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(this@MainActivity, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
