@@ -218,9 +218,9 @@ class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListener, 
         val uri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath)
         val intent = Intent(Intent.ACTION_VIEW)
         intent.setDataAndType(uri, "resource/folder")
-        if (intent.resolveActivityInfo(packageManager, 0) != null) {
+        try {
             startActivity(intent)
-        } else {
+        } catch (e: ActivityNotFoundException) {
             Utils.showToast(this, R.string.no_file_explorer_msg)
         }
     }

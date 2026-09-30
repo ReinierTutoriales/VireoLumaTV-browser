@@ -1206,18 +1206,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 Log.d(TAG, "shouldOverrideUrlLoading: non-network url: $url")
                 val intent = Intent(Intent.ACTION_VIEW, uri)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                if (intent.resolveActivity(TVBro.instance.packageManager) != null) {
-                    runOnUiThread {
-                        askUserAndOpenInExternalApp(url, intent)
-                    }
-                    true
-                } else {
-                    Log.d(TAG, "shouldOverrideUrlLoading: no activity to handle intent")
-                    runOnUiThread {
-                        Utils.showToast(applicationContext, getString(R.string.err_no_app_to_handle_url))
-                    }
-                    true
+                runOnUiThread {
+                    askUserAndOpenInExternalApp(url, intent)
                 }
+                true
             } catch (e: Exception) {
                 Log.e(TAG, "shouldOverrideUrlLoading: ", e)
                 true
