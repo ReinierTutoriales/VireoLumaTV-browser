@@ -63,7 +63,7 @@ import java.util.concurrent.atomic.AtomicInteger
 @SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
 open class WebViewEx(context: Context, val callback: Callback, val jsInterface: AndroidJSInterface) : WebView(context) {
     companion object {
-        val TAG = WebViewEx::class.java.simpleName
+        const val TAG = "WebViewEx"
         const val WEB_VIEW_TAG = "TV Bro WebView"
         const val INTERNAL_SCHEME = "internal://"
         //blocked requests are reported to the UI at most once per this interval
