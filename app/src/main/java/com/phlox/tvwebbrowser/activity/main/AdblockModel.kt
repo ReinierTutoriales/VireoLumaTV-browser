@@ -6,6 +6,7 @@ import android.widget.Toast
 import com.phlox.tvwebbrowser.AppContext
 import com.phlox.tvwebbrowser.Config
 import com.phlox.tvwebbrowser.TVBro
+import com.phlox.tvwebbrowser.adblock.AdblockFilterListValidator
 import com.phlox.tvwebbrowser.adblock.BraveAdBlockEngine
 import com.phlox.tvwebbrowser.adblock.ContentBlocker
 import com.phlox.tvwebbrowser.adblock.ContentBlockerEngine
@@ -26,8 +27,6 @@ class AdblockModel : ActiveModel() {
         private const val PARTIAL_UPDATE_RETRY_MINUTES = 60 * 24 //1 day
         private const val DOWNLOAD_CONNECT_TIMEOUT_MS = 10_000
         private const val DOWNLOAD_READ_TIMEOUT_MS = 15_000
-        private const val MIN_DEFAULT_FILTER_LINES = 100
-        private const val MIN_CUSTOM_FILTER_LINES = 1
         private const val EASY_PRIVACY_URL = "https://easylist.to/easylist/easyprivacy.txt"
         private const val EASY_LIST_SPANISH_URL = "https://easylist-downloads.adblockplus.org/easylistspanish.txt"
     }
@@ -241,20 +240,10 @@ class AdblockModel : ActiveModel() {
     }
 
     private fun isValidFilterList(filterList: FilterList, content: String): Boolean {
-        val normalizedContent = content.removePrefix("\uFEFF")
-        val trimmedStart = normalizedContent.trimStart()
-        if (looksLikeHtml(trimmedStart)) return false
-        val lineCount = normalizedContent.lineSequence().count()
-        if (filterList.requiresAdblockHeader) {
-            val firstNonBlankLine = normalizedContent.lineSequence().firstOrNull { it.isNotBlank() } ?: return false
-            return firstNonBlankLine.startsWith("[Adblock Plus") && lineCount >= MIN_DEFAULT_FILTER_LINES
-        }
-        return normalizedContent.isNotBlank() && lineCount >= MIN_CUSTOM_FILTER_LINES
-    }
-
-    private fun looksLikeHtml(trimmedStart: String): Boolean {
-        val lowerStart = trimmedStart.lowercase(Locale.US)
-        return lowerStart.startsWith("<!doctype html") || lowerStart.startsWith("<html")
+        return AdblockFilterListValidator.isValid(
+            content = content,
+            requiresAdblockHeader = filterList.requiresAdblockHeader
+        )
     }
 
     private fun buildCombinedFilterList(resolvedLists: List<ResolvedFilterList>): String {
