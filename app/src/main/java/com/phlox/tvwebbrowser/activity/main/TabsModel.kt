@@ -21,7 +21,8 @@ import java.net.URL
 
 class TabsModel : ActiveModel() {
     companion object {
-        var TAG: String = TabsModel::class.java.simpleName
+        //literal, not ::class.java.simpleName: R8 renames the class in release builds
+        const val TAG = "TabsModel"
     }
 
     var loaded = false
@@ -113,6 +114,7 @@ class TabsModel : ActiveModel() {
         webEngineWindowProviderCallback: WebEngineWindowProviderCallback
     ) {
         if (currentTab.value == newTab && newTab.webEngine.getView() != null) return
+        val previousTab = currentTab.value
         if (currentTab.value != newTab) {
             tabsStates.forEach {
                 it.selected = false
@@ -140,6 +142,23 @@ class TabsModel : ActiveModel() {
             newTab.webEngine.loadUrl(newTab.url)
         }
         newTab.webEngine.setNetworkAvailable(Utils.isNetworkConnected(TVBro.instance))
+        releaseBackgroundWebViews(newTab, previousTab)
+    }
+
+    //Each extra live WebView costs ~50 MB of renderer memory on a 2 GB device (W1), so only the
+    //current and the previously used tab keep theirs. The others are destroyed; their state was
+    //saved in onPause() when they were detached, and restoreWebView() brings it back on return.
+    private fun releaseBackgroundWebViews(activeTab: WebTabState, previousTab: WebTabState?) {
+        var released = 0
+        for (tab in tabsStates) {
+            if (tab == activeTab || tab == previousTab) continue
+            if (tab.webEngine.getView() == null) continue
+            tab.trimMemory()
+            released++
+        }
+        if (released > 0) {
+            Log.i(TAG, "released $released background WebView(s), kept current and previous tab")
+        }
     }
 
     suspend fun findHostConfig(tab: WebTabState, createIfNotFound: Boolean): HostConfig? {
