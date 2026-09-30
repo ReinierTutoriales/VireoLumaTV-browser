@@ -136,7 +136,6 @@
   <string name="incognito_mode">Tryb incognito</string>
   <string name="incognito_mode_hint">Teraz możesz przeglądać internet prywatnie, a pozostali ludzie którzy używają tego urządzenia nie zobaczą Twojej aktywności. Aplikacja TV Bro nie będzie zapisywać Twojej historii przeglądania, ciasteczek oraz danych stron, informacji dodanych w formularzach.\n\nJednakże, zapisane zostaną pobrane pliki i zakładki. Twoja aktywność będzie nadal widoczna dla stron które odwiedzasz, twojej organizacji oraz dostawcy internetu.</string>
   <string name="don_t_show_again">Nie pokazuj ponownie</string>
-  <string name="why_icon_changed">Czemu ikona się zmieniła?</string>
   <string name="clear_web_cache">Wyczyść pamięć podręczną</string>
   <string name="block_popups">Blokowanie wyskakujących okienek</string>
   <string name="block_popups_s">Blokowanie wyskakujących okienek (%s)</string>

@@ -124,7 +124,6 @@
     <string name="incognito_mode">無痕模式</string>
     <string name="incognito_mode_hint">您現在可以私密瀏覽，其他使用此裝置的人無法看到您的活動。TV Bro 不會儲存您的歷史紀錄、Cookies、網站資料，以及輸入表單的資訊。\n\n然而，下載和書籤仍會被儲存。您的活動仍可能會被您造訪的網站、您的組織，或是網路服務供應商看到。</string>
     <string name="don_t_show_again">不再顯示</string>
-    <string name="why_icon_changed">為什麼圖示變了？</string>
     <string name="clear_web_cache">清除網路快取</string>
     <string name="block_popups">阻擋彈出式視窗</string>
     <string name="block_popups_s">阻擋彈出式視窗 (%s)</string>
