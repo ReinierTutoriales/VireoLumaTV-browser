@@ -60,7 +60,7 @@ android {
     productFlavors {
         create("generic") {
             dimension = "appstore"
-            buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "true")
+            buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "false")
         }
         create("google") {
             dimension = "appstore"
