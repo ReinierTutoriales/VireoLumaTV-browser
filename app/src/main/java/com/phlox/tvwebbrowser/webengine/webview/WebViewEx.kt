@@ -231,7 +231,9 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             }
 
             override fun onShowCustomView(view: View, callback: CustomViewCallback) {
+                Log.i(TAG, "onShowCustomView requested view=" + view.javaClass.name + " hasCallback=" + (fullscreenViewCallback != null))
                 if (fullscreenViewCallback != null) {
+                    Log.i(TAG, "onShowCustomView rejected: fullscreen callback already present")
                     callback.onCustomViewHidden()
                     return
                 }
@@ -240,6 +242,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             }
 
             override fun onHideCustomView() {
+                Log.i(TAG, "onHideCustomView hasCallback=" + (fullscreenViewCallback != null))
                 callback.onHideCustomView()
                 fullscreenViewCallback?.onCustomViewHidden()
                 fullscreenViewCallback = null
