@@ -21,7 +21,7 @@ import java.util.*
 
 class AdblockModel : ActiveModel() {
     companion object {
-        val TAG: String = AdblockModel::class.java.simpleName
+        const val TAG: String = "AdblockModel"
 
         const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 30 //30 days
         private const val PARTIAL_UPDATE_RETRY_MINUTES = 60 * 24 //1 day
