@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
@@ -187,6 +188,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun onDetachFromWindow(completely: Boolean, destroyTab: Boolean) {
+        Log.i(TAG, "onDetachFromWindow completely=" + completely + " destroyTab=" + destroyTab + " hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
         exitFullscreenView(restoreBrowserControls = false)
         onPause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
@@ -199,7 +201,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
     override fun trimMemory() {
         val webView = webView
+        Log.i(TAG, "trimMemory hasWebView=" + (webView != null) + " attached=" + webView?.isAttachedToWindow + " hasFullscreen=" + (fullScreenView != null))
         if (webView != null && !webView.isAttachedToWindow) {
+            Log.i(TAG, "trimMemory destroying detached WebView")
             exitFullscreenView(restoreBrowserControls = false)
             webView.destroy()
             this.webView = null
@@ -242,7 +246,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     private fun enterFullscreenView(view: View) {
+        Log.i(TAG, "enterFullscreenView requested view=" + view.javaClass.name + " hasFullscreen=" + (fullScreenView != null) + " hasWebView=" + (webView != null) + " hasParent=" + (viewParent != null))
         if (fullScreenView != null) {
+            Log.i(TAG, "enterFullscreenView rejected: fullscreen view already present")
             (view.parent as? ViewGroup)?.removeView(view)
             return
         }
@@ -263,6 +269,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     private fun exitFullscreenView(restoreBrowserControls: Boolean) {
+        Log.i(TAG, "exitFullscreenView restoreBrowserControls=" + restoreBrowserControls + " hasFullscreen=" + (fullScreenView != null) + " hasWebView=" + (webView != null))
         val fullscreenView = fullScreenView
         fullScreenView = null
         (fullscreenView?.parent as? ViewGroup)?.removeView(fullscreenView)
@@ -303,10 +310,12 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun onShowCustomView(view: View) {
+            Log.i(TAG, "callback.onShowCustomView view=" + view.javaClass.name)
             enterFullscreenView(view)
         }
 
         override fun onHideCustomView() {
+            Log.i(TAG, "callback.onHideCustomView")
             exitFullscreenView(restoreBrowserControls = true)
         }
 
@@ -348,6 +357,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun onRenderProcessGone(): Boolean {
+            Log.i(TAG, "onRenderProcessGone hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
             exitFullscreenView(restoreBrowserControls = false)
             val deadWebView = webView ?: return true
             (deadWebView.parent as? ViewGroup)?.removeView(deadWebView)
@@ -425,6 +435,8 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     companion object {
+        private val TAG = WebViewWebEngine::class.java.simpleName
+
         init {
             WebEngineFactory.registerProvider(WebEngineProvider("WebView", object : WebEngineProviderCallback {
                 override suspend fun initialize(context: Context, webViewContainer: CursorLayout) {
