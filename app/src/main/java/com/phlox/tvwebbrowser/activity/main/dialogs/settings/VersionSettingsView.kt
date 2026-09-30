@@ -81,10 +81,6 @@ class VersionSettingsView @JvmOverloads constructor(
             loadUrl(URL_PRIVACY_POLICY)
         }
 
-        vb.tvUkraine.setOnClickListener {
-            loadUrl("https://tv-bro-3546c.web.app/msg001.html")
-        }
-
         if (BuildConfig.BUILT_IN_AUTO_UPDATE) {
             vb.chkAutoCheckUpdates.isChecked = autoUpdateModel.needAutoCheckUpdates
 
