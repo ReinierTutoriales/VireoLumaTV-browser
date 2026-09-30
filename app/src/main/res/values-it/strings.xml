@@ -136,7 +136,6 @@
   <string name="incognito_mode">Modalità Incognito</string>
   <string name="incognito_mode_hint">Ora puoi navigare in privato e altri utilizzatori di questo dispositivo non vedranno la tua attività. TV Bro non salverà la cronologia di navigazione, i cookie e i dati del sito, le informazioni inserite nei moduli.\n\nTuttavia, i download e i segnalibri verranno salvati. La tua attività potrebbe essere comunque visibile ai siti Web che visiti, alla tua organizzazione o al provider di servizi Internet.</string>
   <string name="don_t_show_again">Non mostrare più</string>
-  <string name="why_icon_changed">Perché l\'icona è cambiata?</string>
   <string name="clear_web_cache">Pulisci la cache</string>
   <string name="block_popups">Blocco dei popup</string>
   <string name="block_popups_s">Blocco popup (%s)</string>
