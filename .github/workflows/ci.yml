@@ -52,6 +52,8 @@ jobs:
         run: ./gradlew assembleGenericDebug --stacktrace
 
       - name: Validate release build
+        env:
+          CI_SIGN_RELEASE_WITH_DEBUG_KEY: ${{ env.HAS_DEBUG_KEYSTORE }}
         run: ./gradlew assembleGenericRelease --stacktrace
 
       - name: Upload test reports
