@@ -42,8 +42,12 @@ android {
             isDebuggable = false
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = if (System.getenv("KEYSTORE_PATH") != null)
-                signingConfigs.getByName("release") else null
+            val signReleaseWithDebugKey = System.getenv("CI_SIGN_RELEASE_WITH_DEBUG_KEY") == "true"
+            signingConfig = when {
+                System.getenv("KEYSTORE_PATH") != null -> signingConfigs.getByName("release")
+                signReleaseWithDebugKey -> signingConfigs.getByName("debug")
+                else -> null
+            }
         }
     }
 
