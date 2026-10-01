@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvDescription"
         tools:text="https://test.com"
-        android:lines="1"
+        android:maxLines="4"
         android:background="@drawable/text_link_background_selector"
         android:focusable="true"
         android:clickable="true"/>

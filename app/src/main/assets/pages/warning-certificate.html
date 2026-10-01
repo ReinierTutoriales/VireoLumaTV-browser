@@ -70,26 +70,26 @@
 
         <div id="certErrorAndCaptivePortalButtonContainer">
             <button id="returnButton" onclick="history.back();"></button>
-            <button id="goForwardButton" onclick="TVBro.reloadWithSslTrust();"></button>
+            <button id="goForwardButton" onclick="VireoLumaTVApp.reloadWithSslTrust();"></button>
         </div>
     </div>
 </div>
 <script>
 function onLoad() {
     //translate captions first
-    document.getElementById("caption").innerHTML = TVBro.getStringByName('connection_isnt_secure');
-    document.getElementById("hostnameLabel").innerHTML = TVBro.getStringByName('hostname');
-    document.getElementById("errorDeskr").innerHTML = TVBro.getStringByName('err_desk');
-    document.getElementById("details").innerHTML = TVBro.getStringByName('details');
-    document.getElementById("returnButton").innerHTML = TVBro.getStringByName('back_to_safety');
-    document.getElementById("goForwardButton").innerHTML = TVBro.getStringByName('go_im_aware');
+    document.getElementById("caption").innerHTML = VireoLumaTVApp.getStringByName('connection_isnt_secure');
+    document.getElementById("hostnameLabel").innerHTML = VireoLumaTVApp.getStringByName('hostname');
+    document.getElementById("errorDeskr").innerHTML = VireoLumaTVApp.getStringByName('err_desk');
+    document.getElementById("details").innerHTML = VireoLumaTVApp.getStringByName('details');
+    document.getElementById("returnButton").innerHTML = VireoLumaTVApp.getStringByName('back_to_safety');
+    document.getElementById("goForwardButton").innerHTML = VireoLumaTVApp.getStringByName('go_im_aware');
 
     //show error info
-    let url = new URL(TVBro.currentUrl());
+    let url = new URL(VireoLumaTVApp.currentUrl());
     document.getElementById("hostname").innerHTML = url.hostname;
-    let error = TVBro.lastSSLError(false);
+    let error = VireoLumaTVApp.lastSSLError(false);
     document.getElementById("error").innerHTML = error;
-    error = TVBro.lastSSLError(true);
+    error = VireoLumaTVApp.lastSSLError(true);
     document.getElementById("error-details").innerHTML = error;
 }
 </script>
