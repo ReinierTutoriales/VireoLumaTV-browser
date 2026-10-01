@@ -1,13 +1,13 @@
 plugins {
-    id("tvbro.android.application")
+    id("vireolumatv.android.application")
     alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.phlox.tvwebbrowser"
+    namespace = "com.reiniertutoriales.vireolumatv"
 
     defaultConfig {
-        applicationId = "com.reiniertutoriales.vireobrowser"
+        applicationId = "com.reiniertutoriales.vireolumatv"
         versionCode = 69
         versionName = "2.1.6"
 

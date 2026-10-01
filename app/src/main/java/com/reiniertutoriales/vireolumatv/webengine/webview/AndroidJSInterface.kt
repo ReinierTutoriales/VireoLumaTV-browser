@@ -1,0 +1,140 @@
+package com.reiniertutoriales.vireolumatv.webengine.webview
+
+import android.net.http.SslError
+import android.webkit.JavascriptInterface
+import com.reiniertutoriales.vireolumatv.AppContext
+import com.reiniertutoriales.vireolumatv.Config
+import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.model.Download
+import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
+import org.json.JSONArray
+import org.json.JSONObject
+
+
+class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
+    @JavascriptInterface
+    fun currentUrl(): String {
+        if (!webEngine.tab.url.startsWith(WebViewEx.INTERNAL_SCHEME)) return ""
+        return webEngine.tab.url
+    }
+
+    @JavascriptInterface
+    fun reloadWithSslTrust() {
+        val callback = webEngine.callback ?: return
+        if ((webEngine.getView() as WebViewEx).currentOriginalUrl?.scheme != "file") return
+        callback.getActivity().runOnUiThread {
+            val webview = webEngine.getView() as? WebViewEx ?: return@runOnUiThread
+            webview.trustSsl = true
+            webEngine.tab.url.apply { webEngine.loadUrl(this) }
+        }
+    }
+
+    @JavascriptInterface
+    fun getStringByName(name: String): String {
+        val ctx = VireoLumaTVApp.instance
+        //val resId = ctx.resources.getIdentifier(name, "string", ctx.packageName)
+        //return ctx.getString(resId)
+        when (name) {
+            "connection_isnt_secure" -> return ctx.getString(R.string.connection_isnt_secure)
+            "hostname" -> return ctx.getString(R.string.hostname)
+            "err_desk" -> return ctx.getString(R.string.err_desk)
+            "details" -> return ctx.getString(R.string.details)
+            "back_to_safety" -> return ctx.getString(R.string.back_to_safety)
+            "go_im_aware" -> return ctx.getString(R.string.go_im_aware)
+            else -> return ""
+        }
+    }
+
+    @JavascriptInterface
+    fun startVoiceSearch() {
+        if (!isHomePage()) return
+        val callback = webEngine.callback ?: return
+        callback.getActivity().runOnUiThread { callback.initiateVoiceSearch() }
+    }
+
+    @JavascriptInterface
+    fun setSearchEngine(engine: String, customSearchEngineURL: String) {
+        if (!isHomePage()) return
+        AppContext.provideConfig().searchEngineURL.value = customSearchEngineURL
+    }
+
+    @JavascriptInterface
+    fun onEditBookmark(index: Int) {
+        if (!isHomePage()) return
+        val callback = webEngine.callback ?: return
+        callback.getActivity().runOnUiThread { callback.onEditHomePageBookmarkSelected(index) }
+    }
+
+    @JavascriptInterface
+    fun onHomePageLoaded() {
+        if (!isHomePage()) return
+        val callback = webEngine.callback ?: return
+        callback.getActivity().runOnUiThread {
+            val cfg = AppContext.provideConfig()
+            val jsArr = JSONArray()
+            for (item in callback.getHomePageLinks()) {
+                jsArr.put(item.toJsonObj())
+            }
+            var links = jsArr.toString()
+            links = links.replace("'", "\\'")
+            webEngine.evaluateJavascript("renderLinks('${cfg.homePageLinksMode.name}', $links)")
+            webEngine.evaluateJavascript(
+                "applySearchEngine(${JSONObject.quote(cfg.guessSearchEngineName())}, ${JSONObject.quote(cfg.searchEngineURL.value)})")
+        }
+    }
+
+    @JavascriptInterface
+    fun lastSSLError(getDetails: Boolean): String {
+        if (!isInternalCertificateErrorPage()) return "unknown"
+        val lastSSLError = (webEngine.getView() as? WebViewEx)?.lastSSLError ?: return "unknown"
+        return if (getDetails) {
+            lastSSLError.toString()
+        } else {
+            when (lastSSLError.primaryError) {
+                SslError.SSL_EXPIRED -> VireoLumaTVApp.instance.getString(R.string.ssl_expired)
+                SslError.SSL_IDMISMATCH -> VireoLumaTVApp.instance.getString(R.string.ssl_idmismatch)
+                SslError.SSL_DATE_INVALID -> VireoLumaTVApp.instance.getString(R.string.ssl_date_invalid)
+                SslError.SSL_INVALID -> VireoLumaTVApp.instance.getString(R.string.ssl_invalid)
+                else -> "unknown"
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun takeBlobDownloadData(base64BlobData: String, fileName: String?, url: String, mimetype: String) {
+        // Only accept blob data while the active top-level page is a normal HTTP(S) document.
+        // Internal/file pages must never be able to turn the bridge into a download primitive.
+        if (!isNormalWebPage()) return
+        if (!url.startsWith("blob:", ignoreCase = true)) return
+        val callback = webEngine.callback ?: return
+        val finalFileName = DownloadUtils.sanitizeFileName(fileName)
+            ?: DownloadUtils.guessFileName(url, null, mimetype)
+        callback.onDownloadRequested(url, "",
+                finalFileName, "VireoLumaTV",
+            mimetype, Download.OperationAfterDownload.NOP, base64BlobData)
+    }
+
+    @JavascriptInterface
+    fun markBookmarkRecommendationAsUseful(bookmarkOrder: Int) {
+        if (!isHomePage()) return
+        val callback = webEngine.callback ?: return
+        callback.getActivity().runOnUiThread { callback.markBookmarkRecommendationAsUseful(bookmarkOrder) }
+    }
+
+    private fun isHomePage(): Boolean {
+        return webEngine.tab.url == Config.HOME_PAGE_URL || webEngine.tab.url == Config.HOME_URL_ALIAS
+    }
+
+    private fun isNormalWebPage(): Boolean {
+        val scheme = (webEngine.getView() as? WebViewEx)?.currentOriginalUrl?.scheme ?: return false
+        return scheme.equals("http", ignoreCase = true) || scheme.equals("https", ignoreCase = true)
+    }
+
+    private fun isInternalCertificateErrorPage(): Boolean {
+        val view = webEngine.getView() as? WebViewEx ?: return false
+        return webEngine.tab.url.startsWith(WebViewEx.INTERNAL_SCHEME) &&
+            view.currentOriginalUrl?.scheme == "file" &&
+            view.lastSSLError != null
+    }
+}
