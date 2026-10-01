@@ -18,7 +18,6 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import java.io.File
@@ -51,7 +50,7 @@ class DownloadService : Service() {
         }
 
         override fun onError(task: DownloadTask, responseCode: Int, responseMessage: String) {
-            AppDatabase.db.downloadDao().update(task.downloadInfo)
+            DownloadHistory.update(task.downloadInfo)
             handler.post {
                 model.notifyListenersAboutError(task, responseCode, responseMessage)
                 onTaskEnded(task)
@@ -59,7 +58,7 @@ class DownloadService : Service() {
         }
 
         override fun onDone(task: DownloadTask) {
-            AppDatabase.db.downloadDao().update(task.downloadInfo)
+            DownloadHistory.update(task.downloadInfo)
             handler.post {
                 model.notifyListenersAboutDownloadProgress(task)
                 onTaskEnded(task)
