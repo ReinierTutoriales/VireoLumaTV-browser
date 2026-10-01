@@ -96,6 +96,7 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
                 if (tabsThumbsDir.exists() || tabsThumbsDir.mkdir()) {
                     try {
                         val hash = Utils.MD5_Hash(url.toByteArray(Charset.defaultCharset()))
+                            ?.let { if (incognito) "private-$it" else it }
                         if (hash != null && hash != thumbnailHash) {
                             if (thumbnailHash != null) {
                                 removeThumbnailFile()
@@ -163,7 +164,9 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
             try {
                 val stateBytes = File(getWVStatePath(stateFileName)).readBytes()
                 state = webEngine.stateFromBytes(stateBytes)
-                if (state == null) return false
+                if (state == null) return
+        // Private tabs must not overwrite a legacy file shared with a normal tab.
+        if (incognito && stateFileName?.startsWith("private-") != true) stateFileName = null false
                 this.savedState = state
                 webEngine.restoreState(state)
                 return true
@@ -183,6 +186,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
             stateFileName = null
         }
         if (state == null) return
+        // Private tabs must not overwrite a legacy file shared with a normal tab.
+        if (incognito && stateFileName?.startsWith("private-") != true) stateFileName = null
         val stateBytes = when (state) {
             is Bundle -> {
                 Utils.bundleToBytes(state) ?: return
@@ -192,7 +197,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
             }
         }
         if (stateFileName == null) {
-            stateFileName = Utils.MD5_Hash(stateBytes) ?: return
+            val hash = Utils.MD5_Hash(stateBytes) ?: return
+            stateFileName = if (incognito) "private-$hash" else hash
         }
         try {
             val statesDir = File(AppContext.get().filesDir.absolutePath + File.separator + TAB_WVSTATES_DIR)
