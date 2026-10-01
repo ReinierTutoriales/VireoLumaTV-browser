@@ -61,7 +61,7 @@ This policy may be updated when application behavior changes. The "Last updated"
 
 For privacy-related questions about Vireo Browser, visit:
 
-https://github.com/ReinierTutoriales/tv-bro
+https://github.com/ReinierTutoriales/vireo-browser
 
 ---
 

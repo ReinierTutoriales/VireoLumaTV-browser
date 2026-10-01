@@ -122,7 +122,7 @@ huellas no verificadas.
 Arranque en frío, sin `pm clear`:
 
 ```bat
-adb shell am force-stop com.phlox.tvwebbrowser
+adb shell am force-stop com.reiniertutoriales.vireobrowser
 ```
 
 Memoria: WebView renderiza en un proceso aparte; hay que medir app y renderer.
@@ -142,8 +142,8 @@ adb logcat | findstr /i "adblock onBlockedAds lowmemorykiller lmkd crash excepti
 Fluidez:
 
 ```bat
-adb shell dumpsys gfxinfo com.phlox.tvwebbrowser reset
-adb shell dumpsys gfxinfo com.phlox.tvwebbrowser
+adb shell dumpsys gfxinfo com.reiniertutoriales.vireobrowser reset
+adb shell dumpsys gfxinfo com.reiniertutoriales.vireobrowser
 ```
 
 Escenarios, con espera fija de unos 30 s antes de cada medición:

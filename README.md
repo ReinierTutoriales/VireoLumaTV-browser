@@ -14,9 +14,15 @@ Features:
 - browsing history
 - shortcuts
 
-Discussion pages:
+Historical discussion of the original TV Bro project:
 - https://forum.xda-developers.com/android/apps-games/tv-bro-browser-android-based-tvs-t3545295
 
 Source:
-- Vireo Browser repository: https://github.com/ReinierTutoriales/tv-bro
+- Vireo Browser repository: https://github.com/ReinierTutoriales/vireo-browser
 - Original TV Bro source code: https://github.com/truefedex/tv-bro
+
+## License and attribution
+
+The original TV Bro copyright, conditions, and disclaimer are preserved in [LICENSE.md](LICENSE.md). This license has specific requirements for modified binaries; it is not an unmodified standard BSD license. Vireo Browser must retain its distinct name, application ID, and icon and show the original-source attribution in its About screen.
+
+Additional component notices are recorded in [NOTICE.md](NOTICE.md). The license and rebranding audit, including unresolved release requirements, is in [docs/LICENSE_REBRANDING_AUDIT.md](docs/LICENSE_REBRANDING_AUDIT.md).

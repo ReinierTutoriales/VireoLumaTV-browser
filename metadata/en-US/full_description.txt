@@ -8,3 +8,4 @@ Features:
 - built-in download manager
 - browsing history
 - shortcuts
+Based on the source code of TV Bro by Fedir Tsapana: https://github.com/truefedex/tv-bro . Vireo Browser is maintained independently.
