@@ -62,7 +62,16 @@ class TabsModel : ActiveModel() {
             }
         }
         val tabsDao = AppDatabase.db.tabsDao()
-        tabsStates.replaceAll(tabsDao.getAll(config.incognitoMode))
+        if (config.incognitoMode) {
+            val staleIncognitoTabs = tabsDao.getAll(true)
+            withContext(Dispatchers.IO) {
+                staleIncognitoTabs.forEach { it.removeFiles() }
+            }
+            tabsDao.deleteAll(true)
+            tabsStates.clear()
+        } else {
+            tabsStates.replaceAll(tabsDao.getAll(false))
+        }
         loaded = true
     }
 
