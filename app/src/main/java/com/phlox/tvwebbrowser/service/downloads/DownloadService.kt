@@ -51,7 +51,11 @@ class DownloadService : Service() {
         }
 
         override fun onError(task: DownloadTask, responseCode: Int, responseMessage: String) {
-            AppDatabase.db.downloadDao().update(task.downloadInfo)
+            if (!task.downloadInfo.incognito) {
+                if (!task.downloadInfo.incognito) {
+                AppDatabase.db.downloadDao().update(task.downloadInfo)
+            }
+            }
             handler.post {
                 model.notifyListenersAboutError(task, responseCode, responseMessage)
                 onTaskEnded(task)
