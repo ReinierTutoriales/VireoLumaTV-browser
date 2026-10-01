@@ -32,7 +32,7 @@ class VersionSettingsView @JvmOverloads constructor(
 
     companion object {
         private const val URL_SUPPORT_AUTHOR = "https://donatello.to/truefedex"
-        //required by the TV Bro license for modified binaries: credit the original sources
+        // Required by the original license for modified binaries: credit the original sources
         private const val URL_TV_BRO_SOURCES = "https://github.com/truefedex/tv-bro"
         private const val URL_LICENSE =
             "https://raw.githubusercontent.com/truefedex/tv-bro/refs/heads/master/LICENSE.md"

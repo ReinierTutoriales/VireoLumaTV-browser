@@ -64,7 +64,7 @@ import java.util.concurrent.atomic.AtomicInteger
 open class WebViewEx(context: Context, val callback: Callback, val jsInterface: AndroidJSInterface) : WebView(context) {
     companion object {
         const val TAG = "WebViewEx"
-        const val WEB_VIEW_TAG = "TV Bro WebView"
+        const val WEB_VIEW_TAG = "Vireo WebView"
         const val INTERNAL_SCHEME = "internal://"
         //blocked requests are reported to the UI at most once per this interval
         private const val BLOCKED_ADS_REPORT_DELAY_MS = 250L
