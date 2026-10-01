@@ -9,13 +9,13 @@ Copyright (c) 2019, Fedir Tsapana. All rights reserved.
 VireoLumaTV uses sources from https://github.com/truefedex/tv-bro.
 The original license, conditions, and disclaimer are retained verbatim in [LICENSE.md](LICENSE.md). Modified binaries require a different application name, icon, and application ID, plus an About screen crediting and linking the original sources.
 
-`app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt` also retains Copyright (c) 2016 Fedir Tsapana.
+`app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.kt` also retains Copyright (c) 2016 Fedir Tsapana.
 
 ## DownloadUtils.kt
 
-`app/common/src/main/java/com/phlox/tvwebbrowser/utils/DownloadUtils.kt` carries an MPL 2.0 notice and incorporates work with Copyright (C) 2006 The Android Open Source Project under Apache 2.0. Both original notices remain in that file. See [MPL 2.0](licenses/MPL-2.0.txt) and [Apache 2.0](licenses/Apache-2.0.txt).
+`app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt` carries an MPL 2.0 notice and incorporates work with Copyright (C) 2006 The Android Open Source Project under Apache 2.0. Both original notices remain in that file. See [MPL 2.0](licenses/MPL-2.0.txt) and [Apache 2.0](licenses/Apache-2.0.txt).
 
-Source and modifications: https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/fixes/audit/app/common/src/main/java/com/phlox/tvwebbrowser/utils/DownloadUtils.kt
+Source and modifications: https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/cleanup/vireolumatv-identity/app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt
 For each published binary, provide the corresponding source tag or immutable commit, rather than relying solely on this moving branch link.
 
 ## segmented-button v1.0.0

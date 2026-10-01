@@ -6,7 +6,7 @@ Base: fixes/audit c339fcfb848593491a683f8aeec6efb50d73dadb. Source review, not a
 |---|---|
 | Stored tabs/previews | TabsModel.saveTab/loadState; common/model/WebTabState.saveWebViewStateToFile/saveThumbnail |
 | Stored download records | DownloadTask inserts File/Blob/Stream metadata into Room, with no base incognito exclusion |
-| Stored favicon/host data | common/singleton/FaviconsPool; TVBro.databaseDelegate |
+| Stored favicon/host data | common/singleton/FaviconsPool; VireoLumaTVApp.databaseDelegate |
 | Filter connections | AdblockModel.init/loadAdBlockList/getConfiguredFilterLists; Config.DEFAULT_ADBLOCK_LIST_URL |
 | Google favicon connections | assets/pages/home/index.html applySearchEngine: t2.gstatic.com/faviconV2 includes website origin |
 | Voice provider | VoiceSearchHelper ACTION_RECOGNIZE_SPEECH/createSpeechRecognizer, no on-device-only requirement |

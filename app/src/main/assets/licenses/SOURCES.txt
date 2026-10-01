@@ -1,10 +1,11 @@
 VireoLumaTV includes TV Bro sources, DownloadUtils.kt with MPL 2.0 and Apache 2.0 notices, and ad-block native code covered by MPL 2.0.
 
 Application-source base reviewed for this proposal:
-https://github.com/ReinierTutoriales/vireo-browser/tree/c339fcfb848593491a683f8aeec6efb50d73dadb
+https://github.com/ReinierTutoriales/VireoLumaTV-browser/tree/c339fcfb848593491a683f8aeec6efb50d73dadb
 
-DownloadUtils.kt corresponding source in this base:
-https://github.com/ReinierTutoriales/vireo-browser/blob/c339fcfb848593491a683f8aeec6efb50d73dadb/app/common/src/main/java/com/phlox/tvwebbrowser/utils/DownloadUtils.kt
+Current namespace migration and covered DownloadUtils.kt source:
+https://github.com/ReinierTutoriales/VireoLumaTV-browser/tree/cleanup/vireolumatv-identity
+https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/cleanup/vireolumatv-identity/app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt
 
 ad-block 0.0.4 sources, including checked-in native bloom-filter-cpp/hashset-cpp:
 https://github.com/truefedex/ad-block/tree/3bbb044bc3f9e3806c98207766e6a4c5f90ac5b3
