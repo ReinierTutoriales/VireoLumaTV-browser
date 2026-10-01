@@ -23,6 +23,8 @@ class TabsModel : ActiveModel() {
     companion object {
         //literal, not ::class.java.simpleName: R8 renames the class in release builds
         const val TAG = "TabsModel"
+
+        private val incognitoSession = IncognitoSessionTabs()
     }
 
     var loaded = false
@@ -62,7 +64,11 @@ class TabsModel : ActiveModel() {
             }
         }
         val tabsDao = AppDatabase.db.tabsDao()
-        tabsStates.replaceAll(tabsDao.getAll(config.incognitoMode))
+        if (config.incognitoMode) {
+            tabsStates.replaceAll(incognitoSession.load(tabsDao))
+        } else {
+            tabsStates.replaceAll(tabsDao.getAll(false))
+        }
         loaded = true
     }
 
