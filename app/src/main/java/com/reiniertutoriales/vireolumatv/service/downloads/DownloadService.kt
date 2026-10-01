@@ -51,7 +51,7 @@ class DownloadService : Service() {
         }
 
         override fun onError(task: DownloadTask, responseCode: Int, responseMessage: String) {
-            AppDatabase.db.downloadDao().update(task.downloadInfo)
+            DownloadHistory.update(task.downloadInfo)
             handler.post {
                 model.notifyListenersAboutError(task, responseCode, responseMessage)
                 onTaskEnded(task)
@@ -59,7 +59,7 @@ class DownloadService : Service() {
         }
 
         override fun onDone(task: DownloadTask) {
-            AppDatabase.db.downloadDao().update(task.downloadInfo)
+            DownloadHistory.update(task.downloadInfo)
             handler.post {
                 model.notifyListenersAboutDownloadProgress(task)
                 onTaskEnded(task)
