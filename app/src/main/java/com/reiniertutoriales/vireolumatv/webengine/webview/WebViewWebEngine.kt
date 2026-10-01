@@ -360,6 +360,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
             Log.i(TAG, "onRenderProcessGone hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
             exitFullscreenView(restoreBrowserControls = false)
             val deadWebView = webView ?: return true
+            tab.rendererLost = true
             (deadWebView.parent as? ViewGroup)?.removeView(deadWebView)
             deadWebView.destroy()
             webView = null

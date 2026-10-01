@@ -135,17 +135,12 @@ class TabsModel : ActiveModel() {
             if (wv == null) {
                 return
             }
-            needReloadUrl = if (currentTab.value === newTab && previousTab === newTab) {
-                // The current renderer disappeared. savedState may predate the latest navigation,
-                // so recover the last observed URL instead of restoring stale WebView history.
-                true
-            } else {
-                !newTab.restoreWebView()
-            }
+            needReloadUrl = !newTab.restoreWebView()
         }
         newTab.webEngine.onAttachToWindow(webEngineWindowProviderCallback, webViewParent)
         if (needReloadUrl) {
             newTab.webEngine.loadUrl(newTab.url)
+            newTab.rendererLost = false
         }
         newTab.webEngine.setNetworkAvailable(Utils.isNetworkConnected(VireoLumaTVApp.instance))
         releaseBackgroundWebViews(newTab, previousTab)
