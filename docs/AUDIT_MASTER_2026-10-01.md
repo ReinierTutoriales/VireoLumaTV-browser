@@ -74,15 +74,19 @@ This is the compact source-of-truth index for work audited against baseline `c33
 
 ## Physical validation sequence
 
-1. Vireo release smoke test.
-2. Incognito suffix/process/session isolation test.
-3. Incognito download-history leak test.
-4. Incognito host/favicon persistence test with the debug artifact/database inspection.
-5. Explicit-Intent `javascript:` injection reproduction.
-6. Capture at least one legitimate blob-download flow before changing the JS bridge.
-7. Implement/verify the privacy-security block based on evidence.
-8. Only then run W3.
-9. Address renderer recovery and tab-selection atomicity after the higher-priority block unless new evidence raises their severity.
+The #193 debug and release artifacts have the same application ID and shared debug signature. Installing debug with `adb install -r` replaces release and preserves its data. Therefore all release/R8 behavior tests must run before switching to debug.
+
+1. On `vireo-release`: Vireo release smoke test.
+2. On `vireo-release`: incognito suffix/process/session isolation test.
+3. On `vireo-release`: incognito download-history leak test.
+4. On `vireo-release`: explicit-Intent `javascript:` injection reproduction.
+5. On `vireo-release`: capture at least one legitimate blob-download flow before changing the JS bridge.
+6. Only now install `vireo-debug` over release with `adb install -r`; accumulated app data is preserved.
+7. On `vireo-debug`: inspect incognito host/favicon persistence with `run-as`.
+8. Database extraction must be binary-safe and WAL-aware: force-stop first and copy `main.db`, `main.db-wal`, and `main.db-shm` with `adb exec-out` plus `cmd /c` redirection. Never use PowerShell `>` for these binary files.
+9. Implement/verify the privacy-security block based on evidence.
+10. Only then run W3.
+11. Address renderer recovery and tab-selection atomicity after the higher-priority block unless new evidence raises their severity.
 
 ## Do-not-touch compatibility/legal list
 
