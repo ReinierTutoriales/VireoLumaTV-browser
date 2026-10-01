@@ -86,6 +86,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
 
     @JavascriptInterface
     fun lastSSLError(getDetails: Boolean): String {
+        if (!isInternalCertificateErrorPage()) return "unknown"
         val lastSSLError = (webEngine.getView() as? WebViewEx)?.lastSSLError ?: return "unknown"
         return if (getDetails) {
             lastSSLError.toString()
@@ -102,7 +103,9 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
 
     @JavascriptInterface
     fun takeBlobDownloadData(base64BlobData: String, fileName: String?, url: String, mimetype: String) {
-        //only blob: URLs are expected here (see generic_injects.js); the file name comes from the web page
+        // Only accept blob data while the active top-level page is a normal HTTP(S) document.
+        // Internal/file pages must never be able to turn the bridge into a download primitive.
+        if (!isNormalWebPage()) return
         if (!url.startsWith("blob:", ignoreCase = true)) return
         val callback = webEngine.callback ?: return
         val finalFileName = DownloadUtils.sanitizeFileName(fileName)
@@ -121,5 +124,17 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
 
     private fun isHomePage(): Boolean {
         return webEngine.tab.url == Config.HOME_PAGE_URL || webEngine.tab.url == Config.HOME_URL_ALIAS
+    }
+
+    private fun isNormalWebPage(): Boolean {
+        val scheme = (webEngine.getView() as? WebViewEx)?.currentOriginalUrl?.scheme ?: return false
+        return scheme.equals("http", ignoreCase = true) || scheme.equals("https", ignoreCase = true)
+    }
+
+    private fun isInternalCertificateErrorPage(): Boolean {
+        val view = webEngine.getView() as? WebViewEx ?: return false
+        return webEngine.tab.url.startsWith(WebViewEx.INTERNAL_SCHEME) &&
+            view.currentOriginalUrl?.scheme == "file" &&
+            view.lastSSLError != null
     }
 }
