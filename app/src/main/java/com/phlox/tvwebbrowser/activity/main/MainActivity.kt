@@ -602,7 +602,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             return
         }
         pendingDownloads.addLast(Download(url, originalDownloadFileName, null, operationAfterDownload,
-            mimeType, referer, userAgent, base64BlobData, stream, size))
+            mimeType, referer, userAgent, base64BlobData, stream, size).apply {
+            incognito = config.incognitoMode
+        })
         if (downloadPermissionRequestPending) return
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R &&
