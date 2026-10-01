@@ -46,6 +46,11 @@ jobs:
             done
           done
 
+      - name: Record corresponding application source
+        shell: bash
+        run: |
+          printf 'Application source: https://github.com/%s/tree/%s\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > RELEASE_SOURCE.txt
+
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
@@ -55,3 +60,8 @@ jobs:
           prerelease: ${{ inputs.prerelease == 'pre-release' }}
           files: |
             app/build/outputs/apk/generic/release/*.apk
+            LICENSE.md
+            NOTICE.md
+            licenses/*.txt
+            app/src/main/assets/licenses/SOURCES.txt
+            RELEASE_SOURCE.txt
