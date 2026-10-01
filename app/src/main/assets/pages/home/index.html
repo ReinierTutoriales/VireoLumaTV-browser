@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Vireo: Home</title>
+    <title>VireoLumaTV: Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
 body {
@@ -442,10 +442,10 @@ function onIcoLoadError(element) {
 
 function onSuggestionClicked(index) {
     var bookmark = null;
-    if (homePageLinksMode === "BOOKMARKS" && window.hasOwnProperty( "TVBro" )) {
+    if (homePageLinksMode === "BOOKMARKS" && window.hasOwnProperty( "VireoLumaTVApp" )) {
         bookmark = recommendationsToDisplay.find(function (b) { return b.order === index; });
-        if (bookmark && TVBro.hasOwnProperty("markBookmarkRecommendationAsUseful")) {
-            TVBro.markBookmarkRecommendationAsUseful(index);
+        if (bookmark && VireoLumaTVApp.hasOwnProperty("markBookmarkRecommendationAsUseful")) {
+            VireoLumaTVApp.markBookmarkRecommendationAsUseful(index);
         }
     } else {
         if (index >= recommendationsToDisplay.length) return;
@@ -482,10 +482,10 @@ function renderLinks(mode, linksArray) {
                 var url = new URL(urlStr);
                 c.favicon = url.origin + "/favicon.ico";
 
-                if (window.hasOwnProperty( "TVBro" )) {
-                    if (TVBro.requestFavicon) {
+                if (window.hasOwnProperty( "VireoLumaTVApp" )) {
+                    if (VireoLumaTVApp.requestFavicon) {
                         //GeckoView
-                        TVBro.requestFavicon(urlStr);
+                        VireoLumaTVApp.requestFavicon(urlStr);
                     } else {
                         //WebView
                         c.favicon = "favicon://" + url.host;
@@ -505,7 +505,7 @@ function renderLinks(mode, linksArray) {
         var suggElement = document.getElementById("sugg" + i);
         if (suggElement) {
             var link;
-            if (homePageLinksMode == "BOOKMARKS" && window.hasOwnProperty( "TVBro" )) {
+            if (homePageLinksMode == "BOOKMARKS" && window.hasOwnProperty( "VireoLumaTVApp" )) {
                 link = recommendationsToDisplay.find(function(c) { return c.order == i; });
             } else {
                 link = recommendationsToDisplay[i];
@@ -533,12 +533,12 @@ function renderLinks(mode, linksArray) {
             titleElement.classList.toggle("empty", !link);
             descriptionElement.classList.toggle("empty", !link);
 
-            if (homePageLinksMode == "BOOKMARKS" && window.hasOwnProperty( "TVBro" )) {
+            if (homePageLinksMode == "BOOKMARKS" && window.hasOwnProperty( "VireoLumaTVApp" )) {
                 var moreElement = suggElement.getElementsByClassName("more")[0]; 
                 moreElement.style.display = "block";
                 moreElement.onclick = function(e) {
                     var index = parseInt(e.target.parentElement.id.substring(4));
-                    TVBro.onEditBookmark(index);
+                    VireoLumaTVApp.onEditBookmark(index);
                     e.stopPropagation();
                 };
             }
@@ -558,7 +558,7 @@ function promptCustomSearchEngineUrl() {
     return prompt("Enter search engine URL (with [query] as placeholder)", searchEngineUrl);
 }
 
-function applySearchEngine(engine, searchEngineUrl, notifyTVBro) {
+function applySearchEngine(engine, searchEngineUrl, notifyVireoLumaTVApp) {
     document.getElementById("search-engines-list").classList.remove("active");
 
     searchEngineUrl = searchEngineUrl ? searchEngineUrl : searchEngineUrlMap[engine];
@@ -575,8 +575,8 @@ function applySearchEngine(engine, searchEngineUrl, notifyTVBro) {
     }
     document.getElementsByClassName("default_option")[0].style.backgroundImage = "url('" + iconUrl + "')";    
 
-    if (window.hasOwnProperty( "TVBro" ) && notifyTVBro) {
-        TVBro.setSearchEngine(engine, searchEngineUrl ? searchEngineUrl : searchEngineUrlMap[engine]);
+    if (window.hasOwnProperty( "VireoLumaTVApp" ) && notifyVireoLumaTVApp) {
+        VireoLumaTVApp.setSearchEngine(engine, searchEngineUrl ? searchEngineUrl : searchEngineUrlMap[engine]);
     }
 }
 
@@ -586,7 +586,7 @@ function performSearch(text) {
     window.open(url, "_self");
 }
 
-//callback called from TVBro/GeckoView
+//callback called from VireoLumaTVApp/GeckoView
 function onFaviconLoaded(url, data) {
     let imgElements = document.getElementsByTagName("img");
     for (let i = 0; i < imgElements.length; i++) {
@@ -622,20 +622,20 @@ document.getElementsByClassName("search_action_container")[0].onclick = function
     if (document.getElementsByClassName("mic")[0].style.display == "none") {
         performSearch(document.getElementById("search-input").value);
     } else {
-        if (window.hasOwnProperty( "TVBro" )) {
-            TVBro.startVoiceSearch();
+        if (window.hasOwnProperty( "VireoLumaTVApp" )) {
+            VireoLumaTVApp.startVoiceSearch();
         }
     }
 };
 
 //there are three modes this page can run in:
-//1. Running inside ordinary web page - TVBro variable is not installed - no bookmarks, no voice search
-//2. Running inside TVBro WebView - TVBro variable is installed
-//3. Running inside TVBro GeckoView - TVBro variable is installed
+//1. Running inside ordinary web page - VireoLumaTVApp variable is not installed - no bookmarks, no voice search
+//2. Running inside VireoLumaTVApp WebView - VireoLumaTVApp variable is installed
+//3. Running inside VireoLumaTVApp GeckoView - VireoLumaTVApp variable is installed
 
-if (window.hasOwnProperty( "TVBro" )) {
-    console.log("Running inside TVBro");
-    TVBro.onHomePageLoaded();
+if (window.hasOwnProperty( "VireoLumaTVApp" )) {
+    console.log("Running inside VireoLumaTVApp");
+    VireoLumaTVApp.onHomePageLoaded();
 } else {
     hideVoiceSearchUI();
     applySearchEngine(searchEngine, searchEngineUrl, false);

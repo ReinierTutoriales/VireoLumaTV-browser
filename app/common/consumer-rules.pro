@@ -1,3 +1,3 @@
--keepclassmembers class * extends com.phlox.tvwebbrowser.utils.activemodel.ActiveModel {
+-keepclassmembers class * extends com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel {
    <init>(...);
 }

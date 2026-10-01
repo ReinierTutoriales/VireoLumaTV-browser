@@ -41,10 +41,15 @@ jobs:
         run: |
           for dir in generic; do
             for f in app/build/outputs/apk/${dir}/release/app-*.apk; do
-              new="${f/app-/vireo-${{ inputs.version }}-}"
+              new="${f/app-/vireolumatv-${{ inputs.version }}-}"
               mv "$f" "${new/-release.apk/.apk}"
             done
           done
+
+      - name: Record corresponding application source
+        shell: bash
+        run: |
+          printf 'Application source: https://github.com/%s/tree/%s\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > RELEASE_SOURCE.txt
 
       - name: Create release
         uses: softprops/action-gh-release@v3
@@ -55,3 +60,8 @@ jobs:
           prerelease: ${{ inputs.prerelease == 'pre-release' }}
           files: |
             app/build/outputs/apk/generic/release/*.apk
+            LICENSE.md
+            NOTICE.md
+            licenses/*.txt
+            app/src/main/assets/licenses/SOURCES.txt
+            RELEASE_SOURCE.txt

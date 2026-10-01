@@ -9,16 +9,16 @@
 
 # Add any project specific keep options here:
 
--keep class com.phlox.tvwebbrowser.webengine.webview.WebViewWebEngine { *; }
+-keep class com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine { *; }
 
--keepclassmembers class com.phlox.tvwebbrowser.model.** {
+-keepclassmembers class com.reiniertutoriales.vireolumatv.model.** {
    public *;
 }
 -keepclassmembers class com.brave.adblock.AdBlockClient {
    public *;
    private *;
 }
--keepclassmembers class com.phlox.tvwebbrowser.webengine.webview.AndroidJSInterface {
+-keepclassmembers class com.reiniertutoriales.vireolumatv.webengine.webview.AndroidJSInterface {
    public *;
    private *;
 }
@@ -28,6 +28,6 @@
     public static int d(...);
 }
 
-#-keepclasseswithmembers class com.phlox.tvwebbrowser.model.** {
+#-keepclasseswithmembers class com.reiniertutoriales.vireolumatv.model.** {
 #    <fields>;
 #}
