@@ -65,7 +65,7 @@
     </queries>
 
     <application
-        android:name=".TVBro"
+        android:name=".VireoLumaTVApp"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher"

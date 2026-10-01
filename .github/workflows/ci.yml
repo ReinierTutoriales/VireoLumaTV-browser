@@ -67,13 +67,13 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v6
         with:
-          name: vireo-debug
+          name: vireolumatv-debug
           path: app/build/outputs/apk/generic/debug/*.apk
           retention-days: 7
 
       - name: Upload release APK
         uses: actions/upload-artifact@v6
         with:
-          name: vireo-release
+          name: vireolumatv-release
           path: app/build/outputs/apk/generic/release/*.apk
           retention-days: 7

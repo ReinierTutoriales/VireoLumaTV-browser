@@ -10,7 +10,7 @@
     tools:deviceIds="tv"
     android:clipChildren="false">
 
-    <com.phlox.tvwebbrowser.widgets.cursor.CursorLayout
+    <com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/flWebViewContainer" />
@@ -32,12 +32,12 @@
         android:clipChildren="false"
         android:clipToPadding="false">
 
-        <com.phlox.tvwebbrowser.activity.main.view.ActionBar
+        <com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
             android:id="@+id/vActionBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <com.phlox.tvwebbrowser.activity.main.view.tabs.TabsView
+        <com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabsView
             android:id="@+id/vTabs"
             android:layout_width="match_parent"
             android:layout_height="60dp"
@@ -221,7 +221,7 @@
             tools:text="1" />
     </androidx.constraintlayout.widget.ConstraintLayout>
     
-    <com.phlox.tvwebbrowser.activity.main.view.CursorMenuView
+    <com.reiniertutoriales.vireolumatv.activity.main.view.CursorMenuView
         android:id="@+id/vCursorMenu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

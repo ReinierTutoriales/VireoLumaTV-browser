@@ -18,6 +18,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "tv-bro"
+rootProject.name = "VireoLumaTV-browser"
 include(":app")
 include(":app:common")
