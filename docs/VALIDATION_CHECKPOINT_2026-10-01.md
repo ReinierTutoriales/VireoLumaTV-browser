@@ -147,11 +147,11 @@ The product decision is **still pending**. The downloaded file is expected to re
 
 Do not choose between (a) and (b) before the P0 implementation review. Option (b) is the current candidate, not an approved implementation.
 
-#### Room prerequisite if option (b) is selected
+#### Room schema-export infrastructure
 
 The current repository does not version exported Room schema JSON. `AppDatabase` has schema export disabled/commented, while the project compiles Room with KSP; a classic annotation-processor `room.schemaLocation` argument is not sufficient for KSP schema export.
 
-Before implementing database version 20, create a **separate prerequisite commit** on the then-current version-19 database that:
+Independently of which download design is ultimately selected, create a **separate infrastructure commit** on the then-current version-19 database that:
 
 - enables Room schema export;
 - configures the Room KSP processor with `ksp { arg("room.schemaLocation", ...) }` (using the project's actual Gradle/KSP syntax);
@@ -159,7 +159,7 @@ Before implementing database version 20, create a **separate prerequisite commit
 - versions that v19 JSON in the repository;
 - makes no schema change in that prerequisite commit.
 
-Then the P0 database change may add an `incognito` marker to downloads, bump Room 19 -> 20, and include a `MigrationTestHelper` test using the versioned schemas. Also physically test installing the v20 APK over a v19 installation that already contains data.
+This gives the project a valid migration-test baseline for any future schema change. If download design (b) is selected, the subsequent P0 database change may add an `incognito` marker to downloads, bump Room 19 -> 20, and include a `MigrationTestHelper` test using the versioned schemas. Also physically test installing the v20 APK over a v19 installation that already contains data.
 
 There is **no automatic downgrade path**. The current Room builder registers forward migrations and does not opt into destructive downgrade fallback. After a test APK upgrades the database to v20, installing/running an older v19 APK against that data can fail at database open. To return to a v19 build during testing, uninstall/clear app data first. Treat downgrade-by-install as unsupported; do not add destructive downgrade behavior merely for test convenience.
 
@@ -231,12 +231,14 @@ Regression tests should cover at least:
 
 Do not implement the blob fix as a simple blanket disable: legitimate `blob:` downloads must continue working.
 
+Important memory-model limitation: with the current global `addJavascriptInterface` method signature, Kotlin sees `base64BlobData` only **after** WebView has converted the JavaScript string into a Java `String` in the app process. Therefore a length check in Java/Kotlin can prevent further base64 decode and file-write amplification, but it cannot guarantee that a malicious page cannot exhaust app heap during argument materialization itself. Treat that as residual risk unless the transport mechanism is narrowed/replaced. Chunking the legitimate injected flow reduces normal-path per-call size but does not stop a hostile page from directly invoking the global bridge with one huge string. A message-based mechanism such as `WebViewCompat.addWebMessageListener` is a candidate for evaluation, not yet an approved design; origin scoping and practical message-size behavior must be verified before adoption.
+
 Future design requirements for blob downloads:
 
 - bind acceptance to a browser-controlled pending blob-download request or equivalent short-lived capability created by the legitimate download flow;
 - make that capability single-use and short-lived;
 - reject unsolicited calls from arbitrary pages/iframes;
-- enforce a defensible decoded-size limit before allocating/decoding an arbitrarily large payload;
+- enforce a defensible Java-side input limit immediately on bridge entry, before base64 decoding and disk I/O; note that the JS-to-Java bridge has already materialized the argument as a Java String by then, so this cannot by itself prevent app-process OOM from an extremely large hostile argument;
 - clear pending authorization on navigation/tab destruction as appropriate;
 - preserve legitimate blob downloads after the change.
 
