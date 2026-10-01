@@ -108,7 +108,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         val finalFileName = DownloadUtils.sanitizeFileName(fileName)
             ?: DownloadUtils.guessFileName(url, null, mimetype)
         callback.onDownloadRequested(url, "",
-                finalFileName, "TV Bro",
+                finalFileName, "Vireo",
             mimetype, Download.OperationAfterDownload.NOP, base64BlobData)
     }
 
