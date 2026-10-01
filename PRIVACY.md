@@ -1,68 +1,51 @@
-### Privacy policy ###
+# Vireo Browser privacy policy
 
-**Last updated:** September 30, 2026
+Last updated: October 1, 2026.
 
-This policy describes how **Vireo Browser** handles information.
+Vireo Browser is an Android TV browser maintained by ReinierTutoriales and distributed through GitHub. It uses sources from [TV Bro](https://github.com/truefedex/tv-bro); this policy describes Vireo, not the original project.
 
-Vireo Browser is an open-source Android TV web browser based on the source code of TV Bro. The original source code is available at:
-https://github.com/truefedex/tv-bro
+## Browser data
 
----
+Vireo processes pages and search queries to provide browsing. It stores browser information on your device: history, bookmarks, settings, open-tab URLs and state, previews, favicon/host information, cookies and website storage, and download records. Download records can include URL, referring page, filename, destination, size and progress. Files are saved to your chosen or configured destination.
 
-#### Information the application collects ####
+The reviewed application source does not include a developer-operated analytics or crash-reporting service. This does not mean that no information leaves the device: the services described below receive information needed to provide their functions.
 
-The current version of Vireo Browser does not collect personal data and does not transmit analytics or usage data from your device to Vireo Browser developers or third-party analytics services as part of the application's own behavior.
+## Websites and network connections
 
-Vireo Browser stores browser information locally on your device, including:
+Websites and your selected search provider receive page requests, search queries and information transmitted by WebView, such as IP address, browser headers and applicable cookies. Their policies apply. HTTP pages may transmit information without transport encryption.
 
-- browsing history
-- bookmarks
-- cookies and website data
-- browser settings
-- downloaded files
+Vireo downloads and caches filters from configured ad-block providers. Defaults include EasyList, EasyPrivacy and EasyList Spanish. Their hosts receive connection information, including IP address, even when you are not visiting those websites. Lists can be checked at browser startup and when refreshed.
 
-This information remains on your device unless you choose to remove it.
+Site icons may be requested from websites, referenced icon hosts, and a Google-hosted favicon service used by the internal home page. That service receives the requested website origin in its URL. Default bookmark suggestions can load third-party icons. These requests are separate from developer analytics.
 
-#### Websites you visit ####
+Opening source, license, support and policy links contacts GitHub or the linked provider. Android WebView, the operating system and installed device services may perform their own network activity under their policies.
 
-Vireo Browser is a web browser. When you browse the internet:
+## Voice and permissions
 
-- Websites and online services you use may collect, store, and process data according to their own privacy policies.
-- Your device, internet service provider, DNS provider, and other network intermediaries may process network activity required to load websites.
-- You are responsible for the websites you visit and the information you choose to provide.
+Voice search uses your device's speech recognition service. That service may send audio to remote servers; Vireo does not require on-device-only recognition. Recognized text may be sent to your selected search provider.
 
-#### Incognito mode ####
+Websites may request camera, microphone or approximate location access. Vireo displays prompts and uses Android permissions where required. If you allow access, websites may receive the corresponding data under their own policies. Protected-media websites may interact with device DRM facilities through WebView.
 
-Vireo Browser provides an incognito mode designed to reduce local storage of browsing activity.
+Other declared permissions support connectivity, download notifications, foreground downloads, keeping the device awake, file access on supported Android versions and package-installation flows. The reviewed variants disable the built-in app updater. Declared permissions are not necessarily used in every session.
 
-Incognito mode does not provide anonymity. It does not hide your activity from websites, network providers, or other parties that may observe network traffic.
+## Incognito limitations
 
-#### Permissions ####
+Incognito is intended to reduce ordinary browsing history. It does not hide activity from websites, search providers, speech services, network operators or the operating system.
 
-Vireo Browser may request Android permissions required for browser functionality, including:
+In the currently reviewed code, private-tab URLs/state and previews, favicon/host information and download records can still be written to persistent storage. Cleanup is not guaranteed after a crash or forced termination. Downloads remain until removed. Do not rely on this version to prevent all local traces. This section will be revised when fixes are integrated and verified in the distributed build.
 
-- downloading files
-- opening external content
-- managing files selected by the user
+## Backup, retention and deletion
 
-Permissions are used only for the requested browser features.
+Android backup is enabled in the manifest. Depending on the device, Android version and settings, eligible app data may be copied by system backup or device-transfer services. Vireo cannot promise that all app data stays exclusively on the device.
 
-#### Children ####
+Data can remain until removed through available browser controls or Android app-data settings. Clearing browser cache does not necessarily remove history, bookmarks, cookies, tab state or downloaded files. Clearing app data or uninstalling may remove app-private data, but externally saved downloads, backups and information held by websites/providers require separate deletion. System/provider policies control backup retention.
 
-Vireo Browser does not knowingly collect personal information from children.
+## Children and updates
 
-Parents and guardians should supervise minors' use of web browsers and online services.
+Parents and guardians should supervise minors' browsing. Websites and device services apply their own age restrictions and data practices. Vireo does not control those providers' collection.
 
-#### Changes to this policy ####
+This policy will be updated when the distributed application's behavior changes. Review it together with the source and release notes for your installed version.
 
-This policy may be updated when application behavior changes. The "Last updated" date at the top will be updated when changes are made.
+## Contact
 
-#### Contact ####
-
-For privacy-related questions about Vireo Browser, visit:
-
-https://github.com/ReinierTutoriales/tv-bro
-
----
-
-*This document is provided for transparency. It is not legal advice.*
+Contact the maintainer through [Vireo Browser issues](https://github.com/ReinierTutoriales/vireo-browser/issues). Issues are public: do not post browsing history, credentials, personal files or other sensitive information. GitHub's policy applies to information submitted there.
