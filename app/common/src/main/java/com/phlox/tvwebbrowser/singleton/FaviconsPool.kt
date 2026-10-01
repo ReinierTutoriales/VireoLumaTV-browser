@@ -70,7 +70,8 @@ object FaviconsPool {
                 if (hostBitmap != null) {
                     return hostBitmap
                 }
-                val hostConfig = databaseDelegate.findByHostName(host)
+                val incognitoMode = AppContext.provideConfig().incognitoMode
+                val hostConfig = if (incognitoMode) null else databaseDelegate.findByHostName(host)
                 if (hostConfig != null) {
                     val faviconFileName = hostConfig.favicon
                     if (faviconFileName != null) {
@@ -114,7 +115,9 @@ object FaviconsPool {
                     if (bitmap != null) {
                         Log.d(TAG, "get: favicon downloaded for $host")
                         cache.put(host, bitmap)
-                        saveFavicon(host, bitmap, hostConfig)
+                        if (!incognitoMode) {
+                            saveFavicon(host, bitmap, hostConfig)
+                        }
                         return bitmap
                     } else {
                         Log.d(TAG, "get: favicon download failed for ${icon.src}")
@@ -123,7 +126,7 @@ object FaviconsPool {
                 }
                 //try to get favicon from webview
                 withContext(Dispatchers.Main) {
-                    loadFaviconWithTemporaryWebView(urlOrHost, host, hostConfig)
+                    loadFaviconWithTemporaryWebView(urlOrHost, host, hostConfig, persist = !incognitoMode)
                 }
             }
         } catch (e: Exception) {
@@ -138,7 +141,12 @@ object FaviconsPool {
      * WebView is now always destroyed: after the icon arrives or after [WEBVIEW_FAVICON_TIMEOUT_MS].
      * Must be called on the main thread.
      */
-    private fun loadFaviconWithTemporaryWebView(url: String, host: String, hostConfig: HostConfig?) {
+    private fun loadFaviconWithTemporaryWebView(
+        url: String,
+        host: String,
+        hostConfig: HostConfig?,
+        persist: Boolean
+    ) {
         val handler = Handler(Looper.getMainLooper())
         val webView = WebView(AppContext.get())
         var finished = false
@@ -159,11 +167,13 @@ object FaviconsPool {
                 iconHandled = true
                 Log.d(TAG, "get: favicon received from webview for $host")
                 cache.put(host, icon)
-                backgroundScope.launch {
-                    try {
-                        saveFavicon(host, icon, hostConfig)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Can not save favicon for $host", e)
+                if (persist) {
+                    backgroundScope.launch {
+                        try {
+                            saveFavicon(host, icon, hostConfig)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Can not save favicon for $host", e)
+                        }
                     }
                 }
                 //do not destroy the WebView from inside its own callback
