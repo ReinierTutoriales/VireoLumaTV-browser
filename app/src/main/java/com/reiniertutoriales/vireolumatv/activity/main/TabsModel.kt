@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.net.URL
 
 class TabsModel : ActiveModel() {
@@ -25,6 +27,7 @@ class TabsModel : ActiveModel() {
         const val TAG = "TabsModel"
     }
 
+    private val saveMutex = Mutex()
     var loaded = false
     val currentTab = ObservableValue<WebTabState?>(null)
     val tabsStates = ObservableList<WebTabState>()
@@ -67,17 +70,15 @@ class TabsModel : ActiveModel() {
     }
 
     suspend fun saveTab(tab: WebTabState) {
-        val tabsDB = AppDatabase.db.tabsDao()
-        if (tab.selected) {
-            tabsDB.unselectAll(config.incognitoMode)
-        }
+        val snapshot = tab.copy()
+        // Keep the lock entirely on IO: onPause currently waits synchronously on the UI thread.
         withContext(Dispatchers.IO) {
-            tab.saveWebViewStateToFile()
-        }
-        if (tab.id != 0L) {
-            tabsDB.update(tab)
-        } else {
-            tab.id = tabsDB.insert(tab)
+            saveMutex.withLock {
+                snapshot.id = tab.id
+                tab.saveWebViewStateToFile()
+                snapshot.wvStateFileName = tab.wvStateFileName
+                tab.id = AppDatabase.db.tabsDao().save(snapshot)
+            }
         }
     }
 

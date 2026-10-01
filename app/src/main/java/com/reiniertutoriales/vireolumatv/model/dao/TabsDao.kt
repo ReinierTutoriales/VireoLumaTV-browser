@@ -27,6 +27,21 @@ interface TabsDao {
     suspend fun updatePosition(position: Int, id: Long)
 
     @Transaction
+    suspend fun save(item: WebTabState): Long {
+        // Freeze selection and mode before the first suspending query.
+        val snapshot = item.copy()
+        if (snapshot.selected) {
+            unselectAll(snapshot.incognito)
+        }
+        return if (snapshot.id != 0L) {
+            update(snapshot)
+            snapshot.id
+        } else {
+            insert(snapshot)
+        }
+    }
+
+    @Transaction
     suspend fun updatePositions(tabs: List<WebTabState>) {
         tabs.forEach { updatePosition(it.position, it.id) }
     }
