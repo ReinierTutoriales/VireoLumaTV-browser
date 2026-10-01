@@ -1,8 +1,8 @@
-# TV Bro fork — Roadmap WebView-only
+# Vireo Browser — Roadmap WebView-only
 
 Documento de trabajo de la rama de integración `fixes/audit`.
 
-El fork es WebView-only: Gecko está eliminado del build (módulo `:app:gecko`, flavor
+Vireo Browser es WebView-only: Gecko está eliminado del build (módulo `:app:gecko`, flavor
 `webengine` y dependencia de Mozilla) y ya no queda selector de motor en la app. El
 dispositivo objetivo es el onn 4K Streaming Device (Realtek RTD1325, 2 GB de RAM,
 sistema solo 32 bits `armeabi-v7a`, Android 14).
@@ -15,7 +15,7 @@ sistema solo 32 bits `armeabi-v7a`, Android 14).
 | Base real de este documento | `f7c216d` |
 | Línea base W0 | `f2ed4ecb3656759e41b6813b939d4ee2aacd369d` |
 | Tag `w0-baseline` | Pendiente; el SHA completo es suficiente para medir |
-| `applicationId` | `com.phlox.tvwebbrowser` (debug y release comparten id) |
+| `applicationId` | `com.reiniertutoriales.vireobrowser` (debug y release comparten id) |
 | APK de medición | `genericRelease` firmado con el debug keystore compartido |
 
 ## Cerrado

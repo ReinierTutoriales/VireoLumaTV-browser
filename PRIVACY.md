@@ -1,47 +1,67 @@
 ### Privacy policy ###
 
-**Last updated:** March 28, 2026
+**Last updated:** September 30, 2026
 
-This policy describes how **TV Bro** (“the application”) handles information. The application is open-source software. The primary author is **Fedir Tsapana**. Development may also involve a **changing set of voluntary contributors**; you can see the current list on the [GitHub contributors page](https://github.com/truefedex/tv-bro/graphs/contributors).
+This policy describes how **Vireo Browser** handles information.
+
+Vireo Browser is an open-source Android TV web browser based on the source code of TV Bro. The original source code is available at:
+https://github.com/truefedex/tv-bro
 
 ---
 
 #### Information the application collects ####
 
-The current version of the application **does not collect personal data** and **does not transmit analytics or usage data** from your device to us or to third-party analytics services as part of the app’s own behavior.
+The current version of Vireo Browser does not collect personal data and does not transmit analytics or usage data from your device to Vireo Browser developers or third-party analytics services as part of the application's own behavior.
 
-#### Earlier versions ####
+Vireo Browser stores browser information locally on your device, including:
 
-**Older releases** of the application may have included **Firebase Crashlytics** (or similar crash-reporting tooling) that could send **crash diagnostics** to Google’s infrastructure. Those reports, when enabled, were handled under Google’s terms and privacy practices applicable at the time. If you use an old build, consult that build’s documentation or source to confirm what was included.
+- browsing history
+- bookmarks
+- cookies and website data
+- browser settings
+- downloaded files
+
+This information remains on your device unless you choose to remove it.
 
 #### Websites you visit ####
 
-TV Bro is a **web browser**. When you browse the internet:
+Vireo Browser is a web browser. When you browse the internet:
 
-- **Websites, networks, and services you use** may collect, store, and process data according to **their own** privacy policies and practices.
-- **Your device, ISP, DNS provider, and other intermediaries** may see network activity when you load pages or use online services.
-- **Using the web can be risky.** You may expose passwords, payment details, location, or other sensitive information if you enter them on untrusted sites or over insecure connections.
-
-You are responsible for choosing which sites you trust and what information you share online.
+- Websites and online services you use may collect, store, and process data according to their own privacy policies.
+- Your device, internet service provider, DNS provider, and other network intermediaries may process network activity required to load websites.
+- You are responsible for the websites you visit and the information you choose to provide.
 
 #### Incognito mode ####
 
-The application offers an **incognito** (or similar) mode that provides a **temporary, isolated space** for **local site data** (such as cookies and storage used by websites while that mode is active). That local data is intended to be **removed when you leave incognito mode**.
+Vireo Browser provides an incognito mode designed to reduce local storage of browsing activity.
 
-**Incognito mode does not guarantee anonymity or privacy.** It does not hide your activity from websites, your network operator, or other parties that may observe traffic. It is not a substitute for careful behavior on the web.
+Incognito mode does not provide anonymity. It does not hide your activity from websites, network providers, or other parties that may observe network traffic.
+
+#### Permissions ####
+
+Vireo Browser may request Android permissions required for browser functionality, including:
+
+- downloading files
+- opening external content
+- managing files selected by the user
+
+Permissions are used only for the requested browser features.
 
 #### Children ####
 
-The application does not knowingly collect personal information from children. Parents and guardians should supervise minors’ use of any web browser.
+Vireo Browser does not knowingly collect personal information from children.
+
+Parents and guardians should supervise minors' use of web browsers and online services.
 
 #### Changes to this policy ####
 
-We may update this policy from time to time. The **“Last updated”** date at the top will change when we do. Continued use of the application after changes means you accept the revised policy.
+This policy may be updated when application behavior changes. The "Last updated" date at the top will be updated when changes are made.
 
 #### Contact ####
 
-For privacy-related questions about this project, you may reach the author via the contact options linked from the official project page:  
-https://github.com/truefedex/tv-bro
+For privacy-related questions about Vireo Browser, visit:
+
+https://github.com/ReinierTutoriales/tv-bro
 
 ---
 

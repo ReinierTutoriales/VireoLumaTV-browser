@@ -11,7 +11,7 @@ Use the post-merge CI release artifact for this exact commit:
 - Parent: `0b8277f688fac76673b70ec8c3dfe949e7cde236`
 - PR: #31, `Keep at most two live tab WebViews`
 - Post-merge workflow run: `36782928588`
-- Release artifact: `tvbro-release`
+- Release artifact: `vireo-release`
 - Artifact ID: `11128174762`
 - Artifact digest: `sha256:36bcf90bd4867070b043e2dedf931443a3a1536bfd0c38d79e2fc26b47147d7b`
 
@@ -127,7 +127,7 @@ Record launch time and any startup anomaly.
 ## notas.txt template
 
 ```text
-APK: tvbro-release from post-merge run 36782928588
+APK: vireo-release from post-merge run 36782928588
 SHA: 94b32643525070ebc05ffbce3a7e66b68d7066ff
 Artifact ID: 11128174762
 Artifact digest: sha256:36bcf90bd4867070b043e2dedf931443a3a1536bfd0c38d79e2fc26b47147d7b
