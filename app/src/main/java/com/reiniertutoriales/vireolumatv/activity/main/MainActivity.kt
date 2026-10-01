@@ -143,7 +143,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val incognitoMode = config.incognitoMode
         Log.d(TAG, "onCreate incognitoMode: $incognitoMode")
         if (incognitoMode xor (this is IncognitoModeMainActivity)) {
-            switchProcess(incognitoMode, intent?.extras)
+            switchProcess(incognitoMode, intent)
             finish()
             return
         }
@@ -816,14 +816,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    private fun switchProcess(incognitoMode: Boolean, intentDataToCopy: Bundle? = null) {
+    private fun switchProcess(incognitoMode: Boolean, intentDataToCopy: Intent? = null) {
         Log.d(TAG, "switchProcess incognitoMode: $incognitoMode")
         val activityClass = if (incognitoMode) IncognitoModeMainActivity::class.java
         else MainActivity::class.java
         val intent = Intent(this@MainActivity, activityClass)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         intentDataToCopy?.let {
-            intent.putExtras(it)
+            it.extras?.let { extras -> intent.putExtras(extras) }
+            ExternalWebNavigation.copyAllowedData(it, intent)
         }
         startActivity(intent)
         exitProcess(0)
