@@ -19,7 +19,7 @@ import java.io.File
 @RobolectricConfig(application = Application::class, sdk = [28])
 class IncognitoSessionTabsTest {
     @Test fun clearsOldPrivateTabsProtectsSharedFilesAndPreservesCurrentSession() = runBlocking {
-        val app = RuntimeEnvironment.getApplication<Application>()
+        val app = RuntimeEnvironment.getApplication()
         AppContext.init(app, Config(app.getSharedPreferences("tabs-test", 0)))
         val db = Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java).allowMainThreadQueries().build()
         try {
