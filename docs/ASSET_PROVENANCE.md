@@ -1,10 +1,10 @@
 # Vireo assets and distribution status
 
-Recorded October 1, 2026. Maintainer states that the Vireo bird logo was generated with ChatGPT (OpenAI), and requests GitHub-only distribution for now.
+Recorded October 1, 2026. Maintainer states that the Vireo bird logo was generated with ChatGPT (OpenAI) from a text description without reference images, and requests GitHub-only distribution for now.
 
 ## Vireo artwork
 
-Existing launcher icons and application banner show the Vireo bird. This statement records reported provenance, not exclusive ownership or trademark clearance. Before public distribution, retain the generation service/model, generation date, original output/prompt or account export, and applicable terms granting the intended commercial/distribution use. Check whether reference images were used and whether their rights permit that use. The maintainer identified ChatGPT as the service. The generation date/model, original conversation/output, and use of reference images remain unconfirmed.
+Existing launcher icons and application banner show the Vireo bird. This statement records reported provenance, not exclusive ownership or trademark clearance. Before public distribution, retain the generation service/model, generation date, original output/prompt or account export, and applicable terms granting the intended commercial/distribution use. The maintainer confirms a text-only description and no reference images. This is a provenance declaration; the original generation record has not been inspected. The generation date/model and original conversation/output remain unconfirmed.
 
 No claim of copyright registration, exclusive rights, or trademark availability is made. An AI origin does not establish that a design is free of third-party similarities. A jurisdiction-specific trademark clearance is still needed if a guarantee concerning the name/design is required.
 
