@@ -166,6 +166,64 @@ Before W3, the eventual privacy PR should demonstrate all of these:
 
 Do not combine a speculative `MODE_MULTI_PROCESS` redesign into this PR unless the physical test independently reproduces that problem.
 
+## Security audit findings before W3
+
+### Explicit Intent can inject non-web schemes into the current tab
+
+Local audit of `c339fcf` found that exported `MainActivity` accepts external VIEW intents and `handleIntent()` can pass `intent.data.toString()` to navigation when the public legacy `EXTRA_OPEN_IN_SAME_TAB` extra is true. The manifest's HTTP/HTTPS intent filter constrains implicit matching; it is not a substitute for validating data received by an explicitly addressed exported Activity.
+
+Physical reproduction on an already-open ordinary web page:
+
+```
+adb shell am start -n com.reiniertutoriales.vireobrowser/com.phlox.tvwebbrowser.activity.main.MainActivity -a android.intent.action.VIEW -d "javascript:alert(document.domain)" --ez com.phlox.tvwebbrowser.EXTRA_OPEN_IN_SAME_TAB true
+```
+
+If the current page executes the JavaScript and displays its domain, treat this as confirmed external-script injection.
+
+Future fix invariant: every externally supplied navigation URI handled through this exported entry point must be allowlisted to the intended web schemes (`http` and `https`) before it reaches WebView navigation. Reject `javascript:`, `data:`, `file:`, `content:`, `intent:`, and any unknown/non-web scheme. Preserve the existing public extra name for compatibility; do not rename it as part of the fix.
+
+Regression tests should cover at least:
+
+- explicit HTTP URL accepted;
+- explicit HTTPS URL accepted;
+- `javascript:` rejected;
+- `data:` rejected;
+- `file:` rejected;
+- `content:` rejected;
+- `intent:` rejected;
+- malformed/no-scheme input cannot reach WebView as an external navigation;
+- same-tab behavior still works for valid HTTP/HTTPS callers.
+
+### Global JavaScript interface exposure
+
+`WebViewEx` exposes the `TVBro` JavaScript interface to web content. Local audit identified two methods needing tighter origin/context authorization:
+
+- `takeBlobDownloadData` can accept page-provided base64 data and initiate a download path without an equivalent internal-page guard. Besides unsolicited downloads, unbounded base64 transfer into Java creates a memory-exhaustion risk on constrained TV hardware.
+- `lastSSLError(true)` exposes the last certificate-error details without restricting the caller to the internal SSL-error page.
+
+Do not implement the blob fix as a simple blanket disable: legitimate `blob:` downloads must continue working.
+
+Future design requirements for blob downloads:
+
+- bind acceptance to a browser-controlled pending blob-download request or equivalent short-lived capability created by the legitimate download flow;
+- make that capability single-use and short-lived;
+- reject unsolicited calls from arbitrary pages/iframes;
+- enforce a defensible decoded-size limit before allocating/decoding an arbitrarily large payload;
+- clear pending authorization on navigation/tab destruction as appropriate;
+- preserve legitimate blob downloads after the change.
+
+Future invariant for `lastSSLError`: certificate details are exposed only in the browser-controlled SSL error-page context that needs them.
+
+### Security test order on onn
+
+After the incognito tests and before W3:
+
+1. Run the explicit-Intent `javascript:` reproduction above.
+2. If confirmed, include URI scheme validation in the pre-W3 security/privacy patch.
+3. Exercise a legitimate normal HTTP/HTTPS external VIEW intent after the fix.
+4. Test at least one legitimate blob download before designing/finalizing the JS-interface restriction, so the existing required flow is captured.
+5. Do not merge speculative JS-interface changes until that legitimate flow has a regression test.
+
 ## 3. W3 performance/behavior validation
 
 Run only after the Vireo smoke test and, if reproduced, after the incognito privacy fix/regression test.
