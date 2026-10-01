@@ -15,18 +15,21 @@ import org.json.JSONObject
 class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     @JavascriptInterface
     fun currentUrl(): String {
-        if (!webEngine.tab.url.startsWith(WebViewEx.INTERNAL_SCHEME)) return ""
-        return webEngine.tab.url
+        if (!isInternalCertificateErrorPage()) return ""
+        return (webEngine.getView() as? WebViewEx)?.lastSSLError?.url ?: ""
     }
 
     @JavascriptInterface
     fun reloadWithSslTrust() {
         val callback = webEngine.callback ?: return
-        if ((webEngine.getView() as WebViewEx).currentOriginalUrl?.scheme != "file") return
+        if (!isInternalCertificateErrorPage()) return
+        val error = (webEngine.getView() as? WebViewEx)?.lastSSLError ?: return
         callback.getActivity().runOnUiThread {
+            if (!isInternalCertificateErrorPage()) return@runOnUiThread
             val webview = webEngine.getView() as? WebViewEx ?: return@runOnUiThread
+            if (webview.lastSSLError !== error) return@runOnUiThread
             webview.trustSsl = true
-            webEngine.tab.url.apply { webEngine.loadUrl(this) }
+            webEngine.loadUrl(error.url)
         }
     }
 
@@ -50,20 +53,23 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     fun startVoiceSearch() {
         if (!isHomePage()) return
         val callback = webEngine.callback ?: return
-        callback.getActivity().runOnUiThread { callback.initiateVoiceSearch() }
+        callback.getActivity().runOnUiThread { if (isHomePage()) callback.initiateVoiceSearch() }
     }
 
     @JavascriptInterface
     fun setSearchEngine(engine: String, customSearchEngineURL: String) {
         if (!isHomePage()) return
-        AppContext.provideConfig().searchEngineURL.value = customSearchEngineURL
+        val callback = webEngine.callback ?: return
+        callback.getActivity().runOnUiThread {
+            if (isHomePage()) AppContext.provideConfig().searchEngineURL.value = customSearchEngineURL
+        }
     }
 
     @JavascriptInterface
     fun onEditBookmark(index: Int) {
         if (!isHomePage()) return
         val callback = webEngine.callback ?: return
-        callback.getActivity().runOnUiThread { callback.onEditHomePageBookmarkSelected(index) }
+        callback.getActivity().runOnUiThread { if (isHomePage()) callback.onEditHomePageBookmarkSelected(index) }
     }
 
     @JavascriptInterface
@@ -71,6 +77,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         if (!isHomePage()) return
         val callback = webEngine.callback ?: return
         callback.getActivity().runOnUiThread {
+            if (!isHomePage()) return@runOnUiThread
             val cfg = AppContext.provideConfig()
             val jsArr = JSONArray()
             for (item in callback.getHomePageLinks()) {
@@ -86,6 +93,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
 
     @JavascriptInterface
     fun lastSSLError(getDetails: Boolean): String {
+        if (!isInternalCertificateErrorPage()) return "unknown"
         val lastSSLError = (webEngine.getView() as? WebViewEx)?.lastSSLError ?: return "unknown"
         return if (getDetails) {
             lastSSLError.toString()
@@ -102,24 +110,38 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
 
     @JavascriptInterface
     fun takeBlobDownloadData(base64BlobData: String, fileName: String?, url: String, mimetype: String) {
-        //only blob: URLs are expected here (see generic_injects.js); the file name comes from the web page
+        // Only accept blob data while the active top-level page is a normal HTTP(S) document.
+        // Internal/file pages must never be able to turn the bridge into a download primitive.
+        if (!isNormalWebPage()) return
         if (!url.startsWith("blob:", ignoreCase = true)) return
         val callback = webEngine.callback ?: return
         val finalFileName = DownloadUtils.sanitizeFileName(fileName)
             ?: DownloadUtils.guessFileName(url, null, mimetype)
-        callback.onDownloadRequested(url, "",
-                finalFileName, "VireoLumaTV",
-            mimetype, Download.OperationAfterDownload.NOP, base64BlobData)
+        val sourceUrl = (webEngine.getView() as? WebViewEx)?.currentOriginalUrl
+        callback.getActivity().runOnUiThread {
+            if (!isNormalWebPage() || (webEngine.getView() as? WebViewEx)?.currentOriginalUrl != sourceUrl) return@runOnUiThread
+            callback.onDownloadRequested(url, "", finalFileName, "VireoLumaTV",
+                mimetype, Download.OperationAfterDownload.NOP, base64BlobData)
+        }
     }
 
     @JavascriptInterface
     fun markBookmarkRecommendationAsUseful(bookmarkOrder: Int) {
         if (!isHomePage()) return
         val callback = webEngine.callback ?: return
-        callback.getActivity().runOnUiThread { callback.markBookmarkRecommendationAsUseful(bookmarkOrder) }
+        callback.getActivity().runOnUiThread { if (isHomePage()) callback.markBookmarkRecommendationAsUseful(bookmarkOrder) }
     }
 
     private fun isHomePage(): Boolean {
-        return webEngine.tab.url == Config.HOME_PAGE_URL || webEngine.tab.url == Config.HOME_URL_ALIAS
+        return (webEngine.getView() as? WebViewEx)?.currentOriginalUrl?.toString() == Config.HOME_PAGE_URL
+    }
+
+    private fun isNormalWebPage(): Boolean {
+        return BridgePagePolicy.isNormalWebPage((webEngine.getView() as? WebViewEx)?.currentOriginalUrl)
+    }
+
+    private fun isInternalCertificateErrorPage(): Boolean {
+        val view = webEngine.getView() as? WebViewEx ?: return false
+        return BridgePagePolicy.isCertificatePage(view.currentOriginalUrl, view.certificateErrorPageUrl, view.lastSSLError != null)
     }
 }

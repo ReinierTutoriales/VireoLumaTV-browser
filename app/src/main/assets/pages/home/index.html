@@ -453,7 +453,11 @@ function onSuggestionClicked(index) {
     }
     if (!bookmark) return;
     var url = bookmark.dest_url ? bookmark.dest_url : bookmark.url;
-    window.location.href = url;
+    try {
+        var destination = new URL(url);
+        if (destination.protocol !== "https:" && destination.protocol !== "http:") return;
+        window.location.href = destination.href;
+    } catch (e) { return; }
 }
 
 function loadRecommendations() {
@@ -520,14 +524,14 @@ function renderLinks(mode, linksArray) {
                 icon.src = link.favicon;
                 //color-scheme: only light;
                 icon.style.filter = "";
-                titleElement.innerHTML = link.title;
-                descriptionElement.innerHTML = link.description ? link.description : escapeHTML(link.url);
+                titleElement.textContent = link.title;
+                descriptionElement.textContent = link.description ? link.description : link.url;
             } else {
                 icon.src = "ic_not_available.svg";
                 //color-scheme: default;
                 icon.style.filter = "invert(1)";
-                titleElement.innerHTML = "&nbsp;";
-                descriptionElement.innerHTML = "&nbsp;";
+                titleElement.textContent = "\u00a0";
+                descriptionElement.textContent = "\u00a0";
             }
 
             titleElement.classList.toggle("empty", !link);
