@@ -69,12 +69,17 @@ class TabsModel : ActiveModel() {
         loaded = true
     }
 
-    suspend fun saveTab(tab: WebTabState) = saveMutex.withLock {
-        val tabsDB = AppDatabase.db.tabsDao()
+    suspend fun saveTab(tab: WebTabState) {
+        val snapshot = tab.copy()
+        // Keep the lock entirely on IO: onPause currently waits synchronously on the UI thread.
         withContext(Dispatchers.IO) {
-            tab.saveWebViewStateToFile()
+            saveMutex.withLock {
+                snapshot.id = tab.id
+                tab.saveWebViewStateToFile()
+                snapshot.wvStateFileName = tab.wvStateFileName
+                tab.id = AppDatabase.db.tabsDao().save(snapshot)
+            }
         }
-        tab.id = tabsDB.save(tab)
     }
 
     fun onCloseTab(tab: WebTabState) {
