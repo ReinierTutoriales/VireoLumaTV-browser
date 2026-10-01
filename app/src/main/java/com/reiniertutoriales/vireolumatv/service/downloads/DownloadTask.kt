@@ -10,7 +10,6 @@ import android.util.Log
 import android.webkit.CookieManager
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import java.io.*
 import java.net.HttpURLConnection
@@ -42,10 +41,10 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
 
         var input: InputStream? = null
         var output: OutputStream? = null
-        val url = URL(downloadInfo.url)
 
         var connection: HttpURLConnection? = null
         try {
+            val url = URL(downloadInfo.url)
             var retries = 0
             do {
                 connection = url.openConnection() as HttpURLConnection
