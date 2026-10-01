@@ -13,7 +13,7 @@ import java.io.File
 @Config(application = Application::class, sdk = [28])
 class IncognitoWebViewSessionTest {
     @Test fun staleDataIsRemovedBeforeSuffixAndRecreationDoesNotWipeActiveSession() {
-        val context = RuntimeEnvironment.getApplication<Application>()
+        val context = RuntimeEnvironment.getApplication()
         val privateDirectory = File(context.filesDir.parentFile, "app_webview_incognito").apply { mkdirs() }
         val normalDirectory = File(context.filesDir.parentFile, "app_webview").apply { mkdirs() }
         File(privateDirectory, "old-cookie").writeText("private")
@@ -40,7 +40,7 @@ class IncognitoWebViewSessionTest {
     }
 
     @Test fun failedSuffixConfigurationCanBeRetried() {
-        val context = RuntimeEnvironment.getApplication<Application>()
+        val context = RuntimeEnvironment.getApplication()
         val session = IncognitoWebViewSession()
         try { session.configure(context) { error("provider already initialized") }; fail() }
         catch (_: IllegalStateException) { }
