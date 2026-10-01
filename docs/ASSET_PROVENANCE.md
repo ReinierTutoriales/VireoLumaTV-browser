@@ -1,10 +1,10 @@
 # Vireo assets and distribution status
 
-Recorded October 1, 2026. Maintainer states that the Vireo bird logo was generated with AI, and requests GitHub-only distribution for now.
+Recorded October 1, 2026. Maintainer states that the Vireo bird logo was generated with ChatGPT (OpenAI), and requests GitHub-only distribution for now.
 
 ## Vireo artwork
 
-Existing launcher icons and application banner show the Vireo bird. This statement records reported provenance, not exclusive ownership or trademark clearance. Before public distribution, retain the generation service/model, generation date, original output/prompt or account export, and applicable terms granting the intended commercial/distribution use. Check whether reference images were used and whether their rights permit that use. These details have not yet been supplied.
+Existing launcher icons and application banner show the Vireo bird. This statement records reported provenance, not exclusive ownership or trademark clearance. Before public distribution, retain the generation service/model, generation date, original output/prompt or account export, and applicable terms granting the intended commercial/distribution use. Check whether reference images were used and whether their rights permit that use. The maintainer identified ChatGPT as the service. The generation date/model, original conversation/output, and use of reference images remain unconfirmed.
 
 No claim of copyright registration, exclusive rights, or trademark availability is made. An AI origin does not establish that a design is free of third-party similarities. A jurisdiction-specific trademark clearance is still needed if a guarantee concerning the name/design is required.
 
@@ -24,3 +24,9 @@ Search-provider favicons, website logos, SVG/Android vector icons and legacy UI 
 - Maintain TV Bro source attribution and license independently of promotional branding.
 - Verify the exact APK's component notices, sources, permissions and privacy behavior.
 - Do not submit a store listing with missing images; this proposal only retires misleading inherited material for the current GitHub-only plan.
+
+## OpenAI terms checked
+
+On October 1, 2026, the current individual Terms of Use (effective January 1, 2026) were checked at https://openai.com/policies/terms-of-use/ . Their Content section assigns OpenAI's rights, if any, in output to the user, to the extent permitted by applicable law. It also states that output may not be unique and requires users to have rights to their inputs. The terms do not certify trademark availability or guarantee non-infringement.
+
+This supports recording a contractual basis between the user and OpenAI; it does not establish exclusive copyright, clear third-party reference material, or determine the terms applicable on an unknown generation date/account/region. Preserve the original generation record and applicable terms. No OpenAI authorship credit is substituted for the existing TV Bro attribution.
