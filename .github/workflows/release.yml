@@ -41,7 +41,7 @@ jobs:
         run: |
           for dir in generic; do
             for f in app/build/outputs/apk/${dir}/release/app-*.apk; do
-              new="${f/app-/tvbro-${{ inputs.version }}-}"
+              new="${f/app-/vireo-${{ inputs.version }}-}"
               mv "$f" "${new/-release.apk/.apk}"
             done
           done
