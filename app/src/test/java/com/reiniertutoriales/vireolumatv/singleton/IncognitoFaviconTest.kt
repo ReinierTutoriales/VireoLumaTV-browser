@@ -24,7 +24,7 @@ class IncognitoFaviconTest {
     @Test fun downloadedNormalIconStillPersists() = verify(false)
 
     private fun verify(privateMode: Boolean) = runBlocking {
-        val app = RuntimeEnvironment.getApplication<Application>()
+        val app = RuntimeEnvironment.getApplication()
         val config = Config(app.getSharedPreferences("favicon-test", 0))
         config.incognitoMode = privateMode
         AppContext.init(app, config)
