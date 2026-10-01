@@ -25,7 +25,6 @@ import android.os.Environment
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.os.Process
 import android.util.Log
 import android.util.Patterns
 import android.view.Gravity
@@ -115,7 +114,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         const val PICK_FILE_REQUEST_CODE = 10005
         private const val REQUEST_CODE_HISTORY_ACTIVITY = 10006
         const val REQUEST_CODE_UNKNOWN_APP_SOURCES = 10007
-        const val KEY_PROCESS_ID_TO_KILL = "proc_id_to_kill"
         private const val MY_PERMISSIONS_REQUEST_VOICE_SEARCH_PERMISSIONS = 10008
         private const val COMMON_REQUESTS_START_CODE = 10100
     }
@@ -148,10 +146,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             switchProcess(incognitoMode, intent?.extras)
             finish()
             return
-        }
-        val pidToKill = intent?.getIntExtra(KEY_PROCESS_ID_TO_KILL, -1) ?: -1
-        if (pidToKill != -1) {
-            Process.killProcess(pidToKill)
         }
 
         viewModel = ActiveModelsRepository.get(MainActivityViewModel::class, this)
@@ -828,7 +822,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         else MainActivity::class.java
         val intent = Intent(this@MainActivity, activityClass)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        intent.putExtra(KEY_PROCESS_ID_TO_KILL, Process.myPid())
         intentDataToCopy?.let {
             intent.putExtras(it)
         }
