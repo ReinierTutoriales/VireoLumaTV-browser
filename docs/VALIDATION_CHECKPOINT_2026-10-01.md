@@ -140,7 +140,28 @@ Physical verification:
 4. Open Downloads in normal mode.
 5. Record whether the incognito download appears.
 
-Product policy for the future fix: **the downloaded file remains on storage, but an incognito-initiated download must not be persisted in Vireo's internal download-history list.** Prefer preventing the database record rather than inserting it and depending on later cleanup.
+The product decision is **still pending**. The downloaded file is expected to remain on storage, but there are two implementation models for Vireo's internal Downloads UI:
+
+- **(a) Never persist the incognito download.** This maximizes privacy, but current download IDs originate from the database insert and are used by active-download/progress UI. Implementing this correctly would require a separate/synthetic ID strategy and changes to list/progress tracking.
+- **(b) Candidate design: persist the download only for the live incognito session, mark it as incognito, show normal progress/list behavior, then delete its database metadata on normal incognito exit and on startup sanitation of a new incognito process.** This aligns with the P0-4 session-cleanup boundary but requires a Room schema migration.
+
+Do not choose between (a) and (b) before the P0 implementation review. Option (b) is the current candidate, not an approved implementation.
+
+#### Room prerequisite if option (b) is selected
+
+The current repository does not version exported Room schema JSON. `AppDatabase` has schema export disabled/commented, while the project compiles Room with KSP; a classic annotation-processor `room.schemaLocation` argument is not sufficient for KSP schema export.
+
+Before implementing database version 20, create a **separate prerequisite commit** on the then-current version-19 database that:
+
+- enables Room schema export;
+- configures the Room KSP processor with `ksp { arg("room.schemaLocation", ...) }` (using the project's actual Gradle/KSP syntax);
+- generates the exact version-19 schema from the unchanged v19 database;
+- versions that v19 JSON in the repository;
+- makes no schema change in that prerequisite commit.
+
+Then the P0 database change may add an `incognito` marker to downloads, bump Room 19 -> 20, and include a `MigrationTestHelper` test using the versioned schemas. Also physically test installing the v20 APK over a v19 installation that already contains data.
+
+There is **no automatic downgrade path**. The current Room builder registers forward migrations and does not opt into destructive downgrade fallback. After a test APK upgrades the database to v20, installing/running an older v19 APK against that data can fail at database open. To return to a v19 build during testing, uninstall/clear app data first. Treat downgrade-by-install as unsupported; do not add destructive downgrade behavior merely for test convenience.
 
 ### Incognito tab/state remnants after abnormal termination
 
