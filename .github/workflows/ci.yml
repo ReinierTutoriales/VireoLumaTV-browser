@@ -46,7 +46,9 @@ jobs:
           keytool -list -v -keystore ~/.android/debug.keystore -storepass android | grep "SHA256:"
 
       - name: Unit tests
-        run: ./gradlew testGenericDebugUnitTest --stacktrace
+        run: |
+          node scripts/test-home-page-security.cjs
+          ./gradlew testGenericDebugUnitTest --stacktrace
 
       - name: Build debug APK
         run: ./gradlew assembleGenericDebug --stacktrace
