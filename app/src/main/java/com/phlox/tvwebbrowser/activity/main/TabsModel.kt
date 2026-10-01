@@ -68,17 +68,10 @@ class TabsModel : ActiveModel() {
 
     suspend fun saveTab(tab: WebTabState) {
         val tabsDB = AppDatabase.db.tabsDao()
-        if (tab.selected) {
-            tabsDB.unselectAll(config.incognitoMode)
-        }
         withContext(Dispatchers.IO) {
             tab.saveWebViewStateToFile()
         }
-        if (tab.id != 0L) {
-            tabsDB.update(tab)
-        } else {
-            tab.id = tabsDB.insert(tab)
-        }
+        tab.id = tabsDB.save(tab)
     }
 
     fun onCloseTab(tab: WebTabState) {
