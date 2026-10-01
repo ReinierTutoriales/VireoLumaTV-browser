@@ -7,7 +7,7 @@ android {
     namespace = "com.phlox.tvwebbrowser"
 
     defaultConfig {
-        applicationId = "com.phlox.tvwebbrowser"
+        applicationId = "com.reiniertutoriales.vireobrowser"
         versionCode = 69
         versionName = "2.1.6"
 
