@@ -15,7 +15,7 @@ sistema solo 32 bits `armeabi-v7a`, Android 14).
 | Base real de este documento | `f7c216d` |
 | Línea base W0 | `f2ed4ecb3656759e41b6813b939d4ee2aacd369d` |
 | Tag `w0-baseline` | Pendiente; el SHA completo es suficiente para medir |
-| `applicationId` | `com.reiniertutoriales.vireobrowser` (debug y release comparten id) |
+| `applicationId` | `com.reiniertutoriales.vireolumatv` (debug y release comparten id) |
 | APK de medición | `genericRelease` firmado con el debug keystore compartido |
 
 ## Cerrado
@@ -122,13 +122,13 @@ huellas no verificadas.
 Arranque en frío, sin `pm clear`:
 
 ```bat
-adb shell am force-stop com.phlox.tvwebbrowser
+adb shell am force-stop com.reiniertutoriales.vireolumatv
 ```
 
 Memoria: WebView renderiza en un proceso aparte; hay que medir app y renderer.
 
 ```bat
-adb shell ps -A -o PID,RSS,NAME | findstr /i "tvwebbrowser sandboxed webview"
+adb shell ps -A -o PID,RSS,NAME | findstr /i "vireolumatv sandboxed webview"
 adb shell dumpsys meminfo <PID>
 ```
 
@@ -142,8 +142,8 @@ adb logcat | findstr /i "adblock onBlockedAds lowmemorykiller lmkd crash excepti
 Fluidez:
 
 ```bat
-adb shell dumpsys gfxinfo com.phlox.tvwebbrowser reset
-adb shell dumpsys gfxinfo com.phlox.tvwebbrowser
+adb shell dumpsys gfxinfo com.reiniertutoriales.vireolumatv reset
+adb shell dumpsys gfxinfo com.reiniertutoriales.vireolumatv
 ```
 
 Escenarios, con espera fija de unos 30 s antes de cada medición:
@@ -190,9 +190,10 @@ comprobación con `WebViewFeature.isFeatureSupported`).
 
 ### W6 — actualizador
 
-`latest_version.json` apunta a APK `geckoIncluded` de `truefedex/tv-bro`: una variante
-que ya no existe en el fork y firmada con otra clave, por lo que la actualización fallaría
-al instalarse.
+`latest_version.json` contiene canales y changelog vacíos: todavía no hay una versión
+propia publicada para actualización automática. El actualizador está desactivado en
+todos los builds y no consulta la red cuando está desactivado. No se ofrecen APK del
+proyecto original como actualización de VireoLumaTV.
 
 Pendiente:
 

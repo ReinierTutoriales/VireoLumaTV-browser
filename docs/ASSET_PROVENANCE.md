@@ -12,7 +12,7 @@ No claim of copyright registration, exclusive rights, or trademark availability 
 
 The seven inherited files under `metadata/en-US/images/` are removed from this proposal because they contain TV Bro branding or represent historical screenshots and photography rather than the current VireoLumaTV build. Git retains them in history. This does not remove LICENSE, copyright, or required attribution.
 
-No replacement screenshots are fabricated. If a store is selected later, capture the actual released app with its VireoLumaTV identity and prepare the store-specific dimensions. Confirm rights over displayed website material and any mockup photography. The runtime's existing icons/banner remain unchanged by this proposal; the old home logo is addressed separately in PR #50.
+No replacement screenshots are fabricated. If a store is selected later, capture the actual released app with its VireoLumaTV identity and prepare the store-specific dimensions. Confirm rights over displayed website material and any mockup photography. Launcher icons retain the existing bird; the home logo uses that launcher artwork. The TV banner was edited with the image generation tool on October 1, 2026 to display VireoLumaTV and exported at 640 by 360 pixels. The original generated edit is retained separately by the maintainer's workspace.
 
 ## Remaining resource inventory
 
