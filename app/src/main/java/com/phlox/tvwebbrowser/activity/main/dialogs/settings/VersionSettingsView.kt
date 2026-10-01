@@ -32,6 +32,8 @@ class VersionSettingsView @JvmOverloads constructor(
 
     companion object {
         private const val URL_SUPPORT_AUTHOR = "https://donatello.to/truefedex"
+        //required by the TV Bro license for modified binaries: credit the original sources
+        private const val URL_TV_BRO_SOURCES = "https://github.com/truefedex/tv-bro"
         private const val URL_LICENSE =
             "https://raw.githubusercontent.com/truefedex/tv-bro/refs/heads/master/LICENSE.md"
         private const val URL_PRIVACY_POLICY =
@@ -60,10 +62,10 @@ class VersionSettingsView @JvmOverloads constructor(
         val engineVersion = "Engine: " + WebEngineFactory.getWebEngineVersionString()
         vb.tvWebViewVersion.text = engineVersion
 
-        vb.tvLink.text = Html.fromHtml("<p><u>https://github.com/truefedex/tv-bro</u></p>",
-            Html.FROM_HTML_MODE_LEGACY)
+        vb.tvLink.text = Html.fromHtml("<p>" + context.getString(R.string.based_on_tv_bro_sources,
+            "<u>$URL_TV_BRO_SOURCES</u>") + "</p>", Html.FROM_HTML_MODE_LEGACY)
         vb.tvLink.setOnClickListener {
-            loadUrl(vb.tvLink.text.toString())
+            loadUrl(URL_TV_BRO_SOURCES)
         }
 
         vb.tvSupportAuthor.text = context.getString(R.string.support_the_author)
