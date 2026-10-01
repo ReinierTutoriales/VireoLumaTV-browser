@@ -98,6 +98,74 @@ Normal exit from incognito is already ordered defensively: WebStorage/cookies/ca
 
 If the release behavior is ambiguous, only then add diagnostic `Log.i` messages with literal stable tags. Do not instrument preemptively.
 
+## Additional confirmed app-layer incognito leaks
+
+These are independent of the WebView data-directory suffix problem and can occur even after a normal incognito exit.
+
+### Favicon/host persistence
+
+Local audit of `c339fcf` found that `FaviconsPool.saveFavicon` does not gate persistence on incognito mode. Visiting a site in incognito can therefore:
+
+- write its favicon under `cacheDir/favicons/<hash>.png`;
+- insert/update the site's hostname in the shared `hosts` table in `main.db`.
+
+The normal incognito cleanup does not remove the `hosts` rows or favicon cache. This exposes visited incognito domains beyond the incognito session.
+
+Physical verification should use the #193 `vireo-debug` build because release cannot use `run-as`:
+
+```
+adb shell "run-as com.reiniertutoriales.vireobrowser cat databases/main.db" > main.db
+```
+
+After visiting a unique test domain only in incognito and exiting normally, inspect the exported database for that hostname. Also inspect favicon persistence if needed.
+
+Future fix invariant: while incognito is active, favicons may remain in the in-memory FaviconsPool cache for the live session but must not be persisted to disk or written to the shared `hosts` table.
+
+### Download-history persistence
+
+Local audit found that `FileDownloadTask` writes download records through `downloadDao` without an incognito-mode guard. Consequently an incognito download can remain visible in Vireo's normal Downloads list after returning to normal mode.
+
+Physical verification:
+
+1. Enter incognito.
+2. Download a uniquely named test file.
+3. Exit incognito normally.
+4. Open Downloads in normal mode.
+5. Record whether the incognito download appears.
+
+Product policy for the future fix: **the downloaded file remains on storage, but an incognito-initiated download must not be persisted in Vireo's internal download-history list.** Prefer preventing the database record rather than inserting it and depending on later cleanup.
+
+### Incognito tab/state remnants after abnormal termination
+
+If the incognito process dies without the normal exit path, incognito tab rows and their persisted `wvstates/` and `tabthumbs/` data can remain and be restored by a later incognito process.
+
+Privacy policy for Vireo: an incognito session is process-lifetime scoped. A new incognito process must not restore private tabs/state/thumbnails left by a previous dead incognito process.
+
+The future startup cleanup for the suffix defect should therefore be designed as one pre-WebView incognito-session sanitation step covering:
+
+- stale incognito WebView data/cache paths;
+- stale incognito tab database rows;
+- their WebView state files;
+- their thumbnails.
+
+This must happen before the new incognito WebView session begins. Avoid deleting shared normal-mode state.
+
+### Incognito patch acceptance criteria
+
+Before W3, the eventual privacy PR should demonstrate all of these:
+
+- normal authenticated WebView state is not visible in incognito;
+- a new incognito process always configures the incognito WebView suffix exactly once per process;
+- Activity/ViewModel recreation in the same process does not reconfigure the suffix;
+- incognito-only hostnames are not persisted in `hosts`;
+- incognito favicons are not persisted to disk;
+- downloaded files remain, but incognito downloads do not enter Vireo's persistent Downloads history;
+- abnormal incognito process death does not cause private tabs, state files, or thumbnails to be restored in the next incognito process;
+- returning to normal mode does not expose incognito browsing metadata;
+- normal-mode favicon, download-history, tab persistence, and WebView behavior remain unchanged.
+
+Do not combine a speculative `MODE_MULTI_PROCESS` redesign into this PR unless the physical test independently reproduces that problem.
+
 ## 3. W3 performance/behavior validation
 
 Run only after the Vireo smoke test and, if reproduced, after the incognito privacy fix/regression test.
