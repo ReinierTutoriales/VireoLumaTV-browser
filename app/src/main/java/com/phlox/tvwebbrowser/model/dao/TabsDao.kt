@@ -27,6 +27,19 @@ interface TabsDao {
     suspend fun updatePosition(position: Int, id: Long)
 
     @Transaction
+    suspend fun save(item: WebTabState): Long {
+        if (item.selected) {
+            unselectAll(item.incognito)
+        }
+        return if (item.id != 0L) {
+            update(item)
+            item.id
+        } else {
+            insert(item)
+        }
+    }
+
+    @Transaction
     suspend fun updatePositions(tabs: List<WebTabState>) {
         tabs.forEach { updatePosition(it.position, it.id) }
     }
