@@ -1,0 +1,14 @@
+pre  app/src/main/res/drawable-hdpi/ic_launcher.png db7f8633d569c260400798d137cd50be44af0f6f
+pre  app/src/main/res/drawable-mdpi/ic_launcher.png f4f16e06350c666d937f073ea3063e10cb6d4bde
+pre  app/src/main/res/drawable-xhdpi/banner.png 6e3f7e89c855ac3a8bd841e4827d9ba9a97a66bf
+pre  app/src/main/res/drawable-xhdpi/ic_launcher.png c7a882493a78b44a0878119788dce2bace460193
+pre  app/src/main/res/drawable-xxhdpi/ic_launcher.png 87e1cc179ff3595e01a0f1a45eaa32e0c41445aa
+pre  app/src/main/res/drawable-xxxhdpi/ic_launcher.png 3475694814d3ae91b55e1035e2ae082bf69f4cda
+post app/src/main/res/drawable-hdpi/ic_launcher.png 06788b282c21366fccb8b7dfea2d206f35fa7cd7
+post app/src/main/res/drawable-mdpi/ic_launcher.png bf0ab148c00cfb0cfc27eab3b14c4b811339485e
+post app/src/main/res/drawable-xhdpi/banner.png f1be40023744c9efa026e9a19454ad16cd4fbb42
+post app/src/main/res/drawable-xhdpi/ic_launcher.png 0819f8d88789e3b3a8a1837c8bf10f9085f6b1d4
+post app/src/main/res/drawable-xxhdpi/ic_launcher.png b37ee9cae389eb69f8deb65ceec55862184e66e1
+post app/src/main/res/drawable-xxxhdpi/ic_launcher.png 60602b3b5af6f6263fe7adf075c44ef390ea16a1
+post art/vireo-banner.png f1be40023744c9efa026e9a19454ad16cd4fbb42
+post art/vireo-icon-master.png ea071fa0de24a40c6f01368f92ab788d6105742d
