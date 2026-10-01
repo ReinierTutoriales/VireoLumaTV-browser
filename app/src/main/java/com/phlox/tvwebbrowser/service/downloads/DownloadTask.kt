@@ -38,7 +38,9 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
     }
 
     override fun run() {
-        downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        if (!downloadInfo.incognito) {
+            downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        }
 
         var input: InputStream? = null
         var output: OutputStream? = null
@@ -138,7 +140,9 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
 class BlobDownloadTask(override var downloadInfo: Download, val blobBase64Data: String, val callback: DownloadTask.Callback) : Runnable, DownloadTask {
 
     override fun run() {
-        downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        if (!downloadInfo.incognito) {
+            downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        }
 
         try {
             val blobAsBytes: ByteArray = Base64.decode(DownloadUtils.dataUrlBase64Payload(blobBase64Data), 0)
@@ -159,7 +163,9 @@ class BlobDownloadTask(override var downloadInfo: Download, val blobBase64Data: 
 
 class StreamDownloadTask(override var downloadInfo: Download, val stream: InputStream, val callback: DownloadTask.Callback) : Runnable, DownloadTask {
     override fun run() {
-        downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        if (!downloadInfo.incognito) {
+            downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        }
 
         var output: OutputStream? = null
         try {
@@ -239,7 +245,9 @@ private fun prepareDownloadOutput(downloadInfo: Download): OutputStream {
         }
         val fd = contentResolver.openFileDescriptor(downloadUri, "w", null)
         downloadInfo.filepath = downloadUri.toString()
-        AppDatabase.db.downloadDao().update(downloadInfo)
+        if (!downloadInfo.incognito) {
+            AppDatabase.db.downloadDao().update(downloadInfo)
+        }
         AutoCloseOutputStream(fd)
     } else {
         FileOutputStream(downloadInfo.filepath)
