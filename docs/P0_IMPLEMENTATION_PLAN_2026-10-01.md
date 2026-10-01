@@ -56,9 +56,9 @@ Tests:
 - Abnormal incognito termination does not restore stale private tabs/state/thumbnails into the next incognito process.
 - Normal-mode tab/state data remains intact.
 
-### P0-D0 — Room v19 schema-export prerequisite
+### P0-D0 — Room v19 schema-export infrastructure
 
-Create this only if download design (b) is selected.
+This is useful independently of download design (a) or (b) and may be landed as a standalone infrastructure improvement before any future Room schema change.
 
 This commit must make **no database schema change**.
 
@@ -70,8 +70,9 @@ Scope:
 
 Purpose:
 - Establish the historical JSON required for official Room migration testing before v20 exists.
+- Make future Room migrations testable even if P0-D1 is never implemented.
 
-This prerequisite should be reviewed/merged separately from the actual migration.
+This infrastructure change should be reviewed/merged separately from any actual migration and should not alter runtime database structure or behavior.
 
 ### P0-D1 — Incognito download session metadata (candidate design b)
 
@@ -106,9 +107,11 @@ Do not implement until a legitimate blob-download flow has been captured and can
 
 Blob path:
 - Introduce browser-controlled authorization for blob data transfer.
+- Treat app-process OOM from a hostile direct call with an enormous bridge String as a residual risk unless the global bridge transport itself is replaced.
+- Candidate transport designs to evaluate include chunking the legitimate injected blob flow (which limits normal-path per-call size but does not stop hostile direct bridge calls) or replacing the global method with a narrower message channel such as `WebViewCompat.addWebMessageListener`, after verifying origin scoping and practical message-size behavior.
 - Authorization should be short-lived and single-use or equivalently scoped.
 - Reject unsolicited bridge calls.
-- Bound accepted payload size before expensive allocation/decoding.
+- Enforce a Java-side size limit as soon as the bridge method receives the String, before base64 decoding and disk I/O. This does **not** prevent the Java String itself from already occupying app-process heap; the WebView bridge performs JS-to-Java String conversion before Kotlin can inspect its size.
 - Clear authorization when its navigation/tab context is no longer valid.
 - Preserve legitimate blob downloads.
 
@@ -118,7 +121,7 @@ SSL-error path:
 Tests:
 - Legitimate blob download still succeeds.
 - Unsolicited page/iframe bridge call cannot initiate a download.
-- Oversized input is rejected without destabilizing the app.
+- Oversized input is rejected from further decode/write processing once Java receives it. Under the current global `addJavascriptInterface` design, this test cannot guarantee protection from app-process OOM caused by the bridge first materializing an extremely large Java String.
 - Authorization cannot be reused outside its intended context.
 - Ordinary pages cannot read the last SSL error.
 - Internal SSL error page still functions.
@@ -128,7 +131,7 @@ Tests:
 - P0-A: independent.
 - P0-B: independent.
 - P0-C: depends on physical incognito reproduction; may later provide the sanitation hook reused by P0-D1.
-- P0-D0: depends only on choosing download design (b); must precede D1.
+- P0-D0: independent Room migration-test infrastructure; useful regardless of download design. If D1 is selected, D0 must precede it.
 - P0-D1: depends on D0 and should integrate with the incognito sanitation boundary established by C.
 - P0-E: depends on capturing the legitimate blob flow first.
 
