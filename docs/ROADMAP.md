@@ -1,8 +1,8 @@
-# Vireo Browser — Roadmap WebView-only
+# VireoLumaTV — Roadmap WebView-only
 
 Documento de trabajo de la rama de integración `fixes/audit`.
 
-Vireo Browser es WebView-only: Gecko está eliminado del build (módulo `:app:gecko`, flavor
+VireoLumaTV es WebView-only: Gecko está eliminado del build (módulo `:app:gecko`, flavor
 `webengine` y dependencia de Mozilla) y ya no queda selector de motor en la app. El
 dispositivo objetivo es el onn 4K Streaming Device (Realtek RTD1325, 2 GB de RAM,
 sistema solo 32 bits `armeabi-v7a`, Android 14).
