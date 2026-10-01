@@ -16,7 +16,7 @@ import org.robolectric.annotation.Config
 @Config(application = Application::class, sdk = [28])
 class AtomicTabSaveTest {
     @Test fun switchingSelectionKeepsExactlyOneSelectedTabPerModeAndUpdatesExistingRow() = runBlocking {
-        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication<Application>(), AppDatabase::class.java)
+        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java)
             .allowMainThreadQueries().build()
         try {
             val dao = db.tabsDao()
@@ -35,7 +35,7 @@ class AtomicTabSaveTest {
     }
 
     @Test fun failedInsertRollsBackUnselection() = runBlocking {
-        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication<Application>(), AppDatabase::class.java)
+        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java)
             .allowMainThreadQueries().build()
         try {
             val dao = db.tabsDao()
