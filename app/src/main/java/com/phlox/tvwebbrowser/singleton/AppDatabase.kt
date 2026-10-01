@@ -16,7 +16,7 @@ import com.phlox.tvwebbrowser.model.util.Converters
     HistoryItem::class, WebTabState::class,
     HostConfig::class
                      ],
-    version = 19/*, exportSchema = true*/)
+    version = 19, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun downloadDao(): DownloadDao
