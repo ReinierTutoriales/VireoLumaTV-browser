@@ -28,14 +28,16 @@ interface TabsDao {
 
     @Transaction
     suspend fun save(item: WebTabState): Long {
-        if (item.selected) {
-            unselectAll(item.incognito)
+        // Freeze selection and mode before the first suspending query.
+        val snapshot = item.copy()
+        if (snapshot.selected) {
+            unselectAll(snapshot.incognito)
         }
-        return if (item.id != 0L) {
-            update(item)
-            item.id
+        return if (snapshot.id != 0L) {
+            update(snapshot)
+            snapshot.id
         } else {
-            insert(item)
+            insert(snapshot)
         }
     }
 

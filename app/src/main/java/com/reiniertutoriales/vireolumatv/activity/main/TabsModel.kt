@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.net.URL
 
 class TabsModel : ActiveModel() {
@@ -25,6 +27,7 @@ class TabsModel : ActiveModel() {
         const val TAG = "TabsModel"
     }
 
+    private val saveMutex = Mutex()
     var loaded = false
     val currentTab = ObservableValue<WebTabState?>(null)
     val tabsStates = ObservableList<WebTabState>()
@@ -66,7 +69,7 @@ class TabsModel : ActiveModel() {
         loaded = true
     }
 
-    suspend fun saveTab(tab: WebTabState) {
+    suspend fun saveTab(tab: WebTabState) = saveMutex.withLock {
         val tabsDB = AppDatabase.db.tabsDao()
         withContext(Dispatchers.IO) {
             tab.saveWebViewStateToFile()
