@@ -1,4 +1,4 @@
-Vireo Browser includes TV Bro sources, DownloadUtils.kt with MPL 2.0 and Apache 2.0 notices, and ad-block native code covered by MPL 2.0.
+VireoLumaTV includes TV Bro sources, DownloadUtils.kt with MPL 2.0 and Apache 2.0 notices, and ad-block native code covered by MPL 2.0.
 
 Application-source base reviewed for this proposal:
 https://github.com/ReinierTutoriales/vireo-browser/tree/c339fcfb848593491a683f8aeec6efb50d73dadb
