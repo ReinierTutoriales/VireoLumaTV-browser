@@ -35,9 +35,9 @@ class VersionSettingsView @JvmOverloads constructor(
         // Required by the original license for modified binaries: credit the original sources
         private const val URL_TV_BRO_SOURCES = "https://github.com/truefedex/tv-bro"
         private const val URL_LICENSE =
-            "https://raw.githubusercontent.com/truefedex/tv-bro/refs/heads/master/LICENSE.md"
+            "https://github.com/ReinierTutoriales/vireo-browser/blob/fixes/audit/LICENSE.md"
         private const val URL_PRIVACY_POLICY =
-            "https://raw.githubusercontent.com/truefedex/tv-bro/refs/heads/master/PRIVACY.md"
+            "https://github.com/ReinierTutoriales/vireo-browser/blob/fixes/audit/PRIVACY.md"
     }
     private var vb = ViewSettingsVersionBinding.inflate(LayoutInflater.from(getContext()), this, true)
     var config = AppContext.provideConfig()
@@ -68,7 +68,7 @@ class VersionSettingsView @JvmOverloads constructor(
             loadUrl(URL_TV_BRO_SOURCES)
         }
 
-        vb.tvSupportAuthor.text = context.getString(R.string.support_the_author)
+        vb.tvSupportAuthor.text = context.getString(R.string.support_original_author)
         vb.tvSupportAuthor.setOnClickListener {
             loadUrl(URL_SUPPORT_AUTHOR)
         }
