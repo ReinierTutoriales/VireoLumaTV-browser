@@ -29,6 +29,8 @@ class Download() {
     @Volatile
     var cancelled: Boolean = false
     @Ignore
+    var incognito: Boolean = false
+    @Ignore
     var isDateHeader = false//user for displaying date headers inside list view
     @Ignore
     var mimeType: String? = null
