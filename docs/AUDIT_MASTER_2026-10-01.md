@@ -55,7 +55,9 @@ This is the compact source-of-truth index for work audited against baseline `c33
 - Internal namespace/packages stay `com.phlox.tvwebbrowser`; package migration was abandoned because benefit is cosmetic and it creates reflection/R8/upstream risk.
 - Preserve public legacy Intent key `com.phlox.tvwebbrowser.EXTRA_OPEN_IN_SAME_TAB`.
 - Preserve TV Bro attribution/compatibility constants and legacy UA checks.
-- Incognito download policy: keep the downloaded file, but do not persist an incognito download in Vireo's internal download-history list.
+- Incognito download policy is **not yet finalized**. Candidate (b) keeps the download visible during the live incognito session and removes its database metadata at session cleanup; option (a) never persists it but requires a synthetic-ID/list-progress redesign.
+- If candidate (b) is selected, first land a separate no-schema-change prerequisite commit that enables Room schema export through KSP and versions the exact v19 schema. Then implement 19 -> 20 with an `incognito` download marker plus `MigrationTestHelper` coverage and an onn upgrade test from v19 data.
+- Room downgrade is not supported by the current builder. After a test database reaches v20, returning to a v19 APK requires uninstall/clearing app data; do not add destructive downgrade fallback for test convenience.
 - Incognito favicon policy: in-memory use is allowed during the live session; no incognito hostname/database or favicon-disk persistence.
 - Incognito recovery policy: private session state is process-lifetime scoped; a new incognito process must not restore stale private tabs/state/thumbnails from a previous dead process.
 - Do not redesign `MODE_MULTI_PROCESS` unless physical testing independently demonstrates the cross-process preference problem.
