@@ -135,7 +135,13 @@ class TabsModel : ActiveModel() {
             if (wv == null) {
                 return
             }
-            needReloadUrl = !newTab.restoreWebView()
+            needReloadUrl = if (currentTab.value === newTab && previousTab === newTab) {
+                // The current renderer disappeared. savedState may predate the latest navigation,
+                // so recover the last observed URL instead of restoring stale WebView history.
+                true
+            } else {
+                !newTab.restoreWebView()
+            }
         }
         newTab.webEngine.onAttachToWindow(webEngineWindowProviderCallback, webViewParent)
         if (needReloadUrl) {
