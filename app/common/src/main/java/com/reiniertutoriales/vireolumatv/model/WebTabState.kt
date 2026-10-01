@@ -164,9 +164,7 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
             try {
                 val stateBytes = File(getWVStatePath(stateFileName)).readBytes()
                 state = webEngine.stateFromBytes(stateBytes)
-                if (state == null) return
-        // Private tabs must not overwrite a legacy file shared with a normal tab.
-        if (incognito && stateFileName?.startsWith("private-") != true) stateFileName = null false
+                if (state == null) return false
                 this.savedState = state
                 webEngine.restoreState(state)
                 return true
