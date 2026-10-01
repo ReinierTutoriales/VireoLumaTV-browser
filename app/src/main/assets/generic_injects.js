@@ -1,6 +1,6 @@
 //download blobs support
-if (!window.tvBroClicksListener) {
-    window.tvBroClicksListener = function(e) {
+if (!window.vireoLumaTVClicksListener) {
+    window.vireoLumaTVClicksListener = function(e) {
         var target = e.target;
         if (!target || typeof target.closest !== "function") return;
         //the click can land on an element inside the link (icon, span, button...)
@@ -19,7 +19,7 @@ if (!window.tvBroClicksListener) {
                 reader.onload = function() {
                     var base64data = reader.result;
                     if (typeof base64data === "string") {
-                        TVBro.takeBlobDownloadData(base64data, fileName, url, blob.type);
+                        VireoLumaTVApp.takeBlobDownloadData(base64data, fileName, url, blob.type);
                     }
                 };
                 reader.readAsDataURL(blob);
@@ -29,19 +29,19 @@ if (!window.tvBroClicksListener) {
         e.stopPropagation();
         e.preventDefault();
     };
-    document.addEventListener("click", window.tvBroClicksListener);
+    document.addEventListener("click", window.vireoLumaTVClicksListener);
 }
 
 // video playback control support
 //local helper instead of patching HTMLMediaElement.prototype: never clashes with the page's own code
-window.tvBroIsPlaying = function(media) {
+window.vireoLumaTVIsPlaying = function(media) {
     return !!(media.currentTime > 0 && !media.paused && !media.ended && media.readyState > 2);
 }
 
-window.tvBroTogglePlayback = function() {
+window.vireoLumaTVTogglePlayback = function() {
   var media = document.querySelector('video') || document.querySelector('audio');
   if (media) {
-      if (window.tvBroIsPlaying(media)) {
+      if (window.vireoLumaTVIsPlaying(media)) {
         media.pause();
       } else {
         media.play();
@@ -49,7 +49,7 @@ window.tvBroTogglePlayback = function() {
   }
 }
 
-window.tvBroStopPlayback = function() {
+window.vireoLumaTVStopPlayback = function() {
   var media = document.querySelector('video') || document.querySelector('audio');
   if (media) {
       media.pause();
@@ -57,14 +57,14 @@ window.tvBroStopPlayback = function() {
   }
 }
 
-window.tvBroRewind = function() {
+window.vireoLumaTVRewind = function() {
     var media = document.querySelector('video') || document.querySelector('audio');
     if (media) {
         media.currentTime -= 10;
     }
 }
 
-window.tvBroFastForward = function() {
+window.vireoLumaTVFastForward = function() {
     var media = document.querySelector('video') || document.querySelector('audio');
     if (media) {
         media.currentTime += 10;
@@ -72,11 +72,11 @@ window.tvBroFastForward = function() {
 }
 
 // context menu support
-if (!window.tvBroTouchStartListener) {
-    window.tvBroTouchStartListener = function(e) {
-        window.TVBRO_activeElement = e.target;
-        window.TVBRO_touchStartX = e.touches[0].clientX;
-        window.TVBRO_touchStartY = e.touches[0].clientY;
+if (!window.vireoLumaTVTouchStartListener) {
+    window.vireoLumaTVTouchStartListener = function(e) {
+        window.VIREOLUMATV_activeElement = e.target;
+        window.VIREOLUMATV_touchStartX = e.touches[0].clientX;
+        window.VIREOLUMATV_touchStartY = e.touches[0].clientY;
     };
-    window.addEventListener("touchstart", window.tvBroTouchStartListener);
+    window.addEventListener("touchstart", window.vireoLumaTVTouchStartListener);
 }
