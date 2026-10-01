@@ -57,6 +57,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     @delegate:Ignore
     val webEngine by lazy { WebEngineFactory.createWebEngine(this) }
     @Ignore
+    var rendererLost: Boolean = false
+    @Ignore
     var lastLoadingUrl: String? = null //this is last url appeared in WebViewClient.shouldOverrideUrlLoading callback
     @Ignore
     var blockedAds = 0
@@ -151,6 +153,7 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     }
 
     fun restoreWebView(): Boolean {
+        if (rendererLost) return false
         var state = savedState
         val stateFileName = wvStateFileName
         if (state != null) {

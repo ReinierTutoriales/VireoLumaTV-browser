@@ -140,6 +140,7 @@ class TabsModel : ActiveModel() {
         newTab.webEngine.onAttachToWindow(webEngineWindowProviderCallback, webViewParent)
         if (needReloadUrl) {
             newTab.webEngine.loadUrl(newTab.url)
+            newTab.rendererLost = false
         }
         newTab.webEngine.setNetworkAvailable(Utils.isNetworkConnected(VireoLumaTVApp.instance))
         releaseBackgroundWebViews(newTab, previousTab)
