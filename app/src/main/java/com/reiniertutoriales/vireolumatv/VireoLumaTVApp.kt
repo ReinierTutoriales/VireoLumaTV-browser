@@ -13,6 +13,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
+import com.reiniertutoriales.vireolumatv.utils.IncognitoWebViewData
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
 import java.net.CookieHandler
@@ -49,6 +50,12 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
         }
 
         instance = this
+
+        // Configure the private process before any WebView/provider initialization.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+            Application.getProcessName().endsWith(":incognito")) {
+            IncognitoWebViewData.configure(this)
+        }
 
         AppContext.init(this, Config(getSharedPreferences(MAIN_PREFS_NAME, MODE_MULTI_PROCESS)))
 
