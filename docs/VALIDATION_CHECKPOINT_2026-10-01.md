@@ -111,13 +111,20 @@ Local audit of `c339fcf` found that `FaviconsPool.saveFavicon` does not gate per
 
 The normal incognito cleanup does not remove the `hosts` rows or favicon cache. This exposes visited incognito domains beyond the incognito session.
 
-Physical verification should use the #193 `vireo-debug` build because release cannot use `run-as`:
+Physical verification should use the #193 `vireo-debug` build because release cannot use `run-as`. **Do this only after all release/R8 tests are complete.** The #193 debug and release artifacts use the same application ID and shared debug signing key, so `adb install -r` of debug replaces release while preserving its app data.
+
+Do not redirect binary database output with PowerShell `>`; PowerShell can text-encode/corrupt binary output. Room uses WAL, so copy the database together with its WAL/SHM companions. First stop the app to avoid copying while it is writing, then use `adb exec-out` with `cmd /c` redirection:
 
 ```
-adb shell "run-as com.reiniertutoriales.vireobrowser cat databases/main.db" > main.db
+adb shell am force-stop com.reiniertutoriales.vireobrowser
+cmd /c "adb exec-out run-as com.reiniertutoriales.vireobrowser cat databases/main.db > main.db"
+cmd /c "adb exec-out run-as com.reiniertutoriales.vireobrowser cat databases/main.db-wal > main.db-wal"
+cmd /c "adb exec-out run-as com.reiniertutoriales.vireobrowser cat databases/main.db-shm > main.db-shm"
 ```
 
-After visiting a unique test domain only in incognito and exiting normally, inspect the exported database for that hostname. Also inspect favicon persistence if needed.
+Keep all three files together when opening/inspecting the database so SQLite can account for WAL content. A `main.db`-only copy can miss recent `hosts` rows and produce a false negative.
+
+After visiting a unique test domain only in incognito and exiting normally, inspect the exported database set for that hostname. Also inspect favicon persistence if needed.
 
 Future fix invariant: while incognito is active, favicons may remain in the in-memory FaviconsPool cache for the live session but must not be persisted to disk or written to the shared `hosts` table.
 
@@ -213,6 +220,12 @@ Future design requirements for blob downloads:
 - preserve legitimate blob downloads after the change.
 
 Future invariant for `lastSSLError`: certificate details are exposed only in the browser-controlled SSL error-page context that needs them.
+
+### Build-order rule for physical validation
+
+Run **all release/R8 behavior tests first** using `vireo-release`: smoke test, incognito suffix/session isolation, download-history leak, explicit-Intent injection, and legitimate blob-download capture. Only after those are complete, install `vireo-debug` over release with `adb install -r` to perform `run-as` database inspection. Because both #193 artifacts share application ID and signing key, this replacement preserves the accumulated app data but changes the tested build to debug.
+
+Do not switch to debug early and then treat subsequent behavior as release/R8 validation.
 
 ### Security test order on onn
 
