@@ -18,7 +18,6 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import java.io.File
