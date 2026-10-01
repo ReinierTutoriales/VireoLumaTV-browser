@@ -1,0 +1,544 @@
+HISTORICAL SNAPSHOT: fixes/audit c339fcfb848593491a683f8aeec6efb50d73dadb, before the VireoLumaTV branding and package migration. Matches below are evidence about that base tree, not a current list of remaining cleanup tasks. Refer to LICENSE_REBRANDING_AUDIT.md in this directory and docs/BRAND_STANDARD.md for context.
+origin/fixes/audit:.github/FUNDING.yml:1:custom: ['https://donatello.to/truefedex']
+origin/fixes/audit:.github/ISSUE_TEMPLATE/bug_report.md:6:assignees: truefedex
+origin/fixes/audit:.github/ISSUE_TEMPLATE/bug_report.md:40:1. Consider making a donation via [Donatello](https://donatello.to/truefedex).
+origin/fixes/audit:.github/ISSUE_TEMPLATE/custom.md:15:1. Consider making a donation via [Donatello](https://donatello.to/truefedex).
+origin/fixes/audit:.github/ISSUE_TEMPLATE/feature_request.md:6:assignees: truefedex
+origin/fixes/audit:.github/ISSUE_TEMPLATE/feature_request.md:24:1. Consider making a donation via [Donatello](https://donatello.to/truefedex).
+origin/fixes/audit:LICENSE.md:15:  https://github.com/truefedex/tv-bro/releases web page.
+origin/fixes/audit:LICENSE.md:17:  contain "TV Bro" string in any case. It also must not use the same app icon and
+origin/fixes/audit:LICENSE.md:21:  TV Bro's sources and link to https://github.com/truefedex/tv-bro.
+origin/fixes/audit:PRIVACY.md:7:Vireo Browser is an open-source Android TV web browser based on the source code of TV Bro. The original source code is available at:
+origin/fixes/audit:PRIVACY.md:8:https://github.com/truefedex/tv-bro
+origin/fixes/audit:PRIVACY.md:64:https://github.com/ReinierTutoriales/tv-bro
+origin/fixes/audit:README.md:5:Vireo Browser is a WebView-only Android TV browser based on the source code of TV Bro. The GeckoView engine, Gecko build variant, and Gecko module sources have been removed to keep the app smaller, simpler, and more predictable on low-memory Android TV hardware.
+origin/fixes/audit:README.md:18:- https://forum.xda-developers.com/android/apps-games/tv-bro-browser-android-based-tvs-t3545295
+origin/fixes/audit:README.md:21:- Vireo Browser repository: https://github.com/ReinierTutoriales/tv-bro
+origin/fixes/audit:README.md:22:- Original TV Bro source code: https://github.com/truefedex/tv-bro
+origin/fixes/audit:app/build.gradle.kts:2:    id("tvbro.android.application")
+origin/fixes/audit:app/build.gradle.kts:7:    namespace = "com.phlox.tvwebbrowser"
+origin/fixes/audit:app/common/build.gradle.kts:2:    id("tvbro.android.library")
+origin/fixes/audit:app/common/build.gradle.kts:7:    namespace = "com.phlox.tvwebbrowser.common"
+origin/fixes/audit:app/common/consumer-rules.pro:1:-keepclassmembers class * extends com.phlox.tvwebbrowser.utils.activemodel.ActiveModel {
+origin/fixes/audit:app/common/proguard-rules.pro:23:-keepclassmembers class * extends com.phlox.tvwebbrowser.utils.activemodel.ActiveModel {
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/AppContext.kt:1:package com.phlox.tvwebbrowser
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/Config.kt:1:package com.phlox.tvwebbrowser
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/Config.kt:5:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/Config.kt:6:import com.phlox.tvwebbrowser.utils.observable.ObservableValue
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/Config.kt:18:        const val TV_BRO_UA_PREFIX = "TV Bro/1.0 "
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/Config.kt:51:        const val HOME_PAGE_URL = "https://tvbro.phlox.dev/appcontent/home/"
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/model/Download.kt:1:package com.phlox.tvwebbrowser.model
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/model/FavoriteItem.kt:1:package com.phlox.tvwebbrowser.model
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/model/HistoryItem.kt:1:package com.phlox.tvwebbrowser.model
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/model/HomePageLink.kt:1:package com.phlox.tvwebbrowser.model
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/model/HostConfig.kt:1:package com.phlox.tvwebbrowser.model
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/model/WebTabState.kt:1:package com.phlox.tvwebbrowser.model
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/model/WebTabState.kt:11:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/model/WebTabState.kt:12:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/model/WebTabState.kt:13:import com.phlox.tvwebbrowser.webengine.WebEngineFactory
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/singleton/FaviconsPool.kt:1:package com.phlox.tvwebbrowser.singleton
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/singleton/FaviconsPool.kt:11:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/singleton/FaviconsPool.kt:12:import com.phlox.tvwebbrowser.model.HostConfig
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/singleton/FaviconsPool.kt:13:import com.phlox.tvwebbrowser.utils.FaviconExtractor
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/BackNavigationEventsAdapter.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/DPADNavigationEventsAdapter.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/DownloadUtils.kt:23:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/Extensions.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/FaviconExtractor.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/NavigationReservedShortcutKeyCodes.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/Utils.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModel.kt:1:package com.phlox.tvwebbrowser.utils.activemodel
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModel.kt:12: * @see com.phlox.tvwebbrowser.utils.statemodel.ActiveModelsRepository#markAsNeedless()).
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModelsRepository.kt:1:package com.phlox.tvwebbrowser.utils.activemodel
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModelsRepository.kt:48:   * (@see com.phlox.tvwebbrowser.utils.statemodel.ActiveModelsRepository#markAsNeedless())
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/observable/ObservableList.kt:1:package com.phlox.tvwebbrowser.utils.observable
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/utils/observable/SimpleObservable.kt:1:package com.phlox.tvwebbrowser.utils.observable
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngine.kt:1:package com.phlox.tvwebbrowser.webengine
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngine.kt:8:import com.phlox.tvwebbrowser.widgets.cursor.CursorDrawerDelegate
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineFactory.kt:1:package com.phlox.tvwebbrowser.webengine
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineFactory.kt:5:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineFactory.kt:6:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineFactory.kt:7:import com.phlox.tvwebbrowser.widgets.cursor.CursorLayout
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineWindowProviderCallback.kt:1:package com.phlox.tvwebbrowser.webengine
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineWindowProviderCallback.kt:8:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineWindowProviderCallback.kt:9:import com.phlox.tvwebbrowser.model.HomePageLink
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineWindowProviderCallback.kt:10:import com.phlox.tvwebbrowser.widgets.cursor.CursorDrawerDelegate
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/widgets/cursor/CursorDrawerDelegate.kt:1:package com.phlox.tvwebbrowser.widgets.cursor
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/widgets/cursor/CursorDrawerDelegate.kt:20:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/widgets/cursor/CursorDrawerDelegate.kt:21:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/widgets/cursor/CursorDrawerDelegate.kt:22:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/widgets/cursor/CursorLayout.kt:1:package com.phlox.tvwebbrowser.widgets.cursor
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/widgets/cursor/CursorLayout.kt:13:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/common/src/main/java/com/phlox/tvwebbrowser/widgets/cursor/CursorLayout.kt:14:import com.phlox.tvwebbrowser.utils.DPADNavigationEventsAdapter
+origin/fixes/audit:app/common/src/test/java/com/phlox/tvwebbrowser/ExampleUnitTest.kt:1:package com.phlox.tvwebbrowser
+origin/fixes/audit:app/proguard-rules.pro:12:-keep class com.phlox.tvwebbrowser.webengine.webview.WebViewWebEngine { *; }
+origin/fixes/audit:app/proguard-rules.pro:14:-keepclassmembers class com.phlox.tvwebbrowser.model.** {
+origin/fixes/audit:app/proguard-rules.pro:21:-keepclassmembers class com.phlox.tvwebbrowser.webengine.webview.AndroidJSInterface {
+origin/fixes/audit:app/proguard-rules.pro:31:#-keepclasseswithmembers class com.phlox.tvwebbrowser.model.** {
+origin/fixes/audit:app/src/main/AndroidManifest.xml:68:        android:name=".TVBro"
+origin/fixes/audit:app/src/main/assets/generic_injects.js:2:if (!window.tvBroClicksListener) {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:3:    window.tvBroClicksListener = function(e) {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:22:                        TVBro.takeBlobDownloadData(base64data, fileName, url, blob.type);
+origin/fixes/audit:app/src/main/assets/generic_injects.js:32:    document.addEventListener("click", window.tvBroClicksListener);
+origin/fixes/audit:app/src/main/assets/generic_injects.js:37:window.tvBroIsPlaying = function(media) {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:41:window.tvBroTogglePlayback = function() {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:44:      if (window.tvBroIsPlaying(media)) {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:52:window.tvBroStopPlayback = function() {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:60:window.tvBroRewind = function() {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:67:window.tvBroFastForward = function() {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:75:if (!window.tvBroTouchStartListener) {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:76:    window.tvBroTouchStartListener = function(e) {
+origin/fixes/audit:app/src/main/assets/generic_injects.js:77:        window.TVBRO_activeElement = e.target;
+origin/fixes/audit:app/src/main/assets/generic_injects.js:78:        window.TVBRO_touchStartX = e.touches[0].clientX;
+origin/fixes/audit:app/src/main/assets/generic_injects.js:79:        window.TVBRO_touchStartY = e.touches[0].clientY;
+origin/fixes/audit:app/src/main/assets/generic_injects.js:81:    window.addEventListener("touchstart", window.tvBroTouchStartListener);
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:445:    if (homePageLinksMode === "BOOKMARKS" && window.hasOwnProperty( "TVBro" )) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:447:        if (bookmark && TVBro.hasOwnProperty("markBookmarkRecommendationAsUseful")) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:448:            TVBro.markBookmarkRecommendationAsUseful(index);
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:485:                if (window.hasOwnProperty( "TVBro" )) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:486:                    if (TVBro.requestFavicon) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:488:                        TVBro.requestFavicon(urlStr);
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:508:            if (homePageLinksMode == "BOOKMARKS" && window.hasOwnProperty( "TVBro" )) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:536:            if (homePageLinksMode == "BOOKMARKS" && window.hasOwnProperty( "TVBro" )) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:541:                    TVBro.onEditBookmark(index);
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:561:function applySearchEngine(engine, searchEngineUrl, notifyTVBro) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:578:    if (window.hasOwnProperty( "TVBro" ) && notifyTVBro) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:579:        TVBro.setSearchEngine(engine, searchEngineUrl ? searchEngineUrl : searchEngineUrlMap[engine]);
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:589://callback called from TVBro/GeckoView
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:625:        if (window.hasOwnProperty( "TVBro" )) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:626:            TVBro.startVoiceSearch();
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:632://1. Running inside ordinary web page - TVBro variable is not installed - no bookmarks, no voice search
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:633://2. Running inside TVBro WebView - TVBro variable is installed
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:634://3. Running inside TVBro GeckoView - TVBro variable is installed
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:636:if (window.hasOwnProperty( "TVBro" )) {
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:637:    console.log("Running inside TVBro");
+origin/fixes/audit:app/src/main/assets/pages/home/index.html:638:    TVBro.onHomePageLoaded();
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:73:            <button id="goForwardButton" onclick="TVBro.reloadWithSslTrust();"></button>
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:80:    document.getElementById("caption").innerHTML = TVBro.getStringByName('connection_isnt_secure');
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:81:    document.getElementById("hostnameLabel").innerHTML = TVBro.getStringByName('hostname');
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:82:    document.getElementById("errorDeskr").innerHTML = TVBro.getStringByName('err_desk');
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:83:    document.getElementById("details").innerHTML = TVBro.getStringByName('details');
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:84:    document.getElementById("returnButton").innerHTML = TVBro.getStringByName('back_to_safety');
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:85:    document.getElementById("goForwardButton").innerHTML = TVBro.getStringByName('go_im_aware');
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:88:    let url = new URL(TVBro.currentUrl());
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:90:    let error = TVBro.lastSSLError(false);
+origin/fixes/audit:app/src/main/assets/pages/warning-certificate.html:92:    error = TVBro.lastSSLError(true);
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:1:package com.phlox.tvwebbrowser
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:12:import com.phlox.tvwebbrowser.activity.main.MainActivity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:13:import com.phlox.tvwebbrowser.model.HostConfig
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:14:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:15:import com.phlox.tvwebbrowser.singleton.FaviconsPool
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:16:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:17:import com.phlox.tvwebbrowser.webengine.webview.WebViewWebEngine
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:28:class TVBro : Application(), Application.ActivityLifecycleCallbacks {
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:30:        lateinit var instance: TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:33:        val TAG = TVBro::class.simpleName
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:79:            Class.forName("com.phlox.tvwebbrowser.webengine.webview.WebViewWebEngine")
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/TVBro.kt:126:                val intent = Intent(this@TVBro, MainActivity::class.java)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/IncognitoModeMainActivity.kt:1:package com.phlox.tvwebbrowser.activity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/IncognitoModeMainActivity.kt:6:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/IncognitoModeMainActivity.kt:7:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/IncognitoModeMainActivity.kt:8:import com.phlox.tvwebbrowser.activity.main.MainActivity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/IncognitoModeMainActivity.kt:27:            TVBro.instance.needToExitProcessAfterMainActivityFinish = true
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt:1:package com.phlox.tvwebbrowser.activity.downloads
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt:6:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt:7:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt:8:import com.phlox.tvwebbrowser.service.downloads.DownloadTask
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt:9:import com.phlox.tvwebbrowser.service.downloads.FileDownloadTask
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt:10:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt:11:import com.phlox.tvwebbrowser.utils.observable.ObservableList
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt:12:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt:27:            val contentResolver = TVBro.instance.contentResolver
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListAdapter.kt:1:package com.phlox.tvwebbrowser.activity.downloads
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListAdapter.kt:7:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListAdapter.kt:8:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListItemView.kt:1:package com.phlox.tvwebbrowser.activity.downloads
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListItemView.kt:11:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListItemView.kt:12:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt:1:package com.phlox.tvwebbrowser.activity.downloads
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt:22:import com.phlox.tvwebbrowser.BuildConfig
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt:23:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt:24:import com.phlox.tvwebbrowser.databinding.ActivityDownloadsBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt:25:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt:26:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt:27:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsHistoryModel.kt:1:package com.phlox.tvwebbrowser.activity.downloads
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsHistoryModel.kt:3:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsHistoryModel.kt:4:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsHistoryModel.kt:5:import com.phlox.tvwebbrowser.utils.observable.ObservableValue
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsHistoryModel.kt:6:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt:1:package com.phlox.tvwebbrowser.activity.history
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt:17:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt:18:import com.phlox.tvwebbrowser.databinding.ActivityHistoryBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt:19:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt:20:import com.phlox.tvwebbrowser.utils.BaseAnimationListener
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt:21:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt:22:import com.phlox.tvwebbrowser.utils.VoiceSearchHelper
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt:23:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryAdapter.kt:1:package com.phlox.tvwebbrowser.activity.history
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryAdapter.kt:7:import com.phlox.tvwebbrowser.model.HistoryItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryAdapter.kt:8:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryItemView.kt:1:package com.phlox.tvwebbrowser.activity.history
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryItemView.kt:9:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryItemView.kt:10:import com.phlox.tvwebbrowser.model.HistoryItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryModel.kt:1:package com.phlox.tvwebbrowser.activity.history
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryModel.kt:3:import com.phlox.tvwebbrowser.model.HistoryItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryModel.kt:4:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryModel.kt:5:import com.phlox.tvwebbrowser.utils.observable.ObservableValue
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryModel.kt:6:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:1:package com.phlox.tvwebbrowser.activity.main
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:6:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:7:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:8:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:9:import com.phlox.tvwebbrowser.adblock.AdblockFilterListValidator
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:10:import com.phlox.tvwebbrowser.adblock.BraveAdBlockEngine
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:11:import com.phlox.tvwebbrowser.adblock.ContentBlocker
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:12:import com.phlox.tvwebbrowser.adblock.ContentBlockerEngine
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:13:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:14:import com.phlox.tvwebbrowser.utils.observable.ObservableValue
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:77:                val serializedFile = File(TVBro.instance.filesDir, engine.cacheFileName)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:146:                Toast.makeText(TVBro.instance, "Error loading ad-blocker list", Toast.LENGTH_SHORT).show()
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt:190:            val cacheFile = File(TVBro.instance.filesDir, filterList.cacheFileName)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AutoUpdateModel.kt:1:package com.phlox.tvwebbrowser.activity.main
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AutoUpdateModel.kt:9:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AutoUpdateModel.kt:10:import com.phlox.tvwebbrowser.BuildConfig
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AutoUpdateModel.kt:11:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AutoUpdateModel.kt:12:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AutoUpdateModel.kt:13:import com.phlox.tvwebbrowser.utils.UpdateChecker
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AutoUpdateModel.kt:14:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AutoUpdateModel.kt:15:import com.phlox.tvwebbrowser.utils.sameDay
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/AutoUpdateModel.kt:39:                    updateChecker.check("https://raw.githubusercontent.com/truefedex/tv-bro/master/latest_version.json",
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:1:package com.phlox.tvwebbrowser.activity.main
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:58:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:59:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:60:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:61:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:62:import com.phlox.tvwebbrowser.activity.IncognitoModeMainActivity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:63:import com.phlox.tvwebbrowser.activity.downloads.DownloadsActivity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:64:import com.phlox.tvwebbrowser.activity.history.HistoryActivity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:65:import com.phlox.tvwebbrowser.activity.main.dialogs.favorites.FavoriteEditorDialog
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:66:import com.phlox.tvwebbrowser.activity.main.dialogs.favorites.FavoritesDialog
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:67:import com.phlox.tvwebbrowser.activity.main.dialogs.settings.SettingsDialog
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:68:import com.phlox.tvwebbrowser.activity.main.view.ActionBar
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:69:import com.phlox.tvwebbrowser.activity.main.view.CursorMenuView
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:70:import com.phlox.tvwebbrowser.activity.main.view.tabs.TabsAdapter.Listener
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:71:import com.phlox.tvwebbrowser.databinding.ActivityMainBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:72:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:73:import com.phlox.tvwebbrowser.model.FavoriteItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:74:import com.phlox.tvwebbrowser.model.HomePageLink
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:75:import com.phlox.tvwebbrowser.model.HostConfig
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:76:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:77:import com.phlox.tvwebbrowser.service.downloads.DownloadService
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:78:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:79:import com.phlox.tvwebbrowser.singleton.shortcuts.ShortcutMgr
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:80:import com.phlox.tvwebbrowser.utils.BackNavigationEventsAdapter
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:81:import com.phlox.tvwebbrowser.utils.DownloadUtils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:82:import com.phlox.tvwebbrowser.utils.BaseAnimationListener
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:83:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:84:import com.phlox.tvwebbrowser.utils.VoiceSearchHelper
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:85:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:86:import com.phlox.tvwebbrowser.utils.childs
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:87:import com.phlox.tvwebbrowser.utils.sameDay
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:88:import com.phlox.tvwebbrowser.webengine.WebEngine
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:89:import com.phlox.tvwebbrowser.webengine.WebEngineFactory
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:90:import com.phlox.tvwebbrowser.webengine.WebEngineWindowProviderCallback
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:91:import com.phlox.tvwebbrowser.widgets.NotificationView
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:92:import com.phlox.tvwebbrowser.widgets.cursor.CursorDrawerDelegate
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:166:        prefs = getSharedPreferences(TVBro.MAIN_PREFS_NAME, Context.MODE_PRIVATE)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:480:        if (intent.getBooleanExtra("com.phlox.tvwebbrowser.EXTRA_OPEN_IN_SAME_TAB", false) &&
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt:568:        if (ua?.contains("TV Bro/1.0 ") == true) {//legacy ua string - now default one should be used
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:1:package com.phlox.tvwebbrowser.activity.main
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:6:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:7:import com.phlox.tvwebbrowser.BuildConfig
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:8:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:9:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:10:import com.phlox.tvwebbrowser.model.FavoriteItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:11:import com.phlox.tvwebbrowser.model.HistoryItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:12:import com.phlox.tvwebbrowser.model.HomePageLink
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:13:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:14:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:15:import com.phlox.tvwebbrowser.utils.UpdateChecker
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:16:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:17:import com.phlox.tvwebbrowser.utils.deleteDirectory
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:18:import com.phlox.tvwebbrowser.utils.observable.ObservableList
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:62:                UpdateChecker.clearTempFilesIfAny(TVBro.instance)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:214:                TVBro.instance.filesDir.parentFile!!.absolutePath +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:224:                TVBro.instance.filesDir.parentFile!!.absolutePath +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:228:                TVBro.instance.filesDir.parentFile!!.absolutePath +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:237:                File(TVBro.instance.cacheDir.absolutePath + "/" + WEB_VIEW_CACHE_FOLDER)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:239:                TVBro.instance.cacheDir.absolutePath + "/" + WEB_VIEW_CACHE_FOLDER +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:251:                TVBro.instance.filesDir.parentFile!!.absolutePath +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:257:                    TVBro.instance.cacheDir.absolutePath + "/" + WEB_VIEW_CACHE_FOLDER +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:262:                    TVBro.instance.cacheDir.absolutePath + "/" +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:270:                TVBro.instance.filesDir.parentFile!!.absolutePath +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:275:                File(TVBro.instance.cacheDir.absolutePath + "/" + WEB_VIEW_CACHE_FOLDER)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:279:                TVBro.instance.filesDir.parentFile!!.absolutePath +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt:284:                TVBro.instance.cacheDir.absolutePath + "/" + WEB_VIEW_CACHE_FOLDER +
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt:1:package com.phlox.tvwebbrowser.activity.main
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt:3:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt:4:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt:5:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt:6:import com.phlox.tvwebbrowser.utils.observable.ObservableValue
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt:11:        const val TV_BRO_UA_PREFIX = "TV Bro/1.0 "
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:1:package com.phlox.tvwebbrowser.activity.main
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:6:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:7:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:8:import com.phlox.tvwebbrowser.model.HostConfig
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:9:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:10:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:11:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:12:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:13:import com.phlox.tvwebbrowser.utils.observable.ObservableList
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:14:import com.phlox.tvwebbrowser.utils.observable.ObservableValue
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:15:import com.phlox.tvwebbrowser.webengine.WebEngineWindowProviderCallback
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:144:        newTab.webEngine.setNetworkAvailable(Utils.isNetworkConnected(TVBro.instance))
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt:174:            val db = com.phlox.tvwebbrowser.singleton.AppDatabase.db.hostsDao()
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt:9:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt:10:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt:11:import com.phlox.tvwebbrowser.activity.main.SettingsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt:11:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt:12:import com.phlox.tvwebbrowser.singleton.shortcuts.Shortcut
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt:13:import com.phlox.tvwebbrowser.singleton.shortcuts.ShortcutMgr
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt:14:import com.phlox.tvwebbrowser.utils.NavigationReservedShortcutKeyCodes
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteEditorDialog.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs.favorites
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteEditorDialog.kt:11:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteEditorDialog.kt:12:import com.phlox.tvwebbrowser.model.FavoriteItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs.favorites
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt:10:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt:11:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt:12:import com.phlox.tvwebbrowser.databinding.ViewFavoriteItemBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt:13:import com.phlox.tvwebbrowser.model.FavoriteItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt:14:import com.phlox.tvwebbrowser.singleton.FaviconsPool
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt:15:import com.phlox.tvwebbrowser.utils.activity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesDialog.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs.favorites
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesDialog.kt:7:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesDialog.kt:8:import com.phlox.tvwebbrowser.model.FavoriteItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesDialog.kt:9:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesListAdapter.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs.favorites
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesListAdapter.kt:7:import com.phlox.tvwebbrowser.model.FavoriteItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs.settings
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:16:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:17:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:18:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:19:import com.phlox.tvwebbrowser.activity.main.AdblockModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:20:import com.phlox.tvwebbrowser.activity.main.MainActivity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:21:import com.phlox.tvwebbrowser.activity.main.SettingsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:22:import com.phlox.tvwebbrowser.databinding.ViewSettingsMainBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:23:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:24:import com.phlox.tvwebbrowser.utils.activity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:25:import com.phlox.tvwebbrowser.webengine.WebEngineFactory
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt:214:        if (config.userAgentString.value?.contains("TV Bro/1.0 ") == true) {//legacy ua string - now default one should be used
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/SettingsDialog.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs.settings
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/SettingsDialog.kt:10:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/SettingsDialog.kt:11:import com.phlox.tvwebbrowser.activity.main.SettingsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/SettingsDialog.kt:12:import com.phlox.tvwebbrowser.widgets.SegmentedButtonTabsAdapter
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs.settings
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt:14:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt:15:import com.phlox.tvwebbrowser.activity.main.SettingsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt:16:import com.phlox.tvwebbrowser.activity.main.dialogs.ShortcutDialog
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt:17:import com.phlox.tvwebbrowser.databinding.ViewShortcutBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt:18:import com.phlox.tvwebbrowser.singleton.shortcuts.Shortcut
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt:19:import com.phlox.tvwebbrowser.singleton.shortcuts.ShortcutMgr
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt:20:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt:21:import com.phlox.tvwebbrowser.utils.activity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:1:package com.phlox.tvwebbrowser.activity.main.dialogs.settings
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:14:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:15:import com.phlox.tvwebbrowser.BuildConfig
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:16:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:17:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:18:import com.phlox.tvwebbrowser.activity.IncognitoModeMainActivity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:19:import com.phlox.tvwebbrowser.activity.main.AutoUpdateModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:20:import com.phlox.tvwebbrowser.activity.main.MainActivity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:21:import com.phlox.tvwebbrowser.activity.main.SettingsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:22:import com.phlox.tvwebbrowser.databinding.ViewSettingsVersionBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:23:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:24:import com.phlox.tvwebbrowser.utils.activity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:25:import com.phlox.tvwebbrowser.webengine.WebEngineFactory
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:34:        private const val URL_SUPPORT_AUTHOR = "https://donatello.to/truefedex"
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:36:        private const val URL_TV_BRO_SOURCES = "https://github.com/truefedex/tv-bro"
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:38:            "https://raw.githubusercontent.com/truefedex/tv-bro/refs/heads/master/LICENSE.md"
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:40:            "https://raw.githubusercontent.com/truefedex/tv-bro/refs/heads/master/PRIVACY.md"
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:65:        vb.tvLink.text = Html.fromHtml("<p>" + context.getString(R.string.based_on_tv_bro_sources,
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:66:            "<u>$URL_TV_BRO_SOURCES</u>") + "</p>", Html.FROM_HTML_MODE_LEGACY)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt:68:            loadUrl(URL_TV_BRO_SOURCES)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt:1:package com.phlox.tvwebbrowser.activity.main.view
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt:16:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt:17:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt:18:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt:19:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt:20:import com.phlox.tvwebbrowser.activity.downloads.ActiveDownloadsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt:21:import com.phlox.tvwebbrowser.databinding.ViewActionbarBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt:22:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt:23:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt:1:package com.phlox.tvwebbrowser.activity.main.view
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt:17:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt:18:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt:19:import com.phlox.tvwebbrowser.databinding.ViewCursorMenuBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt:20:import com.phlox.tvwebbrowser.utils.dip2px
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt:21:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt:22:import com.phlox.tvwebbrowser.webengine.WebEngineWindowProviderCallback
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt:23:import com.phlox.tvwebbrowser.widgets.cursor.CursorDrawerDelegate
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt:24:import com.phlox.tvwebbrowser.utils.BackNavigationEventsAdapter
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:1:package com.phlox.tvwebbrowser.activity.main.view.tabs
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:12:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:13:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:14:import com.phlox.tvwebbrowser.activity.main.TabsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:15:import com.phlox.tvwebbrowser.activity.main.view.tabs.TabsAdapter.TabViewHolder
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:16:import com.phlox.tvwebbrowser.databinding.ViewHorizontalWebtabItemBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:17:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:18:import com.phlox.tvwebbrowser.singleton.FaviconsPool
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:19:import com.phlox.tvwebbrowser.utils.activity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt:20:import com.phlox.tvwebbrowser.widgets.CheckableContainer
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsDiffUtillCallback.kt:1:package com.phlox.tvwebbrowser.activity.main.view.tabs
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsDiffUtillCallback.kt:4:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt:1:package com.phlox.tvwebbrowser.activity.main.view.tabs
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt:11:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt:12:import com.phlox.tvwebbrowser.activity.main.SettingsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt:13:import com.phlox.tvwebbrowser.activity.main.TabsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt:14:import com.phlox.tvwebbrowser.activity.main.view.tabs.TabsAdapter.Listener
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt:15:import com.phlox.tvwebbrowser.databinding.ViewTabsBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt:16:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt:17:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt:18:import com.phlox.tvwebbrowser.utils.observable.ObservableList
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/adblock/AdblockFilterListValidator.kt:1:package com.phlox.tvwebbrowser.adblock
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/adblock/BraveAdBlockEngine.kt:1:package com.phlox.tvwebbrowser.adblock
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/adblock/ContentBlocker.kt:1:package com.phlox.tvwebbrowser.adblock
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/DownloadDao.kt:1:package com.phlox.tvwebbrowser.model.dao
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/DownloadDao.kt:4:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/FavoritesDao.kt:1:package com.phlox.tvwebbrowser.model.dao
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/FavoritesDao.kt:4:import com.phlox.tvwebbrowser.model.FavoriteItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/HistoryDao.kt:1:package com.phlox.tvwebbrowser.model.dao
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/HistoryDao.kt:8:import com.phlox.tvwebbrowser.model.HistoryItem
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/HostsDao.kt:1:package com.phlox.tvwebbrowser.model.dao
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/HostsDao.kt:4:import com.phlox.tvwebbrowser.model.HostConfig
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/TabsDao.kt:1:package com.phlox.tvwebbrowser.model.dao
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/dao/TabsDao.kt:4:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/model/util/Converters.kt:1:package com.phlox.tvwebbrowser.model.util
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt:1:package com.phlox.tvwebbrowser.service.downloads
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt:17:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt:18:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt:19:import com.phlox.tvwebbrowser.activity.downloads.ActiveDownloadsModel
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt:20:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt:21:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt:22:import com.phlox.tvwebbrowser.utils.DownloadUtils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt:23:import com.phlox.tvwebbrowser.utils.activemodel.ActiveModelsRepository
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt:107:            notificationBuilder = NotificationCompat.Builder(this, TVBro.CHANNEL_ID_DOWNLOADS)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt:1:package com.phlox.tvwebbrowser.service.downloads
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt:11:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt:12:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt:13:import com.phlox.tvwebbrowser.singleton.AppDatabase
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt:14:import com.phlox.tvwebbrowser.utils.DownloadUtils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt:204:    val contentResolver = TVBro.instance.contentResolver
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt:223:    val contentResolver = TVBro.instance.contentResolver
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt:1:package com.phlox.tvwebbrowser.singleton
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt:9:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt:10:import com.phlox.tvwebbrowser.model.*
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt:11:import com.phlox.tvwebbrowser.model.dao.*
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt:12:import com.phlox.tvwebbrowser.model.util.Converters
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt:201:                TVBro.instance,
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/Shortcut.kt:1:package com.phlox.tvwebbrowser.singleton.shortcuts
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/Shortcut.kt:6:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt:1:package com.phlox.tvwebbrowser.singleton.shortcuts
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt:9:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt:10:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt:11:import com.phlox.tvwebbrowser.activity.main.MainActivity
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt:12:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt:13:import com.phlox.tvwebbrowser.webengine.WebEngine
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt:23:        TVBro.instance.getSharedPreferences(PREFS_SHORTCUTS, Context.MODE_PRIVATE)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/utils/BaseAnimationListener.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/utils/FileUtils.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/utils/StringUtils.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/utils/UpdateChecker.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/utils/UpdateChecker.kt:15:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/utils/VoiceSearchHelper.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/utils/VoiceSearchHelper.kt:24:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/utils/VoiceSearchHelper.kt:25:import com.phlox.tvwebbrowser.databinding.ViewSpeachRecognizerResultsBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:1:package com.phlox.tvwebbrowser.webengine.webview
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:5:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:6:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:7:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:8:import com.phlox.tvwebbrowser.TVBro
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:9:import com.phlox.tvwebbrowser.model.Download
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:10:import com.phlox.tvwebbrowser.utils.DownloadUtils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:35:        val ctx = TVBro.instance
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:94:                SslError.SSL_EXPIRED -> TVBro.instance.getString(R.string.ssl_expired)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:95:                SslError.SSL_IDMISMATCH -> TVBro.instance.getString(R.string.ssl_idmismatch)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:96:                SslError.SSL_DATE_INVALID -> TVBro.instance.getString(R.string.ssl_date_invalid)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt:97:                SslError.SSL_INVALID -> TVBro.instance.getString(R.string.ssl_invalid)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/HomePageHelper.kt:1:package com.phlox.tvwebbrowser.webengine.webview
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/HomePageHelper.kt:7:import com.phlox.tvwebbrowser.singleton.FaviconsPool
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/HomePageHelper.kt:30:            //load images of tvbro.phlox.dev from assets for offline mode
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/HomePageHelper.kt:31:            val data = TVBro.instance.assets.open("pages/home" + request.url.path!!.replace("/appcontent/home", "")).use { it.readBytes() }
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/Scripts.kt:1:package com.phlox.tvwebbrowser.webengine.webview
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/Scripts.kt:5:var element = window.TVBRO_activeElement;
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt:1:package com.phlox.tvwebbrowser.webengine.webview
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt:50:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt:51:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt:52:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt:53:import com.phlox.tvwebbrowser.utils.DPADNavigationEventsAdapter
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt:54:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt:521:                    it.hint = context.getString(com.phlox.tvwebbrowser.common.R.string.username)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt:525:                    it.hint = context.getString(com.phlox.tvwebbrowser.common.R.string.password)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt:559:        addJavascriptInterface(jsInterface, "TVBro")
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:1:package com.phlox.tvwebbrowser.webengine.webview
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:15:import com.phlox.tvwebbrowser.AppContext
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:16:import com.phlox.tvwebbrowser.Config
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:17:import com.phlox.tvwebbrowser.R
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:18:import com.phlox.tvwebbrowser.model.WebTabState
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:19:import com.phlox.tvwebbrowser.utils.Utils
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:20:import com.phlox.tvwebbrowser.webengine.WebEngine
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:21:import com.phlox.tvwebbrowser.webengine.WebEngineFactory
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:22:import com.phlox.tvwebbrowser.webengine.WebEngineProvider
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:23:import com.phlox.tvwebbrowser.webengine.WebEngineProviderCallback
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:24:import com.phlox.tvwebbrowser.webengine.WebEngineWindowProviderCallback
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:25:import com.phlox.tvwebbrowser.widgets.cursor.CursorDrawerDelegate
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:26:import com.phlox.tvwebbrowser.widgets.cursor.CursorLayout
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:159:        webView?.evaluateJavascript("tvBroTogglePlayback()", null)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:163:        webView?.evaluateJavascript("tvBroStopPlayback()", null)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:167:        webView?.evaluateJavascript("tvBroRewind()", null)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt:171:        webView?.evaluateJavascript("tvBroFastForward()", null)
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableContainer.kt:1:package com.phlox.tvwebbrowser.widgets
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableImageButton.kt:1:package com.phlox.tvwebbrowser.widgets
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/widgets/NotificationView.kt:1:package com.phlox.tvwebbrowser.widgets
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/widgets/NotificationView.kt:11:import com.phlox.tvwebbrowser.databinding.ViewNotificationBinding
+origin/fixes/audit:app/src/main/java/com/phlox/tvwebbrowser/widgets/SegmentedButtonTabsAdapter.kt:1:package com.phlox.tvwebbrowser.widgets
+origin/fixes/audit:app/src/main/res/layout/activity_downloads.xml:9:    tools:context="com.phlox.tvwebbrowser.activity.downloads.DownloadsActivity">
+origin/fixes/audit:app/src/main/res/layout/activity_main.xml:13:    <com.phlox.tvwebbrowser.widgets.cursor.CursorLayout
+origin/fixes/audit:app/src/main/res/layout/activity_main.xml:35:        <com.phlox.tvwebbrowser.activity.main.view.ActionBar
+origin/fixes/audit:app/src/main/res/layout/activity_main.xml:40:        <com.phlox.tvwebbrowser.activity.main.view.tabs.TabsView
+origin/fixes/audit:app/src/main/res/layout/activity_main.xml:224:    <com.phlox.tvwebbrowser.activity.main.view.CursorMenuView
+origin/fixes/audit:app/src/main/res/layout/view_actionbar.xml:69:  <com.phlox.tvwebbrowser.widgets.CheckableImageButton
+origin/fixes/audit:app/src/main/res/layout/view_horizontal_webtab_item.xml:2:<com.phlox.tvwebbrowser.widgets.CheckableContainer xmlns:android="http://schemas.android.com/apk/res/android"
+origin/fixes/audit:app/src/main/res/layout/view_horizontal_webtab_item.xml:35:</com.phlox.tvwebbrowser.widgets.CheckableContainer>
+origin/fixes/audit:app/src/main/res/values/strings.xml:4:    <string name="based_on_tv_bro_sources" translatable="false">Based on the source code of TV Bro: %s</string>
+origin/fixes/audit:app/src/main/res/values/styles.xml:4:    <style name="AppTheme" parent="@style/Theme.TVBro" />
+origin/fixes/audit:app/src/main/res/values/themes.xml:3:    <style name="Theme.TVBroBase" parent="Theme.AppCompat.DayNight.NoActionBar">
+origin/fixes/audit:app/src/main/res/values/themes.xml:14:    <style name="Theme.TVBro" parent="Theme.TVBroBase">
+origin/fixes/audit:app/src/test/java/com/phlox/tvwebbrowser/adblock/AdblockFilterListValidatorTest.kt:1:package com.phlox.tvwebbrowser.adblock
+origin/fixes/audit:app/src/test/java/com/phlox/tvwebbrowser/utils/DownloadUtilsDataUrlTest.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/src/test/java/com/phlox/tvwebbrowser/utils/DownloadUtilsSanitizeFileNameTest.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:app/src/test/java/com/phlox/tvwebbrowser/utils/FaviconExtractorTest.kt:1:package com.phlox.tvwebbrowser.utils
+origin/fixes/audit:build.gradle.kts:3:// Android and Kotlin plugins are applied by buildSrc convention plugins (tvbro.android.library / tvbro.android.application).
+origin/fixes/audit:buildSrc/src/main/kotlin/tvbro/TvBroAndroidModulePlugin.kt:1:package tvbro
+origin/fixes/audit:buildSrc/src/main/kotlin/tvbro/TvBroAndroidModulePlugin.kt:14:internal object TvBroAndroidModulePlugin {
+origin/fixes/audit:buildSrc/src/main/kotlin/tvbro/TvBroAndroidModulePlugin.kt:72:class TvBroAndroidApplicationPlugin : Plugin<Project> {
+origin/fixes/audit:buildSrc/src/main/kotlin/tvbro/TvBroAndroidModulePlugin.kt:73:    override fun apply(project: Project) = TvBroAndroidModulePlugin.configure(project, AndroidModuleType.APPLICATION)
+origin/fixes/audit:buildSrc/src/main/kotlin/tvbro/TvBroAndroidModulePlugin.kt:76:class TvBroAndroidLibraryPlugin : Plugin<Project> {
+origin/fixes/audit:buildSrc/src/main/kotlin/tvbro/TvBroAndroidModulePlugin.kt:77:    override fun apply(project: Project) = TvBroAndroidModulePlugin.configure(project, AndroidModuleType.LIBRARY)
+origin/fixes/audit:buildSrc/src/main/resources/META-INF/gradle-plugins/tvbro.android.application.properties:1:implementation-class=tvbro.TvBroAndroidApplicationPlugin
+origin/fixes/audit:buildSrc/src/main/resources/META-INF/gradle-plugins/tvbro.android.library.properties:1:implementation-class=tvbro.TvBroAndroidLibraryPlugin
+origin/fixes/audit:docs/ROADMAP.md:125:adb shell am force-stop com.phlox.tvwebbrowser
+origin/fixes/audit:docs/ROADMAP.md:145:adb shell dumpsys gfxinfo com.phlox.tvwebbrowser reset
+origin/fixes/audit:docs/ROADMAP.md:146:adb shell dumpsys gfxinfo com.phlox.tvwebbrowser
+origin/fixes/audit:docs/ROADMAP.md:193:`latest_version.json` apunta a APK `geckoIncluded` de `truefedex/tv-bro`: una variante
+origin/fixes/audit:gradle/libs.versions.toml:47:segmented-button = { group = "com.github.truefedex", name = "segmented-button", version.ref = "segmented-button" }
+origin/fixes/audit:gradle/libs.versions.toml:48:ad-block = { group = "com.github.truefedex", name = "ad-block", version.ref = "ad-block" }
+origin/fixes/audit:latest_version.json:8:      "url": "https://github.com/truefedex/tv-bro/releases/download/v2.1.6/tvbro-2.1.6-generic-geckoIncluded-armeabi-v7a.apk",
+origin/fixes/audit:latest_version.json:10:        "https://github.com/truefedex/tv-bro/releases/download/v2.1.6/tvbro-2.1.6-generic-geckoIncluded-arm64-v8a.apk",
+origin/fixes/audit:latest_version.json:11:        "https://github.com/truefedex/tv-bro/releases/download/v2.1.6/tvbro-2.1.6-generic-geckoIncluded-x86_64.apk"
+origin/fixes/audit:latest_version.json:19:      "url": "https://github.com/truefedex/tv-bro/releases/download/v2.1.6/tvbro-2.1.6-generic-geckoIncluded-armeabi-v7a.apk",
+origin/fixes/audit:latest_version.json:21:        "https://github.com/truefedex/tv-bro/releases/download/v2.1.6/tvbro-2.1.6-generic-geckoIncluded-arm64-v8a.apk",
+origin/fixes/audit:latest_version.json:22:        "https://github.com/truefedex/tv-bro/releases/download/v2.1.6/tvbro-2.1.6-generic-geckoIncluded-x86_64.apk"
+origin/fixes/audit:settings.gradle.kts:21:rootProject.name = "tv-bro"
