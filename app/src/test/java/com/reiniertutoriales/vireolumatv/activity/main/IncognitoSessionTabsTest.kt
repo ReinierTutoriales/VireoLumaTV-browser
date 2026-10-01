@@ -1,6 +1,8 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.os.Bundle
 import androidx.room.Room
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
@@ -18,6 +20,31 @@ import java.io.File
 @RunWith(RobolectricTestRunner::class)
 @RobolectricConfig(application = Application::class, sdk = [28])
 class IncognitoSessionTabsTest {
+    @Test fun newPrivatePreviewsAndSavedStatesCannotOverwriteNormalFiles() = runBlocking {
+        val app = RuntimeEnvironment.getApplication()
+        AppContext.init(app, Config(app.getSharedPreferences("tab-files-test", 0)))
+        val normal = WebTabState(url = "https://same.test")
+        val privateTab = WebTabState(url = normal.url, incognito = true)
+        val bitmap = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888)
+        normal.updateThumbnail(app, bitmap)
+        privateTab.updateThumbnail(app, bitmap)
+        assertNotNull(normal.thumbnailHash)
+        assertNotEquals(normal.thumbnailHash, privateTab.thumbnailHash)
+        assertTrue(privateTab.thumbnailHash!!.startsWith("private-"))
+        val state = Bundle().apply { putString("url", normal.url) }
+        normal.savedState = state
+        normal.saveWebViewStateToFile()
+        privateTab.savedState = state
+        privateTab.wvStateFileName = normal.wvStateFileName
+        privateTab.saveWebViewStateToFile()
+        assertNotNull(normal.wvStateFileName)
+        assertNotEquals(normal.wvStateFileName, privateTab.wvStateFileName)
+        assertTrue(privateTab.wvStateFileName!!.startsWith("private-"))
+        privateTab.removeFiles()
+        assertTrue(File(app.filesDir, "${WebTabState.TAB_WVSTATES_DIR}/${normal.wvStateFileName}").exists())
+        assertTrue(File(app.cacheDir, "${WebTabState.TAB_THUMBNAILS_DIR}/${normal.thumbnailHash}.png").exists())
+    }
+
     @Test fun clearsOldPrivateTabsProtectsSharedFilesAndPreservesCurrentSession() = runBlocking {
         val app = RuntimeEnvironment.getApplication()
         AppContext.init(app, Config(app.getSharedPreferences("tabs-test", 0)))
