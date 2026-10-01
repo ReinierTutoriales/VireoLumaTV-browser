@@ -77,20 +77,20 @@
 <script>
 function onLoad() {
     //translate captions first
-    document.getElementById("caption").innerHTML = VireoLumaTVApp.getStringByName('connection_isnt_secure');
-    document.getElementById("hostnameLabel").innerHTML = VireoLumaTVApp.getStringByName('hostname');
-    document.getElementById("errorDeskr").innerHTML = VireoLumaTVApp.getStringByName('err_desk');
-    document.getElementById("details").innerHTML = VireoLumaTVApp.getStringByName('details');
-    document.getElementById("returnButton").innerHTML = VireoLumaTVApp.getStringByName('back_to_safety');
-    document.getElementById("goForwardButton").innerHTML = VireoLumaTVApp.getStringByName('go_im_aware');
+    document.getElementById("caption").textContent = VireoLumaTVApp.getStringByName('connection_isnt_secure');
+    document.getElementById("hostnameLabel").textContent = VireoLumaTVApp.getStringByName('hostname');
+    document.getElementById("errorDeskr").textContent = VireoLumaTVApp.getStringByName('err_desk');
+    document.getElementById("details").textContent = VireoLumaTVApp.getStringByName('details');
+    document.getElementById("returnButton").textContent = VireoLumaTVApp.getStringByName('back_to_safety');
+    document.getElementById("goForwardButton").textContent = VireoLumaTVApp.getStringByName('go_im_aware');
 
     //show error info
     let url = new URL(VireoLumaTVApp.currentUrl());
-    document.getElementById("hostname").innerHTML = url.hostname;
+    document.getElementById("hostname").textContent = url.hostname;
     let error = VireoLumaTVApp.lastSSLError(false);
-    document.getElementById("error").innerHTML = error;
+    document.getElementById("error").textContent = error;
     error = VireoLumaTVApp.lastSSLError(true);
-    document.getElementById("error-details").innerHTML = error;
+    document.getElementById("error-details").textContent = error;
 }
 </script>
 </body>

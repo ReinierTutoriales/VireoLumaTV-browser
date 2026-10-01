@@ -112,9 +112,11 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     private var androidPermissionsPendingRequest: PermissionRequest? = null
     private var geoPermissionOrigin: String? = null
     private var geoPermissionsCallback: GeolocationPermissions.Callback? = null
-    var lastSSLError: SslError? = null
+    @Volatile var lastSSLError: SslError? = null
+    @Volatile var certificateErrorPageUrl: String? = null
+        private set
     var trustSsl: Boolean = false
-    var currentOriginalUrl: Uri? = null
+    @Volatile var currentOriginalUrl: Uri? = null
     private val uiHandler = Handler(Looper.getMainLooper())
     private val pendingBlockedAds = AtomicInteger(0)
     private val reportBlockedAdsRunnable = Runnable {
@@ -465,6 +467,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 super.onPageStarted(view, url, favicon)
                 Log.d(TAG, "onPageStarted url: $url")
                 currentOriginalUrl = url.toUri()
+                if (url != "file:///android_asset/") certificateErrorPageUrl = null
                 callback.onPageStarted(url)
             }
 
@@ -577,10 +580,12 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         val url = INTERNAL_SCHEME + INTERNAL_SCHEME_WARNING_DOMAIN +
                 "?type=" + INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT +
                 "&url=" + URLEncoder.encode(error.url, "UTF-8")
+        certificateErrorPageUrl = url
         loadUrl(url)
     }
 
     override fun loadUrl(url: String) {
+        if (url != certificateErrorPageUrl) certificateErrorPageUrl = null
         when {
             Config.HOME_URL_ALIAS == url -> {
                 when (config.homePageMode) {
