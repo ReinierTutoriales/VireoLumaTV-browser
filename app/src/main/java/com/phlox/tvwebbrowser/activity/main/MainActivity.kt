@@ -476,20 +476,33 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun handleIntent(intent: Intent) {
-        Log.d(TAG, "handleIntent: " + intent.data)
+        val uri = intent.data
+        Log.d(TAG, "handleIntent: $uri")
+        if (!isAllowedExternalWebUri(uri)) {
+            Log.w(TAG, "Rejected external navigation with non-web scheme: " + uri?.scheme)
+            return
+        }
+        val url = uri.toString()
+
         if (intent.getBooleanExtra("com.phlox.tvwebbrowser.EXTRA_OPEN_IN_SAME_TAB", false) &&
             tabsModel.tabsStates.isNotEmpty()) {
             if (tabsModel.currentTab.value == null) {
                 changeTab(tabsModel.tabsStates[0])
             }
-            navigate(intent.data.toString())
+            navigate(url)
             return
         }
 
         openInNewTab(
-            intent.data.toString(), tabsModel.tabsStates.size, needToHideMenuOverlay = true,
+            url, tabsModel.tabsStates.size, needToHideMenuOverlay = true,
             navigateImmediately = true
         )
+    }
+
+    private fun isAllowedExternalWebUri(uri: Uri?): Boolean {
+        val scheme = uri?.scheme ?: return false
+        return scheme.equals("http", ignoreCase = true) ||
+            scheme.equals("https", ignoreCase = true)
     }
 
     private fun openInNewTab(url: String?, index: Int = 0, needToHideMenuOverlay: Boolean = true, navigateImmediately: Boolean): WebEngine? {
