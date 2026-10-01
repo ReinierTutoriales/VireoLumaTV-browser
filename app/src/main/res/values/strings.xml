@@ -82,6 +82,7 @@
     <string name="version_s">Version: %s</string>
     <string name="build_flavor_s">Build flavor: %1$s · %2$s</string>
     <string name="support_the_author">☕ Support the author</string>
+    <string name="support_original_author" translatable="false">☕ Support Fedir Tsapana (TV Bro)</string>
     <string name="view_license">📃 License</string>
     <string name="privacy_policy">🔒 Privacy policy</string>
     <string name="update_channel">Update channel:</string>
