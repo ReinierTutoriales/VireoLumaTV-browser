@@ -24,8 +24,7 @@ class TabsModel : ActiveModel() {
         //literal, not ::class.java.simpleName: R8 renames the class in release builds
         const val TAG = "TabsModel"
 
-        @Volatile
-        private var incognitoSessionSanitized = false
+        private val incognitoSession = IncognitoSessionTabs()
     }
 
     var loaded = false
@@ -66,17 +65,7 @@ class TabsModel : ActiveModel() {
         }
         val tabsDao = AppDatabase.db.tabsDao()
         if (config.incognitoMode) {
-            if (!incognitoSessionSanitized) {
-                val staleIncognitoTabs = tabsDao.getAll(true)
-                withContext(Dispatchers.IO) {
-                    staleIncognitoTabs.forEach { it.removeFiles() }
-                }
-                tabsDao.deleteAll(true)
-                incognitoSessionSanitized = true
-                tabsStates.clear()
-            } else {
-                tabsStates.replaceAll(tabsDao.getAll(true))
-            }
+            tabsStates.replaceAll(incognitoSession.load(tabsDao))
         } else {
             tabsStates.replaceAll(tabsDao.getAll(false))
         }
