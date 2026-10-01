@@ -48,7 +48,7 @@ object FaviconsPool {
     }
 
     suspend fun get(urlOrHost: String): Bitmap? {
-        Log.d(TAG, "get: $urlOrHost")
+        val incognitoMode = AppContext.provideConfig().incognitoMode
         if (!urlOrHost.startsWith("http://", true) && !urlOrHost.startsWith("https://", true)) {
             //host passed?
             if (urlOrHost.contains("://")) {
@@ -70,7 +70,6 @@ object FaviconsPool {
                 if (hostBitmap != null) {
                     return hostBitmap
                 }
-                val incognitoMode = AppContext.provideConfig().incognitoMode
                 val hostConfig = if (incognitoMode) null else databaseDelegate.findByHostName(host)
                 if (hostConfig != null) {
                     val faviconFileName = hostConfig.favicon
@@ -193,6 +192,7 @@ object FaviconsPool {
     }
 
     private suspend fun saveFavicon(host: String, bitmap: Bitmap, hostConfig: HostConfig?) = withContext(Dispatchers.IO) {
+        if (AppContext.provideConfig().incognitoMode) return@withContext
         val favIconsDir = File(favIconsDir())
         if (!favIconsDir.exists() && !favIconsDir.mkdir()) return@withContext
         val faviconFileName = host.hashCode().toString() + ".png"
