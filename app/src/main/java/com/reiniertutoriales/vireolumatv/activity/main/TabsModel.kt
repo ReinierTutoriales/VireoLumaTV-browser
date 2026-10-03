@@ -114,7 +114,6 @@ class TabsModel : ActiveModel() {
         webEngineWindowProviderCallback: WebEngineWindowProviderCallback
     ) {
         if (currentTab.value == newTab && newTab.webEngine.getView() != null) return
-        val previousTab = currentTab.value
         if (currentTab.value != newTab) {
             tabsStates.forEach {
                 it.selected = false
@@ -142,22 +141,21 @@ class TabsModel : ActiveModel() {
             newTab.webEngine.loadUrl(newTab.url)
         }
         newTab.webEngine.setNetworkAvailable(Utils.isNetworkConnected(VireoLumaTVApp.instance))
-        releaseBackgroundWebViews(newTab, previousTab)
+        releaseBackgroundWebViews(newTab)
     }
 
-    //Each extra live WebView costs ~50 MB of renderer memory on a 2 GB device (W1), so only the
-    //current and the previously used tab keep theirs. The others are destroyed; their state was
-    //saved in onPause() when they were detached, and restoreWebView() brings it back on return.
-    private fun releaseBackgroundWebViews(activeTab: WebTabState, previousTab: WebTabState?) {
+    // Android requires destroy() when a WebView is finished. On a 2 GB box only the visible tab
+    // keeps a renderer. State was saved in onPause() on detach; restoreWebView() brings it back.
+    private fun releaseBackgroundWebViews(activeTab: WebTabState) {
         var released = 0
         for (tab in tabsStates) {
-            if (tab == activeTab || tab == previousTab) continue
+            if (tab == activeTab) continue
             if (tab.webEngine.getView() == null) continue
             tab.trimMemory()
             released++
         }
         if (released > 0) {
-            Log.i(TAG, "released $released background WebView(s), kept current and previous tab")
+            Log.i(TAG, "released $released background WebView(s); only the visible tab stays live")
         }
     }
 
