@@ -34,6 +34,11 @@ class ExitPersistenceTest {
             savedState = Bundle().apply { putString("history", "previous tab history") }
         }
         val previousSave = model.modelScope.launch { model.saveTab(previous) }
+        tab.selected = false
+        tab.title = "obsolete"
+        val obsoleteSave = model.modelScope.launch { model.saveTab(tab) }
+        tab.selected = true
+        tab.title = "latest"
         val pending = model.saveTabBeforeExit(tab)
         try {
             assertFalse("onPause must return without waiting for disk", pending.isCompleted)
@@ -41,7 +46,7 @@ class ExitPersistenceTest {
             model.clear()
         } finally { mutex.unlock() }
         withTimeout(10_000) {
-            while (!pending.isCompleted || !previousSave.isCompleted) {
+            while (!pending.isCompleted || !previousSave.isCompleted || !obsoleteSave.isCompleted) {
                 shadowOf(Looper.getMainLooper()).idle()
                 delay(5)
             }
@@ -50,7 +55,10 @@ class ExitPersistenceTest {
         assertNotNull(previous.wvStateFileName)
         assertTrue(tab.id > 0)
         assertNotNull(tab.wvStateFileName)
-        assertEquals(tab.id, AppDatabase.db.tabsDao().getAll(false).single { it.url == tab.url }.id)
+        val stored = AppDatabase.db.tabsDao().getAll(false).single { it.url == tab.url }
+        assertEquals(tab.id, stored.id)
+        assertEquals("latest", stored.title)
+        assertTrue(stored.selected)
         AppDatabase.db.tabsDao().delete(tab)
         tab.removeFiles()
         AppDatabase.db.tabsDao().delete(previous)

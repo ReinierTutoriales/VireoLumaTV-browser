@@ -64,6 +64,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     @Ignore
     var rendererLost: Boolean = false
     @Ignore
+    val persistenceRevision = java.util.concurrent.atomic.AtomicLong(0)
+    @Ignore
     var lastLoadingUrl: String? = null //this is last url appeared in WebViewClient.shouldOverrideUrlLoading callback
     @Ignore
     var blockedAds = 0
