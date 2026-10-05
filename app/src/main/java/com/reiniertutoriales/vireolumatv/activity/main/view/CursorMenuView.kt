@@ -84,9 +84,12 @@ class CursorMenuView @JvmOverloads constructor(
 
     /** Hides the menu immediately (no animation). Used before showing a dialog so focus does not re-trigger menu actions. */
     private fun closeWithoutAnimation() {
+        val previous = menuContext
         menuContext = null
         vb.root.animate().cancel()
         visibility = GONE
+        previous?.tab?.webEngine?.getView()?.requestFocus()
+        previous?.cursorDrawerDelegate?.animateAppearing()
         vb.root.alpha = 1f
         vb.root.scaleX = 1f
         vb.root.scaleY = 1f
@@ -94,7 +97,6 @@ class CursorMenuView @JvmOverloads constructor(
 
     fun close(animation: CloseAnimation = CloseAnimation.FADE_OUT) {
         if (menuContext == null) return
-        menuContext = null
         vb.root.animate().cancel()
         val scale = if (animation == CloseAnimation.EXPLODE_OUT) 1.08f else 1f
         vb.root.animate().alpha(0f).scaleX(scale).scaleY(scale).setDuration(140)
@@ -136,6 +138,7 @@ class CursorMenuView @JvmOverloads constructor(
                 }
                 enterDirectNavigationMode(mc)
             }
+            .setOnDismissListener { mc.tab.webEngine.getView()?.requestFocus() }
             .show()
     }
 

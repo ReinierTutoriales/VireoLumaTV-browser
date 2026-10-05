@@ -11,7 +11,6 @@ import android.widget.ArrayAdapter
 import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.Toast
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
@@ -169,6 +168,24 @@ class MainSettingsView @JvmOverloads constructor(
         })
     }
 
+    private val loadingObserver: (Boolean) -> Unit = { updateAdBlockInfo() }
+    private val resultObserver: (AdblockModel.UpdateResult) -> Unit = { updateAdBlockInfo() }
+    private val sourceObserver: (String) -> Unit = { updateAdBlockInfo() }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        adblockModel.clientLoading.subscribe(loadingObserver)
+        adblockModel.updateResult.subscribe(resultObserver)
+        config.adBlockListURL.subscribe(sourceObserver)
+    }
+
+    override fun onDetachedFromWindow() {
+        adblockModel.clientLoading.unsubscribe(loadingObserver)
+        adblockModel.updateResult.unsubscribe(resultObserver)
+        config.adBlockListURL.unsubscribe(sourceObserver)
+        super.onDetachedFromWindow()
+    }
+
     private fun initAdBlockConfigUI() {
         vb.scAdblock.isChecked = config.adBlockEnabled
         vb.etAdBlockerListUrl.setText(config.adBlockListURL.value)
@@ -180,15 +197,10 @@ class MainSettingsView @JvmOverloads constructor(
         }
         vb.llAdBlockerDetails.visibility = if (config.adBlockEnabled) VISIBLE else GONE
 
-        adblockModel.clientLoading.subscribe(activity as FragmentActivity) {
-            updateAdBlockInfo()
-        }
-
         vb.btnAdBlockerUpdate.setOnClickListener {
             if (adblockModel.clientLoading.value) return@setOnClickListener
             saveAdBlockListUrl()
             adblockModel.loadAdBlockList(true)
-            it.isEnabled = false
         }
 
         updateAdBlockInfo()
@@ -196,7 +208,12 @@ class MainSettingsView @JvmOverloads constructor(
 
     private fun saveAdBlockListUrl() {
         val value = vb.etAdBlockerListUrl.text.toString().trim()
-        config.adBlockListURL.value = value.ifEmpty { Config.DEFAULT_ADBLOCK_LIST_URL }
+        val source = value.ifEmpty { Config.DEFAULT_ADBLOCK_LIST_URL }
+        if (config.adBlockListURL.value != source) {
+            config.adBlockListLastUpdate = 0L
+            config.adBlockListNextRetry = 0L
+            config.adBlockListURL.value = source
+        }
     }
 
     private fun updateAdBlockInfo() {
@@ -207,10 +224,19 @@ class MainSettingsView @JvmOverloads constructor(
         val lists = if (config.adBlockListURL.value == Config.DEFAULT_ADBLOCK_LIST_URL)
             "EasyList · EasyPrivacy · EasyList Spanish" else config.adBlockListURL.value
         val infoText = "${context.getString(R.string.last_update)}: $lastUpdate\n$lists"
-        vb.tvAdBlockerListInfo.text = infoText
         val loadingAdBlockList = adblockModel.clientLoading.value
-        vb.btnAdBlockerUpdate.isEnabled = !loadingAdBlockList
-        vb.btnAdBlockerUpdate.visibility = if (loadingAdBlockList) View.GONE else View.VISIBLE
+        val status = when {
+            loadingAdBlockList -> R.string.adblock_updating
+            adblockModel.updateResult.value == AdblockModel.UpdateResult.UPDATED -> R.string.adblock_updated
+            adblockModel.updateResult.value == AdblockModel.UpdateResult.PARTIAL -> R.string.adblock_partial_update
+            adblockModel.updateResult.value == AdblockModel.UpdateResult.CACHED -> R.string.adblock_using_saved
+            adblockModel.updateResult.value == AdblockModel.UpdateResult.ERROR -> R.string.adblock_update_error
+            else -> null
+        }
+        vb.tvAdBlockerListInfo.text = infoText + (status?.let { "\n" + context.getString(it) } ?: "")
+        // Keep the focused TV button in place; the click handler rejects duplicate refreshes.
+        vb.btnAdBlockerUpdate.isEnabled = true
+        vb.btnAdBlockerUpdate.visibility = View.VISIBLE
         vb.pbAdBlockerListLoading.visibility = if (loadingAdBlockList) View.VISIBLE else View.GONE
     }
 

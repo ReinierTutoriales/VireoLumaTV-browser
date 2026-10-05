@@ -202,6 +202,10 @@ class Config(val prefs: SharedPreferences) {
             prefs.edit().putLong(ADBLOCK_LAST_UPDATE_LIST_KEY, value).apply()
         }
 
+    var adBlockListNextRetry: Long
+        get() = prefs.getLong("adblock_list_next_retry", 0)
+        set(value) { prefs.edit().putLong("adblock_list_next_retry", value).apply() }
+
     var appWebExtensionVersion: Int
         get() = prefs.getInt(APP_WEB_EXTENSION_VERSION_KEY, 0)
         set(value) {

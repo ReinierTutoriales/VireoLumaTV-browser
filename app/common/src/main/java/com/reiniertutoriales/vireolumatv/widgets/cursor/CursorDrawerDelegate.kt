@@ -558,13 +558,28 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
         surface.post(pinchZoomRunnable)
     }
 
-    fun hideCursor() {
-        if (dpadCenterPressed) {
-            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
-            dpadCenterPressed = false
+    /** Stop held keys and synthetic gestures when a menu/dialog or another tab takes input. */
+    fun resetInput() {
+        surface.removeCallbacks(cursorUpdateRunnable)
+        surface.removeCallbacks(longPressRunnable)
+        surface.removeCallbacks(pinchZoomRunnable)
+        mainHandler.removeCallbacks(cursorHideRunnable)
+        if (dpadCenterPressed || scrollHackStarted || pinchZoomStartTime != 0L) {
+            val point = if (scrollHackStarted) scrollHackCoords else cursorPosition
+            dispatchMotionEvent(point.x, point.y, MotionEvent.ACTION_CANCEL)
         }
+        dpadCenterPressed = false
+        scrollHackStarted = false
+        pinchZoomStartTime = 0L
         grabMode = false
-        lastCursorUpdate = System.currentTimeMillis() - CURSOR_DISAPPEAR_TIMEOUT
+        cursorDirection.set(0, 0)
+        cursorSpeed.set(0f, 0f)
+        surface.keyDispatcherState?.reset(this)
+    }
+
+    fun hideCursor() {
+        resetInput()
+        lastCursorUpdate = System.currentTimeMillis() - CURSOR_DISAPPEAR_TIMEOUT - 1L
         surface.postInvalidate()
     }
 

@@ -961,6 +961,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.ivMiniatures.animate().cancel()
         vb.ivMiniatures.visibility = View.VISIBLE
         vb.llBottomPanel.visibility = View.VISIBLE
+        vb.flWebViewContainer.resetInput()
         vb.flWebViewContainer.visibility = View.INVISIBLE
         val currentTab = tabsModel.currentTab.value
         if (currentTab != null) {
@@ -1026,7 +1027,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     private fun hideMenuOverlay(hideBottomButtons: Boolean = true) {
         if (!thumbnailOverlayVisible) {
-            if (hideBottomButtons) hideBottomPanel()
+            if (hideBottomButtons) {
+                hideBottomPanel()
+                if (!vb.vCursorMenu.isVisible) {
+                    vb.flWebViewContainer.visibility = View.VISIBLE
+                    tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
+                }
+            }
             return
         }
         thumbnailOverlayVisible = false
@@ -1035,7 +1042,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         displayThumbnailRunnable.tabState = null
         vb.rlActionBar.animate().cancel()
         vb.ivMiniatures.animate().cancel()
+        syncTabWithTitles()
+        vb.flWebViewContainer.visibility = View.VISIBLE
         if (hideBottomButtons) {
+            tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
             hideBottomPanel()
         }
 
@@ -1063,11 +1073,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                     vb.ivMiniatures.visibility = View.INVISIBLE
                     vb.rlActionBar.visibility = View.INVISIBLE
                     vb.ivMiniatures.setImageResource(0)
-                    syncTabWithTitles()
-                    vb.flWebViewContainer.visibility = View.VISIBLE
-                    if (hideBottomButtons) {
-                        tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
-                    }
                 }
                 .start()
     }

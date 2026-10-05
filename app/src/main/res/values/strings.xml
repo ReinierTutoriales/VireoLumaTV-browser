@@ -189,4 +189,9 @@
     <string name="media_rewind">Rewind Media</string>
     <string name="media_fast_forward">Fast Forward Media</string>
     <string name="long_press">Long press</string>
+    <string name="adblock_updating">Updating filter lists…</string>
+    <string name="adblock_updated">Filter lists updated</string>
+    <string name="adblock_partial_update">Some lists updated; saved rules retained. Retry in 24 hours.</string>
+    <string name="adblock_using_saved">Using saved rules. No new list was downloaded.</string>
+    <string name="adblock_update_error">Could not load filter lists. Check the connection or list URL.</string>
 </resources>

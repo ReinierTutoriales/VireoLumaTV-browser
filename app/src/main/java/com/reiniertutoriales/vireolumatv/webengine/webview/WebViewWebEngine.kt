@@ -194,6 +194,11 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         this.viewParent = parent as CursorLayout
         parent.removeAllViews()
         parent.addView(webView)
+        viewParent?.resetInput()
+        viewParent?.cursorEnabled = true
+        webView?.setVirtualCursorMode(true)
+        webView?.isFocusableInTouchMode = true
+        webView?.requestFocus()
         viewParent?.cursorDrawerDelegate?.callback = this
         onResume()
     }

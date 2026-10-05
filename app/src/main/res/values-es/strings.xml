@@ -1,0 +1,7 @@
+<resources>
+    <string name="adblock_updating">Actualizando listas…</string>
+    <string name="adblock_updated">Listas actualizadas</string>
+    <string name="adblock_partial_update">Actualización parcial; se conservan las reglas guardadas. Reintento en 24 horas.</string>
+    <string name="adblock_using_saved">Usando reglas guardadas. No se descargaron listas nuevas.</string>
+    <string name="adblock_update_error">No se pudieron cargar las listas. Revisa la conexión o la URL.</string>
+</resources>

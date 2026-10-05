@@ -56,6 +56,7 @@ class AdblockUpdateTest {
         val source = "http://127.0.0.1:${server.address.port}/"
         model.config.adBlockListURL.value = source
         model.config.adBlockListLastUpdate = 0
+        model.config.adBlockListNextRetry = 0
         val cache = AdblockCache.fileFor(VireoLumaTVApp.instance.filesDir, engine, source)
         cache.writeText("old-ads.test")
         fun blocks(host: String) = model.isAd(Uri.parse("https://$host/banner"), "image", Uri.parse("https://page.test"))
@@ -76,6 +77,8 @@ class AdblockUpdateTest {
             assertEquals("Failed downloads should not recompile cached rules", 1, compiles)
             assertEquals("An existing native client should not be deserialized again", 1, restores)
             assertFalse(model.clientLoading.value)
+            assertEquals(AdblockModel.UpdateResult.CACHED, model.updateResult.value)
+            assertTrue(model.config.adBlockListNextRetry > System.currentTimeMillis())
         } finally {
             release.countDown()
             model.clear()
