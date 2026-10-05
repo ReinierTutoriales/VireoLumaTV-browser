@@ -8,6 +8,8 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.cancel
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
@@ -90,6 +92,7 @@ class BrowserNavigationTest {
             view.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
         }
         override fun close() {
+            activity.lifecycleScope.cancel()
             vb.root.removeAllViews()
             tabs.currentTab.value = null
             tabs.tabsStates.clear()
@@ -154,6 +157,23 @@ class BrowserNavigationTest {
         assertNotNull("TV keyboard Search must load a result", f.loadedUrl)
         assertTrue(f.loadedUrl!!.contains("android+tv+navegador"))
         assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
+        assertTrue(f.page.hasFocus())
+    }
+
+    @Test fun pageUpdatesCannotOverwriteTypingAndPhysicalEnterSubmitsOnce() = Fixture().use { f ->
+        f.call("handleBackNavigation")
+        val address = f.vb.vActionBar.findViewById<EditText>(R.id.etUrl)
+        f.vb.vActionBar.setAddressBoxText("https://before.test")
+        address.requestFocus()
+        address.setText("my search")
+        f.vb.vActionBar.setAddressBoxText("https://redirected.test")
+        assertEquals("my search", address.text.toString())
+        f.call("handleBackNavigation")
+        assertEquals("https://redirected.test", address.text.toString())
+        address.requestFocus()
+        address.setText("https://typed.test")
+        f.key(address, KeyEvent.KEYCODE_ENTER)
+        assertEquals("https://typed.test", f.loadedUrl)
         assertTrue(f.page.hasFocus())
     }
 

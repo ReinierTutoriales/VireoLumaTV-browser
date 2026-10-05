@@ -30,6 +30,7 @@ class ActionBar @JvmOverloads constructor(
     var callback: Callback? = null
     private var downloadAnimation: Animation? = null
     private var downloadsModel = ActiveModelsRepository.get(ActiveDownloadsModel::class, context)
+    private var addressBoxText = ""
     private var extendedAddressBarMode = false
     val isEditingAddress: Boolean get() = extendedAddressBarMode
     private val selectAddressRunnable = Runnable {
@@ -63,6 +64,7 @@ class ActionBar @JvmOverloads constructor(
             removeCallbacks(selectAddressRunnable)
             if (extendedAddressBarMode) {
                 dismissExtendedAddressBarMode()
+                vb.etUrl.setText(addressBoxText)
                 callback?.onAddressInputCancelled()
             }
         }
@@ -143,11 +145,9 @@ class ActionBar @JvmOverloads constructor(
     }
 
     fun setAddressBoxText(text: String) {
-        if (text == Config.HOME_PAGE_URL) {
-            vb.etUrl.setText("")
-        } else {
-            vb.etUrl.setText(text)
-        }
+        addressBoxText = if (text == Config.HOME_PAGE_URL) "" else text
+        // A page finishing or redirecting must not overwrite a search being typed.
+        if (!extendedAddressBarMode) vb.etUrl.setText(addressBoxText)
     }
 
     fun setAddressBoxTextColor(color: Int) {
@@ -182,6 +182,7 @@ class ActionBar @JvmOverloads constructor(
         imm.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
         dismissExtendedAddressBarMode()
         vb.etUrl.clearFocus()
+        vb.etUrl.setText(addressBoxText)
         callback?.onAddressInputCancelled()
         catchFocus()
     }
