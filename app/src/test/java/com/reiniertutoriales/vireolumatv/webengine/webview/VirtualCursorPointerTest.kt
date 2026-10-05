@@ -1,82 +1,112 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
+import android.app.Activity
 import android.app.Application
+import android.os.Looper
 import android.view.InputDevice
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.widget.FrameLayout
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [28])
 class VirtualCursorPointerTest {
-    private class Surface : View(RuntimeEnvironment.getApplication()) {
+    private class Surface(activity: Activity) : FrameLayout(activity) {
         val touch = mutableListOf<MotionEvent>()
-        val hover = mutableListOf<MotionEvent>()
         override fun dispatchTouchEvent(event: MotionEvent): Boolean {
             touch += MotionEvent.obtain(event)
-            return true
+            return super.dispatchTouchEvent(event)
         }
-        override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
-            hover += MotionEvent.obtain(event)
-            return true
-        }
-        fun recycle() = (touch + hover).forEach { it.recycle() }
     }
 
-    private fun send(delegate: CursorDrawerDelegate, action: Int) {
-        CursorDrawerDelegate::class.java.getDeclaredMethod("dispatchCursorEvent",
-            Float::class.javaPrimitiveType, Float::class.javaPrimitiveType, Int::class.javaPrimitiveType)
-            .apply { isAccessible = true }.invoke(delegate, 123f, 456f, action)
+    private fun withCursor(test: (CursorDrawerDelegate, Surface, IntArray) -> Unit) {
+        val controller = Robolectric.buildActivity(Activity::class.java).setup()
+        val activity = controller.get()
+        val surface = Surface(activity)
+        val clicks = intArrayOf(0, 0)
+        repeat(2) { index ->
+            surface.addView(View(activity).apply {
+                setOnClickListener { clicks[index]++ }
+            }, FrameLayout.LayoutParams(400, 800).apply { leftMargin = index * 400 })
+        }
+        activity.setContentView(surface)
+        surface.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY))
+        surface.layout(0, 0, 800, 800)
+        val delegate = CursorDrawerDelegate(activity, surface)
+        delegate.cursorPosition.set(123f, 456f)
+        delegate.animateAppearing()
+        try { test(delegate, surface, clicks) } finally {
+            surface.touch.forEach { it.recycle() }
+            controller.pause().stop().destroy()
+        }
     }
 
-    @Test fun webCursorHasExactMouseCoordinatesAndPrimaryButtonWithIndependentHover() {
-        val surface = Surface()
-        val delegate = CursorDrawerDelegate(surface.context, surface)
+    private fun key(delegate: CursorDrawerDelegate, action: Int, code: Int = KeyEvent.KEYCODE_DPAD_CENTER) {
+        assertTrue(delegate.dispatchKeyEvent(KeyEvent(action, code)))
+    }
+
+    @Test fun remoteTapClicksOnlyTheControlUnderTheCursor() = withCursor { delegate, surface, clicks ->
+        key(delegate, KeyEvent.ACTION_DOWN)
+        key(delegate, KeyEvent.ACTION_UP)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertArrayEquals(intArrayOf(1, 0), clicks)
+        delegate.cursorPosition.set(523f, 456f)
+        key(delegate, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
+        key(delegate, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertArrayEquals(intArrayOf(1, 1), clicks)
+        assertEquals(listOf(0, 1, 0, 1), surface.touch.map { it.actionMasked })
+        surface.touch.forEach {
+            assertEquals(InputDevice.SOURCE_TOUCHSCREEN, it.source)
+            assertEquals(MotionEvent.TOOL_TYPE_FINGER, it.getToolType(0))
+            assertEquals(456f, it.y, 0f)
+        }
+        assertEquals(123f, surface.touch[0].x, 0f)
+        assertEquals(523f, surface.touch[2].x, 0f)
+        assertEquals(surface.touch[0].downTime, surface.touch[1].downTime)
+    }
+
+    @Test fun selectionAliasesDoNotDuplicateTheTap() = withCursor { delegate, surface, clicks ->
+        key(delegate, KeyEvent.ACTION_DOWN)
+        key(delegate, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BUTTON_A)
+        key(delegate, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BUTTON_A)
+        key(delegate, KeyEvent.ACTION_UP)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertArrayEquals(intArrayOf(1, 0), clicks)
+        assertEquals(listOf(0, 1), surface.touch.map { it.actionMasked })
+    }
+
+    @Test fun longPressCancelsTapAndTheNextTapStillWorks() = withCursor { delegate, surface, clicks ->
+        var longPresses = 0
         delegate.callback = object : CursorDrawerDelegate.Callback {
-            override fun onLongPress(x: Int, y: Int) {}
-            override fun usesMousePointer() = true
+            override fun onLongPress(x: Int, y: Int) {
+                assertEquals(123, x)
+                assertEquals(456, y)
+                longPresses++
+            }
         }
-        try {
-            send(delegate, MotionEvent.ACTION_HOVER_MOVE)
-            send(delegate, MotionEvent.ACTION_DOWN)
-            send(delegate, MotionEvent.ACTION_MOVE)
-            send(delegate, MotionEvent.ACTION_UP)
-            send(delegate, MotionEvent.ACTION_DOWN)
-            send(delegate, MotionEvent.ACTION_CANCEL)
-            assertEquals(1, surface.hover.size)
-            assertEquals(5, surface.touch.size)
-            (surface.touch + surface.hover).forEach {
-                assertEquals(InputDevice.SOURCE_MOUSE, it.source)
-                assertEquals(MotionEvent.TOOL_TYPE_MOUSE, it.getToolType(0))
-                assertEquals(123f, it.x, 0f)
-                assertEquals(456f, it.y, 0f)
-            }
-            assertEquals(MotionEvent.BUTTON_PRIMARY, surface.touch[0].buttonState)
-            assertEquals(MotionEvent.BUTTON_PRIMARY, surface.touch[1].buttonState)
-            assertEquals(0, surface.touch[2].buttonState)
-            assertEquals(0, surface.touch[4].buttonState)
-            assertEquals(surface.touch[0].downTime, surface.touch[2].downTime)
-            assertEquals(0, surface.hover.single().buttonState)
-        } finally { surface.recycle() }
-    }
-
-    @Test fun nonWebControlsKeepTouchSemantics() {
-        val surface = Surface()
-        val delegate = CursorDrawerDelegate(surface.context, surface)
-        try {
-            send(delegate, MotionEvent.ACTION_DOWN)
-            send(delegate, MotionEvent.ACTION_UP)
-            assertTrue(surface.hover.isEmpty())
-            surface.touch.forEach {
-                assertEquals(InputDevice.SOURCE_TOUCHSCREEN, it.source)
-                assertEquals(MotionEvent.TOOL_TYPE_FINGER, it.getToolType(0))
-            }
-        } finally { surface.recycle() }
+        key(delegate, KeyEvent.ACTION_DOWN)
+        val runnable = CursorDrawerDelegate::class.java.getDeclaredField("longPressRunnable")
+            .apply { isAccessible = true }.get(delegate) as Runnable
+        runnable.run()
+        key(delegate, KeyEvent.ACTION_UP)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(1, longPresses)
+        assertArrayEquals(intArrayOf(0, 0), clicks)
+        assertEquals(listOf(0, 3), surface.touch.map { it.actionMasked })
+        key(delegate, KeyEvent.ACTION_DOWN)
+        key(delegate, KeyEvent.ACTION_UP)
+        shadowOf(Looper.getMainLooper()).idle()
+        assertArrayEquals(intArrayOf(1, 0), clicks)
     }
 }

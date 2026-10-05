@@ -1,0 +1,96 @@
+name: Update v1.0.0 cursor hotfix
+
+on:
+  push:
+    branches: [fixes/audit]
+    paths: ['.github/workflows/update-v1.0.0.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-v1.0.0
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HAS_RELEASE_KEY: ${{ secrets.KEYSTORE_BASE64 != '' }}
+      HAS_SHARED_KEY: ${{ secrets.DEBUG_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Verify existing release and expected source
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/v1.0.0" >/dev/null
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v1.0.0" --jq '.object.sha')" = '6a94ee6f2da87ff41aa38f82d7b30988556f62f1'
+          mkdir -p original
+          gh release download v1.0.0 --repo "$GITHUB_REPOSITORY" --pattern SIGNING.txt --dir original
+          python - <<'PYCODE'
+          from pathlib import Path
+          source = Path('app/build.gradle.kts').read_text()
+          assert 'versionName = "1.0.0"' in source
+          assert 'versionCode = 71' in source
+          PYCODE
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+      - name: Restore the original shared signing key
+        env:
+          SHARED_KEY: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          test "$HAS_SHARED_KEY" = true
+          mkdir -p "$HOME/.android"
+          printf '%s' "$SHARED_KEY" | base64 --decode > "$HOME/.android/debug.keystore"
+      - name: Verify complete test suite and debug build
+        run: |
+          node scripts/test-home-page-security.cjs
+          node scripts/test-webview-controls.cjs
+          ./gradlew testGenericDebugUnitTest assembleGenericDebug --stacktrace
+      - name: Build with existing shared CI certificate
+        env:
+          CI_SIGN_RELEASE_WITH_DEBUG_KEY: 'true'
+        run: ./gradlew assembleGenericRelease --stacktrace
+      - name: Verify APK version and signature; prepare release files
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/generic/release/app-generic-release.apk dist/VireoLumaTV-1.0.0.apk
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+          metadata = json.loads(Path('app/build/outputs/apk/generic/release/output-metadata.json').read_text())
+          assert len(metadata['elements']) == 1
+          element = metadata['elements'][0]
+          assert element['versionName'] == '1.0.0'
+          assert element['versionCode'] == 71
+          PYCODE
+          build_tools=$(find "$ANDROID_HOME/build-tools" -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n 1)
+          "$build_tools/apksigner" verify --verbose --print-certs dist/VireoLumaTV-1.0.0.apk > dist/SIGNING.txt
+          python - <<'PYCODE'
+          import re
+          from pathlib import Path
+          pattern = r'Signer #1 certificate SHA-256 digest: ([a-fA-F0-9]+)'
+          old = re.search(pattern, Path('original/SIGNING.txt').read_text())
+          new = re.search(pattern, Path('dist/SIGNING.txt').read_text())
+          assert old and new and old.group(1).lower() == new.group(1).lower(), 'Signing certificate changed'
+          PYCODE
+          printf '\nFirma: certificado compartido de CI existente (debug); APK release optimizado con R8.\n' >> dist/SIGNING.txt
+          printf '\n**Firma:** certificado compartido de CI existente, de tipo debug; APK release optimizado con R8.\n' >> RELEASE_NOTES.md
+          printf 'Application source: https://github.com/%s/tree/%s\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > dist/RELEASE_SOURCE.txt
+          cp LICENSE.md NOTICE.md dist/
+          cp licenses/*.txt dist/
+          cp app/src/main/assets/licenses/SOURCES.txt dist/
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+      - name: Update existing v1.0.0 release after all checks
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v1.0.0" --jq '.object.sha')" = '6a94ee6f2da87ff41aa38f82d7b30988556f62f1'
+          gh release upload v1.0.0 dist/* --repo "$GITHUB_REPOSITORY" --clobber
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/v1.0.0" -f sha="$GITHUB_SHA" -F force=true
+          gh release edit v1.0.0 --repo "$GITHUB_REPOSITORY" --notes-file RELEASE_NOTES.md --latest

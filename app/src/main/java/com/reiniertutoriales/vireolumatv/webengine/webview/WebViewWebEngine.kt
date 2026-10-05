@@ -228,7 +228,6 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         return true
     }
 
-    override fun usesMousePointer(): Boolean = true
 
     override fun onLongPress(x: Int, y: Int) {
         webView?.let {
