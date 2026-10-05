@@ -1,6 +1,8 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.net.http.SslError
+import android.os.SystemClock
+import android.util.Base64
 import android.webkit.JavascriptInterface
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
@@ -10,22 +12,25 @@ import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import org.json.JSONArray
 import org.json.JSONObject
+import java.security.SecureRandom
 
 
 class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     companion object {
-        private const val BLOB_DOWNLOAD_TIMEOUT_MS = 10_000L
+        // Covers the XHR + FileReader round trip for the largest accepted blob on a slow TV SoC.
+        private const val BLOB_DOWNLOAD_TIMEOUT_MS = 30_000L
         private const val MAX_BLOB_DOWNLOAD_BYTES = 32L * 1024L * 1024L
-        private val BLOB_TOKEN_PATTERN = Regex("^[A-Za-z0-9_-]{32,128}$")
+        private val secureRandom = SecureRandom()
     }
 
     private data class PendingBlobDownload(
         val token: String,
         val url: String,
         val fileName: String?,
-        val mimetype: String,
         val sourceUrl: android.net.Uri,
-        val expiresAtMs: Long
+        val expiresAtMs: Long,
+        var mimetype: String = "",
+        var sizeAccepted: Boolean = false
     )
 
     private val blobDownloadLock = Any()
@@ -126,26 +131,47 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         }
     }
 
+    /**
+     * Opens a blob download session. Requires a fresh native user activation (remote OK/Enter,
+     * gamepad A, touch or mouse click) that the page cannot synthesize; the activation is consumed,
+     * so one press authorizes at most one download. Returns a single-use token generated here,
+     * or "" when rejected.
+     */
     @JavascriptInterface
-    fun beginBlobDownload(token: String, url: String, fileName: String?, mimetype: String?, size: Long): Boolean {
-        val sourceUrl = (webEngine.getView() as? WebViewEx)?.currentOriginalUrl ?: return false
-        if (!BridgePagePolicy.isNormalWebPage(sourceUrl)) return false
-        if (!isValidBlobToken(token)) return false
-        if (!url.startsWith("blob:", ignoreCase = true)) return false
-        if (size <= 0L || size > MAX_BLOB_DOWNLOAD_BYTES) return false
+    fun beginBlobDownload(url: String, fileName: String?): String {
+        val sourceUrl = (webEngine.getView() as? WebViewEx)?.currentOriginalUrl ?: return ""
+        if (!BridgePagePolicy.isNormalWebPage(sourceUrl)) return ""
+        if (!url.startsWith("blob:", ignoreCase = true)) return ""
 
-        val now = System.currentTimeMillis()
+        val now = SystemClock.uptimeMillis()
         synchronized(blobDownloadLock) {
             val existing = pendingBlobDownload
-            if (existing != null && existing.expiresAtMs > now) return false
+            if (existing != null && existing.expiresAtMs > now) return ""
+            if (!UserActivation.consume()) return ""
+            val token = newBlobToken()
             pendingBlobDownload = PendingBlobDownload(
                 token = token,
                 url = url,
                 fileName = fileName,
-                mimetype = mimetype.orEmpty(),
                 sourceUrl = sourceUrl,
                 expiresAtMs = now + BLOB_DOWNLOAD_TIMEOUT_MS
             )
+            return token
+        }
+    }
+
+    /** Called before FileReader so oversized blobs are dropped before being base64-encoded. */
+    @JavascriptInterface
+    fun acceptBlobSize(token: String, size: Long, mimetype: String?): Boolean {
+        val now = SystemClock.uptimeMillis()
+        synchronized(blobDownloadLock) {
+            val pending = livePending(token, now) ?: return false
+            if (size <= 0L || size > MAX_BLOB_DOWNLOAD_BYTES) {
+                pendingBlobDownload = null
+                return false
+            }
+            pending.mimetype = mimetype.orEmpty()
+            pending.sizeAccepted = true
             return true
         }
     }
@@ -158,32 +184,38 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     }
 
     @JavascriptInterface
-    fun takeBlobDownloadData(token: String, base64BlobData: String, fileName: String?, url: String, mimetype: String) {
-        // Blob data is extremely memory-expensive in this legacy bridge path. Only accept a single
-        // short-lived, user-click initiated session registered by the injected downloader script.
+    fun takeBlobDownloadData(token: String, base64BlobData: String, url: String) {
+        // The Java String already exists when this runs; the length check below prevents the
+        // decode and disk write from multiplying that cost, it cannot undo the bridge allocation.
         val sourceUrl = (webEngine.getView() as? WebViewEx)?.currentOriginalUrl ?: return
-        val now = System.currentTimeMillis()
+        val now = SystemClock.uptimeMillis()
         val pending = synchronized(blobDownloadLock) {
-            val pending = pendingBlobDownload ?: return
-            if (pending.expiresAtMs <= now) {
-                pendingBlobDownload = null
-                return
-            }
-            if (pending.token != token || pending.url != url || pending.sourceUrl != sourceUrl) return
-            if (!isBlobDataUrlWithinLimit(base64BlobData)) return
+            val pending = livePending(token, now) ?: return
             pendingBlobDownload = null
+            if (!pending.sizeAccepted || pending.url != url || pending.sourceUrl != sourceUrl) return
+            if (!isBlobDataUrlWithinLimit(base64BlobData)) return
             pending
         }
 
         if (!BridgePagePolicy.isNormalWebPage(sourceUrl)) return
         val callback = webEngine.callback ?: return
-        val finalFileName = DownloadUtils.sanitizeFileName(fileName ?: pending.fileName)
-            ?: DownloadUtils.guessFileName(url, null, pending.mimetype.ifEmpty { mimetype })
+        val finalFileName = DownloadUtils.sanitizeFileName(pending.fileName)
+            ?: DownloadUtils.guessFileName(url, null, pending.mimetype)
         callback.getActivity().runOnUiThread {
             if (!isNormalWebPage() || (webEngine.getView() as? WebViewEx)?.currentOriginalUrl != pending.sourceUrl) return@runOnUiThread
             callback.onDownloadRequested(url, "", finalFileName, "VireoLumaTV",
-                pending.mimetype.ifEmpty { mimetype }, Download.OperationAfterDownload.NOP, base64BlobData)
+                pending.mimetype, Download.OperationAfterDownload.NOP, base64BlobData)
         }
+    }
+
+    /** Must be called while holding [blobDownloadLock]. Drops expired sessions. */
+    private fun livePending(token: String, now: Long): PendingBlobDownload? {
+        val pending = pendingBlobDownload ?: return null
+        if (pending.expiresAtMs <= now) {
+            pendingBlobDownload = null
+            return null
+        }
+        return if (pending.token == token) pending else null
     }
 
     @JavascriptInterface
@@ -206,8 +238,10 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         return BridgePagePolicy.isCertificatePage(view.currentOriginalUrl, view.certificateErrorPageUrl, view.lastSSLError != null)
     }
 
-    private fun isValidBlobToken(token: String): Boolean {
-        return BLOB_TOKEN_PATTERN.matches(token)
+    private fun newBlobToken(): String {
+        val bytes = ByteArray(24)
+        secureRandom.nextBytes(bytes)
+        return Base64.encodeToString(bytes, Base64.NO_WRAP or Base64.NO_PADDING or Base64.URL_SAFE)
     }
 
     private fun isBlobDataUrlWithinLimit(dataUrl: String): Boolean {

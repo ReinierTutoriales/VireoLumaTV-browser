@@ -88,6 +88,7 @@ import com.reiniertutoriales.vireolumatv.utils.sameDay
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import com.reiniertutoriales.vireolumatv.widgets.NotificationView
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import kotlinx.coroutines.Dispatchers
@@ -858,6 +859,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         window.callback = object : Window.Callback by localCallback {
             override fun dispatchKeyEvent(event: KeyEvent): Boolean {
                 //Log.d(TAG, "dispatchKeyEvent event: $event")
+                UserActivation.onKeyEvent(event)
                 backNavigationEventsAdapter.dispatchKeyEvent(event)
 
                 val keyCode = if (event.keyCode != 0) event.keyCode else event.scanCode
@@ -871,6 +873,11 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 }
 
                 return localCallback.dispatchKeyEvent(event)
+            }
+
+            override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+                UserActivation.onTouchEvent(event)
+                return localCallback.dispatchTouchEvent(event)
             }
 
             override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
