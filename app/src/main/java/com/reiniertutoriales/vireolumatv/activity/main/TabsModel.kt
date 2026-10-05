@@ -85,7 +85,7 @@ class TabsModel : ActiveModel() {
     suspend fun saveTab(tab: WebTabState) {
         val snapshot = tab.copy().apply { savedState = tab.savedState }
         // Capture WebView state on Main, serialize and commit the captured state on IO.
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO + NonCancellable) {
             saveMutex.withLock {
                 if (tab.closed) return@withLock
                 snapshot.id = tab.id

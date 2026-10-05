@@ -6,6 +6,7 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeout
@@ -29,6 +30,10 @@ class ExitPersistenceTest {
             savedState = Bundle().apply { putString("history", "kept after exit") }
         }
         mutex.lock() // Hold the IO transaction so completion cannot race the assertion.
+        val previous = WebTabState(url = "https://previous.test").apply {
+            savedState = Bundle().apply { putString("history", "previous tab history") }
+        }
+        val previousSave = model.modelScope.launch { model.saveTab(previous) }
         val pending = model.saveTabBeforeExit(tab)
         try {
             assertFalse("onPause must return without waiting for disk", pending.isCompleted)
@@ -36,15 +41,19 @@ class ExitPersistenceTest {
             model.clear()
         } finally { mutex.unlock() }
         withTimeout(10_000) {
-            while (!pending.isCompleted) {
+            while (!pending.isCompleted || !previousSave.isCompleted) {
                 shadowOf(Looper.getMainLooper()).idle()
                 delay(5)
             }
         }
+        assertTrue(previous.id > 0)
+        assertNotNull(previous.wvStateFileName)
         assertTrue(tab.id > 0)
         assertNotNull(tab.wvStateFileName)
         assertEquals(tab.id, AppDatabase.db.tabsDao().getAll(false).single { it.url == tab.url }.id)
         AppDatabase.db.tabsDao().delete(tab)
         tab.removeFiles()
+        AppDatabase.db.tabsDao().delete(previous)
+        previous.removeFiles()
     }
 }
