@@ -953,8 +953,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun showMenuOverlay() {
+        if (thumbnailOverlayVisible) return
         thumbnailOverlayVisible = true
         thumbnailGeneration++
+        vb.llBottomPanel.animate().cancel()
+        vb.rlActionBar.animate().cancel()
+        vb.ivMiniatures.animate().cancel()
         vb.ivMiniatures.visibility = View.VISIBLE
         vb.llBottomPanel.visibility = View.VISIBLE
         vb.flWebViewContainer.visibility = View.INVISIBLE
@@ -969,7 +973,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.llBottomPanel.translationY = vb.llBottomPanel.height.toFloat()
         vb.llBottomPanel.alpha = 0f
         vb.llBottomPanel.animate()
-                .setDuration(300)
+                .setDuration(220)
                 .setInterpolator(DecelerateInterpolator())
                 .translationY(0f)
                 .alpha(1f)
@@ -986,7 +990,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.rlActionBar.animate()
                 .translationY(0f)
                 .alpha(1f)
-                .setDuration(300)
+                .setDuration(220)
                 .setInterpolator(DecelerateInterpolator())
                 .start()
 
@@ -994,7 +998,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.ivMiniatures.translationY = 0f
         vb.ivMiniatures.animate()
                 .translationY(vb.rlActionBar.height.toFloat())
-                .setDuration(300)
+                .setDuration(220)
                 .setInterpolator(DecelerateInterpolator())
                 .start()
     }
@@ -1021,13 +1025,16 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun hideMenuOverlay(hideBottomButtons: Boolean = true) {
+        if (!thumbnailOverlayVisible) {
+            if (hideBottomButtons) hideBottomPanel()
+            return
+        }
         thumbnailOverlayVisible = false
         thumbnailGeneration++
         uiHandler.removeCallbacks(displayThumbnailRunnable)
         displayThumbnailRunnable.tabState = null
-        if (vb.rlActionBar.visibility == View.INVISIBLE) {
-            return
-        }
+        vb.rlActionBar.animate().cancel()
+        vb.ivMiniatures.animate().cancel()
         if (hideBottomButtons) {
             hideBottomPanel()
         }
@@ -1035,7 +1042,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.rlActionBar.animate()
                 .translationY(-vb.rlActionBar.height.toFloat())
                 .alpha(0f)
-                .setDuration(300)
+                .setDuration(220)
                 .setInterpolator(DecelerateInterpolator())
                 .withEndAction {
                     vb.rlActionBar.visibility = View.INVISIBLE
@@ -1050,7 +1057,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.ivMiniatures.translationY = vb.rlActionBar.height.toFloat()
         vb.ivMiniatures.animate()
                 .translationY(0f)
-                .setDuration(300)
+                .setDuration(220)
                 .setInterpolator(DecelerateInterpolator())
                 .withEndAction {
                     vb.ivMiniatures.visibility = View.INVISIBLE
@@ -1079,8 +1086,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     private fun hideBottomPanel() {
         if (vb.llBottomPanel.visibility != View.VISIBLE) return
+        vb.llBottomPanel.animate().cancel()
         vb.llBottomPanel.animate()
-                .setDuration(300)
+                .setDuration(220)
                 .setInterpolator(AccelerateInterpolator())
                 .translationY(vb.llBottomPanel.height.toFloat())
                 .withEndAction {

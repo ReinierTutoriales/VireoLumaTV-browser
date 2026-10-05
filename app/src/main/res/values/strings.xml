@@ -60,6 +60,8 @@
     <string name="voice_search">Voice search</string>
     <string name="zoom_in">Zoom in</string>
     <string name="zoom_out">Zoom out</string>
+    <string name="cursor_grab_mode">Move the page</string>
+    <string name="link_actions">Link actions</string>
     <string name="not_set">Not set</string>
     <string name="action">Action:</string>
     <string name="current_key">Current key:</string>
