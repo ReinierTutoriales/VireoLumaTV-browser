@@ -128,10 +128,10 @@ class TabsModel : ActiveModel() {
         newTab: WebTabState,
         webViewProvider: (tab: WebTabState) -> View?,
         webViewParent: ViewGroup,
-        webEngineWindowProviderCallback: WebEngineWindowProviderCallback
+        webEngineWindowProviderCallback: WebEngineWindowProviderCallback,
+        loadInitialUrl: Boolean = true
     ) {
         if (currentTab.value == newTab && newTab.webEngine.getView() != null) return
-        val previousTab = currentTab.value
         if (currentTab.value != newTab) {
             tabsStates.forEach {
                 it.selected = false
@@ -145,6 +145,8 @@ class TabsModel : ActiveModel() {
             newTab.selected = true
             currentTab.value = newTab
         }
+        // Release the old renderer before allocating its replacement, including on low-RAM devices.
+        releaseBackgroundWebViews(newTab)
         var wv = newTab.webEngine.getView()
         var needReloadUrl = false
         if (wv == null) {
@@ -155,27 +157,24 @@ class TabsModel : ActiveModel() {
             needReloadUrl = !newTab.restoreWebView()
         }
         newTab.webEngine.onAttachToWindow(webEngineWindowProviderCallback, webViewParent)
-        if (needReloadUrl) {
+        if (needReloadUrl && loadInitialUrl) {
             newTab.webEngine.loadUrl(newTab.url)
             newTab.rendererLost = false
         }
         newTab.webEngine.setNetworkAvailable(Utils.isNetworkConnected(VireoLumaTVApp.instance))
-        releaseBackgroundWebViews(newTab, previousTab)
     }
 
-    //Each extra live WebView costs ~50 MB of renderer memory on a 2 GB device (W1), so only the
-    //current and the previously used tab keep theirs. The others are destroyed; their state was
-    //saved in onPause() when they were detached, and restoreWebView() brings it back on return.
-    private fun releaseBackgroundWebViews(activeTab: WebTabState, previousTab: WebTabState?) {
+    // Only the visible tab owns a WebView. Captured history survives destruction and is restored
+    // when the user returns; background pages (including audio/video) stop running.
+    private fun releaseBackgroundWebViews(activeTab: WebTabState) {
         var released = 0
         for (tab in tabsStates) {
-            if (tab == activeTab || tab == previousTab) continue
-            if (tab.webEngine.getView() == null) continue
-            tab.trimMemory()
+            if (tab === activeTab || tab.webEngine.getView() == null) continue
+            tab.webEngine.onDetachFromWindow(completely = true, destroyTab = false)
             released++
         }
         if (released > 0) {
-            Log.i(TAG, "released $released background WebView(s), kept current and previous tab")
+            Log.i(TAG, "released $released background WebView(s), kept only current tab")
         }
     }
 

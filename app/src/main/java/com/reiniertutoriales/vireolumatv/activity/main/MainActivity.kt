@@ -502,9 +502,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             return null
         }
         val tab = WebTabState(url = url, incognito = config.incognitoMode)
-        createWebView(tab) ?: return null
         tabsModel.tabsStates.add(index, tab)
-        changeTab(tab)
+        changeTab(tab, loadInitialUrl = false)
+        if (tab.webEngine.getView() == null) return null
         if (navigateImmediately) {
             navigate(url)
         }
@@ -532,8 +532,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         hideBottomPanel()
     }
 
-    private fun changeTab(newTab: WebTabState) {
-        tabsModel.changeTab(newTab, { tab: WebTabState -> createWebView(tab) }, vb.flWebViewContainer, WebEngineCallback(newTab))
+    private fun changeTab(newTab: WebTabState, loadInitialUrl: Boolean = true) {
+        tabsModel.changeTab(newTab, { tab: WebTabState -> createWebView(tab) }, vb.flWebViewContainer, WebEngineCallback(newTab), loadInitialUrl)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -1336,12 +1336,18 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 onBlockedDialog(!dialog)
                 return null
             }
+            val currentTab = this@MainActivity.tabsModel.currentTab.value ?: return null
             val tab = WebTabState(incognito = config.incognitoMode)
             val webView = createWebView(tab) ?: return null
-            val currentTab = this@MainActivity.tabsModel.currentTab.value ?: return null
             val index = tabsModel.tabsStates.indexOf(currentTab) + 1
             tabsModel.tabsStates.add(index, tab)
-            changeTab(tab)
+            // Finish Chromium's window transport before destroying the source WebView.
+            vb.flWebViewContainer.post {
+                if (!tab.closed) {
+                    if (isFinishing || tabsModel.currentTab.value !== currentTab) tabsModel.onCloseTab(tab)
+                    else changeTab(tab, loadInitialUrl = false)
+                }
+            }
             return webView
         }
 
