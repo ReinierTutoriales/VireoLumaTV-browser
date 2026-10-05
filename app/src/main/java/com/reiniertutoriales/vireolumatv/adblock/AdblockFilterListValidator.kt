@@ -10,6 +10,11 @@ object AdblockFilterListValidator {
         val normalizedContent = content.removePrefix("\uFEFF")
         val trimmedStart = normalizedContent.trimStart()
         if (looksLikeHtml(trimmedStart)) return false
+        val firstRule = normalizedContent.lineSequence().map { it.trim() }.firstOrNull {
+            it.isNotEmpty() && !it.startsWith("!") && !it.startsWith("[Adblock Plus")
+        } ?: return false
+        // An error document may have leading comments, and parse() can accept zero blocking rules.
+        if (firstRule.startsWith("<")) return false
         val lineCount = normalizedContent.lineSequence().take(MIN_DEFAULT_FILTER_LINES).count()
         if (requiresAdblockHeader) {
             val firstNonBlankLine = normalizedContent.lineSequence().firstOrNull { it.isNotBlank() } ?: return false

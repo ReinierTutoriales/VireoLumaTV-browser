@@ -41,7 +41,8 @@ current selection.
 - A source changed during an update cannot publish stale rules/update dates;
   it triggers another update for the selected source.
 - Validator HTML detection lowercases only a short prefix, and minimum-line
-  checks stop when the required count is reached.
+  checks stop when the required count is reached. Comment/header-only lists and
+  markup error responses after leading metadata cannot replace working rules.
 
 Legacy compiled caches have no subscription identity and are intentionally not
 reused. The first launch of this cache version may need downloads or reconstruction
@@ -51,7 +52,7 @@ claim of a zero-gap cold start without usable rules.
 ## Verification and limits
 
 Regression tests cover mixed Accept headers, resource hints/native flags,
-subscription hash collisions, failed/successful cache writes, startup blocking
+comment-only/markup error lists, subscription hash collisions, failed/successful cache writes, startup blocking
 while a download is held open, and retaining active rules without recompilation
 when a subsequent download returns HTML.
 

@@ -62,6 +62,15 @@ class AdblockFilterListValidatorTest {
         assertFalse(AdblockFilterListValidator.isValid("  <html></html>", requiresAdblockHeader = false))
     }
 
+    @Test
+    fun commentOnlyOrHeaderOnlyListsMustNotReplaceWorkingRules() {
+        assertFalse(AdblockFilterListValidator.isValid("! downloaded successfully\n! no rules", false))
+        assertFalse(AdblockFilterListValidator.isValid("[Adblock Plus 2.0]\n" + "! comment\n".repeat(120), true))
+        assertFalse(AdblockFilterListValidator.isValid("! server error\n<html>error</html>", false))
+        assertFalse(AdblockFilterListValidator.isValid("<?xml version=\"1.0\"?><Error/>", false))
+        assertTrue(AdblockFilterListValidator.isValid("! custom rules\n||ads.example.test^", false))
+    }
+
     private fun defaultListWithRules(ruleCount: Int): String {
         return listOf("[Adblock Plus 2.0]")
             .plus((0 until ruleCount).map { "||example$it.com^" })
