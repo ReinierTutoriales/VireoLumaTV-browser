@@ -51,7 +51,7 @@ class ActiveDownloadsModel: ActiveModel() {
     fun cancelDownload(download: Download) {
         for (i in activeDownloads.indices) {
             val task = activeDownloads[i]
-            if (task.downloadInfo.id == download.id) {
+            if (task.downloadInfo === download) {
                 task.downloadInfo.cancelled = true
                 break
             }

@@ -140,6 +140,12 @@
             android:foregroundServiceType="dataSync"
             android:exported="false"/>
 
+        <service
+            android:name=".service.downloads.IncognitoDownloadService"
+            android:process=":incognito"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

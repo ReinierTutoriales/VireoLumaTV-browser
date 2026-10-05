@@ -57,6 +57,10 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     @delegate:Ignore
     val webEngine by lazy { WebEngineFactory.createWebEngine(this) }
     @Ignore
+    var closed: Boolean = false
+    @Ignore
+    var rendererLost: Boolean = false
+    @Ignore
     var lastLoadingUrl: String? = null //this is last url appeared in WebViewClient.shouldOverrideUrlLoading callback
     @Ignore
     var blockedAds = 0
@@ -96,6 +100,7 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
                 if (tabsThumbsDir.exists() || tabsThumbsDir.mkdir()) {
                     try {
                         val hash = Utils.MD5_Hash(url.toByteArray(Charset.defaultCharset()))
+                            ?.let { if (incognito) "private-$it" else it }
                         if (hash != null && hash != thumbnailHash) {
                             if (thumbnailHash != null) {
                                 removeThumbnailFile()
@@ -151,6 +156,7 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     }
 
     fun restoreWebView(): Boolean {
+        if (rendererLost) return false
         var state = savedState
         val stateFileName = wvStateFileName
         if (state != null) {
@@ -183,6 +189,10 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
             stateFileName = null
         }
         if (state == null) return
+        // Private tabs must not overwrite a legacy file shared with a normal tab.
+        val prefix = if (incognito) "private-tab-" else "tab-"
+        // Old content hashes may be shared by duplicate tabs; never overwrite their shared file.
+        if (stateFileName?.startsWith(prefix) != true) stateFileName = null
         val stateBytes = when (state) {
             is Bundle -> {
                 Utils.bundleToBytes(state) ?: return
@@ -192,13 +202,22 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
             }
         }
         if (stateFileName == null) {
-            stateFileName = Utils.MD5_Hash(stateBytes) ?: return
+            stateFileName = prefix + java.util.UUID.randomUUID().toString()
         }
         try {
             val statesDir = File(AppContext.get().filesDir.absolutePath + File.separator + TAB_WVSTATES_DIR)
             if (statesDir.exists() || statesDir.mkdir()) {
-                File(getWVStatePath(stateFileName)).writeBytes(stateBytes)
-                wvStateFileName = stateFileName
+                val file = android.util.AtomicFile(File(getWVStatePath(stateFileName)))
+                var output: FileOutputStream? = null
+                try {
+                    output = file.startWrite()
+                    output.write(stateBytes)
+                    file.finishWrite(output)
+                    wvStateFileName = stateFileName
+                } catch (error: Exception) {
+                    file.failWrite(output)
+                    throw error
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()

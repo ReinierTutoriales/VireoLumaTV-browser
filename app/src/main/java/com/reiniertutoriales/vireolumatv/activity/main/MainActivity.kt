@@ -25,7 +25,6 @@ import android.os.Environment
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.os.Process
 import android.util.Log
 import android.util.Patterns
 import android.view.Gravity
@@ -75,6 +74,7 @@ import com.reiniertutoriales.vireolumatv.model.HomePageLink
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.service.downloads.DownloadService
+import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
@@ -116,7 +116,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         const val PICK_FILE_REQUEST_CODE = 10005
         private const val REQUEST_CODE_HISTORY_ACTIVITY = 10006
         const val REQUEST_CODE_UNKNOWN_APP_SOURCES = 10007
-        const val KEY_PROCESS_ID_TO_KILL = "proc_id_to_kill"
         private const val MY_PERMISSIONS_REQUEST_VOICE_SEARCH_PERMISSIONS = 10008
         private const val COMMON_REQUESTS_START_CODE = 10100
     }
@@ -146,13 +145,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val incognitoMode = config.incognitoMode
         Log.d(TAG, "onCreate incognitoMode: $incognitoMode")
         if (incognitoMode xor (this is IncognitoModeMainActivity)) {
-            switchProcess(incognitoMode, intent?.extras)
+            switchProcess(incognitoMode, intent)
             finish()
             return
-        }
-        val pidToKill = intent?.getIntExtra(KEY_PROCESS_ID_TO_KILL, -1) ?: -1
-        if (pidToKill != -1) {
-            Process.killProcess(pidToKill)
         }
 
         viewModel = ActiveModelsRepository.get(MainActivityViewModel::class, this)
@@ -417,7 +412,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     @SuppressLint("MissingSuperCall")
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.data != null) {
+        setIntent(intent)
+        if (::tabsModel.isInitialized && tabsModel.loaded && intent.data != null) {
             handleIntent(intent)
         }
     }
@@ -437,7 +433,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
         vb.progressBarGeneric.visibility = View.GONE
 
-        if (intent.data == null) {
+        if (!ExternalWebNavigation.isAllowed(intent.data)) {
             if (tabsModel.tabsStates.isEmpty()) {
                 openInNewTab(settingsModel.homePage, 0,
                     needToHideMenuOverlay = true,
@@ -477,18 +473,23 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun handleIntent(intent: Intent) {
-        Log.d(TAG, "handleIntent: " + intent.data)
+        val uri = intent.data
+        if (!ExternalWebNavigation.isAllowed(uri)) {
+            Log.w(TAG, "Rejected external navigation with scheme: " + uri?.scheme)
+            return
+        }
+        val url = uri.toString()
         if (intent.getBooleanExtra("com.reiniertutoriales.vireolumatv.EXTRA_OPEN_IN_SAME_TAB", false) &&
             tabsModel.tabsStates.isNotEmpty()) {
             if (tabsModel.currentTab.value == null) {
                 changeTab(tabsModel.tabsStates[0])
             }
-            navigate(intent.data.toString())
+            navigate(url)
             return
         }
 
         openInNewTab(
-            intent.data.toString(), tabsModel.tabsStates.size, needToHideMenuOverlay = true,
+            url, tabsModel.tabsStates.size, needToHideMenuOverlay = true,
             navigateImmediately = true
         )
     }
@@ -603,7 +604,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             return
         }
         pendingDownloads.addLast(Download(url, originalDownloadFileName, null, operationAfterDownload,
-            mimeType, referer, userAgent, base64BlobData, stream, size))
+            mimeType, referer, userAgent, base64BlobData, stream, size).apply {
+            incognito = config.incognitoMode
+        })
         if (downloadPermissionRequestPending) return
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R &&
@@ -635,11 +638,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     override fun onTrimMemory(level: Int) {
-        for (tab in tabsModel.tabsStates) {
-            if (!tab.selected) {
-                tab.trimMemory()
+        if (::tabsModel.isInitialized) {
+            for (tab in tabsModel.tabsStates) {
+                if (!tab.selected) {
+                    tab.thumbnail = null
+                    tab.trimMemory()
+                }
             }
         }
+        FaviconsPool.clear()
         super.onTrimMemory(level)
     }
 
@@ -700,7 +707,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     override fun onStart() {
         super.onStart()
-        bindService(Intent(this, DownloadService::class.java), downloadServiceConnection, Context.BIND_AUTO_CREATE)
+        bindService(DownloadService.intent(this, config.incognitoMode), downloadServiceConnection, Context.BIND_AUTO_CREATE)
     }
 
     override fun onStop() {
@@ -817,15 +824,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    private fun switchProcess(incognitoMode: Boolean, intentDataToCopy: Bundle? = null) {
+    private fun switchProcess(incognitoMode: Boolean, intentDataToCopy: Intent? = null) {
         Log.d(TAG, "switchProcess incognitoMode: $incognitoMode")
         val activityClass = if (incognitoMode) IncognitoModeMainActivity::class.java
         else MainActivity::class.java
         val intent = Intent(this@MainActivity, activityClass)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        intent.putExtra(KEY_PROCESS_ID_TO_KILL, Process.myPid())
         intentDataToCopy?.let {
-            intent.putExtras(it)
+            it.extras?.let { extras -> intent.putExtras(extras) }
+            ExternalWebNavigation.copyAllowedData(it, intent)
         }
         startActivity(intent)
         exitProcess(0)
@@ -1556,7 +1563,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 //probably service still in another process due to incognito mode process switch
                 //so we will try to reconnect in a few seconds
                 uiHandler.postDelayed({
-                    bindService(Intent(this@MainActivity, DownloadService::class.java),
+                    bindService(DownloadService.intent(this@MainActivity, config.incognitoMode),
                         this, Context.BIND_AUTO_CREATE)
                 }, 1000)
                 return

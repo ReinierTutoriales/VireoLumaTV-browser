@@ -17,14 +17,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.net.URL
 
 class TabsModel : ActiveModel() {
     companion object {
         //literal, not ::class.java.simpleName: R8 renames the class in release builds
         const val TAG = "TabsModel"
+
+        private val incognitoSession = IncognitoSessionTabs()
     }
 
+    private val saveMutex = Mutex()
     var loaded = false
     val currentTab = ObservableValue<WebTabState?>(null)
     val tabsStates = ObservableList<WebTabState>()
@@ -62,42 +67,54 @@ class TabsModel : ActiveModel() {
             }
         }
         val tabsDao = AppDatabase.db.tabsDao()
-        tabsStates.replaceAll(tabsDao.getAll(config.incognitoMode))
+        if (config.incognitoMode) {
+            tabsStates.replaceAll(incognitoSession.load(tabsDao))
+        } else {
+            tabsStates.replaceAll(tabsDao.getAll(false))
+        }
         loaded = true
     }
 
     suspend fun saveTab(tab: WebTabState) {
-        val tabsDB = AppDatabase.db.tabsDao()
-        if (tab.selected) {
-            tabsDB.unselectAll(config.incognitoMode)
-        }
+        val snapshot = tab.copy().apply { savedState = tab.savedState }
+        // Capture WebView state on Main, serialize and commit the captured state on IO.
         withContext(Dispatchers.IO) {
-            tab.saveWebViewStateToFile()
-        }
-        if (tab.id != 0L) {
-            tabsDB.update(tab)
-        } else {
-            tab.id = tabsDB.insert(tab)
+            saveMutex.withLock {
+                if (tab.closed) return@withLock
+                snapshot.id = tab.id
+                snapshot.saveWebViewStateToFile()
+                tab.wvStateFileName = snapshot.wvStateFileName
+                tab.id = AppDatabase.db.tabsDao().save(snapshot)
+            }
         }
     }
 
     fun onCloseTab(tab: WebTabState) {
+        tab.closed = true
         tab.webEngine.onDetachFromWindow(completely = true, destroyTab = true)
         tabsStates.remove(tab)
-        modelScope.launch(Dispatchers.Main) {
-            val tabsDB = AppDatabase.db.tabsDao()
-            tabsDB.delete(tab)
-            launch { tab.removeFiles() }
+        modelScope.launch(Dispatchers.IO) {
+            saveMutex.withLock {
+                AppDatabase.db.tabsDao().delete(tab)
+                tab.removeFiles()
+            }
         }
     }
 
     fun onCloseAllTabs() = modelScope.launch(Dispatchers.Main) {
         val tabsClone = ArrayList(tabsStates)
+        tabsClone.forEach {
+            it.closed = true
+            it.webEngine.onDetachFromWindow(completely = true, destroyTab = true)
+        }
+        currentTab.value = null
         tabsStates.clear()
-        val tabsDB = AppDatabase.db.tabsDao()
-        tabsDB.deleteAll(config.incognitoMode)
+        val mode = config.incognitoMode
         withContext(Dispatchers.IO) {
-            tabsClone.forEach { it.removeFiles() }
+            saveMutex.withLock {
+                AppDatabase.db.tabsDao().deleteAll(mode)
+                tabsClone.forEach { it.removeFiles() }
+            }
         }
     }
 
@@ -140,6 +157,7 @@ class TabsModel : ActiveModel() {
         newTab.webEngine.onAttachToWindow(webEngineWindowProviderCallback, webViewParent)
         if (needReloadUrl) {
             newTab.webEngine.loadUrl(newTab.url)
+            newTab.rendererLost = false
         }
         newTab.webEngine.setNetworkAvailable(Utils.isNetworkConnected(VireoLumaTVApp.instance))
         releaseBackgroundWebViews(newTab, previousTab)

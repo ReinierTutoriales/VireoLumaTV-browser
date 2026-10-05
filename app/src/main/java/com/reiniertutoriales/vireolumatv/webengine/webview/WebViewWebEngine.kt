@@ -193,7 +193,10 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         onPause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
         callback = null
+        viewParent?.cursorDrawerDelegate?.callback = null
+        viewParent = null
         if (completely) {
+            permissionsRequests.clear()
             webView?.destroy()
             webView = null
         }
@@ -360,6 +363,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
             Log.i(TAG, "onRenderProcessGone hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
             exitFullscreenView(restoreBrowserControls = false)
             val deadWebView = webView ?: return true
+            tab.rendererLost = true
             (deadWebView.parent as? ViewGroup)?.removeView(deadWebView)
             deadWebView.destroy()
             webView = null

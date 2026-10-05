@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.os.Build
 import android.util.Log
-import android.webkit.WebView
+import com.reiniertutoriales.vireolumatv.utils.IncognitoWebViewData
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.BuildConfig
 import com.reiniertutoriales.vireolumatv.Config
@@ -36,6 +36,7 @@ class MainActivityViewModel: ActiveModel() {
         const val WEB_VIEW_CACHE_FOLDER = "WebView"
         const val WEB_VIEW_DATA_BACKUP_DIRECTORY_SUFFIX = "_backup"
         const val INCOGNITO_DATA_DIRECTORY_SUFFIX = "incognito"
+
     }
 
     var loaded = false
@@ -210,15 +211,7 @@ class MainActivityViewModel: ActiveModel() {
         //in api >= 28 we just use another directory for WebView data
         //on earlier apis we backup-ing existing WebView data directory
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val incognitoWebViewData = File(
-                VireoLumaTVApp.instance.filesDir.parentFile!!.absolutePath +
-                        "/" + WEB_VIEW_DATA_FOLDER + "_" + INCOGNITO_DATA_DIRECTORY_SUFFIX
-            )
-            if (incognitoWebViewData.exists()) {
-                Log.i(TAG, "Looks like we already in incognito mode")
-                return
-            }
-            WebView.setDataDirectorySuffix(INCOGNITO_DATA_DIRECTORY_SUFFIX)
+            IncognitoWebViewData.configure(VireoLumaTVApp.instance)
         } else {
             val webViewData = File(
                 VireoLumaTVApp.instance.filesDir.parentFile!!.absolutePath +
@@ -247,24 +240,7 @@ class MainActivityViewModel: ActiveModel() {
         Log.d(TAG, "clearIncognitoData")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val webViewData = File(
-                VireoLumaTVApp.instance.filesDir.parentFile!!.absolutePath +
-                        "/" + WEB_VIEW_DATA_FOLDER + "_" + INCOGNITO_DATA_DIRECTORY_SUFFIX
-            )
-            deleteDirectory(webViewData)
-            var webViewCache =
-                File(
-                    VireoLumaTVApp.instance.cacheDir.absolutePath + "/" + WEB_VIEW_CACHE_FOLDER +
-                            "_" + INCOGNITO_DATA_DIRECTORY_SUFFIX
-                )
-            if (!webViewCache.exists()) {
-                webViewCache = File(
-                    VireoLumaTVApp.instance.cacheDir.absolutePath + "/" +
-                            WEB_VIEW_CACHE_FOLDER.lowercase(Locale.getDefault()) +
-                            "_" + INCOGNITO_DATA_DIRECTORY_SUFFIX
-                )
-            }
-            deleteDirectory(webViewCache)
+            IncognitoWebViewData.clear(VireoLumaTVApp.instance)
         } else {
             val webViewData = File(
                 VireoLumaTVApp.instance.filesDir.parentFile!!.absolutePath +

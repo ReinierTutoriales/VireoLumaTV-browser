@@ -6,11 +6,11 @@ import android.os.Build
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream
 import android.provider.MediaStore
 import android.util.Base64
+import android.util.Base64InputStream
 import android.util.Log
 import android.webkit.CookieManager
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import java.io.*
 import java.net.HttpURLConnection
@@ -38,14 +38,13 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
     }
 
     override fun run() {
-        downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        DownloadHistory.insert(downloadInfo)
 
         var input: InputStream? = null
         var output: OutputStream? = null
-        val url = URL(downloadInfo.url)
-
         var connection: HttpURLConnection? = null
         try {
+            val url = URL(downloadInfo.url)
             var retries = 0
             do {
                 connection = url.openConnection() as HttpURLConnection
@@ -91,7 +90,7 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
             val fileLength = connection.contentLength
             downloadInfo.size = fileLength.toLong()
 
-            if (connection.headerFields.containsKey("Content-Disposition")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && connection.headerFields.containsKey("Content-Disposition")) {
                 val mime = connection.getHeaderField("Content-Type")
                 downloadInfo.filename = DownloadUtils.sanitizeFileName(DownloadUtils.guessFileName(
                     downloadInfo.url, connection.getHeaderField("Content-Disposition"), mime)) ?: "downloadfile"
@@ -135,22 +134,41 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
     }
 }
 
-class BlobDownloadTask(override var downloadInfo: Download, val blobBase64Data: String, val callback: DownloadTask.Callback) : Runnable, DownloadTask {
+class BlobDownloadTask(override var downloadInfo: Download, blobBase64Data: String, val callback: DownloadTask.Callback) : Runnable, DownloadTask {
+    private var encodedData: String? = blobBase64Data
 
     override fun run() {
-        downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
-
         try {
-            val blobAsBytes: ByteArray = Base64.decode(DownloadUtils.dataUrlBase64Payload(blobBase64Data), 0)
-            val output = prepareDownloadOutput(downloadInfo)
-            output.buffered().use{ it.write(blobAsBytes) }
-            downloadInfo.size = blobAsBytes.size.toLong()
-            downloadInfo.bytesReceived = downloadInfo.size
+            DownloadHistory.insert(downloadInfo)
+            if (downloadInfo.cancelled) {
+                downloadInfo.size = Download.CANCELLED_MARK
+            } else {
+                Base64InputStream(BlobPayloadInputStream(requireNotNull(encodedData)), Base64.DEFAULT).use { input ->
+                    prepareDownloadOutput(downloadInfo).use { output ->
+                        val buffer = ByteArray(8192)
+                        var count = input.read(buffer)
+                        while (count != -1) {
+                            if (downloadInfo.cancelled) {
+                                downloadInfo.bytesReceived = 0
+                                downloadInfo.size = Download.CANCELLED_MARK
+                                break
+                            }
+                            output.write(buffer, 0, count)
+                            downloadInfo.bytesReceived += count
+                            callback.onProgress(this)
+                            count = input.read(buffer)
+                        }
+                        if (!downloadInfo.cancelled) downloadInfo.size = downloadInfo.bytesReceived
+                    }
+                }
+            }
         } catch (e: Exception) {
             downloadInfo.size = Download.BROKEN_MARK
             callback.onError(this, 0, e.toString())
             return
         } finally {
+            encodedData = null
+            downloadInfo.base64BlobData = null
             cancelDownloadIfNeeded(downloadInfo)
         }
         callback.onDone(this)
@@ -159,7 +177,7 @@ class BlobDownloadTask(override var downloadInfo: Download, val blobBase64Data: 
 
 class StreamDownloadTask(override var downloadInfo: Download, val stream: InputStream, val callback: DownloadTask.Callback) : Runnable, DownloadTask {
     override fun run() {
-        downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        DownloadHistory.insert(downloadInfo)
 
         var output: OutputStream? = null
         try {
@@ -188,6 +206,7 @@ class StreamDownloadTask(override var downloadInfo: Download, val stream: InputS
             try {
                 output?.close()
                 stream.close()
+                downloadInfo.stream = null
             } catch (ignored: IOException) {
             }
 
@@ -202,7 +221,7 @@ private fun cancelDownloadIfNeeded(downloadInfo: Download) {
     val filePath = downloadInfo.filepath
     if (filePath.isEmpty()) return
     val contentResolver = VireoLumaTVApp.instance.contentResolver
-    if (downloadInfo.cancelled) {
+    if (downloadInfo.cancelled || downloadInfo.size == Download.BROKEN_MARK) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val rowsDeleted = contentResolver.delete(Uri.parse(filePath), null)
             if (rowsDeleted < 1) {
@@ -219,27 +238,30 @@ private fun cancelDownloadIfNeeded(downloadInfo: Download) {
     }
 }
 
+internal fun buildDownloadDetails(downloadInfo: Download) = ContentValues().apply {
+    if (downloadInfo.filename.isNotEmpty()) put(MediaStore.Downloads.DISPLAY_NAME, downloadInfo.filename)
+    if (!downloadInfo.incognito) {
+        put(MediaStore.Downloads.DOWNLOAD_URI, downloadInfo.url)
+        put(MediaStore.Downloads.REFERER_URI, downloadInfo.referer)
+    }
+    put(MediaStore.Downloads.IS_PENDING, 1)
+}
+
 private fun prepareDownloadOutput(downloadInfo: Download): OutputStream {
     val contentResolver = VireoLumaTVApp.instance.contentResolver
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         val downloadsCollection =
             MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        val newDownloadDetails = ContentValues().apply {
-            if (downloadInfo.filename.isNotEmpty()) {
-                put(MediaStore.Downloads.DISPLAY_NAME, downloadInfo.filename)
-            }
-            put(MediaStore.Downloads.DOWNLOAD_URI, downloadInfo.url)
-            put(MediaStore.Downloads.REFERER_URI, downloadInfo.referer)
-            put(MediaStore.Downloads.IS_PENDING, 1)
-        }
+        val newDownloadDetails = buildDownloadDetails(downloadInfo)
         val downloadUri = contentResolver
             .insert(downloadsCollection, newDownloadDetails)
         if (downloadUri == null) {
             throw IllegalStateException("Can not create file")
         }
-        val fd = contentResolver.openFileDescriptor(downloadUri, "w", null)
         downloadInfo.filepath = downloadUri.toString()
-        AppDatabase.db.downloadDao().update(downloadInfo)
+        val fd = contentResolver.openFileDescriptor(downloadUri, "w", null)
+            ?: throw IOException("Could not open the download output")
+        DownloadHistory.update(downloadInfo)
         AutoCloseOutputStream(fd)
     } else {
         FileOutputStream(downloadInfo.filepath)

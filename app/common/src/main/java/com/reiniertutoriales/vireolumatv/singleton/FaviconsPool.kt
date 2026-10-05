@@ -31,6 +31,8 @@ object FaviconsPool {
     private const val MAX_FAVICON_BYTES = 2 * 1024 * 1024
     private val TAG: String = FaviconsPool::class.java.simpleName
 
+    private var temporaryWebViewRelease: Runnable? = null
+
     val faviconExtractor = FaviconExtractor()
     private val backgroundScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     var databaseDelegate: DatabaseDelegate = object : DatabaseDelegate {}
@@ -41,14 +43,14 @@ object FaviconsPool {
         suspend fun insert(newHostConfig: HostConfig) {}
     }
 
-    private val cache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(10 * 1024 * 1024) {
+    private val cache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(2 * 1024 * 1024) {
         override fun sizeOf(key: String, value: Bitmap): Int {
             return value.byteCount
         }
     }
 
     suspend fun get(urlOrHost: String): Bitmap? {
-        Log.d(TAG, "get: $urlOrHost")
+        val incognitoMode = AppContext.provideConfig().incognitoMode
         if (!urlOrHost.startsWith("http://", true) && !urlOrHost.startsWith("https://", true)) {
             //host passed?
             if (urlOrHost.contains("://")) {
@@ -70,7 +72,7 @@ object FaviconsPool {
                 if (hostBitmap != null) {
                     return hostBitmap
                 }
-                val hostConfig = databaseDelegate.findByHostName(host)
+                val hostConfig = if (incognitoMode) null else databaseDelegate.findByHostName(host)
                 if (hostConfig != null) {
                     val faviconFileName = hostConfig.favicon
                     if (faviconFileName != null) {
@@ -114,7 +116,9 @@ object FaviconsPool {
                     if (bitmap != null) {
                         Log.d(TAG, "get: favicon downloaded for $host")
                         cache.put(host, bitmap)
-                        saveFavicon(host, bitmap, hostConfig)
+                        if (!incognitoMode) {
+                            saveFavicon(host, bitmap, hostConfig)
+                        }
                         return bitmap
                     } else {
                         Log.d(TAG, "get: favicon download failed for ${icon.src}")
@@ -123,7 +127,7 @@ object FaviconsPool {
                 }
                 //try to get favicon from webview
                 withContext(Dispatchers.Main) {
-                    loadFaviconWithTemporaryWebView(urlOrHost, host, hostConfig)
+                    loadFaviconWithTemporaryWebView(urlOrHost, host, hostConfig, persist = !incognitoMode)
                 }
             }
         } catch (e: Exception) {
@@ -138,7 +142,14 @@ object FaviconsPool {
      * WebView is now always destroyed: after the icon arrives or after [WEBVIEW_FAVICON_TIMEOUT_MS].
      * Must be called on the main thread.
      */
-    private fun loadFaviconWithTemporaryWebView(url: String, host: String, hostConfig: HostConfig?) {
+    private fun loadFaviconWithTemporaryWebView(
+        url: String,
+        host: String,
+        hostConfig: HostConfig?,
+        persist: Boolean
+    ) {
+        // Bookmark grids must not fan out into one renderer-backed WebView per missing icon.
+        if (temporaryWebViewRelease != null) return
         val handler = Handler(Looper.getMainLooper())
         val webView = WebView(AppContext.get())
         var finished = false
@@ -147,6 +158,7 @@ object FaviconsPool {
             override fun run() {
                 if (finished) return
                 finished = true
+                temporaryWebViewRelease = null
                 handler.removeCallbacks(this)
                 webView.stopLoading()
                 webView.destroy()
@@ -159,23 +171,34 @@ object FaviconsPool {
                 iconHandled = true
                 Log.d(TAG, "get: favicon received from webview for $host")
                 cache.put(host, icon)
-                backgroundScope.launch {
-                    try {
-                        saveFavicon(host, icon, hostConfig)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Can not save favicon for $host", e)
+                if (persist) {
+                    backgroundScope.launch {
+                        try {
+                            saveFavicon(host, icon, hostConfig)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Can not save favicon for $host", e)
+                        }
                     }
                 }
                 //do not destroy the WebView from inside its own callback
                 handler.post(release)
             }
         }
+        temporaryWebViewRelease = release
         handler.postDelayed(release, WEBVIEW_FAVICON_TIMEOUT_MS)
-        webView.loadUrl(url)
+        try {
+            webView.loadUrl(url)
+        } catch (error: Exception) {
+            release.run()
+            throw error
+        }
     }
 
     fun clear() {
         cache.evictAll()
+        val handler = Handler(Looper.getMainLooper())
+        if (Looper.myLooper() == Looper.getMainLooper()) temporaryWebViewRelease?.run()
+        else handler.post { temporaryWebViewRelease?.run() }
     }
 
     fun favIconsDir(): String {
@@ -183,6 +206,7 @@ object FaviconsPool {
     }
 
     private suspend fun saveFavicon(host: String, bitmap: Bitmap, hostConfig: HostConfig?) = withContext(Dispatchers.IO) {
+        if (AppContext.provideConfig().incognitoMode) return@withContext
         val favIconsDir = File(favIconsDir())
         if (!favIconsDir.exists() && !favIconsDir.mkdir()) return@withContext
         val faviconFileName = host.hashCode().toString() + ".png"
@@ -215,7 +239,10 @@ object FaviconsPool {
         if (width <= 0 || height <= 0) {
             return@withContext null
         }
-        val sampleSize = maxOf(width / 512, height / 512, 1)
+        var sampleSize = 1
+        while ((width - 1) / sampleSize + 1 > 512 || (height - 1) / sampleSize + 1 > 512) {
+            sampleSize *= 2
+        }
         options.inJustDecodeBounds = false
         options.inSampleSize = sampleSize
         return@withContext BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size, options)

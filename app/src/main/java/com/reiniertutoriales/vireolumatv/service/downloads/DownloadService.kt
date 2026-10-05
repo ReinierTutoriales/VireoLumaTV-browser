@@ -18,7 +18,6 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import java.io.File
@@ -29,9 +28,9 @@ import java.util.concurrent.Executors
  * Created by PDT on 23.01.2017.
  */
 
-class DownloadService : Service() {
+open class DownloadService : Service() {
     private lateinit var model: ActiveDownloadsModel
-    private val executor = Executors.newCachedThreadPool()
+    private val executor = Executors.newFixedThreadPool(2)
     private val handler = Handler(Looper.getMainLooper())
     private var notificationBuilder: NotificationCompat.Builder? = null
     private lateinit var notificationManager: NotificationManager
@@ -51,7 +50,7 @@ class DownloadService : Service() {
         }
 
         override fun onError(task: DownloadTask, responseCode: Int, responseMessage: String) {
-            AppDatabase.db.downloadDao().update(task.downloadInfo)
+            DownloadHistory.update(task.downloadInfo)
             handler.post {
                 model.notifyListenersAboutError(task, responseCode, responseMessage)
                 onTaskEnded(task)
@@ -59,7 +58,7 @@ class DownloadService : Service() {
         }
 
         override fun onDone(task: DownloadTask) {
-            AppDatabase.db.downloadDao().update(task.downloadInfo)
+            DownloadHistory.update(task.downloadInfo)
             handler.post {
                 model.notifyListenersAboutDownloadProgress(task)
                 onTaskEnded(task)
@@ -74,12 +73,14 @@ class DownloadService : Service() {
     }
 
     override fun onDestroy() {
+        model.activeDownloads.forEach { it.downloadInfo.cancelled = true }
+        executor.shutdown()
         ActiveModelsRepository.markAsNeedless(model, this)
         super.onDestroy()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun updateNotification(): Notification {
@@ -96,7 +97,7 @@ class DownloadService : Service() {
                 hasUnknownSizedFiles = true
             }
         }
-        title.trim(',')
+        title = title.trim(',')
         val description = if (hasUnknownSizedFiles) {
             Formatter.formatShortFileSize(this, downloaded)
         } else {
@@ -125,7 +126,8 @@ class DownloadService : Service() {
     }
 
     private fun onTaskEnded(task: DownloadTask) {
-        when (task.downloadInfo.operationAfterDownload) {
+        when (if (task.downloadInfo.size >= 0 && !task.downloadInfo.cancelled)
+            task.downloadInfo.operationAfterDownload else Download.OperationAfterDownload.NOP) {
             Download.OperationAfterDownload.INSTALL -> {
                 val canInstallFromOtherSources = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     packageManager.canRequestPackageInstalls()
@@ -147,15 +149,17 @@ class DownloadService : Service() {
     }
 
     fun launchInstallAPKActivity(context: Context, download: Download) {
-        val file = File(download.filepath)
-        val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension)
-        val apkURI = FileProvider.getUriForFile(
-                context,
-                context.applicationContext.packageName + ".provider", file)
+        val apkURI = if (download.filepath.startsWith("content://")) {
+            android.net.Uri.parse(download.filepath)
+        } else {
+            FileProvider.getUriForFile(context,
+                context.applicationContext.packageName + ".provider", File(download.filepath))
+        }
+        val mimeType = "application/vnd.android.package-archive"
 
         val install = Intent(Intent.ACTION_INSTALL_PACKAGE)
         install.setDataAndType(apkURI, mimeType)
-        install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         try {
             context.startActivity(install)
         } catch (e: ActivityNotFoundException) {
@@ -213,7 +217,7 @@ class DownloadService : Service() {
         model.activeDownloads.add(downloadTask)
         executor.execute(downloadTask)
 
-        startService(Intent(this, DownloadService::class.java))
+        startService(Intent(this, javaClass))
         startForeground(DOWNLOAD_NOTIFICATION_ID, updateNotification())
     }
 
@@ -222,5 +226,8 @@ class DownloadService : Service() {
     companion object {
         val TAG: String = DownloadService::class.java.simpleName
         const val DOWNLOAD_NOTIFICATION_ID = 101101
+
+        fun intent(context: Context, incognito: Boolean): Intent = Intent(context,
+            if (incognito) IncognitoDownloadService::class.java else DownloadService::class.java)
     }
 }
