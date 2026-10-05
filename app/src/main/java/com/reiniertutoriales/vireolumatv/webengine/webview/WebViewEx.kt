@@ -161,7 +161,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     init {
         with(settings) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                safeBrowsingEnabled = callback.isAdBlockingEnabled()
+                safeBrowsingEnabled = true
             }
             javaScriptEnabled = true
             useWideViewPort = true
@@ -718,7 +718,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     fun onUpdateAdblockSetting(adblockEnabled: Boolean) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            settings.safeBrowsingEnabled = adblockEnabled
+            // Malware/phishing protection is independent of the advertising preference.
+            settings.safeBrowsingEnabled = true
         }
     }
 

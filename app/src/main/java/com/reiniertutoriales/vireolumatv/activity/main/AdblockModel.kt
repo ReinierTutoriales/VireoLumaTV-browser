@@ -7,12 +7,14 @@ import android.widget.Toast
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.adblock.AdblockCache
 import com.reiniertutoriales.vireolumatv.adblock.AdblockFilterListValidator
 import com.reiniertutoriales.vireolumatv.adblock.BraveAdBlockEngine
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlocker
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlockerEngine
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,7 +22,10 @@ import java.io.File
 import java.net.URL
 import java.util.*
 
-class AdblockModel : ActiveModel() {
+class AdblockModel @JvmOverloads constructor(
+    private val engine: ContentBlockerEngine = BraveAdBlockEngine(),
+    autoLoad: Boolean = true
+) : ActiveModel() {
     companion object {
         const val TAG: String = "AdblockModel"
 
@@ -50,19 +55,20 @@ class AdblockModel : ActiveModel() {
         val source: FilterListSource
     )
 
-    private val engine: ContentBlockerEngine = BraveAdBlockEngine()
     private val clientLock = Any()
     private var client: ContentBlocker? = null
+    private var clientSource: String? = null
     val clientLoading = ObservableValue(false)
     val config = AppContext.provideConfig()
 
     init {
-        loadAdBlockList(false)
+        if (autoLoad) loadAdBlockList(false)
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
     fun loadAdBlockList(forceReload: Boolean) = modelScope.launch {
         if (clientLoading.value) return@launch
+        val configuredUrl = config.adBlockListURL.value
         val checkDate = Calendar.getInstance()
         checkDate.timeInMillis = config.adBlockListLastUpdate
         checkDate.add(Calendar.MINUTE, AUTO_UPDATE_INTERVAL_MINUTES)
@@ -75,16 +81,26 @@ class AdblockModel : ActiveModel() {
         var partialUpdate = false
         try {
             withContext(Dispatchers.IO) ioContext@ {
-                val serializedFile = File(VireoLumaTVApp.instance.filesDir, engine.cacheFileName)
-                val filterLists = getConfiguredFilterLists()
-                if (!needUpdate) {
+                val serializedFile = AdblockCache.fileFor(VireoLumaTVApp.instance.filesDir, engine, configuredUrl)
+                val filterLists = getConfiguredFilterLists(configuredUrl)
+                // Protect initial page requests while expired lists download in the background.
+                // A refresh of an already active blocker does not allocate another cached native client.
+                if (!hasCurrentClient(configuredUrl)) {
                     loadedClient = deserializeCachedList(serializedFile)
-                    if (loadedClient != null) {
-                        Log.i(TAG, "Loaded cached adblock list")
-                        return@ioContext
+                    loadedClient?.let { cached ->
+                        if (config.adBlockListURL.value == configuredUrl) {
+                            synchronized(clientLock) {
+                                client = cached
+                                clientSource = configuredUrl
+                            }
+                        }
                     }
-                    Log.w(TAG, "Cached adblock list is missing or invalid")
                 }
+                if (!needUpdate && loadedClient != null) {
+                    Log.i(TAG, "Loaded cached adblock list")
+                    return@ioContext
+                }
+                if (!needUpdate && hasCurrentClient(configuredUrl)) return@ioContext
                 downloadAttempted = true
                 try {
                     val resolvedLists = resolveFilterLists(filterLists)
@@ -92,7 +108,7 @@ class AdblockModel : ActiveModel() {
                         Log.w(TAG, "No usable adblock filter list text available")
                     } else {
                         if (resolvedLists.all { it.source == FilterListSource.CACHE }) {
-                            val cachedClient = deserializeCachedList(serializedFile)
+                            val cachedClient = loadedClient ?: if (hasCurrentClient(configuredUrl)) null else deserializeCachedList(serializedFile)
                             if (cachedClient != null) {
                                 loadedClient = cachedClient
                                 updated = true
@@ -102,13 +118,20 @@ class AdblockModel : ActiveModel() {
                             }
                             Log.w(TAG, "Serialized adblock list unavailable; compiling cached filter list text")
                         }
+                        // Failed downloads must not recompile the same rules while a working client exists.
+                        if (resolvedLists.all { it.source == FilterListSource.CACHE } && hasCurrentClient(configuredUrl)) {
+                            updated = true
+                            partialUpdate = true
+                            return@ioContext
+                        }
                         val combinedFilterList = buildCombinedFilterList(resolvedLists)
                         val freshClient = engine.compile(combinedFilterList)
                         if (freshClient != null) {
-                            freshClient.serialize(serializedFile)
+                            val cacheWritten = AdblockCache.write(serializedFile, freshClient)
+                            if (!cacheWritten) Log.w(TAG, "Compiled rules active but cache write failed; will retry")
                             loadedClient = freshClient
                             updated = true
-                            partialUpdate = resolvedLists.size < filterLists.size ||
+                            partialUpdate = !cacheWritten || resolvedLists.size < filterLists.size ||
                                     resolvedLists.any { it.source != FilterListSource.DOWNLOAD }
                             Log.i(
                                 TAG,
@@ -119,21 +142,27 @@ class AdblockModel : ActiveModel() {
                         }
                         Log.w(TAG, "Adblock engine rejected filter lists: ${resolvedLists.joinToString { it.filterList.name }}")
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     Log.w(TAG, "Can not prepare adblock filter lists", e)
                 }
                 //update failed: keep blocking with the last serialized list that worked
-                loadedClient = deserializeCachedList(serializedFile)
+                loadedClient = loadedClient ?: if (hasCurrentClient(configuredUrl)) null else deserializeCachedList(serializedFile)
                 if (loadedClient != null) {
                     Log.i(TAG, "Using cached adblock list after update failure")
+                } else if (hasCurrentClient()) {
+                    Log.i(TAG, "Keeping the active blocker after update failure")
                 } else {
                     Log.w(TAG, "No usable adblock list available")
                 }
             }
+            if (config.adBlockListURL.value != configuredUrl) return@launch
             //if nothing could be loaded keep the current client (if any) instead of replacing it with an empty one
             loadedClient?.let {
                 synchronized(clientLock) {
                     this@AdblockModel.client = it
+                    clientSource = configuredUrl
                 }
             }
             if (updated) {
@@ -148,13 +177,13 @@ class AdblockModel : ActiveModel() {
             }
         } finally {
             clientLoading.value = false
+            if (config.adBlockListURL.value != configuredUrl) loadAdBlockList(true)
         }
     }
 
-    private fun getConfiguredFilterLists(): List<FilterList> {
-        val configuredUrl = config.adBlockListURL.value
+    private fun getConfiguredFilterLists(configuredUrl: String): List<FilterList> {
         if (configuredUrl != Config.DEFAULT_ADBLOCK_LIST_URL) {
-            val customCacheSuffix = configuredUrl.hashCode().toString().replace("-", "m")
+            val customCacheSuffix = AdblockCache.sourceKey(configuredUrl)
             return listOf(
                 FilterList(
                     "Custom",
@@ -272,12 +301,17 @@ class AdblockModel : ActiveModel() {
     }
 
     private fun deserializeCachedList(serializedFile: File): ContentBlocker? {
-        return engine.deserialize(serializedFile)
+        return try {
+            engine.deserialize(serializedFile)
+        } catch (e: Exception) {
+            Log.w(TAG, "Can not restore compiled adblock cache", e)
+            null
+        }
     }
 
-    private fun hasCurrentClient(): Boolean {
+    private fun hasCurrentClient(source: String? = null): Boolean {
         return synchronized(clientLock) {
-            client != null
+            client != null && (source == null || clientSource == source)
         }
     }
 

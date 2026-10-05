@@ -1291,10 +1291,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
 
         override fun isAdBlockingEnabled(): Boolean {
-            tabsModel.currentTab.value?.adblock?.apply {
-                return this
-            }
-            return  config.adBlockEnabled
+            return tab.adblock ?: config.adBlockEnabled
         }
 
         override fun isDialogsBlockingEnabled(): Boolean {

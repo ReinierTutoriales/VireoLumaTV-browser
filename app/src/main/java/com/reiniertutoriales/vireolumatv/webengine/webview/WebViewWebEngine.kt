@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import com.reiniertutoriales.vireolumatv.adblock.AdblockRequestClassifier
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -372,7 +373,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun isAd(request: WebResourceRequest, baseUri: Uri): Boolean {
-            return callback?.isAd(request.url, request.requestHeaders["Accept"], baseUri) ?: false
+            return callback?.isAd(request.url, AdblockRequestClassifier.classify(request.url, request.requestHeaders, request.isForMainFrame), baseUri) ?: false
         }
 
         override fun isAdBlockingEnabled(): Boolean {

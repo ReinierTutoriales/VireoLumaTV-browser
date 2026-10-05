@@ -10,7 +10,7 @@ object AdblockFilterListValidator {
         val normalizedContent = content.removePrefix("\uFEFF")
         val trimmedStart = normalizedContent.trimStart()
         if (looksLikeHtml(trimmedStart)) return false
-        val lineCount = normalizedContent.lineSequence().count()
+        val lineCount = normalizedContent.lineSequence().take(MIN_DEFAULT_FILTER_LINES).count()
         if (requiresAdblockHeader) {
             val firstNonBlankLine = normalizedContent.lineSequence().firstOrNull { it.isNotBlank() } ?: return false
             return firstNonBlankLine.startsWith("[Adblock Plus") && lineCount >= MIN_DEFAULT_FILTER_LINES
@@ -19,7 +19,7 @@ object AdblockFilterListValidator {
     }
 
     private fun looksLikeHtml(trimmedStart: String): Boolean {
-        val lowerStart = trimmedStart.lowercase(Locale.US)
+        val lowerStart = trimmedStart.take(32).lowercase(Locale.US)
         return lowerStart.startsWith("<!doctype html") || lowerStart.startsWith("<html")
     }
 }
