@@ -1239,8 +1239,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
 
         override fun onPageStarted(url: String?) {
-            lifecycleScope.launch { tabsModel.findHostConfig(tab, false) }
-            onWebViewUpdated(tab)
             val webViewUrl = tab.webEngine.url
             if (webViewUrl != null) {
                 tab.url = webViewUrl
@@ -1252,6 +1250,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
             tab.blockedAds = 0
             tab.blockedPopups = 0
+            // Update the URL before starting the host lookup, including redirects.
+            lifecycleScope.launch { tabsModel.findHostConfig(tab, false) }
+            onWebViewUpdated(tab)
         }
 
         override fun onPageFinished(url: String?) {
