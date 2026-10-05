@@ -117,7 +117,10 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     @Throws(Exception::class)
     override fun getOrCreateView(activityContext: Context): View {
         if (webView == null) {
-            webView = WebViewEx(activityContext, webViewCallback, jsInterface)
+            webView = WebViewEx(activityContext, webViewCallback, jsInterface).also {
+                // Register before the first navigation, using this tab's setting even before attach.
+                it.onUpdateAdblockSetting(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)
+            }
         }
         return webView!!
     }

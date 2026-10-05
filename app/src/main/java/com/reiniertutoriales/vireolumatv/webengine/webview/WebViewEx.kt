@@ -104,6 +104,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     private var virtualCursorMode: Boolean = true
     private var genericInjects: String? = null
+    private val youtubeAdblock by lazy { YouTubeAdblockController(this) }
     private val consoleLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     private val streamLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     private var webChromeClient_: WebChromeClient
@@ -479,6 +480,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 currentOriginalUrl = url.toUri()
                 if (url != "file:///android_asset/") certificateErrorPageUrl = null
                 callback.onPageStarted(url)
+                youtubeAdblock.onPage(url)
             }
 
             override fun onPageFinished(view: WebView, url: String?) {
@@ -486,6 +488,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 Log.d(TAG, "onPageFinished url: $url")
                 callback.onPageFinished(url)
                 evaluateJavascript(getGenericJSInjects(), null)
+                youtubeAdblock.onPage(url)
             }
 
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
@@ -743,10 +746,16 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     }
 
     fun onUpdateAdblockSetting(adblockEnabled: Boolean) {
+        youtubeAdblock.setEnabled(adblockEnabled)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Malware/phishing protection is independent of the advertising preference.
             settings.safeBrowsingEnabled = true
         }
+    }
+
+    override fun destroy() {
+        youtubeAdblock.destroy()
+        super.destroy()
     }
 
     fun setVirtualCursorMode(enabled: Boolean) {

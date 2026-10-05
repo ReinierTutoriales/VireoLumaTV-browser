@@ -31,7 +31,7 @@ class AdblockModel @JvmOverloads constructor(
     companion object {
         const val TAG: String = "AdblockModel"
 
-        const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 30 //30 days
+        const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 7 //7 days
         private const val PARTIAL_UPDATE_RETRY_MINUTES = 60 * 24 //1 day
         private const val DOWNLOAD_CONNECT_TIMEOUT_MS = 10_000
         private const val DOWNLOAD_READ_TIMEOUT_MS = 15_000

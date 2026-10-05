@@ -33,6 +33,12 @@ class AdblockRequestClassifierTest {
         assertEquals("image", classify("/icon", mapOf("accept" to "image/avif,image/webp,*/*;q=0.8")))
     }
 
+    @Test fun extensionlessJsonRequestsUseXhrRulesWithoutGuessingForMixedAccept() {
+        assertEquals("xhr", classify("/youtubei/v1/player", mapOf("Accept" to "application/json")))
+        assertEquals("xhr", classify("/api/ads", mapOf("accept" to "application/problem+json")))
+        assertEquals("unknown", classify("/api", mapOf("Accept" to "application/json,text/html")))
+    }
+
     @Test fun navigationUsesItsOwnHostWhileSubresourcesUseTheContainingPage() {
         val destination = Uri.parse("https://new-page.test/")
         val previousPage = Uri.parse("https://old-page.test/")

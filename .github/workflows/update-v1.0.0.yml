@@ -1,4 +1,4 @@
-name: Update v1.0.0 cursor hotfix
+name: Update v1.0.0 browser fixes
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
           from pathlib import Path
           source = Path('app/build.gradle.kts').read_text()
           assert 'versionName = "1.0.0"' in source
-          assert 'versionCode = 71' in source
+          assert 'versionCode = 72' in source
           PYCODE
       - uses: actions/setup-java@v5
         with:
@@ -53,6 +53,7 @@ jobs:
         run: |
           node scripts/test-home-page-security.cjs
           node scripts/test-webview-controls.cjs
+          node scripts/test-youtube-adblock.cjs
           ./gradlew testGenericDebugUnitTest assembleGenericDebug --stacktrace
       - name: Build with existing shared CI certificate
         env:
@@ -69,7 +70,7 @@ jobs:
           assert len(metadata['elements']) == 1
           element = metadata['elements'][0]
           assert element['versionName'] == '1.0.0'
-          assert element['versionCode'] == 71
+          assert element['versionCode'] == 72
           PYCODE
           build_tools=$(find "$ANDROID_HOME/build-tools" -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n 1)
           "$build_tools/apksigner" verify --verbose --print-certs dist/VireoLumaTV-1.0.0.apk > dist/SIGNING.txt

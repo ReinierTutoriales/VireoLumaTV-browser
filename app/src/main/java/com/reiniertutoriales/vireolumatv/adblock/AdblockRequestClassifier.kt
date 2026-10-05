@@ -35,6 +35,7 @@ internal object AdblockRequestClassifier {
             it.substringBefore(';').trim().lowercase(Locale.ROOT)
         }?.filter { it != "*/*" }
         if (accepted.isNullOrEmpty()) return "unknown"
+        if (accepted.all { it == "application/json" || it.endsWith("+json") }) return "xhr"
         if (accepted.all { it.startsWith("image/") }) return "image"
         if (accepted.all { it == "text/css" }) return "style"
         if (accepted.all { it == "application/javascript" || it == "text/javascript" }) return "script"

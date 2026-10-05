@@ -49,6 +49,7 @@ jobs:
         run: |
           node scripts/test-home-page-security.cjs
           node scripts/test-webview-controls.cjs
+          node scripts/test-youtube-adblock.cjs
           ./gradlew testGenericDebugUnitTest --stacktrace
 
       - name: Build debug APK
