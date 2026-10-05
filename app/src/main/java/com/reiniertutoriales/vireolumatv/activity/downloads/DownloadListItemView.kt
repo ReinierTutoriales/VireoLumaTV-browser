@@ -70,6 +70,8 @@ class DownloadListItemView(private val downloadsActivity: DownloadsActivity, pri
         if (tvTitle?.text != download.filename) {
             tvTitle?.text = download.filename
         }
+        this.download?.filename = download.filename
+        this.download?.filepath = download.filepath
         this.download?.size = download.size
         this.download?.bytesReceived = download.bytesReceived
         tvSize!!.setTextColor(defaultTextColor)
@@ -116,13 +118,13 @@ class DownloadListItemView(private val downloadsActivity: DownloadsActivity, pri
     }
 
     override fun onDownloadUpdated(downloadInfo: Download) {
-        if (downloadInfo.id == this.download?.id) {
+        if (downloadInfo.matches(this.download)) {
             updateUI(downloadInfo)
         }
     }
 
     override fun onDownloadError(downloadInfo: Download, responseCode: Int, responseMessage: String) {
-        if (downloadInfo.id == this.download?.id) {
+        if (downloadInfo.matches(this.download)) {
             updateUI(downloadInfo)
         }
     }

@@ -43,6 +43,10 @@ class Download() {
     @Ignore
     var stream: InputStream? = null
 
+    // Persisted history rows may be separate objects. Runtime-only private downloads all have id=0.
+    fun matches(other: Download?): Boolean = other != null &&
+        (this === other || (id != 0L && id == other.id))
+
     enum class OperationAfterDownload {
         NOP, INSTALL
     }

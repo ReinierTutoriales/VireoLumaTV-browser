@@ -32,6 +32,16 @@ class DownloadResourceTest {
         assertTrue(second.cancelled)
     }
 
+    @Test fun normalHistoryCopyCanStillCancelItsActiveTaskByNonzeroId() {
+        val live = Download().apply { id = 42 }
+        val historyRow = Download().apply { id = 42 }
+        val model = ActiveDownloadsModel()
+        model.activeDownloads.add(StreamDownloadTask(live, "data".byteInputStream(), callback))
+        model.cancelDownload(historyRow)
+        assertTrue(live.cancelled)
+        assertFalse(Download().matches(Download()))
+    }
+
     @Test fun cancelledBlobDoesNotWriteAFileAndReleasesItsBridgeString() {
         val path = File(VireoLumaTVApp.instance.cacheDir, "cancelled-blob.txt")
         path.delete()

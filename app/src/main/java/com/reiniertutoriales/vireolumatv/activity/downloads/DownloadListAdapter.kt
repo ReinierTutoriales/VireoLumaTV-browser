@@ -36,6 +36,10 @@ class DownloadListAdapter(private val downloadsActivity: DownloadsActivity) : Ba
         notifyDataSetChanged()
     }
 
+    fun addLiveItem(download: Download) {
+        if (downloads.none { !it.isDateHeader && it.matches(download) }) addItems(listOf(download))
+    }
+
     override fun getCount(): Int {
         return downloads.size
     }

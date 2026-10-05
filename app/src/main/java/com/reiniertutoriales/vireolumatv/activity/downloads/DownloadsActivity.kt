@@ -34,6 +34,7 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
     private lateinit var vb: ActivityDownloadsBinding
     private lateinit var adapter: DownloadListAdapter
     private val listeners = ArrayList<ActiveDownloadsModel.Listener>()
+    private val privateSession: Boolean get() = this is IncognitoDownloadsActivity
 
     private lateinit var activeDownloadsModel: ActiveDownloadsModel
     private lateinit var downloadsHistoryModel: DownloadsHistoryModel
@@ -44,7 +45,7 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         }
 
         override fun onScroll(view: AbsListView, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
-            if (totalItemCount != 0 && firstVisibleItem + visibleItemCount >= totalItemCount - 1) {
+            if (!privateSession && totalItemCount != 0 && firstVisibleItem + visibleItemCount >= totalItemCount - 1) {
                 downloadsHistoryModel.loadNextItems()
             }
         }
@@ -74,7 +75,9 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
             }
         })
 
-        if (downloadsHistoryModel.allItems.isEmpty()) {
+        if (privateSession) {
+            showActivePrivateDownloads()
+        } else if (downloadsHistoryModel.allItems.isEmpty()) {
             downloadsHistoryModel.loadNextItems()
         } else {
             vb.tvPlaceholder.visibility = View.GONE
@@ -86,6 +89,17 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
     override fun onResume() {
         super.onResume()
         activeDownloadsModel.registerListener(this)
+        if (privateSession) showActivePrivateDownloads()
+    }
+
+    private fun showActivePrivateDownloads() {
+        activeDownloadsModel.activeDownloads.filter { it.downloadInfo.incognito }
+            .forEach { showPrivateDownload(it.downloadInfo) }
+    }
+
+    private fun showPrivateDownload(download: Download) {
+        adapter.addLiveItem(download)
+        vb.tvPlaceholder.visibility = View.GONE
     }
 
     override fun onPause() {
@@ -233,12 +247,14 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
     }
 
     override fun onDownloadUpdated(downloadInfo: Download) {
+        if (privateSession && downloadInfo.incognito) showPrivateDownload(downloadInfo)
         for (i in listeners.indices) {
             listeners[i].onDownloadUpdated(downloadInfo)
         }
     }
 
     override fun onDownloadError(downloadInfo: Download, responseCode: Int, responseMessage: String) {
+        if (privateSession && downloadInfo.incognito) showPrivateDownload(downloadInfo)
         for (i in listeners.indices) {
             listeners[i].onDownloadError(downloadInfo, responseCode, responseMessage)
         }
