@@ -1,7 +1,6 @@
 package com.reiniertutoriales.vireolumatv.activity.main.view
 
 import android.content.Context
-import android.transition.TransitionManager
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -31,6 +30,9 @@ class ActionBar @JvmOverloads constructor(
     private var downloadAnimation: Animation? = null
     private var downloadsModel = ActiveModelsRepository.get(ActiveDownloadsModel::class, context)
     private var extendedAddressBarMode = false
+    private val selectAddressRunnable = Runnable {
+        if (vb.etUrl.hasFocus()) vb.etUrl.selectAll()
+    }
 
     interface Callback {
         fun closeWindow()
@@ -52,10 +54,10 @@ class ActionBar @JvmOverloads constructor(
             val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
             imm.showSoftInput(vb.etUrl, InputMethodManager.SHOW_IMPLICIT)
-            postDelayed(//workaround an android TV bug
-                {
-                    vb.etUrl.selectAll()
-                }, 500)
+            removeCallbacks(selectAddressRunnable)
+            postDelayed(selectAddressRunnable, 500) // Let the TV keyboard finish opening.
+        } else {
+            removeCallbacks(selectAddressRunnable)
         }
     }
 
@@ -144,7 +146,6 @@ class ActionBar @JvmOverloads constructor(
                 child.visibility = GONE
             }
         }
-        TransitionManager.beginDelayedTransition(this)
         callback?.onExtendedAddressBarMode()
     }
 
@@ -161,5 +162,12 @@ class ActionBar @JvmOverloads constructor(
 
     fun catchFocus() {
         vb.ibMenu.requestFocus()
+    }
+
+    override fun onDetachedFromWindow() {
+        removeCallbacks(selectAddressRunnable)
+        vb.ibDownloads.clearAnimation()
+        downloadAnimation = null
+        super.onDetachedFromWindow()
     }
 }
