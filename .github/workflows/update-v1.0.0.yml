@@ -77,13 +77,37 @@ jobs:
           python - <<'PYCODE'
           import re
           from pathlib import Path
-          pattern = r'Signer #1 certificate SHA-256 digest: ([a-fA-F0-9]+)'
-          old = re.search(pattern, Path('original/SIGNING.txt').read_text())
-          new = re.search(pattern, Path('dist/SIGNING.txt').read_text())
-          assert old and new, 'Cannot read APK certificate fingerprints'
-          print('Existing APK certificate SHA-256:', old.group(1).lower())
-          print('Updated APK certificate SHA-256:', new.group(1).lower())
-          assert old.group(1).lower() == new.group(1).lower(), 'Signing certificate changed'
+          # apksigner labels v3 signers by SDK range, rather than "Signer #1".
+          # Match signer certificates only; exclude source stamps and public keys.
+          pattern = r'^Signer (?:#\d+|\(.*\)) certificate SHA-256 digest: ([a-fA-F0-9]{64})\s*
+          PYCODE
+          printf '\nFirma: certificado compartido de CI existente (debug); APK release optimizado con R8.\n' >> dist/SIGNING.txt
+          printf '\n**Firma:** certificado compartido de CI existente, de tipo debug; APK release optimizado con R8.\n' >> RELEASE_NOTES.md
+          printf 'Application source: https://github.com/%s/tree/%s\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > dist/RELEASE_SOURCE.txt
+          cp LICENSE.md NOTICE.md dist/
+          cp licenses/*.txt dist/
+          cp app/src/main/assets/licenses/SOURCES.txt dist/
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+      - name: Update existing v1.0.0 release after all checks
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v1.0.0" --jq '.object.sha')" = '6a94ee6f2da87ff41aa38f82d7b30988556f62f1'
+          gh release upload v1.0.0 dist/* --repo "$GITHUB_REPOSITORY" --clobber
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/v1.0.0" -f sha="$GITHUB_SHA" -F force=true
+          gh release edit v1.0.0 --repo "$GITHUB_REPOSITORY" --notes-file RELEASE_NOTES.md --latest
+
+          def fingerprints(text):
+              return {value.lower() for value in re.findall(pattern, text, re.MULTILINE)}
+          sample = 'a' * 64
+          assert fingerprints('Signer #1 certificate SHA-256 digest: ' + sample) == {sample}
+          assert fingerprints('Signer (minSdkVersion=24, maxSdkVersion=2147483647) certificate SHA-256 digest: ' + sample) == {sample}
+          assert not fingerprints('Source Stamp Signer certificate SHA-256 digest: ' + sample)
+          assert not fingerprints('Signer #1 public key SHA-256 digest: ' + sample)
+          old = fingerprints(Path('original/SIGNING.txt').read_text())
+          new = fingerprints(Path('dist/SIGNING.txt').read_text())
+          assert len(old) == len(new) == 1, 'Expected one distinct signing certificate per APK'
+          print('Existing APK certificate SHA-256:', sorted(old))
+          print('Updated APK certificate SHA-256:', sorted(new))
+          assert old == new, 'Signing certificate changed'
           PYCODE
           printf '\nFirma: certificado compartido de CI existente (debug); APK release optimizado con R8.\n' >> dist/SIGNING.txt
           printf '\n**Firma:** certificado compartido de CI existente, de tipo debug; APK release optimizado con R8.\n' >> RELEASE_NOTES.md
