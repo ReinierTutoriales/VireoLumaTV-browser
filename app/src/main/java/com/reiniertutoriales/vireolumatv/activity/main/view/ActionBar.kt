@@ -9,6 +9,7 @@ import android.view.View.OnKeyListener
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
+import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -30,6 +31,7 @@ class ActionBar @JvmOverloads constructor(
     private var downloadAnimation: Animation? = null
     private var downloadsModel = ActiveModelsRepository.get(ActiveDownloadsModel::class, context)
     private var extendedAddressBarMode = false
+    val isEditingAddress: Boolean get() = extendedAddressBarMode
     private val selectAddressRunnable = Runnable {
         if (vb.etUrl.hasFocus()) vb.etUrl.selectAll()
     }
@@ -44,6 +46,7 @@ class ActionBar @JvmOverloads constructor(
         fun search(text: String)
         fun onExtendedAddressBarMode()
         fun onUrlInputDone()
+        fun onAddressInputCancelled() {}
         fun toggleIncognitoMode()
     }
 
@@ -58,23 +61,30 @@ class ActionBar @JvmOverloads constructor(
             postDelayed(selectAddressRunnable, 500) // Let the TV keyboard finish opening.
         } else {
             removeCallbacks(selectAddressRunnable)
+            if (extendedAddressBarMode) {
+                dismissExtendedAddressBarMode()
+                callback?.onAddressInputCancelled()
+            }
         }
     }
 
-    private val etUrlKeyListener = OnKeyListener { view, i, keyEvent ->
-        when (keyEvent.keyCode) {
-            KeyEvent.KEYCODE_ENTER -> {
-                if (keyEvent.action == KeyEvent.ACTION_UP) {
-                    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
-                    callback?.search(vb.etUrl.text.toString())
-                    dismissExtendedAddressBarMode()
-                    callback?.onUrlInputDone()
-                }
-                return@OnKeyListener true
-            }
-        }
-        false
+    private fun submitAddress() {
+        val text = vb.etUrl.text.toString().trim()
+        if (text.isEmpty()) return
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
+        dismissExtendedAddressBarMode()
+        vb.etUrl.clearFocus()
+        // Commit a previewed tab before loading the search result into it.
+        callback?.onUrlInputDone()
+        callback?.search(text)
+    }
+
+    private val etUrlKeyListener = OnKeyListener { _, _, event ->
+        if (event.keyCode == KeyEvent.KEYCODE_ENTER || event.keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) {
+            if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) submitAddress()
+            true
+        } else false
     }
 
     init {
@@ -107,6 +117,13 @@ class ActionBar @JvmOverloads constructor(
         vb.etUrl.onFocusChangeListener = etUrlFocusChangeListener
 
         vb.etUrl.setOnKeyListener(etUrlKeyListener)
+        vb.etUrl.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_GO ||
+                actionId == EditorInfo.IME_ACTION_DONE) {
+                submitAddress()
+                true
+            } else false
+        }
 
 
         downloadsModel.activeDownloads.subscribe(context as AppCompatActivity) {
@@ -158,6 +175,15 @@ class ActionBar @JvmOverloads constructor(
                 child.visibility = VISIBLE
             }
         }
+    }
+
+    fun cancelAddressInput() {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
+        dismissExtendedAddressBarMode()
+        vb.etUrl.clearFocus()
+        callback?.onAddressInputCancelled()
+        catchFocus()
     }
 
     fun catchFocus() {

@@ -101,6 +101,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/etUrl"
+        android:nextFocusDown="@id/vTabs"
+        android:nextFocusLeft="@id/ibSettings"
         android:iconifiedByDefault="false"
         android:textCursorDrawable="@null"
         android:textColor="@color/default_url_color"

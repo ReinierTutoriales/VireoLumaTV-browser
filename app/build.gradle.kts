@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "com.reiniertutoriales.vireolumatv"
-        versionCode = 73
+        versionCode = 74
         versionName = "1.0.0"
 
         javaCompileOptions {

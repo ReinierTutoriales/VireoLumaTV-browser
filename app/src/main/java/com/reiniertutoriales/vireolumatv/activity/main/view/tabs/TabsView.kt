@@ -91,6 +91,15 @@ class TabsView @JvmOverloads constructor(
       .show()
   }
 
+  fun focusCurrentTab(): Boolean {
+    for (i in 0 until vb.rvTabs.childCount) {
+      val child = vb.rvTabs.getChildAt(i)
+      if (child.tag === tabsModel.tabsStates.getOrNull(current) && child.requestFocus()) return true
+    }
+    // The selected row can be offscreen or the list can be empty; keep an actionable focus.
+    return vb.btnAdd.requestFocus()
+  }
+
   override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
     if (gainFocus && childCount > 0) {
       for (i in 0 until vb.rvTabs.childCount) {
