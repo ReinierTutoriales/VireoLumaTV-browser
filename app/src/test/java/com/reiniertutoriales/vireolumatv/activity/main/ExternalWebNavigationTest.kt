@@ -3,6 +3,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.app.Application
 import android.net.Uri
 import android.content.Intent
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
