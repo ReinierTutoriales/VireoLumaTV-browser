@@ -1,6 +1,24 @@
 //download blobs support
 if (!window.vireoLumaTVClicksListener) {
+    window.vireoLumaTVCreateBlobToken = function() {
+        var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
+        var bytes = new Uint8Array(32);
+        if (window.crypto && typeof window.crypto.getRandomValues === "function") {
+            window.crypto.getRandomValues(bytes);
+        } else {
+            for (var i = 0; i < bytes.length; i++) {
+                bytes[i] = Math.floor(Math.random() * 256);
+            }
+        }
+        var token = "";
+        for (var j = 0; j < bytes.length; j++) {
+            token += alphabet.charAt(bytes[j] % alphabet.length);
+        }
+        return token;
+    };
+
     window.vireoLumaTVClicksListener = function(e) {
+        if (e && e.isTrusted === false) return;
         var target = e.target;
         if (!target || typeof target.closest !== "function") return;
         //the click can land on an element inside the link (icon, span, button...)
@@ -15,12 +33,23 @@ if (!window.vireoLumaTVClicksListener) {
         xhr.onload = function() {
             if (this.status == 200) {
                 var blob = this.response;
+                if (!blob) return;
+                var mimetype = blob.type || "";
+                var token = window.vireoLumaTVCreateBlobToken();
+                if (!VireoLumaTVApp.beginBlobDownload(token, url, fileName, mimetype, blob.size || 0)) {
+                    return;
+                }
                 var reader = new FileReader();
                 reader.onload = function() {
                     var base64data = reader.result;
                     if (typeof base64data === "string") {
-                        VireoLumaTVApp.takeBlobDownloadData(base64data, fileName, url, blob.type);
+                        VireoLumaTVApp.takeBlobDownloadData(token, base64data, fileName, url, mimetype);
+                    } else {
+                        VireoLumaTVApp.cancelBlobDownload(token);
                     }
+                };
+                reader.onerror = function() {
+                    VireoLumaTVApp.cancelBlobDownload(token);
                 };
                 reader.readAsDataURL(blob);
             }
