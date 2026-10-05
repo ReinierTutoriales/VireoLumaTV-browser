@@ -74,7 +74,6 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
     }
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
-        Log.d("CursorLayout", "dispatchGenericMotionEvent: $event")
 
         if (willNotDraw()) return super.dispatchGenericMotionEvent(event)
 

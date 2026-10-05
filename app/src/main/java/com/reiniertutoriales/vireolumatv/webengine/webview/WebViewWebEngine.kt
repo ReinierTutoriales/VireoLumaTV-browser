@@ -8,6 +8,7 @@ import com.reiniertutoriales.vireolumatv.adblock.AdblockRequestClassifier
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import org.json.JSONTokener
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
@@ -227,10 +228,14 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         return true
     }
 
+    override fun usesMousePointer(): Boolean = true
+
     override fun onLongPress(x: Int, y: Int) {
         webView?.let {
             it.evaluateJavascript(Scripts.LONG_PRESS_SCRIPT) { href ->
-                val linkUrl = if (href == "null") null else href
+                // evaluateJavascript returns JSON, not a raw URI.
+                val linkUrl = runCatching { JSONTokener(href).nextValue() as? String }.getOrNull()
+                if (webView !== it || viewParent == null) return@evaluateJavascript
                 webViewCallback.onContextMenu(
                     it.currentOriginalUrl.toString(),
                     linkUrl, x, y
@@ -369,6 +374,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
         override fun onRenderProcessGone(): Boolean {
             Log.i(TAG, "onRenderProcessGone hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
+            jsInterface.cancelHomeFavicons()
             exitFullscreenView(restoreBrowserControls = false)
             val deadWebView = webView ?: return true
             tab.rendererLost = true

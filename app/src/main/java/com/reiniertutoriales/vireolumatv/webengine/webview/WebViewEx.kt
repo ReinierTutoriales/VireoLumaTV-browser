@@ -19,6 +19,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.os.SystemClock
 import android.text.TextUtils
 import android.util.Log
 import android.view.MotionEvent
@@ -34,6 +35,7 @@ import android.webkit.ValueCallback
 import android.webkit.WebBackForwardList
 import android.webkit.WebChromeClient
 import android.webkit.RenderProcessGoneDetail
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -102,6 +104,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     private var virtualCursorMode: Boolean = true
     private var genericInjects: String? = null
+    private val consoleLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
+    private val streamLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     private var webChromeClient_: WebChromeClient
     private var fullscreenViewCallback: WebChromeClient.CustomViewCallback? = null
     private var pickFileCallback: ValueCallback<Array<Uri>>? = null
@@ -380,8 +384,14 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             }
 
             override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
-                val msg: String = "(" + consoleMessage.sourceId() + "[" + consoleMessage.lineNumber() + "]): " + consoleMessage.message()
-                when (consoleMessage.messageLevel()) {
+                val level = consoleMessage.messageLevel()
+                if (!config.webEngineDebug) {
+                    if (level != ConsoleMessage.MessageLevel.ERROR && level != ConsoleMessage.MessageLevel.WARNING)
+                        return true
+                    if (!consoleLogBudget.allow()) return true
+                }
+                val msg = "[${consoleMessage.lineNumber()}] " + consoleMessage.message().take(2048)
+                when (level) {
                     ConsoleMessage.MessageLevel.ERROR -> Log.e(WEB_VIEW_TAG, msg)
                     ConsoleMessage.MessageLevel.WARNING -> Log.w(WEB_VIEW_TAG, msg)
                     else -> Log.i(WEB_VIEW_TAG, msg)
@@ -476,6 +486,22 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 Log.d(TAG, "onPageFinished url: $url")
                 callback.onPageFinished(url)
                 evaluateJavascript(getGenericJSInjects(), null)
+            }
+
+            override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
+                val kind = StreamDiagnostics.kind(request.url)
+                if (kind != null && streamLogBudget.allow()) {
+                    Log.w(WEB_VIEW_TAG, "Stream $kind transport=${error.errorCode} host=${request.url.host}")
+                }
+                super.onReceivedError(view, request, error)
+            }
+
+            override fun onReceivedHttpError(view: WebView, request: WebResourceRequest, response: WebResourceResponse) {
+                val kind = StreamDiagnostics.kind(request.url)
+                if (kind != null && streamLogBudget.allow()) {
+                    Log.w(WEB_VIEW_TAG, "Stream $kind http=${response.statusCode} host=${request.url.host}")
+                }
+                super.onReceivedHttpError(view, request, response)
             }
 
             override fun onLoadResource(view: WebView, url: String) {
