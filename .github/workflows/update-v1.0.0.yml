@@ -90,6 +90,10 @@ jobs:
           assert not fingerprints('Signer #1 public key SHA-256 digest: ' + sample)
           old = fingerprints(Path('original/SIGNING.txt').read_text())
           new = fingerprints(Path('dist/SIGNING.txt').read_text())
+          for label, path, values in [('Existing', 'original/SIGNING.txt', old), ('Updated', 'dist/SIGNING.txt', new)]:
+              lines = [line for line in Path(path).read_text().splitlines() if 'certificate SHA-256' in line or 'Signer' in line]
+              print(label + ' APK signer lines:', repr(lines), flush=True)
+              print(label + ' parsed fingerprints:', sorted(values), flush=True)
           assert len(old) == len(new) == 1, 'Expected one distinct signing certificate per APK'
           print('Existing APK certificate SHA-256:', sorted(old))
           print('Updated APK certificate SHA-256:', sorted(new))
