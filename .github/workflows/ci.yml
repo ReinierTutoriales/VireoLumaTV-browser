@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - 'fixes/**'
+      - fixes/audit
   pull_request:
   workflow_dispatch:
 

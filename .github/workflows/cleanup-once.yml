@@ -1,0 +1,35 @@
+name: Clean integrated branches and restart publication
+
+on:
+  push:
+    branches: [fixes/audit]
+    paths: ['.github/workflows/cleanup-once.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+  pull-requests: read
+
+concurrency:
+  group: repository-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Cancel duplicates, delete integrated branches and restart one publisher
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/cleanup-repository-once.py
+      - name: Save cleanup result
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: repository-cleanup-result
+          path: cleanup-result.json
+          if-no-files-found: ignore
+          retention-days: 30

@@ -1,0 +1,104 @@
+{
+  "source_sha": "0bab11dac452237490019fb0991a7a350cef815e",
+  "default_branch": "fixes/audit",
+  "delete_branches": [
+    {
+      "name": "fix/cursor-tap-1.0.0",
+      "sha": "d385fa1f4600c9d9309ce8f2895435176af84c4d"
+    },
+    {
+      "name": "fixes/adblock-audit-20261005",
+      "sha": "0002a92665df6597768c1e792d19638b022763fd"
+    },
+    {
+      "name": "fixes/low-resource-audit-20261005",
+      "sha": "41709b65cb36a07fba9bb610f63493ee54ced2b7"
+    },
+    {
+      "name": "fixes/network-audit-20261005",
+      "sha": "4e18f979e5ffb272481e8bf9e1012cbde724be11"
+    },
+    {
+      "name": "fixes/single-live-tab-20261005",
+      "sha": "9a7c7ad5d0dfde5f1de4cd29fdcc44d798e7995c"
+    },
+    {
+      "name": "fixes/ui-resource-audit-20261005",
+      "sha": "e3b71c3012b4030ecdcedbcb1f51845a1fbefd83"
+    },
+    {
+      "name": "fixes/webview-video-pointer-20261005",
+      "sha": "c8e051bb15ed4776984d7f110832bb9b54b239c5"
+    },
+    {
+      "name": "fixes/youtube-adblock-20261005",
+      "sha": "0bab11dac452237490019fb0991a7a350cef815e"
+    },
+    {
+      "name": "privacy/incognito-downloads-no-history",
+      "sha": "6a0d28b5416975f162b71d0a5e9d575559b227e4"
+    },
+    {
+      "name": "privacy/incognito-favicons-memory-only",
+      "sha": "9d38a0b3e1923a1832a441c5a7a3ed5a7e9521fa"
+    },
+    {
+      "name": "privacy/incognito-stale-tabs-cleanup",
+      "sha": "b1d70850e036458dd7b9ae0eb5cbdd9c266e32be"
+    },
+    {
+      "name": "privacy/incognito-webview-isolation",
+      "sha": "791c05533c04f742718092a01129460cb8802e72"
+    },
+    {
+      "name": "reliability/atomic-selected-tab-save",
+      "sha": "7d0d24597ab99a0d157d2e8d8936a48a2f19b7fe"
+    },
+    {
+      "name": "reliability/current-tab-renderer-recovery",
+      "sha": "07d96b6910eeb6ba8e6e2979d9414d1035011ec3"
+    },
+    {
+      "name": "security/external-http-intents",
+      "sha": "518f1c069eb87fc0a3dd0b9397c54a546f1bfde9"
+    }
+  ],
+  "retained_branches": [
+    {
+      "name": "docs/onn-validation-checkpoint",
+      "sha": "9a5ffe9d587135d3a6e210a07384ae6f946f5745",
+      "reason": "contains unintegrated commits or open PR"
+    },
+    {
+      "name": "fixes/audit",
+      "sha": "0bab11dac452237490019fb0991a7a350cef815e",
+      "reason": "default"
+    },
+    {
+      "name": "fixes/ci-js-bridge-context-guards",
+      "sha": "76b1206a6e319d53dba687aa3a88f196de076690",
+      "reason": "contains unintegrated commits or open PR"
+    },
+    {
+      "name": "infra/room-v19-schema-export",
+      "sha": "f27ce326375f5c11d0aa4dfdd325d4def0235c2e",
+      "reason": "contains unintegrated commits or open PR"
+    },
+    {
+      "name": "perf/onn-2gb",
+      "sha": "f08483137e500567b54974cc3b617c0d43aeb2b6",
+      "reason": "contains unintegrated commits or open PR"
+    },
+    {
+      "name": "review/privacy-security-stability",
+      "sha": "875f6d1cb9c2639585d1615d1da858d44308a7a5",
+      "reason": "contains unintegrated commits or open PR"
+    },
+    {
+      "name": "security/js-bridge-context-guards",
+      "sha": "16f3734757d9d2b80fd171f9fc42d1aed90cdedc",
+      "reason": "contains unintegrated commits or open PR"
+    }
+  ],
+  "purge_policy": "Remove cancelled runs and older failed runs; retain 5 latest failures, successful runs and open-PR evidence."
+}
