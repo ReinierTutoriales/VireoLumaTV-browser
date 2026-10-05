@@ -2,17 +2,27 @@ package com.reiniertutoriales.vireolumatv.singleton
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.AtomicFile
 import android.util.Log
 import android.util.LruCache
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.utils.FaviconExtractor
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 import java.net.URL
+import java.security.MessageDigest
+import java.util.Locale
 
 object FaviconsPool {
     const val FAVICONS_DIR = "favicons"
@@ -20,6 +30,11 @@ object FaviconsPool {
     private const val FAVICON_CONNECT_TIMEOUT_MS = 5_000
     private const val FAVICON_READ_TIMEOUT_MS = 10_000
     private const val MAX_FAVICON_BYTES = 2 * 1024 * 1024
+    private const val MAX_ICON_SIDE = 256
+    private val requests = Semaphore(2)
+    private val persistenceMutex = Mutex()
+    // Fixed-size locks deduplicate a host without an ever-growing host/job map.
+    private val hostLocks = Array(32) { Mutex() }
     private val TAG: String = FaviconsPool::class.java.simpleName
 
     val faviconExtractor = FaviconExtractor()
@@ -52,15 +67,25 @@ object FaviconsPool {
             }
             return get("http://$urlOrHost")
         }
+        val host = try { URL(urlOrHost).host.lowercase(Locale.ROOT) } catch (_: Exception) { return null }
+        cache.get(host)?.let { return it }
+        return requests.withPermit {
+            hostLocks[(host.hashCode() and Int.MAX_VALUE) % hostLocks.size].withLock {
+                getHttp(urlOrHost, incognitoMode)
+            }
+        }
+    }
+
+    private suspend fun getHttp(urlOrHost: String, incognitoMode: Boolean): Bitmap? {
         try {
             val urlObj = URL(urlOrHost)
-            val host = urlObj.host
-            if (host != null) {
+            val host = urlObj.host.lowercase(Locale.ROOT)
+            if (host.isNotEmpty()) {
                 val hostBitmap = cache.get(host)
                 if (hostBitmap != null) {
                     return hostBitmap
                 }
-                val hostConfig = if (incognitoMode) null else databaseDelegate.findByHostName(host)
+                val hostConfig = if (incognitoMode) null else withContext(Dispatchers.IO) { databaseDelegate.findByHostName(host) }
                 if (hostConfig != null) {
                     val faviconFileName = hostConfig.favicon
                     if (faviconFileName != null) {
@@ -71,7 +96,11 @@ object FaviconsPool {
                             if (!favIconsDir.exists() && !favIconsDir.mkdir()) return@withContext null
                             val faviconFile = File(favIconsDir, faviconFileName)
                             if (faviconFile.exists()) {
-                                BitmapFactory.decodeFile(faviconFile.absolutePath)
+                                if (faviconFile.length() <= MAX_FAVICON_BYTES) {
+                                    faviconFile.inputStream().use { input ->
+                                        input.readUpTo(MAX_FAVICON_BYTES)?.let { decodeIcon(it) }
+                                    }
+                                } else null
                             } else {
                                 null
                             }
@@ -89,15 +118,18 @@ object FaviconsPool {
                 val favicons = try {
                     withContext(Dispatchers.IO) { faviconExtractor.extractFavIconsFromURL(urlObj) }
                 } catch (e: Exception) {
+                    if (e is CancellationException) throw e
                     e.printStackTrace()
                     ArrayList()
                 }
                 Log.d(TAG, "get: favicons found: ${favicons.size}")
                 while (favicons.isNotEmpty()) {
+                    currentCoroutineContext().ensureActive()
                     val icon = chooseNearestSizeIcon(favicons, FAVICON_PREFERRED_SIDE_SIZE, FAVICON_PREFERRED_SIDE_SIZE)!!
                     val bitmap = try {
                         downloadIcon(icon)
                     } catch (e: Exception) {
+                        if (e is CancellationException) throw e
                         e.printStackTrace()
                         null
                     }
@@ -117,6 +149,7 @@ object FaviconsPool {
                 // The caller displays its existing placeholder if HTTP discovery found no icon.
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             e.printStackTrace()
         }
         return null
@@ -134,43 +167,51 @@ object FaviconsPool {
         if (AppContext.provideConfig().incognitoMode) return@withContext
         val favIconsDir = File(favIconsDir())
         if (!favIconsDir.exists() && !favIconsDir.mkdir()) return@withContext
-        val faviconFileName = host.hashCode().toString() + ".png"
-        val faviconFile = File(favIconsDir, faviconFileName)
-        if (faviconFile.exists()) {
-            faviconFile.delete()
-        }
-        faviconFile.createNewFile()
-        faviconFile.outputStream().use {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
-        }
-        if (hostConfig != null) {
-            hostConfig.favicon = faviconFileName
-            databaseDelegate.update(hostConfig)
-        } else {
-            val newHostConfig = HostConfig(host)
-            newHostConfig.favicon = faviconFileName
-            databaseDelegate.insert(newHostConfig)
+        // Hash-code collisions must not let unrelated sites share an icon file.
+        val faviconFileName = MessageDigest.getInstance("SHA-256")
+            .digest(host.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) } + ".png"
+        persistenceMutex.withLock {
+            currentCoroutineContext().ensureActive()
+            val file = AtomicFile(File(favIconsDir, faviconFileName))
+            var output: java.io.FileOutputStream? = null
+            try {
+                output = file.startWrite()
+                check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, output))
+                file.finishWrite(output)
+            } catch (error: Exception) {
+                file.failWrite(output)
+                throw error
+            }
+            if (hostConfig != null) {
+                hostConfig.favicon = faviconFileName
+                databaseDelegate.update(hostConfig)
+            } else {
+                val newHostConfig = HostConfig(host)
+                newHostConfig.favicon = faviconFileName
+                databaseDelegate.insert(newHostConfig)
+            }
         }
     }
 
     private suspend fun downloadIcon(iconInfo: FaviconExtractor.IconInfo): Bitmap? = withContext(Dispatchers.IO) {
         val iconBytes = readIconBytes(iconInfo.src) ?: return@withContext null
-        val options = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-        }
+        currentCoroutineContext().ensureActive()
+        decodeIcon(iconBytes)
+    }
+
+    private fun decodeIcon(iconBytes: ByteArray): Bitmap? {
+        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size, options)
         val width = options.outWidth
         val height = options.outHeight
-        if (width <= 0 || height <= 0) {
-            return@withContext null
-        }
+        if (width <= 0 || height <= 0) return null
         var sampleSize = 1
-        while ((width - 1) / sampleSize + 1 > 512 || (height - 1) / sampleSize + 1 > 512) {
+        while ((width - 1) / sampleSize + 1 > MAX_ICON_SIDE || (height - 1) / sampleSize + 1 > MAX_ICON_SIDE) {
             sampleSize *= 2
         }
         options.inJustDecodeBounds = false
         options.inSampleSize = sampleSize
-        return@withContext BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size, options)
+        return BitmapFactory.decodeByteArray(iconBytes, 0, iconBytes.size, options)
     }
 
     private fun readIconBytes(iconSrc: String): ByteArray? {

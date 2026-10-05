@@ -5,16 +5,9 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.databinding.ViewFavoriteItemBinding
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
-import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
-import com.reiniertutoriales.vireolumatv.utils.activity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.reiniertutoriales.vireolumatv.utils.ViewFaviconLoader
 
 /**
  * Created by PDT on 13.09.2016.
@@ -22,6 +15,7 @@ import kotlinx.coroutines.launch
 class FavoriteItemView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
         FrameLayout(context, attrs, defStyleAttr) {
     private lateinit var vb: ViewFavoriteItemBinding
+    private lateinit var faviconLoader: ViewFaviconLoader
     var favorite: FavoriteItem? = null
         private set
     var listener: Listener? = null
@@ -38,6 +32,8 @@ class FavoriteItemView @JvmOverloads constructor(context: Context, attrs: Attrib
     private fun init() {
         vb = ViewFavoriteItemBinding.inflate(LayoutInflater.from(context), this, true)
 
+        faviconLoader = ViewFaviconLoader(this, vb.ivIcon)
+
         vb.ibDelete.setOnClickListener { favorite?.let { listener?.onDeleteClick(it)} }
 
         vb.llContent.setOnClickListener {  favorite?.let {listener?.onEditClick(it)} }
@@ -50,20 +46,6 @@ class FavoriteItemView @JvmOverloads constructor(context: Context, attrs: Attrib
         vb.llContent.isFocusable = editMode
         vb.tvTitle.text = favorite.title
         vb.tvUrl.text = favorite.url
-        vb.ivIcon.setImageResource(R.drawable.ic_not_available)
-        val url = favorite.url
-        if (url != null && url != Config.HOME_PAGE_URL) {
-            val scope = (activity as AppCompatActivity).lifecycleScope
-            scope.launch(Dispatchers.Main) {
-                val favicon = FaviconsPool.get(url)
-                if (url != this@FavoriteItemView.favorite?.url) return@launch //url was changed while loading favicon
-                if (!isAttachedToWindow) return@launch
-                favicon?.let {
-                    vb.ivIcon.setImageBitmap(it)
-                } ?: run {
-                    vb.ivIcon.setImageResource(R.drawable.ic_not_available)
-                }
-            }
-        }
+        faviconLoader.bind(favorite.url)
     }
 }

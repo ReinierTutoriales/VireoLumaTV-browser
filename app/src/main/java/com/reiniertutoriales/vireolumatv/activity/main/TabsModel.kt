@@ -15,7 +15,8 @@ import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -73,6 +74,12 @@ class TabsModel : ActiveModel() {
             tabsStates.replaceAll(tabsDao.getAll(false))
         }
         loaded = true
+    }
+
+    // Start the state capture before returning to the Activity, finish the small atomic write even
+    // if the last Activity destroys its model. No Activity or View is captured by this job.
+    fun saveTabBeforeExit(tab: WebTabState) = modelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+        withContext(NonCancellable) { saveTab(tab) }
     }
 
     suspend fun saveTab(tab: WebTabState) {
@@ -189,14 +196,23 @@ class TabsModel : ActiveModel() {
         var hostConfig = tab.cachedHostConfig
         if (hostConfig == null || hostConfig.hostName != currentHostName) {
             val db = com.reiniertutoriales.vireolumatv.singleton.AppDatabase.db.hostsDao()
-            hostConfig = db.findByHostName(currentHostName)
+            hostConfig = withContext(Dispatchers.IO) { db.findByHostName(currentHostName) }
             if (hostConfig == null && createIfNotFound) {
                 hostConfig = HostConfig(currentHostName)
                 hostConfig.id = db.insert(hostConfig)
             }
-            tab.cachedHostConfig = hostConfig
+            if (runCatching { URL(tab.url).host }.getOrNull() == currentHostName) {
+                tab.cachedHostConfig = hostConfig
+            }
         }
         return hostConfig
+    }
+
+    /** Synchronous WebView policy callbacks must never wait for disk on the UI thread. */
+    fun popupBlockingLevel(tab: WebTabState): Int {
+        val host = runCatching { URL(tab.url).host }.getOrNull()
+        return tab.cachedHostConfig?.takeIf { it.hostName == host }?.popupBlockLevel
+            ?: HostConfig.DEFAULT_BLOCK_POPUPS_VALUE
     }
 
     suspend fun changePopupBlockingLevel(newLevel: Int, tab: WebTabState) {

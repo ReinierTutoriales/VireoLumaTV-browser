@@ -9,7 +9,9 @@ class TabsDiffUtillCallback(val oldList: List<WebTabState>, val newList: List<We
     override fun getNewListSize(): Int = newList.size
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return oldList[oldItemPosition].id == newList[newItemPosition].id
+        val old = oldList[oldItemPosition]
+        val new = newList[newItemPosition]
+        return old === new || (old.id != 0L && old.id == new.id)
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =

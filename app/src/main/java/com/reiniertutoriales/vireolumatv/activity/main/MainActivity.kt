@@ -96,7 +96,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
@@ -261,6 +260,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
+    private var thumbnailGeneration = 0
+    private var thumbnailOverlayVisible = false
+
     private val displayThumbnailRunnable = object : Runnable {
         var tabState: WebTabState? = null
         override fun run() {
@@ -277,6 +279,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             Log.d(TAG, "onTitleChanged: $index")
             val tab = tabByTitleIndex(index)
             vb.vActionBar.setAddressBoxText(tab?.url ?: "")
+            thumbnailGeneration++
             uiHandler.removeCallbacks(displayThumbnailRunnable)
             displayThumbnailRunnable.tabState = tab
             uiHandler.postDelayed(displayThumbnailRunnable, 200)
@@ -403,6 +406,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
+        thumbnailOverlayVisible = false
+        thumbnailGeneration++
+        uiHandler.removeCallbacks(displayThumbnailRunnable)
+        displayThumbnailRunnable.tabState = null
         //here properties can be uninitialized in case of wrong activity for incognito mode
         //detection and force activity restart in onCreate()
         if (::tabsModel.isInitialized) {
@@ -730,7 +737,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         tabsModel.currentTab.value?.apply {
             webEngine.onPause()
             onPause()
-            runBlocking { tabsModel.saveTab(this@apply) }
+            tabsModel.saveTabBeforeExit(this@apply)
         }
         super.onPause()
     }
@@ -939,6 +946,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun showMenuOverlay() {
+        thumbnailOverlayVisible = true
+        thumbnailGeneration++
         vb.ivMiniatures.visibility = View.VISIBLE
         vb.llBottomPanel.visibility = View.VISIBLE
         vb.flWebViewContainer.visibility = View.INVISIBLE
@@ -984,34 +993,31 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private suspend fun displayThumbnail(currentTab: WebTabState?) {
-        if (currentTab != null) {
-            if (tabByTitleIndex(vb.vTabs.current) != currentTab) return
-            vb.llMiniaturePlaceholder.visibility = View.INVISIBLE
-            vb.ivMiniatures.visibility = View.VISIBLE
-            if (currentTab.thumbnail != null) {
-                vb.ivMiniatures.setImageBitmap(currentTab.thumbnail)
-            } else if (currentTab.thumbnailHash != null) {
-                withContext(Dispatchers.IO) {
-                    val thumbnail = currentTab.loadThumbnail()
-                    withContext(Dispatchers.Main) {
-                        if (thumbnail != null) {
-                            vb.ivMiniatures.setImageBitmap(currentTab.thumbnail)
-                        } else {
-                            vb.ivMiniatures.setImageResource(0)
-                        }
-                    }
-                }
-            } else {
-                vb.ivMiniatures.setImageResource(0)
-            }
-        } else {
+        if (!thumbnailOverlayVisible) return
+        if (currentTab == null) {
             vb.llMiniaturePlaceholder.visibility = View.VISIBLE
             vb.ivMiniatures.setImageResource(0)
             vb.ivMiniatures.visibility = View.INVISIBLE
+            return
         }
+        if (tabByTitleIndex(vb.vTabs.current) !== currentTab) return
+        val request = ++thumbnailGeneration
+        // Do not keep the previous site's preview on screen while loading the next one.
+        vb.ivMiniatures.setImageResource(0)
+        val thumbnail = currentTab.thumbnail ?: withContext(Dispatchers.IO) { currentTab.loadThumbnail() }
+        if (request != thumbnailGeneration || !thumbnailOverlayVisible || currentTab.closed ||
+            tabByTitleIndex(vb.vTabs.current) !== currentTab) return
+        // Disk decoding does not populate all background tab objects with retained bitmaps.
+        vb.llMiniaturePlaceholder.visibility = if (thumbnail == null) View.VISIBLE else View.INVISIBLE
+        vb.ivMiniatures.visibility = if (thumbnail == null) View.INVISIBLE else View.VISIBLE
+        vb.ivMiniatures.setImageBitmap(thumbnail)
     }
 
     private fun hideMenuOverlay(hideBottomButtons: Boolean = true) {
+        thumbnailOverlayVisible = false
+        thumbnailGeneration++
+        uiHandler.removeCallbacks(displayThumbnailRunnable)
+        displayThumbnailRunnable.tabState = null
         if (vb.rlActionBar.visibility == View.INVISIBLE) {
             return
         }
@@ -1233,6 +1239,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
 
         override fun onPageStarted(url: String?) {
+            lifecycleScope.launch { tabsModel.findHostConfig(tab, false) }
             onWebViewUpdated(tab)
             val webViewUrl = tab.webEngine.url
             if (webViewUrl != null) {
@@ -1300,8 +1307,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
 
         override fun shouldBlockNewWindow(dialog: Boolean, userGesture: Boolean): Boolean {
-            val hostConfig = runBlocking(Dispatchers.Main.immediate){ tabsModel.findHostConfig(tab, false) }
-            val currentBlockPopupsLevelValue = hostConfig?.popupBlockLevel ?: HostConfig.DEFAULT_BLOCK_POPUPS_VALUE
+            val currentBlockPopupsLevelValue = tabsModel.popupBlockingLevel(tab)
             return when (currentBlockPopupsLevelValue) {
                 HostConfig.POPUP_BLOCK_NONE -> false
                 HostConfig.POPUP_BLOCK_DIALOGS -> dialog

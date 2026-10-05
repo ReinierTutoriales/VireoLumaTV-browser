@@ -252,16 +252,21 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
         }
     }
 
+    /** Decode a bounded preview without retaining it on a background tab. Call on IO. */
     fun loadThumbnail(): Bitmap? {
         val hash = thumbnailHash ?: return null
-        val thumbnailFile = File(getThumbnailPath(hash))
-        if (thumbnailFile.exists()) {
-            thumbnail = BitmapFactory.decodeFile(thumbnailFile.absolutePath,
-                    BitmapFactory.Options().apply { this.inMutable = true })
-            return thumbnail
-        } else {
-            thumbnailHash = null
+        val file = File(getThumbnailPath(hash))
+        if (!file.exists() || file.length() > 2 * 1024 * 1024) return null
+        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, options)
+        if (options.outWidth <= 0 || options.outHeight <= 0) return null
+        var sample = 1
+        while ((options.outWidth - 1) / sample + 1 > 480 || (options.outHeight - 1) / sample + 1 > 480) {
+            sample *= 2
         }
-        return null
+        options.inJustDecodeBounds = false
+        options.inSampleSize = sample
+        options.inPreferredConfig = Bitmap.Config.RGB_565
+        return BitmapFactory.decodeFile(file.absolutePath, options)
     }
 }

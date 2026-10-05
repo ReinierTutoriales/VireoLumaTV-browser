@@ -61,10 +61,11 @@ class TabsView @JvmOverloads constructor(
   }
 
   fun showTabOptions(tab: WebTabState) {
-    val tabIndex = tabsModel.tabsStates.indexOf(tab)
     AlertDialog.Builder(context)
       .setTitle(R.string.tabs)
       .setItems(R.array.tabs_options) { _, i ->
+        val tabIndex = tabsModel.tabsStates.indexOf(tab)
+        if (tabIndex < 0) return@setItems
         when (i) {
           //Open new Tab
           0 -> {
@@ -110,15 +111,16 @@ class TabsView @JvmOverloads constructor(
 
   fun onTabTitleUpdated(tab: WebTabState) {
     val tabIndex = tabsModel.tabsStates.indexOf(tab)
-    adapter.notifyItemChanged(tabIndex)
+    if (tabIndex >= 0) adapter.notifyItemChanged(tabIndex)
   }
 
   fun onFavIconUpdated(tab: WebTabState) {
     val tabIndex = tabsModel.tabsStates.indexOf(tab)
-    adapter.notifyItemChanged(tabIndex)
+    if (tabIndex >= 0) adapter.notifyItemChanged(tabIndex)
   }
 
   private fun scrollToSeeCurrentTab() {
+    if (current !in 0 until adapter.itemCount) return
     val lm = (vb.rvTabs.layoutManager as LinearLayoutManager)
     if (current < lm.findFirstCompletelyVisibleItemPosition() ||
       current > lm.findLastCompletelyVisibleItemPosition()
@@ -136,7 +138,7 @@ class TabsView @JvmOverloads constructor(
   private val currentTabObserver: (value: WebTabState?) -> Unit =  {
     val new = tabsModel.tabsStates.indexOf(it)
     if (new != -1 && current != new) {
-      adapter.notifyItemChanged(current)
+      if (current in 0 until adapter.itemCount) adapter.notifyItemChanged(current)
       current = new
       adapter.notifyItemChanged(new)
 

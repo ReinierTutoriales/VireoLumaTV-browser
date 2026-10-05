@@ -18,6 +18,7 @@ class CheckableContainer @JvmOverloads constructor(
   }
 
   override fun setChecked(checked: Boolean) {
+    if (mChecked == checked) return
     mChecked = checked
     refreshDrawableState()
   }
