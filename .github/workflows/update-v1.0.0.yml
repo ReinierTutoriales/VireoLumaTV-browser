@@ -28,7 +28,7 @@ jobs:
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/v1.0.0" >/dev/null
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v1.0.0" --jq '.object.sha')" = '6a94ee6f2da87ff41aa38f82d7b30988556f62f1'
           mkdir -p original
-          gh release download v1.0.0 --repo "$GITHUB_REPOSITORY" --pattern SIGNING.txt --dir original
+          gh release download v1.0.0 --repo "$GITHUB_REPOSITORY" --pattern VireoLumaTV-1.0.0.apk --dir original
           python - <<'PYCODE'
           from pathlib import Path
           source = Path('app/build.gradle.kts').read_text()
@@ -73,13 +73,17 @@ jobs:
           PYCODE
           build_tools=$(find "$ANDROID_HOME/build-tools" -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n 1)
           "$build_tools/apksigner" verify --verbose --print-certs dist/VireoLumaTV-1.0.0.apk > dist/SIGNING.txt
+          "$build_tools/apksigner" verify --verbose --print-certs original/VireoLumaTV-1.0.0.apk > original/SIGNING.txt
           python - <<'PYCODE'
           import re
           from pathlib import Path
           pattern = r'Signer #1 certificate SHA-256 digest: ([a-fA-F0-9]+)'
           old = re.search(pattern, Path('original/SIGNING.txt').read_text())
           new = re.search(pattern, Path('dist/SIGNING.txt').read_text())
-          assert old and new and old.group(1).lower() == new.group(1).lower(), 'Signing certificate changed'
+          assert old and new, 'Cannot read APK certificate fingerprints'
+          print('Existing APK certificate SHA-256:', old.group(1).lower())
+          print('Updated APK certificate SHA-256:', new.group(1).lower())
+          assert old.group(1).lower() == new.group(1).lower(), 'Signing certificate changed'
           PYCODE
           printf '\nFirma: certificado compartido de CI existente (debug); APK release optimizado con R8.\n' >> dist/SIGNING.txt
           printf '\n**Firma:** certificado compartido de CI existente, de tipo debug; APK release optimizado con R8.\n' >> RELEASE_NOTES.md
