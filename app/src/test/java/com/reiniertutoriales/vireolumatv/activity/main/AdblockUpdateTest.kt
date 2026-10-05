@@ -71,12 +71,14 @@ class AdblockUpdateTest {
             assertFalse(blocks("old-ads.test"))
             assertEquals(1, compiles)
             assertEquals(1, restores)
+            val successTime = model.config.adBlockListLastUpdate
             failedDownload.set(true)
             finish(model.loadAdBlockList(true))
             assertTrue(blocks("new-ads.test"))
             assertEquals("Failed downloads should not recompile cached rules", 1, compiles)
             assertEquals("An existing native client should not be deserialized again", 1, restores)
             assertFalse(model.clientLoading.value)
+            assertEquals(successTime, model.config.adBlockListLastUpdate)
             assertEquals(AdblockModel.UpdateResult.CACHED, model.updateResult.value)
             assertTrue(model.config.adBlockListNextRetry > System.currentTimeMillis())
         } finally {

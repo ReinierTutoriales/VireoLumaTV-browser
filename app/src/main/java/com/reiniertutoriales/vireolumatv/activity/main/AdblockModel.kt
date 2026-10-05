@@ -78,8 +78,13 @@ class AdblockModel @JvmOverloads constructor(
     val clientLoading = ObservableValue(false)
     val config = AppContext.provideConfig()
 
+    private val sourceObserver: (String) -> Unit = { loadAdBlockList(true) }
+
     init {
-        if (autoLoad) loadAdBlockList(false)
+        if (autoLoad) {
+            config.adBlockListURL.subscribe(sourceObserver, notifyOnSubscribe = false)
+            loadAdBlockList(false)
+        }
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -318,6 +323,7 @@ class AdblockModel @JvmOverloads constructor(
     }
 
     override fun onClear() {
+        config.adBlockListURL.unsubscribe(sourceObserver)
         installedClient = null
         super.onClear()
     }

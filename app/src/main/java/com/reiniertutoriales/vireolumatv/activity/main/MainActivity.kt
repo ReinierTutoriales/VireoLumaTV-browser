@@ -895,6 +895,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                     return true
                 }
 
+                // A hidden/detached menu can leave the framework focus path outside the page.
+                // Route cursor input exactly once while the live browser surface owns the screen.
+                if (browserOwnsCursorInput()) return vb.flWebViewContainer.dispatchKeyEvent(event)
                 return localCallback.dispatchKeyEvent(event)
             }
 
@@ -908,10 +911,16 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 if (backNavigationEventsAdapter.dispatchGenericMotionEvent(event)) {
                     return true
                 }
+                if (browserOwnsCursorInput()) return vb.flWebViewContainer.dispatchGenericMotionEvent(event)
                 return localCallback.dispatchGenericMotionEvent(event)
             }
         }
     }
+
+    private fun browserOwnsCursorInput(): Boolean =
+        ::vb.isInitialized && window.decorView.hasWindowFocus() &&
+            vb.flWebViewContainer.isShown && vb.flWebViewContainer.cursorEnabled &&
+            !vb.vCursorMenu.isVisible && !vb.rlActionBar.isVisible && !vb.llBottomPanel.isVisible
 
     /**
      * When the IME is visible, the first back press should only dismiss it; this mirrors standard

@@ -53,6 +53,7 @@ class CursorLayoutRecoveryTest {
             layout.cursorDrawerDelegate.animateAppearing()
             assertTrue(key(KeyEvent.ACTION_DOWN))
             assertTrue(key(KeyEvent.ACTION_UP))
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             assertEquals(1, clicks)
         } finally { controller.pause().stop().destroy() }
     }

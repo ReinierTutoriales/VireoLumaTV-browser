@@ -237,7 +237,7 @@ class MainSettingsView @JvmOverloads constructor(
         // Keep the focused TV button in place; the click handler rejects duplicate refreshes.
         vb.btnAdBlockerUpdate.isEnabled = true
         vb.btnAdBlockerUpdate.visibility = View.VISIBLE
-        vb.pbAdBlockerListLoading.visibility = if (loadingAdBlockList) View.VISIBLE else View.GONE
+        vb.pbAdBlockerListLoading.visibility = if (loadingAdBlockList) View.VISIBLE else View.INVISIBLE
     }
 
     private fun initUAStringConfigUI(context: Context) {
