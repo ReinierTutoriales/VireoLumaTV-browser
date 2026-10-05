@@ -28,7 +28,7 @@ interface WebEngineWindowProviderCallback {
     fun onPageFinished(url: String?)
     fun onPageCertificateError(url: String?)
     fun onRenderProcessGone()
-    fun isAd(url: Uri, acceptHeader: String?, baseUri: Uri): Boolean?
+    fun isAd(url: Uri, requestType: String?, baseUri: Uri): Boolean?
     fun isAdBlockingEnabled(): Boolean
     fun isDialogsBlockingEnabled(): Boolean
     fun shouldBlockNewWindow(dialog: Boolean, userGesture: Boolean): Boolean

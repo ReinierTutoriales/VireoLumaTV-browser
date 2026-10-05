@@ -1286,8 +1286,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
 
-        override fun isAd(url: Uri, acceptHeader: String?, baseUri: Uri): Boolean? {
-            return adblockModel.isAd(url, acceptHeader, baseUri)
+        override fun isAd(url: Uri, requestType: String?, baseUri: Uri): Boolean? {
+            return adblockModel.isAd(url, requestType, baseUri)
         }
 
         override fun isAdBlockingEnabled(): Boolean {

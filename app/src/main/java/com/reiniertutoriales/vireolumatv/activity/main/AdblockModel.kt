@@ -15,6 +15,7 @@ import com.reiniertutoriales.vireolumatv.adblock.ContentBlockerEngine
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -66,7 +67,7 @@ class AdblockModel @JvmOverloads constructor(
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    fun loadAdBlockList(forceReload: Boolean) = modelScope.launch {
+    fun loadAdBlockList(forceReload: Boolean): Job = modelScope.launch {
         if (clientLoading.value) return@launch
         val configuredUrl = config.adBlockListURL.value
         val checkDate = Calendar.getInstance()
