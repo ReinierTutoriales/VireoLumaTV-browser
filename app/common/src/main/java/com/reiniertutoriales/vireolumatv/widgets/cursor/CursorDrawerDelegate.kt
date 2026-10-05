@@ -40,9 +40,6 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
     var callback: Callback? = null
     var customScrollCallback: CustomScrollCallback? = null
     private val cursorHideRunnable = Runnable {
-        if (callback?.usesMousePointer() == true) {
-            dispatchCursorEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_HOVER_EXIT)
-        }
         surface.invalidate()
     }
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -58,7 +55,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
         // active pointer while dpadCenterPressed is false — scroll-hack or the next frame can inject
         // another ACTION_DOWN, which yields ACTION_CANCEL + ACTION_DOWN and a spurious tap.
         if (dpadCenterPressed) {
-            dispatchCursorEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_CANCEL)
+            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_CANCEL)
             dpadCenterPressed = false
         }
         surface.keyDispatcherState.reset(this@CursorDrawerDelegate)
@@ -79,7 +76,6 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
 
     interface Callback {
         fun onLongPress(x: Int, y: Int)
-        fun usesMousePointer(): Boolean = false
     }
 
     interface CustomScrollCallback {
@@ -201,13 +197,13 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
                     } else {
                         surface.keyDispatcherState.startTracking(event, this)
                         if (!isCursorDisappear && !dpadCenterPressed) {
-                            // Finish edge-scroll's finger stream before starting a mouse click.
+                            // Finish edge-scroll's gesture before starting the cursor tap.
                             if (scrollHackStarted) {
                                 dispatchMotionEvent(scrollHackCoords.x, scrollHackCoords.y, MotionEvent.ACTION_CANCEL)
                                 scrollHackStarted = false
                             }
                             dpadCenterPressed = true
-                            dispatchCursorEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_DOWN)
+                            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_DOWN)
                             surface.postInvalidate()
                             surface.postDelayed(longPressRunnable, LONG_PRESS_TIMEOUT)
                         }
@@ -223,7 +219,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
                         scheduleCursorHide()
                     } else {
                         if (dpadCenterPressed) {
-                            dispatchCursorEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
+                            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
                             dpadCenterPressed = false
                         }
                         surface.postInvalidate()
@@ -234,34 +230,6 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
             }
         }
         return false
-    }
-
-    private fun dispatchCursorEvent(x: Float, y: Float, action: Int) {
-        if (callback?.usesMousePointer() != true) {
-            dispatchMotionEvent(x, y, action)
-            return
-        }
-        if (action == MotionEvent.ACTION_DOWN) downTime = SystemClock.uptimeMillis()
-        val pressed = action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE
-        val properties = arrayOf(MotionEvent.PointerProperties().apply {
-            id = 0
-            toolType = MotionEvent.TOOL_TYPE_MOUSE
-        })
-        val coordinates = arrayOf(MotionEvent.PointerCoords().apply {
-            this.x = x
-            this.y = y
-            pressure = if (pressed) 1f else 0f
-        })
-        val event = MotionEvent.obtain(downTime, SystemClock.uptimeMillis(), action, 1,
-            properties, coordinates, 0, if (pressed) MotionEvent.BUTTON_PRIMARY else 0,
-            1f, 1f, 0, 0, InputDevice.SOURCE_MOUSE, 0)
-        try {
-            if (action == MotionEvent.ACTION_HOVER_MOVE || action == MotionEvent.ACTION_HOVER_EXIT)
-                surface.dispatchGenericMotionEvent(event)
-            else surface.dispatchTouchEvent(event)
-        } finally {
-            event.recycle()
-        }
     }
 
     private fun dispatchMotionEvent(x: Float, y: Float, action: Int, pointerId: Int = 0) {
@@ -402,7 +370,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
     }
 
     fun exitGrabMode() {
-        dispatchCursorEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
+        dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
         dpadCenterPressed = false
         grabMode = false
         surface.postInvalidate()
@@ -472,10 +440,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
             if (dpadCenterPressed &&
                 (tmpPointF.x != cursorPosition.x || tmpPointF.y != cursorPosition.y)
             ) {
-                dispatchCursorEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_MOVE)
-            } else if (!dpadCenterPressed && !scrollHackStarted && callback?.usesMousePointer() == true &&
-                (tmpPointF.x != cursorPosition.x || tmpPointF.y != cursorPosition.y)) {
-                dispatchCursorEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_HOVER_MOVE)
+                dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_MOVE)
             }
 
             surface.invalidate()
@@ -595,7 +560,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
 
     fun hideCursor() {
         if (dpadCenterPressed) {
-            dispatchCursorEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
+            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
             dpadCenterPressed = false
         }
         grabMode = false
