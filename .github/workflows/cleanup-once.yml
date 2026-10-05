@@ -1,35 +1,37 @@
-name: Clean integrated branches and restart publication
+name: Remove merged TV UI branch
 
 on:
   push:
     branches: [fixes/audit]
     paths: ['.github/workflows/cleanup-once.yml']
-  workflow_dispatch:
 
 permissions:
   contents: write
-  actions: write
   pull-requests: read
-
-concurrency:
-  group: repository-cleanup
-  cancel-in-progress: false
 
 jobs:
   cleanup:
     runs-on: ubuntu-slim
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - name: Cancel duplicates, delete integrated branches and restart one publisher
+      - name: Verify identical merged content and delete only the reviewed branch
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/cleanup-repository-once.py
-      - name: Save cleanup result
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: repository-cleanup-result
-          path: cleanup-result.json
-          if-no-files-found: ignore
-          retention-days: 30
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          branch='fixes/tv-focus-fluency-20261005'
+          expected='89866de1db73e8884028389e48619bea05bcc0e6'
+          merged='b5caa342aad48da2e2dd88f2e7995b61db364f77'
+          test "$(gh api "repos/$repo/git/ref/heads/$branch" --jq '.object.sha')" = "$expected"
+          test "$(gh api "repos/$repo/pulls/67" --jq '.merged')" = true
+          test "$(gh api "repos/$repo/pulls/67" --jq '.head.sha')" = "$expected"
+          merged_tree=$(gh api "repos/$repo/git/commits/$merged" --jq '.tree.sha')
+          branch_tree=$(gh api "repos/$repo/git/commits/$expected" --jq '.tree.sha')
+          test "$merged_tree" = "$branch_tree"
+          status=$(gh api "repos/$repo/compare/$merged...$GITHUB_SHA" --jq '.status')
+          test "$status" = ahead -o "$status" = identical
+          open_uses=$(gh api "repos/$repo/pulls?state=open&per_page=100" --jq "[.[] | select(.head.ref == \"$branch\")] | length")
+          test "$open_uses" = 0
+          gh api --method DELETE "repos/$repo/git/refs/heads/$branch"
+          echo "Removed merged branch: $branch"
