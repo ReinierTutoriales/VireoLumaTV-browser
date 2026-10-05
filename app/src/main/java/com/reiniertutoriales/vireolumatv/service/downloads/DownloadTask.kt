@@ -52,6 +52,11 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
             val url = URL(downloadInfo.url)
             var retries = 0
             do {
+                if (downloadInfo.cancelled) {
+                    downloadInfo.size = Download.CANCELLED_MARK
+                    callback.onDone(this)
+                    return
+                }
                 connection = url.openConnection() as HttpURLConnection
                 connection.apply {
                     readTimeout = 10000
@@ -64,10 +69,6 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
                     useCaches = false
                     val cookie = CookieManager.getInstance().getCookie(url.toString())
                     if (cookie != null) setRequestProperty("cookie", cookie)
-                    if (retries > 0) {
-                        //trust me, sometimes this helps! Don't ask me how...
-                        Thread.sleep(3000)
-                    }
                     connect()
                 }
 
@@ -76,10 +77,20 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
                     HttpURLConnection.HTTP_GATEWAY_TIMEOUT,
                     HttpURLConnection.HTTP_UNAVAILABLE -> {
                         retries++
-                        if (retries >= MAX_CONNECT_RETRIES) {
+                        val delay = DownloadRetryPolicy.delayMillis(retries, connection.getHeaderField("Retry-After"))
+                        if (retries >= MAX_CONNECT_RETRIES || delay == null) {
                             downloadInfo.size = Download.BROKEN_MARK
                             callback.onError(this, connection.responseCode, connection.responseMessage)
                             return
+                        }
+                        connection.errorStream?.close()
+                        connection.disconnect()
+                        // No connection is held during backoff; cancellation is checked every 250 ms.
+                        val deadline = System.nanoTime() + delay * 1_000_000L
+                        while (!downloadInfo.cancelled) {
+                            val remaining = (deadline - System.nanoTime()) / 1_000_000L
+                            if (remaining <= 0) break
+                            Thread.sleep(minOf(250L, remaining))
                         }
                     }
                     else -> {
@@ -121,6 +132,11 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
                 count = input.read(data)
             }
         } catch (e: Exception) {
+            if (downloadInfo.cancelled) {
+                downloadInfo.size = Download.CANCELLED_MARK
+                callback.onDone(this)
+                return
+            }
             downloadInfo.size = Download.BROKEN_MARK
             callback.onError(this, 0, e.toString())
             return

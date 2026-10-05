@@ -6,6 +6,7 @@ import android.webkit.MimeTypeMap
 import java.io.BufferedReader
 import java.io.Reader
 import java.net.URL
+import java.net.HttpURLConnection
 import java.net.URLConnection
 import java.util.regex.Pattern
 
@@ -19,6 +20,7 @@ class FaviconExtractor {
         private const val CONNECTION_TIMEOUT_MS = 5_000
         private const val READ_TIMEOUT_MS = 10_000
         const val MAX_DOCUMENT_CHARS = 256 * 1024
+        private const val MAX_ICON_CANDIDATES = 32
     }
 
     private val headerClosingTagsPattern: Pattern = Pattern.compile("<\\s*(?:body|/\\s*head)(?:\\s+|>)")
@@ -78,20 +80,19 @@ class FaviconExtractor {
      * @throws java.io.IOException
      */
     fun extractFavIconsFromURL(url: URL): ArrayList<IconInfo> {
-        val (result, manifestHref) = url.openTimedConnection().getInputStream().bufferedReader()
-            .use { extractFavIconsFromHTML(url, it) }
-        if (manifestHref != null) {
+        val (result, manifestHref) = readDocument(url) { extractFavIconsFromHTML(url, it) }
+        // A manifest is unnecessary when HTML already supplied a usable bitmap icon.
+        if (manifestHref != null && result.none { isFetchableBitmap(it) }) {
             val manifestURL = URL(url, manifestHref)
             try {
-                val manifestIcons = manifestURL.openTimedConnection().getInputStream().bufferedReader()
-                    .use { extractFavIconsFromWebManifest(manifestURL, it) }
-                result.addAll(manifestIcons)
+                val manifestIcons = readDocument(manifestURL) { extractFavIconsFromWebManifest(manifestURL, it) }
+                result.addAll(manifestIcons.take(MAX_ICON_CANDIDATES - result.size))
             } catch (e: Exception) {
                 //shit happens, but I don't think it's too important here
                 e.printStackTrace()
             }
         }
-        if (result.isEmpty()) {
+        if (result.none { isFetchableBitmap(it) }) {
             result.add(
                 IconInfo(
                 "/favicon.ico",
@@ -163,7 +164,7 @@ class FaviconExtractor {
                 }
             }
             jsonReader.endObject()
-            if (src != null) {
+            if (src != null && iconInfos.size < MAX_ICON_CANDIDATES) {
                 iconInfos.add(IconInfo(src, type, null, sizes, manifestURL))
             }
         }
@@ -252,7 +253,7 @@ class FaviconExtractor {
                         if (sizes == null && rel.equals("apple-touch-icon", true)) {
                             sizes = "180x180"
                         }
-                        iconInfos.add(IconInfo(href, type, rel, sizes, baseURL))
+                        if (iconInfos.size < MAX_ICON_CANDIDATES) iconInfos.add(IconInfo(href, type, rel, sizes, baseURL))
                     } else if (rel.equals("manifest", true)) {
                         manifestHref = href
                     }
@@ -265,6 +266,19 @@ class FaviconExtractor {
 
 
         return Pair(iconInfos, manifestHref)
+    }
+
+    private fun isFetchableBitmap(icon: IconInfo): Boolean =
+        !icon.type.equals("image/svg+xml", true) &&
+            runCatching { URL(icon.src).protocol in listOf("http", "https") }.getOrDefault(false)
+
+    private fun <T> readDocument(url: URL, read: (BufferedReader) -> T): T {
+        val connection = url.openTimedConnection()
+        try {
+            return connection.getInputStream().bufferedReader().use(read)
+        } finally {
+            (connection as? HttpURLConnection)?.disconnect()
+        }
     }
 
     private fun URL.openTimedConnection(): URLConnection {

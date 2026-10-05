@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.singleton
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.SystemClock
 import android.util.AtomicFile
 import android.util.Log
 import android.util.LruCache
@@ -31,6 +32,9 @@ object FaviconsPool {
     private const val FAVICON_READ_TIMEOUT_MS = 10_000
     private const val MAX_FAVICON_BYTES = 2 * 1024 * 1024
     private const val MAX_ICON_SIDE = 256
+    private const val MAX_ICON_ATTEMPTS = 3
+    private const val FAILED_LOOKUP_COOLDOWN_MS = 60_000L
+    private val failedLookups = LruCache<String, Long>(128)
     private val requests = Semaphore(2)
     private val persistenceMutex = Mutex()
     // Fixed-size locks deduplicate a host without an ever-growing host/job map.
@@ -52,7 +56,7 @@ object FaviconsPool {
         }
     }
 
-    suspend fun get(urlOrHost: String): Bitmap? {
+    suspend fun get(urlOrHost: String, knownIconSrc: String? = null): Bitmap? {
         val incognitoMode = AppContext.provideConfig().incognitoMode
         if (!urlOrHost.startsWith("http://", true) && !urlOrHost.startsWith("https://", true)) {
             //host passed?
@@ -69,14 +73,22 @@ object FaviconsPool {
         }
         val host = try { URL(urlOrHost).host.lowercase(Locale.ROOT) } catch (_: Exception) { return null }
         cache.get(host)?.let { return it }
-        return requests.withPermit {
-            hostLocks[(host.hashCode() and Int.MAX_VALUE) % hostLocks.size].withLock {
-                getHttp(urlOrHost, incognitoMode)
+        val origin = try { URL(urlOrHost).let { "${it.protocol.lowercase(Locale.ROOT)}://${it.authority.lowercase(Locale.ROOT)}" } }
+            catch (_: Exception) { return null }
+        // Do not occupy a global network permit while waiting for another lookup of this host.
+        return hostLocks[(host.hashCode() and Int.MAX_VALUE) % hostLocks.size].withLock {
+            cache.get(host)?.let { return@withLock it }
+            failedLookups.get(origin)?.let { failedAt ->
+                if (SystemClock.elapsedRealtime() - failedAt < FAILED_LOOKUP_COOLDOWN_MS) return@withLock null
+                failedLookups.remove(origin)
             }
+            val result = requests.withPermit { getHttp(urlOrHost, incognitoMode, knownIconSrc) }
+            if (result == null) failedLookups.put(origin, SystemClock.elapsedRealtime())
+            result
         }
     }
 
-    private suspend fun getHttp(urlOrHost: String, incognitoMode: Boolean): Bitmap? {
+    private suspend fun getHttp(urlOrHost: String, incognitoMode: Boolean, knownIconSrc: String?): Bitmap? {
         try {
             val urlObj = URL(urlOrHost)
             val host = urlObj.host.lowercase(Locale.ROOT)
@@ -115,17 +127,28 @@ object FaviconsPool {
                     Log.d(TAG, "get: favicon not found in db for $host")
                 }
 
-                val favicons = try {
-                    withContext(Dispatchers.IO) { faviconExtractor.extractFavIconsFromURL(urlObj) }
+                val discovered = try {
+                    val known = knownIconSrc?.takeIf { it.length <= 2048 &&
+                        runCatching { URL(it).protocol in listOf("http", "https") }.getOrDefault(false) }
+                    if (known != null) arrayListOf(FaviconExtractor.IconInfo(known))
+                    else withContext(Dispatchers.IO) { faviconExtractor.extractFavIconsFromURL(urlObj) }
                 } catch (e: Exception) {
                     if (e is CancellationException) throw e
                     e.printStackTrace()
                     ArrayList()
                 }
-                Log.d(TAG, "get: favicons found: ${favicons.size}")
+                // A page can list hundreds of duplicates or SVGs that BitmapFactory cannot decode.
+                val favicons = ArrayList(discovered.filter { icon ->
+                    runCatching { URL(icon.src).protocol.lowercase(Locale.ROOT) in listOf("http", "https") }.getOrDefault(false) &&
+                        !icon.type.equals("image/svg+xml", true)
+                }.distinctBy { it.src }.sortedBy {
+                    kotlin.math.abs(it.width.toLong() - FAVICON_PREFERRED_SIDE_SIZE) +
+                        kotlin.math.abs(it.height.toLong() - FAVICON_PREFERRED_SIDE_SIZE)
+                }.take(MAX_ICON_ATTEMPTS))
+                Log.d(TAG, "get: bounded favicon attempts: ${favicons.size}")
                 while (favicons.isNotEmpty()) {
                     currentCoroutineContext().ensureActive()
-                    val icon = chooseNearestSizeIcon(favicons, FAVICON_PREFERRED_SIDE_SIZE, FAVICON_PREFERRED_SIDE_SIZE)!!
+                    val icon = favicons.first()
                     val bitmap = try {
                         downloadIcon(icon)
                     } catch (e: Exception) {
@@ -155,8 +178,15 @@ object FaviconsPool {
         return null
     }
 
+    fun peek(host: String): Bitmap? = cache.get(host.lowercase(Locale.ROOT))
+
+    fun trimMemory() {
+        cache.evictAll() // Keep failure cooldowns so memory pressure cannot trigger a retry storm.
+    }
+
     fun clear() {
         cache.evictAll()
+        failedLookups.evictAll()
     }
 
     fun favIconsDir(): String {
@@ -219,8 +249,10 @@ object FaviconsPool {
             connectTimeout = FAVICON_CONNECT_TIMEOUT_MS
             readTimeout = FAVICON_READ_TIMEOUT_MS
         }
-        connection.getInputStream().use { input ->
-            return input.readUpTo(MAX_FAVICON_BYTES)
+        try {
+            connection.getInputStream().use { input -> return input.readUpTo(MAX_FAVICON_BYTES) }
+        } finally {
+            (connection as? java.net.HttpURLConnection)?.disconnect()
         }
     }
 
@@ -241,16 +273,4 @@ object FaviconsPool {
         }
     }
 
-    private fun chooseNearestSizeIcon(icons: List<FaviconExtractor.IconInfo>, w: Int, h: Int): FaviconExtractor.IconInfo? {
-        var nearestIcon: FaviconExtractor.IconInfo? = null
-        var nearestDiff = Int.MAX_VALUE
-        for (icon in icons) {
-            val diff = Math.abs(icon.width - w) + Math.abs(icon.height - h)
-            if (diff < nearestDiff) {
-                nearestDiff = diff
-                nearestIcon = icon
-            }
-        }
-        return nearestIcon
-    }
 }

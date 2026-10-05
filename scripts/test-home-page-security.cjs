@@ -34,3 +34,20 @@ for (const url of ['javascript:alert(1)', 'data:text/html,<script>alert(1)</scri
 sandbox.renderLinks('LATEST_HISTORY', []);
 assert.equal(title.textContent, '\u00a0');
 console.log('Home-page security tests passed: plain text rendering and safe navigation');
+
+// Native homepage tiles must share the bounded favicon pool even when a remote icon was supplied.
+sandbox.VireoLumaTVApp = {};
+sandbox.window.VireoLumaTVApp = sandbox.VireoLumaTVApp;
+sandbox.renderLinks('LATEST_HISTORY', [{title: 'Site', url: 'https://example.com', favicon: 'https://cdn.example.com/huge.png'}]);
+assert.equal(icon.src, 'favicon://example.com');
+
+sandbox.document.getElementsByTagName = () => [icon];
+vm.runInContext(functionSource('onFaviconLoaded'), sandbox);
+icon.src = 'ic_not_available.svg';
+icon.style.filter = 'invert(1)';
+sandbox.onFaviconLoaded('example.com', 'data:image/png;base64,test');
+assert.equal(icon.src, 'data:image/png;base64,test');
+assert.equal(icon.style.filter, '');
+sandbox.renderLinks('LATEST_HISTORY', [{title: 'Other', url: 'https://other.example', favicon: 'https://other.example/icon.png'}]);
+sandbox.onFaviconLoaded('example.com', 'data:image/png;base64,stale');
+assert.equal(icon.src, 'favicon://other.example');

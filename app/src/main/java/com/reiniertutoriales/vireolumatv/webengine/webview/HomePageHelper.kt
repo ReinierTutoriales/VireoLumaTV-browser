@@ -5,7 +5,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
-import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayOutputStream
 
 object HomePageHelper {
@@ -14,9 +13,8 @@ object HomePageHelper {
         //check is scheme is favicon
         if (request.url.scheme == "favicon") {
             val host = request.url.host ?: return null
-            val favicon = runBlocking {
-                FaviconsPool.get(host)
-            }
+            // Never wait for external network work on WebView's request-interception thread.
+            val favicon = FaviconsPool.peek(host)
             if (favicon != null) {
                 val bytes = ByteArrayOutputStream()
                 favicon.compress(Bitmap.CompressFormat.PNG, 100, bytes)

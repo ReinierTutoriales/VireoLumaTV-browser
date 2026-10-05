@@ -4,6 +4,15 @@ import android.net.http.SslError
 import android.os.SystemClock
 import android.util.Base64
 import android.webkit.JavascriptInterface
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.net.URL
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
@@ -32,6 +41,13 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         var mimetype: String = "",
         var sizeAccepted: Boolean = false
     )
+
+    private var homeFaviconJob: Job? = null
+
+    fun cancelHomeFavicons() {
+        homeFaviconJob?.cancel()
+        homeFaviconJob = null
+    }
 
     private val blobDownloadLock = Any()
     private var pendingBlobDownload: PendingBlobDownload? = null
@@ -102,8 +118,11 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         callback.getActivity().runOnUiThread {
             if (!isHomePage()) return@runOnUiThread
             val cfg = AppContext.provideConfig()
+            cancelHomeFavicons()
+            val homeView = webEngine.getView()
+            val homeLinks = callback.getHomePageLinks()
             val jsArr = JSONArray()
-            for (item in callback.getHomePageLinks()) {
+            for (item in homeLinks) {
                 jsArr.put(item.toJsonObj())
             }
             var links = jsArr.toString()
@@ -111,6 +130,23 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
             webEngine.evaluateJavascript("renderLinks('${cfg.homePageLinksMode.name}', $links)")
             webEngine.evaluateJavascript(
                 "applySearchEngine(${JSONObject.quote(cfg.guessSearchEngineName())}, ${JSONObject.quote(cfg.searchEngineURL.value)})")
+            val activity = callback.getActivity() as? AppCompatActivity ?: return@runOnUiThread
+            homeFaviconJob = activity.lifecycleScope.launch {
+                homeLinks.filter { it.order == null || it.order in 0..7 }.take(8).forEach { item ->
+                    launch iconRequest@ {
+                        val host = runCatching { URL(item.url).host.lowercase(java.util.Locale.ROOT) }.getOrNull() ?: return@iconRequest
+                        val icon = FaviconsPool.get(item.url, item.favicon) ?: return@iconRequest
+                        val data = withContext(Dispatchers.IO) {
+                            val output = ByteArrayOutputStream()
+                            icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output)
+                            "data:image/png;base64," + Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
+                        }
+                        if (isHomePage() && webEngine.getView() === homeView) {
+                            webEngine.evaluateJavascript("onFaviconLoaded(${JSONObject.quote(host)}, ${JSONObject.quote(data)})")
+                        }
+                    }
+                }
+            }
         }
     }
 

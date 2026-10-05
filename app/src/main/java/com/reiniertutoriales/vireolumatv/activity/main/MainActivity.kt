@@ -655,7 +655,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 }
             }
         }
-        FaviconsPool.clear()
+        FaviconsPool.trimMemory()
         super.onTrimMemory(level)
     }
 

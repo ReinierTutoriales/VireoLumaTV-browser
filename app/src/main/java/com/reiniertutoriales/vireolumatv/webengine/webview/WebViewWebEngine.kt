@@ -139,9 +139,11 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
     override fun onResume() {
         webView?.onResume()
+        jsInterface.onHomePageLoaded()
     }
 
     override fun onPause() {
+        jsInterface.cancelHomeFavicons()
         webView?.onPause()
     }
 
@@ -189,6 +191,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun onDetachFromWindow(completely: Boolean, destroyTab: Boolean) {
+        jsInterface.cancelHomeFavicons()
         Log.i(TAG, "onDetachFromWindow completely=" + completely + " destroyTab=" + destroyTab + " hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
         exitFullscreenView(restoreBrowserControls = false)
         onPause()
@@ -349,6 +352,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun onPageStarted(url: String?) {
+            jsInterface.cancelHomeFavicons()
             callback?.onPageStarted(url)
         }
 

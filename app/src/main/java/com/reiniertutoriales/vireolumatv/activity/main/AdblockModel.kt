@@ -249,7 +249,11 @@ class AdblockModel @JvmOverloads constructor(
             connectTimeout = DOWNLOAD_CONNECT_TIMEOUT_MS
             readTimeout = DOWNLOAD_READ_TIMEOUT_MS
         }
-        return BoundedReader(connection.inputStream.bufferedReader(), 8 * 1024 * 1024).use { it.readText() }
+        try {
+            return BoundedReader(connection.inputStream.bufferedReader(), 8 * 1024 * 1024).use { it.readText() }
+        } finally {
+            (connection as? java.net.HttpURLConnection)?.disconnect()
+        }
     }
 
     private fun readCachedFilterList(filterList: FilterList, cacheFile: File): String? {
