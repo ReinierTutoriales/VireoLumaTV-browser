@@ -33,6 +33,13 @@ class AdblockRequestClassifierTest {
         assertEquals("image", classify("/icon", mapOf("accept" to "image/avif,image/webp,*/*;q=0.8")))
     }
 
+    @Test fun navigationUsesItsOwnHostWhileSubresourcesUseTheContainingPage() {
+        val destination = Uri.parse("https://new-page.test/")
+        val previousPage = Uri.parse("https://old-page.test/")
+        assertEquals(destination, AdblockRequestClassifier.pageContext(destination, previousPage, true))
+        assertEquals(previousPage, AdblockRequestClassifier.pageContext(destination, previousPage, false))
+    }
+
     @Test fun nativeFlagsDoNotMixObjectsWithImagesAndSupportMediaAndFonts() {
         assertEquals(8, AdblockRequestClassifier.filterOption("object"))
         assertEquals(0, AdblockRequestClassifier.filterOption("object") and AdblockRequestClassifier.filterOption("image"))

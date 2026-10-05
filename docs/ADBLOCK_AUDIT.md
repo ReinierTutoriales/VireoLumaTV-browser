@@ -10,6 +10,9 @@ navigation is a document. Sec-Fetch-Dest and XMLHttpRequest hints take precedenc
 when present; otherwise known path extensions and unambiguous Accept categories
 provide conservative fallbacks. Mixed HTML/XML/image Accept headers remain unknown
 instead of being treated as images. Header names and extensions ignore case.
+Top-level navigation uses its destination as the page context; subresources use
+the containing page. The previous page must not make a new top-level navigation
+appear third-party or apply the previous site's domain-scoped exceptions.
 
 Native options use the values in truefedex/ad-block tag 0.0.4, filter.h. Its C++
 object flag is octal 010 (decimal 8), whereas the Java OBJECT enum is decimal 10,

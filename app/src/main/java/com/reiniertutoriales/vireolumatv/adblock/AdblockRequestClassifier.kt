@@ -5,6 +5,9 @@ import java.util.Locale
 
 /** WebView exposes request headers, not the response MIME type. Prefer destination over Accept. */
 internal object AdblockRequestClassifier {
+    fun pageContext(url: Uri, currentPage: Uri, mainFrame: Boolean): Uri =
+        if (mainFrame) url else currentPage
+
     fun classify(url: Uri, headers: Map<String, String>, mainFrame: Boolean): String {
         if (mainFrame) return "document"
         fun header(name: String): String? = headers.entries.firstOrNull { it.key.equals(name, true) }?.value

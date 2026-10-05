@@ -373,7 +373,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun isAd(request: WebResourceRequest, baseUri: Uri): Boolean {
-            return callback?.isAd(request.url, AdblockRequestClassifier.classify(request.url, request.requestHeaders, request.isForMainFrame), baseUri) ?: false
+            val type = AdblockRequestClassifier.classify(request.url, request.requestHeaders, request.isForMainFrame)
+            val pageContext = AdblockRequestClassifier.pageContext(request.url, baseUri, request.isForMainFrame)
+            return callback?.isAd(request.url, type, pageContext) ?: false
         }
 
         override fun isAdBlockingEnabled(): Boolean {
