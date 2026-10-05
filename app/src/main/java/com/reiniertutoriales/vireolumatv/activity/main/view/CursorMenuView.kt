@@ -83,13 +83,15 @@ class CursorMenuView @JvmOverloads constructor(
     }
 
     /** Hides the menu immediately (no animation). Used before showing a dialog so focus does not re-trigger menu actions. */
-    private fun closeWithoutAnimation() {
+    private fun closeWithoutAnimation(restoreFocus: Boolean = true) {
         val previous = menuContext
         menuContext = null
         vb.root.animate().cancel()
         visibility = GONE
-        previous?.tab?.webEngine?.getView()?.requestFocus()
-        previous?.cursorDrawerDelegate?.animateAppearing()
+        if (restoreFocus) {
+            previous?.tab?.webEngine?.getView()?.requestFocus()
+            previous?.cursorDrawerDelegate?.animateAppearing()
+        }
         vb.root.alpha = 1f
         vb.root.scaleX = 1f
         vb.root.scaleY = 1f
@@ -104,7 +106,7 @@ class CursorMenuView @JvmOverloads constructor(
     }
 
     override fun onDetachedFromWindow() {
-        closeWithoutAnimation()
+        closeWithoutAnimation(restoreFocus = false)
         super.onDetachedFromWindow()
     }
 

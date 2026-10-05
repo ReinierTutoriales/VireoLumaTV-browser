@@ -47,6 +47,7 @@ class MainSettingsLifecycleTest {
                 val button = settings.findViewById<View>(R.id.btnAdBlockerUpdate)
                 assertEquals(View.VISIBLE, button.visibility)
                 assertTrue(button.isEnabled)
+                assertTrue(settings.findViewById<android.widget.TextView>(R.id.tvAdBlockerListInfo).maxLines >= 3)
                 root.removeView(settings)
                 assertTrue(model.clientLoading.observers.isEmpty())
                 assertTrue(model.updateResult.observers.isEmpty())

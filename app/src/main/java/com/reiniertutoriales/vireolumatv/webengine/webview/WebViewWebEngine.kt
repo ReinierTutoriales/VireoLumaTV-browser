@@ -200,6 +200,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         webView?.isFocusableInTouchMode = true
         webView?.requestFocus()
         viewParent?.cursorDrawerDelegate?.callback = this
+        viewParent?.cursorDrawerDelegate?.animateAppearing()
         onResume()
     }
 
