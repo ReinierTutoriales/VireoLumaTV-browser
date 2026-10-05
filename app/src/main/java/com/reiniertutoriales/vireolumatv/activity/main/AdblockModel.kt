@@ -3,6 +3,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import com.reiniertutoriales.vireolumatv.utils.BoundedReader
 import android.net.Uri
 import android.util.Log
+import android.util.LruCache
 import android.widget.Toast
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
@@ -58,6 +59,20 @@ class AdblockModel @JvmOverloads constructor(
 
     private val clientLock = Any()
     private var client: ContentBlocker? = null
+    private data class DecisionKey(val url: String, val type: String?, val baseHost: String)
+    // Bound URL retention in bytes, rather than retaining unbounded signed stream URLs.
+    private val decisions = object : LruCache<DecisionKey, Boolean>(64 * 1024) {
+        override fun sizeOf(key: DecisionKey, value: Boolean): Int =
+            64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length)
+    }
+
+    private fun installClient(value: ContentBlocker, source: String) {
+        synchronized(clientLock) {
+            if (client !== value) decisions.evictAll()
+            client = value
+            clientSource = source
+        }
+    }
     private var clientSource: String? = null
     val clientLoading = ObservableValue(false)
     val config = AppContext.provideConfig()
@@ -90,10 +105,7 @@ class AdblockModel @JvmOverloads constructor(
                     loadedClient = deserializeCachedList(serializedFile)
                     loadedClient?.let { cached ->
                         if (config.adBlockListURL.value == configuredUrl) {
-                            synchronized(clientLock) {
-                                client = cached
-                                clientSource = configuredUrl
-                            }
+                            installClient(cached, configuredUrl)
                         }
                     }
                 }
@@ -161,10 +173,7 @@ class AdblockModel @JvmOverloads constructor(
             if (config.adBlockListURL.value != configuredUrl) return@launch
             //if nothing could be loaded keep the current client (if any) instead of replacing it with an empty one
             loadedClient?.let {
-                synchronized(clientLock) {
-                    this@AdblockModel.client = it
-                    clientSource = configuredUrl
-                }
+                installClient(it, configuredUrl)
             }
             if (updated) {
                 if (partialUpdate) {
@@ -313,11 +322,27 @@ class AdblockModel @JvmOverloads constructor(
         }
     }
 
+    override fun onClear() {
+        synchronized(clientLock) {
+            decisions.evictAll()
+            client = null
+            clientSource = null
+        }
+        super.onClear()
+    }
+
     fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean {
         val baseHost = baseUri.host ?: return false
         val result = try {
             synchronized(clientLock) {
-                client?.shouldBlock(url, type, baseHost) ?: false
+                val activeClient = client ?: return@synchronized false
+                val text = url.toString()
+                val key = if (text.length <= 2048 && baseHost.length <= 255)
+                    DecisionKey(text, type, baseHost) else null
+                key?.let { decisions.get(it) }?.let { return@synchronized it }
+                val blocked = activeClient.shouldBlock(url, type, baseHost)
+                if (key != null) decisions.put(key, blocked)
+                blocked
             }
         } catch (e: Exception) {
             e.printStackTrace()
