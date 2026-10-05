@@ -641,10 +641,16 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     fun renderThumbnail(bitmap: Bitmap?): Bitmap? {
         if (width == 0 || height == 0) return null
-        var thumbnail = bitmap
+        // This is a menu preview, not a full-resolution screenshot. Avoid a multi-MiB 4K bitmap.
+        val previewScale = minOf(1f, 480f / maxOf(width, height))
+        val previewWidth = maxOf(1, (width * previewScale).toInt())
+        val previewHeight = maxOf(1, (height * previewScale).toInt())
+        var thumbnail = bitmap?.takeIf {
+            !it.isRecycled && it.width == previewWidth && it.height == previewHeight
+        }
         if (thumbnail == null) {
             try {
-                thumbnail = createBitmap(width, height, Bitmap.Config.RGB_565)
+                thumbnail = createBitmap(previewWidth, previewHeight, Bitmap.Config.RGB_565)
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
@@ -655,7 +661,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         val canvas = Canvas(thumbnail)
         val scaleFactor = thumbnail.width / width.toFloat()
         canvas.scale(scaleFactor, scaleFactor)
-        canvas.translate(-scrollX.toFloat() * scaleFactor, -scrollY.toFloat() * scaleFactor)
+        canvas.translate(-scrollX.toFloat(), -scrollY.toFloat())
         super.draw(canvas)
         return thumbnail
     }

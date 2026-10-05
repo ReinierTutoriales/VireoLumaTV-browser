@@ -53,6 +53,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     @Ignore
     var thumbnail: Bitmap? = null
     @Ignore
+    private val thumbnailToken = java.util.UUID.randomUUID().toString()
+    @Ignore
     var savedState: Any? = null
     @delegate:Ignore
     val webEngine by lazy { WebEngineFactory.createWebEngine(this) }
@@ -101,9 +103,10 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
                 if (tabsThumbsDir.exists() || tabsThumbsDir.mkdir()) {
                     try {
                         val hash = Utils.MD5_Hash(url.toByteArray(Charset.defaultCharset()))
-                            ?.let { if (incognito) "private-$it" else it }
-                        if (hash != null && hash != thumbnailHash) {
-                            if (thumbnailHash != null) {
+                            ?.let { (if (incognito) "private-preview-" else "preview-") + thumbnailToken + "-" + it }
+                        if (hash != null) {
+                            if (thumbnailHash != null && thumbnailHash != hash &&
+                                (thumbnailHash.startsWith("preview-") || thumbnailHash.startsWith("private-preview-"))) {
                                 removeThumbnailFile()
                             }
                             val file = File(getThumbnailPath(hash))
