@@ -14,13 +14,13 @@ Scope: Android TV tab rows, favorites, branding assets, preview images and UI-th
 
 ## Branding and compatibility
 
-The existing launcher PNGs have 48/72/96/144/192 pixel density variants. The TV banner is 640 × 360 pixels in xhdpi (320 × 180 dp), with the product name inside the image. Visually inspected the launcher and banner; no distorted or cropped artwork was found. No extra image library, renderer, adaptive-icon mask, or redraw was introduced.
+The existing launcher PNGs have 48/72/96/144/192 pixel density variants. The TV banner is 640 × 360 pixels and was mislabeled as xhdpi. Move it to xxxhdpi to match the logical size of Android TV’s specified 320 × 180 px xhdpi banner (160 × 90 dp). A resource regression test checks both launcher and banner intrinsic dimensions at mdpi. The artwork and its product name are unchanged. Visually inspected the launcher and banner; no distorted or cropped artwork was found. No extra image library, renderer, adaptive-icon mask, or redraw was introduced.
 
 The current one-live-renderer policy is preserved and covered by SingleLiveTabTest. `docs/W2_MEASUREMENT.md` is a historical two-renderer measurement protocol, not the current policy. Do not interpret its old RAM numbers as measurements of this change. `largeHeap` remains until removal is measured on target hardware.
 
 ## Verification
 
-Regression coverage: recycled selection; reorder identity and unsaved IDs; cached oversized icons; off-main favicon lookup; cancellation propagation; bounded legacy previews without background bitmap retention; popup policy scoped to the current host. Existing tests cover incognito favicon isolation, renderer lifetime, atomic tab persistence, navigation and homepage security.
+Regression coverage: recycled selection; reorder identity and unsaved IDs; cached oversized icons; off-main favicon lookup; cancellation propagation; bounded legacy previews without background bitmap retention; popup policy scoped to the current host; exit persistence after model destruction; density-correct launcher/banner dimensions. Existing tests cover incognito favicon isolation, renderer lifetime, atomic tab persistence, navigation and homepage security.
 
 CI runs the full generic unit test suite, homepage security checks, a debug APK and a minified release APK. Consult the linked pull request and exact-head Actions run for results.
 

@@ -19,3 +19,7 @@ The bird launcher icon remains the existing text-only ChatGPT artwork reported b
 Keep the original LICENSE.md verbatim, original copyright notices, the TV Bro source link in the application, and third-party license texts. Historical performance records retain their original artifact names. Recognition of the old `TV Bro/1.0` user agent is compatibility code, not the current browser identity. Built-in updating remains disabled for every build variant and now returns before attempting a network request when disabled. The fork's latest_version.json has no published channels or changelog; never advertise upstream TV Bro binaries as updates for this app. Enable updating only after preparing signed fork-specific artifacts and a real feed.
 
 Validation is recorded in the PR: XML parsing and consistent application labels, Kotlin package/path and XML class references, convention plugin entry points, original license comparison, injected script playback/blob-download behavior, and CI unit/debug/release builds. Device testing remains a separate check. The chosen name has preliminary search checks only, not trademark clearance.
+
+## Android TV banner density (2026-10-05)
+
+The 640 × 360 px banner is stored in `drawable-xxxhdpi`, equivalent to the official 320 × 180 px xhdpi requirement (160 × 90 dp). Do not label the 640 px asset as xhdpi: that doubles its intrinsic logical dimensions and decoded pixel count per side. Artwork and manifest resource names remain unchanged.
