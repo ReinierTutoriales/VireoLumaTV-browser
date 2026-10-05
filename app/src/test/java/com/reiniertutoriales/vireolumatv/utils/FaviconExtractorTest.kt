@@ -12,6 +12,16 @@ class FaviconExtractorTest {
     private val extractor = FaviconExtractor()
 
     @Test
+    fun minifiedHtmlWithoutAHeadCannotGrowBeyondTheDocumentBudget() {
+        val prefix = "<link rel=\"icon\" href=\"/bounded.png\">"
+        val text = prefix + "x".repeat(FaviconExtractor.MAX_DOCUMENT_CHARS + 8192)
+        val reader = text.reader().buffered()
+        val (icons, _) = extractor.extractFavIconsFromHTML(URL("https://example.com"), reader)
+        assertEquals("https://example.com/bounded.png", icons.single().src)
+        assertTrue(reader.read() >= 0) // The extractor stopped while input still remains.
+    }
+
+    @Test
     fun iconInfoSizesParsing() {
         val info = FaviconExtractor.IconInfo(
             "test/test.ico",//relative path

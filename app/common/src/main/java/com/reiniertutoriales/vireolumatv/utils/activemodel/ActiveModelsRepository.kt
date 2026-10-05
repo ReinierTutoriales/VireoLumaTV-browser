@@ -33,9 +33,9 @@ object ActiveModelsRepository {
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-      if (activity.isFinishing) {
-        markAsNeedlessAllModelsUsedBy(activity)
-      }
+      // Release the destroyed Activity even during rotation. Retain only its models until
+      // the replacement Activity attaches; retaining the old user leaks the whole view tree.
+      markAsNeedlessAllModelsUsedBy(activity, retainUnused = activity.isChangingConfigurations)
     }
   }
 
@@ -77,12 +77,12 @@ object ActiveModelsRepository {
   }
 
   @MainThread
-  fun markAsNeedlessAllModelsUsedBy(user: Any) {
+  fun markAsNeedlessAllModelsUsedBy(user: Any, retainUnused: Boolean = false) {
     val iterator = holdersMap.iterator()
     while (iterator.hasNext()) {
       val kv = iterator.next()
       if (kv.value.users.remove(user)) {
-        if (kv.value.users.isEmpty()) {
+        if (kv.value.users.isEmpty() && !retainUnused) {
           iterator.remove()
           kv.value.activeModel.clear()
         }

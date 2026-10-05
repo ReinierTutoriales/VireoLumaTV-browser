@@ -60,6 +60,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.IncognitoModeMainActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
+import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoriteEditorDialog
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesDialog
@@ -311,7 +312,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     override fun showDownloads() {
-        startActivity(Intent(this@MainActivity, DownloadsActivity::class.java))
+        startActivity(Intent(this@MainActivity, if (config.incognitoMode)
+            IncognitoDownloadsActivity::class.java else DownloadsActivity::class.java))
     }
 
     override fun showHistory() {

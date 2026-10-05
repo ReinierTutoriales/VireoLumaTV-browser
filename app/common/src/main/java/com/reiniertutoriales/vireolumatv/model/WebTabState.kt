@@ -57,6 +57,7 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     @delegate:Ignore
     val webEngine by lazy { WebEngineFactory.createWebEngine(this) }
     @Ignore
+    @Volatile
     var closed: Boolean = false
     @Ignore
     var rendererLost: Boolean = false

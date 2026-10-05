@@ -44,6 +44,11 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
         var output: OutputStream? = null
         var connection: HttpURLConnection? = null
         try {
+            if (downloadInfo.cancelled) {
+                downloadInfo.size = Download.CANCELLED_MARK
+                callback.onDone(this)
+                return
+            }
             val url = URL(downloadInfo.url)
             var retries = 0
             do {
@@ -158,7 +163,10 @@ class BlobDownloadTask(override var downloadInfo: Download, blobBase64Data: Stri
                             callback.onProgress(this)
                             count = input.read(buffer)
                         }
-                        if (!downloadInfo.cancelled) downloadInfo.size = downloadInfo.bytesReceived
+                        if (downloadInfo.cancelled) {
+                            downloadInfo.size = Download.CANCELLED_MARK
+                            downloadInfo.bytesReceived = 0
+                        } else downloadInfo.size = downloadInfo.bytesReceived
                     }
                 }
             }
@@ -181,6 +189,11 @@ class StreamDownloadTask(override var downloadInfo: Download, val stream: InputS
 
         var output: OutputStream? = null
         try {
+            if (downloadInfo.cancelled) {
+                downloadInfo.size = Download.CANCELLED_MARK
+                callback.onDone(this)
+                return
+            }
             output = prepareDownloadOutput(downloadInfo)
             val data = ByteArray(4096)
             var total: Long = 0
@@ -221,6 +234,7 @@ private fun cancelDownloadIfNeeded(downloadInfo: Download) {
     val filePath = downloadInfo.filepath
     if (filePath.isEmpty()) return
     val contentResolver = VireoLumaTVApp.instance.contentResolver
+    try {
     if (downloadInfo.cancelled || downloadInfo.size == Download.BROKEN_MARK) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val rowsDeleted = contentResolver.delete(Uri.parse(filePath), null)
@@ -235,6 +249,9 @@ private fun cancelDownloadIfNeeded(downloadInfo: Download) {
             put(MediaStore.Downloads.IS_PENDING, 0)
         }
         contentResolver.update(Uri.parse(filePath), downloadDetails, null, null)
+    }
+    } catch (error: Exception) {
+        Log.w(FileDownloadTask.TAG, "Could not finalize download output", error)
     }
 }
 

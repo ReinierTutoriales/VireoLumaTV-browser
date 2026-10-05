@@ -18,6 +18,7 @@ class FaviconExtractor {
         const val DEFAULT_ICON_SIZE_STRING = "${DEFAULT_ICON_SIZE}x$DEFAULT_ICON_SIZE"
         private const val CONNECTION_TIMEOUT_MS = 5_000
         private const val READ_TIMEOUT_MS = 10_000
+        const val MAX_DOCUMENT_CHARS = 256 * 1024
     }
 
     private val headerClosingTagsPattern: Pattern = Pattern.compile("<\\s*(?:body|/\\s*head)(?:\\s+|>)")
@@ -106,7 +107,7 @@ class FaviconExtractor {
 
     fun extractFavIconsFromWebManifest(manifestURL: URL?, manifest: Reader): ArrayList<IconInfo> {
         val iconInfos = ArrayList<IconInfo>()
-        val jsonReader = JsonReader(manifest)
+        val jsonReader = JsonReader(BoundedReader(manifest, MAX_DOCUMENT_CHARS))
         jsonReader.isLenient = true
         try {
             jsonReader.use {
@@ -203,15 +204,13 @@ class FaviconExtractor {
         var manifestHref: String? = null
 
         val headerPartOfHTML = StringBuilder()
-        var line = html.readLine()
+        val buffer = CharArray(4096)
         try {
-            while (line != null) {
-                headerPartOfHTML.appendLine(line)
-                val matcher = headerClosingTagsPattern.matcher(line)
-                if (matcher.find()) {
-                    break
-                }
-                line = html.readLine()
+            while (headerPartOfHTML.length < MAX_DOCUMENT_CHARS) {
+                val count = html.read(buffer, 0, minOf(buffer.size, MAX_DOCUMENT_CHARS - headerPartOfHTML.length))
+                if (count == -1) break
+                headerPartOfHTML.append(buffer, 0, count)
+                if (headerClosingTagsPattern.matcher(headerPartOfHTML).find()) break
             }
         } catch (e: Exception) {
             e.printStackTrace()

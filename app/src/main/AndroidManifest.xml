@@ -121,6 +121,13 @@
             android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi"/>
 
+        <activity android:name=".activity.downloads.IncognitoDownloadsActivity"
+            android:process=":incognito"
+            android:exported="false"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:screenOrientation="behind"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".activity.IncognitoModeMainActivity"
             android:process=":incognito"
             android:exported="false"

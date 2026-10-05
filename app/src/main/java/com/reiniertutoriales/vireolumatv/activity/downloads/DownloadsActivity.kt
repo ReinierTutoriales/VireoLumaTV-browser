@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
 
-class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListener, ActiveDownloadsModel.Listener, AdapterView.OnItemLongClickListener{
+open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListener, ActiveDownloadsModel.Listener, AdapterView.OnItemLongClickListener{
     private lateinit var vb: ActivityDownloadsBinding
     private lateinit var adapter: DownloadListAdapter
     private val listeners = ArrayList<ActiveDownloadsModel.Listener>()

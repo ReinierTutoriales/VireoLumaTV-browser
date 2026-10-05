@@ -1,5 +1,6 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
+import com.reiniertutoriales.vireolumatv.utils.BoundedReader
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -216,7 +217,7 @@ class AdblockModel : ActiveModel() {
             connectTimeout = DOWNLOAD_CONNECT_TIMEOUT_MS
             readTimeout = DOWNLOAD_READ_TIMEOUT_MS
         }
-        return connection.inputStream.bufferedReader().use { it.readText() }
+        return BoundedReader(connection.inputStream.bufferedReader(), 8 * 1024 * 1024).use { it.readText() }
     }
 
     private fun writeCacheFileAtomically(cacheFile: File, text: String) {
@@ -231,7 +232,7 @@ class AdblockModel : ActiveModel() {
     private fun readCachedFilterList(filterList: FilterList, cacheFile: File): String? {
         if (!cacheFile.exists()) return null
         return try {
-            val cachedText = cacheFile.readText()
+            val cachedText = BoundedReader(cacheFile.bufferedReader(), 8 * 1024 * 1024).use { it.readText() }
             if (isValidFilterList(filterList, cachedText)) cachedText else null
         } catch (e: Exception) {
             Log.w(TAG, "Can not read cached adblock list text: ${filterList.name}", e)
@@ -247,6 +248,9 @@ class AdblockModel : ActiveModel() {
     }
 
     private fun buildCombinedFilterList(resolvedLists: List<ResolvedFilterList>): String {
+        require(resolvedLists.sumOf { it.content.length.toLong() } <= 16L * 1024 * 1024) {
+            "Combined adblock text exceeds the low-memory budget"
+        }
         return buildString {
             resolvedLists.forEach { resolvedList ->
                 appendLine("! ${resolvedList.filterList.name}")
