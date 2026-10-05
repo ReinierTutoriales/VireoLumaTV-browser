@@ -175,6 +175,7 @@ class MainSettingsView @JvmOverloads constructor(
         vb.llAdblock.setOnClickListener {
             vb.scAdblock.isChecked = !vb.scAdblock.isChecked
             config.adBlockEnabled = vb.scAdblock.isChecked
+            (activity as MainActivity).refreshAdblockSettings()
             vb.llAdBlockerDetails.visibility = if (vb.scAdblock.isChecked) VISIBLE else GONE
         }
         vb.llAdBlockerDetails.visibility = if (config.adBlockEnabled) VISIBLE else GONE
@@ -203,9 +204,12 @@ class MainSettingsView @JvmOverloads constructor(
         val lastUpdate = if (config.adBlockListLastUpdate == 0L)
             context.getString(R.string.never) else
             dateFormat.format(Date(config.adBlockListLastUpdate))
-        val infoText = "${context.getString(R.string.last_update)}: $lastUpdate"
+        val lists = if (config.adBlockListURL.value == Config.DEFAULT_ADBLOCK_LIST_URL)
+            "EasyList · EasyPrivacy · EasyList Spanish" else config.adBlockListURL.value
+        val infoText = "${context.getString(R.string.last_update)}: $lastUpdate\n$lists"
         vb.tvAdBlockerListInfo.text = infoText
         val loadingAdBlockList = adblockModel.clientLoading.value
+        vb.btnAdBlockerUpdate.isEnabled = !loadingAdBlockList
         vb.btnAdBlockerUpdate.visibility = if (loadingAdBlockList) View.GONE else View.VISIBLE
         vb.pbAdBlockerListLoading.visibility = if (loadingAdBlockList) View.VISIBLE else View.GONE
     }

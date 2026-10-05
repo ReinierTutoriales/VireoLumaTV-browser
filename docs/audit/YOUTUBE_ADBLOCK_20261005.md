@@ -12,6 +12,7 @@ HaGeZi PRO++ is a domain list, including its Adblock-format distribution. It can
 - Add a small HTTPS YouTube/youtube-nocookie origin-scoped content layer before page JavaScript using WebViewCompat.addDocumentStartJavaScript when supported.
 - Scrub playerAds, adPlacements and adSlots only from recognizable player response objects and bounded known bootstrap envelopes. Preserve streamingData, videoDetails, authentication, signatures and media URLs.
 - Handle inline ytInitialPlayerResponse/ytplayer assignment, JSON.parse, player endpoint Response.json/text and XHR response/responseText. Keep original parsing errors/revivers, response types, headers and non-player endpoints.
+- Fix the filter-update button staying disabled after a refresh; show actual subscription names. Apply global-switch changes to the live tab immediately, preserve explicit tab overrides and scope blocked-request counters to the requesting tab.
 - Native CSS hides known ad containers. No polling, extra HTTP requests, document-wide mutation observation, forced playback/seeks or bitrate changes. XHR text rewriting is capped at 2 MiB with weak per-request memoization.
 - Respect the requesting tab's adblock switch, including construction before attach; disable the content layer/CSS and remove future document-start registration. Release the script registration when destroying the WebView.
 - Old providers get best-effort injection at page start/end; it cannot guarantee intercepting the earliest player bootstrap. A current Android System WebView is necessary for early injection.

@@ -142,6 +142,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun onResume() {
+        webView?.onUpdateAdblockSetting(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)
         webView?.resumeTimers()
         webView?.onResume()
         jsInterface.onHomePageLoaded()

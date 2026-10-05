@@ -742,6 +742,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         super.onPause()
     }
 
+    fun refreshAdblockSettings() {
+        tabsModel.currentTab.value?.let { tab ->
+            tab.webEngine.onUpdateAdblockSetting(tab.adblock ?: config.adBlockEnabled)
+            onWebViewUpdated(tab)
+        }
+    }
+
     private fun toggleAdBlockForTab() {
         tabsModel.currentTab.value?.apply {
             val currentState = adblock ?: config.adBlockEnabled
@@ -1318,11 +1325,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
 
         override fun onBlockedAds(count: Int) {
-            if (!config.adBlockEnabled) return
+            if (!isAdBlockingEnabled() || count <= 0) return
             tab.blockedAds += count
             Log.i(TAG, "onBlockedAds: +$count (page total ${tab.blockedAds})")
-            vb.tvBlockedAdCounter.visibility = if (tab.blockedAds > 0) View.VISIBLE else View.GONE
-            vb.tvBlockedAdCounter.text = tab.blockedAds.toString()
+            if (tabsModel.currentTab.value == tab) {
+                vb.tvBlockedAdCounter.visibility = if (tab.blockedAds > 0) View.VISIBLE else View.GONE
+                vb.tvBlockedAdCounter.text = tab.blockedAds.toString()
+            }
         }
 
         override fun onBlockedDialog(newTab: Boolean) {
