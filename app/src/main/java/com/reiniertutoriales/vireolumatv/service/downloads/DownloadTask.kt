@@ -10,7 +10,6 @@ import android.util.Log
 import android.webkit.CookieManager
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import java.io.*
 import java.net.HttpURLConnection
@@ -38,7 +37,7 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
     }
 
     override fun run() {
-        downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        DownloadHistory.insert(downloadInfo)
 
         var input: InputStream? = null
         var output: OutputStream? = null
@@ -138,7 +137,7 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
 class BlobDownloadTask(override var downloadInfo: Download, val blobBase64Data: String, val callback: DownloadTask.Callback) : Runnable, DownloadTask {
 
     override fun run() {
-        downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        DownloadHistory.insert(downloadInfo)
 
         try {
             val blobAsBytes: ByteArray = Base64.decode(DownloadUtils.dataUrlBase64Payload(blobBase64Data), 0)
@@ -159,7 +158,7 @@ class BlobDownloadTask(override var downloadInfo: Download, val blobBase64Data: 
 
 class StreamDownloadTask(override var downloadInfo: Download, val stream: InputStream, val callback: DownloadTask.Callback) : Runnable, DownloadTask {
     override fun run() {
-        downloadInfo.id = AppDatabase.db.downloadDao().insert(downloadInfo)
+        DownloadHistory.insert(downloadInfo)
 
         var output: OutputStream? = null
         try {
@@ -219,19 +218,21 @@ private fun cancelDownloadIfNeeded(downloadInfo: Download) {
     }
 }
 
+internal fun buildDownloadDetails(downloadInfo: Download) = ContentValues().apply {
+    if (downloadInfo.filename.isNotEmpty()) put(MediaStore.Downloads.DISPLAY_NAME, downloadInfo.filename)
+    if (!downloadInfo.incognito) {
+        put(MediaStore.Downloads.DOWNLOAD_URI, downloadInfo.url)
+        put(MediaStore.Downloads.REFERER_URI, downloadInfo.referer)
+    }
+    put(MediaStore.Downloads.IS_PENDING, 1)
+}
+
 private fun prepareDownloadOutput(downloadInfo: Download): OutputStream {
     val contentResolver = VireoLumaTVApp.instance.contentResolver
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         val downloadsCollection =
             MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        val newDownloadDetails = ContentValues().apply {
-            if (downloadInfo.filename.isNotEmpty()) {
-                put(MediaStore.Downloads.DISPLAY_NAME, downloadInfo.filename)
-            }
-            put(MediaStore.Downloads.DOWNLOAD_URI, downloadInfo.url)
-            put(MediaStore.Downloads.REFERER_URI, downloadInfo.referer)
-            put(MediaStore.Downloads.IS_PENDING, 1)
-        }
+        val newDownloadDetails = buildDownloadDetails(downloadInfo)
         val downloadUri = contentResolver
             .insert(downloadsCollection, newDownloadDetails)
         if (downloadUri == null) {
@@ -239,7 +240,7 @@ private fun prepareDownloadOutput(downloadInfo: Download): OutputStream {
         }
         val fd = contentResolver.openFileDescriptor(downloadUri, "w", null)
         downloadInfo.filepath = downloadUri.toString()
-        AppDatabase.db.downloadDao().update(downloadInfo)
+        DownloadHistory.update(downloadInfo)
         AutoCloseOutputStream(fd)
     } else {
         FileOutputStream(downloadInfo.filepath)
