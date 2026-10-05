@@ -48,6 +48,7 @@ jobs:
       - name: Unit tests
         run: |
           node scripts/test-home-page-security.cjs
+          node scripts/test-webview-controls.cjs
           ./gradlew testGenericDebugUnitTest --stacktrace
 
       - name: Build debug APK

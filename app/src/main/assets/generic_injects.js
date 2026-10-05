@@ -47,51 +47,79 @@ if (!window.vireoLumaTVClicksListener) {
     document.addEventListener("click", window.vireoLumaTVClicksListener);
 }
 
-// video playback control support
-//local helper instead of patching HTMLMediaElement.prototype: never clashes with the page's own code
+// Controls act only on user input; leave buffering, retry and bitrate to the site's player.
 window.vireoLumaTVIsPlaying = function(media) {
-    return !!(media.currentTime > 0 && !media.paused && !media.ended && media.readyState > 2);
-}
+    // Buffering (readyState 0..2) is still an active play request, including at time zero.
+    return !!(media && !media.paused && !media.ended);
+};
+
+window.vireoLumaTVMedia = function() {
+    var media = document.querySelectorAll('video, audio');
+    for (var i = 0; i < media.length; i++) {
+        if (window.vireoLumaTVIsPlaying(media[i])) return media[i];
+    }
+    return document.querySelector('video') || document.querySelector('audio');
+};
+
+window.vireoLumaTVSeek = function(media, target) {
+    if (!media || !isFinite(target)) return;
+    try {
+        var ranges = media.seekable;
+        if (!ranges || !ranges.length) return; // Live streams may not offer seeking.
+        var nearest = ranges.start(0);
+        var distance = Math.abs(target - nearest);
+        for (var i = 0; i < ranges.length; i++) {
+            var start = ranges.start(i), end = ranges.end(i);
+            // Stay inside the available range, including a sliding live/DVR window.
+            var candidate = Math.max(start, Math.min(target, Math.max(start, end - 0.05)));
+            var delta = Math.abs(target - candidate);
+            if (delta <= distance) { nearest = candidate; distance = delta; }
+        }
+        media.currentTime = nearest;
+    } catch (e) { /* The live window can change between reading ranges and seeking. */ }
+};
 
 window.vireoLumaTVTogglePlayback = function() {
-  var media = document.querySelector('video') || document.querySelector('audio');
-  if (media) {
-      if (window.vireoLumaTVIsPlaying(media)) {
+    var media = window.vireoLumaTVMedia();
+    if (!media) return;
+    if (window.vireoLumaTVIsPlaying(media)) {
         media.pause();
-      } else {
-        media.play();
-      }
-  }
-}
+    } else {
+        try {
+            var result = media.play();
+            // Autoplay policy/unsupported media can reject; never create a retry loop.
+            if (result && typeof result.catch === 'function') result.catch(function() {});
+        } catch (e) {}
+    }
+};
 
 window.vireoLumaTVStopPlayback = function() {
-  var media = document.querySelector('video') || document.querySelector('audio');
-  if (media) {
-      media.pause();
-      media.currentTime = 0;
-  }
-}
+    var media = window.vireoLumaTVMedia();
+    if (media) {
+        media.pause();
+        window.vireoLumaTVSeek(media, 0);
+    }
+};
 
 window.vireoLumaTVRewind = function() {
-    var media = document.querySelector('video') || document.querySelector('audio');
-    if (media) {
-        media.currentTime -= 10;
-    }
-}
+    var media = window.vireoLumaTVMedia();
+    if (media) window.vireoLumaTVSeek(media, media.currentTime - 10);
+};
 
 window.vireoLumaTVFastForward = function() {
-    var media = document.querySelector('video') || document.querySelector('audio');
-    if (media) {
-        media.currentTime += 10;
-    }
-}
+    var media = window.vireoLumaTVMedia();
+    if (media) window.vireoLumaTVSeek(media, media.currentTime + 10);
+};
 
-// context menu support
+// Context menus track both native mouse clicks and touchscreen gestures.
 if (!window.vireoLumaTVTouchStartListener) {
     window.vireoLumaTVTouchStartListener = function(e) {
+        if (!e || e.isTrusted !== true) return;
         window.VIREOLUMATV_activeElement = e.target;
-        window.VIREOLUMATV_touchStartX = e.touches[0].clientX;
-        window.VIREOLUMATV_touchStartY = e.touches[0].clientY;
+        var point = e.touches && e.touches.length ? e.touches[0] : e;
+        window.VIREOLUMATV_touchStartX = point.clientX;
+        window.VIREOLUMATV_touchStartY = point.clientY;
     };
-    window.addEventListener("touchstart", window.vireoLumaTVTouchStartListener);
+    window.addEventListener("touchstart", window.vireoLumaTVTouchStartListener, {passive: true});
+    window.addEventListener("mousedown", window.vireoLumaTVTouchStartListener, {passive: true});
 }
