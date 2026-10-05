@@ -138,6 +138,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun onResume() {
+        webView?.resumeTimers()
         webView?.onResume()
         jsInterface.onHomePageLoaded()
     }
@@ -145,6 +146,8 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun onPause() {
         jsInterface.cancelHomeFavicons()
         webView?.onPause()
+        // onPause alone leaves JavaScript timers running. The process keeps one live renderer.
+        webView?.pauseTimers()
     }
 
     override fun onUpdateAdblockSetting(newState: Boolean) {

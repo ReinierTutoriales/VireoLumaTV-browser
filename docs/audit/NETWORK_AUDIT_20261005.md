@@ -8,6 +8,8 @@ One live renderer; Chromium/WebView HTTP caching with LOAD_DEFAULT; two file-dow
 
 ## Corrections
 
+- Pause JavaScript/layout timers with the WebView when the app is paused or a renderer detached, and resume them before the active renderer resumes. Android onPause alone does not pause JavaScript; the existing single-live-renderer invariant makes the process-wide timer API appropriate.
+
 - Homepage favicon interception now reads only the memory cache and returns immediately when absent. A separate lifecycle-bound job loads at most eight visible tile icons, with up to two global favicon requests. Navigation, detaching the renderer and pausing cancel the batch; resuming the internal homepage restarts it. Results require the same live view and internal homepage. Known icon URLs bypass downloading the site's HTML. Failed images can be replaced asynchronously without applying stale results to another tile.
 - All native homepage icon URLs use the bounded pool instead of uncontrolled external image requests. Ordinary browser previews retain their existing behavior.
 - Failed favicon lookups have a 60-second cooldown, held in a 128-entry LRU. Low-memory trimming retains cooldowns. Same-host waits no longer consume a global network permit. Cancellation does not become a cached failure.
@@ -21,6 +23,7 @@ Regression tests use a local HTTP server to verify that 16 concurrent plus 10 re
 There is no arbitrary bandwidth cap on the active website. Chromium owns page connections, streaming, cache validation and resource scheduling. Browser auxiliary work is bounded; this does not guarantee the availability of remote websites or a slow/unstable connection. Blocking socket operations may take their finite timeout to return after coroutine cancellation. Real-link bandwidth, RTT, packet loss, video quality and device RAM remain unmeasured.
 
 Primary sources:
+- https://developer.android.com/reference/android/webkit/WebView
 - https://developer.android.com/reference/android/webkit/WebSettings
 - https://developer.android.com/reference/java/net/HttpURLConnection
 - https://www.rfc-editor.org/rfc/rfc9110.html#name-retry-after
