@@ -12,11 +12,18 @@ internal object AdblockCache {
         File(directory, "v2-${sourceKey(url)}-${engine.cacheFileName}")
 
     /** Serialize away from the good cache: rejection, disk-full or cancellation must not truncate it. */
-    fun write(file: File, blocker: ContentBlocker): Boolean {
+    fun write(file: File, blocker: ContentBlocker): Boolean = write(file) { blocker.serialize(it) }
+
+    fun writeText(file: File, text: String): Boolean = write(file) {
+        it.writeText(text)
+        true
+    }
+
+    private fun write(file: File, serialize: (File) -> Boolean): Boolean {
         var temporary: File? = null
         return try {
             temporary = File.createTempFile("adblock-", ".tmp", file.parentFile)
-            if (!blocker.serialize(temporary) || temporary.length() == 0L) false
+            if (!serialize(temporary) || temporary.length() == 0L) false
             else temporary.renameTo(file)
         } catch (_: Exception) {
             false

@@ -225,7 +225,9 @@ class AdblockModel @JvmOverloads constructor(
                 if (!isValidFilterList(filterList, downloadedText)) {
                     throw IllegalArgumentException("Invalid adblock list content: ${filterList.name}")
                 }
-                writeCacheFileAtomically(cacheFile, downloadedText)
+                if (!AdblockCache.writeText(cacheFile, downloadedText)) {
+                    Log.w(TAG, "Valid download available, but text cache could not be saved: ${filterList.name}")
+                }
                 Log.i(TAG, "Downloaded valid adblock list: ${filterList.name}")
                 ResolvedFilterList(filterList, downloadedText, FilterListSource.DOWNLOAD)
             } catch (e: Exception) {
@@ -248,15 +250,6 @@ class AdblockModel @JvmOverloads constructor(
             readTimeout = DOWNLOAD_READ_TIMEOUT_MS
         }
         return BoundedReader(connection.inputStream.bufferedReader(), 8 * 1024 * 1024).use { it.readText() }
-    }
-
-    private fun writeCacheFileAtomically(cacheFile: File, text: String) {
-        val tmpFile = File(cacheFile.parentFile, "${cacheFile.name}.tmp")
-        tmpFile.writeText(text)
-        if (!tmpFile.renameTo(cacheFile)) {
-            tmpFile.delete()
-            throw IllegalStateException("Can not replace adblock list cache: ${cacheFile.name}")
-        }
     }
 
     private fun readCachedFilterList(filterList: FilterList, cacheFile: File): String? {

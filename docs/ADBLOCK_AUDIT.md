@@ -30,7 +30,10 @@ current selection.
   subscription cannot silently load another subscription's compiled rules.
 - Custom text caches also use SHA-256 rather than collision-prone Java hashCode.
 - Compiled rules serialize to a separate temporary file. Rejection or write
-  failure preserves the working cache, and temporary files are removed.
+  failure preserves the working cache, and temporary files are removed. Text
+  caches use the same unique-temporary-file path: normal/private processes cannot
+  corrupt each other's staging file. A valid download is still usable if its text
+  cache cannot be written.
 - If all downloads fall back to cache and a matching client is active, the same
   rules are not recompiled or deserialized again.
 - Failed updates retain active protection. Failed compiled-cache writes schedule
