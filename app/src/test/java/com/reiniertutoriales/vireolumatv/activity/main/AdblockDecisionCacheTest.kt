@@ -78,4 +78,34 @@ class AdblockDecisionCacheTest {
             assertEquals(2, blocker.calls)
         } finally { model.clear() }
     }
+    @Test fun replacingRulesDoesNotWaitForABusyNativeMatcher() {
+        val model = AdblockModel(autoLoad = false)
+        val entered = java.util.concurrent.CountDownLatch(1)
+        val release = java.util.concurrent.CountDownLatch(1)
+        val executor = java.util.concurrent.Executors.newFixedThreadPool(2)
+        val blocker = object : ContentBlocker {
+            override fun shouldBlock(url: Uri, type: String?, baseHost: String): Boolean {
+                entered.countDown()
+                release.await(5, java.util.concurrent.TimeUnit.SECONDS)
+                return false
+            }
+            override fun serialize(file: File) = true
+        }
+        try {
+            install(model, blocker)
+            val request = executor.submit<Boolean> {
+                model.isAd(Uri.parse("https://ads.test/banner"), "image", Uri.parse("https://page.test"))
+            }
+            assertTrue(entered.await(2, java.util.concurrent.TimeUnit.SECONDS))
+            executor.submit { install(model, Blocker(true)) }.get(1, java.util.concurrent.TimeUnit.SECONDS)
+            assertTrue(model.isAd(Uri.parse("https://ads.test/banner"), "image", Uri.parse("https://page.test")))
+            release.countDown()
+            assertFalse(request.get(2, java.util.concurrent.TimeUnit.SECONDS))
+        } finally {
+            release.countDown()
+            executor.shutdownNow()
+            model.clear()
+        }
+    }
+
 }

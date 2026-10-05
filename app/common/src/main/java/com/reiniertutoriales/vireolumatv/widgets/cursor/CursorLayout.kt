@@ -3,8 +3,6 @@ package com.reiniertutoriales.vireolumatv.widgets.cursor
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
-import android.util.Log
-import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.widget.FrameLayout
@@ -19,10 +17,14 @@ import com.reiniertutoriales.vireolumatv.utils.DPADNavigationEventsAdapter
  */
 class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null):
     FrameLayout(context, attrs) {
-    var cursorEnabled: Boolean
-        get() = !willNotDraw()
+    // Drawing flags are framework optimizations, not navigation state.
+    var cursorEnabled: Boolean = true
         set(value) {
-            setWillNotDraw(!value)
+            if (field == value) return
+            field = value
+            inputEventsAdapter.resetState()
+            if (::cursorDrawerDelegate.isInitialized) cursorDrawerDelegate.resetInput()
+            invalidate()
         }
     lateinit var cursorDrawerDelegate: CursorDrawerDelegate
     private val inputEventsAdapter = DPADNavigationEventsAdapter(
@@ -50,21 +52,30 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
 
     override fun onSizeChanged(w: Int, h: Int, ow: Int, oh: Int) {
         super.onSizeChanged(w, h, ow, oh)
-        if (isInEditMode || willNotDraw()) {
+        if (isInEditMode) {
             return
         }
         cursorDrawerDelegate.onSizeChanged(w, h, ow, oh)
     }
 
-    override fun setWillNotDraw(willNotDraw: Boolean) {
+    override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+        super.onWindowFocusChanged(hasWindowFocus)
+        if (!hasWindowFocus) resetInput()
+    }
+
+    override fun onDetachedFromWindow() {
+        resetInput()
+        super.onDetachedFromWindow()
+    }
+
+    fun resetInput() {
         inputEventsAdapter.resetState()
-        super.setWillNotDraw(willNotDraw)
+        if (::cursorDrawerDelegate.isInitialized) cursorDrawerDelegate.resetInput()
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        Log.d("CursorLayout", "dispatchKeyEvent: $event")
 
-        if (willNotDraw()) return super.dispatchKeyEvent(event)
+        if (!cursorEnabled) return super.dispatchKeyEvent(event)
 
         if (inputEventsAdapter.dispatchKeyEvent(event)) {
             return true
@@ -75,7 +86,7 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
 
-        if (willNotDraw()) return super.dispatchGenericMotionEvent(event)
+        if (!cursorEnabled) return super.dispatchGenericMotionEvent(event)
 
         if (inputEventsAdapter.dispatchGenericMotionEvent(event)) {
             return true
@@ -86,7 +97,7 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
 
     override fun dispatchDraw(canvas: Canvas) {
         super.dispatchDraw(canvas)
-        if (isInEditMode || willNotDraw()) {
+        if (isInEditMode || !cursorEnabled) {
             return
         }
 

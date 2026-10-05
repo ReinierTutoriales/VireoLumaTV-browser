@@ -78,6 +78,8 @@ import com.reiniertutoriales.vireolumatv.service.downloads.DownloadService
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
+import com.reiniertutoriales.vireolumatv.utils.DPADNavigationEventsAdapter
+import com.reiniertutoriales.vireolumatv.utils.NavigationReservedShortcutKeyCodes
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.BaseAnimationListener
@@ -895,6 +897,11 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                     return true
                 }
 
+                // A hidden/detached menu can leave the framework focus path outside the page.
+                // Route cursor input exactly once while the live browser surface owns the screen.
+                if (browserOwnsCursorInput() && event.keyCode in
+                    NavigationReservedShortcutKeyCodes.dpadNavigationKeys &&
+                    vb.flWebViewContainer.dispatchKeyEvent(event)) return true
                 return localCallback.dispatchKeyEvent(event)
             }
 
@@ -908,10 +915,19 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 if (backNavigationEventsAdapter.dispatchGenericMotionEvent(event)) {
                     return true
                 }
+                if (browserOwnsCursorInput() &&
+                    DPADNavigationEventsAdapter.isNavigationGenericMotionSource(event.source) &&
+                    vb.flWebViewContainer.dispatchGenericMotionEvent(event)) return true
                 return localCallback.dispatchGenericMotionEvent(event)
             }
         }
     }
+
+    private fun browserOwnsCursorInput(): Boolean =
+        ::vb.isInitialized && window.decorView.hasWindowFocus() &&
+            vb.flWebViewContainer.isShown && vb.flWebViewContainer.cursorEnabled &&
+            !vb.vCursorMenu.isVisible && !vb.rlActionBar.isVisible && !vb.llBottomPanel.isVisible &&
+            ViewCompat.getRootWindowInsets(window.decorView)?.isVisible(WindowInsetsCompat.Type.ime()) != true
 
     /**
      * When the IME is visible, the first back press should only dismiss it; this mirrors standard
@@ -961,6 +977,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.ivMiniatures.animate().cancel()
         vb.ivMiniatures.visibility = View.VISIBLE
         vb.llBottomPanel.visibility = View.VISIBLE
+        vb.flWebViewContainer.resetInput()
         vb.flWebViewContainer.visibility = View.INVISIBLE
         val currentTab = tabsModel.currentTab.value
         if (currentTab != null) {
@@ -1026,7 +1043,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     private fun hideMenuOverlay(hideBottomButtons: Boolean = true) {
         if (!thumbnailOverlayVisible) {
-            if (hideBottomButtons) hideBottomPanel()
+            if (hideBottomButtons) {
+                hideBottomPanel()
+                if (!vb.vCursorMenu.isVisible) {
+                    vb.flWebViewContainer.visibility = View.VISIBLE
+                    tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
+                }
+            }
             return
         }
         thumbnailOverlayVisible = false
@@ -1035,7 +1058,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         displayThumbnailRunnable.tabState = null
         vb.rlActionBar.animate().cancel()
         vb.ivMiniatures.animate().cancel()
+        syncTabWithTitles()
+        vb.flWebViewContainer.visibility = View.VISIBLE
         if (hideBottomButtons) {
+            tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
             hideBottomPanel()
         }
 
@@ -1063,11 +1089,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                     vb.ivMiniatures.visibility = View.INVISIBLE
                     vb.rlActionBar.visibility = View.INVISIBLE
                     vb.ivMiniatures.setImageResource(0)
-                    syncTabWithTitles()
-                    vb.flWebViewContainer.visibility = View.VISIBLE
-                    if (hideBottomButtons) {
-                        tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
-                    }
                 }
                 .start()
     }

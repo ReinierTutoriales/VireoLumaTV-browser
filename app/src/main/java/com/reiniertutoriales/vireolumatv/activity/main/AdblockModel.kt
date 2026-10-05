@@ -10,6 +10,8 @@ import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.adblock.AdblockCache
 import com.reiniertutoriales.vireolumatv.adblock.AdblockFilterListValidator
+import com.reiniertutoriales.vireolumatv.adblock.AdblockListDownloader
+import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.adblock.BraveAdBlockEngine
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlocker
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlockerEngine
@@ -21,7 +23,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.net.URL
 import java.util.*
 
 class AdblockModel @JvmOverloads constructor(
@@ -33,8 +34,6 @@ class AdblockModel @JvmOverloads constructor(
 
         const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 7 //7 days
         private const val PARTIAL_UPDATE_RETRY_MINUTES = 60 * 24 //1 day
-        private const val DOWNLOAD_CONNECT_TIMEOUT_MS = 10_000
-        private const val DOWNLOAD_READ_TIMEOUT_MS = 15_000
         private const val EASY_PRIVACY_URL = "https://easylist.to/easylist/easyprivacy.txt"
         private const val EASY_LIST_SPANISH_URL = "https://easylist-downloads.adblockplus.org/easylistspanish.txt"
     }
@@ -43,7 +42,8 @@ class AdblockModel @JvmOverloads constructor(
         val name: String,
         val url: String,
         val cacheFileName: String,
-        val requiresAdblockHeader: Boolean
+        val requiresAdblockHeader: Boolean,
+        val mirrors: List<String> = emptyList()
     )
 
     private enum class FilterListSource {
@@ -57,28 +57,34 @@ class AdblockModel @JvmOverloads constructor(
         val source: FilterListSource
     )
 
-    private val clientLock = Any()
-    private var client: ContentBlocker? = null
     private data class DecisionKey(val url: String, val type: String?, val baseHost: String)
-    // Bound URL retention in bytes, rather than retaining unbounded signed stream URLs.
-    private val decisions = object : LruCache<DecisionKey, Boolean>(64 * 1024) {
-        override fun sizeOf(key: DecisionKey, value: Boolean): Int =
-            64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length)
-    }
-
-    private fun installClient(value: ContentBlocker, source: String) {
-        synchronized(clientLock) {
-            if (client !== value) decisions.evictAll()
-            client = value
-            clientSource = source
+    private class InstalledClient(val blocker: ContentBlocker, val source: String) {
+        val lock = Any()
+        val decisions = object : LruCache<DecisionKey, Boolean>(64 * 1024) {
+            override fun sizeOf(key: DecisionKey, value: Boolean): Int =
+                64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length)
         }
     }
-    private var clientSource: String? = null
+    // Publishing a new generation must not make Main wait for a WebView request/native matcher.
+    @Volatile private var installedClient: InstalledClient? = null
+    private fun installClient(value: ContentBlocker, source: String) {
+        val current = installedClient
+        if (current == null || current.blocker !== value || current.source != source) {
+            installedClient = InstalledClient(value, source)
+        }
+    }
+    enum class UpdateResult { IDLE, UPDATED, PARTIAL, CACHED, ERROR }
+    val updateResult = ObservableValue(UpdateResult.IDLE)
     val clientLoading = ObservableValue(false)
     val config = AppContext.provideConfig()
 
+    private val sourceObserver: (String) -> Unit = { loadAdBlockList(true) }
+
     init {
-        if (autoLoad) loadAdBlockList(false)
+        if (autoLoad) {
+            config.adBlockListURL.subscribe(sourceObserver, notifyOnSubscribe = false)
+            loadAdBlockList(false)
+        }
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -89,12 +95,14 @@ class AdblockModel @JvmOverloads constructor(
         checkDate.timeInMillis = config.adBlockListLastUpdate
         checkDate.add(Calendar.MINUTE, AUTO_UPDATE_INTERVAL_MINUTES)
         val now = Calendar.getInstance()
-        val needUpdate = forceReload || checkDate.before(now)
+        val retryAt = config.adBlockListNextRetry
+        val needUpdate = forceReload || if (retryAt != 0L) now.timeInMillis >= retryAt else checkDate.before(now)
         clientLoading.value = true
         var loadedClient: ContentBlocker? = null
         var downloadAttempted = false
         var updated = false
         var partialUpdate = false
+        var downloadedAny = false
         try {
             withContext(Dispatchers.IO) ioContext@ {
                 val serializedFile = AdblockCache.fileFor(VireoLumaTVApp.instance.filesDir, engine, configuredUrl)
@@ -117,6 +125,7 @@ class AdblockModel @JvmOverloads constructor(
                 downloadAttempted = true
                 try {
                     val resolvedLists = resolveFilterLists(filterLists)
+                    downloadedAny = resolvedLists.any { it.source == FilterListSource.DOWNLOAD }
                     if (resolvedLists.isEmpty()) {
                         Log.w(TAG, "No usable adblock filter list text available")
                     } else {
@@ -175,15 +184,19 @@ class AdblockModel @JvmOverloads constructor(
             loadedClient?.let {
                 installClient(it, configuredUrl)
             }
-            if (updated) {
-                if (partialUpdate) {
-                    scheduleRetryAfterPartialUpdate(now.timeInMillis)
-                } else {
-                    config.adBlockListLastUpdate = now.timeInMillis
-                }
+            if (updated && downloadedAny) config.adBlockListLastUpdate = now.timeInMillis
+            if (downloadAttempted) {
+                config.adBlockListNextRetry = if (!updated || partialUpdate)
+                    now.timeInMillis + PARTIAL_UPDATE_RETRY_MINUTES * 60_000L else 0L
             }
-            if (downloadAttempted && loadedClient == null && !hasCurrentClient()) {
-                Toast.makeText(VireoLumaTVApp.instance, "Error loading ad-blocker list", Toast.LENGTH_SHORT).show()
+            updateResult.value = when {
+                updated && downloadedAny && !partialUpdate -> UpdateResult.UPDATED
+                updated && downloadedAny -> UpdateResult.PARTIAL
+                hasCurrentClient() -> UpdateResult.CACHED
+                else -> UpdateResult.ERROR
+            }
+            if (downloadAttempted && !hasCurrentClient()) {
+                Toast.makeText(VireoLumaTVApp.instance, R.string.adblock_update_error, Toast.LENGTH_SHORT).show()
             }
         } finally {
             clientLoading.value = false
@@ -208,13 +221,15 @@ class AdblockModel @JvmOverloads constructor(
                 "EasyList",
                 Config.DEFAULT_ADBLOCK_LIST_URL,
                 "adblock_list_easylist.txt",
-                requiresAdblockHeader = true
+                requiresAdblockHeader = true,
+                mirrors = listOf("https://easylist-downloads.adblockplus.org/easylist.txt")
             ),
             FilterList(
                 "EasyPrivacy",
                 EASY_PRIVACY_URL,
                 "adblock_list_easyprivacy.txt",
-                requiresAdblockHeader = true
+                requiresAdblockHeader = true,
+                mirrors = listOf("https://easylist-downloads.adblockplus.org/easyprivacy.txt")
             ),
             FilterList(
                 "EasyList Spanish",
@@ -253,17 +268,9 @@ class AdblockModel @JvmOverloads constructor(
         }
     }
 
-    private fun downloadFilterList(filterList: FilterList): String {
-        val connection = URL(filterList.url).openConnection().apply {
-            connectTimeout = DOWNLOAD_CONNECT_TIMEOUT_MS
-            readTimeout = DOWNLOAD_READ_TIMEOUT_MS
-        }
-        try {
-            return BoundedReader(connection.inputStream.bufferedReader(), 8 * 1024 * 1024).use { it.readText() }
-        } finally {
-            (connection as? java.net.HttpURLConnection)?.disconnect()
-        }
-    }
+    private fun downloadFilterList(filterList: FilterList): String = AdblockListDownloader.download(
+        listOf(filterList.url) + filterList.mirrors, filterList.requiresAdblockHeader
+    )
 
     private fun readCachedFilterList(filterList: FilterList, cacheFile: File): String? {
         if (!cacheFile.exists()) return null
@@ -301,12 +308,6 @@ class AdblockModel @JvmOverloads constructor(
             .ifBlank { "none" }
     }
 
-    private fun scheduleRetryAfterPartialUpdate(nowMillis: Long) {
-        val autoUpdateIntervalMillis = AUTO_UPDATE_INTERVAL_MINUTES * 60_000L
-        val partialRetryMillis = PARTIAL_UPDATE_RETRY_MINUTES * 60_000L
-        config.adBlockListLastUpdate = nowMillis - autoUpdateIntervalMillis + partialRetryMillis
-    }
-
     private fun deserializeCachedList(serializedFile: File): ContentBlocker? {
         return try {
             engine.deserialize(serializedFile)
@@ -317,25 +318,23 @@ class AdblockModel @JvmOverloads constructor(
     }
 
     private fun hasCurrentClient(source: String? = null): Boolean {
-        return synchronized(clientLock) {
-            client != null && (source == null || clientSource == source)
-        }
+        val current = installedClient ?: return false
+        return source == null || current.source == source
     }
 
     override fun onClear() {
-        synchronized(clientLock) {
-            decisions.evictAll()
-            client = null
-            clientSource = null
-        }
+        config.adBlockListURL.unsubscribe(sourceObserver)
+        installedClient = null
         super.onClear()
     }
 
     fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean {
         val baseHost = baseUri.host ?: return false
         val result = try {
-            synchronized(clientLock) {
-                val activeClient = client ?: return@synchronized false
+            val current = installedClient ?: return false
+            synchronized(current.lock) {
+                val activeClient = current.blocker
+                val decisions = current.decisions
                 val text = url.toString()
                 val key = if (text.length <= 2048 && baseHost.length <= 255)
                     DecisionKey(text, type, baseHost) else null

@@ -54,7 +54,7 @@ object ActiveModelsRepository {
     val className = clazz.qualifiedName ?: throw IllegalStateException("clazz should have name!")
     var modelHolder: StateModelHolder? = holdersMap[className]
     if (modelHolder == null) {
-      modelHolder = StateModelHolder(clazz.java.constructors.first().newInstance() as ActiveModel)
+      modelHolder = StateModelHolder(clazz.java.getDeclaredConstructor().newInstance() as ActiveModel)
       holdersMap[className] = modelHolder
     }
     if (!modelHolder.users.contains(user)) {
