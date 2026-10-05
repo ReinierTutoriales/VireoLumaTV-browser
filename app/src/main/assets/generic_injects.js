@@ -1,6 +1,9 @@
 //download blobs support
+//Authorization lives in Java: beginBlobDownload() only succeeds right after a real remote/touch
+//activation and returns a single-use token generated natively. Untrusted (script) clicks are ignored.
 if (!window.vireoLumaTVClicksListener) {
     window.vireoLumaTVClicksListener = function(e) {
+        if (!e || e.isTrusted !== true) return;
         var target = e.target;
         if (!target || typeof target.closest !== "function") return;
         //the click can land on an element inside the link (icon, span, button...)
@@ -9,25 +12,37 @@ if (!window.vireoLumaTVClicksListener) {
         var url = link.getAttribute("href");
         if (!url || !url.toLowerCase().startsWith("blob:")) return;
         var fileName = link.download || null;
+        //must run synchronously inside the click so the native activation is still fresh
+        var token = VireoLumaTVApp.beginBlobDownload(url, fileName);
+        e.stopPropagation();
+        e.preventDefault();
+        if (!token) return;
+        var cancel = function() { VireoLumaTVApp.cancelBlobDownload(token); };
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.responseType = 'blob';
+        xhr.onerror = cancel;
+        xhr.onabort = cancel;
         xhr.onload = function() {
-            if (this.status == 200) {
-                var blob = this.response;
-                var reader = new FileReader();
-                reader.onload = function() {
-                    var base64data = reader.result;
-                    if (typeof base64data === "string") {
-                        VireoLumaTVApp.takeBlobDownloadData(base64data, fileName, url, blob.type);
-                    }
-                };
-                reader.readAsDataURL(blob);
+            var blob = this.response;
+            if (this.status != 200 || !blob ||
+                !VireoLumaTVApp.acceptBlobSize(token, blob.size || 0, blob.type || "")) {
+                cancel();
+                return;
             }
+            var reader = new FileReader();
+            reader.onload = function() {
+                if (typeof reader.result === "string") {
+                    VireoLumaTVApp.takeBlobDownloadData(token, reader.result, url);
+                } else {
+                    cancel();
+                }
+            };
+            reader.onerror = cancel;
+            reader.onabort = cancel;
+            reader.readAsDataURL(blob);
         };
         xhr.send();
-        e.stopPropagation();
-        e.preventDefault();
     };
     document.addEventListener("click", window.vireoLumaTVClicksListener);
 }
