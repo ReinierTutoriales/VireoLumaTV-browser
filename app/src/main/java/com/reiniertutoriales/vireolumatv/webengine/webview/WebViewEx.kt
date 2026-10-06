@@ -268,9 +268,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                     PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID == request.resources[0]) {
                     //fast path for grant/deny RESOURCE_PROTECTED_MEDIA_ID
                     if (MediaDrm.isCryptoSchemeSupported(WIDEVINE_UUID)) {
-                        val widevineKeyDrm = MediaDrm(WIDEVINE_UUID)
-                        val version = widevineKeyDrm.getPropertyString(MediaDrm.PROPERTY_VERSION)
-                        Log.i(TAG, "DRM widevine version = " + version)
                         request.grant(request.resources)
                     } else {
                         request.deny()
