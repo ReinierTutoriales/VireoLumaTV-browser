@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 class AdblockModel @JvmOverloads constructor(
     private val engine: ContentBlockerEngine = BraveAdBlockEngine(),
@@ -60,6 +61,8 @@ class AdblockModel @JvmOverloads constructor(
     private data class DecisionKey(val url: String, val type: String?, val baseHost: String)
     private class InstalledClient(val blocker: ContentBlocker, val source: String) {
         val lock = Any()
+        // A broken native matcher can fail for every resource on a busy page.
+        val failureLogged = AtomicBoolean(false)
         val decisions = object : LruCache<DecisionKey, Boolean>(64 * 1024) {
             override fun sizeOf(key: DecisionKey, value: Boolean): Int =
                 64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length)
@@ -330,8 +333,8 @@ class AdblockModel @JvmOverloads constructor(
 
     fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean {
         val baseHost = baseUri.host ?: return false
+        val current = installedClient ?: return false
         val result = try {
-            val current = installedClient ?: return false
             synchronized(current.lock) {
                 val activeClient = current.blocker
                 val decisions = current.decisions
@@ -344,7 +347,9 @@ class AdblockModel @JvmOverloads constructor(
                 blocked
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            if (current.failureLogged.compareAndSet(false, true)) {
+                Log.e(TAG, "Adblock matcher failed; later requests can retry", e)
+            }
             false
         }
         return result
