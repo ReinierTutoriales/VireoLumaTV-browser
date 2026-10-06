@@ -108,7 +108,7 @@ class ActionBar @JvmOverloads constructor(
         vb.ibSettings.setOnClickListener { callback?.showSettings() }
 
         if (Utils.isFireTV(context)) {
-            vb.ibMenu.nextFocusRightId = R.id.ibHistory
+            vb.etUrl.nextFocusRightId = R.id.ibHistory
             removeView(vb.ibVoiceSearch)
         } else {
             vb.ibVoiceSearch.setOnClickListener { callback?.initiateVoiceSearch() }
@@ -188,7 +188,7 @@ class ActionBar @JvmOverloads constructor(
     }
 
     fun catchFocus() {
-        vb.ibMenu.requestFocus()
+        vb.ibHistory.requestFocus()
     }
 
     override fun onDetachedFromWindow() {

@@ -3,18 +3,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:parentTag="android.widget.LinearLayout"
     tools:orientation="horizontal">
-  <ImageButton
-      android:layout_width="wrap_content"
+  <FrameLayout
+      android:layout_width="0dp"
+      android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:id="@+id/ibMenu"
-      android:src="@drawable/ic_close_grey_900_36dp"
-      android:nextFocusRight="@+id/ibVoiceSearch"
-      android:nextFocusDown="@+id/vTabs"
-      android:background="@drawable/button_bg_selector"
-      android:layout_margin="5dp"
-      android:focusable="true"
-      android:focusableInTouchMode="true"
-      android:contentDescription="@string/close_application" />
+      android:background="@color/top_bar_background"
+      android:id="@+id/flUrl">
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/etUrl"
+        android:nextFocusRight="@id/ibVoiceSearch"
+        android:nextFocusDown="@id/vTabs"
+        android:iconifiedByDefault="false"
+        android:textCursorDrawable="@null"
+        android:textColor="@color/default_url_color"
+        android:layout_marginTop="15dp"
+        android:imeOptions="actionSearch"
+        android:hint="@string/url_prompt"
+        android:inputType="textFilter|textNoSuggestions|textUri"
+        android:importantForAutofill="no" />
+  </FrameLayout>
 
   <ImageButton
       android:layout_width="wrap_content"
@@ -83,7 +92,7 @@
       android:src="@drawable/ic_settings_grey_900_24dp"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:nextFocusRight="@+id/etUrl"
+      android:nextFocusRight="@+id/ibMenu"
       android:nextFocusDown="@+id/vTabs"
       android:id="@+id/ibSettings"
       android:background="@drawable/button_bg_selector"
@@ -91,25 +100,15 @@
       android:layout_marginTop="5dp"
       android:contentDescription="@string/settings" />
 
-  <FrameLayout
-      android:layout_width="match_parent"
+  <ImageButton
+      android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_alignWithParentIfMissing="true"
-      android:background="@color/top_bar_background"
-      android:id="@+id/flUrl">
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/etUrl"
-        android:nextFocusDown="@id/vTabs"
-        android:nextFocusLeft="@id/ibSettings"
-        android:iconifiedByDefault="false"
-        android:textCursorDrawable="@null"
-        android:textColor="@color/default_url_color"
-        android:layout_marginTop="15dp"
-        android:imeOptions="actionSearch"
-        android:hint="@string/url_prompt"
-        android:inputType="textFilter|textNoSuggestions|textUri"
-        android:importantForAutofill="no" />
-  </FrameLayout>
+      android:id="@+id/ibMenu"
+      android:src="@drawable/ic_close_grey_900_36dp"
+      android:nextFocusDown="@+id/vTabs"
+      android:background="@drawable/button_bg_selector"
+      android:layout_margin="5dp"
+      android:focusable="true"
+      android:focusableInTouchMode="true"
+      android:contentDescription="@string/close_application" />
 </merge>
