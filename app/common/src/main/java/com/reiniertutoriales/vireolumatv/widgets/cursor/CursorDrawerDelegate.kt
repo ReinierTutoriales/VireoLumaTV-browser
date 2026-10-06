@@ -36,6 +36,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
     private val paint = Paint()
     private var lastCursorUpdate = System.currentTimeMillis() - CURSOR_DISAPPEAR_TIMEOUT
     private var dpadCenterPressed = false
+    val isSelectionPressed: Boolean get() = dpadCenterPressed
     internal var tmpPointF = PointF()
     var callback: Callback? = null
     var customScrollCallback: CustomScrollCallback? = null

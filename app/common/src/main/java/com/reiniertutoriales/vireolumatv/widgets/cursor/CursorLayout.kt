@@ -44,7 +44,9 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
         },
         motionAxesTranslationEnabled = { !AppContext.provideConfig().disableMotionAxesDpadNavigation },
         isSoftwareKeyboardVisible = {
-            isTextInputActive() || ViewCompat.getRootWindowInsets(rootView)?.isVisible(WindowInsetsCompat.Type.ime()) == true
+            // The click that focuses an editor must still receive its matching release.
+            !cursorDrawerDelegate.isSelectionPressed && (isTextInputActive() ||
+                ViewCompat.getRootWindowInsets(rootView)?.isVisible(WindowInsetsCompat.Type.ime()) == true)
         },
     )
 
