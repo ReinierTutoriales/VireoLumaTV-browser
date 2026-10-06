@@ -32,6 +32,7 @@ class VersionSettingsView @JvmOverloads constructor(
 
     companion object {
         private const val URL_SUPPORT_AUTHOR = "https://donatello.to/truefedex"
+        private const val URL_VIREO_SOURCES = "https://github.com/ReinierTutoriales/VireoLumaTV-browser"
         // Required by the original license for modified binaries: credit the original sources
         private const val URL_TV_BRO_SOURCES = "https://github.com/truefedex/tv-bro"
         private const val URL_LICENSE =
@@ -61,6 +62,11 @@ class VersionSettingsView @JvmOverloads constructor(
 
         val engineVersion = "Engine: " + WebEngineFactory.getWebEngineVersionString()
         vb.tvWebViewVersion.text = engineVersion
+
+        vb.tvProjectCredit.text = context.getString(R.string.vireo_project_credit)
+        vb.tvProjectCredit.setOnClickListener {
+            loadUrl(URL_VIREO_SOURCES)
+        }
 
         vb.tvLink.text = Html.fromHtml("<p>" + context.getString(R.string.based_on_tv_bro_sources,
             "<u>$URL_TV_BRO_SOURCES</u>") + "</p>", Html.FROM_HTML_MODE_LEGACY)

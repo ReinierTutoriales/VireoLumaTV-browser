@@ -20,10 +20,22 @@
         android:text="@string/web_browser_optimized_for_tvs" />
 
     <TextView
-        android:id="@+id/tvLink"
+        android:id="@+id/tvProjectCredit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvDescription"
+        android:layout_marginTop="10dp"
+        android:text="@string/vireo_project_credit"
+        android:background="@drawable/text_link_background_selector"
+        android:focusable="true"
+        android:clickable="true" />
+
+    <TextView
+        android:id="@+id/tvLink"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvProjectCredit"
+        android:layout_marginTop="6dp"
         tools:text="https://test.com"
         android:maxLines="4"
         android:background="@drawable/text_link_background_selector"
