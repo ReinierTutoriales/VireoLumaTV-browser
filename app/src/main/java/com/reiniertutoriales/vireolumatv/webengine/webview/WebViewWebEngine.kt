@@ -16,7 +16,6 @@ import android.webkit.WebView
 import androidx.webkit.WebViewCompat
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
@@ -307,13 +306,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     private fun restoreBrowserControlsAfterFullscreen() {
-        val activity = callback?.getActivity() ?: return
-        activity.window.decorView.post {
-            activity.findViewById<View>(R.id.flWebViewContainer)?.visibility = View.VISIBLE
-            activity.findViewById<View>(R.id.rlActionBar)?.visibility = View.VISIBLE
-            activity.findViewById<View>(R.id.llBottomPanel)?.visibility = View.VISIBLE
-            activity.findViewById<View>(R.id.vActionBar)?.requestFocus()
-        }
+        // The window owner controls chrome visibility, navigation state and focus together.
+        // Never post independent visibility changes that can race a later menu transition.
+        callback?.onRestoreBrowserControlsAfterFullscreen()
     }
 
     private val webViewCallback = object : WebViewEx.Callback {

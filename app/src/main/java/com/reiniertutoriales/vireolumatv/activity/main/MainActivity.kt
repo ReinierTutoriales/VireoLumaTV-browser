@@ -34,7 +34,6 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.view.animation.AccelerateInterpolator
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.animation.DecelerateInterpolator
@@ -51,7 +50,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.AppContext
@@ -172,26 +170,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
         vb.vTabs.listener = tabsListener
 
-        vb.ibAdBlock.setOnClickListener { toggleAdBlockForTab() }
-        vb.ibPopupBlock.setOnClickListener { lifecycleScope.launch(Dispatchers.Main) { showPopupBlockOptions() } }
-        vb.ibHome.setOnClickListener { navigate(settingsModel.homePage) }
-        vb.ibBack.setOnClickListener { navigateBack() }
-        vb.ibForward.setOnClickListener {
-            val tab = tabsModel.currentTab.value ?: return@setOnClickListener
-            if (tab.webEngine.canGoForward()) {
-                tab.webEngine.goForward()
-            }
-        }
-        vb.ibRefresh.setOnClickListener { refresh() }
-        vb.ibCloseTab.setOnClickListener { tabsModel.currentTab.value?.apply { closeTab(this) } }
-
-        vb.vActionBar.callback = this
-
-        vb.llBottomPanel.childs.forEach {
-            it.setOnTouchListener(bottomButtonsOnTouchListener)
-            it.onFocusChangeListener = bottomButtonsFocusListener
-            it.setOnKeyListener(bottomButtonsKeyListener)
-        }
+        configureBrowserControls()
 
         config.userAgentString.subscribe(this.lifecycle, false) {
             for (tab in tabsModel.tabsStates) {
@@ -341,37 +320,45 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         hideMenuOverlay()
     }
 
-    private val bottomButtonsOnTouchListener = View.OnTouchListener{ v, e ->
-        when (e.action) {
-            MotionEvent.ACTION_DOWN -> {
-                return@OnTouchListener true
+    private fun configureBrowserControls() {
+        vb.vActionBar.callback = this
+        // Focusing a command must never remove another row of reachable controls.
+        // Commit the previewed tab before executing a page command, then return to the page.
+        fun pageCommand(button: View, action: () -> Unit) {
+            button.setOnClickListener {
+                hideMenuOverlay()
+                action()
             }
-            MotionEvent.ACTION_UP -> {
-                hideMenuOverlay(false)
-                v.performClick()
-                return@OnTouchListener true
-            }
-            else -> return@OnTouchListener false
         }
-    }
-
-    private val bottomButtonsFocusListener = View.OnFocusChangeListener { view, hasFocus ->
-        if (hasFocus) {
-            hideMenuOverlay(false)
+        pageCommand(vb.ibHome) { navigate(settingsModel.homePage) }
+        pageCommand(vb.ibBack) { navigateBack() }
+        pageCommand(vb.ibForward) {
+            tabsModel.currentTab.value?.webEngine?.let { if (it.canGoForward()) it.goForward() }
         }
-    }
-
-    private val bottomButtonsKeyListener = View.OnKeyListener { view, i, keyEvent ->
-        when (keyEvent.keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                if (keyEvent.action == KeyEvent.ACTION_UP) {
-                    hideBottomPanel()
-                    tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
+        pageCommand(vb.ibRefresh) { refresh() }
+        pageCommand(vb.ibCloseTab) { closeTab(tabsModel.currentTab.value) }
+        vb.ibAdBlock.setOnClickListener { syncTabWithTitles(); toggleAdBlockForTab() }
+        vb.ibPopupBlock.setOnClickListener {
+            syncTabWithTitles()
+            lifecycleScope.launch(Dispatchers.Main) { showPopupBlockOptions() }
+        }
+        vb.llBottomPanel.childs.forEach { button ->
+            button.setOnKeyListener { _, _, event ->
+                when (event.keyCode) {
+                    KeyEvent.KEYCODE_DPAD_UP -> {
+                        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                            vb.vTabs.focusCurrentTab()
+                        }
+                        true
+                    }
+                    KeyEvent.KEYCODE_DPAD_DOWN -> {
+                        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) hideMenuOverlay()
+                        true
+                    }
+                    else -> false
                 }
-                return@OnKeyListener true
             }
         }
-        false
     }
 
     private fun tabByTitleIndex(index: Int) =
@@ -382,7 +369,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     override fun onExtendedAddressBarMode() {
-        vb.llBottomPanel.visibility = View.INVISIBLE
+        hideBottomPanel()
+    }
+
+    override fun onAddressInputCancelled() {
+        if (thumbnailOverlayVisible) {
+            vb.llBottomPanel.visibility = View.VISIBLE
+            vb.llBottomPanel.alpha = 1f
+            vb.llBottomPanel.translationY = 0f
+        }
     }
 
     override fun onUrlInputDone() {
@@ -857,7 +852,11 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     fun toggleMenu() {
-        if (vb.rlActionBar.isInvisible) {
+        if (isFullscreen) {
+            tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
+            return
+        }
+        if (!thumbnailOverlayVisible) {
             showMenuOverlay()
         } else {
             hideMenuOverlay()
@@ -885,7 +884,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             override fun dispatchKeyEvent(event: KeyEvent): Boolean {
                 //Log.d(TAG, "dispatchKeyEvent event: $event")
                 UserActivation.onKeyEvent(event)
-                backNavigationEventsAdapter.dispatchKeyEvent(event)
+                if (backNavigationEventsAdapter.dispatchKeyEvent(event)) return true
 
                 val keyCode = if (event.keyCode != 0) event.keyCode else event.scanCode
                 val keyCodeBackNavigation = keyCode == KeyEvent.KEYCODE_ESCAPE ||
@@ -948,27 +947,27 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun handleBackNavigation() {
-        Log.d(TAG, "handleBackNavigation")
-        if (tabsModel.currentTab.value?.webEngine?.isVirtualCursorMode() == false) {
-            tabsModel.currentTab.value?.webEngine?.setVirtualCursorMode(true)
-            backNavigationEventsAdapter.gameControllersLongPressBForBackNavigation = false
-            return
-        }
-
-        if (vb.vCursorMenu.isVisible) {
-            vb.vCursorMenu.close(CursorMenuView.CloseAnimation.ROTATE_OUT)
-        } else if (vb.flWebViewContainer.cursorDrawerDelegate.canHandleBackNavigation()) {
-            vb.flWebViewContainer.cursorDrawerDelegate.handleBackNavigation()
-        } else if (isFullscreen) {
-            tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
-        } else if (vb.llBottomPanel.isVisible && !vb.rlActionBar.isVisible) {
-            hideBottomPanel()
-        } else {
-            toggleMenu()
+        // Unwind the active interaction before changing the browser's input mode.
+        when {
+            vb.vCursorMenu.isVisible -> vb.vCursorMenu.close(CursorMenuView.CloseAnimation.ROTATE_OUT)
+            isFullscreen -> tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
+            vb.vActionBar.isEditingAddress -> vb.vActionBar.cancelAddressInput()
+            thumbnailOverlayVisible -> hideMenuOverlay()
+            vb.flWebViewContainer.cursorDrawerDelegate.canHandleBackNavigation() ->
+                vb.flWebViewContainer.cursorDrawerDelegate.handleBackNavigation()
+            else -> {
+                tabsModel.currentTab.value?.webEngine?.setVirtualCursorMode(true)
+                backNavigationEventsAdapter.gameControllersLongPressBForBackNavigation = false
+                showMenuOverlay()
+            }
         }
     }
 
     private fun showMenuOverlay() {
+        if (isFullscreen) {
+            tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
+            return
+        }
         if (thumbnailOverlayVisible) return
         thumbnailOverlayVisible = true
         thumbnailGeneration++
@@ -994,14 +993,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 .setInterpolator(DecelerateInterpolator())
                 .translationY(0f)
                 .alpha(1f)
-                .withEndAction {
-                    vb.vActionBar.catchFocus()
-                }
                 .start()
 
         vb.vActionBar.dismissExtendedAddressBarMode()
 
         vb.rlActionBar.visibility = View.VISIBLE
+        // Focus is part of the transition, not an animation completion callback.
+        if (!vb.ibBack.requestFocus()) vb.ibHome.requestFocus()
         vb.rlActionBar.translationY = -vb.rlActionBar.height.toFloat()
         vb.rlActionBar.alpha = 0f
         vb.rlActionBar.animate()
@@ -1042,55 +1040,28 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun hideMenuOverlay(hideBottomButtons: Boolean = true) {
-        if (!thumbnailOverlayVisible) {
-            if (hideBottomButtons) {
-                hideBottomPanel()
-                if (!vb.vCursorMenu.isVisible) {
-                    vb.flWebViewContainer.visibility = View.VISIBLE
-                    tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
-                }
-            }
-            return
-        }
+        val wasVisible = thumbnailOverlayVisible
         thumbnailOverlayVisible = false
         thumbnailGeneration++
         uiHandler.removeCallbacks(displayThumbnailRunnable)
         displayThumbnailRunnable.tabState = null
+        vb.vActionBar.dismissExtendedAddressBarMode()
         vb.rlActionBar.animate().cancel()
         vb.ivMiniatures.animate().cancel()
-        syncTabWithTitles()
-        vb.flWebViewContainer.visibility = View.VISIBLE
-        if (hideBottomButtons) {
-            tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
-            hideBottomPanel()
+        // Hidden chrome stops owning focus/input immediately, even after a cancelled animation.
+        vb.rlActionBar.visibility = View.INVISIBLE
+        vb.rlActionBar.translationY = 0f
+        vb.rlActionBar.alpha = 1f
+        vb.ivMiniatures.visibility = View.INVISIBLE
+        vb.ivMiniatures.translationY = 0f
+        vb.ivMiniatures.setImageResource(0)
+        vb.llMiniaturePlaceholder.visibility = View.INVISIBLE
+        if (hideBottomButtons) hideBottomPanel()
+        if (wasVisible) syncTabWithTitles()
+        if (!vb.vCursorMenu.isVisible) {
+            vb.flWebViewContainer.visibility = View.VISIBLE
+            if (hideBottomButtons) tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
         }
-
-        vb.rlActionBar.animate()
-                .translationY(-vb.rlActionBar.height.toFloat())
-                .alpha(0f)
-                .setDuration(220)
-                .setInterpolator(DecelerateInterpolator())
-                .withEndAction {
-                    vb.rlActionBar.visibility = View.INVISIBLE
-                }
-                .start()
-
-        if (vb.llMiniaturePlaceholder.visibility == View.VISIBLE) {
-            vb.llMiniaturePlaceholder.visibility = View.INVISIBLE
-            vb.ivMiniatures.visibility = View.VISIBLE
-        }
-
-        vb.ivMiniatures.translationY = vb.rlActionBar.height.toFloat()
-        vb.ivMiniatures.animate()
-                .translationY(0f)
-                .setDuration(220)
-                .setInterpolator(DecelerateInterpolator())
-                .withEndAction {
-                    vb.ivMiniatures.visibility = View.INVISIBLE
-                    vb.rlActionBar.visibility = View.INVISIBLE
-                    vb.ivMiniatures.setImageResource(0)
-                }
-                .start()
     }
 
     private fun syncTabWithTitles() {
@@ -1106,17 +1077,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun hideBottomPanel() {
-        if (vb.llBottomPanel.visibility != View.VISIBLE) return
         vb.llBottomPanel.animate().cancel()
-        vb.llBottomPanel.animate()
-                .setDuration(220)
-                .setInterpolator(AccelerateInterpolator())
-                .translationY(vb.llBottomPanel.height.toFloat())
-                .withEndAction {
-                    vb.llBottomPanel.translationY = 0f
-                    vb.llBottomPanel.visibility = View.INVISIBLE
-                }
-                .start()
+        vb.llBottomPanel.visibility = View.INVISIBLE
+        vb.llBottomPanel.translationY = 0f
+        vb.llBottomPanel.alpha = 1f
     }
 
     private fun onDownloadStarted(fileName: String) {
@@ -1503,6 +1467,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             window.decorView.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             isFullscreen = false
+        }
+
+        override fun onRestoreBrowserControlsAfterFullscreen() {
+            if (tabsModel.currentTab.value === tab && !isFinishing && !isDestroyed) showMenuOverlay()
         }
 
         override fun onVisited(url: String) {
