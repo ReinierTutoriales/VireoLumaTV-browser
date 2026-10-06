@@ -3,6 +3,8 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
+import android.view.MotionEvent
+import android.widget.ImageView
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -44,6 +46,7 @@ class BrowserNavigationTest {
         var hideFullscreen: (() -> Unit)? = null
         var wentBack = 0
         var refreshed = 0
+        var thumbnailRenders = 0
         var loadedUrl: String? = null
         val thumbnail = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
         val engine = Proxy.newProxyInstance(WebEngine::class.java.classLoader,
@@ -57,7 +60,7 @@ class BrowserNavigationTest {
                 "goBack" -> { wentBack++; null }
                 "reload" -> { refreshed++; null }
                 "loadUrl" -> { loadedUrl = args!![0] as String; null }
-                "renderThumbnail" -> thumbnail
+                "renderThumbnail" -> { thumbnailRenders++; thumbnail }
                 else -> null
             }
         } as WebEngine
@@ -118,6 +121,38 @@ class BrowserNavigationTest {
         f.key(f.vb.ibRefresh, KeyEvent.KEYCODE_DPAD_DOWN)
         assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
         assertEquals(View.INVISIBLE, f.vb.llBottomPanel.visibility)
+        assertTrue(f.page.hasFocus())
+    }
+
+    @Test fun activePageStaysSharpAndFirstTouchReachesTheRealPage() = Fixture().use { f ->
+        var clicks = 0
+        f.page.setOnClickListener { clicks++ }
+        f.call("showMenuOverlay")
+        assertEquals(View.VISIBLE, f.vb.flWebViewContainer.visibility)
+        assertEquals(View.INVISIBLE, f.vb.ivMiniatures.visibility)
+        assertTrue(f.vb.flWebViewContainer.cursorSuppressed)
+        assertEquals("Opening controls must not allocate an active-page screenshot", 0, f.thumbnailRenders)
+        assertEquals(ImageView.ScaleType.CENTER_INSIDE, f.vb.ivMiniatures.scaleType)
+        // A page click also exits native address editing without leaving its keyboard/draft behind.
+        f.vb.vActionBar.callback = f.activity
+        f.vb.vActionBar.setAddressBoxText(f.tab.url)
+        val address = f.vb.vActionBar.findViewById<EditText>(R.id.etUrl)
+        address.requestFocus()
+        address.setText("unfinished address draft")
+        assertTrue(f.vb.vActionBar.isEditingAddress)
+        val now = android.os.SystemClock.uptimeMillis()
+        for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
+            val event = MotionEvent.obtain(now, now, action, 640f, 360f, 0)
+            f.vb.flWebViewContainer.dispatchTouchEvent(event)
+            event.recycle()
+        }
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+        assertEquals("The click that resumes the page must reach its search field", 1, clicks)
+        assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
+        assertFalse(f.vb.flWebViewContainer.cursorSuppressed)
+        assertNull(f.vb.flWebViewContainer.onPageTouch)
+        assertFalse(f.vb.vActionBar.isEditingAddress)
+        assertEquals(f.tab.url, address.text.toString())
         assertTrue(f.page.hasFocus())
     }
 
