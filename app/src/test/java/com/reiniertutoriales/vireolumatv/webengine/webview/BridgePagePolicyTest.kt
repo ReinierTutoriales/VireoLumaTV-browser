@@ -12,6 +12,16 @@ import org.robolectric.annotation.Config as RoboConfig
 @RunWith(RobolectricTestRunner::class)
 @RoboConfig(application = Application::class, sdk = [28])
 class BridgePagePolicyTest {
+    @Test fun staticHomeIsIsolatedWithoutExcludingYouTubeOrOtherWebPages() {
+        assertTrue(BridgePagePolicy.isPackagedHomePage(Uri.parse(Config.HOME_PAGE_URL)))
+        assertTrue(BridgePagePolicy.isPackagedHomePage(Uri.parse(Config.HOME_PAGE_URL + "index.html")))
+        listOf("https://www.youtube.com/watch?v=test", "https://m.youtube.com/", "https://duckduckgo.com/?q=test",
+            "https://en.wikipedia.org/", "https://example.com/?url=" + Config.HOME_PAGE_URL,
+            "https://vireolumatv.invalid.evil.example/appcontent/home/").forEach {
+            assertFalse(it, BridgePagePolicy.isPackagedHomePage(Uri.parse(it)))
+        }
+    }
+
     @Test fun downloadedBlobMustComeFromAWebDocumentNotTheSyntheticHomeOrigin() {
         assertTrue(BridgePagePolicy.isNormalWebPage(Uri.parse("https://example.com/page")))
         listOf(Config.HOME_PAGE_URL, Config.HOME_PAGE_URL + "index.html", "about:home", "file:///android_asset/", "http:opaque", "https://", "data:text/html,hello").forEach {

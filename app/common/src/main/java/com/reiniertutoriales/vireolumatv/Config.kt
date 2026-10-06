@@ -47,6 +47,8 @@ class Config(val prefs: SharedPreferences) {
         val SearchEnginesURLs = listOf("https://www.google.com/search?q=[query]", "https://www.bing.com/search?q=[query]",
             "https://search.yahoo.com/search?p=[query]", "https://duckduckgo.com/?q=[query]",
             "https://yandex.com/search/?text=[query]", "https://www.startpage.com/sp/search?query=[query]", "")
+        const val DUCKDUCKGO_SEARCH_URL = "https://duckduckgo.com/?q=[query]"
+        private const val MINIMAL_HOME_SEARCH_MIGRATED = "minimal_home_search_migrated"
         const val HOME_PAGE_URL = "https://vireolumatv.invalid/appcontent/home/"
         //const val HOME_PAGE_URL = "http://10.0.2.2:5000/appcontent/home/"
     }
@@ -154,7 +156,15 @@ class Config(val prefs: SharedPreferences) {
             prefs.edit().putString(HOME_PAGE_KEY, value).apply()
         }
 
-    var searchEngineURL = ObservableStringPreference(SearchEnginesURLs[0], SEARCH_ENGINE_URL_PREF_KEY)
+    var searchEngineURL = ObservableStringPreference(DUCKDUCKGO_SEARCH_URL, SEARCH_ENGINE_URL_PREF_KEY)
+
+    init {
+        // Apply the requested search default once to existing installs, not on every startup.
+        if (!prefs.getBoolean(MINIMAL_HOME_SEARCH_MIGRATED, false)) {
+            searchEngineURL.value = DUCKDUCKGO_SEARCH_URL
+            prefs.edit().putBoolean(MINIMAL_HOME_SEARCH_MIGRATED, true).apply()
+        }
+    }
 
     var allowAutoplayMedia: Boolean
         get() = prefs.getBoolean(ALLOW_AUTOPLAY_MEDIA, false)

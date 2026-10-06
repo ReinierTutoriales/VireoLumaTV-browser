@@ -161,7 +161,7 @@ class BrowserNavigationTest {
         assertTrue(f.page.hasFocus())
     }
 
-    @Test fun cancelSearchRestoresButtonsAndKeyboardSearchLoadsGoogle() = Fixture().use { f ->
+    @Test fun cancelSearchRestoresButtonsAndKeyboardSearchLoadsConfiguredEngine() = Fixture().use { f ->
         f.call("handleBackNavigation")
         val address = f.vb.vActionBar.findViewById<EditText>(R.id.etUrl)
         address.requestFocus()

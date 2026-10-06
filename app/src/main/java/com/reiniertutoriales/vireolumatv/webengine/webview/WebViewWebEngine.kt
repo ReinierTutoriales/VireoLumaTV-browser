@@ -144,11 +144,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         webView?.onUpdateAdblockSetting(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)
         webView?.resumeTimers()
         webView?.onResume()
-        jsInterface.onHomePageLoaded()
     }
 
     override fun onPause() {
-        jsInterface.cancelHomeFavicons()
         webView?.onPause()
         // onPause alone leaves JavaScript timers running. The process keeps one live renderer.
         webView?.pauseTimers()
@@ -204,7 +202,6 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun onDetachFromWindow(completely: Boolean, destroyTab: Boolean) {
-        jsInterface.cancelHomeFavicons()
         Log.i(TAG, "onDetachFromWindow completely=" + completely + " destroyTab=" + destroyTab + " hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
         exitFullscreenView(restoreBrowserControls = false)
         onPause()
@@ -364,7 +361,6 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun onPageStarted(url: String?) {
-            jsInterface.cancelHomeFavicons()
             callback?.onPageStarted(url)
         }
 
@@ -378,7 +374,6 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
         override fun onRenderProcessGone(): Boolean {
             Log.i(TAG, "onRenderProcessGone hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
-            jsInterface.cancelHomeFavicons()
             exitFullscreenView(restoreBrowserControls = false)
             val deadWebView = webView ?: return true
             tab.rendererLost = true
