@@ -852,6 +852,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     fun toggleMenu() {
+        if (isFullscreen) {
+            tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
+            return
+        }
         if (!thumbnailOverlayVisible) {
             showMenuOverlay()
         } else {
@@ -960,6 +964,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun showMenuOverlay() {
+        if (isFullscreen) {
+            tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
+            return
+        }
         if (thumbnailOverlayVisible) return
         thumbnailOverlayVisible = true
         thumbnailGeneration++
@@ -1459,6 +1467,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             window.decorView.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             isFullscreen = false
+        }
+
+        override fun onRestoreBrowserControlsAfterFullscreen() {
+            if (tabsModel.currentTab.value === tab && !isFinishing && !isDestroyed) showMenuOverlay()
         }
 
         override fun onVisited(url: String) {

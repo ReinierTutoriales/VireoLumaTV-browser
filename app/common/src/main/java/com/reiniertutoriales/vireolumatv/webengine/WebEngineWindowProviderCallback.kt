@@ -45,6 +45,8 @@ interface WebEngineWindowProviderCallback {
     fun getHomePageLinks(): List<HomePageLink>
     fun onPrepareForFullscreen()
     fun onExitFullscreen()
+    /** Called after the fullscreen view is removed and page input is restored. */
+    fun onRestoreBrowserControlsAfterFullscreen() {}
     fun onVisited(url: String)
     fun suggestActionsForLink(baseUri: String?, linkUri: String?, srcUri: String?,
                               title: String?, altText: String?, textContent: String?,

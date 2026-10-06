@@ -16,6 +16,8 @@ import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
+import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,6 +41,7 @@ class BrowserNavigationTest {
         val page = View(host.get()).apply { isFocusableInTouchMode = true }
         var virtualCursor = true
         var exitedFullscreen = 0
+        var hideFullscreen: (() -> Unit)? = null
         var wentBack = 0
         var refreshed = 0
         var loadedUrl: String? = null
@@ -50,7 +53,7 @@ class BrowserNavigationTest {
                 "isVirtualCursorMode" -> virtualCursor
                 "setVirtualCursorMode" -> { virtualCursor = args!![0] as Boolean; null }
                 "canGoBack", "canGoForward" -> true
-                "hideFullscreenView" -> { exitedFullscreen++; null }
+                "hideFullscreenView" -> { exitedFullscreen++; hideFullscreen?.invoke(); null }
                 "goBack" -> { wentBack++; null }
                 "reload" -> { refreshed++; null }
                 "loadUrl" -> { loadedUrl = args!![0] as String; null }
@@ -129,17 +132,33 @@ class BrowserNavigationTest {
         assertTrue(f.page.hasFocus())
     }
 
-    @Test fun firstBackExitsFullscreenBeforeEnablingPointerOrOpeningChrome() = Fixture().use { f ->
-        f.set("isFullscreen", true)
+    @Test fun fullscreenExitRestoresOneCoherentMenuAndNextBackReturnsToPage() = Fixture().use { f ->
+        // Exercise the real engine's fullscreen teardown and the real Activity callback together.
+        val callback = Class.forName("com.reiniertutoriales.vireolumatv.activity.main.MainActivity\$WebEngineCallback")
+            .getDeclaredConstructor(MainActivity::class.java, WebTabState::class.java)
+            .apply { isAccessible = true }.newInstance(f.activity, f.tab) as WebEngineWindowProviderCallback
+        val engine = WebViewWebEngine(f.tab).apply { this.callback = callback }
+        WebViewWebEngine::class.java.getDeclaredField("viewParent").apply { isAccessible = true }
+            .set(engine, f.vb.flWebViewContainer)
+        val video = View(f.host.get()).apply { isFocusableInTouchMode = true }
+        WebViewWebEngine::class.java.getDeclaredMethod("enterFullscreenView", View::class.java)
+            .apply { isAccessible = true }.invoke(engine, video)
+        assertFalse(f.vb.flWebViewContainer.cursorEnabled)
+        assertTrue(video.hasFocus())
+        f.hideFullscreen = { engine.hideFullscreenView() }
         f.virtualCursor = false
         f.call("handleBackNavigation")
         assertEquals(1, f.exitedFullscreen)
-        assertFalse("Fullscreen exit belongs to the engine, not an early cursor-mode branch", f.virtualCursor)
-        assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
-        f.set("isFullscreen", false)
-        f.call("handleBackNavigation")
+        assertNull(video.parent)
+        assertTrue(f.vb.flWebViewContainer.cursorEnabled)
+        assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
         assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
-        assertTrue(f.virtualCursor)
+        assertTrue(f.vb.ibBack.hasFocus())
+        f.call("handleBackNavigation")
+        assertEquals("Back must close the existing menu, not reopen bars in an unknown state",
+            View.INVISIBLE, f.vb.rlActionBar.visibility)
+        assertEquals(View.INVISIBLE, f.vb.llBottomPanel.visibility)
+        assertTrue(f.page.hasFocus())
     }
 
     @Test fun cancelSearchRestoresButtonsAndKeyboardSearchLoadsGoogle() = Fixture().use { f ->
