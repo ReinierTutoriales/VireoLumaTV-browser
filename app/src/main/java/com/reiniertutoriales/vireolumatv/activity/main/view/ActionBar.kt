@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.View.OnKeyListener
 import android.view.animation.Animation
@@ -52,15 +53,7 @@ class ActionBar @JvmOverloads constructor(
     }
 
     private val etUrlFocusChangeListener = OnFocusChangeListener { _, focused ->
-        if (focused) {
-            enterExtendedAddressBarMode()
-
-            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
-            imm.showSoftInput(vb.etUrl, InputMethodManager.SHOW_IMPLICIT)
-            removeCallbacks(selectAddressRunnable)
-            postDelayed(selectAddressRunnable, 500) // Let the TV keyboard finish opening.
-        } else {
+        if (!focused) {
             removeCallbacks(selectAddressRunnable)
             if (extendedAddressBarMode) {
                 dismissExtendedAddressBarMode()
@@ -68,6 +61,17 @@ class ActionBar @JvmOverloads constructor(
                 callback?.onAddressInputCancelled()
             }
         }
+    }
+
+    private fun startAddressInput() {
+        if (extendedAddressBarMode) return
+        vb.etUrl.requestFocus()
+        enterExtendedAddressBarMode()
+        vb.etUrl.showSoftInputOnFocus = true
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(vb.etUrl, InputMethodManager.SHOW_IMPLICIT)
+        removeCallbacks(selectAddressRunnable)
+        postDelayed(selectAddressRunnable, 500) // Let the TV keyboard finish opening.
     }
 
     private fun submitAddress() {
@@ -83,10 +87,21 @@ class ActionBar @JvmOverloads constructor(
     }
 
     private val etUrlKeyListener = OnKeyListener { _, _, event ->
-        if (event.keyCode == KeyEvent.KEYCODE_ENTER || event.keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) {
-            if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) submitAddress()
-            true
-        } else false
+        when (event.keyCode) {
+            KeyEvent.KEYCODE_DPAD_RIGHT -> if (!extendedAddressBarMode) {
+                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                    vb.etUrl.focusSearch(View.FOCUS_RIGHT)?.requestFocus()
+                }
+                true
+            } else false
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
+                if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) {
+                    if (extendedAddressBarMode) submitAddress() else startAddressInput()
+                }
+                true
+            }
+            else -> false
+        }
     }
 
     init {
@@ -117,6 +132,9 @@ class ActionBar @JvmOverloads constructor(
         vb.ibIncognito.isChecked = incognitoMode
 
         vb.etUrl.onFocusChangeListener = etUrlFocusChangeListener
+        vb.etUrl.showSoftInputOnFocus = false
+        vb.etUrl.isCursorVisible = false
+        vb.etUrl.setOnClickListener { startAddressInput() }
 
         vb.etUrl.setOnKeyListener(etUrlKeyListener)
         vb.etUrl.setOnEditorActionListener { _, actionId, _ ->
@@ -157,6 +175,7 @@ class ActionBar @JvmOverloads constructor(
     private fun enterExtendedAddressBarMode() {
         if (extendedAddressBarMode) return
         extendedAddressBarMode = true
+        vb.etUrl.isCursorVisible = true
         for (i in 0 until childCount) {
             val child = getChildAt(i)
             if (child is ImageButton) {
@@ -169,6 +188,8 @@ class ActionBar @JvmOverloads constructor(
     fun dismissExtendedAddressBarMode() {
         if (!extendedAddressBarMode) return
         extendedAddressBarMode = false
+        vb.etUrl.showSoftInputOnFocus = false
+        vb.etUrl.isCursorVisible = false
         for (i in 0 until childCount) {
             val child = getChildAt(i)
             if (child is ImageButton) {
