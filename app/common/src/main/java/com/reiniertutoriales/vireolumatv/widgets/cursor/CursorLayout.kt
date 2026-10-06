@@ -26,6 +26,17 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
             if (::cursorDrawerDelegate.isInitialized) cursorDrawerDelegate.resetInput()
             invalidate()
         }
+    // Chrome owns remote input while it overlays the live page. Preserve the user's cursor mode.
+    var cursorSuppressed: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            resetInput()
+            invalidate()
+        }
+    var onPageTouch: (() -> Unit)? = null
+    fun isTextInputActive(): Boolean = findFocus()?.onCheckIsTextEditor() == true
+
     lateinit var cursorDrawerDelegate: CursorDrawerDelegate
     private val inputEventsAdapter = DPADNavigationEventsAdapter(
         onEmulatedKeyEvent = { keyEvent ->
@@ -33,7 +44,7 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
         },
         motionAxesTranslationEnabled = { !AppContext.provideConfig().disableMotionAxesDpadNavigation },
         isSoftwareKeyboardVisible = {
-            ViewCompat.getRootWindowInsets(rootView)?.isVisible(WindowInsetsCompat.Type.ime()) == true
+            isTextInputActive() || ViewCompat.getRootWindowInsets(rootView)?.isVisible(WindowInsetsCompat.Type.ime()) == true
         },
     )
 
@@ -73,9 +84,15 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
         if (::cursorDrawerDelegate.isInitialized) cursorDrawerDelegate.resetInput()
     }
 
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        // Resume the page before forwarding this same DOWN. A search field needs no second click.
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) onPageTouch?.invoke()
+        return super.dispatchTouchEvent(event)
+    }
+
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 
-        if (!cursorEnabled) return super.dispatchKeyEvent(event)
+        if (!cursorEnabled || cursorSuppressed) return super.dispatchKeyEvent(event)
 
         if (inputEventsAdapter.dispatchKeyEvent(event)) {
             return true
@@ -86,7 +103,7 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
 
-        if (!cursorEnabled) return super.dispatchGenericMotionEvent(event)
+        if (!cursorEnabled || cursorSuppressed) return super.dispatchGenericMotionEvent(event)
 
         if (inputEventsAdapter.dispatchGenericMotionEvent(event)) {
             return true
@@ -97,7 +114,7 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
 
     override fun dispatchDraw(canvas: Canvas) {
         super.dispatchDraw(canvas)
-        if (isInEditMode || !cursorEnabled) {
+        if (isInEditMode || !cursorEnabled || cursorSuppressed || isTextInputActive()) {
             return
         }
 

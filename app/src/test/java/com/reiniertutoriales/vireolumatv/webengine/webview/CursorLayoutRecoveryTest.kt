@@ -16,6 +16,33 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class CursorLayoutRecoveryTest {
+    @Test fun focusedTextEditorReceivesEnterAndDpadWithoutImeInsets() {
+        val controller = Robolectric.buildActivity(Activity::class.java).setup()
+        try {
+            val activity = controller.get()
+            val layout = CursorLayout(activity)
+            val keys = mutableListOf<Int>()
+            val editor = object : View(activity) {
+                override fun onCheckIsTextEditor() = true
+                override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+                    keys += keyCode
+                    return true
+                }
+                override fun onKeyUp(keyCode: Int, event: KeyEvent) = true
+            }.apply { isFocusableInTouchMode = true }
+            layout.addView(editor)
+            activity.setContentView(layout)
+            editor.requestFocus()
+            assertTrue(layout.isTextInputActive())
+            for (code in listOf(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_DPAD_LEFT)) {
+                assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code)))
+                assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code)))
+            }
+            assertEquals(listOf(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_DPAD_LEFT), keys)
+            assertTrue("Editing must preserve the cursor mode for after submission", layout.cursorEnabled)
+        } finally { controller.pause().stop().destroy() }
+    }
+
     @Test fun cursorSurvivesDrawingFlagChangesAndResizesWhileDisabled() {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         val activity = controller.get()

@@ -404,6 +404,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
         thumbnailOverlayVisible = false
+        vb.flWebViewContainer.onPageTouch = null
+        vb.flWebViewContainer.cursorSuppressed = false
         thumbnailGeneration++
         uiHandler.removeCallbacks(displayThumbnailRunnable)
         displayThumbnailRunnable.tabState = null
@@ -925,6 +927,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private fun browserOwnsCursorInput(): Boolean =
         ::vb.isInitialized && window.decorView.hasWindowFocus() &&
             vb.flWebViewContainer.isShown && vb.flWebViewContainer.cursorEnabled &&
+            !vb.flWebViewContainer.cursorSuppressed && !vb.flWebViewContainer.isTextInputActive() &&
             !vb.vCursorMenu.isVisible && !vb.rlActionBar.isVisible && !vb.llBottomPanel.isVisible &&
             ViewCompat.getRootWindowInsets(window.decorView)?.isVisible(WindowInsetsCompat.Type.ime()) != true
 
@@ -974,17 +977,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.llBottomPanel.animate().cancel()
         vb.rlActionBar.animate().cancel()
         vb.ivMiniatures.animate().cancel()
-        vb.ivMiniatures.visibility = View.VISIBLE
+        vb.ivMiniatures.visibility = View.INVISIBLE
+        vb.ivMiniatures.setImageResource(0)
         vb.llBottomPanel.visibility = View.VISIBLE
-        vb.flWebViewContainer.resetInput()
-        vb.flWebViewContainer.visibility = View.INVISIBLE
-        val currentTab = tabsModel.currentTab.value
-        if (currentTab != null) {
-            lifecycleScope.launch {
-                currentTab.thumbnail = currentTab.webEngine.renderThumbnail(currentTab.thumbnail)
-                displayThumbnail(currentTab)
-            }
-        }
+        vb.flWebViewContainer.cursorSuppressed = true
+        vb.flWebViewContainer.onPageTouch = { hideMenuOverlay() }
+        val previewTab = tabByTitleIndex(vb.vTabs.current)
+        vb.flWebViewContainer.visibility = if (previewTab != null && previewTab === tabsModel.currentTab.value)
+            View.VISIBLE else View.INVISIBLE
+        lifecycleScope.launch { displayThumbnail(previewTab) }
 
         vb.llBottomPanel.translationY = vb.llBottomPanel.height.toFloat()
         vb.llBottomPanel.alpha = 0f
@@ -1009,17 +1010,21 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 .setInterpolator(DecelerateInterpolator())
                 .start()
 
-        vb.ivMiniatures.layoutParams = vb.ivMiniatures.layoutParams.apply { this.height = vb.flWebViewContainer.height }
-        vb.ivMiniatures.translationY = 0f
-        vb.ivMiniatures.animate()
-                .translationY(vb.rlActionBar.height.toFloat())
-                .setDuration(220)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
+
     }
 
     private suspend fun displayThumbnail(currentTab: WebTabState?) {
-        if (!thumbnailOverlayVisible) return
+        if (!thumbnailOverlayVisible || tabByTitleIndex(vb.vTabs.current) !== currentTab) return
+        if (currentTab === tabsModel.currentTab.value && currentTab != null) {
+            // Keep the sole live WebView at native resolution; never stretch a tiny screenshot.
+            thumbnailGeneration++
+            vb.ivMiniatures.setImageResource(0)
+            vb.ivMiniatures.visibility = View.INVISIBLE
+            vb.llMiniaturePlaceholder.visibility = View.INVISIBLE
+            vb.flWebViewContainer.visibility = View.VISIBLE
+            return
+        }
+        vb.flWebViewContainer.visibility = View.INVISIBLE
         if (currentTab == null) {
             vb.llMiniaturePlaceholder.visibility = View.VISIBLE
             vb.ivMiniatures.setImageResource(0)
@@ -1042,6 +1047,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private fun hideMenuOverlay(hideBottomButtons: Boolean = true) {
         val wasVisible = thumbnailOverlayVisible
         thumbnailOverlayVisible = false
+        vb.flWebViewContainer.onPageTouch = null
+        vb.flWebViewContainer.cursorSuppressed = false
         thumbnailGeneration++
         uiHandler.removeCallbacks(displayThumbnailRunnable)
         displayThumbnailRunnable.tabState = null

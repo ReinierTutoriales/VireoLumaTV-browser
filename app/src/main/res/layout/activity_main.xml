@@ -53,7 +53,10 @@
         android:id="@+id/ivMiniatures"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitXY"
+        android:scaleType="centerInside"
+        android:layout_below="@id/rlActionBar"
+        android:layout_above="@id/llBottomPanel"
+        android:background="@color/top_bar_background"
         tools:ignore="ContentDescription" />
 
     <LinearLayout
