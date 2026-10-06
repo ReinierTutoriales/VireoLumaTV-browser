@@ -124,6 +124,24 @@ class BrowserNavigationTest {
         assertTrue(f.page.hasFocus())
     }
 
+    @Test fun tabsLeadToSearchAndExitingAddressDoesNotFocusCloseApp() = Fixture().use { f ->
+        val bar = f.vb.vActionBar
+        val address = bar.findViewById<EditText>(R.id.etUrl)
+        val close = bar.findViewById<View>(R.id.ibMenu)
+        assertEquals(R.id.flUrl, bar.getChildAt(0).id)
+        assertEquals(R.id.ibMenu, bar.getChildAt(bar.childCount - 1).id)
+        assertEquals(R.id.etUrl, f.vb.vTabs.nextFocusUpId)
+        f.call("handleBackNavigation")
+        f.vb.vTabs.requestFocus()
+        assertEquals(address, f.vb.vTabs.focusSearch(View.FOCUS_UP))
+        address.requestFocus()
+        f.call("handleBackNavigation")
+        assertFalse(bar.isEditingAddress)
+        assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
+        assertFalse(close.hasFocus())
+        assertTrue(bar.findViewById<View>(R.id.ibHistory).hasFocus())
+    }
+
     @Test fun activePageStaysSharpAndFirstTouchReachesTheRealPage() = Fixture().use { f ->
         var clicks = 0
         f.page.setOnClickListener { clicks++ }

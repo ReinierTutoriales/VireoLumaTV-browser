@@ -44,7 +44,7 @@
             android:layout_below="@+id/vActionBar"
             android:layout_marginTop="10dp"
             android:focusable="true"
-            android:nextFocusUp="@+id/ibMenu"
+            android:nextFocusUp="@+id/etUrl"
             android:nextFocusDown="@+id/ibCloseTab"
             />
     </RelativeLayout>
