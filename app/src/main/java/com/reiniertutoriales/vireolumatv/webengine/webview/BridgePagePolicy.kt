@@ -4,6 +4,9 @@ import android.net.Uri
 import com.reiniertutoriales.vireolumatv.Config
 
 internal object BridgePagePolicy {
+    fun isPackagedHomePage(uri: Uri?): Boolean =
+        uri?.toString()?.startsWith(Config.HOME_PAGE_URL) == true
+
     fun isNormalWebPage(uri: Uri?): Boolean {
         val scheme = uri?.scheme ?: return false
         return (scheme.equals("http", true) || scheme.equals("https", true)) &&

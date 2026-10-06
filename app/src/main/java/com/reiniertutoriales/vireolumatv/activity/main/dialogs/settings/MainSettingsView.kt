@@ -329,16 +329,10 @@ class MainSettingsView @JvmOverloads constructor(
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 val homePageMode = Config.HomePageMode.entries[position]
                 vb.llCustomHomePage.visibility = if (homePageMode == Config.HomePageMode.CUSTOM) View.VISIBLE else View.GONE
-                vb.llHomePageLinksMode.visibility = if (homePageMode == Config.HomePageMode.HOME_PAGE) View.VISIBLE else View.GONE
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
-
-        val homePageLinksSpinnerAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, context.resources.getStringArray(R.array.home_page_links_modes))
-        homePageLinksSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        vb.spHomePageLinks.adapter = homePageLinksSpinnerAdapter
-        vb.spHomePageLinks.setSelection(settingsModel.homePageLinksMode.ordinal)
 
         vb.etCustomHomePageUrl.setText(settingsModel.homePage)
     }
@@ -349,7 +343,7 @@ class MainSettingsView @JvmOverloads constructor(
 
         val homePageMode = Config.HomePageMode.entries[vb.spHomePage.selectedItemPosition]
         val customHomePageURL = vb.etCustomHomePageUrl.text.toString()
-        val homePageLinksMode = Config.HomePageLinksMode.entries[vb.spHomePageLinks.selectedItemPosition]
+        val homePageLinksMode = settingsModel.homePageLinksMode
         settingsModel.setHomePageProperties(homePageMode, customHomePageURL, homePageLinksMode)
 
         val userAgent = vb.etUAString.text.toString().trim(' ')

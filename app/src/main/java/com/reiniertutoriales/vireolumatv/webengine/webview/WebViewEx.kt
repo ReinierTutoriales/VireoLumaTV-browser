@@ -487,7 +487,10 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 super.onPageFinished(view, url)
                 Log.d(TAG, "onPageFinished url: $url")
                 callback.onPageFinished(url)
-                evaluateJavascript(getGenericJSInjects(), null)
+                // The static start page needs no media/link scripts; external pages retain them.
+                if (!BridgePagePolicy.isPackagedHomePage(currentOriginalUrl)) {
+                    evaluateJavascript(getGenericJSInjects(), null)
+                }
                 youtubeAdblock.onPage(url)
             }
 
