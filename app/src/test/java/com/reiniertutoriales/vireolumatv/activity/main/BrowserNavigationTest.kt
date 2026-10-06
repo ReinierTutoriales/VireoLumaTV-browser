@@ -133,6 +133,13 @@ class BrowserNavigationTest {
         assertTrue(f.vb.flWebViewContainer.cursorSuppressed)
         assertEquals("Opening controls must not allocate an active-page screenshot", 0, f.thumbnailRenders)
         assertEquals(ImageView.ScaleType.CENTER_INSIDE, f.vb.ivMiniatures.scaleType)
+        // A page click also exits native address editing without leaving its keyboard/draft behind.
+        f.vb.vActionBar.callback = f.activity
+        f.vb.vActionBar.setAddressBoxText(f.tab.url)
+        val address = f.vb.vActionBar.findViewById<EditText>(R.id.etUrl)
+        address.requestFocus()
+        address.setText("unfinished address draft")
+        assertTrue(f.vb.vActionBar.isEditingAddress)
         val now = android.os.SystemClock.uptimeMillis()
         for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
             val event = MotionEvent.obtain(now, now, action, 640f, 360f, 0)
@@ -144,6 +151,8 @@ class BrowserNavigationTest {
         assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
         assertFalse(f.vb.flWebViewContainer.cursorSuppressed)
         assertNull(f.vb.flWebViewContainer.onPageTouch)
+        assertFalse(f.vb.vActionBar.isEditingAddress)
+        assertEquals(f.tab.url, address.text.toString())
         assertTrue(f.page.hasFocus())
     }
 

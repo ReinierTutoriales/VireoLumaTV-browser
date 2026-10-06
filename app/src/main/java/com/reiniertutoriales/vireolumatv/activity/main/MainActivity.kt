@@ -981,7 +981,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.ivMiniatures.setImageResource(0)
         vb.llBottomPanel.visibility = View.VISIBLE
         vb.flWebViewContainer.cursorSuppressed = true
-        vb.flWebViewContainer.onPageTouch = { hideMenuOverlay() }
+        vb.flWebViewContainer.onPageTouch = {
+            if (vb.vActionBar.isEditingAddress) vb.vActionBar.cancelAddressInput()
+            hideMenuOverlay()
+        }
         val previewTab = tabByTitleIndex(vb.vTabs.current)
         vb.flWebViewContainer.visibility = if (previewTab != null && previewTab === tabsModel.currentTab.value)
             View.VISIBLE else View.INVISIBLE
