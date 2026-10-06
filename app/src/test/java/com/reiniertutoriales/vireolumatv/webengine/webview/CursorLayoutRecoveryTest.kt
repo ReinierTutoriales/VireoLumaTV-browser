@@ -32,11 +32,14 @@ class CursorLayoutRecoveryTest {
             }.apply { isFocusableInTouchMode = true }
             layout.addView(editor)
             activity.setContentView(layout)
-            editor.requestFocus()
+            layout.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
+            layout.layout(0, 0, 800, 600)
+            assertTrue(editor.requestFocus())
             assertTrue(layout.isTextInputActive())
             for (code in listOf(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_DPAD_LEFT)) {
-                assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code)))
-                assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code)))
+                assertTrue("Text editor must receive DOWN for $code", layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code)))
+                assertTrue("Text editor must receive UP for $code", layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code)))
             }
             assertEquals(listOf(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_DPAD_LEFT), keys)
             assertTrue("Editing must preserve the cursor mode for after submission", layout.cursorEnabled)
