@@ -1,4 +1,7 @@
 <resources>
+    <string name="vireo_project_credit">VireoLumaTV de ReinierTutoriales · Código fuente</string>
+    <string name="based_on_tv_bro_sources">Basado en el código fuente de TV Bro: %s</string>
+    <string name="support_original_author">☕ Apoyar a Fedir Tsapana (autor original de TV Bro)</string>
     <string name="adblock_updating">Actualizando listas…</string>
     <string name="adblock_updated">Listas actualizadas</string>
     <string name="adblock_partial_update">Actualización parcial; se conservan las reglas guardadas. Reintento en 24 horas.</string>
