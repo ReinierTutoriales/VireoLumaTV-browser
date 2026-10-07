@@ -20,6 +20,7 @@ import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,6 +36,7 @@ class AdblockModel @JvmOverloads constructor(
         const val TAG: String = "AdblockModel"
 
         const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 7 //7 days
+        internal const val FOREGROUND_CHECK_INTERVAL_MS = 15 * 60_000L
         private const val PARTIAL_UPDATE_RETRY_MINUTES = 60 * 24 //1 day
         private const val EASY_PRIVACY_URL = "https://easylist.to/easylist/easyprivacy.txt"
         private const val EASY_LIST_SPANISH_URL = "https://easylist-downloads.adblockplus.org/easylistspanish.txt"
@@ -89,6 +91,24 @@ class AdblockModel @JvmOverloads constructor(
             config.adBlockListURL.subscribe(sourceObserver, notifyOnSubscribe = false)
             loadAdBlockList(false)
         }
+    }
+
+    private var automaticUpdates: Job? = null
+
+    // Only check deadlines while the browser is resumed; a check is not a forced download.
+    fun startAutomaticUpdates(): Job {
+        automaticUpdates?.takeIf { it.isActive }?.let { return it }
+        return modelScope.launch {
+            while (isActive) {
+                loadAdBlockList(false).join()
+                delay(FOREGROUND_CHECK_INTERVAL_MS)
+            }
+        }.also { automaticUpdates = it }
+    }
+
+    fun stopAutomaticUpdates() {
+        automaticUpdates?.cancel()
+        automaticUpdates = null
     }
 
     private var updateJob: Job? = null
@@ -351,6 +371,7 @@ class AdblockModel @JvmOverloads constructor(
     }
 
     override fun onClear() {
+        stopAutomaticUpdates()
         config.adBlockListURL.unsubscribe(sourceObserver)
         installedClient = null
         super.onClear()
