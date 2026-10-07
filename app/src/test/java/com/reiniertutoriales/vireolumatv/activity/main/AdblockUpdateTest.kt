@@ -65,6 +65,8 @@ class AdblockUpdateTest {
             shadowOf(Looper.getMainLooper()).idle()
             assertTrue("Download must start", entered.await(5, TimeUnit.SECONDS))
             assertTrue("Cached blocker must be installed before the response arrives", blocks("old-ads.test"))
+            assertSame("Concurrent automatic checks share the download", job, model.loadAdBlockList(false))
+            assertSame("A manual request during an actual refresh shares the download", job, model.loadAdBlockList(true))
             release.countDown()
             finish(job)
             assertTrue(blocks("new-ads.test"))
