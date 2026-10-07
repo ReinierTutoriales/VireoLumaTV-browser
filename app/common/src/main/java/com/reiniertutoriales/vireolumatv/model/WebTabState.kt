@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -163,28 +164,24 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
 
     fun restoreWebView(): Boolean {
         if (rendererLost) return false
-        var state = savedState
-        val stateFileName = wvStateFileName
-        if (state != null) {
-            webEngine.restoreState(state)
-            return true
-        } else if (stateFileName != null) {
-            if (stateFileName.startsWith(GECKO_SESSION_STATE_HASH_PREFIX)) {
-                return false
-            }
-            try {
+        return try {
+            var state = savedState
+            if (state == null) {
+                val stateFileName = wvStateFileName ?: return false
+                if (stateFileName.startsWith(GECKO_SESSION_STATE_HASH_PREFIX)) return false
                 val stateBytes = File(getWVStatePath(stateFileName)).readBytes()
-                state = webEngine.stateFromBytes(stateBytes)
-                if (state == null) return false
-                this.savedState = state
-                webEngine.restoreState(state)
-                return true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return false
+                state = webEngine.stateFromBytes(stateBytes) ?: return false
             }
+            val restored = webEngine.restoreState(state)
+            // Keep a usable snapshot only after the engine accepts it. Persisted files are
+            // preserved until the normal atomic save replaces them; failure loads the saved URL.
+            savedState = if (restored) state else null
+            restored
+        } catch (e: Exception) {
+            savedState = null
+            Log.w(TAG, "Could not restore tab state; loading saved URL", e)
+            false
         }
-        return false
     }
 
     fun saveWebViewStateToFile() {

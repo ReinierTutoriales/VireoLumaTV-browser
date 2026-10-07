@@ -3,6 +3,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
+import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.Utils
@@ -15,6 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.io.File
 import java.lang.reflect.Proxy
@@ -87,6 +89,28 @@ class TabRestoreFallbackTest {
         val tab = tabWithEngine(engine).apply { savedState = "invalid legacy payload" }
         assertFalse(tab.restoreWebView())
         assertEquals("https://saved.test/page", tab.url)
+    }
+
+    @Test fun realEngineRestoresValidHistoryAndRejectsEmptyBundle() {
+        val app = RuntimeEnvironment.getApplication()
+        val engine = WebViewWebEngine(WebTabState())
+        val tab = tabWithEngine(engine)
+        try {
+            val live = engine.getOrCreateView(app) as WebView
+            engine.loadUrl("https://saved.test/first")
+            shadowOf(live).pushEntryToHistory("https://saved.test/first")
+            engine.loadUrl("https://saved.test/second")
+            shadowOf(live).pushEntryToHistory("https://saved.test/second")
+            tab.savedState = requireNotNull(engine.saveState())
+            engine.onDetachFromWindow(completely = true, destroyTab = false)
+            engine.getOrCreateView(app)
+            assertTrue(tab.restoreWebView())
+            assertEquals("https://saved.test/second", engine.url)
+            assertTrue(engine.canGoBack())
+            tab.savedState = Bundle()
+            assertFalse(tab.restoreWebView())
+            assertNull(tab.savedState)
+        } finally { engine.onDetachFromWindow(completely = true, destroyTab = true) }
     }
 
     @Test fun engineWithoutLiveViewDoesNotManufactureSavedState() {

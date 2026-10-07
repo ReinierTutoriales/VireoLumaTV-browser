@@ -52,18 +52,14 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
             }
         }
 
-    override fun saveState(): Any {
+    override fun saveState(): Any? {
         val bundle = Bundle()
-        webView?.saveState(bundle)
-        return bundle
+        return if (webView?.saveState(bundle) != null) bundle else null
     }
 
-    override fun restoreState(savedInstanceState: Any) {
-        if (savedInstanceState is Bundle) {
-            webView?.restoreState(savedInstanceState)
-        } else {
-            throw IllegalArgumentException("savedInstanceState must be Bundle")
-        }
+    override fun restoreState(savedInstanceState: Any): Boolean {
+        require(savedInstanceState is Bundle) { "savedInstanceState must be Bundle" }
+        return webView?.restoreState(savedInstanceState) != null
     }
 
     override fun stateFromBytes(bytes: ByteArray): Any? =
