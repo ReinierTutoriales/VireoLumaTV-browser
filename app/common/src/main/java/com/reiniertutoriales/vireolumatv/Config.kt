@@ -119,7 +119,7 @@ class Config(val prefs: SharedPreferences) {
         }
 
     var theme = object : ObservableValue<Theme>(Theme.SYSTEM) {
-        override var value: Theme = Theme.entries[prefs.getInt(THEME_KEY, 0)]
+        override var value: Theme = Theme.entries.getOrNull(prefs.getInt(THEME_KEY, 0)) ?: Theme.SYSTEM
             set(value) {
                 prefs.edit().putInt(THEME_KEY, value.ordinal).apply()
                 field = value
