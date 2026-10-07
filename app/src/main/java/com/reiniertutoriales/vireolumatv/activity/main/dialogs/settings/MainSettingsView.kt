@@ -265,11 +265,17 @@ class MainSettingsView @JvmOverloads constructor(
         }
         vb.spTitles.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                if (position == settingsModel.userAgentStringTitles.size - 1 && vb.llUAString.visibility == View.GONE) {
-                    vb.llUAString.visibility = View.VISIBLE
-                    vb.llUAString.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_in))
-                    vb.etUAString.requestFocus()
+                if (position == settingsModel.userAgentStringTitles.size - 1) {
+                    if (vb.llUAString.visibility == View.GONE) {
+                        vb.llUAString.visibility = View.VISIBLE
+                        vb.llUAString.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_in))
+                        vb.etUAString.setText(config.userAgentString.value.orEmpty())
+                        vb.etUAString.requestFocus()
+                    }
+                    // Initial/repeated selection must not erase a saved or in-progress custom value.
+                    return
                 }
+                vb.llUAString.visibility = View.GONE
                 vb.etUAString.setText(settingsModel.uaStrings[position])
             }
 
