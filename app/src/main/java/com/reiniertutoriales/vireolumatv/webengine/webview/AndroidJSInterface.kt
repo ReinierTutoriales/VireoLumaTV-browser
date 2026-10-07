@@ -34,6 +34,13 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     private val blobDownloadLock = Any()
     private var pendingBlobDownload: PendingBlobDownload? = null
 
+    /** Site element hiding CSS; only plain selectors from the installed filter lists. */
+    @JavascriptInterface
+    fun cosmeticCss(host: String?): String {
+        if (host.isNullOrEmpty() || host.length > 253) return ""
+        return webEngine.cosmeticCss(host)
+    }
+
     @JavascriptInterface
     fun currentUrl(): String {
         if (!isInternalCertificateErrorPage()) return ""

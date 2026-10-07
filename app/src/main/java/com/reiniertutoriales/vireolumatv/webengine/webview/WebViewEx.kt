@@ -105,6 +105,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     private var virtualCursorMode: Boolean = true
     private var genericInjects: String? = null
     private val youtubeAdblock by lazy { YouTubeAdblockController(this) }
+    private val cosmeticFilters by lazy { CosmeticFilterController(this) }
     private val consoleLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     private val streamLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     private var webChromeClient_: WebChromeClient
@@ -161,6 +162,9 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         fun onOpenInExternalAppRequested(url: String)
         fun onVisited(url: String)
         fun onContextMenu(baseUrl: String?, href: String?, x: Int, y: Int)
+        /** Main-frame navigation of a page-opened window; true cancels it as a popup ad. */
+        fun onPopupNavigation(url: Uri): Boolean
+        fun onPopupPageFinished(url: String?)
     }
 
     init {
@@ -427,10 +431,18 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
         webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                // Redirect chains of a popunder (ad network -> advertiser) arrive here.
+                if (request.isForMainFrame && callback.onPopupNavigation(request.url)) return true
                 return callback.shouldOverrideUrlLoading(request.url.toString())
             }
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+                // window.open(url) loads its first document without shouldOverrideUrlLoading.
+                if (request.isForMainFrame && callback.onPopupNavigation(request.url)) {
+                    return WebResourceResponse("text/plain", "utf-8", "".byteInputStream()).apply {
+                        setStatusCodeAndReasonPhrase(403, "Blocked")
+                    }
+                }
                 val currentPageUrl = currentOriginalUrl
 
                 if (currentPageUrl != null && currentPageUrl.toString().startsWith(Config.HOME_PAGE_URL,
@@ -484,6 +496,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 super.onPageFinished(view, url)
                 Log.d(TAG, "onPageFinished url: $url")
                 callback.onPageFinished(url)
+                callback.onPopupPageFinished(url)
+                cosmeticFilters.onPageFinished(url)
                 // The static start page needs no media/link scripts; external pages retain them.
                 if (!BridgePagePolicy.isPackagedHomePage(currentOriginalUrl)) {
                     evaluateJavascript(getGenericJSInjects(), null)
@@ -747,6 +761,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     fun onUpdateAdblockSetting(adblockEnabled: Boolean) {
         youtubeAdblock.setEnabled(adblockEnabled)
+        cosmeticFilters.setEnabled(adblockEnabled)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Malware/phishing protection is independent of the advertising preference.
             settings.safeBrowsingEnabled = true
@@ -755,6 +770,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     override fun destroy() {
         youtubeAdblock.destroy()
+        cosmeticFilters.destroy()
         super.destroy()
     }
 

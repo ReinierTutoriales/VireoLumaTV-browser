@@ -235,6 +235,12 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
 
+    /** Element hiding CSS for a top document of this tab (JavaBridge thread). */
+    fun cosmeticCss(host: String): String {
+        if (!(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)) return ""
+        return cosmeticCssProvider?.invoke(host) ?: ""
+    }
+
     override fun onLongPress(x: Int, y: Int) {
         webView?.let {
             it.evaluateJavascript(Scripts.LONG_PRESS_SCRIPT) { href ->
@@ -438,6 +444,13 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
             callback?.onVisited(url)
         }
 
+        override fun onPopupNavigation(url: Uri): Boolean =
+            tab.popupGuard?.onNavigation(url) ?: false
+
+        override fun onPopupPageFinished(url: String?) {
+            tab.popupGuard?.onPageFinished(url)
+        }
+
         override fun onContextMenu(baseUrl:String?, href: String?, x: Int, y: Int) {
             callback?.onContextMenu(
                 viewParent!!.cursorDrawerDelegate,
@@ -455,6 +468,10 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
     companion object {
         private val TAG = WebViewWebEngine::class.java.simpleName
+
+        /** Installed by the window owner (adblock model); read from the JavaBridge thread. */
+        @Volatile
+        var cosmeticCssProvider: ((String) -> String)? = null
 
         init {
             WebEngineFactory.registerProvider(WebEngineProvider("WebView", object : WebEngineProviderCallback {

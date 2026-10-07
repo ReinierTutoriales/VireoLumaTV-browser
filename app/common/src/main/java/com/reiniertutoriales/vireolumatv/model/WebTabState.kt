@@ -73,6 +73,10 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     var blockedPopups = 0
     @Ignore
     var cachedHostConfig: HostConfig? = null
+    /** Set while a page-opened window is screened against popup ad rules. */
+    @Ignore
+    @Volatile
+    var popupGuard: PopupGuard? = null
 
     constructor(context: Context, json: JSONObject) : this() {
         try {

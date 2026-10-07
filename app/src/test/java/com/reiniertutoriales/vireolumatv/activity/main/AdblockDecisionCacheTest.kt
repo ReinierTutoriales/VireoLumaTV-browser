@@ -56,7 +56,7 @@ class AdblockDecisionCacheTest {
         try {
             install(model, blocker)
             model.isAd(first, "xhr", page)
-            repeat(100) { model.isAd(Uri.parse("https://stream.test/${it + 1}.m3u8?" + "x".repeat(1000)), "xhr", page) }
+            repeat(400) { model.isAd(Uri.parse("https://stream.test/${it + 1}.m3u8?" + "x".repeat(1000)), "xhr", page) }
             val before = blocker.calls
             model.isAd(first, "xhr", page)
             assertEquals(before + 1, blocker.calls)

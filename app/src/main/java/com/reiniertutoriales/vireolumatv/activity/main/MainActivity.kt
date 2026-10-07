@@ -70,6 +70,7 @@ import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 import com.reiniertutoriales.vireolumatv.model.HomePageLink
 import com.reiniertutoriales.vireolumatv.model.HostConfig
+import com.reiniertutoriales.vireolumatv.model.PopupGuard
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.service.downloads.DownloadService
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
@@ -89,6 +90,7 @@ import com.reiniertutoriales.vireolumatv.webengine.WebEngine
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
+import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
 import com.reiniertutoriales.vireolumatv.widgets.NotificationView
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import kotlinx.coroutines.Dispatchers
@@ -118,6 +120,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         private const val MY_PERMISSIONS_REQUEST_VOICE_SEARCH_PERMISSIONS = 10008
         private const val COMMON_REQUESTS_START_CODE = 10100
         private const val THUMBNAIL_CAPTURE_DELAY_MS = 1500L
+        // A popup that has not requested a page by then (about:blank + document.write) is shown.
+        private const val POPUP_DECISION_TIMEOUT_MS = 1200L
+        // Popup/dialog spam must not stack notifications on a slow TV.
+        private const val BLOCKED_NOTIFICATION_INTERVAL_MS = 3000L
     }
 
     private lateinit var vb: ActivityMainBinding
@@ -138,6 +144,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private var downloadPermissionRequestPending = false
     var openUrlInExternalAppDialog: AlertDialog? = null
     private var linkActionsMenu: PopupMenu? = null
+    private var lastBlockedNotificationTime = 0L
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,6 +163,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
         settingsModel = ActiveModelsRepository.get(SettingsModel::class, this)
         adblockModel = ActiveModelsRepository.get(AdblockModel::class, this)
+        val cosmeticSource = adblockModel
+        WebViewWebEngine.cosmeticCssProvider = { host -> cosmeticSource.cosmeticCss(host) }
         tabsModel = ActiveModelsRepository.get(TabsModel::class, this)
         autoUpdateModel = ActiveModelsRepository.get(AutoUpdateModel::class, this)
         uiHandler = Handler(Looper.getMainLooper())
@@ -241,7 +250,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private fun postNetworkState() {
         uiHandler.post {
             if (isDestroyed) return@post
-            tabsModel.currentTab.value?.webEngine?.setNetworkAvailable(Utils.isNetworkConnected(this))
+            val connected = Utils.isNetworkConnected(this)
+            tabsModel.currentTab.value?.webEngine?.setNetworkAvailable(connected)
+            // A TV often starts the app before Wi-Fi: fetch filter lists as soon as it connects.
+            if (connected) adblockModel.updateIfDue(networkRestored = true)
         }
     }
 
@@ -742,6 +754,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
         tabsModel.currentTab.value?.webEngine?.onResume()
+        // TV apps stay alive for days: the model's start-up check alone never refreshes the lists.
+        adblockModel.updateIfDue()
     }
 
     override fun onPause() {
@@ -1373,12 +1387,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
         override fun onBlockedDialog(newTab: Boolean) {
             tab.blockedPopups++
-            runOnUiThread {
-                vb.tvBlockedPopupCounter.visibility = if (tab.blockedPopups > 0) View.VISIBLE else View.GONE
-                vb.tvBlockedPopupCounter.text = tab.blockedPopups.toString()
-                val msg = getString(if (newTab) R.string.new_tab_blocked else R.string.popup_dialog_blocked)
-                NotificationView.showBottomRight(vb.rlRoot, R.drawable.ic_block_popups, msg)
-            }
+            runOnUiThread { showBlockedPopup(tab, newTab) }
         }
 
         override fun onCreateWindow(dialog: Boolean, userGesture: Boolean): View? {
@@ -1391,12 +1400,26 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             val webView = createWebView(tab) ?: return null
             val index = tabsModel.tabsStates.indexOf(currentTab) + 1
             tabsModel.tabsStates.add(index, tab)
-            // Finish Chromium's window transport before destroying the source WebView.
-            vb.flWebViewContainer.post {
+            val showPopup = Runnable {
                 if (!tab.closed) {
-                    if (isFinishing || tabsModel.currentTab.value !== currentTab) tabsModel.onCloseTab(tab)
+                    if (isFinishing || isDestroyed || tabsModel.currentTab.value !== currentTab) tabsModel.onCloseTab(tab)
                     else changeTab(tab, loadInitialUrl = false)
                 }
+            }
+            if (isAdBlockingEnabled()) {
+                // Keep the opener alive until the popup's destination is known: switching tabs
+                // destroys the opener's WebView, and a blocked popunder would cost a page reload.
+                val opener = runCatching { Uri.parse(currentTab.url) }.getOrNull()
+                val model = adblockModel
+                tab.popupGuard = PopupGuard(
+                    isAd = { url -> model.isPopupAd(url, opener) },
+                    onBlocked = { uiHandler.post { onPopupAdBlocked(tab, currentTab) } },
+                    onAllowed = { uiHandler.post(showPopup) }
+                )
+                uiHandler.postDelayed({ tab.popupGuard?.allow() }, POPUP_DECISION_TIMEOUT_MS)
+            } else {
+                // Finish Chromium's window transport before destroying the source WebView.
+                vb.flWebViewContainer.post(showPopup)
             }
             return webView
         }
@@ -1590,6 +1613,25 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         override fun markBookmarkRecommendationAsUseful(bookmarkOrder: Int) {
             viewModel.markBookmarkRecommendationAsUseful(bookmarkOrder)
         }
+    }
+
+    private fun onPopupAdBlocked(popup: WebTabState, opener: WebTabState) {
+        if (popup.closed) return
+        Log.i(TAG, "Blocked popup ad window")
+        if (tabsModel.currentTab.value === popup) closeTab(popup) else tabsModel.onCloseTab(popup)
+        opener.blockedPopups++
+        showBlockedPopup(opener, newTab = true)
+    }
+
+    private fun showBlockedPopup(tab: WebTabState, newTab: Boolean) {
+        if (isDestroyed || tabsModel.currentTab.value !== tab) return
+        vb.tvBlockedPopupCounter.visibility = if (tab.blockedPopups > 0) View.VISIBLE else View.GONE
+        vb.tvBlockedPopupCounter.text = tab.blockedPopups.toString()
+        val now = android.os.SystemClock.uptimeMillis()
+        if (now - lastBlockedNotificationTime < BLOCKED_NOTIFICATION_INTERVAL_MS) return
+        lastBlockedNotificationTime = now
+        val msg = getString(if (newTab) R.string.new_tab_blocked else R.string.popup_dialog_blocked)
+        NotificationView.showBottomRight(vb.rlRoot, R.drawable.ic_block_popups, msg)
     }
 
     private fun askUserAndOpenInExternalApp(url: String, intent: Intent) {

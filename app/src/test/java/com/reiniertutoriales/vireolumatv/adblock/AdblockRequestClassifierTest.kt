@@ -52,7 +52,7 @@ class AdblockRequestClassifierTest {
         assertEquals(16, AdblockRequestClassifier.filterOption("xhr"))
         assertEquals(64, AdblockRequestClassifier.filterOption("subdocument"))
         assertEquals(128, AdblockRequestClassifier.filterOption("document"))
-        assertEquals(1048576, AdblockRequestClassifier.filterOption("font"))
-        assertEquals(2097152, AdblockRequestClassifier.filterOption("media"))
+        assertEquals(524288, AdblockRequestClassifier.filterOption("font")) // FOFont = 02000000 octal
+        assertEquals(1048576, AdblockRequestClassifier.filterOption("media")) // FOMedia = 04000000 octal
     }
 }
