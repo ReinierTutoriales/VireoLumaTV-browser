@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "com.reiniertutoriales.vireolumatv"
-        versionCode = 85
+        versionCode = 86
         versionName = "1.0.0"
 
         javaCompileOptions {
@@ -41,6 +41,8 @@ android {
         getByName("release") {
             isDebuggable = false
             isMinifyEnabled = true
+            // Resources are only referenced through R (no getIdentifier), so shrinking is safe.
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             val signReleaseWithDebugKey = System.getenv("CI_SIGN_RELEASE_WITH_DEBUG_KEY") == "true"
             signingConfig = when {

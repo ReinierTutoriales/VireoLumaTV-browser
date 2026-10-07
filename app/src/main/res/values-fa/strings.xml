@@ -3,12 +3,9 @@
   <string name="app_name">VireoLumaTV</string>
   <string name="error">"خطا"</string>
   <string name="ok">"خوب"</string>
-  <string name="loading">"بارگذاری…"</string>
   <string name="url_prompt">"جستجو یا URL را تایپ کنید"</string>
   <string name="can_not_recognize">"قابل تشخیص نیست"</string>
   <string name="speak">"صحبت کردن"</string>
-  <string name="open_new_tab">"برگه جدید را باز کنید"</string>
-  <string name="close">"بستن"</string>
   <string name="web_perm_request_confirmation">"این صفحه وب می خواهد از منابع زیر استفاده کند:
 
 %s"</string>
@@ -26,13 +23,10 @@
   <string name="edit">"ویرایش"</string>
   <string name="new_bookmark">"نشانک جدید"</string>
   <string name="title">"عنوان"</string>
-  <string name="search_history">"تاریخچه جستجو"</string>
   <string name="engine">"موتور جستجو"</string>
   <string name="choose_default_search_engine">"موتور جستجوی پیش فرض را انتخاب کنید"</string>
   <string name="save">"ذخیره"</string>
   <string name="search_engine_url_with_query_placeholder_query">"URL موتور جستجو"</string>
-  <string name="change_search_engine">"موتور جستجو را تغییر دهید"</string>
-  <string name="change_user_agent">"نمایه کاربری را تغییر دهید"</string>
   <string name="user_agent_string">"نمایه کاربری"</string>
   <string name="choose_user_agent_string">"نمایه کاربری را انتخاب کنید"</string>
   <string name="edit_user_agent_string">"نمایه کاربری را ویرایش کنید"</string>
@@ -52,7 +46,6 @@
   <string name="history">"تاریخچه"</string>
   <string name="settings">"تنظیمات"</string>
   <string name="shortcut">"میانبر"</string>
-  <string name="toggle_main_menu">"تغییر منوی اصلی"</string>
   <string name="navigate_back">"بازگشت به عقب"</string>
   <string name="navigate_home">"به خانه بروید"</string>
   <string name="refresh_page">"تازه سازی صفحه"</string>
@@ -80,7 +73,6 @@
   <string name="version_and_updates">نسخه و به روزرسانی ها</string>
   <string name="version_s">"نسخه: %s"</string>
   <string name="build_flavor_s">نوع ساخت: %1$s · %2$s</string>
-  <string name="support_the_author">☕ حمایت از نویسنده</string>
   <string name="view_license">📃 مجوز</string>
   <string name="privacy_policy">🔒 سیاست حریم خصوصی</string>
   <string name="update_channel">"کانال ترجمه:"</string>
@@ -88,9 +80,7 @@
   <string name="update">"به روز رسانی"</string>
   <string name="new_version_available_s">"نسخه جدید موجود است: %s"</string>
   <string name="warning">"هشدار"</string>
-  <string name="unprotected_connection">"اتصال محافظت نشده"</string>
   <string name="err_webview_can_not_link">"نمی توان به وب نما متصل شد.ابتدا وب نما سیستم Android را نصب کنید."</string>
-  <string name="new_tab_title">"[زبانه جدید]"</string>
   <string name="open_a_new_tab_here">"یک برگه جدید در اینجا باز کنید"</string>
   <string name="tabs">"برگه ها"</string>
   <string name="ssl_expired">"گواهی منقضی شده است"</string>
@@ -120,7 +110,6 @@
     <item>سفید</item>
     <item>تاریک</item>
   </array>
-  <string name="set_search_engine_as_homepage">موتور جستجو را به عنوان صفحه اصلی تنظیم کنید</string>
   <string name="toggle_keep_screen_on">صفحه نمایش را روشن بگذارید</string>
   <string name="navigate_with_joystick_axes">پیمایش با محورهای جوی‌استیک</string>
   <string name="cursor_max_speed">حداکثر سرعت مکان‌نمای مجازی</string>
@@ -164,19 +153,12 @@
     <item>سفارشی</item>
     <item>جای خالی</item>
   </string-array>
-  <string-array name="home_page_links_modes">
-    <item>نشانک ها</item>
-    <item>آخرین تاریخ</item>
-    <item>بیشترین بازدید</item>
-  </string-array>
 
-  <string name="restart">راه اندازی مجدد</string>
   <string name="yes">آره</string>
   <string name="no">خیر</string>
   <string name="site_asks_to_open_unknown_url">سایت می خواهد URL ناشناخته را باز کند</string>
   <string name="site_asks_to_open_unknown_url_message">آیا می خواهید این URL را در برنامه خارجی باز کنید؟</string>
   <string name="err_no_app_to_handle_url">نمی توان برنامه مناسبی برای مدیریت این URL پیدا کرد</string>
-  <string name="home_page_links">لینک ها در صفحه اصلی</string>
   <string name="http_auth_title">احراز هویت لازم است</string>
   <string name="play_pause">پخش/توقف</string>
   <string name="media_stop">توقف رسانه</string>

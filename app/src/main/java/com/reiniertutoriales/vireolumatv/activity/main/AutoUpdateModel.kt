@@ -23,7 +23,8 @@ class AutoUpdateModel: ActiveModel() {
     val updateChecker = UpdateChecker(BuildConfig.VERSION_CODE)
     var lastUpdateNotificationTime: Calendar
     var needAutoCheckUpdates: Boolean
-        get() = config.autoCheckUpdates && BuildConfig.BUILT_IN_AUTO_UPDATE
+        // Build flag first: the preference default asks PackageManager for the installer.
+        get() = BuildConfig.BUILT_IN_AUTO_UPDATE && config.autoCheckUpdates
         set(value) { config.autoCheckUpdates = value }
 
     init {

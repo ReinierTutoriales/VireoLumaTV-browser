@@ -27,21 +27,15 @@ internal object MediaPolicy {
         hardwareAv1
     }
 
-    fun blockedCodecs(mode: Config.VideoCodecPolicy): List<String> =
-        blockedCodecs(mode, { hardwareVp9 }, { hardwareAv1 })
+    /**
+     * Fixed optimal mode: VP9/AV1 stay available only when the device decodes them in hardware,
+     * otherwise sites fall back to H.264. VP9 also covers VP8 (both software in WebView).
+     */
+    fun blockedCodecs(): List<String> = blockedCodecs(hardwareVp9, hardwareAv1)
 
-    /** VP9 also covers VP8: both are decoded in software by WebView when no hardware exists. */
-    internal fun blockedCodecs(
-        mode: Config.VideoCodecPolicy,
-        hasVp9: () -> Boolean,
-        hasAv1: () -> Boolean
-    ): List<String> = when (mode) {
-        Config.VideoCodecPolicy.OFF -> emptyList()
-        Config.VideoCodecPolicy.FORCE_H264 -> listOf("vp9", "av1")
-        Config.VideoCodecPolicy.AUTO -> buildList {
-            if (!hasVp9()) add("vp9")
-            if (!hasAv1()) add("av1")
-        }
+    internal fun blockedCodecs(hasVp9: Boolean, hasAv1: Boolean): List<String> = buildList {
+        if (!hasVp9) add("vp9")
+        if (!hasAv1) add("av1")
     }
 
     /** Script argument; null when the policy changes nothing. */
@@ -78,7 +72,7 @@ internal class MediaPolicyController(private val view: WebView, private val conf
     /** Cheap when nothing changed; call before each navigation so settings apply to the next page. */
     fun refresh() {
         val json = MediaPolicy.configJson(
-            MediaPolicy.blockedCodecs(config.videoCodecPolicy), config.videoMaxHeight)
+            MediaPolicy.blockedCodecs(), config.videoMaxHeight)
         if (json == appliedJson) return
         registration?.remove()
         registration = null

@@ -5,29 +5,22 @@
   <string name="allow">Разрешить</string>
   <string name="bookmarks">Закладки</string>
   <string name="can_not_recognize">Не могу распознать</string>
-  <string name="close">Закрыть</string>
   <string name="deny">Запретить</string>
   <string name="download_started">Загрузка начата…\nФайл будет сохранён по пути:\n%s</string>
   <string name="downloading_file">Загрузка файла…</string>
   <string name="edit">Редактировать</string>
   <string name="err_cant_open_file_chooser">Не могу запустить интерфейс выбора файла</string>
   <string name="error">Ошибка</string>
-  <string name="loading">Загрузка…</string>
   <string name="location">Локация</string>
   <string name="new_bookmark">Новая закладка</string>
   <string name="ok">ОК</string>
   <string name="open_in_new_tab">Открыть в новой вкладке</string>
-  <string name="open_new_tab">Новая вкладка</string>
   <string name="speak">Искать запрос</string>
   <string name="title">Название</string>
   <string name="url_prompt">Введите искомый запрос или URL</string>
   <string name="web_perm_request_confirmation">Эта страница запрашивает следующие ресурсы:\n\n%s</string>
-  <string name="search_history">Поиск по истории</string>
-  <string name="change_search_engine">Изменить поисковый движок</string>
-  <string name="change_user_agent">Изменить User Agent</string>
   <string name="choose_default_search_engine">Выберите поисковый движок по-умолчанию</string>
   <string name="engine">Поисковый движок</string>
-  <string name="set_search_engine_as_homepage">Установить поисковый движок в качестве домашней страницы</string>
   <string name="save">Сохранить</string>
   <string name="search_engine_url_with_query_placeholder_query">URL поискового движка (используйте параметр [query])</string>
   <string name="cancel">Отмена</string>
@@ -58,7 +51,6 @@
   <string name="settings">Настройки</string>
   <string name="shortcut">\"Быстрая\" клавиша</string>
   <string name="shortcuts">\"Быстрые\" клавиши</string>
-  <string name="toggle_main_menu">Отобразить меню</string>
   <string name="voice_search">Голосовой поиск</string>
   <string name="install">Установить</string>
   <string name="turn_on_unknown_sources">Пожалуйста, активируйте системную настройку \"Установка из неизвестных источников\"</string>
@@ -73,20 +65,17 @@
   <string name="downloads_notifications_description">Уведомления о загрузках</string>
   <string name="auto_check_for_updates">Проверять обновления</string>
   <string name="main">Основные</string>
-  <string name="unprotected_connection">Незащищенное соединение</string>
   <string name="update">Обновить</string>
   <string name="update_channel">Канал обновлений</string>
   <string name="version_and_updates">Версия</string>
   <string name="version_s">Версия: %s</string>
   <string name="build_flavor_s">Вариант сборки: %1$s · %2$s</string>
-  <string name="support_the_author">☕ Поддержать автора</string>
   <string name="view_license">📃 Лицензия</string>
   <string name="privacy_policy">🔒 Политика конфиденциальности</string>
   <string name="warning">Предупреждение</string>
   <string name="web_browser_optimized_for_tvs">Веб-браузер, оптимизированный для телевизоров</string>
   <string name="new_version_available_s">Доступна новая версия: %s</string>
   <string name="err_webview_can_not_link">Не могу найти WebView компонент. Попробуйте сперва установить Android System WebView</string>
-  <string name="new_tab_title">[НОВАЯ ВКЛ.]</string>
   <string name="open_a_new_tab_here">Открыть новую вкладку тут</string>
   <string name="tabs">Вкладки</string>
   <array name="tabs_options">
@@ -160,19 +149,12 @@
     <item>Пользовательская</item>
     <item>Пустая</item>
   </string-array>
-  <string-array name="home_page_links_modes">
-    <item>Закладки</item>
-    <item>История</item>
-    <item>Самые посещаемые</item>
-  </string-array>
 
-  <string name="restart">Перезапуск</string>
   <string name="yes">Да</string>
   <string name="no">Нет</string>
   <string name="site_asks_to_open_unknown_url">Сайт просит открыть неизвестный URL</string>
   <string name="site_asks_to_open_unknown_url_message">Вы хотите открыть этот URL-адрес во внешнем приложении?</string>
   <string name="err_no_app_to_handle_url">Не удаётся найти подходящее приложение для обработки этого URL-адреса</string>
-  <string name="home_page_links">Ссылки на главной странице</string>
   <string name="http_auth_title">Требуется аутентификация</string>
   <string name="play_pause">Воспроизведение/Пауза</string>
   <string name="media_stop">Остановить воспроизведение</string>

@@ -224,7 +224,7 @@ Opciones: conservar el historial por trazabilidad, o construir una rama limpia p
 | Hecho | Consecuencia |
 |---|---|
 | `AdBlockClient::parse()` siempre devuelve `true` | La validez de una lista se comprueba por su contenido, no con `parse()` |
-| La app solo bloquea peticiones de red | No hay filtrado cosmético; los anuncios de YouTube no se pueden separar por URL |
+| El motor nativo ignora `$popup` y las reglas cosméticas | Las reglas `$popup` se compilan en un cliente aparte y la ocultación por sitio (`dominio##selector`) se inyecta al inicio del documento; las reglas cosméticas genéricas y procedurales siguen sin aplicarse |
 | `onDetachFromWindow` pone `callback = null` | Las pestañas en segundo plano no actualizan el contador de bloqueos |
 | `-assumenosideeffects` no garantiza eliminar la evaluación de argumentos | Los logs del camino caliente se eliminan en el código fuente |
 | `isAd()` no tiene contador de invocaciones | W0 no puede medir la proporción bloqueadas/totales sin instrumentación |

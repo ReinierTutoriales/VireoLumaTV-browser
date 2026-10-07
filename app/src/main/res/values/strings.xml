@@ -5,12 +5,9 @@
     <string name="based_on_tv_bro_sources">Based on the source code of TV Bro: %s</string>
     <string name="error">Error</string>
     <string name="ok">OK</string>
-    <string name="loading">Loading&#8230;</string>
     <string name="url_prompt">Input query text or URL</string>
     <string name="can_not_recognize">Can not recognize</string>
     <string name="speak">Search query</string>
-    <string name="open_new_tab">Open new Tab</string>
-    <string name="close">Close</string>
     <string name="web_perm_request_confirmation">This web page wants to use following resources:\n\n%s</string>
     <string name="allow">Allow</string>
     <string name="deny">Deny</string>
@@ -27,14 +24,10 @@
     <string name="done">Done</string>
     <string name="title">Title</string>
     <string name="url" translatable="false">URL</string>
-    <string name="search_history">Search history</string>
     <string name="engine">Search Engine</string>
     <string name="choose_default_search_engine">Choose default search engine</string>
-    <string name="set_search_engine_as_homepage">Set search engine as homepage</string>
     <string name="save">Save</string>
     <string name="search_engine_url_with_query_placeholder_query">Search engine URL with query placeholder [query]</string>
-    <string name="change_search_engine">Change Search Engine</string>
-    <string name="change_user_agent">Change User Agent</string>
     <string name="user_agent_string">User Agent String</string>
     <string name="choose_user_agent_string">Choose User Agent String</string>
     <string name="edit_user_agent_string">Edit User Agent String</string>
@@ -54,7 +47,6 @@
     <string name="history">History</string>
     <string name="settings">Settings</string>
     <string name="shortcut">Shortcut</string>
-    <string name="toggle_main_menu">Toggle main menu</string>
     <string name="navigate_back">Navigate back</string>
     <string name="navigate_home">Navigate home</string>
     <string name="refresh_page">Refresh page</string>
@@ -84,7 +76,6 @@
     <string name="version_and_updates"><![CDATA[Version & updates]]></string>
     <string name="version_s">Version: %s</string>
     <string name="build_flavor_s">Build flavor: %1$s · %2$s</string>
-    <string name="support_the_author">☕ Support the author</string>
     <string name="support_original_author">☕ Support Fedir Tsapana (original TV Bro author)</string>
     <string name="view_license">📃 License</string>
     <string name="privacy_policy">🔒 Privacy policy</string>
@@ -94,9 +85,7 @@
     <string name="new_version_available_s">New version available: %s</string>
     <string name="web_browser_optimized_for_tvs">Web browser optimized for TVs</string>
     <string name="warning">Warning</string>
-    <string name="unprotected_connection">Unprotected connection</string>
     <string name="err_webview_can_not_link">Can not link to WebView component. Try to install Android System WebView component first.</string>
-    <string name="new_tab_title">[NEW TAB]</string>
     <string name="open_a_new_tab_here">Open a new tab here</string>
     <string name="tabs">Tabs</string>
     <array name="tabs_options">
@@ -164,7 +153,6 @@
     <string name="external_app_open_error">Can not find suitable application</string>
     <string name="home_page">Home page</string>
     <string name="custom_home_page_url">Custom home page URL</string>
-    <string name="home_page_links">Links on home page</string>
     <array name="home_page_modes">
         <item>VireoLumaTV Home</item>
         <item>Search engine</item>
@@ -172,13 +160,7 @@
         <item>Blank</item>
     </array>
 
-    <array name="home_page_links_modes">
-        <item>Bookmarks</item>
-        <item>Latest History</item>
-        <item>Most Visited</item>
-    </array>
 
-    <string name="restart">Restart</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="site_asks_to_open_unknown_url">Site asks to open unknown URL</string>
@@ -192,15 +174,9 @@
     <string name="long_press">Long press</string>
     <string name="adblock_updating">Updating filter lists…</string>
     <string name="adblock_updated">Filter lists updated</string>
-    <string name="adblock_partial_update">Some lists updated; saved rules retained. Retry in 24 hours.</string>
+    <string name="adblock_partial_update">Some lists updated; saved rules retained. Retry in 6 hours.</string>
     <string name="adblock_using_saved">Using saved rules. No new list was downloaded.</string>
     <string name="adblock_update_error">Could not load filter lists. Check the connection or list URL.</string>
-    <string name="video_codec_policy">Video codecs (smooth playback on low-end TVs)</string>
-    <array name="video_codec_policies">
-        <item>Automatic: H.264 when VP9/AV1 have no hardware decoder</item>
-        <item>Always H.264 (block VP9 and AV1)</item>
-        <item>Off (sites decide)</item>
-    </array>
     <string name="video_max_quality">Maximum video quality</string>
     <array name="video_max_qualities">
         <item>Automatic</item>

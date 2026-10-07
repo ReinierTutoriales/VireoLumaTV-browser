@@ -12,6 +12,7 @@ import android.widget.AbsListView
 import android.widget.AdapterView
 import android.widget.ImageButton
 import android.widget.PopupMenu
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.R
@@ -55,6 +56,7 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
         setContentView(vb.root)
 
         historyModel = ActiveModelsRepository.get(HistoryModel::class, this)
+        onBackPressedDispatcher.addCallback(this, exitMultiselectOnBack)
 
         ibDelete = findViewById(R.id.ibDelete)
 
@@ -156,6 +158,7 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
     }
 
     private fun updateMenu() {
+        exitMultiselectOnBack.isEnabled = adapter?.isMultiselectMode == true
         val selection = adapter!!.selectedItems
         if (selection.isEmpty()) {
             if (ibDelete!!.visibility == View.GONE) return
@@ -173,13 +176,12 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
         }
     }
 
-    override fun onBackPressed() {
-        if (adapter!!.isMultiselectMode) {
-            adapter!!.isMultiselectMode = false
+    // onBackPressed() is not called for apps targeting API 36 on Android 16 (predictive back).
+    private val exitMultiselectOnBack = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            adapter?.isMultiselectMode = false
             updateMenu()
-            return
         }
-        super.onBackPressed()
     }
 
     private fun showItemOptionsPopup(v: HistoryItemView) {

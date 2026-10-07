@@ -1,18 +1,178 @@
 <resources>
+    <string name="app_name">VireoLumaTV</string>
+    <string name="error">Error</string>
+    <string name="ok">Aceptar</string>
+    <string name="url_prompt">Escribe una búsqueda o una URL</string>
+    <string name="can_not_recognize">No se pudo reconocer</string>
+    <string name="speak">Búsqueda</string>
+    <string name="web_perm_request_confirmation">Esta página quiere usar los siguientes recursos:\n\n%s</string>
+    <string name="allow">Permitir</string>
+    <string name="deny">Denegar</string>
+    <string name="location">Ubicación</string>
+    <string name="open_in_new_tab">Abrir en pestaña nueva</string>
+    <string name="download_started">Descarga iniciada…\nEl archivo se guardará en:\n%s</string>
+    <string name="downloading_file">Descargando archivo…</string>
+    <string name="err_cant_open_file_chooser">No se puede abrir el selector de archivos</string>
+    <string name="bookmarks">Marcadores</string>
+    <string name="add">Añadir</string>
+    <string name="edit">Editar</string>
+    <string name="no_bookmarks_yet">Aún no hay marcadores</string>
+    <string name="new_bookmark">Nuevo marcador</string>
+    <string name="done">Hecho</string>
+    <string name="title">Título</string>
+    <string name="engine">Buscador</string>
+    <string name="choose_default_search_engine">Elige el buscador predeterminado</string>
+    <string name="save">Guardar</string>
+    <string name="search_engine_url_with_query_placeholder_query">URL del buscador con el marcador [query]</string>
+    <string name="user_agent_string">Agente de usuario</string>
+    <string name="choose_user_agent_string">Elige el agente de usuario</string>
+    <string name="edit_user_agent_string">Editar agente de usuario</string>
+    <string name="nothing">Nada</string>
+    <string name="cancelled">Cancelado</string>
+    <string name="download">Descargar</string>
+    <string name="file_not_found">Archivo no encontrado</string>
+    <string name="no_app_for_file_type">No hay aplicaciones para abrir este tipo de archivo</string>
+    <string name="delete">Eliminar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="msg_delete_history">¿Eliminar las entradas del historial seleccionadas?</string>
+    <string name="msg_delete_history_all">¿Eliminar todo el historial?</string>
+    <string name="open_folder">Abrir carpeta</string>
+    <string name="no_file_explorer_msg">No hay ningún explorador de archivos adecuado instalado en el dispositivo</string>
+    <string name="shortcuts">Atajos</string>
+    <string name="favorites">Favoritos</string>
+    <string name="history">Historial</string>
+    <string name="settings">Ajustes</string>
+    <string name="shortcut">Atajo</string>
+    <string name="navigate_back">Atrás</string>
+    <string name="navigate_home">Inicio</string>
+    <string name="refresh_page">Recargar página</string>
+    <string name="voice_search">Búsqueda por voz</string>
+    <string name="zoom_in">Acercar</string>
+    <string name="zoom_out">Alejar</string>
+    <string name="cursor_grab_mode">Mover la página</string>
+    <string name="link_actions">Acciones del enlace</string>
+    <string name="not_set">Sin asignar</string>
+    <string name="action">Acción:</string>
+    <string name="current_key">Tecla actual:</string>
+    <string name="set_key_for_action">Asignar tecla a la acción</string>
+    <string name="press_eny_key">Pulsa cualquier tecla…</string>
+    <string name="shortcut_key_reserved_for_navigation">Esta tecla está reservada para la navegación del navegador</string>
+    <string name="clear">Borrar</string>
+    <string name="install">Instalar</string>
+    <string name="turn_on_unknown_sources">Activa \"Orígenes desconocidos\" en los ajustes del sistema</string>
+    <string name="turn_on_unknown_sources_for_app">Permite que VireoLumaTV instale aplicaciones de \"Orígenes desconocidos\" en los ajustes del sistema</string>
+    <string name="storage_not_mounted">Almacenamiento no disponible</string>
+    <string name="can_not_create_downloads">No se puede crear la carpeta de descargas</string>
+    <string name="voice_search_not_found">Búsqueda por voz no disponible</string>
+    <string name="new_version_dialog_title">Nueva versión disponible</string>
+    <string name="later">Más tarde</string>
+    <string name="downloads">Descargas</string>
+    <string name="downloads_notifications_description">Notificaciones sobre el estado de las descargas</string>
+    <string name="main">General</string>
+    <string name="version_and_updates">Versión y actualizaciones</string>
+    <string name="version_s">Versión: %s</string>
+    <string name="build_flavor_s">Variante: %1$s · %2$s</string>
+    <string name="view_license">📃 Licencia</string>
+    <string name="privacy_policy">🔒 Política de privacidad</string>
+    <string name="update_channel">Canal de actualización:</string>
+    <string name="auto_check_for_updates">Buscar actualizaciones automáticamente</string>
+    <string name="update">Actualizar</string>
+    <string name="new_version_available_s">Nueva versión disponible: %s</string>
+    <string name="web_browser_optimized_for_tvs">Navegador web optimizado para TV</string>
+    <string name="warning">Advertencia</string>
+    <string name="err_webview_can_not_link">No se puede usar el componente WebView. Instala o actualiza Android System WebView.</string>
+    <string name="open_a_new_tab_here">Abre una pestaña nueva aquí</string>
+    <string name="tabs">Pestañas</string>
+    <array name="tabs_options">
+        <item>Abrir pestaña nueva</item>
+        <item>Cerrar actual</item>
+        <item>Cerrar todas</item>
+        <item>Mover a la izquierda</item>
+        <item>Mover a la derecha</item>
+    </array>
+    <string name="ssl_expired">El certificado ha caducado</string>
+    <string name="ssl_idmismatch">El nombre del servidor no coincide</string>
+    <string name="ssl_date_invalid">La fecha del certificado no es válida</string>
+    <string name="ssl_invalid">Se produjo un error de certificado</string>
+    <string name="back_to_safety">Volver a un lugar seguro</string>
+    <string name="go_im_aware">Continuar. Conozco el riesgo</string>
+    <string name="connection_isnt_secure">La conexión no es segura</string>
+    <string name="hostname">Servidor:</string>
+    <string name="err_desk">Descripción del error:</string>
+    <string name="details">Detalles:</string>
+    <string name="exit">Salir</string>
+    <string name="find_in_apps_store">Buscar en la tienda de aplicaciones</string>
+    <string name="close_application">Cerrar aplicación</string>
+    <string name="close_tab">Cerrar pestaña</string>
+    <string name="navigate_forward">Adelante</string>
+    <string name="toggle_ads_blocking">Activar o desactivar el bloqueo de anuncios</string>
+    <string name="never">nunca</string>
+    <string name="last_update">Última actualización</string>
+    <string name="update_ad_blocker_list">Actualizar listas del bloqueador</string>
+    <string name="toggle_keep_screen_on">Mantener la pantalla encendida</string>
+    <string name="navigate_with_joystick_axes">Navegar con los ejes del mando</string>
+    <string name="cursor_max_speed">Velocidad máxima del cursor</string>
+    <string name="cursor_acceleration">Aceleración del cursor</string>
+    <string name="cursor_physics_percent">%d%% del valor predeterminado</string>
+    <string name="direct_navigation_mode_title">Modo de navegación directa</string>
+    <string name="direct_navigation_mode_message">La navegación directa oculta el cursor y envía las teclas del mando o del control de juegos directamente a la página, para que las webs compatibles con TV o teclado resalten enlaces y controles.\n\nPara salir de este modo: pulsa Atrás en el mando de la TV, o mantén pulsado el botón B en un control de juegos.\n\nEste modo funciona mejor con el motor WebView: WebView permite mover el foco por la página con la cruceta.</string>
+    <string name="need_restart">Hay que reiniciar la aplicación</string>
+    <string name="theme">Tema</string>
+    <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Oscurecer las páginas web con el tema oscuro (requiere reiniciar)</string>
+    <string name="allow_autoplay_media">Permitir reproducción automática</string>
+    <string name="web_engine_debug">Depuración del motor web (requiere reiniciar)</string>
+    <string name="web_engine_debug_warning_message">Activar la depuración del motor web puede exponer el contenido de las páginas, las cookies y datos de sesión sensibles a cualquiera con acceso de depuración al dispositivo. Actívala solo en dispositivos de confianza para diagnosticar problemas.</string>
+    <array name="themes">
+        <item>Sistema</item>
+        <item>Claro</item>
+        <item>Oscuro</item>
+    </array>
+    <string name="incognito_mode">Modo incógnito</string>
+    <string name="incognito_mode_hint">Ahora puedes navegar en privado y las demás personas que usen este dispositivo no verán tu actividad. VireoLumaTV no guardará tu historial, cookies ni datos de sitios, ni la información que escribas en formularios.\n\nSin embargo, las descargas y los marcadores sí se guardan. Tu actividad aún puede ser visible para las webs que visites, tu organización o tu proveedor de internet.</string>
+    <string name="don_t_show_again">No volver a mostrar</string>
+    <string name="clear_web_cache">Borrar caché web</string>
+    <string name="block_popups">Bloqueo de ventanas emergentes</string>
+    <string name="block_popups_s">Bloqueo de ventanas emergentes (%s)</string>
+    <string name="popup_dialog_blocked">Diálogo emergente bloqueado</string>
+    <string name="new_tab_blocked">Pestaña nueva bloqueada</string>
+    <array name="popup_blocking_level">
+        <item>No bloquear</item>
+        <item>Bloquear diálogos</item>
+        <item>Bloquear también pestañas nuevas (abiertas por scripts)</item>
+        <item>Bloquear cualquier ventana nueva (bloqueo máximo)</item>
+    </array>
+    <string name="copy_to_clipboard">Copiar al portapapeles</string>
+    <string name="copied_to_clipboard">Copiado al portapapeles</string>
+    <string name="share_url">Compartir URL</string>
+    <string name="open_in_external_application">Abrir en aplicación externa</string>
+    <string name="external_app_open_error">No se encontró una aplicación adecuada</string>
+    <string name="home_page">Página de inicio</string>
+    <string name="custom_home_page_url">URL de inicio personalizada</string>
+    <array name="home_page_modes">
+        <item>Inicio de VireoLumaTV</item>
+        <item>Buscador</item>
+        <item>Personalizada</item>
+        <item>En blanco</item>
+    </array>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    <string name="site_asks_to_open_unknown_url">El sitio quiere abrir una URL desconocida</string>
+    <string name="site_asks_to_open_unknown_url_message">¿Quieres abrir esta URL en una aplicación externa?</string>
+    <string name="err_no_app_to_handle_url">No se encontró una aplicación para abrir esta URL</string>
+    <string name="http_auth_title">Se requiere autenticación</string>
+    <string name="play_pause">Reproducir/Pausar</string>
+    <string name="media_stop">Detener reproducción</string>
+    <string name="media_rewind">Retroceder</string>
+    <string name="media_fast_forward">Avanzar</string>
+    <string name="long_press">Pulsación larga</string>
     <string name="vireo_project_credit">VireoLumaTV de ReinierTutoriales · Código fuente</string>
     <string name="based_on_tv_bro_sources">Basado en el código fuente de TV Bro: %s</string>
     <string name="support_original_author">☕ Apoyar a Fedir Tsapana (autor original de TV Bro)</string>
     <string name="adblock_updating">Actualizando listas…</string>
     <string name="adblock_updated">Listas actualizadas</string>
-    <string name="adblock_partial_update">Actualización parcial; se conservan las reglas guardadas. Reintento en 24 horas.</string>
+    <string name="adblock_partial_update">Actualización parcial; se conservan las reglas guardadas. Reintento en 6 horas.</string>
     <string name="adblock_using_saved">Usando reglas guardadas. No se descargaron listas nuevas.</string>
     <string name="adblock_update_error">No se pudieron cargar las listas. Revisa la conexión o la URL.</string>
-    <string name="video_codec_policy">Códecs de vídeo (reproducción fluida en TV de pocos recursos)</string>
-    <array name="video_codec_policies">
-        <item>Automático: H.264 si VP9/AV1 no tienen decodificador por hardware</item>
-        <item>Siempre H.264 (bloquear VP9 y AV1)</item>
-        <item>Desactivado (decide cada web)</item>
-    </array>
     <string name="video_max_quality">Calidad máxima de vídeo</string>
     <array name="video_max_qualities">
         <item>Automática</item>

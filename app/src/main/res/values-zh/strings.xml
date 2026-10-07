@@ -3,12 +3,9 @@
   <string name="app_name">VireoLumaTV</string>
   <string name="error">错误</string>
   <string name="ok">OK</string>
-  <string name="loading">载入中…</string>
   <string name="url_prompt">输入搜索查询文字或网址</string>
   <string name="can_not_recognize">无法识别</string>
   <string name="speak">搜索查询</string>
-  <string name="open_new_tab">新建标签页</string>
-  <string name="close">关闭</string>
   <string name="web_perm_request_confirmation">该网页想要使用以下资源:\n\n%s</string>
   <string name="allow">允许</string>
   <string name="deny">拒绝</string>
@@ -22,13 +19,10 @@
   <string name="edit">编辑</string>
   <string name="new_bookmark">新书签</string>
   <string name="title">标题</string>
-  <string name="search_history">搜索历史记录</string>
   <string name="engine">搜索引擎</string>
   <string name="choose_default_search_engine">选择默认搜索引擎</string>
   <string name="save">保存</string>
   <string name="search_engine_url_with_query_placeholder_query">带有查询占位符 [query] 的搜索引擎网址</string>
-  <string name="change_search_engine">更改搜索引擎</string>
-  <string name="change_user_agent">更改用户代理</string>
   <string name="user_agent_string">用户代理字符串</string>
   <string name="choose_user_agent_string">选择用户代理字符串</string>
   <string name="edit_user_agent_string">编辑用户代理字符串</string>
@@ -48,7 +42,6 @@
   <string name="history">历史</string>
   <string name="settings">设置</string>
   <string name="shortcut">捷径</string>
-  <string name="toggle_main_menu">切换主菜单</string>
   <string name="navigate_back">后退</string>
   <string name="navigate_home">转到主页</string>
   <string name="refresh_page">刷新页面</string>
@@ -76,7 +69,6 @@
   <string name="version_and_updates">版本与更新</string>
   <string name="version_s">版本: %s</string>
   <string name="build_flavor_s">构建变体：%1$s · %2$s</string>
-  <string name="support_the_author">☕ 支持作者</string>
   <string name="view_license">📃 许可协议</string>
   <string name="privacy_policy">🔒 隐私政策</string>
   <string name="update_channel">更新频道：</string>
@@ -85,9 +77,7 @@
   <string name="new_version_available_s">新版本可用: %s</string>
   <string name="web_browser_optimized_for_tvs">针对电视进行了优化的网络浏览器</string>
   <string name="warning">警告</string>
-  <string name="unprotected_connection">未保护的连接</string>
   <string name="err_webview_can_not_link">无法链接到 WebView 组件。尝试先安装 Android 系统 WebView 组件。</string>
-  <string name="new_tab_title">[新标签页]</string>
   <string name="open_a_new_tab_here">在这里打开一个新标签</string>
   <string name="tabs">标签页</string>
   <array name="tabs_options">
@@ -123,7 +113,6 @@
     <item>明亮</item>
     <item>黑暗</item>
   </array>
-  <string name="set_search_engine_as_homepage">将搜索引擎设为首页</string>
   <string name="toggle_keep_screen_on">保持屏幕开启</string>
   <string name="navigate_with_joystick_axes">使用摇杆轴导航</string>
   <string name="cursor_max_speed">虚拟光标最大速度</string>
@@ -160,19 +149,12 @@
     <item>自定义</item>
     <item>空白页</item>
   </string-array>
-  <string-array name="home_page_links_modes">
-    <item>书签</item>
-    <item>近期历史记录</item>
-    <item>最常访问</item>
-  </string-array>
 
-  <string name="restart">重新启动</string>
   <string name="yes">是</string>
   <string name="no">否</string>
   <string name="site_asks_to_open_unknown_url">此站点想要打开一个未知的 URL</string>
   <string name="site_asks_to_open_unknown_url_message">您想允许此站点使用外部应用打开此 URL 吗?</string>
   <string name="err_no_app_to_handle_url">找不到合适的应用来处理此 URL</string>
-  <string name="home_page_links">主页上的链接</string>
   <string name="http_auth_title">需要身份验证</string>
   <string name="play_pause">播放/暂停</string>
   <string name="media_stop">停止媒体</string>

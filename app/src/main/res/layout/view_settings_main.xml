@@ -288,7 +288,7 @@
         android:id="@+id/scAllowAutoplayMedia"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:nextFocusDown="@+id/spVideoCodecPolicy"
+        android:nextFocusDown="@+id/spVideoMaxQuality"
         android:nextFocusUp="@+id/scWebViewAlgorithmicDarkeningWithDarkUiMode"
         android:layout_weight="0"
         />
@@ -304,21 +304,6 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/video_codec_policy"
-        android:textSize="16sp"
-        />
-    <Spinner
-        android:id="@+id/spVideoCodecPolicy"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:dropDownWidth="400dp"
-        android:nextFocusUp="@+id/scAllowAutoplayMedia"
-        android:nextFocusDown="@+id/spVideoMaxQuality"
-        />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:text="@string/video_max_quality"
         android:textSize="16sp"
         />
@@ -327,7 +312,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:dropDownWidth="300dp"
-        android:nextFocusUp="@+id/spVideoCodecPolicy"
+        android:nextFocusUp="@+id/scAllowAutoplayMedia"
         android:nextFocusDown="@+id/scWebEngineDebug"
         />
   </LinearLayout>

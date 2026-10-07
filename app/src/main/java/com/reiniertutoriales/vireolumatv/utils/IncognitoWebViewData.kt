@@ -29,6 +29,8 @@ internal class IncognitoWebViewSession {
 
 internal object IncognitoWebViewData {
     private val session = IncognitoWebViewSession()
+    // Callers check Application.getProcessName(), which is API 28 as well.
+    @androidx.annotation.RequiresApi(android.os.Build.VERSION_CODES.P)
     fun configure(context: Context) = session.configure(context, WebView::setDataDirectorySuffix)
     fun clear(context: Context) = session.clear(context)
 }

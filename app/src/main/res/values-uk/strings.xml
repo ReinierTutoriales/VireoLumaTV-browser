@@ -5,29 +5,23 @@
   <string name="allow">Дозволити</string>
   <string name="bookmarks">Закладки</string>
   <string name="can_not_recognize">Не можу розпізнати</string>
-  <string name="close">Закрити</string>
   <string name="deny">Заборонити</string>
   <string name="download_started">Завантаження розпочато…\nФайл буде збережено по шляху:\n%s</string>
   <string name="downloading_file">Завантаження файла…</string>
   <string name="edit">Редагувати</string>
   <string name="err_cant_open_file_chooser">Не можу запустити інтерфейс вибора файлу</string>
   <string name="error">Помилка</string>
-  <string name="loading">Завантаження…</string>
   <string name="location">Локація</string>
   <string name="new_bookmark">Нова закладка</string>
   <string name="ok">ОК</string>
   <string name="open_in_new_tab">Відкрити у новій вкладці</string>
-  <string name="open_new_tab">Нова вкладка</string>
   <string name="speak">Шукати запит</string>
   <string name="title">Назва</string>
   <string name="url_prompt">Введіть шуканий запит або URL</string>
   <string name="web_perm_request_confirmation">Ця сторінка запитує наступні ресурси:\n\n%s</string>
-  <string name="search_history">Пошук в історії</string>
   <string name="search_engine_url_with_query_placeholder_query">URL пошукової системи (використовуйте параметер [query])</string>
   <string name="save">Зберегти</string>
   <string name="engine">Пошукова система</string>
-  <string name="change_search_engine">Змінити пошукову систему</string>
-  <string name="change_user_agent">Змінити User Agent</string>
   <string name="choose_default_search_engine">Виберіть пошукову систему за-замовчанням</string>
   <string name="cancel">Відміна</string>
   <string name="cancelled">Відмінено</string>
@@ -57,7 +51,6 @@
   <string name="settings">Налаштунки</string>
   <string name="shortcut">\"Швидка\" клавіша</string>
   <string name="shortcuts">\"Швидкі\" клавіші</string>
-  <string name="toggle_main_menu">Відобразити меню</string>
   <string name="voice_search">Голосовий пошук</string>
   <string name="install">Встановити</string>
   <string name="turn_on_unknown_sources">Будь-ласка, активуйте системну настройку \"Невідомі джерела\"</string>
@@ -72,20 +65,17 @@
   <string name="downloads">Завантаження</string>
   <string name="auto_check_for_updates">Перевіряти поновлення</string>
   <string name="main">Головні</string>
-  <string name="unprotected_connection">Незахищене з\'єднання</string>
   <string name="update">Оновити</string>
   <string name="update_channel">Канал оновлень</string>
   <string name="version_and_updates">Версія</string>
   <string name="version_s">Версія: %s</string>
   <string name="build_flavor_s">Варіант збірки: %1$s · %2$s</string>
-  <string name="support_the_author">☕ Підтримати автора</string>
   <string name="view_license">📃 Ліцензія</string>
   <string name="privacy_policy">🔒 Політика конфіденційності</string>
   <string name="warning">Увага</string>
   <string name="web_browser_optimized_for_tvs">Веб-браузер, оптимізований для телевізорів</string>
   <string name="new_version_available_s">Доступна нова версія: %s</string>
   <string name="err_webview_can_not_link">Не можу знайти WebView компонент. Спробуйте спочатку встановити Android System WebView</string>
-  <string name="new_tab_title">[НОВА ВКЛ.]</string>
   <string name="open_a_new_tab_here">Відкрити нову вкладку тут</string>
   <string name="tabs">Вкладки</string>
   <string name="ssl_expired">Термін дії сертифікату минув</string>
@@ -116,7 +106,6 @@
     <item>Біла</item>
     <item>Темна</item>
   </array>
-  <string name="set_search_engine_as_homepage">Встановити пошукову систему як домашню сторінку</string>
   <string name="toggle_keep_screen_on">Підтримувати екран увімкненим</string>
   <string name="navigate_with_joystick_axes">Навігація осями джойстика</string>
   <string name="cursor_max_speed">Максимальна швидкість віртуального курсора</string>
@@ -160,19 +149,12 @@
     <item>Користувацька</item>
     <item>Пуста</item>
   </string-array>
-  <string-array name="home_page_links_modes">
-    <item>Закладки</item>
-    <item>Історія</item>
-    <item>Найбільш відвідувані</item>
-  </string-array>
 
-  <string name="restart">Перезапустити</string>
   <string name="yes">Так</string>
   <string name="no">Немає</string>
   <string name="site_asks_to_open_unknown_url">Сайт просить відкрити невідому URL-адресу</string>
   <string name="site_asks_to_open_unknown_url_message">Відкрити цю URL-адресу в зовнішній програмі?</string>
   <string name="err_no_app_to_handle_url">Неможливо знайти відповідну програму для обробки цієї URL-адреси</string>
-  <string name="home_page_links">Посилання на домашній сторінці</string>
   <string name="http_auth_title">Потрібна автентифікація</string>
   <string name="play_pause">Відтворення/Пауза</string>
   <string name="media_stop">Зупинити медіа</string>

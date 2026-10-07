@@ -103,10 +103,8 @@ class MainSettingsView @JvmOverloads constructor(
                 override fun onNothingSelected(parent: AdapterView<*>) {}
             }
         }
-        // Applied from the next page load on (document-start script).
-        spinner(vb.spVideoCodecPolicy, R.array.video_codec_policies, config.videoCodecPolicy.ordinal) {
-            config.videoCodecPolicy = Config.VideoCodecPolicy.entries[it]
-        }
+        // Applied from the next page load on (document-start script). Codecs follow the
+        // device's hardware decoders automatically; only the quality cap is user-selectable.
         val heights = intArrayOf(0, 1080, 720, 480)
         spinner(vb.spVideoMaxQuality, R.array.video_max_qualities,
             heights.indexOf(config.videoMaxHeight).coerceAtLeast(0)) {
