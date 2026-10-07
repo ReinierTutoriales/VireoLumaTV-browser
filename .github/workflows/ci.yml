@@ -52,16 +52,6 @@ jobs:
           node scripts/test-youtube-adblock.cjs
           ./gradlew testGenericDebugUnitTest --stacktrace
 
-      - name: Record native UI previews
-        if: always()
-        run: |
-          python - <<'PY_UI'
-          import base64
-          from pathlib import Path
-          for image in sorted(Path('app/build/reports/ui').glob('browser-*.png')):
-              print('UI_SNAPSHOT ' + image.name + ' ' + base64.b64encode(image.read_bytes()).decode())
-          PY_UI
-
       - name: Upload UI previews
         if: always()
         uses: actions/upload-artifact@v6
