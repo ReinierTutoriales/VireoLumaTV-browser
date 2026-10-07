@@ -29,4 +29,4 @@ Additional component notices are recorded in [NOTICE.md](NOTICE.md). The histori
 
 ## Development status
 
-The [current work plan](docs/ROADMAP.md) and [consolidated audit](docs/audit/CONSOLIDATED_AUDIT_20261007.md) track the one-branch review, corrections and validation status. Older audits describe their own source revisions and must be checked against current code before applying changes.
+The [regression policy](docs/REGRESSION_POLICY.md), [contributor rules](AGENTS.md), [current work plan](docs/ROADMAP.md) and [consolidated audit](docs/audit/CONSOLIDATED_AUDIT_20261007.md) track the one-branch review, corrections and validation status. Older audits describe their own source revisions and must be checked against current code before applying changes.

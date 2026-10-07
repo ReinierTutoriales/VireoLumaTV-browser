@@ -22,12 +22,31 @@ con el código actual antes de aplicarlos.
 | Limpieza remota de ramas | Ocho ramas verificadas eliminadas; seis referencias históricas conservadas. |
 | Rendimiento, reproducción y mando en TV | Requieren dispositivo físico y medición. |
 
-## Siguiente trabajo en la misma rama
+## Línea de trabajo vigente
 
-1. Exigir checks verdes para el tip actual del [PR #76](https://github.com/ReinierTutoriales/VireoLumaTV-browser/pull/76) antes de integrar.
-2. Seguir las prioridades de la [auditoría Android TV oficial](audit/ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md): Atrás, permisos y restauración primero; después callbacks, ajustes y descargas.
-3. Medir en TV antes de afirmar mejoras de memoria o reproducción.
-4. Revisar el trabajo único de las ramas históricas conservadas antes de eliminarlas.
+La [política de estabilidad y modernización](REGRESSION_POLICY.md) y `AGENTS.md`
+son el contrato para este trabajo. La auditoría identifica evidencia; no impone
+parches que eliminen las barras ni cambia por sí sola el diseño de navegación.
+
+| Etapa | Trabajo | Condición de cierre |
+| --- | --- | --- |
+| 0 — Protección | Política, contrato N01–N10, plantilla PR y mapa de cobertura. | Documentado en esta rama; ampliar pruebas de eventos reales y TV sigue pendiente. |
+| 1 — Navegación | Estados separados para menú, barras, historial, IME, fullscreen, dialogs y salida; corregir restauración y callbacks. | Conservar controles inferiores/superiores y su foco; sin bucle ni pestaña vacía; regresiones cubiertas y validación TV. |
+| 2 — Experiencia protegida | Reintento observable de adblock, reglas válidas, política de popups/redirecciones y descargas explícitas con límites. | Sitios de prueba legítimos/abusivos; login, target=_blank y descargas voluntarias preservados; sin ráfagas de diálogos. |
+| 3 — Pestañas y recursos | Ahorro y evaluación de Equilibrado, precarga acotada, estado restaurable y presupuestos agregados. | Base y mediciones en onn 2 GB y dispositivo low-RAM; timers globales coordinados; pestaña activa y vídeo prioritarios. |
+| 4 — Motor WebView | Evaluar startup/navegación/cache/favicons de APIs estables existentes y recuperación. | Feature checks por proveedor, fallback, release y medición antes/después. |
+| 5 — UI TV | Renovar barra superior, estilos, tipografía/iconos/espaciado/foco y transiciones conservando acciones y barra inferior. | Propuesta visual, capturas comparables y N01–N10 intactos; mando, contraste y legibilidad comprobados. |
+| 6 — Actualizaciones y release | Revisar librerías/toolchain por grupos compatibles, pruebas minificadas, perfiles y documentación. | Changelog oficial actual, SHA con CI verde y evidencia pertinente; no actualización masiva ni release implícito. |
+
+Correcciones concretas F01–F09 y riesgos R01–R08 están en la
+[auditoría Android TV](audit/ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md).
+F01 requiere acordar la secuencia de salida respetando N01–N10; no quitar el
+menú ni reinterpretar el botón inferior Atrás. Estas etapas son pendientes de
+implementación, no mejoras ya entregadas. Comenzar cada etapa con los fallos
+reproducibles y sus pruebas, sin reescritura general del motor.
+
+Las ramas históricas conservadas se revisan por contenido único antes de
+eliminarlas; no se usan como cola automática de parches.
 
 ## Reglas de integración
 
