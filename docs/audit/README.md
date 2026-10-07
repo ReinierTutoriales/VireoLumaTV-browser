@@ -27,3 +27,5 @@ These two files preserve the full October 1, 2026 license/rebranding audit and m
 The consolidated brand, attribution, identity, privacy, distribution notices and license files are in the current repository root and `licenses/`. Resolved items include VireoLumaTV labels/assets/links, store screenshot removal, the package/application-ID migration, bundled license notices and disabling inherited update channels. The exact transitive release dependency inventory, device privacy behavior, artwork/mark clearance and device testing require their own follow-up.
 
 Original proposal PR: https://github.com/ReinierTutoriales/VireoLumaTV-browser/pull/49
+
+- [Actualización adblock sin TV: concurrencia y disparadores](ADBLOCK_OFF_DEVICE_20261007.md).

@@ -32,8 +32,9 @@ vacía como efecto permitido de ahorro.
 
 El bloqueador conserva reglas funcionales si falla la red, distingue resultados
 UPDATED/PARTIAL/CACHED/ERROR y programa timestamps de actualización (7 días) y
-reintento parcial (1 día). Un timestamp no ejecuta un trabajo por sí mismo:
-revisar disparadores de reintento en sesiones largas y retorno a primer plano.
+reintento parcial (1 día). Los disparadores de primer plano, sesión larga y conectividad se implementaron
+en el [lote adblock](audit/ADBLOCK_OFF_DEVICE_20261007.md); validar integración
+y compatibilidad real en TV sigue pendiente.
 No concluir que cada resultado CACHED significa fallo del bloqueador.
 
 ## 2. Contrato de navegación protegido
