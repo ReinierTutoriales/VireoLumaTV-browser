@@ -20,6 +20,7 @@ con el código actual antes de aplicarlos.
 | Pruebas Android y APK debug/release | Primera CI completa en verde; consultar los checks del PR para el tip actual. |
 | Publicación de rama y CI remoto | Rama publicada y CI ejecutada en el PR #76. |
 | Limpieza remota de ramas | Ocho ramas verificadas eliminadas; seis referencias históricas conservadas. |
+| Restauración rechazada y UA Default efectivo (F03/F07) | Arreglos publicados con pruebas que fallaron antes; aceptación mediante CI del tip actual. Ver [lote sin TV](audit/OFF_DEVICE_FIXES_20261007.md). |
 | Rendimiento, reproducción y mando en TV | Requieren dispositivo físico y medición. |
 
 ## Línea de trabajo vigente

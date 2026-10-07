@@ -5,7 +5,9 @@ Fecha: 2026-10-07. Base examinada: `f614e51`, CI
 completada correctamente. Trabajo en `fixes/consolidated-audit-20261007`, PR #76.
 
 Este documento desarrolla el roadmap vigente; no es otra cola de parches.
-Todas las tareas siguientes son **pendientes de implementación/validación**.
+El avance F03/F07 y su evidencia previa están en el
+[lote verificable sin TV](audit/OFF_DEVICE_FIXES_20261007.md). El resto de tareas
+siguientes es **pendiente de implementación/validación**.
 La política y las correcciones ya verificadas se conservan. «Inmejorable» se
 traduce aquí en criterios comprobables de funcionamiento y mejoras medidas;
 no en una garantía de perfección para todos los sitios/proveedores/hardware.

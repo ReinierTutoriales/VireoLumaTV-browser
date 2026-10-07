@@ -8,6 +8,11 @@ The October 5 topic audits remain evidence for their own source revisions, not
 instructions to reapply their patches. The previous work plan is preserved in
 [the October 7 archive](archive-2026-10-07/ROADMAP_PRE_CONSOLIDATION.md).
 
+## Avance verificable sin dispositivo
+
+[Restauración y User-Agent](OFF_DEVICE_FIXES_20261007.md): evidencia de fallos
+previos, correcciones aisladas, cobertura de CI y límites de la validación.
+
 ## Android TV y recursos limitados
 
 La [auditoría contra documentación oficial](ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md)
