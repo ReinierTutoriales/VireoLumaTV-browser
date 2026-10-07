@@ -90,6 +90,60 @@ class AdblockUpdateTest {
         }
     }
 
+    @Test fun manualRefreshDuringCacheRestoreIsNotLost() {
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val requests = java.util.concurrent.atomic.AtomicInteger()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/") { exchange ->
+            requests.incrementAndGet()
+            val bytes = "||fresh.test^".toByteArray()
+            exchange.sendResponseHeaders(200, bytes.size.toLong())
+            exchange.responseBody.use { it.write(bytes) }
+        }
+        server.start()
+        val engine = object : ContentBlockerEngine {
+            override val cacheFileName = "manual-refresh-test.dat"
+            override fun compile(filterText: String) = blocker("fresh.test")
+            override fun deserialize(file: File): ContentBlocker? {
+                entered.countDown()
+                check(release.await(5, TimeUnit.SECONDS))
+                return if (file.exists()) blocker(file.readText()) else null
+            }
+        }
+        val model = AdblockModel(engine, autoLoad = false)
+        val source = "http://127.0.0.1:${server.address.port}/"
+        model.config.adBlockListURL.value = source
+        model.config.adBlockListLastUpdate = System.currentTimeMillis()
+        model.config.adBlockListNextRetry = 0
+        val cache = AdblockCache.fileFor(VireoLumaTVApp.instance.filesDir, engine, source)
+        cache.writeText("cached.test")
+        try {
+            val automatic = model.loadAdBlockList(false)
+            shadowOf(Looper.getMainLooper()).idle()
+            assertTrue(entered.await(5, TimeUnit.SECONDS))
+            val manual = model.loadAdBlockList(true)
+            shadowOf(Looper.getMainLooper()).idle()
+            release.countDown()
+            finish(automatic)
+            finish(manual)
+            assertEquals("The manual request must refresh after the cache-only load", 1, requests.get())
+            assertTrue(model.isAd(Uri.parse("https://fresh.test/ad"), "image", Uri.parse("https://page.test")))
+            assertEquals(AdblockModel.UpdateResult.UPDATED, model.updateResult.value)
+        } finally {
+            release.countDown()
+            model.clear()
+            server.stop(0)
+            cache.delete()
+            File(VireoLumaTVApp.instance.filesDir, "adblock_list_custom_${AdblockCache.sourceKey(source)}.txt").delete()
+        }
+    }
+
+    private fun blocker(host: String) = object : ContentBlocker {
+        override fun shouldBlock(url: Uri, type: String?, baseHost: String) = url.host == host
+        override fun serialize(file: File): Boolean { file.writeText(host); return true }
+    }
+
     private fun finish(job: Job) {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
         while (!job.isCompleted && System.nanoTime() < deadline) {
