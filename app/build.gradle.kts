@@ -3,6 +3,11 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+ksp {
+    arg("room.incremental", "true")
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
     namespace = "com.reiniertutoriales.vireolumatv"
 
@@ -11,15 +16,6 @@ android {
         versionCode = 80
         versionName = "1.0.0"
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += mapOf(
-                    "room.incremental" to "true",
-                    //used when AppDatabase @Database annotation exportSchema = true. Useful for migrations
-                    "room.schemaLocation" to "$projectDir/schemas"
-                )
-            }
-        }
     }
 
     signingConfigs {
@@ -105,7 +101,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
     implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 
