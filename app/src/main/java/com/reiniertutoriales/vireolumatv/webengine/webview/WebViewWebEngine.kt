@@ -47,9 +47,8 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override var userAgentString: String? = null
         set(value) {
             field = value
-            if (value != null) {
-                webView?.settings?.userAgentString = value
-            }
+            // null selects the provider default, including on an already live WebView.
+            webView?.settings?.userAgentString = value
         }
 
     override fun saveState(): Any? {
