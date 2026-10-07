@@ -29,3 +29,5 @@ The consolidated brand, attribution, identity, privacy, distribution notices and
 Original proposal PR: https://github.com/ReinierTutoriales/VireoLumaTV-browser/pull/49
 
 - [Actualización adblock sin TV: concurrencia y disparadores](ADBLOCK_OFF_DEVICE_20261007.md).
+
+- [Renovación visual TV: diseño, capturas y eficiencia](TV_UI_REFRESH_20261007.md).

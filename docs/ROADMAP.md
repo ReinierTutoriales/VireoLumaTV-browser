@@ -22,6 +22,7 @@ con el código actual antes de aplicarlos.
 | Limpieza remota de ramas | Ocho ramas verificadas eliminadas; seis referencias históricas conservadas. |
 | Restauración rechazada y UA Default efectivo (F03/F07) | Arreglos publicados con pruebas que fallaron antes; aceptación mediante CI del tip actual. Ver [lote sin TV](audit/OFF_DEVICE_FIXES_20261007.md). |
 | Actualización adblock: solicitudes y disparadores | Correcciones publicadas con HTTP local/Robolectric; aceptación mediante CI del tip. Salud por fuente y sitios reales pendientes. Ver [lote adblock](audit/ADBLOCK_OFF_DEVICE_20261007.md). |
+| Renovación visual TV | Recursos de barras, pestañas y paleta; capturas/contraste/geometría automáticos. Validación de mando y rendimiento real pendiente. Ver [lote UI](audit/TV_UI_REFRESH_20261007.md). |
 | Rendimiento, reproducción y mando en TV | Requieren dispositivo físico y medición. |
 
 ## Línea de trabajo vigente
