@@ -7,4 +7,17 @@
     <string name="adblock_partial_update">Actualización parcial; se conservan las reglas guardadas. Reintento en 24 horas.</string>
     <string name="adblock_using_saved">Usando reglas guardadas. No se descargaron listas nuevas.</string>
     <string name="adblock_update_error">No se pudieron cargar las listas. Revisa la conexión o la URL.</string>
+    <string name="video_codec_policy">Códecs de vídeo (reproducción fluida en TV de pocos recursos)</string>
+    <array name="video_codec_policies">
+        <item>Automático: H.264 si VP9/AV1 no tienen decodificador por hardware</item>
+        <item>Siempre H.264 (bloquear VP9 y AV1)</item>
+        <item>Desactivado (decide cada web)</item>
+    </array>
+    <string name="video_max_quality">Calidad máxima de vídeo</string>
+    <array name="video_max_qualities">
+        <item>Automática</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </array>
 </resources>

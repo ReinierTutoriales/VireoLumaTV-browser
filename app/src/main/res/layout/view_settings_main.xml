@@ -288,9 +288,47 @@
         android:id="@+id/scAllowAutoplayMedia"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:nextFocusDown="@+id/scWebEngineDebug"
+        android:nextFocusDown="@+id/spVideoCodecPolicy"
         android:nextFocusUp="@+id/scWebViewAlgorithmicDarkeningWithDarkUiMode"
         android:layout_weight="0"
+        />
+  </LinearLayout>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:orientation="vertical"
+      android:paddingTop="5dp"
+      >
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/video_codec_policy"
+        android:textSize="16sp"
+        />
+    <Spinner
+        android:id="@+id/spVideoCodecPolicy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:dropDownWidth="400dp"
+        android:nextFocusUp="@+id/scAllowAutoplayMedia"
+        android:nextFocusDown="@+id/spVideoMaxQuality"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/video_max_quality"
+        android:textSize="16sp"
+        />
+    <Spinner
+        android:id="@+id/spVideoMaxQuality"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:dropDownWidth="300dp"
+        android:nextFocusUp="@+id/spVideoCodecPolicy"
+        android:nextFocusDown="@+id/scWebEngineDebug"
         />
   </LinearLayout>
 
@@ -315,7 +353,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:nextFocusDown="@+id/scKeepScreenOn"
-        android:nextFocusUp="@+id/scAllowAutoplayMedia"
+        android:nextFocusUp="@+id/spVideoMaxQuality"
         android:layout_weight="0"
         />
   </LinearLayout>

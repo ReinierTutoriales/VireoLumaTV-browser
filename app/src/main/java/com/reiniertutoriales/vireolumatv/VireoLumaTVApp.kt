@@ -64,6 +64,7 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
                 TimeUnit.SECONDS, ArrayBlockingQueue(maxThreadsInOfflineJobsPool))
 
         initWebEngineStuff()
+        threadPool.execute { com.reiniertutoriales.vireolumatv.webengine.webview.MediaPolicy.prewarm() }
 
         initNotificationChannels()
 

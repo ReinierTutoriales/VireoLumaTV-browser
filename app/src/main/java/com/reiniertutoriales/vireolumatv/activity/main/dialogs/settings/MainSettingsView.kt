@@ -47,6 +47,8 @@ class MainSettingsView @JvmOverloads constructor(
 
         initAllowAutoplayMediaUI()
 
+        initVideoPlaybackUI()
+
         initWebEngineDebugUI()
 
         initKeepScreenOnUI()
@@ -87,6 +89,28 @@ class MainSettingsView @JvmOverloads constructor(
             config.webviewUseAlgorithmicDarkeningWithDarkUiMode
         vb.scWebViewAlgorithmicDarkeningWithDarkUiMode.setOnCheckedChangeListener { _, isChecked ->
             config.webviewUseAlgorithmicDarkeningWithDarkUiMode = isChecked
+        }
+    }
+
+    private fun initVideoPlaybackUI() {
+        fun spinner(view: android.widget.Spinner, items: Int, selected: Int, onSelected: (Int) -> Unit) {
+            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, context.resources.getStringArray(items))
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            view.adapter = adapter
+            view.setSelection(selected, false)
+            view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) = onSelected(position)
+                override fun onNothingSelected(parent: AdapterView<*>) {}
+            }
+        }
+        // Applied from the next page load on (document-start script).
+        spinner(vb.spVideoCodecPolicy, R.array.video_codec_policies, config.videoCodecPolicy.ordinal) {
+            config.videoCodecPolicy = Config.VideoCodecPolicy.entries[it]
+        }
+        val heights = intArrayOf(0, 1080, 720, 480)
+        spinner(vb.spVideoMaxQuality, R.array.video_max_qualities,
+            heights.indexOf(config.videoMaxHeight).coerceAtLeast(0)) {
+            config.videoMaxHeight = heights[it]
         }
     }
 

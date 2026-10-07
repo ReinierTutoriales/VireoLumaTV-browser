@@ -106,6 +106,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     private var genericInjects: String? = null
     private val youtubeAdblock by lazy { YouTubeAdblockController(this) }
     private val cosmeticFilters by lazy { CosmeticFilterController(this) }
+    private val mediaPolicy by lazy { MediaPolicyController(this, config) }
     private val consoleLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     private val streamLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     private var webChromeClient_: WebChromeClient
@@ -487,6 +488,9 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 super.onPageStarted(view, url, favicon)
                 Log.d(TAG, "onPageStarted url: $url")
                 currentOriginalUrl = url.toUri()
+                mediaPolicy.onPageStarted()
+                // Settings changes apply from the next document on.
+                mediaPolicy.refresh()
                 if (url != "file:///android_asset/") certificateErrorPageUrl = null
                 callback.onPageStarted(url)
                 youtubeAdblock.onPage(url)
@@ -603,6 +607,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         }
 
         addJavascriptInterface(jsInterface, "VireoLumaTVApp")
+        // Before the first navigation, so the first page already sees the codec policy.
+        mediaPolicy.refresh()
     }
 
     override fun restoreState(inState: Bundle): WebBackForwardList? {
@@ -771,6 +777,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     override fun destroy() {
         youtubeAdblock.destroy()
         cosmeticFilters.destroy()
+        mediaPolicy.destroy()
         super.destroy()
     }
 

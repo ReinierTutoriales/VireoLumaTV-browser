@@ -30,6 +30,8 @@ class Config(val prefs: SharedPreferences) {
         const val HOME_PAGE_MODE = "home_page_mode"
         const val HOME_PAGE_SUGGESTIONS_MODE = "home_page_suggestions_mode"
         const val ALLOW_AUTOPLAY_MEDIA = "allow_autoplay_media"
+        const val VIDEO_CODEC_POLICY_KEY = "video_codec_policy"
+        const val VIDEO_MAX_HEIGHT_KEY = "video_max_height"
         const val WEBVIEW_USE_ALGORITHMIC_DARKENING_WITH_DARK_UI_MODE_KEY =
             "webview_use_algorithmic_darkening_with_dark_ui_mode"
         const val WEB_ENGINE_DEBUG_KEY = "web_engine_debug"
@@ -165,6 +167,22 @@ class Config(val prefs: SharedPreferences) {
             prefs.edit().putBoolean(MINIMAL_HOME_SEARCH_MIGRATED, true).apply()
         }
     }
+
+    enum class VideoCodecPolicy { AUTO, FORCE_H264, OFF }
+
+    /** AUTO keeps VP9/AV1 only when the device decodes them in hardware. */
+    var videoCodecPolicy: VideoCodecPolicy
+        get() = VideoCodecPolicy.entries.getOrElse(prefs.getInt(VIDEO_CODEC_POLICY_KEY, 0)) { VideoCodecPolicy.AUTO }
+        set(value) {
+            prefs.edit().putInt(VIDEO_CODEC_POLICY_KEY, value.ordinal).apply()
+        }
+
+    /** Maximum video height in pixels; 0 lets the site decide. */
+    var videoMaxHeight: Int
+        get() = prefs.getInt(VIDEO_MAX_HEIGHT_KEY, 0)
+        set(value) {
+            prefs.edit().putInt(VIDEO_MAX_HEIGHT_KEY, value).apply()
+        }
 
     var allowAutoplayMedia: Boolean
         get() = prefs.getBoolean(ALLOW_AUTOPLAY_MEDIA, false)

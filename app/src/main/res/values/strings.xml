@@ -195,4 +195,17 @@
     <string name="adblock_partial_update">Some lists updated; saved rules retained. Retry in 24 hours.</string>
     <string name="adblock_using_saved">Using saved rules. No new list was downloaded.</string>
     <string name="adblock_update_error">Could not load filter lists. Check the connection or list URL.</string>
+    <string name="video_codec_policy">Video codecs (smooth playback on low-end TVs)</string>
+    <array name="video_codec_policies">
+        <item>Automatic: H.264 when VP9/AV1 have no hardware decoder</item>
+        <item>Always H.264 (block VP9 and AV1)</item>
+        <item>Off (sites decide)</item>
+    </array>
+    <string name="video_max_quality">Maximum video quality</string>
+    <array name="video_max_qualities">
+        <item>Automatic</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </array>
 </resources>
