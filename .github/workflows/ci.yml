@@ -52,6 +52,23 @@ jobs:
           node scripts/test-youtube-adblock.cjs
           ./gradlew testGenericDebugUnitTest --stacktrace
 
+      - name: Record native UI previews
+        run: |
+          python - <<'PY_UI'
+          import base64
+          from pathlib import Path
+          for image in sorted(Path('app/build/reports/ui').glob('browser-*.png')):
+              print('UI_SNAPSHOT ' + image.name + ' ' + base64.b64encode(image.read_bytes()).decode())
+          PY_UI
+
+      - name: Upload UI previews
+        uses: actions/upload-artifact@v6
+        with:
+          name: browser-ui-previews
+          path: app/build/reports/ui/*.png
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Build debug APK
         run: ./gradlew assembleGenericDebug --stacktrace
 
