@@ -2,6 +2,7 @@
 
 Antes de editar código, leer `docs/REGRESSION_POLICY.md` y `docs/ROADMAP.md`.
 La política define contratos de producto y evidencias; el roadmap define el orden.
+Leer también `docs/IMPLEMENTATION_PLAN.md` para tareas y aceptación detalladas.
 Una auditoría o propuesta antigua no autoriza aplicar automáticamente sus parches.
 
 ## Contratos que debe conservar cada cambio
@@ -10,6 +11,8 @@ Una auditoría o propuesta antigua no autoriza aplicar automáticamente sus parc
   pestaña y controles de bloqueo. La superior conserva dirección/búsqueda,
   voz cuando esté disponible, ajustes y salida. No eliminar una barra para
   resolver un problema de Atrás ni reinterpretar una acción existente en silencio.
+- En fullscreen, Atrás debe cerrar el vídeo y mostrar ambas barras en la misma
+  acción, con foco inferior y ruta a la superior; conservar el callback existente.
 - Separar Atrás del sistema, historial de la página, cierre de fullscreen,
   cierre de IME/diálogo y apertura/cierre del menú. Probar cada transición.
 - Foco visible y controles alcanzables con D-pad. Foco no ejecuta acciones ni

@@ -24,6 +24,11 @@ con el código actual antes de aplicarlos.
 
 ## Línea de trabajo vigente
 
+Seguir el [plan detallado de ejecución](IMPLEMENTATION_PLAN.md): tareas por
+etapa, contrato fullscreen→barras→puntero, bloqueo, recursos, actualización
+de aplicación y condiciones de release. Este es el desarrollo del roadmap,
+no una cola adicional de cambios.
+
 La [política de estabilidad y modernización](REGRESSION_POLICY.md) y `AGENTS.md`
 son el contrato para este trabajo. La auditoría identifica evidencia; no impone
 parches que eliminen las barras ni cambia por sí sola el diseño de navegación.

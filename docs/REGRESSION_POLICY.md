@@ -6,6 +6,9 @@ una garantía técnica de cero regresiones; esta política exige pruebas y
 mediciones adecuadas al riesgo. Aplica a colaboradores y agentes mediante
 `AGENTS.md`, al trabajo mediante `ROADMAP.md` y a revisión mediante la plantilla PR.
 
+El [plan detallado de ejecución](IMPLEMENTATION_PLAN.md) concreta tareas,
+recorridos, mediciones y aceptación; mantiene separado lo propuesto de lo entregado.
+
 ## 1. Estado actual y restricciones reales
 
 Base de esta política: `660c0db`. Las pruebas actuales cubren partes del
@@ -44,7 +47,7 @@ MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 | N02 | Mover foco por barra inferior → Arriba → pestañas → búsqueda | Controles alcanzables, sin ocultar filas por recibir foco; buscar no abre IME hasta activar edición. |
 | N03 | Barra inferior Atrás/Adelante/Inicio/Recargar | Ejecutar una sola acción sobre la pestaña seleccionada; botones coherentes con historial. |
 | N04 | Editar dirección → Atrás/cancelar | Cerrar IME/edición antes de alterar historial; no enfocar accidentalmente Salir. |
-| N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view primero, restaurar barra/cursor/foco y no duplicar acciones ni navegar otra URL. |
+| N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view una vez y mostrar ambas barras en esa misma pulsación; foco inferior accionable, acceso a superior y retorno al puntero, sin navegar otra URL. |
 | N06 | Pestaña A → preview B → comando inferior | Aplicar al contenido seleccionado B, sin quedarse apuntando a A. |
 | N07 | Diálogo/selector/permiso → cancelar o volver | Resolver callback una vez con su propietario; foco vuelve al lugar correcto. |
 | N08 | Atrás desde raíz | Salida al launcher alcanzable y sin bucle, conservando acceso al menú y comandos inferiores. La secuencia exacta debe especificarse antes de implementarla. |
