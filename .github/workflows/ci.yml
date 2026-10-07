@@ -55,6 +55,13 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleGenericDebug --stacktrace
 
+      - name: Verify tracked Room v19 schema
+        run: |
+          schema='app/schemas/com.reiniertutoriales.vireolumatv.singleton.AppDatabase/19.json'
+          test -s "$schema"
+          git ls-files --error-unmatch "$schema"
+          git diff --exit-code -- app/schemas/
+
       - name: Upload generated Room schemas
         uses: actions/upload-artifact@v6
         with:
