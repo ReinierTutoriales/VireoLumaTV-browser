@@ -73,3 +73,17 @@ passed until the relevant checks run.
 Further debt to measure rather than change speculatively: main-thread Room access
 enabled by `allowMainThreadQueries`, the effect of `largeHeap` on the actual TV,
 and blocking filter-list I/O cancellation. These are not fixed by this branch.
+
+## Local cleanup completed in this branch
+
+- Replaced the old roadmap at its stable path with the current work plan and
+  preserved the complete old document under `archive-2026-10-07/`.
+- Added a current audit index and repaired README's broken license-audit link.
+- Removed the one-time `cleanup-once.yml` workflow: its hard-coded TV UI branch is
+  absent from the current GitHub branch list. Regular CI and release workflows
+  are retained.
+- Removed the unused `cleanup-repository-once.py` script, which mixed old run/branch
+  deletion with a release dispatch. No workflow references it. Its previous source
+  remains in Git history; the historical cleanup manifest remains as evidence.
+- No remote branch, PR, run or release was changed. Remote publication remains
+  blocked by automatic approval review after the second attempt.
