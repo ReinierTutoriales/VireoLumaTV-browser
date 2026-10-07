@@ -85,9 +85,9 @@ class BrowserUiSnapshotTest {
             bitmap.recycle()
             val address = vb.root.findViewById<TextView>(R.id.etUrl)
             assertEquals("System font scaling is honored", 18f * fontScale, address.textSize, 0.1f)
-            assertTrue("Enlarged URL text fits vertically", address.layout.getLineBottom(0) <=
+            assertTrue("Enlarged URL text fits vertically: line=${address.layout.getLineBottom(0)}, height=${address.height}, padding=${address.compoundPaddingTop + address.compoundPaddingBottom}", address.layout.getLineBottom(0) <=
                 address.height - address.compoundPaddingTop - address.compoundPaddingBottom)
-            verifyGeometry(vb)
+            verifyGeometry(vb, fontScale)
             verifyStates(activity, name)
         } finally {
             vb.root.removeAllViews()
@@ -98,7 +98,7 @@ class BrowserUiSnapshotTest {
             RuntimeEnvironment.setFontScale(previousScale)
         }
     }
-    private fun verifyGeometry(vb: ActivityMainBinding) {
+    private fun verifyGeometry(vb: ActivityMainBinding, fontScale: Float) {
         val topIds = listOf(R.id.ibVoiceSearch, R.id.ibHistory, R.id.ibFavorites,
             R.id.ibDownloads, R.id.ibIncognito, R.id.ibSettings, R.id.ibMenu)
         val bottomIds = listOf(R.id.ibCloseTab, R.id.ibBack, R.id.ibForward, R.id.ibRefresh,
@@ -123,7 +123,8 @@ class BrowserUiSnapshotTest {
             }
             val address = vb.root.findViewById<View>(R.id.etUrl)
             assertTrue("Address remains usable at $width", address.width >= 240)
-            assertEquals(48, address.height)
+            if (fontScale == 1f) assertEquals("Default address height", 48, address.height)
+            else assertTrue("Accessible text may expand the field", address.height >= 48)
         }
     }
 

@@ -18,7 +18,7 @@ La geometría cambia: validación de mando y lectura a distancia sigue pendiente
 
 | Elemento | Cambio |
 | --- | --- |
-| Barra superior | Botones de 48 dp, iconos existentes ajustados a 24 dp, separación uniforme y márgenes; URL de 18 sp en campo de 48 dp con fondo propio. |
+| Barra superior | Botones de 48 dp, iconos existentes ajustados a 24 dp, separación uniforme y márgenes; URL de 18 sp en campo con fondo propio, mínimo de 48 dp y altura adaptable al tamaño de texto. |
 | Barra inferior | Mismas siete acciones en controles de 48 dp, superficie opaca y espacio vertical/horizontal para el foco. |
 | Pestañas | Fila de 48 dp, favicon de 24 dp, tipografía del sistema de 18 sp, título de una línea con ellipsis; selección/foco por formas XML. |
 | Menú del puntero | Conserva botones y geometría; usa el mismo estilo y color de iconos del tema, sustituyendo el gris fijo. |
@@ -58,6 +58,12 @@ El primer intento `9e12e7c` falló por calificadores de prueba mal ordenados;
 `e6bff56` corrige esa configuración y su
 [CI 37623030100](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/37623030100)
 pasa pruebas, capturas, debug, Room y release minificado. Esto no es evidencia de un fallo de la app.
+
+La prueba de texto al 150 % detectó recorte en el campo inicialmente fijo de
+48 dp: [CI 37624092386](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/37624092386),
+119 pruebas, una fallida y una omitida. La altura pasa a un mínimo de 48 dp
+con contenido adaptable; se conserva la aserción de texto completo y el
+valor exacto de 48 dp con escala normal. No se reduce ni se fija la fuente.
 
 La CI del tip es la aceptación automática y debe quedar verde para ese SHA.
 Incluye:
