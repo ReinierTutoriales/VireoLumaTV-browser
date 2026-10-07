@@ -13,24 +13,20 @@ con el código actual antes de aplicarlos.
 
 | Área | Estado de esta rama |
 | --- | --- |
-| Tema guardado fuera de rango | Corrección y pruebas de regresión preparadas. |
-| User-Agent personalizado | Corrección y pruebas del selector preparadas. |
-| Room v19 | Configuración KSP corregida; generación e inspección del JSON pendientes de CI. |
+| Tema guardado fuera de rango | Corrección y pruebas de regresión pasan en CI. |
+| User-Agent personalizado | Corrección y pruebas del selector pasan en CI. |
+| Room v19 | Esquema generado, inspeccionado y versionado; CI comprueba cambios inesperados. |
 | JavaScript de inicio, controles y YouTube | Tres suites locales pasan. |
-| Pruebas Android y APK debug/release | Pendientes; no equivalen a las pruebas JavaScript. |
-| Publicación de rama y CI remoto | Bloqueadas por revisión automática de autorización. |
-| Limpieza remota de ramas | Pendiente; las ramas remotas conservan su contenido. |
+| Pruebas Android y APK debug/release | Primera CI completa en verde; consultar los checks del PR para el tip actual. |
+| Publicación de rama y CI remoto | Rama publicada y CI ejecutada en el PR #76. |
+| Limpieza remota de ramas | Ocho ramas verificadas eliminadas; seis referencias históricas conservadas. |
 | Rendimiento, reproducción y mando en TV | Requieren dispositivo físico y medición. |
 
 ## Siguiente trabajo en la misma rama
 
-1. Publicar la rama y abrir un único PR contra `fixes/audit`.
-2. Ejecutar CI, revisar resultados y resolver solo fallos comprobados.
-3. Recuperar el esquema generado de Room, inspeccionarlo, versionarlo y comprobar
-   cambios de esquema en CI. Sustituir el PR antiguo de Room después de verificarlo.
-4. Verificar ajustes en el TV y medir antes de cambiar memoria, WebView o reproducción.
-5. Retirar ramas integradas después de comprobar su contenido y conservar cualquier
-   trabajo único o prueba histórica útil.
+1. Exigir checks verdes para el tip actual del [PR #76](https://github.com/ReinierTutoriales/VireoLumaTV-browser/pull/76) antes de integrar.
+2. Verificar ajustes en el TV y medir antes de cambiar memoria, WebView o reproducción.
+3. Revisar el trabajo único de las ramas históricas conservadas antes de eliminarlas.
 
 ## Reglas de integración
 

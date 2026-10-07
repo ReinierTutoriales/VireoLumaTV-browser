@@ -17,9 +17,10 @@ base commits; their proposals must be checked against current code before use.
 Room reference: https://developer.android.com/training/data-storage/room/migrating-db-versions
 The schema JSON must come from Room compilation, never be handwritten.
 Export configuration does not change entities, database version or migration SQL.
-The generated v19 JSON still needs retrieval, inspection and version control after
-CI is authorized and succeeds; schema-export configuration alone does not establish
-coverage of historical migrations.
+The v19 JSON was retrieved from CI artifact `11474177793`, inspected and committed.
+Its identity is `a0e95140d37989600ef637430ae467ae`; its five tables, indexes and setup
+SQL were validated with SQLite. CI now rejects untracked or changed schema JSON.
+This does not establish coverage of historical migrations.
 
 ## Consolidation decisions
 
@@ -32,7 +33,7 @@ fixes. No historical branch was blindly merged or cherry-picked.
 | Home/search/preview branch | Current `CursorLayout.kt` matches its cursor implementation; later focus fixes are already on the base. Keep the current tree. |
 | Older input, navigation, security and privacy branches | Different commit hashes and patch IDs are not evidence that changes are missing after integration. Reviewed current settings observers, navigation/cursor tests, bridge context/token checks, private-tab cleanup and serialized tab writes; do not replace them with old snapshots. |
 | `perf/onn-2gb` | Main already releases background WebViews before creating the replacement. The old manifest also lacks later private downloads components. Do not merge that old tree. `largeHeap` remains a separate measurement question. |
-| Draft PR #41 | Its database source path predates package migration. Port only its KSP/schema-export intent to the current package; do not apply the old patch. The old PR has not been closed. |
+| Draft PR #41 | Its database source path predates package migration. Port only its KSP/schema-export intent to the current package; do not apply the old patch. The old PR is superseded by PR #76; its branch is retained. |
 | Old validation documents | Physical-device scenarios remain useful references; old defect lists and performance expectations are not proof about build 80. |
 
 ## Validation status
@@ -46,29 +47,28 @@ Executed locally and passed:
 - Checked that no entity/DAO/migration SQL, application ID, version code, video
   scripts, renderer lifecycle, cursor dispatch or adblock implementation changed.
 
-Not executed for this branch:
+Android validation executed successfully on published commit `20cc6bfb`:
+[CI run 37604054177](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/37604054177).
+It ran the JavaScript suites, all Android unit tests including the added settings
+regressions, the debug APK build and the minified release build. Room generated
+schema v19 successfully. Local Gradle downloads remain unavailable; remote CI
+provides the Android build evidence.
 
-- Android/Kotlin tests and APK builds: local Gradle download fails with
-  `Network is unreachable`; the environment has Java 17, while this project
-  requires Java 21 for the Gradle daemon.
-- GitHub Actions: publishing the branch was blocked by automatic approval review
-  pending explicit authorization to upload the local changes.
-- TV/onn playback, memory and remote-control testing: no physical device attached.
+PR #76 contains the complete work on one branch. Its current checks are the
+source of truth for subsequent commits, including the schema-diff safeguard:
+https://github.com/ReinierTutoriales/VireoLumaTV-browser/pull/76
 
-The branch is a reviewable local candidate, not a tested release. Do not publish an
-APK, claim lower RAM use or uninterrupted playback, or mark Android regressions as
-passed until the relevant checks run.
+Physical TV/onn playback, memory and remote-control testing remain pending.
+No APK release was published and no performance improvement is attributed to
+these settings/build-configuration corrections.
 
-## Next actions on this same branch
+## Remaining work on this same branch
 
-1. Publish this branch and open one draft PR against `fixes/audit`.
-2. Run existing CI: all JS and Android unit tests, debug APK and minified release.
-3. Retrieve the generated Room v19 schema, inspect its identity and entities,
-   commit the generated JSON, and add a CI check for unexpected schema changes.
-4. Re-run CI after the generated-schema commit; replace draft PR #41 only after
-   its infrastructure is verified in this branch.
-5. Check the settings flow on the TV. Changes to WebView memory, video, fullscreen
+1. Require green checks for the current PR tip before integration.
+2. Check the settings flow on the TV; changes to WebView memory, video, fullscreen
    or blocking require separate physical evidence before implementation.
+3. Historical branches without verified integration remain preserved; review their
+   unique work before any further deletion.
 
 Further debt to measure rather than change speculatively: main-thread Room access
 enabled by `allowMainThreadQueries`, the effect of `largeHeap` on the actual TV,
@@ -85,5 +85,28 @@ and blocking filter-list I/O cancellation. These are not fixed by this branch.
 - Removed the unused `cleanup-repository-once.py` script, which mixed old run/branch
   deletion with a release dispatch. No workflow references it. Its previous source
   remains in Git history; the historical cleanup manifest remains as evidence.
-- No remote branch, PR, run or release was changed. Remote publication remains
-  blocked by automatic approval review after the second attempt.
+- After explicit authorization, published PR #76 and executed remote CI.
+- Deleted the eight branches below only after proving their entire trees identical
+  to ancestor commits of `fixes/audit`, checking their current SHA, excluding open-PR
+  and protected branches, and using a deletion lease. The default branch stayed at
+  `521c214`. No release or previous successful run was deleted.
+- Cleanup succeeded in [run 37604824836](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/37604824836).
+  Its temporary workflow was removed after completion; regular CI/release workflows
+  remain. The exact cleanup code is retained in commit `12c72f86`.
+
+| Deleted branch | Identical integrated commit |
+| --- | --- |
+| `fixes/credits-20261006` | `29047977` |
+| `fixes/engine-adblock-audit-20261006` | `dfa75b7e` |
+| `fixes/home-search-preview-20261006` | `90deabd3` |
+| `fixes/input-adblock-recovery-20261005` | `20239306` |
+| `fixes/minimal-home-20261006` | `58598d88` |
+| `fixes/tv-menu-focus-20261006` | `49e91288` |
+| `fixes/tv-navigation-20261005` | `1928ffa1` |
+| `fixes/tv-tab-focus-20261006` | `521c214a` |
+
+Retained historical branches: `docs/onn-validation-checkpoint`,
+`fixes/ci-js-bridge-context-guards`, `infra/room-v19-schema-export`, `perf/onn-2gb`,
+`review/privacy-security-stability`, and `security/js-bridge-context-guards`.
+Their complete integration was not established by the identical-tree check.
+They are references or pending review, not additional active work branches.
