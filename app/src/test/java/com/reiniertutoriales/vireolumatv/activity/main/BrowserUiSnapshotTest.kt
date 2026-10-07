@@ -27,10 +27,10 @@ import java.io.File
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class BrowserUiSnapshotTest {
-    @Test @Config(qualifiers = "w960dp-h540dp-mdpi-notnight")
+    @Test @Config(qualifiers = "w960dp-h540dp-notnight-mdpi")
     fun dayControls() = capture("day")
 
-    @Test @Config(qualifiers = "w960dp-h540dp-mdpi-night")
+    @Test @Config(qualifiers = "w960dp-h540dp-night-mdpi")
     fun nightControls() = capture("night")
 
     private fun capture(name: String) {
@@ -67,7 +67,7 @@ class BrowserUiSnapshotTest {
             val bitmap = Bitmap.createBitmap(960, 540, Bitmap.Config.ARGB_8888)
             vb.root.draw(Canvas(bitmap))
             val output = File("build/reports/ui/browser-$name.png")
-            output.parentFile.mkdirs()
+            output.parentFile!!.mkdirs()
             output.outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
             assertTrue("Native drawing must include browser controls", bitmap.getPixel(10, 10) !=
                 Color.rgb(100, 116, 139))
