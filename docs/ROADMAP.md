@@ -25,8 +25,9 @@ con el código actual antes de aplicarlos.
 ## Siguiente trabajo en la misma rama
 
 1. Exigir checks verdes para el tip actual del [PR #76](https://github.com/ReinierTutoriales/VireoLumaTV-browser/pull/76) antes de integrar.
-2. Verificar ajustes en el TV y medir antes de cambiar memoria, WebView o reproducción.
-3. Revisar el trabajo único de las ramas históricas conservadas antes de eliminarlas.
+2. Seguir las prioridades de la [auditoría Android TV oficial](audit/ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md): Atrás, permisos y restauración primero; después callbacks, ajustes y descargas.
+3. Medir en TV antes de afirmar mejoras de memoria o reproducción.
+4. Revisar el trabajo único de las ramas históricas conservadas antes de eliminarlas.
 
 ## Reglas de integración
 
