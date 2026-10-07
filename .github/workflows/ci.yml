@@ -51,6 +51,7 @@ jobs:
           node scripts/test-webview-controls.cjs
           node scripts/test-youtube-adblock.cjs
           node scripts/test-media-policy.cjs
+          node scripts/test-window-open-decoy.cjs
           ./gradlew testGenericDebugUnitTest --stacktrace
 
       - name: Build debug APK
