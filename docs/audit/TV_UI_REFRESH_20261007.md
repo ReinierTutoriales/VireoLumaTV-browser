@@ -25,14 +25,28 @@ La geometría cambia: validación de mando y lectura a distancia sigue pendiente
 | Estados | Normal, foco, pulsado, activo y deshabilitado diferenciados; contorno de foco de 2 dp. El foco no escala ni cambia el tamaño de la vista. |
 | Ajustes/controles compartidos | Paleta de tema coherente, indicadores nativos con el mismo acento y foco visible en pestañas activadas. Se conserva geometría de diálogos. |
 
-Capturas de referencia Android con el estilo anterior:
+Capturas Android revisadas antes/después, con el mismo fixture de contenido:
 
-| Claro | Oscuro |
-| --- | --- |
-| ![Antes claro](assets/BEFORE_browser-day.png) | ![Antes oscuro](assets/BEFORE_browser-night.png) |
+| Tema | Antes | Después |
+| --- | --- | --- |
+| Claro | ![Antes claro](assets/BEFORE_browser-day.png) | ![Después claro](assets/AFTER_browser-day.png) |
+| Oscuro | ![Antes oscuro](assets/BEFORE_browser-night.png) | ![Después oscuro](assets/AFTER_browser-night.png) |
 
-Las nuevas capturas y la matriz de estados se encuentran en el artefacto
-`browser-ui-previews` del check CI asociado al commit del nuevo estilo.
+Texto al 150 % (URL completa disponible mediante edición/desplazamiento;
+la captura muestra la parte que cabe horizontalmente):
+
+![Texto ampliado](assets/AFTER_browser-day-large-text.png)
+
+Matriz de fondos de estado, dibujada con los mismos recursos Android:
+
+![Estados claros](assets/AFTER_browser-states-day.png)
+![Estados oscuros](assets/AFTER_browser-states-night.png)
+
+Las capturas posteriores proceden del código `1e931f5`:
+[CI 37624791673](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/37624791673),
+artefacto `browser-ui-previews`. La CI completa pasó: Android/JS, capturas, debug, esquema Room
+sin deriva y release minificado. Las imágenes anteriores están versionadas para
+que la comparación no dependa de la caducidad del artefacto CI.
 
 ## Decisiones de eficiencia
 
@@ -89,7 +103,8 @@ mayor al 150 %, todas las traducciones, mando/puntero y rendimiento medido.
 Las pruebas de geometría y contraste no garantizan legibilidad desde el sofá.
 No se entrega una release ni se integra automáticamente el PR por este lote.
 
-La renovación de recursos/pruebas `b8c9b2b` se puede revertir sin migración de datos.
+La renovación de recursos/pruebas `b8c9b2b` y la altura adaptable `0982c3a`
+se pueden revertir sin migración de datos.
 Las capturas y ajustes de infraestructura son commits separados del estilo.
 
 ## Fuentes oficiales consultadas
