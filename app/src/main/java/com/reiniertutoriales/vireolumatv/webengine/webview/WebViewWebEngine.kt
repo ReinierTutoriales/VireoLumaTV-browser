@@ -447,6 +447,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         override fun onPopupNavigation(url: Uri): Boolean =
             tab.popupGuard?.onNavigation(url) ?: false
 
+        override fun isTabUnderAd(url: Uri): Boolean =
+            callback?.isTabUnderAd(url, webView?.currentOriginalUrl) ?: false
+
         override fun onPopupPageFinished(url: String?) {
             tab.popupGuard?.onPageFinished(url)
         }

@@ -468,25 +468,45 @@ class AdblockModel @JvmOverloads constructor(
     fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean {
         val baseHost = baseUri.host ?: return false
         val current = installedClient ?: return false
-        val result = try {
-            synchronized(current.lock) {
-                val activeClient = current.blocker
-                val decisions = current.decisions
-                val text = url.toString()
-                val key = if (text.length <= 2048 && baseHost.length <= 255)
-                    DecisionKey(text, type, baseHost) else null
-                key?.let { decisions.get(it) }?.let { return@synchronized it }
-                val blocked = activeClient.shouldBlock(url, type, baseHost)
-                if (key != null) decisions.put(key, blocked)
-                blocked
-            }
+        val text = url.toString()
+        val key = if (text.length <= 2048 && baseHost.length <= 255)
+            DecisionKey(text, type, baseHost) else null
+        // LruCache is internally synchronized: cached answers never wait for a native match that
+        // another WebView thread is running.
+        key?.let { current.decisions.get(it) }?.let { return it }
+        val blocked = try {
+            synchronized(current.lock) { current.blocker.shouldBlock(url, type, baseHost) }
         } catch (e: Exception) {
             if (current.failureLogged.compareAndSet(false, true)) {
                 Log.e(TAG, "Adblock matcher failed; later requests can retry", e)
             }
+            return false
+        }
+        if (key != null) current.decisions.put(key, blocked)
+        return blocked
+    }
+
+    /** Memory pressure: decisions are rebuilt on demand, rules stay loaded. */
+    fun trimMemory() {
+        installedClient?.decisions?.evictAll()
+    }
+
+    /**
+     * "Tab-under": a click opens the content elsewhere and sends this tab to a popunder network.
+     * Only the dedicated popup rules are used, and only for third-party destinations.
+     */
+    fun isTabUnderAd(url: Uri, page: Uri?): Boolean {
+        if (url.scheme != "http" && url.scheme != "https") return false
+        val host = url.host?.lowercase(Locale.ROOT) ?: return false
+        val pageHost = page?.host?.lowercase(Locale.ROOT)?.takeIf { it.isNotEmpty() } ?: return false
+        if (isSameSite(host, pageHost)) return false
+        val aux = auxiliary ?: return false
+        val popup = aux.popup ?: return false
+        return try {
+            synchronized(aux.lock) { popup.shouldBlock(url, "document", pageHost) }
+        } catch (e: Exception) {
             false
         }
-        return result
     }
 
     /**

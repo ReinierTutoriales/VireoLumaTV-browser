@@ -671,6 +671,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
         FaviconsPool.trimMemory()
+        if (::adblockModel.isInitialized) adblockModel.trimMemory()
         super.onTrimMemory(level)
     }
 
@@ -1373,6 +1374,14 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 HostConfig.POPUP_BLOCK_NEW_AUTO_OPENED_TABS -> dialog || !userGesture
                 else -> true
             }
+        }
+
+        override fun isTabUnderAd(url: Uri, page: Uri?): Boolean {
+            if (!isAdBlockingEnabled() || !adblockModel.isTabUnderAd(url, page)) return false
+            Log.i(TAG, "Blocked tab-under navigation to ${url.host}")
+            tab.blockedPopups++
+            showBlockedPopup(tab, newTab = true)
+            return true
         }
 
         override fun onBlockedAds(count: Int) {

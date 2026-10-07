@@ -32,6 +32,8 @@ interface WebEngineWindowProviderCallback {
     fun isAdBlockingEnabled(): Boolean
     fun isDialogsBlockingEnabled(): Boolean
     fun shouldBlockNewWindow(dialog: Boolean, userGesture: Boolean): Boolean
+    /** Page-initiated navigation of this tab to a popunder network; true cancels it. */
+    fun isTabUnderAd(url: Uri, page: Uri?): Boolean = false
     fun onBlockedAds(count: Int)
     fun onBlockedDialog(newTab: Boolean)
     fun onCreateWindow(dialog: Boolean, userGesture: Boolean): View?

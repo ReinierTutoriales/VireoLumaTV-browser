@@ -79,6 +79,11 @@ class AdblockPopupAndCosmeticTest {
             assertFalse(model.isPopupAd(Uri.parse("https://accounts.site.test/login"), page))
             assertFalse(model.isPopupAd(Uri.parse("https://other.test/"), page))
             assertEquals(".ad-box{display:none!important}", model.cosmeticCss("www.example.test"))
+            assertTrue("A page sending its own tab to a popunder network is stopped",
+                model.isTabUnderAd(Uri.parse("https://popads.test/go"), page))
+            assertFalse("Ordinary ad servers are not navigation targets to cancel",
+                model.isTabUnderAd(Uri.parse("https://adserver.test/"), page))
+            assertFalse(model.isTabUnderAd(Uri.parse("https://popads.test/go"), Uri.parse("https://popads.test/")))
             assertEquals("", model.cosmeticCss("site.test"))
 
             val compiled = engine.compiles

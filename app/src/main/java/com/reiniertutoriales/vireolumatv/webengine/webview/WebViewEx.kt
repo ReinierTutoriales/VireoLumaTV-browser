@@ -52,6 +52,7 @@ import androidx.webkit.WebViewFeature
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.adblock.AdblockSurrogates
 import com.reiniertutoriales.vireolumatv.utils.DPADNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.Utils
 import java.net.URLEncoder
@@ -166,6 +167,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         /** Main-frame navigation of a page-opened window; true cancels it as a popup ad. */
         fun onPopupNavigation(url: Uri): Boolean
         fun onPopupPageFinished(url: String?)
+        /** Page-initiated main-frame navigation to a popunder network (tab-under). */
+        fun isTabUnderAd(url: Uri): Boolean
     }
 
     init {
@@ -434,6 +437,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 // Redirect chains of a popunder (ad network -> advertiser) arrive here.
                 if (request.isForMainFrame && callback.onPopupNavigation(request.url)) return true
+                // Never called for loadUrl() from the address bar: only links, scripts and redirects.
+                if (request.isForMainFrame && callback.isTabUnderAd(request.url)) return true
                 return callback.shouldOverrideUrlLoading(request.url.toString())
             }
 
@@ -478,6 +483,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                     if (pendingBlockedAds.getAndIncrement() == 0) {
                         uiHandler.postDelayed(reportBlockedAdsRunnable, BLOCKED_ADS_REPORT_DELAY_MS)
                     }
+                    AdblockSurrogates.responseFor(view.context, request.url)?.let { return it }
                     val response = WebResourceResponse("text/plain", "utf-8", "".byteInputStream())
                     response.setStatusCodeAndReasonPhrase(403, "Blocked")
                     response
