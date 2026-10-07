@@ -55,6 +55,14 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleGenericDebug --stacktrace
 
+      - name: Upload generated Room schemas
+        uses: actions/upload-artifact@v6
+        with:
+          name: room-schemas
+          path: app/schemas/**/*.json
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Validate release build
         env:
           CI_SIGN_RELEASE_WITH_DEBUG_KEY: ${{ env.HAS_DEBUG_KEYSTORE }}
