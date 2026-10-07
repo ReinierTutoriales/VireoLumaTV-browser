@@ -20,6 +20,8 @@ import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -34,6 +36,7 @@ class AdblockModel @JvmOverloads constructor(
         const val TAG: String = "AdblockModel"
 
         const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 7 //7 days
+        internal const val FOREGROUND_CHECK_INTERVAL_MS = 15 * 60_000L
         private const val PARTIAL_UPDATE_RETRY_MINUTES = 60 * 24 //1 day
         private const val EASY_PRIVACY_URL = "https://easylist.to/easylist/easyprivacy.txt"
         private const val EASY_LIST_SPANISH_URL = "https://easylist-downloads.adblockplus.org/easylistspanish.txt"
@@ -90,9 +93,50 @@ class AdblockModel @JvmOverloads constructor(
         }
     }
 
+    private var automaticUpdates: Job? = null
+
+    // Only check deadlines while the browser is resumed; a check is not a forced download.
+    fun startAutomaticUpdates(): Job {
+        automaticUpdates?.takeIf { it.isActive }?.let { return it }
+        return modelScope.launch {
+            while (isActive) {
+                loadAdBlockList(false).join()
+                delay(FOREGROUND_CHECK_INTERVAL_MS)
+            }
+        }.also { automaticUpdates = it }
+    }
+
+    fun stopAutomaticUpdates() {
+        automaticUpdates?.cancel()
+        automaticUpdates = null
+    }
+
+    private var updateJob: Job? = null
+    private var pendingForceReload = false
+    private var refreshRequested = false
+
+    // Callers on Main share one job, including a manual refresh queued during cache restoration.
+    fun loadAdBlockList(forceReload: Boolean): Job {
+        updateJob?.takeIf { it.isActive }?.let { active ->
+            if (forceReload && !refreshRequested) pendingForceReload = true
+            return active
+        }
+        return modelScope.launch {
+            try {
+                var force = forceReload
+                do {
+                    pendingForceReload = false
+                    loadOnce(force)
+                    force = pendingForceReload
+                } while (force && isActive)
+            } finally {
+                updateJob = null
+            }
+        }.also { updateJob = it }
+    }
+
     @Suppress("BlockingMethodInNonBlockingContext")
-    fun loadAdBlockList(forceReload: Boolean): Job = modelScope.launch {
-        if (clientLoading.value) return@launch
+    private suspend fun loadOnce(forceReload: Boolean) {
         val configuredUrl = config.adBlockListURL.value
         val checkDate = Calendar.getInstance()
         checkDate.timeInMillis = config.adBlockListLastUpdate
@@ -100,6 +144,7 @@ class AdblockModel @JvmOverloads constructor(
         val now = Calendar.getInstance()
         val retryAt = config.adBlockListNextRetry
         val needUpdate = forceReload || if (retryAt != 0L) now.timeInMillis >= retryAt else checkDate.before(now)
+        refreshRequested = needUpdate
         clientLoading.value = true
         var loadedClient: ContentBlocker? = null
         var downloadAttempted = false
@@ -182,7 +227,7 @@ class AdblockModel @JvmOverloads constructor(
                     Log.w(TAG, "No usable adblock list available")
                 }
             }
-            if (config.adBlockListURL.value != configuredUrl) return@launch
+            if (config.adBlockListURL.value != configuredUrl) return
             //if nothing could be loaded keep the current client (if any) instead of replacing it with an empty one
             loadedClient?.let {
                 installClient(it, configuredUrl)
@@ -203,7 +248,7 @@ class AdblockModel @JvmOverloads constructor(
             }
         } finally {
             clientLoading.value = false
-            if (config.adBlockListURL.value != configuredUrl) loadAdBlockList(true)
+            if (config.adBlockListURL.value != configuredUrl) pendingForceReload = true
         }
     }
 
@@ -326,6 +371,7 @@ class AdblockModel @JvmOverloads constructor(
     }
 
     override fun onClear() {
+        stopAutomaticUpdates()
         config.adBlockListURL.unsubscribe(sourceObserver)
         installedClient = null
         super.onClear()

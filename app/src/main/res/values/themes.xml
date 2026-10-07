@@ -12,6 +12,11 @@
     </style>
 
     <style name="Theme.VireoLumaTV" parent="Theme.VireoLumaTVBase">
+        <item name="colorAccent">@color/ui_focus_border</item>
+        <item name="colorControlActivated">@color/ui_focus_border</item>
+        <item name="colorButtonNormal">@color/button_background</item>
+        <item name="android:textColorPrimary">@color/day_night_text_color_contrast</item>
+        <item name="android:textColorSecondary">@color/day_night_text_color</item>
     </style>
 
     <style name="SettingsDialog">

@@ -47,23 +47,18 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override var userAgentString: String? = null
         set(value) {
             field = value
-            if (value != null) {
-                webView?.settings?.userAgentString = value
-            }
+            // null selects the provider default, including on an already live WebView.
+            webView?.settings?.userAgentString = value
         }
 
-    override fun saveState(): Any {
+    override fun saveState(): Any? {
         val bundle = Bundle()
-        webView?.saveState(bundle)
-        return bundle
+        return if (webView?.saveState(bundle) != null) bundle else null
     }
 
-    override fun restoreState(savedInstanceState: Any) {
-        if (savedInstanceState is Bundle) {
-            webView?.restoreState(savedInstanceState)
-        } else {
-            throw IllegalArgumentException("savedInstanceState must be Bundle")
-        }
+    override fun restoreState(savedInstanceState: Any): Boolean {
+        require(savedInstanceState is Bundle) { "savedInstanceState must be Bundle" }
+        return webView?.restoreState(savedInstanceState) != null
     }
 
     override fun stateFromBytes(bytes: ByteArray): Any? =

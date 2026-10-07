@@ -236,8 +236,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val activeNetwork = cm.activeNetworkInfo
             val isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
-            val tab = tabsModel.currentTab.value ?: return
-            tab.webEngine.setNetworkAvailable(isConnected)
+            if (isConnected) adblockModel.loadAdBlockList(false)
+            tabsModel.currentTab.value?.webEngine?.setNetworkAvailable(isConnected)
         }
     }
 
@@ -727,11 +727,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     override fun onResume() {
         super.onResume()
         val intentFilter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
+        adblockModel.startAutomaticUpdates()
         registerReceiver(mConnectivityChangeReceiver, intentFilter)
         tabsModel.currentTab.value?.webEngine?.onResume()
     }
 
     override fun onPause() {
+        adblockModel.stopAutomaticUpdates()
         unregisterReceiver(mConnectivityChangeReceiver)
         tabsModel.currentTab.value?.apply {
             webEngine.onPause()

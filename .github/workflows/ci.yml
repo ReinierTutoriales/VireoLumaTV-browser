@@ -52,8 +52,32 @@ jobs:
           node scripts/test-youtube-adblock.cjs
           ./gradlew testGenericDebugUnitTest --stacktrace
 
+      - name: Upload UI previews
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: browser-ui-previews
+          path: app/build/reports/ui/*.png
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Build debug APK
         run: ./gradlew assembleGenericDebug --stacktrace
+
+      - name: Verify tracked Room v19 schema
+        run: |
+          schema='app/schemas/com.reiniertutoriales.vireolumatv.singleton.AppDatabase/19.json'
+          test -s "$schema"
+          git ls-files --error-unmatch "$schema"
+          git diff --exit-code -- app/schemas/
+
+      - name: Upload generated Room schemas
+        uses: actions/upload-artifact@v6
+        with:
+          name: room-schemas
+          path: app/schemas/**/*.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Validate release build
         env:
