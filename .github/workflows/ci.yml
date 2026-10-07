@@ -53,6 +53,7 @@ jobs:
           ./gradlew testGenericDebugUnitTest --stacktrace
 
       - name: Record native UI previews
+        if: always()
         run: |
           python - <<'PY_UI'
           import base64
@@ -62,6 +63,7 @@ jobs:
           PY_UI
 
       - name: Upload UI previews
+        if: always()
         uses: actions/upload-artifact@v6
         with:
           name: browser-ui-previews
