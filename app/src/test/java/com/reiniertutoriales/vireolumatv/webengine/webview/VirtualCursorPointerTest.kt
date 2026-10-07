@@ -3,12 +3,16 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 import android.app.Activity
 import android.app.Application
 import android.os.Looper
+import android.os.SystemClock
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
+import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
+import org.robolectric.shadows.ShadowSystemClock
+import java.time.Duration
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -108,5 +112,35 @@ class VirtualCursorPointerTest {
         key(delegate, KeyEvent.ACTION_UP)
         shadowOf(Looper.getMainLooper()).idle()
         assertArrayEquals(intArrayOf(1, 0), clicks)
+    }
+
+    /** Distance covered while Right is held for [holdMs], rendering one frame every [frameMs]. */
+    private fun distanceWhileHolding(frameMs: Long, holdMs: Long): Float {
+        var distance = 0f
+        withCursor { delegate, _, _ ->
+            delegate.init()
+            delegate.cursorPosition.set(10f, 400f)
+            val update = CursorDrawerDelegate::class.java.getDeclaredField("cursorUpdateRunnable")
+                .apply { isAccessible = true }.get(delegate) as Runnable
+            assertTrue(delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT)))
+            val end = SystemClock.uptimeMillis() + holdMs
+            while (SystemClock.uptimeMillis() < end) {
+                ShadowSystemClock.advanceBy(Duration.ofMillis(frameMs))
+                update.run()
+            }
+            distance = delegate.cursorPosition.x - 10f
+            delegate.resetInput()
+        }
+        return distance
+    }
+
+    @Test fun cursorSpeedDoesNotDependOnTheDeviceFrameRate() {
+        val app = org.robolectric.RuntimeEnvironment.getApplication()
+        AppContext.init(app, com.reiniertutoriales.vireolumatv.Config(app.getSharedPreferences("cursor-speed-test", 0)))
+        val at60fps = distanceWhileHolding(frameMs = 16, holdMs = 400)
+        val at30fps = distanceWhileHolding(frameMs = 33, holdMs = 400)
+        assertTrue("The cursor must move: $at60fps", at60fps > 50f)
+        // A slow TV must not move the cursor at half speed just because it renders fewer frames.
+        assertEquals(at60fps, at30fps, at60fps * 0.15f)
     }
 }

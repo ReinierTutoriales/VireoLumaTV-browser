@@ -124,6 +124,16 @@ class BrowserNavigationTest {
         assertTrue(f.page.hasFocus())
     }
 
+    @Test fun controlsRefreshBackAfterHistoryChangedWithoutPageLoad() = Fixture().use { f ->
+        // pushState (YouTube and other SPAs) changes history without onPageStarted/onPageFinished.
+        f.vb.ibBack.isEnabled = false
+        f.vb.ibForward.isEnabled = false
+        f.call("handleBackNavigation")
+        assertTrue(f.vb.ibBack.isEnabled)
+        assertTrue(f.vb.ibForward.isEnabled)
+        assertTrue("Back must be reachable as the first bottom-bar command", f.vb.ibBack.hasFocus())
+    }
+
     @Test fun tabsLeadToSearchAndExitingAddressDoesNotFocusCloseApp() = Fixture().use { f ->
         val bar = f.vb.vActionBar
         val address = bar.findViewById<EditText>(R.id.etUrl)

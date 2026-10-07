@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Point
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.Parcel
 import android.view.WindowManager
@@ -104,8 +105,9 @@ object Utils {
 
     fun isNetworkConnected(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = cm.activeNetworkInfo
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting
+        // NetworkInfo is deprecated since API 29; capabilities are available from API 23 (minSdk 24).
+        val capabilities = cm.getNetworkCapabilities(cm.activeNetwork ?: return false) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     fun isSameDate(date: Long, other: Long): Boolean {

@@ -34,7 +34,11 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
     val cursorPosition = PointF(0f, 0f)
     private val cursorSpeed = PointF(0f, 0f)
     private val paint = Paint()
-    private var lastCursorUpdate = System.currentTimeMillis() - CURSOR_DISAPPEAR_TIMEOUT
+    // Monotonic clock: wall-clock changes (NTP sync on TV boxes) must not hide or freeze the cursor.
+    private var lastCursorUpdate = SystemClock.uptimeMillis() - CURSOR_DISAPPEAR_TIMEOUT
+    // Read from preferences once per movement, not on every animation frame.
+    private var speedCap = 0f
+    private var accelerationScale = 1f
     private var dpadCenterPressed = false
     val isSelectionPressed: Boolean get() = dpadCenterPressed
     internal var tmpPointF = PointF()
@@ -66,7 +70,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
 
     private val isCursorDisappear: Boolean
         get() {
-            val newTime = System.currentTimeMillis()
+            val newTime = SystemClock.uptimeMillis()
             return newTime - lastCursorUpdate > CURSOR_DISAPPEAR_TIMEOUT
         }
 
@@ -215,7 +219,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
                     if (grabMode) {
                         //nop
                     } else if (isCursorDisappear) {
-                        lastCursorUpdate = System.currentTimeMillis()
+                        lastCursorUpdate = SystemClock.uptimeMillis()
                         surface.postInvalidate()
                         scheduleCursorHide()
                     } else {
@@ -261,11 +265,14 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
     }
 
     private fun handleDirectionKeyEvent(event: KeyEvent, x: Int, y: Int, keyDown: Boolean) {
-        lastCursorUpdate = System.currentTimeMillis()
+        lastCursorUpdate = SystemClock.uptimeMillis()
         if (keyDown) {
             if (surface.keyDispatcherState.isTracking(event)) {
                 return
             }
+            val cfg = AppContext.provideConfig()
+            speedCap = maxSpeedBaselinePx * (cfg.cursorMaxSpeedPercent / 100f)
+            accelerationScale = cfg.cursorAccelerationPercent / 100f
             surface.removeCallbacks(cursorUpdateRunnable)
             surface.post(cursorUpdateRunnable)
             surface.keyDispatcherState.startTracking(event, this)
@@ -381,13 +388,15 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
         override fun run() {
             mainHandler.removeCallbacks(cursorHideRunnable)
 
-            val newTime = System.currentTimeMillis()
-            val dTime = newTime - lastCursorUpdate
+            val newTime = SystemClock.uptimeMillis()
+            // Bounded so a long GC/renderer stall does not turn into a cursor jump.
+            val dTime = (newTime - lastCursorUpdate).coerceIn(1L, MAX_FRAME_TIME_MS)
             lastCursorUpdate = newTime
+            // Speeds are tuned in px per 60 Hz frame. Scale by the real frame time so a TV that only
+            // renders 25-30 fps moves the cursor and scrolls as fast as a 60 fps device.
+            val frameScale = dTime / REFERENCE_FRAME_TIME_MS
 
-            val cfg = AppContext.provideConfig()
-            val speedCap = maxSpeedBaselinePx * (cfg.cursorMaxSpeedPercent / 100f)
-            val accelerationFactor = 0.05f * (cfg.cursorAccelerationPercent / 100f) * dTime
+            val accelerationFactor = 0.05f * accelerationScale * dTime
             //float decelerationFactor = 1 - Math.min(0.5f, 0.005f * dTime);
             cursorSpeed.set(bound(cursorSpeed.x/* * decelerationFactor*/ + bound(cursorDirection.x.toFloat(), 1f) * accelerationFactor, speedCap),
                 bound(cursorSpeed.y/* * decelerationFactor*/ + bound(cursorDirection.y.toFloat(), 1f) * accelerationFactor, speedCap))
@@ -402,7 +411,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
                 return
             }
             tmpPointF.set(cursorPosition)
-            cursorPosition.offset(cursorSpeed.x, cursorSpeed.y)
+            cursorPosition.offset(cursorSpeed.x * frameScale, cursorSpeed.y * frameScale)
             surface.removeCallbacks(longPressRunnable)
             if (cursorPosition.x < 0) {
                 cursorPosition.x = 0f
@@ -418,20 +427,20 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
             var dy = 0
             if (cursorPosition.y > surface.height - scrollStartPadding) {
                 if (cursorSpeed.y > 0) {
-                    dy = cursorSpeed.y.toInt()
+                    dy = (cursorSpeed.y * frameScale).toInt()
                 }
             } else if (cursorPosition.y < scrollStartPadding) {
                 if (cursorSpeed.y < 0) {
-                    dy = cursorSpeed.y.toInt()
+                    dy = (cursorSpeed.y * frameScale).toInt()
                 }
             }
             if (cursorPosition.x > surface.width - scrollStartPadding) {
                 if (cursorSpeed.x > 0) {
-                    dx = cursorSpeed.x.toInt()
+                    dx = (cursorSpeed.x * frameScale).toInt()
                 }
             } else if (cursorPosition.x < scrollStartPadding) {
                 if (cursorSpeed.x < 0) {
-                    dx = cursorSpeed.x.toInt()
+                    dx = (cursorSpeed.x * frameScale).toInt()
                 }
             }
             if (dx != 0 || dy != 0) {
@@ -459,7 +468,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
     }
 
     fun animateAppearing() {
-        lastCursorUpdate = System.currentTimeMillis()
+        lastCursorUpdate = SystemClock.uptimeMillis()
         scheduleCursorHide()
         cursorRadiusAnimationMultiplier = 2f
         val animator = ValueAnimator.ofFloat(2f, 1f)
@@ -481,7 +490,8 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
             return
         }
         this.pinchZoomIn = pinchZoomIn
-        this.pinchZoomStartTime = System.currentTimeMillis()
+        // MotionEvent times must come from SystemClock.uptimeMillis() (MotionEvent.obtain contract).
+        this.pinchZoomStartTime = SystemClock.uptimeMillis()
         val deltaX = zoomFactor / 2f * surface.height
         val deltaY = zoomFactor / 2f * surface.height
         val deltaX2 = deltaX / 2f
@@ -544,19 +554,27 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
         event = MotionEvent.obtain(
             pinchZoomStartTime, pinchZoomStartTime,
             MotionEvent.ACTION_DOWN, 1, properties,
-            pointerCoords, 0, 0, 1f, 1f, 0, 0, 0, 0
+            pointerCoords, 0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0
         )
-        surface.dispatchTouchEvent(event)
+        dispatchAndRecycle(event)
 
         //step 2
         event = MotionEvent.obtain(
             pinchZoomStartTime, pinchZoomStartTime,
-            MotionEvent.ACTION_POINTER_2_DOWN, 2,
-            properties, pointerCoords, 0, 0, 1f, 1f, 0, 0, 0, 0
+            POINTER_2_DOWN, 2,
+            properties, pointerCoords, 0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0
         )
-        surface.dispatchTouchEvent(event)
+        dispatchAndRecycle(event)
 
-        surface.post(pinchZoomRunnable)
+        surface.postOnAnimation(pinchZoomRunnable)
+    }
+
+    private fun dispatchAndRecycle(event: MotionEvent) {
+        try {
+            surface.dispatchTouchEvent(event)
+        } finally {
+            event.recycle()
+        }
     }
 
     /** Stop held keys and synthetic gestures when a menu/dialog or another tab takes input. */
@@ -580,7 +598,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
 
     fun hideCursor() {
         resetInput()
-        lastCursorUpdate = System.currentTimeMillis() - CURSOR_DISAPPEAR_TIMEOUT - 1L
+        lastCursorUpdate = SystemClock.uptimeMillis() - CURSOR_DISAPPEAR_TIMEOUT - 1L
         surface.postInvalidate()
     }
 
@@ -627,7 +645,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
                 val pointerCoords = arrayOfNulls<MotionEvent.PointerCoords>(2)
                 val pc1 = MotionEvent.PointerCoords()
                 val pc2 = MotionEvent.PointerCoords()
-                val now = System.currentTimeMillis()
+                val now = SystemClock.uptimeMillis()
                 if (now - pinchZoomStartTime < pinchZoomDuration) {
                     val progress = (now - pinchZoomStartTime).toFloat() / pinchZoomDuration
                     //step 3, 4
@@ -641,10 +659,11 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
                     val event = MotionEvent.obtain(
                         pinchZoomStartTime, now,
                         MotionEvent.ACTION_MOVE, 2, properties,
-                        pointerCoords, 0, 0, 1f, 1f, 0, 0, 0, 0
+                        pointerCoords, 0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0
                     )
-                    surface.dispatchTouchEvent(event)
-                    surface.post(pinchZoomRunnable)
+                    dispatchAndRecycle(event)
+                    // One gesture step per display frame instead of a busy Handler loop.
+                    surface.postOnAnimation(pinchZoomRunnable)
                 } else {
                     //step 5
                     pc1.x = endPoint1.x
@@ -655,18 +674,18 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
                     pointerCoords[1] = pc2
                     var event = MotionEvent.obtain(
                         pinchZoomStartTime, now,
-                        MotionEvent.ACTION_POINTER_2_UP, 2, properties,
-                        pointerCoords, 0, 0, 1f, 1f, 0, 0, 0, 0
+                        POINTER_2_UP, 2, properties,
+                        pointerCoords, 0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0
                     )
-                    surface.dispatchTouchEvent(event)
+                    dispatchAndRecycle(event)
 
                     // step 6
                     event = MotionEvent.obtain(
                         pinchZoomStartTime, now,
                         MotionEvent.ACTION_UP, 1, properties,
-                        pointerCoords, 0, 0, 1f, 1f, 0, 0, 0, 0
+                        pointerCoords, 0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0
                     )
-                    surface.dispatchTouchEvent(event)
+                    dispatchAndRecycle(event)
                     pinchZoomStartTime = 0
                 }
             }
@@ -677,6 +696,13 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
         private val TAG = CursorDrawerDelegate::class.java.simpleName
         private const val UNCHANGED = Integer.MIN_VALUE
         private const val CURSOR_DISAPPEAR_TIMEOUT = 5000
+        private const val REFERENCE_FRAME_TIME_MS = 1000f / 60f
+        private const val MAX_FRAME_TIME_MS = 50L
+        // Second pointer down/up, without the deprecated ACTION_POINTER_2_* constants.
+        private const val POINTER_2_DOWN =
+            MotionEvent.ACTION_POINTER_DOWN or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT)
+        private const val POINTER_2_UP =
+            MotionEvent.ACTION_POINTER_UP or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT)
         private const val USE_SCROLL_HACK = true
         private const val SCROLL_HACK_PADDING = 300
         //100ms more to let underlying view handle long press first

@@ -5,19 +5,18 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
-import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -118,6 +117,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         const val REQUEST_CODE_UNKNOWN_APP_SOURCES = 10007
         private const val MY_PERMISSIONS_REQUEST_VOICE_SEARCH_PERMISSIONS = 10008
         private const val COMMON_REQUESTS_START_CODE = 10100
+        private const val THUMBNAIL_CAPTURE_DELAY_MS = 1500L
     }
 
     private lateinit var vb: ActivityMainBinding
@@ -158,7 +158,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         adblockModel = ActiveModelsRepository.get(AdblockModel::class, this)
         tabsModel = ActiveModelsRepository.get(TabsModel::class, this)
         autoUpdateModel = ActiveModelsRepository.get(AutoUpdateModel::class, this)
-        uiHandler = Handler()
+        uiHandler = Handler(Looper.getMainLooper())
         prefs = getSharedPreferences(VireoLumaTVApp.MAIN_PREFS_NAME, Context.MODE_PRIVATE)
         vb = ActivityMainBinding.inflate(layoutInflater)
         setContentView(vb.root)
@@ -231,13 +231,17 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.progressBar.startAnimation(anim)
     }
 
-    private val mConnectivityChangeReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val activeNetwork = cm.activeNetworkInfo
-            val isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
-            val tab = tabsModel.currentTab.value ?: return
-            tab.webEngine.setNetworkAvailable(isConnected)
+    // Replaces the deprecated CONNECTIVITY_ACTION broadcast. Callbacks arrive on a binder thread.
+    private var networkCallbackRegistered = false
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) = postNetworkState()
+        override fun onLost(network: Network) = postNetworkState()
+    }
+
+    private fun postNetworkState() {
+        uiHandler.post {
+            if (isDestroyed) return@post
+            tabsModel.currentTab.value?.webEngine?.setNetworkAvailable(Utils.isNetworkConnected(this))
         }
     }
 
@@ -726,13 +730,30 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     override fun onResume() {
         super.onResume()
-        val intentFilter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
-        registerReceiver(mConnectivityChangeReceiver, intentFilter)
+        if (!networkCallbackRegistered) {
+            try {
+                (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
+                    .registerDefaultNetworkCallback(networkCallback)
+                networkCallbackRegistered = true
+            } catch (e: RuntimeException) {
+                // Some TV firmwares throw SecurityException/TooManyRequestsException here; the
+                // state is still refreshed on every tab attach.
+                Log.w(TAG, "Can not register network callback", e)
+            }
+        }
         tabsModel.currentTab.value?.webEngine?.onResume()
     }
 
     override fun onPause() {
-        unregisterReceiver(mConnectivityChangeReceiver)
+        if (networkCallbackRegistered) {
+            networkCallbackRegistered = false
+            try {
+                (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
+                    .unregisterNetworkCallback(networkCallback)
+            } catch (e: IllegalArgumentException) {
+                Log.w(TAG, "Network callback was not registered", e)
+            }
+        }
         tabsModel.currentTab.value?.apply {
             webEngine.onPause()
             onPause()
@@ -1002,6 +1023,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.vActionBar.dismissExtendedAddressBarMode()
 
         vb.rlActionBar.visibility = View.VISIBLE
+        // History can change without onPageStarted (pushState on YouTube and other SPAs): refresh
+        // Back/Forward before choosing the initial focus, or Back stays disabled and unreachable.
+        tabsModel.currentTab.value?.let { onWebViewUpdated(it) }
         // Focus is part of the transition, not an animation completion callback.
         if (!vb.ibBack.requestFocus()) vb.ibHome.requestFocus()
         vb.rlActionBar.translationY = -vb.rlActionBar.height.toFloat()
@@ -1260,6 +1284,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
             tab.blockedAds = 0
             tab.blockedPopups = 0
+            uiHandler.removeCallbacks(captureThumbnailRunnable)
             // Update the URL before starting the host lookup, including redirects.
             lifecycleScope.launch { tabsModel.findHostConfig(tab, false) }
             onWebViewUpdated(tab)
@@ -1283,6 +1308,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
             //thumbnail
             tabsModel.tabsStates.onEach { if (it != tab) it.thumbnail = null }
+            // A software draw of the WebView is expensive on low-end TV SoCs. Do it once the page
+            // has settled instead of on every onPageFinished (redirect chains, iframes, SPA loads).
+            uiHandler.removeCallbacks(captureThumbnailRunnable)
+            uiHandler.postDelayed(captureThumbnailRunnable, THUMBNAIL_CAPTURE_DELAY_MS)
+        }
+
+        private val captureThumbnailRunnable = Runnable {
+            if (isFinishing || isDestroyed || tab.closed || tabsModel.currentTab.value !== tab ||
+                tab.webEngine.getView()?.isAttachedToWindow != true) return@Runnable
             lifecycleScope.launch {
                 val newThumbnail = tab.webEngine.renderThumbnail(tab.thumbnail)
                 if (newThumbnail != null) {

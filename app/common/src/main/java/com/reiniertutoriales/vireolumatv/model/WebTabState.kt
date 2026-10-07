@@ -115,7 +115,9 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
                             var fos: FileOutputStream? = null
                             try {
                                 fos = FileOutputStream(file)
-                                thumbnail.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                                // JPEG encodes an RGB_565 preview several times faster than PNG on TV CPUs.
+                                // BitmapFactory detects the format, so the legacy .png name is kept.
+                                thumbnail.compress(Bitmap.CompressFormat.JPEG, 85, fos)
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             } finally {
