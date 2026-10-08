@@ -182,10 +182,11 @@ Alcance de la prueba, en una rama aislada:
 Solo se adopta si mejora de forma medible a `ad-block 0.0.4` sin superar el presupuesto
 de memoria del onn. Licencia MPL-2.0.
 
-Estado (rama `adblock-rust`): capa JNI en `native/adblock-jni` (adblock 0.13.3, jni 0.22),
+Estado: adoptado en la versión 1.1.0 (F4, F5 y F6 integradas en `fixes/audit`). Capa JNI en `native/adblock-jni` (adblock 0.13.3, jni 0.22),
 compilada por Gradle con el NDK 28.2 para `arm64-v8a`, `armeabi-v7a` y `x86_64`; los tests de
 JVM cargan una compilación de host del mismo motor. Medido en x86_64 con las mismas listas y
-URLs (pendiente repetir en el onn):
+URLs (pendiente repetir en el onn). En Chromium con sitios reales y el mismo motor: 98/100 en
+adblock-tester.com.
 
 | | ad-block 0.0.4 | adblock-rust 0.13.3 |
 |---|---|---|

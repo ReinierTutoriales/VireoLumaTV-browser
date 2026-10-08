@@ -36,6 +36,7 @@ MPL 2.0: [license text](licenses/MPL-2.0.txt).
 Source: https://github.com/brave/adblock-rust/tree/v0.13.3 — exact transitive versions are pinned in
 `native/adblock-jni/Cargo.lock`. The other crates linked into the library are licensed MIT,
 Apache 2.0, Unicode-3.0 or Unlicense (dual-licensed crates are used under MIT or Apache 2.0).
+The list of these crates and their license texts is in `licenses/rust-crates.txt`.
 Preserve per-file notices and make the exact corresponding source available with binary distribution.
 
 Filter lists (EasyList, EasyPrivacy, EasyList Spanish, uBlock Origin filters) are downloaded at
