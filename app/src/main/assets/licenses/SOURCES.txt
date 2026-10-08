@@ -1,4 +1,4 @@
-VireoLumaTV includes TV Bro sources, DownloadUtils.kt with MPL 2.0 and Apache 2.0 notices, and ad-block native code covered by MPL 2.0.
+VireoLumaTV includes TV Bro sources, DownloadUtils.kt with MPL 2.0 and Apache 2.0 notices, and the adblock-rust engine (MPL 2.0) built by native/adblock-jni.
 
 Application-source base reviewed for this proposal:
 https://github.com/ReinierTutoriales/VireoLumaTV-browser/tree/c339fcfb848593491a683f8aeec6efb50d73dadb
@@ -7,8 +7,9 @@ Current namespace migration and covered DownloadUtils.kt source:
 https://github.com/ReinierTutoriales/VireoLumaTV-browser/tree/f1146b5506d77c244bffd5f1c3e5c21078f36644
 https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/f1146b5506d77c244bffd5f1c3e5c21078f36644/app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt
 
-ad-block 0.0.4 sources, including checked-in native bloom-filter-cpp/hashset-cpp:
-https://github.com/truefedex/ad-block/tree/3bbb044bc3f9e3806c98207766e6a4c5f90ac5b3
+adblock-rust 0.13.3 sources (native ad blocking engine, MPL 2.0):
+https://github.com/brave/adblock-rust/tree/v0.13.3
+JNI bridge and pinned dependency versions: native/adblock-jni (Cargo.lock) in the application source commit.
 
 segmented-button v1.0.0:
 https://github.com/truefedex/segmented-button/tree/238b39df3f090a804b60401c2169275fe8d28770

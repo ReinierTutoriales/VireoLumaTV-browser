@@ -106,7 +106,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     private var virtualCursorMode: Boolean = true
     private var genericInjects: String? = null
     private val youtubeAdblock by lazy { YouTubeAdblockController(this) }
-    private val cosmeticFilters by lazy { CosmeticFilterController(this) }
+    private val adblockPage by lazy { AdblockPageController(this) }
     private val mediaPolicy by lazy { MediaPolicyController(this, config) }
     private val consoleLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     private val streamLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
@@ -153,6 +153,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         fun isAdBlockingEnabled(): Boolean
         fun isDialogsBlockingEnabled(): Boolean
         fun isAd(request: WebResourceRequest, baseUri: Uri): Boolean
+        /** `data:` URL of the `$redirect` resource for a blocked request, if any. */
+        fun adRedirect(request: WebResourceRequest, baseUri: Uri): String?
         fun onBlockedAds(count: Int)
         fun onBlockedDialog(newTab: Boolean)
         fun onCreateWindow(dialog: Boolean, userGesture: Boolean): WebViewEx?
@@ -483,6 +485,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                     if (pendingBlockedAds.getAndIncrement() == 0) {
                         uiHandler.postDelayed(reportBlockedAdsRunnable, BLOCKED_ADS_REPORT_DELAY_MS)
                     }
+                    currentPageUrl?.let { callback.adRedirect(request, it) }
+                        ?.let { dataUrlResponse(it) }?.let { return it }
                     AdblockSurrogates.responseFor(view.context, request.url)?.let { return it }
                     val response = WebResourceResponse("text/plain", "utf-8", "".byteInputStream())
                     response.setStatusCodeAndReasonPhrase(403, "Blocked")
@@ -507,7 +511,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 Log.d(TAG, "onPageFinished url: $url")
                 callback.onPageFinished(url)
                 callback.onPopupPageFinished(url)
-                cosmeticFilters.onPageFinished(url)
+                adblockPage.onPageFinished(url)
                 // The static start page needs no media/link scripts; external pages retain them.
                 if (!BridgePagePolicy.isPackagedHomePage(currentOriginalUrl)) {
                     evaluateJavascript(getGenericJSInjects(), null)
@@ -684,6 +688,22 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         }
     }
 
+    /** Answers a blocked request with a `data:base64` redirect resource from adblock-rust. */
+    private fun dataUrlResponse(dataUrl: String): WebResourceResponse? {
+        val comma = dataUrl.indexOf(',')
+        if (!dataUrl.startsWith("data:") || comma < 0) return null
+        val header = dataUrl.substring(5, comma)
+        val mime = header.substringBefore(';').ifEmpty { "text/plain" }
+        val bytes = try {
+            if (header.endsWith(";base64")) android.util.Base64.decode(dataUrl.substring(comma + 1), android.util.Base64.DEFAULT)
+            else Uri.decode(dataUrl.substring(comma + 1)).toByteArray()
+        } catch (e: IllegalArgumentException) {
+            return null
+        }
+        return WebResourceResponse(mime, "utf-8", 200, "OK",
+            mapOf("Access-Control-Allow-Origin" to "*", "Cache-Control" to "no-store"), bytes.inputStream())
+    }
+
     private fun getGenericJSInjects(): String {
         var injects = genericInjects
         if (injects == null) {
@@ -773,7 +793,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     fun onUpdateAdblockSetting(adblockEnabled: Boolean) {
         youtubeAdblock.setEnabled(adblockEnabled)
-        cosmeticFilters.setEnabled(adblockEnabled)
+        adblockPage.setEnabled(adblockEnabled)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Malware/phishing protection is independent of the advertising preference.
             settings.safeBrowsingEnabled = true
@@ -782,7 +802,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     override fun destroy() {
         youtubeAdblock.destroy()
-        cosmeticFilters.destroy()
+        adblockPage.destroy()
         mediaPolicy.destroy()
         super.destroy()
     }

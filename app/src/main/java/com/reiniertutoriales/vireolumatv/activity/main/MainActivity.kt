@@ -163,8 +163,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
         settingsModel = ActiveModelsRepository.get(SettingsModel::class, this)
         adblockModel = ActiveModelsRepository.get(AdblockModel::class, this)
-        val cosmeticSource = adblockModel
-        WebViewWebEngine.cosmeticCssProvider = { host -> cosmeticSource.cosmeticCss(host) }
+        val filterSource = adblockModel
+        WebViewWebEngine.pageFiltersProvider = { url -> filterSource.pageFilters(url) }
         tabsModel = ActiveModelsRepository.get(TabsModel::class, this)
         autoUpdateModel = ActiveModelsRepository.get(AutoUpdateModel::class, this)
         uiHandler = Handler(Looper.getMainLooper())
@@ -1356,6 +1356,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         override fun isAd(url: Uri, requestType: String?, baseUri: Uri): Boolean? {
             return adblockModel.isAd(url, requestType, baseUri)
         }
+
+        override fun adRedirect(url: Uri, requestType: String?, baseUri: Uri): String? =
+            adblockModel.redirectFor(url, requestType, baseUri)
 
         override fun isAdBlockingEnabled(): Boolean {
             return tab.adblock ?: config.adBlockEnabled

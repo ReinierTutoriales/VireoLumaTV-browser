@@ -1,6 +1,50 @@
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
+
 plugins {
     id("vireolumatv.android.application")
     alias(libs.plugins.ksp)
+}
+
+/** ABIs shipped with the Rust adblock engine. 32-bit x86 Android TV hardware does not exist. */
+val rustAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+
+/** Compiles native/adblock-jni (Brave's adblock-rust behind JNI) with the NDK toolchain. */
+abstract class BuildRustAdblock : DefaultTask() {
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val sources: ConfigurableFileCollection
+
+    @get:Internal
+    abstract val crateDir: DirectoryProperty
+
+    @get:Internal
+    abstract val ndkDirectory: DirectoryProperty
+
+    @get:Input
+    abstract val minSdk: Property<Int>
+
+    @get:Input
+    abstract val abis: ListProperty<String>
+
+    /** Android libraries by ABI; when [hostLibrary] is set, only the host build runs. */
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @get:Input
+    abstract val hostLibrary: Property<Boolean>
+
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
+    @TaskAction
+    fun build() {
+        val script = crateDir.file("build.sh").get().asFile.absolutePath
+        val out = outputDir.get().asFile.absolutePath
+        val args = if (hostLibrary.get()) listOf(script, ndkDirectory.get().asFile.absolutePath, "/dev/null", out, minSdk.get().toString())
+            else listOf(script, ndkDirectory.get().asFile.absolutePath, out, "-", minSdk.get().toString()) + abis.get()
+        execOperations.exec { commandLine(args) }
+    }
 }
 
 android {
@@ -8,8 +52,11 @@ android {
 
     defaultConfig {
         applicationId = "com.reiniertutoriales.vireolumatv"
-        versionCode = 86
+        versionCode = 87
         versionName = "1.0.0"
+        ndk {
+            abiFilters += rustAbis
+        }
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -21,6 +68,8 @@ android {
             }
         }
     }
+
+    ndkVersion = libs.versions.android.ndk.get()
 
     signingConfigs {
         create("release") {
@@ -57,7 +106,7 @@ android {
         abi {
             isEnable = project.hasProperty("enableAbiSplits")
             reset()
-            include("armeabi-v7a", "arm64-v8a", "x86_64")
+            include(*rustAbis.toTypedArray())
             isUniversalApk = false
         }
     }
@@ -112,9 +161,42 @@ dependencies {
     implementation(libs.androidx.room.ktx)
 
     implementation(libs.segmented.button)
-    implementation(libs.ad.block)
     implementation(libs.pinned.section.listview)
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
+}
+val rustCrate = rootProject.layout.projectDirectory.dir("native/adblock-jni")
+fun BuildRustAdblock.configureCrate() {
+    crateDir.set(rustCrate)
+    sources.from(rustCrate.file("Cargo.toml"), rustCrate.file("Cargo.lock"), rustCrate.file("build.sh"), rustCrate.dir("src"))
+    ndkDirectory.set(androidComponents.sdkComponents.ndkDirectory)
+    minSdk.set(libs.versions.android.minSdk.get().toInt())
+    abis.set(rustAbis)
+}
+
+val buildRustAdblock by tasks.registering(BuildRustAdblock::class) {
+    configureCrate()
+    hostLibrary.set(false)
+    outputDir.set(layout.buildDirectory.dir("rust/jniLibs"))
+}
+
+// Host build of the same engine: JVM unit tests load it instead of a fake.
+val buildRustAdblockHost by tasks.registering(BuildRustAdblock::class) {
+    configureCrate()
+    hostLibrary.set(true)
+    outputDir.set(layout.buildDirectory.dir("rust/host"))
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.sources.jniLibs?.addGeneratedSourceDirectory(buildRustAdblock, BuildRustAdblock::outputDir)
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    dependsOn(buildRustAdblockHost)
+    val hostLib = buildRustAdblockHost.flatMap { it.outputDir.file("libvireoadblock.so") }
+    inputs.files(hostLib)
+    doFirst { systemProperty("vireo.adblock.hostLib", hostLib.get().asFile.absolutePath) }
 }

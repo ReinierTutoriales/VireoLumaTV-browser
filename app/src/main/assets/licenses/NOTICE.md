@@ -27,14 +27,20 @@ Copyright (c) 2018, Fedir Tsapana. All rights reserved.
 BSD 2-Clause license; full copyright, conditions, and disclaimer: [license text](licenses/segmented-button-BSD-2-Clause.txt).
 Source: https://github.com/truefedex/segmented-button/tree/v1.0.0 (commit `238b39df3f090a804b60401c2169275fe8d28770`).
 
-## ad-block 0.0.4 and native components
+## adblock-rust 0.13.3 and the JNI bridge
 
-`com.github.truefedex:ad-block:0.0.4`
+`adblock` 0.13.3 (Brave Software), built from crates.io into `libvireoadblock.so` by
+`native/adblock-jni` (the bridge itself is MPL 2.0 as well).
 
 MPL 2.0: [license text](licenses/MPL-2.0.txt).
-Source: https://github.com/truefedex/ad-block/tree/0.0.4 (commit `3bbb044bc3f9e3806c98207766e6a4c5f90ac5b3`).
+Source: https://github.com/brave/adblock-rust/tree/v0.13.3 — exact transitive versions are pinned in
+`native/adblock-jni/Cargo.lock`. The other crates linked into the library are licensed MIT,
+Apache 2.0, Unicode-3.0 or Unlicense (dual-licensed crates are used under MIT or Apache 2.0).
+Preserve per-file notices and make the exact corresponding source available with binary distribution.
 
-Its Android CMake build incorporates `bloom-filter-cpp` and `hashset-cpp` from that repository's checked-in `node_modules`. Both include MPL 2.0 licenses. Native files retain notices including Copyright (c) 2015 Brian R. Bondy. Preserve all per-file notices and make the exact corresponding source available with binary distribution. This is separate from the removed GeckoView engine.
+Filter lists (EasyList, EasyPrivacy, EasyList Spanish, uBlock Origin filters) are downloaded at
+run time as data and are not part of the application package. The redirect resources and
+scriptlets in `assets/adblock` and `assets/surrogates` are written for VireoLumaTV.
 
 ## pinned-section-listview
 

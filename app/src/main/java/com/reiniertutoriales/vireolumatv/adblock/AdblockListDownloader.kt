@@ -13,7 +13,8 @@ internal object AdblockListDownloader {
     data class Validators(val url: String, val etag: String?, val lastModified: String?)
 
     sealed class Result {
-        class Downloaded(val text: String, val validators: Validators?) : Result()
+        /** [url] is the endpoint that answered (primary or mirror); sub-lists come from there. */
+        class Downloaded(val text: String, val validators: Validators?, val url: String) : Result()
         /** HTTP 304: the saved copy is still the current list. */
         object NotModified : Result()
     }
@@ -57,7 +58,7 @@ internal object AdblockListDownloader {
                     val lastModified = connection.getHeaderField("Last-Modified")
                     val validators = if (etag != null || lastModified != null)
                         Validators(url, etag, lastModified) else null
-                    return Result.Downloaded(text, validators)
+                    return Result.Downloaded(text, validators, url)
                 } finally {
                     connection.disconnect()
                 }

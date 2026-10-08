@@ -21,31 +21,17 @@ import java.util.concurrent.atomic.AtomicInteger
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class AdblockPopupAndCosmeticTest {
-    /** Minimal engine: `||host^` blocks resources, `||host^$document` blocks documents (popups). */
-    private class FakeEngine : ContentBlockerEngine {
+    /** The real adblock-rust engine, counting compilations. */
+    private class CountingEngine : ContentBlockerEngine {
+        private val real = RustAdBlockEngine { AdblockResources.json(VireoLumaTVApp.instance) }
         var compiles = 0
         override val cacheFileName = "popup-cosmetic-test.dat"
-        override fun compile(filterText: String): ContentBlocker {
-            compiles++
-            val lines = filterText.lines().map { it.trim() }
-            val documents = lines.filter { it.startsWith("||") && it.endsWith("^\$document") }
-                .map { it.removePrefix("||").removeSuffix("^\$document") }.toSet()
-            val resources = lines.filter { it.startsWith("||") && it.endsWith("^") }
-                .map { it.removePrefix("||").removeSuffix("^") }.toSet()
-            return object : ContentBlocker {
-                override fun shouldBlock(url: Uri, type: String?, baseHost: String) =
-                    if (type == "document") url.host in documents else url.host in resources
-                override fun serialize(file: File): Boolean {
-                    file.writeText((documents.map { "||$it^\$document" } + resources.map { "||$it^" }).joinToString("\n"))
-                    return true
-                }
-            }
-        }
-        override fun deserialize(file: File): ContentBlocker? = if (file.exists()) compile(file.readText()).also { compiles-- } else null
+        override fun compile(filterText: String): ContentBlocker? { compiles++; return real.compile(filterText) }
+        override fun deserialize(file: File): ContentBlocker? = real.deserialize(file)
     }
 
     @Test fun popupAndSiteHidingRulesWorkAndAnUnchangedListIsNotRecompiled() {
-        val list = "||adserver.test^\n||popads.test^\$popup\nexample.test##.ad-box\n"
+        val list = "||adserver.test^\n||popads.test^\$popup\nexample.test##.ad-box\nexample.test##+js(nowoif)\n"
         val requests = AtomicInteger()
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/") { exchange ->
@@ -61,7 +47,7 @@ class AdblockPopupAndCosmeticTest {
             exchange.responseBody.use { it.write(body) }
         }
         server.start()
-        val engine = FakeEngine()
+        val engine = CountingEngine()
         val model = AdblockModel(engine, autoLoad = false)
         val source = "http://127.0.0.1:${server.address.port}/"
         model.config.adBlockListURL.value = source
@@ -78,13 +64,15 @@ class AdblockPopupAndCosmeticTest {
                 model.isPopupAd(Uri.parse("https://adserver.test/click"), page))
             assertFalse(model.isPopupAd(Uri.parse("https://accounts.site.test/login"), page))
             assertFalse(model.isPopupAd(Uri.parse("https://other.test/"), page))
-            assertEquals(".ad-box{display:none!important}", model.cosmeticCss("www.example.test"))
+            val filters = org.json.JSONObject(model.pageFilters("https://www.example.test/"))
+            assertEquals(".ad-box", filters.getJSONArray("hide").getString(0))
+            assertTrue(filters.getString("script").contains("no-window-open-if"))
             assertTrue("A page sending its own tab to a popunder network is stopped",
                 model.isTabUnderAd(Uri.parse("https://popads.test/go"), page))
             assertFalse("Ordinary ad servers are not navigation targets to cancel",
                 model.isTabUnderAd(Uri.parse("https://adserver.test/"), page))
             assertFalse(model.isTabUnderAd(Uri.parse("https://popads.test/go"), Uri.parse("https://popads.test/")))
-            assertEquals("", model.cosmeticCss("site.test"))
+            assertEquals(0, org.json.JSONObject(model.pageFilters("https://site.test/")).getJSONArray("hide").length())
 
             val compiled = engine.compiles
             val firstUpdate = model.config.adBlockListLastUpdate
@@ -102,7 +90,7 @@ class AdblockPopupAndCosmeticTest {
                 finish(restored.loadAdBlockList(false))
                 assertEquals(2, requests.get())
                 assertTrue(restored.isPopupAd(Uri.parse("https://popads.test/go"), page))
-                assertEquals(".ad-box{display:none!important}", restored.cosmeticCss("example.test"))
+                assertTrue(restored.pageFilters("https://example.test/").contains(".ad-box"))
             } finally { restored.clear() }
         } finally {
             model.clear()

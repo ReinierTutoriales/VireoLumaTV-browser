@@ -29,6 +29,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      # Rust adblock engine (native/adblock-jni); Gradle runs cargo with the NDK linkers.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native/adblock-jni
+
       - uses: gradle/actions/setup-gradle@v6
         with:
           # open-source (MIT) cache provider; v6 defaults to the commercial "enhanced" one
@@ -53,6 +58,7 @@ jobs:
           node scripts/test-media-policy.cjs
           node scripts/test-window-open-decoy.cjs
           node scripts/test-adblock-surrogates.cjs
+          node scripts/test-page-filters.cjs
           ./gradlew testGenericDebugUnitTest --stacktrace
 
       - name: Build debug APK

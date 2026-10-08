@@ -29,6 +29,8 @@ interface WebEngineWindowProviderCallback {
     fun onPageCertificateError(url: String?)
     fun onRenderProcessGone()
     fun isAd(url: Uri, requestType: String?, baseUri: Uri): Boolean?
+    /** `data:` URL of the filter lists' `$redirect` resource for a blocked request, if any. */
+    fun adRedirect(url: Uri, requestType: String?, baseUri: Uri): String? = null
     fun isAdBlockingEnabled(): Boolean
     fun isDialogsBlockingEnabled(): Boolean
     fun shouldBlockNewWindow(dialog: Boolean, userGesture: Boolean): Boolean

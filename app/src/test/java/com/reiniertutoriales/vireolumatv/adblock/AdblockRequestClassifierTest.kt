@@ -45,14 +45,4 @@ class AdblockRequestClassifierTest {
         assertEquals(destination, AdblockRequestClassifier.pageContext(destination, previousPage, true))
         assertEquals(previousPage, AdblockRequestClassifier.pageContext(destination, previousPage, false))
     }
-
-    @Test fun nativeFlagsDoNotMixObjectsWithImagesAndSupportMediaAndFonts() {
-        assertEquals(8, AdblockRequestClassifier.filterOption("object"))
-        assertEquals(0, AdblockRequestClassifier.filterOption("object") and AdblockRequestClassifier.filterOption("image"))
-        assertEquals(16, AdblockRequestClassifier.filterOption("xhr"))
-        assertEquals(64, AdblockRequestClassifier.filterOption("subdocument"))
-        assertEquals(128, AdblockRequestClassifier.filterOption("document"))
-        assertEquals(524288, AdblockRequestClassifier.filterOption("font")) // FOFont = 02000000 octal
-        assertEquals(1048576, AdblockRequestClassifier.filterOption("media")) // FOMedia = 04000000 octal
-    }
 }

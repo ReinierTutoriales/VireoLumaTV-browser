@@ -12,10 +12,10 @@ import com.reiniertutoriales.vireolumatv.adblock.AdblockCache
 import com.reiniertutoriales.vireolumatv.adblock.AdblockFilterListValidator
 import com.reiniertutoriales.vireolumatv.adblock.AdblockListDownloader
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.adblock.BraveAdBlockEngine
+import com.reiniertutoriales.vireolumatv.adblock.AdblockResources
+import com.reiniertutoriales.vireolumatv.adblock.RustAdBlockEngine
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlocker
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlockerEngine
-import com.reiniertutoriales.vireolumatv.adblock.CosmeticFilters
 import com.reiniertutoriales.vireolumatv.adblock.FilterListPreprocessor
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
@@ -29,14 +29,15 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AdblockModel @JvmOverloads constructor(
-    private val engine: ContentBlockerEngine = BraveAdBlockEngine(),
+    private val engine: ContentBlockerEngine = RustAdBlockEngine { AdblockResources.json(VireoLumaTVApp.instance) },
     autoLoad: Boolean = true
 ) : ActiveModel() {
     companion object {
         const val TAG: String = "AdblockModel"
 
-        // EasyList and EasyPrivacy declare "! Expires: 4 days".
-        const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 4
+        // uBlock "Quick fixes" expire in 8 hours, the others in 4-5 days. With conditional
+        // requests an unchanged list costs one HTTP 304, and adblock-rust recompiles in about a second.
+        const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24
         // Some lists failed or could not be cached: retry the same day, not the next one.
         private const val PARTIAL_UPDATE_RETRY_MINUTES = 60 * 6
         // No server reached (TV started before Wi-Fi, DNS down): retry soon. Regaining the network
@@ -44,6 +45,13 @@ class AdblockModel @JvmOverloads constructor(
         private const val FAILURE_RETRY_MINUTES = 60
         private const val EASY_PRIVACY_URL = "https://easylist.to/easylist/easyprivacy.txt"
         private const val EASY_LIST_SPANISH_URL = "https://easylist-downloads.adblockplus.org/easylistspanish.txt"
+        private const val UBO_PRIMARY = "https://ublockorigin.github.io/uAssets/filters/"
+        private val UBO_MIRRORS = listOf(
+            "https://ublockorigin.pages.dev/filters/",
+            "https://cdn.jsdelivr.net/gh/uBlockOrigin/uAssets@latest/filters/"
+        )
+        // Brave ad-block 0.0.4 caches left by earlier versions.
+        private val LEGACY_CACHE_SUFFIXES = listOf("-adblock_ser.dat", "-adblock_ser.dat.popup", "-adblock_ser.dat.cosmetic")
     }
 
     private data class FilterList(
@@ -51,7 +59,9 @@ class AdblockModel @JvmOverloads constructor(
         val url: String,
         val cacheFileName: String,
         val requiresAdblockHeader: Boolean,
-        val mirrors: List<String> = emptyList()
+        val mirrors: List<String> = emptyList(),
+        /** uBlock Origin lists: required "! Title:" prefix and `!#include` sub-lists to fetch. */
+        val uboTitle: String? = null
     )
 
     private enum class FilterListSource {
@@ -73,8 +83,8 @@ class AdblockModel @JvmOverloads constructor(
         // A broken native matcher can fail for every resource on a busy page.
         val failureLogged = AtomicBoolean(false)
         // ~256 KiB of keys: several hundred URLs, enough for a heavy page plus its media playlist.
-        val decisions = object : LruCache<DecisionKey, Boolean>(256 * 1024) {
-            override fun sizeOf(key: DecisionKey, value: Boolean): Int =
+        val decisions = object : LruCache<DecisionKey, Int>(256 * 1024) {
+            override fun sizeOf(key: DecisionKey, value: Int): Int =
                 64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length)
         }
     }
@@ -84,10 +94,12 @@ class AdblockModel @JvmOverloads constructor(
         val current = installedClient
         if (current == null || current.blocker !== value || current.source != source) {
             installedClient = InstalledClient(value, source)
+            // Native rules are freed once in-flight checks on them have finished.
+            if (current != null && current.blocker !== value) current.blocker.release()
         }
     }
-    /** Rules the native engine skips: `$popup` (as a separate client) and site element hiding. */
-    private class Auxiliary(val source: String, val popup: ContentBlocker?, val cosmetics: CosmeticFilters) {
+    /** `$popup` rules, compiled into their own small engine (no popup request type exists). */
+    private class Auxiliary(val source: String, val popup: ContentBlocker?) {
         val lock = Any()
     }
     @Volatile private var auxiliary: Auxiliary? = null
@@ -192,6 +204,7 @@ class AdblockModel @JvmOverloads constructor(
                         if (freshClient != null) {
                             val cacheWritten = AdblockCache.write(serializedFile, freshClient)
                             if (!cacheWritten) Log.w(TAG, "Compiled rules active but cache write failed; will retry")
+                            else deleteLegacyCaches()
                             loadedClient = freshClient
                             updated = true
                             partialUpdate = !cacheWritten || missingLists || usedCacheFallback
@@ -221,7 +234,10 @@ class AdblockModel @JvmOverloads constructor(
                     Log.w(TAG, "No usable adblock list available")
                 }
             }
-            if (config.adBlockListURL.value != configuredUrl) return@launch
+            if (config.adBlockListURL.value != configuredUrl) {
+                if (!hasCurrentClient(configuredUrl)) loadedClient?.release()
+                return@launch
+            }
             //if nothing could be loaded keep the current client (if any) instead of replacing it with an empty one
             loadedClient?.let {
                 installClient(it, configuredUrl)
@@ -283,9 +299,23 @@ class AdblockModel @JvmOverloads constructor(
                 EASY_LIST_SPANISH_URL,
                 "adblock_list_easylist_spanish.txt",
                 requiresAdblockHeader = true
-            )
+            ),
+            // Anti-adblock and stream-site fixes, exceptions for broken sites, scam/malware hosts.
+            uboList("uBlock filters", "filters.txt"),
+            uboList("uBlock Quick fixes", "quick-fixes.txt"),
+            uboList("uBlock Unbreak", "unbreak.txt"),
+            uboList("uBlock Badware risks", "badware.txt")
         )
     }
+
+    private fun uboList(name: String, file: String) = FilterList(
+        name,
+        UBO_PRIMARY + file,
+        "adblock_list_ubo_$file",
+        requiresAdblockHeader = false,
+        mirrors = UBO_MIRRORS.map { it + file },
+        uboTitle = "uBlock"
+    )
 
     private fun resolveFilterLists(filterLists: List<FilterList>): List<ResolvedFilterList> {
         return filterLists.mapNotNull { filterList ->
@@ -304,7 +334,7 @@ class AdblockModel @JvmOverloads constructor(
                         ResolvedFilterList(filterList, cachedText!!, FilterListSource.NOT_MODIFIED)
                     }
                     is AdblockListDownloader.Result.Downloaded -> {
-                        val downloadedText = result.text
+                        val downloadedText = prepareDownloadedList(filterList, result)
                         if (!isValidFilterList(filterList, downloadedText)) {
                             throw IllegalArgumentException("Invalid adblock list content: ${filterList.name}")
                         }
@@ -328,6 +358,23 @@ class AdblockModel @JvmOverloads constructor(
                     Log.w(TAG, "No usable adblock list text: ${filterList.name}")
                     null
                 }
+            }
+        }
+    }
+
+    /** uBO directives are evaluated once here; the saved text is what gets compiled. */
+    private fun prepareDownloadedList(filterList: FilterList, result: AdblockListDownloader.Result.Downloaded): String {
+        if (filterList.uboTitle == null) return result.text
+        val text = FilterListPreprocessor.applyDirectives(result.text)
+        val includes = FilterListPreprocessor.includes(text)
+        if (includes.isEmpty()) return text
+        val base = result.url.substringBeforeLast('/') + "/"
+        return buildString(text.length * 2) {
+            append(text)
+            for (name in includes) {
+                // A missing sub-list makes the whole list fail and fall back to the saved copy.
+                val included = AdblockListDownloader.download(listOf(base + name), requiresAdblockHeader = false)
+                append('\n').append(FilterListPreprocessor.applyDirectives(included))
             }
         }
     }
@@ -359,23 +406,22 @@ class AdblockModel @JvmOverloads constructor(
     private fun popupFileFor(source: String) =
         File(VireoLumaTVApp.instance.filesDir, AdblockCache.fileFor(VireoLumaTVApp.instance.filesDir, engine, source).name + ".popup")
 
-    private fun cosmeticFileFor(source: String) =
-        File(VireoLumaTVApp.instance.filesDir, AdblockCache.fileFor(VireoLumaTVApp.instance.filesDir, engine, source).name + ".cosmetic")
+    /** Marks a list generation without popup rules, so it is not rebuilt on every start. */
+    private fun noPopupMarkerFor(source: String) = File(popupFileFor(source).path + ".none")
 
     private fun hasAuxiliary(source: String): Boolean = auxiliary?.source == source
 
-    /** Loads the popup client and element hiding rules saved by the last [buildAuxiliary]. */
+    /** Loads the popup engine saved by the last [buildAuxiliary]. */
     private fun restoreAuxiliary(source: String): Auxiliary? {
         val popupFile = popupFileFor(source)
-        val cosmeticFile = cosmeticFileFor(source)
-        if (!cosmeticFile.exists()) return null
         return try {
-            val popup = if (popupFile.exists()) engine.deserialize(popupFile) else null
-            val cosmetics = CosmeticFilters.parse(
-                BoundedReader(cosmeticFile.bufferedReader(), 4 * 1024 * 1024).use { it.readText() })
-            Auxiliary(source, popup, cosmetics).also { installAuxiliary(it) }
+            when {
+                popupFile.exists() -> engine.deserialize(popupFile)?.let { Auxiliary(source, it) }
+                noPopupMarkerFor(source).exists() -> Auxiliary(source, null)
+                else -> null
+            }?.also { installAuxiliary(it) }
         } catch (e: Exception) {
-            Log.w(TAG, "Can not restore popup/element hiding rules", e)
+            Log.w(TAG, "Can not restore popup rules", e)
             null
         }
     }
@@ -383,29 +429,39 @@ class AdblockModel @JvmOverloads constructor(
     private fun buildAuxiliary(source: String, texts: List<String>) {
         try {
             val popupRules = StringBuilder()
-            val cosmeticRules = StringBuilder()
-            for (text in texts) {
-                val extracted = FilterListPreprocessor.extract(text)
-                popupRules.append(extracted.popupRules)
-                cosmeticRules.append(extracted.cosmeticRules)
-            }
+            for (text in texts) popupRules.append(FilterListPreprocessor.extract(text).popupRules)
             val popup = if (popupRules.isEmpty()) null else engine.compile(popupRules.toString())
             val popupFile = popupFileFor(source)
-            if (popup == null || !AdblockCache.write(popupFile, popup)) popupFile.delete()
-            val cosmeticFile = cosmeticFileFor(source)
-            // Written last: its presence marks a complete auxiliary cache.
-            if (!AdblockCache.writeText(cosmeticFile, cosmeticRules.toString().ifEmpty { "\n" })) cosmeticFile.delete()
-            installAuxiliary(Auxiliary(source, popup, CosmeticFilters.parse(cosmeticRules.toString())))
-            Log.i(TAG, "Prepared popup rules: ${popup != null}; element hiding rules: ${cosmeticRules.count { it == '\n' }}")
+            val marker = noPopupMarkerFor(source)
+            if (popup != null && AdblockCache.write(popupFile, popup)) marker.delete()
+            else {
+                popupFile.delete()
+                if (popup == null) AdblockCache.writeText(marker, "\n")
+            }
+            installAuxiliary(Auxiliary(source, popup))
+            Log.i(TAG, "Prepared popup rules: ${popupRules.count { it == '\n' }}")
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.w(TAG, "Can not prepare popup/element hiding rules", e)
+            Log.w(TAG, "Can not prepare popup rules", e)
         }
     }
 
     private fun installAuxiliary(value: Auxiliary) {
-        if (config.adBlockListURL.value == value.source) auxiliary = value
+        if (config.adBlockListURL.value != value.source) {
+            value.popup?.release()
+            return
+        }
+        val previous = auxiliary
+        auxiliary = value
+        if (previous != null && previous.popup !== value.popup) previous.popup?.release()
+    }
+
+    /** Removes caches of the former ad-block 0.0.4 engine once the new engine saved its own. */
+    private fun deleteLegacyCaches() {
+        VireoLumaTVApp.instance.filesDir.listFiles()?.forEach { file ->
+            if (LEGACY_CACHE_SUFFIXES.any { file.name.endsWith(it) }) file.delete()
+        }
     }
 
     private fun readCachedFilterList(filterList: FilterList, cacheFile: File): String? {
@@ -420,10 +476,12 @@ class AdblockModel @JvmOverloads constructor(
     }
 
     private fun isValidFilterList(filterList: FilterList, content: String): Boolean {
-        return AdblockFilterListValidator.isValid(
-            content = content,
-            requiresAdblockHeader = filterList.requiresAdblockHeader
-        )
+        if (!AdblockFilterListValidator.isValid(content = content, requiresAdblockHeader = filterList.requiresAdblockHeader)) {
+            return false
+        }
+        val title = filterList.uboTitle ?: return true
+        // An error page or a captive portal must not replace a uBlock Origin list.
+        return content.lineSequence().take(8).any { it.startsWith("! Title: $title") }
     }
 
     private fun buildCombinedFilterList(resolvedLists: List<ResolvedFilterList>): String {
@@ -460,30 +518,51 @@ class AdblockModel @JvmOverloads constructor(
 
     override fun onClear() {
         config.adBlockListURL.unsubscribe(sourceObserver)
+        installedClient?.blocker?.release()
         installedClient = null
+        auxiliary?.popup?.release()
         auxiliary = null
         super.onClear()
     }
 
-    fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean {
-        val baseHost = baseUri.host ?: return false
-        val current = installedClient ?: return false
+    fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean = decision(url, type, baseUri) != ContentBlocker.ALLOW
+
+    /**
+     * `data:` URL of the `$redirect` resource for a blocked request (uBO `noopjs`, `1x1.gif`, empty
+     * VAST...), so the page sees a harmless answer instead of an error it can detect.
+     */
+    fun redirectFor(url: Uri, type: String?, baseUri: Uri): String? {
+        if (decision(url, type, baseUri) != ContentBlocker.BLOCK_REDIRECT) return null
+        val current = installedClient ?: return null
+        return try {
+            if (current.blocker.isConcurrent) current.blocker.redirect(url, type, baseUri)
+            else synchronized(current.lock) { current.blocker.redirect(url, type, baseUri) }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun decision(url: Uri, type: String?, baseUri: Uri): Int {
+        val baseHost = baseUri.host ?: return ContentBlocker.ALLOW
+        val current = installedClient ?: return ContentBlocker.ALLOW
         val text = url.toString()
         val key = if (text.length <= 2048 && baseHost.length <= 255)
             DecisionKey(text, type, baseHost) else null
         // LruCache is internally synchronized: cached answers never wait for a native match that
         // another WebView thread is running.
         key?.let { current.decisions.get(it) }?.let { return it }
-        val blocked = try {
-            synchronized(current.lock) { current.blocker.shouldBlock(url, type, baseHost) }
+        val result = try {
+            // adblock-rust is Sync: WebView worker threads match in parallel.
+            if (current.blocker.isConcurrent) current.blocker.check(url, type, baseUri)
+            else synchronized(current.lock) { current.blocker.check(url, type, baseUri) }
         } catch (e: Exception) {
             if (current.failureLogged.compareAndSet(false, true)) {
                 Log.e(TAG, "Adblock matcher failed; later requests can retry", e)
             }
-            return false
+            return ContentBlocker.ALLOW
         }
-        if (key != null) current.decisions.put(key, blocked)
-        return blocked
+        if (key != null) current.decisions.put(key, result)
+        return result
     }
 
     /** Memory pressure: decisions are rebuilt on demand, rules stay loaded. */
@@ -503,7 +582,8 @@ class AdblockModel @JvmOverloads constructor(
         val aux = auxiliary ?: return false
         val popup = aux.popup ?: return false
         return try {
-            synchronized(aux.lock) { popup.shouldBlock(url, "document", pageHost) }
+            if (popup.isConcurrent) popup.shouldBlock(url, "document", pageHost)
+            else synchronized(aux.lock) { popup.shouldBlock(url, "document", pageHost) }
         } catch (e: Exception) {
             false
         }
@@ -522,7 +602,8 @@ class AdblockModel @JvmOverloads constructor(
         val popup = aux?.popup
         if (popup != null) {
             val blocked = try {
-                synchronized(aux.lock) { popup.shouldBlock(url, "document", openerHost ?: host) }
+                if (popup.isConcurrent) popup.shouldBlock(url, "document", openerHost ?: host)
+                else synchronized(aux.lock) { popup.shouldBlock(url, "document", openerHost ?: host) }
             } catch (e: Exception) {
                 Log.w(TAG, "Popup matcher failed", e)
                 false
@@ -536,6 +617,17 @@ class AdblockModel @JvmOverloads constructor(
     private fun isSameSite(a: String, b: String): Boolean =
         a == b || a.endsWith(".$b") || b.endsWith(".$a")
 
-    /** CSS hiding this site's ad containers, or "" (called from WebView/JavaBridge threads). */
-    fun cosmeticCss(host: String?): String = auxiliary?.cosmetics?.cssFor(host) ?: ""
+    /**
+     * Element hiding selectors and scriptlets for a document (any frame) as JSON, or "". Called
+     * from the JavaBridge thread by assets/adblock/page_filters.js.
+     */
+    fun pageFilters(pageUrl: String): String {
+        val current = installedClient ?: return ""
+        return try {
+            if (current.blocker.isConcurrent) current.blocker.pageFilters(pageUrl)
+            else synchronized(current.lock) { current.blocker.pageFilters(pageUrl) }
+        } catch (e: Exception) {
+            ""
+        }
+    }
 }

@@ -43,20 +43,4 @@ internal object AdblockRequestClassifier {
         if (accepted.all { it == "text/html" || it == "application/xhtml+xml" }) return "subdocument"
         return "unknown"
     }
-
-    // Native filter.h at truefedex/ad-block tag 0.0.4 uses C++ octal bit flags.
-    // The Java wrapper's OBJECT(10) is decimal and incorrectly combines object+image.
-    // FOFont = 02000000 (1 shl 19) and FOMedia = 04000000 (1 shl 20); 1 shl 21 is FOWebRTC.
-    fun filterOption(type: String?): Int = when (type) {
-        "script" -> 1
-        "image" -> 2
-        "style" -> 4
-        "object" -> 8
-        "xhr" -> 16
-        "subdocument" -> 64
-        "document" -> 128
-        "font" -> 1 shl 19
-        "media" -> 1 shl 20
-        else -> 0
-    }
 }

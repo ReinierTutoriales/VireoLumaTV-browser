@@ -235,10 +235,10 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
 
-    /** Element hiding CSS for a top document of this tab (JavaBridge thread). */
-    fun cosmeticCss(host: String): String {
+    /** Element hiding and scriptlets for a document of this tab, any frame (JavaBridge thread). */
+    fun pageFilters(url: String): String {
         if (!(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)) return ""
-        return cosmeticCssProvider?.invoke(host) ?: ""
+        return pageFiltersProvider?.invoke(url) ?: ""
     }
 
     override fun onLongPress(x: Int, y: Int) {
@@ -396,6 +396,12 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
             return callback?.isAd(request.url, type, pageContext) ?: false
         }
 
+        override fun adRedirect(request: WebResourceRequest, baseUri: Uri): String? {
+            val type = AdblockRequestClassifier.classify(request.url, request.requestHeaders, request.isForMainFrame)
+            val pageContext = AdblockRequestClassifier.pageContext(request.url, baseUri, request.isForMainFrame)
+            return callback?.adRedirect(request.url, type, pageContext)
+        }
+
         override fun isAdBlockingEnabled(): Boolean {
             return callback?.isAdBlockingEnabled() ?: false
         }
@@ -474,7 +480,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
         /** Installed by the window owner (adblock model); read from the JavaBridge thread. */
         @Volatile
-        var cosmeticCssProvider: ((String) -> String)? = null
+        var pageFiltersProvider: ((String) -> String)? = null
 
         init {
             WebEngineFactory.registerProvider(WebEngineProvider("WebView", object : WebEngineProviderCallback {

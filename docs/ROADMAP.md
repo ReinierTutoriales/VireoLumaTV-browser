@@ -182,6 +182,22 @@ Alcance de la prueba, en una rama aislada:
 Solo se adopta si mejora de forma medible a `ad-block 0.0.4` sin superar el presupuesto
 de memoria del onn. Licencia MPL-2.0.
 
+Estado (rama `adblock-rust`): capa JNI en `native/adblock-jni` (adblock 0.13.3, jni 0.22),
+compilada por Gradle con el NDK 28.2 para `arm64-v8a`, `armeabi-v7a` y `x86_64`; los tests de
+JVM cargan una compilación de host del mismo motor. Medido en x86_64 con las mismas listas y
+URLs (pendiente repetir en el onn):
+
+| | ad-block 0.0.4 | adblock-rust 0.13.3 |
+|---|---|---|
+| Compilar EasyList + EasyPrivacy + Spanish | 10 000 ms, +28,6 MB | 170 ms, +10,5 MB |
+| Coste por petición | 138 µs | 4,6 µs |
+| Consultas desde 4 hilos | resultados erróneos (estado compartido en `BloomFilter`) | correctas |
+| + listas uBlock Origin (7 listas, 6,7 M caracteres) | 13 400 ms, +34 MB | 267 ms, +14,6 MB |
+| `.so` arm64-v8a | 1,57 MB | 3,25 MB |
+
+F6 incluida en la misma rama: filtrado cosmético por sitio y scriptlets propios
+(`assets/adblock/page_filters.js`, sin `eval`), y redirecciones (`assets/adblock`, recursos propios).
+
 Fases posteriores, condicionadas a F4: F5 cambio de motor para red; F6 filtrado cosmético
 y scriptlets (inyección con `WebViewCompat.addDocumentStartJavaScript`, previa
 comprobación con `WebViewFeature.isFeatureSupported`).

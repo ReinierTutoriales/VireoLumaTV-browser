@@ -34,11 +34,12 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     private val blobDownloadLock = Any()
     private var pendingBlobDownload: PendingBlobDownload? = null
 
-    /** Site element hiding CSS; only plain selectors from the installed filter lists. */
+    /** Element hiding selectors and scriptlet calls for a frame URL (see page_filters.js). */
     @JavascriptInterface
-    fun cosmeticCss(host: String?): String {
-        if (host.isNullOrEmpty() || host.length > 253) return ""
-        return webEngine.cosmeticCss(host)
+    fun pageFilters(url: String?): String {
+        if (url.isNullOrEmpty() || url.length > 4096 ||
+            !(url.startsWith("http://") || url.startsWith("https://"))) return ""
+        return webEngine.pageFilters(url)
     }
 
     @JavascriptInterface
