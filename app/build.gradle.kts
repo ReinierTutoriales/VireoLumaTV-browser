@@ -1,3 +1,4 @@
+import java.io.File
 import org.gradle.process.ExecOperations
 import javax.inject.Inject
 
@@ -18,6 +19,7 @@ abstract class BuildRustAdblock : DefaultTask() {
     @get:Internal
     abstract val crateDir: DirectoryProperty
 
+    /** Unset when the SDK has no NDK: the host build does not need one. */
     @get:Internal
     abstract val ndkDirectory: DirectoryProperty
 
@@ -41,10 +43,16 @@ abstract class BuildRustAdblock : DefaultTask() {
     fun build() {
         val script = crateDir.file("build.sh").get().asFile.absolutePath
         val out = outputDir.get().asFile.absolutePath
-        val args = if (hostLibrary.get()) listOf(script, ndkDirectory.get().asFile.absolutePath, "/dev/null", out, minSdk.get().toString())
-            else listOf(script, ndkDirectory.get().asFile.absolutePath, out, "-", minSdk.get().toString()) + abis.get()
+        val args = if (hostLibrary.get()) listOf(script, "-", "/dev/null", out, minSdk.get().toString())
+            else listOf(script, ndk(), out, "-", minSdk.get().toString()) + abis.get()
         execOperations.exec { commandLine(args) }
     }
+
+    /** The NDK AGP resolves, else the one preinstalled on CI runners. */
+    private fun ndk(): String = ndkDirectory.orNull?.asFile?.absolutePath
+        ?: listOf("ANDROID_NDK_HOME", "ANDROID_NDK_LATEST_HOME", "ANDROID_NDK_ROOT")
+            .firstNotNullOfOrNull { name -> System.getenv(name)?.takeIf { File(it).isDirectory } }
+        ?: throw GradleException("NDK not found: install the version in gradle/libs.versions.toml (android-ndk) with sdkmanager or set ANDROID_NDK_HOME")
 }
 
 android {
@@ -170,7 +178,8 @@ val rustCrate = rootProject.layout.projectDirectory.dir("native/adblock-jni")
 fun BuildRustAdblock.configureCrate() {
     crateDir.set(rustCrate)
     sources.from(rustCrate.file("Cargo.toml"), rustCrate.file("Cargo.lock"), rustCrate.file("build.sh"), rustCrate.dir("src"))
-    ndkDirectory.set(androidComponents.sdkComponents.ndkDirectory)
+    val ndk = androidComponents.sdkComponents.ndkDirectory
+    ndkDirectory.set(providers.provider { runCatching { ndk.get() }.getOrNull() })
     minSdk.set(libs.versions.android.minSdk.get().toInt())
     abis.set(rustAbis)
 }
