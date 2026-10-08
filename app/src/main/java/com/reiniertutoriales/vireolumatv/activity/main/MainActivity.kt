@@ -1408,7 +1408,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 return null
             }
             val currentTab = this@MainActivity.tabsModel.currentTab.value ?: return null
+            if (isAdBlockingEnabled() && currentTab.mediaStarted) {
+                // A page that is playing media opens a window: on video sites that is a popunder.
+                // Never replace the player; the page sees an inert window (window_open_decoy.js).
+                Log.i(TAG, "Blocked new window from a page playing media")
+                onBlockedDialog(!dialog)
+                return null
+            }
             val tab = WebTabState(incognito = config.incognitoMode)
+            tab.opener = currentTab
             val webView = createWebView(tab) ?: return null
             val index = tabsModel.tabsStates.indexOf(currentTab) + 1
             tabsModel.tabsStates.add(index, tab)
@@ -1428,7 +1436,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                     onBlocked = { uiHandler.post { onPopupAdBlocked(tab, currentTab) } },
                     onAllowed = { uiHandler.post(showPopup) }
                 )
-                uiHandler.postDelayed({ tab.popupGuard?.allow() }, POPUP_DECISION_TIMEOUT_MS)
+                uiHandler.postDelayed({ tab.popupGuard?.expire() }, POPUP_DECISION_TIMEOUT_MS)
             } else {
                 // Finish Chromium's window transport before destroying the source WebView.
                 vb.flWebViewContainer.post(showPopup)

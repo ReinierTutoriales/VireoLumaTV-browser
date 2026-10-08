@@ -33,6 +33,27 @@ class PopupGuardTest {
         assertEquals(1, blocked)
     }
 
+    @Test fun windowThatNeverNavigatesIsClosedAtTheTimeout() {
+        val g = guard()
+        assertFalse(g.onNavigation(Uri.parse("about:blank")))
+        g.expire()
+        assertTrue(g.isBlocked)
+        assertEquals(1, blocked)
+        assertEquals(0, allowed)
+        // Late navigations of the closed window are cancelled without a second notification.
+        assertTrue(g.onNavigation(Uri.parse("https://site.test/late")))
+        assertEquals(1, blocked)
+    }
+
+    @Test fun timeoutAfterASafeNavigationKeepsTheWindow() {
+        val g = guard()
+        assertFalse(g.onNavigation(Uri.parse("https://site.test/login")))
+        g.expire()
+        assertFalse(g.isBlocked)
+        assertEquals(0, blocked)
+        assertEquals(1, allowed)
+    }
+
     @Test fun screeningStopsAfterTheShownPageFinished() {
         val g = guard()
         g.allow()

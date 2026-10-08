@@ -486,8 +486,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                         uiHandler.postDelayed(reportBlockedAdsRunnable, BLOCKED_ADS_REPORT_DELAY_MS)
                     }
                     currentPageUrl?.let { callback.adRedirect(request, it) }
-                        ?.let { dataUrlResponse(it) }?.let { return it }
-                    AdblockSurrogates.responseFor(view.context, request.url)?.let { return it }
+                        ?.let { dataUrlResponse(it, request.requestHeaders) }?.let { return it }
+                    AdblockSurrogates.responseFor(view.context, request.url, request.requestHeaders)?.let { return it }
                     val response = WebResourceResponse("text/plain", "utf-8", "".byteInputStream())
                     response.setStatusCodeAndReasonPhrase(403, "Blocked")
                     response
@@ -689,7 +689,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     }
 
     /** Answers a blocked request with a `data:base64` redirect resource from adblock-rust. */
-    private fun dataUrlResponse(dataUrl: String): WebResourceResponse? {
+    private fun dataUrlResponse(dataUrl: String, requestHeaders: Map<String, String>?): WebResourceResponse? {
         val comma = dataUrl.indexOf(',')
         if (!dataUrl.startsWith("data:") || comma < 0) return null
         val header = dataUrl.substring(5, comma)
@@ -701,7 +701,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             return null
         }
         return WebResourceResponse(mime, "utf-8", 200, "OK",
-            mapOf("Access-Control-Allow-Origin" to "*", "Cache-Control" to "no-store"), bytes.inputStream())
+            AdblockSurrogates.replacementHeaders(requestHeaders), bytes.inputStream())
     }
 
     private fun getGenericJSInjects(): String {

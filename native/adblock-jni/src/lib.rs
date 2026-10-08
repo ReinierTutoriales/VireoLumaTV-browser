@@ -9,7 +9,8 @@ use adblock::request::Request;
 use adblock::resources::Resource;
 use adblock::Engine;
 use jni::errors::ThrowRuntimeExAndDefault;
-use jni::objects::{JByteArray, JClass, JString};
+use jni::objects::{JByteArray, JClass, JObjectArray, JString};
+use std::collections::HashSet;
 use jni::sys::{jint, jlong};
 use jni::{Env, EnvUnowned};
 
@@ -37,10 +38,43 @@ fn into_handle(engine: Engine) -> jlong {
     Box::into_raw(Box::new(engine)) as jlong
 }
 
+fn parse_resources(resources_json: &str) -> Vec<Resource> {
+    serde_json::from_str::<Vec<Resource>>(resources_json).unwrap_or_default()
+}
+
 fn load_resources(engine: &mut Engine, resources_json: &str) {
-    if let Ok(resources) = serde_json::from_str::<Vec<Resource>>(resources_json) {
-        engine.use_resources(resources);
+    engine.use_resources(parse_resources(resources_json));
+}
+
+/// Name of a `redirect=`/`redirect-rule=` option without its `:priority` suffix.
+fn redirect_target(option: &str) -> Option<&str> {
+    let value = option.strip_prefix("redirect=").or_else(|| option.strip_prefix("redirect-rule="))?;
+    Some(value.split(':').next().unwrap_or(value))
+}
+
+/// Drops network rules whose `$redirect` resource is not shipped. adblock-rust would still block the
+/// request with no replacement (a hard error for players expecting e.g. the IMA SDK); uBlock Origin
+/// discards such filters instead, so the request goes through.
+fn without_unknown_redirects(list: String, known: &HashSet<&str>) -> String {
+    if !list.contains("redirect") {
+        return list;
     }
+    let keep = |line: &str| {
+        if !line.contains("redirect") || line.contains("##") || line.contains("#@#") {
+            return true;
+        }
+        let Some(dollar) = line.rfind('$') else { return true };
+        line[dollar + 1..]
+            .split(',')
+            .filter_map(redirect_target)
+            .all(|name| name == "none" || known.contains(name))
+    };
+    let mut out = String::with_capacity(list.len());
+    for line in list.lines().filter(|line| keep(line)) {
+        out.push_str(line);
+        out.push('\n');
+    }
+    out
 }
 
 fn request(url: &str, source: &str, kind: &str) -> Option<Request> {
@@ -51,17 +85,25 @@ fn request(url: &str, source: &str, kind: &str) -> Option<Request> {
 pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdblock_nativeCompile<'caller>(
     mut unowned: EnvUnowned<'caller>,
     _class: JClass<'caller>,
-    rules: JString<'caller>,
+    lists: JObjectArray<'caller, JString<'caller>>,
     resources: JString<'caller>,
 ) -> jlong {
     unowned
         .with_env(|env| -> jni::errors::Result<jlong> {
-            let rules = text(env, &rules)?;
-            let resources = text(env, &resources)?;
+            let resources = parse_resources(&text(env, &resources)?);
+            let known: HashSet<&str> = resources
+                .iter()
+                .flat_map(|r| std::iter::once(r.name.as_str()).chain(r.aliases.iter().map(String::as_str)))
+                .collect();
             let mut set = FilterSet::new(false);
-            set.add_filter_list(rules, ParseOptions::default());
+            // One list at a time: no combined copy of several megabytes of filter text.
+            for index in 0..lists.len(env)? {
+                let list = lists.get_element(env, index)?;
+                let list = text(env, &list)?;
+                set.add_filter_list(without_unknown_redirects(list, &known), ParseOptions::default());
+            }
             let mut engine = Engine::new_with_filter_set(set);
-            load_resources(&mut engine, &resources);
+            engine.use_resources(resources);
             Ok(into_handle(engine))
         })
         .resolve::<ThrowRuntimeExAndDefault>()

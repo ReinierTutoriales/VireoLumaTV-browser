@@ -50,6 +50,46 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.match(document.adoptedStyleSheets[0].css, /\\.ad-box\\{display:none!important\\}\\n#banner\\{display:none!important\\}/);
     `, c);
 
+    // Procedural/action filters: pure CSS ones become stylesheet rules; uBO-only pseudo-classes
+    // never reach the stylesheet; DOM ones run on DOMContentLoaded.
+    c = page({ hide: ['.ad', 'div:has-text(Sponsored)'], script: '', procedural: [
+        JSON.stringify({ selector: [{ type: 'css-selector', arg: '.player' }], action: { type: 'style', arg: 'visibility: visible !important' } }),
+        JSON.stringify({ selector: [{ type: 'css-selector', arg: '.overlay' }] }),
+        JSON.stringify({ selector: [{ type: 'css-selector', arg: '.box' }, { type: 'has-text', arg: 'adblock' }], action: { type: 'remove' } })
+    ] }, 'stream.example', `
+        var removed = [];
+        var box = { textContent: 'Please disable adblock', parentNode: { removeChild(n) { removed.push(n); } } };
+        var keep = { textContent: 'Video', parentNode: { removeChild(n) { removed.push(n); } } };
+        document.documentElement = {};
+        document.querySelectorAll = function (q) { return q === '.box' ? [box, keep] : []; };
+    `);
+    vm.runInContext(`
+        var css = document.adoptedStyleSheets[0].css;
+        assert.match(css, /\.ad\{display:none!important\}/);
+        assert.doesNotMatch(css, /has-text/);
+        assert.match(css, /\.player\{visibility: visible !important\}/);
+        assert.match(css, /\.overlay\{display:none!important\}/);
+        window.__ready();
+        assert.deepEqual(removed, [box]);
+    `, c);
+
+    // Media playback is reported once per frame, so popups cannot replace a playing player.
+    c = page({ script: '' }, 'stream.example', `
+        var played = 0, playingListener = null;
+        VireoLumaTVApp.mediaStarted = function () { played++; };
+        document.addEventListener = function (type, fn) { if (type === 'DOMContentLoaded') window.__ready = fn; if (type === 'playing') playingListener = fn; };
+        document.removeEventListener = function (type, fn) { if (type === 'playing' && fn === playingListener) playingListener = null; };
+    `);
+    vm.runInContext(`
+        assert.equal(typeof playingListener, 'function');
+        playingListener({ target: { paused: false, muted: true, volume: 1, duration: 600 } });
+        playingListener({ target: { paused: false, muted: false, volume: 1, duration: 15 } });
+        assert.equal(played, 0, 'muted autoplay and short clips are not the user watching');
+        playingListener({ target: { paused: false, muted: false, volume: 1, duration: Infinity } });
+        assert.equal(played, 1);
+        assert.equal(playingListener, null);
+    `, c);
+
     // set-constant on existing and later-created chains; type mismatch leaves the property alone.
     c = page({ script: call('set-constant', 'adblock.detected', 'false') + call('set-constant', 'canRunAds', 'true') + call('set-constant', 'title', '0') },
         'stream.example', 'window.title = "keep";');
@@ -131,5 +171,5 @@ function page(filters, host = 'stream.example', setup = '') {
     vm.runInContext(source, c);
     vm.runInContext(`assert.equal(document.adoptedStyleSheets.length, 1);`, c);
 
-    console.log('Page filters passed: constructed stylesheet, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
+    console.log('Page filters passed: constructed stylesheet, procedural/action filters, media report, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
 })().catch((error) => { console.error(error); process.exit(1); });

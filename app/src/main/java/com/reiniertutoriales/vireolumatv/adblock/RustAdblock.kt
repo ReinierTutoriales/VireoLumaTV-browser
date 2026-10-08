@@ -20,7 +20,7 @@ internal object RustAdblock {
         }
     }
 
-    @JvmStatic external fun nativeCompile(rules: String, resources: String): Long
+    @JvmStatic external fun nativeCompile(lists: Array<String>, resources: String): Long
     @JvmStatic external fun nativeDeserialize(data: ByteArray, resources: String): Long
     @JvmStatic external fun nativeSerialize(handle: Long): ByteArray
     @JvmStatic external fun nativeDestroy(handle: Long)

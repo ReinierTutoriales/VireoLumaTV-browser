@@ -18,9 +18,9 @@ import kotlin.concurrent.write
 class RustAdBlockEngine(private val resources: () -> String) : ContentBlockerEngine {
     override val cacheFileName: String = "adblock_rust.dat"
 
-    override fun compile(filterText: String): ContentBlocker? {
+    override fun compile(filterLists: List<String>): ContentBlocker? {
         if (!RustAdblock.isAvailable) return null
-        val handle = RustAdblock.nativeCompile(filterText, resources())
+        val handle = RustAdblock.nativeCompile(filterLists.toTypedArray(), resources())
         return if (handle == 0L) null else RustContentBlocker(handle)
     }
 

@@ -43,7 +43,7 @@ class AdblockUpdateTest {
         }
         val engine = object : ContentBlockerEngine {
             override val cacheFileName = "update-test.dat"
-            override fun compile(filterText: String): ContentBlocker {
+            override fun compile(filterLists: List<String>): ContentBlocker {
                 compiles++
                 return blocker("new-ads.test")
             }

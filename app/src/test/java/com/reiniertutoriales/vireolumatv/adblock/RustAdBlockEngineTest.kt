@@ -72,6 +72,31 @@ class RustAdBlockEngineTest {
         } finally { blocker.release() }
     }
 
+    @Test fun redirectRulesWithoutAShippedResourceAreDroppedLikeInUBlockOrigin() {
+        // uBO discards a filter whose redirect resource it lacks; blocking without a replacement
+        // would break players waiting for e.g. the IMA SDK.
+        val blocker = engine.compile(listOf(
+            "||ima.example/ima3.js\$script,redirect=google-ima.js\n||media.example/ad.mp4\$media,redirect=noop-1s.mp4:5",
+            "||known.example/ad.js\$script,redirect=noopjs:5\n||blocked.example^\nexample.test##.redirect-banner"
+        ))!!
+        try {
+            assertEquals(ContentBlocker.ALLOW, blocker.decision("https://ima.example/ima3.js", "script"))
+            assertEquals(ContentBlocker.ALLOW, blocker.decision("https://media.example/ad.mp4", "media"))
+            assertEquals(ContentBlocker.BLOCK_REDIRECT, blocker.decision("https://known.example/ad.js", "script"))
+            assertEquals(ContentBlocker.BLOCK, blocker.decision("https://blocked.example/x.js", "script"))
+            // Cosmetic lines that merely contain the word are kept.
+            assertTrue(blocker.pageFilters("https://example.test/").contains(".redirect-banner"))
+        } finally { blocker.release() }
+    }
+
+    @Test fun replacementsEchoTheOriginOfCredentialedRequests() {
+        val headers = AdblockSurrogates.replacementHeaders(mapOf("origin" to "https://stream.example"))
+        assertEquals("https://stream.example", headers["Access-Control-Allow-Origin"])
+        assertEquals("true", headers["Access-Control-Allow-Credentials"])
+        assertEquals("*", AdblockSurrogates.replacementHeaders(emptyMap())["Access-Control-Allow-Origin"])
+        assertEquals("*", AdblockSurrogates.replacementHeaders(mapOf("Origin" to "null"))["Access-Control-Allow-Origin"])
+    }
+
     @Test fun serializedRulesRestoreAndAnswerFromManyThreads() {
         val compiled = engine.compile(rules)!!
         val file = File.createTempFile("adblock", ".dat")

@@ -21,8 +21,9 @@ class PopupGuard(
 
     /** @return true if this main-frame navigation must be cancelled. */
     fun onNavigation(url: Uri): Boolean {
-        if (!active) return false
+        // A blocked window is being closed: nothing may load in it any more.
         if (state.get() == BLOCKED) return true
+        if (!active) return false
         if (url.scheme != "http" && url.scheme != "https") return false
         if (isAd(url)) {
             val previous = state.getAndSet(BLOCKED)
@@ -34,9 +35,20 @@ class PopupGuard(
         return false
     }
 
-    /** Show the window (first safe navigation, or the caller's timeout for about:blank popups). */
+    /** Show the window on its first safe navigation. */
     fun allow() {
         if (state.compareAndSet(PENDING, ALLOWED)) onAllowed()
+    }
+
+    /**
+     * The caller's timeout: a window that never navigated (about:blank written by script, or a
+     * destination still undecided) is a popunder pattern, so it is closed rather than shown.
+     */
+    fun expire() {
+        if (state.compareAndSet(PENDING, BLOCKED)) {
+            active = false
+            onBlocked()
+        }
     }
 
     /** A page finished in the shown window: stop screening (ordinary browsing from here on). */

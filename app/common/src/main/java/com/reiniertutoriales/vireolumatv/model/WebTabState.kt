@@ -77,6 +77,13 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     @Ignore
     @Volatile
     var popupGuard: PopupGuard? = null
+    /** Tab that opened this popup: kept alive while the popup is shown so closing it resumes the page. */
+    @Ignore
+    var opener: WebTabState? = null
+    /** A media element of the current page (any frame) started playing. */
+    @Ignore
+    @Volatile
+    var mediaStarted: Boolean = false
 
     constructor(context: Context, json: JSONObject) : this() {
         try {

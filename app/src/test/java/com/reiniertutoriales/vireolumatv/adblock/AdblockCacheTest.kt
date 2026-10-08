@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference
 class AdblockCacheTest {
     private val engine = object : ContentBlockerEngine {
         override val cacheFileName = "compiled.dat"
-        override fun compile(filterText: String): ContentBlocker? = null
+        override fun compile(filterLists: List<String>): ContentBlocker? = null
         override fun deserialize(file: File): ContentBlocker? = null
     }
 

@@ -43,8 +43,10 @@ interface ContentBlockerEngine {
     /** Cache file name; engine specific because each engine has its own serialized format. */
     val cacheFileName: String
 
-    /** Compiles [filterText]; returns null if the engine rejects the input. */
-    fun compile(filterText: String): ContentBlocker?
+    /** Compiles several filter lists into one engine; returns null if the engine rejects the input. */
+    fun compile(filterLists: List<String>): ContentBlocker?
+
+    fun compile(filterText: String): ContentBlocker? = compile(listOf(filterText))
 
     /** Restores rules previously written by [ContentBlocker.serialize]; returns null if unusable. */
     fun deserialize(file: File): ContentBlocker?

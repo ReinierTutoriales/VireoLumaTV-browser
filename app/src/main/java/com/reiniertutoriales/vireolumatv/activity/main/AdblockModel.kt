@@ -90,8 +90,15 @@ class AdblockModel @JvmOverloads constructor(
     }
     // Publishing a new generation must not make Main wait for a WebView request/native matcher.
     @Volatile private var installedClient: InstalledClient? = null
-    private fun installClient(value: ContentBlocker, source: String) {
+    // Installs from the IO loader and onClear() on Main: nothing may be installed after clearing.
+    private val installLock = Any()
+    @Volatile private var cleared = false
+    private fun installClient(value: ContentBlocker, source: String) = synchronized(installLock) {
         val current = installedClient
+        if (cleared) {
+            if (current?.blocker !== value) value.release()
+            return@synchronized
+        }
         if (current == null || current.blocker !== value || current.source != source) {
             installedClient = InstalledClient(value, source)
             // Native rules are freed once in-flight checks on them have finished.
@@ -199,8 +206,7 @@ class AdblockModel @JvmOverloads constructor(
                             }
                             Log.w(TAG, "Serialized adblock list unavailable; compiling saved filter list text")
                         }
-                        val combinedFilterList = buildCombinedFilterList(resolvedLists)
-                        val freshClient = engine.compile(combinedFilterList)
+                        val freshClient = engine.compile(filterTexts(resolvedLists))
                         if (freshClient != null) {
                             val cacheWritten = AdblockCache.write(serializedFile, freshClient)
                             if (!cacheWritten) Log.w(TAG, "Compiled rules active but cache write failed; will retry")
@@ -234,10 +240,8 @@ class AdblockModel @JvmOverloads constructor(
                     Log.w(TAG, "No usable adblock list available")
                 }
             }
-            if (config.adBlockListURL.value != configuredUrl) {
-                if (!hasCurrentClient(configuredUrl)) loadedClient?.release()
-                return@launch
-            }
+            // A client that is not installed below is freed in the finally block.
+            if (config.adBlockListURL.value != configuredUrl) return@launch
             //if nothing could be loaded keep the current client (if any) instead of replacing it with an empty one
             loadedClient?.let {
                 installClient(it, configuredUrl)
@@ -262,8 +266,11 @@ class AdblockModel @JvmOverloads constructor(
                 Toast.makeText(VireoLumaTVApp.instance, R.string.adblock_update_error, Toast.LENGTH_SHORT).show()
             }
         } finally {
+            // Compiled or restored but not installed (list URL changed, model cleared, cancelled
+            // while the native compile ran): free its native memory now.
+            loadedClient?.let { if (it !== installedClient?.blocker) it.release() }
             clientLoading.value = false
-            if (config.adBlockListURL.value != configuredUrl) loadAdBlockList(true)
+            if (!cleared && config.adBlockListURL.value != configuredUrl) loadAdBlockList(true)
         }
     }
 
@@ -447,10 +454,10 @@ class AdblockModel @JvmOverloads constructor(
         }
     }
 
-    private fun installAuxiliary(value: Auxiliary) {
-        if (config.adBlockListURL.value != value.source) {
+    private fun installAuxiliary(value: Auxiliary) = synchronized(installLock) {
+        if (cleared || config.adBlockListURL.value != value.source) {
             value.popup?.release()
-            return
+            return@synchronized
         }
         val previous = auxiliary
         auxiliary = value
@@ -484,16 +491,12 @@ class AdblockModel @JvmOverloads constructor(
         return content.lineSequence().take(8).any { it.startsWith("! Title: $title") }
     }
 
-    private fun buildCombinedFilterList(resolvedLists: List<ResolvedFilterList>): String {
+    /** Each list is handed to the engine on its own: no combined multi-megabyte copy is built. */
+    private fun filterTexts(resolvedLists: List<ResolvedFilterList>): List<String> {
         require(resolvedLists.sumOf { it.content.length.toLong() } <= 16L * 1024 * 1024) {
             "Combined adblock text exceeds the low-memory budget"
         }
-        return buildString {
-            resolvedLists.forEach { resolvedList ->
-                appendLine("! ${resolvedList.filterList.name}")
-                appendLine(resolvedList.content)
-            }
-        }
+        return resolvedLists.map { it.content }
     }
 
     private fun List<ResolvedFilterList>.namesFrom(source: FilterListSource): String {
@@ -518,10 +521,13 @@ class AdblockModel @JvmOverloads constructor(
 
     override fun onClear() {
         config.adBlockListURL.unsubscribe(sourceObserver)
-        installedClient?.blocker?.release()
-        installedClient = null
-        auxiliary?.popup?.release()
-        auxiliary = null
+        synchronized(installLock) {
+            cleared = true
+            installedClient?.blocker?.release()
+            installedClient = null
+            auxiliary?.popup?.release()
+            auxiliary = null
+        }
         super.onClear()
     }
 

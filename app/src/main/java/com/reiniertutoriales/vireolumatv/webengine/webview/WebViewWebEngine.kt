@@ -367,6 +367,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
 
         override fun onPageStarted(url: String?) {
+            tab.mediaStarted = false
             callback?.onPageStarted(url)
         }
 

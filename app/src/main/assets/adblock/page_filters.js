@@ -13,6 +13,22 @@
     if (!bridge || typeof bridge.pageFilters !== 'function') return;
     var href = String(location.href);
     if (!/^https?:/.test(href)) return;
+    // Tell the browser once that the user is watching media here: popups opened from then on must
+    // not replace the player. Muted autoplay (ads, previews) and short clips do not count. Media
+    // events do not bubble, so listen in the capture phase.
+    if (typeof bridge.mediaStarted === 'function' && typeof document.addEventListener === 'function') {
+        var onMedia = function (event) {
+            var media = event && event.target;
+            if (!media || media.paused || media.muted || media.volume === 0) return;
+            var duration = media.duration;
+            if (typeof duration === 'number' && isFinite(duration) && duration < 30) return;
+            document.removeEventListener('playing', onMedia, true);
+            document.removeEventListener('volumechange', onMedia, true);
+            try { bridge.mediaStarted(); } catch (_) {}
+        };
+        document.addEventListener('playing', onMedia, true);
+        document.addEventListener('volumechange', onMedia, true);
+    }
     var data;
     try { data = JSON.parse(bridge.pageFilters(href) || '{}'); } catch (_) { return; }
     if (!data || typeof data !== 'object') return;
@@ -491,7 +507,8 @@
                         if (queued) return;
                         queued = true;
                         setTimeout(function () { queued = false; run(); }, 50);
-                    }).observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+                    }).observe(document.documentElement, { childList: true, subtree: true, attributes: true,
+                        attributeFilter: attribute ? list : ['class'] });
                 }
             });
         };
@@ -558,13 +575,148 @@
     };
     scriptlets['nobab'] = scriptlets['nofab'];
 
+    // ---- procedural and action filters (uBO "##sel:has-text(..)", ":remove()", ":style()") --
+
+    function textMatcher(arg) {
+        var match = /^\/(.+)\/([imsu]*)$/.exec(arg);
+        if (match) { try { return new RegExp(match[1], match[2]); } catch (_) { return null; } }
+        return new RegExp(escapeRegex(arg));
+    }
+    function cssMatcher(arg, pseudo) {
+        var colon = arg.indexOf(':');
+        if (colon <= 0) return null;
+        var name = arg.slice(0, colon).trim(), value = textMatcher(arg.slice(colon + 1).trim());
+        if (!value) return null;
+        return function (el) {
+            try { return value.test(getComputedStyle(el, pseudo).getPropertyValue(name)); } catch (_) { return false; }
+        };
+    }
+    /** Compiles one operator into a function from an element list to an element list, or null. */
+    function operator(op, first) {
+        var arg = op && typeof op.arg === 'string' ? op.arg : '';
+        switch (op && op.type) {
+            case 'css-selector':
+                if (first) return function () { try { return Array.from(document.querySelectorAll(arg)); } catch (_) { return []; } };
+                return function (nodes) {
+                    var out = [];
+                    nodes.forEach(function (n) { try { out.push.apply(out, n.querySelectorAll(':scope ' + arg)); } catch (_) {} });
+                    return out;
+                };
+            case 'has-text':
+                var text = textMatcher(arg);
+                return text && function (nodes) { return nodes.filter(function (n) { return text.test(n.textContent || ''); }); };
+            case 'min-text-length':
+                var min = parseInt(arg, 10) || 0;
+                return function (nodes) { return nodes.filter(function (n) { return (n.textContent || '').length >= min; }); };
+            case 'matches-css': case 'matches-css-before': case 'matches-css-after':
+                var test = cssMatcher(arg, op.type === 'matches-css' ? null : op.type === 'matches-css-before' ? '::before' : '::after');
+                return test && function (nodes) { return nodes.filter(test); };
+            case 'matches-attr':
+                var eq = arg.indexOf('='), attrName = textMatcher((eq < 0 ? arg : arg.slice(0, eq)).replace(/^"|"$/g, ''));
+                var attrValue = eq < 0 ? null : textMatcher(arg.slice(eq + 1).replace(/^"|"$/g, ''));
+                return attrName && function (nodes) {
+                    return nodes.filter(function (n) {
+                        for (var i = 0; i < n.attributes.length; i++) {
+                            var a = n.attributes[i];
+                            if (attrName.test(a.name) && (!attrValue || attrValue.test(a.value))) return true;
+                        }
+                        return false;
+                    });
+                };
+            case 'matches-path':
+                var path = textMatcher(arg);
+                return path && function (nodes) { return path.test(location.pathname + location.search) ? nodes : []; };
+            case 'upward':
+                var steps = /^\d+$/.test(arg) ? parseInt(arg, 10) : 0;
+                return function (nodes) {
+                    var out = [];
+                    nodes.forEach(function (n) {
+                        var target = null;
+                        if (steps) { target = n; for (var i = 0; i < steps && target; i++) target = target.parentElement; }
+                        else if (n.parentElement) { try { target = n.parentElement.closest(arg); } catch (_) {} }
+                        if (target && out.indexOf(target) === -1) out.push(target);
+                    });
+                    return out;
+                };
+            case 'xpath':
+                return function (nodes) {
+                    var out = [];
+                    (first ? [document] : nodes).forEach(function (n) {
+                        try {
+                            var r = document.evaluate(arg, n, null, 7, null);
+                            for (var i = 0; i < r.snapshotLength; i++) out.push(r.snapshotItem(i));
+                        } catch (_) {}
+                    });
+                    return out;
+                };
+        }
+        return null;
+    }
+    function compileProcedural(entry, cssOut) {
+        var filter;
+        try { filter = typeof entry === 'string' ? JSON.parse(entry) : entry; } catch (_) { return null; }
+        if (!filter || !Array.isArray(filter.selector) || !filter.selector.length) return null;
+        var action = filter.action || null;
+        var only = filter.selector.length === 1 && filter.selector[0].type === 'css-selector' ? filter.selector[0].arg : null;
+        // Pure CSS: a stylesheet rule is cheaper and immediate.
+        if (only && (!action || action.type === 'style')) {
+            cssOut.push(only + '{' + (action ? action.arg : 'display:none!important') + '}');
+            return null;
+        }
+        if (filter.selector[0].type !== 'css-selector' && filter.selector[0].type !== 'xpath') return null;
+        var steps = [];
+        for (var i = 0; i < filter.selector.length; i++) {
+            var step = operator(filter.selector[i], i === 0);
+            if (!step) return null;
+            steps.push(step);
+        }
+        var apply;
+        switch (action ? action.type : 'hide') {
+            case 'hide': apply = function (el) { el.style.setProperty('display', 'none', 'important'); }; break;
+            case 'remove': apply = function (el) { if (el.parentNode) el.parentNode.removeChild(el); }; break;
+            case 'style': apply = function (el) { el.style.cssText += ';' + action.arg; }; break;
+            case 'remove-attr': apply = function (el) { el.removeAttribute(action.arg); }; break;
+            case 'remove-class': apply = function (el) { el.classList.remove(action.arg); }; break;
+            default: return null;
+        }
+        return function () {
+            var nodes = [];
+            for (var s = 0; s < steps.length; s++) {
+                nodes = steps[s](nodes);
+                if (!nodes.length) return;
+            }
+            nodes.forEach(function (el) { try { apply(el); } catch (_) {} });
+        };
+    }
+
     // ---- apply ---------------------------------------------------------------------------
 
-    var hide = Array.isArray(data.hide) ? data.hide : [];
-    if (hide.length) {
+    var extraCss = [];
+    var procedural = (Array.isArray(data.procedural) ? data.procedural : []).slice(0, 512)
+        .map(function (entry) { return compileProcedural(entry, extraCss); }).filter(Boolean);
+    if (procedural.length) {
+        var runProcedural = function () { procedural.forEach(function (f) { try { f(); } catch (_) {} }); };
+        onReady(function () {
+            runProcedural();
+            if (typeof MutationObserver !== 'function') return;
+            // Batched: at most one pass per 200 ms however busy the page is.
+            var pending = false;
+            new MutationObserver(function () {
+                if (pending) return;
+                pending = true;
+                setTimeout(function () { pending = false; runProcedural(); }, 200);
+            }).observe(document.documentElement, { childList: true, subtree: true });
+        });
+    }
+
+    // uBO-only pseudo-classes are not CSS: the stylesheet parser would only discard them.
+    var procedureLike = /:(?:has-text|upward|xpath|matches-css|matches-attr|matches-path|min-text-length|watch-attr|others|-abp-)/;
+    var hide = (Array.isArray(data.hide) ? data.hide : []).filter(function (s) { return !procedureLike.test(s); });
+    if (hide.length || extraCss.length) {
         // One rule per selector: an unsupported selector must not drop the whole group.
         var css = '';
         for (var h = 0; h < hide.length && h < 2048; h++) css += hide[h] + '{display:none!important}\n';
+        for (var x = 0; x < extraCss.length; x++) css += extraCss[x] + '\n';
         var adopted = false;
         try {
             if (typeof CSSStyleSheet === 'function' && 'adoptedStyleSheets' in document) {

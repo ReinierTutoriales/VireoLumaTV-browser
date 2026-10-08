@@ -173,11 +173,14 @@ class TabsModel : ActiveModel() {
     }
 
     // Only the visible tab owns a WebView. Captured history survives destruction and is restored
-    // when the user returns; background pages (including audio/video) stop running.
+    // when the user returns; background pages (including audio/video) stop running. Exception: the
+    // page that opened the visible popup stays paused in memory, so closing the popup resumes it
+    // (a video player) instead of reloading it. onTrimMemory still frees it under pressure.
     private fun releaseBackgroundWebViews(activeTab: WebTabState) {
+        val opener = activeTab.opener?.takeIf { !it.closed && tabsStates.contains(it) }
         var released = 0
         for (tab in tabsStates) {
-            if (tab === activeTab || tab.webEngine.getView() == null) continue
+            if (tab === activeTab || tab === opener || tab.webEngine.getView() == null) continue
             tab.webEngine.onDetachFromWindow(completely = true, destroyTab = false)
             released++
         }

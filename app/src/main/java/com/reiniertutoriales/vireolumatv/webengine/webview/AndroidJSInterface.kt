@@ -42,6 +42,12 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         return webEngine.pageFilters(url)
     }
 
+    /** A video/audio element started playing in some frame of the page (see page_filters.js). */
+    @JavascriptInterface
+    fun mediaStarted() {
+        webEngine.tab.mediaStarted = true
+    }
+
     @JavascriptInterface
     fun currentUrl(): String {
         if (!isInternalCertificateErrorPage()) return ""

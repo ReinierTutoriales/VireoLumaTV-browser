@@ -28,14 +28,26 @@ object AdblockSurrogates {
         }
     }
 
-    fun responseFor(context: Context, url: Uri): WebResourceResponse? {
+    /**
+     * Headers of a replacement response. A credentialed CORS request (VAST/IMA ad tags use
+     * withCredentials) rejects `Access-Control-Allow-Origin: *`, so the caller's origin is echoed.
+     */
+    fun replacementHeaders(requestHeaders: Map<String, String>?): Map<String, String> {
+        val origin = requestHeaders?.entries?.firstOrNull { it.key.equals("Origin", true) }?.value
+            ?.takeIf { it.isNotEmpty() && it != "null" }
+            ?: return mapOf("Access-Control-Allow-Origin" to "*", "Cache-Control" to "no-store")
+        return mapOf("Access-Control-Allow-Origin" to origin, "Access-Control-Allow-Credentials" to "true",
+            "Vary" to "Origin", "Cache-Control" to "no-store")
+    }
+
+    fun responseFor(context: Context, url: Uri, requestHeaders: Map<String, String>? = null): WebResourceResponse? {
         val asset = assetFor(url) ?: return null
         val bytes = cache.getOrPut(asset) {
             context.assets.open("surrogates/$asset").use { it.readBytes() }
         }
         return WebResourceResponse("application/javascript", "utf-8", 200, "OK",
             // A crossorigin script tag must still accept the replacement.
-            mapOf("Access-Control-Allow-Origin" to "*", "Cache-Control" to "no-store"),
+            replacementHeaders(requestHeaders),
             bytes.inputStream())
     }
 }

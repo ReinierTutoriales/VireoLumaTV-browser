@@ -26,7 +26,7 @@ class AdblockPopupAndCosmeticTest {
         private val real = RustAdBlockEngine { AdblockResources.json(VireoLumaTVApp.instance) }
         var compiles = 0
         override val cacheFileName = "popup-cosmetic-test.dat"
-        override fun compile(filterText: String): ContentBlocker? { compiles++; return real.compile(filterText) }
+        override fun compile(filterLists: List<String>): ContentBlocker? { compiles++; return real.compile(filterLists) }
         override fun deserialize(file: File): ContentBlocker? = real.deserialize(file)
     }
 
