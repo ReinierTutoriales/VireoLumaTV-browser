@@ -27,4 +27,5 @@ internal object RustAdblock {
     @JvmStatic external fun nativeCheck(handle: Long, url: String, source: String, type: String): Int
     @JvmStatic external fun nativeRedirect(handle: Long, url: String, source: String, type: String): String
     @JvmStatic external fun nativeCosmetic(handle: Long, url: String): String
+    @JvmStatic external fun nativeHiddenSelectors(handle: Long, url: String, classes: String, ids: String): String
 }

@@ -241,6 +241,11 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         return pageFiltersProvider?.invoke(url) ?: ""
     }
 
+    fun hiddenSelectors(url: String, classes: String, ids: String): String {
+        if (!(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)) return "[]"
+        return hiddenSelectorsProvider?.invoke(url, classes, ids) ?: "[]"
+    }
+
     override fun onLongPress(x: Int, y: Int) {
         webView?.let {
             it.evaluateJavascript(Scripts.LONG_PRESS_SCRIPT) { href ->
@@ -482,6 +487,8 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         /** Installed by the window owner (adblock model); read from the JavaBridge thread. */
         @Volatile
         var pageFiltersProvider: ((String) -> String)? = null
+        @Volatile
+        var hiddenSelectorsProvider: ((String, String, String) -> String)? = null
 
         init {
             WebEngineFactory.registerProvider(WebEngineProvider("WebView", object : WebEngineProviderCallback {

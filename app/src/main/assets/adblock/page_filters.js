@@ -575,6 +575,540 @@
     };
     scriptlets['nobab'] = scriptlets['nofab'];
 
+    // ---- response rewriting shared by the *-response, xml-prune and m3u-prune scriptlets ----
+
+    /** uBO vararg pairs after the positional arguments: ["propsToMatch", "url:/x/", ...]. */
+    function namedArgs(list) {
+        var out = {};
+        for (var i = 0; i + 1 < list.length; i += 2) out[list[i]] = list[i + 1];
+        return out;
+    }
+
+    var fetchRewriters = [], xhrRewriters = [];
+    function requestDetails(input, init) {
+        var details = { url: '', method: 'GET' };
+        try {
+            if (input && typeof input === 'object' && 'url' in input) { details.url = input.url; details.method = input.method || 'GET'; }
+            else details.url = String(input);
+            if (init && init.method) details.method = String(init.method);
+        } catch (_) {}
+        return details;
+    }
+    /** Applies the rewriters whose request matcher accepts [details]; null when none applies. */
+    function rewrite(list, details, text) {
+        var out = text, touched = false;
+        for (var i = 0; i < list.length; i++) {
+            if (!list[i].matches(details)) continue;
+            touched = true;
+            try { out = list[i].text(out); } catch (_) {}
+        }
+        return touched ? out : null;
+    }
+    var fetchHooked = false;
+    function hookFetch() {
+        if (fetchHooked || typeof window.fetch !== 'function' || typeof Response !== 'function') return;
+        fetchHooked = true;
+        wrapFunction(window, 'fetch', function (target, self, args) {
+            var details = requestDetails(args[0], args[1]);
+            var applies = fetchRewriters.some(function (r) { return r.matches(details); });
+            var promise = Reflect_.apply(target, self, args);
+            if (!applies) return promise;
+            return promise.then(function (response) {
+                // Only text bodies (JSON, XML/VAST, playlists): never buffer video segments.
+                var type = (response.headers && response.headers.get('content-type')) || '';
+                var length = parseInt((response.headers && response.headers.get('content-length')) || '0', 10);
+                if ((type && !/json|xml|text|javascript|mpegurl|vtt/i.test(type)) || length > 8388608) return response;
+                return response.clone().text().then(function (text) {
+                    var out = rewrite(fetchRewriters, details, text);
+                    if (out === null || out === text) return response;
+                    var replaced = new Response(out, { status: response.status, statusText: response.statusText, headers: response.headers });
+                    ['url', 'type', 'redirected'].forEach(function (key) {
+                        try { defineProperty(replaced, key, { value: response[key] }); } catch (_) {}
+                    });
+                    return replaced;
+                }, function () { return response; });
+            });
+        });
+    }
+    var xhrHooked = false;
+    function hookXhr() {
+        var proto = window.XMLHttpRequest && XMLHttpRequest.prototype;
+        if (xhrHooked || !proto) return;
+        var textDescriptor = getOwnPropertyDescriptor(proto, 'responseText');
+        var responseDescriptor = getOwnPropertyDescriptor(proto, 'response');
+        if (!textDescriptor || !responseDescriptor || !textDescriptor.get || !responseDescriptor.get) return;
+        xhrHooked = true;
+        var requests = new WeakMap(), results = new WeakMap();
+        wrapFunction(proto, 'open', function (target, self, args) {
+            var details = { method: String(args[0] || 'GET'), url: String(args[1] || '') };
+            if (xhrRewriters.some(function (r) { return r.matches(details); })) requests.set(self, details);
+            else requests.delete(self);
+            results.delete(self);
+            return Reflect_.apply(target, self, args);
+        });
+        function rewritten(xhr, raw) {
+            var details = requests.get(xhr);
+            if (!details || xhr.readyState !== 4) return raw;
+            var cached = results.get(xhr);
+            if (cached && cached.raw === raw) return cached.out;
+            var out;
+            if (typeof raw === 'string') out = rewrite(xhrRewriters, details, raw);
+            else if (raw !== null && typeof raw === 'object' && xhr.responseType === 'json') {
+                var text = rewrite(xhrRewriters, details, JSON.stringify(raw));
+                try { out = text === null ? null : JSON.parse(text); } catch (_) { out = null; }
+            } else out = null;
+            if (out === null) out = raw;
+            results.set(xhr, { raw: raw, out: out });
+            return out;
+        }
+        try {
+            defineProperty(proto, 'responseText', { configurable: true, enumerable: true,
+                get: function () { return rewritten(this, textDescriptor.get.call(this)); } });
+            defineProperty(proto, 'response', { configurable: true, enumerable: true,
+                get: function () {
+                    var raw = responseDescriptor.get.call(this);
+                    var type = this.responseType;
+                    return type === '' || type === 'text' || type === 'json' ? rewritten(this, raw) : raw;
+                } });
+        } catch (_) {}
+    }
+    function addRewriter(where, matches, text) {
+        var rewriter = { matches: matches, text: text };
+        if (where !== 'xhr') { fetchRewriters.push(rewriter); hookFetch(); }
+        if (where !== 'fetch') { xhrRewriters.push(rewriter); hookXhr(); }
+    }
+    function jsonTextPruner(prunePaths, requiredPaths) {
+        var prune = pruner(prunePaths, requiredPaths);
+        return function (text) {
+            var value;
+            try { value = JSON.parse(text); } catch (_) { return text; }
+            var before = JSON.stringify(value);
+            var after = JSON.stringify(prune(value));
+            return after === before ? text : after;
+        };
+    }
+    function jsonPruneResponse(where) {
+        return function (prunePaths, requiredPaths) {
+            var props = namedArgs([].slice.call(arguments, 2)).propsToMatch;
+            addRewriter(where, requestMatcher(props), jsonTextPruner(prunePaths, requiredPaths));
+        };
+    }
+    scriptlets['json-prune-fetch-response'] = jsonPruneResponse('fetch');
+    scriptlets['json-prune-xhr-response'] = jsonPruneResponse('xhr');
+
+    function textReplacer(pattern, replacement) {
+        if (pattern === undefined || pattern === '') return null;
+        var all = pattern === '*';
+        var re = all ? null : toRegex(pattern, 'g');
+        var value = replacement === undefined ? '' : String(replacement);
+        return function (text) { return all ? value : text.replace(re, value); };
+    }
+    function replaceResponse(where) {
+        return function (pattern, replacement, props) {
+            var replace = textReplacer(pattern, replacement);
+            if (replace) addRewriter(where, requestMatcher(props), replace);
+        };
+    }
+    scriptlets['trusted-replace-xhr-response'] = replaceResponse('xhr');
+    scriptlets['trusted-replace-fetch-response'] = replaceResponse('fetch');
+
+    /** Removes XML nodes (VAST/VMAP ads) matching a CSS selector or xpath(...) expression. */
+    scriptlets['xml-prune'] = function (selector, selectorCheck, urlPattern) {
+        if (!selector || typeof DOMParser !== 'function' || typeof XMLSerializer !== 'function') return;
+        var urlMatches = toRegex(urlPattern);
+        function query(doc, expr) {
+            var xpath = /^xpath\((.+)\)$/.exec(expr);
+            if (!xpath) { try { return Array.from(doc.querySelectorAll(expr)); } catch (_) { return []; } }
+            var out = [];
+            try {
+                var result = doc.evaluate(xpath[1], doc, null, 7, null);
+                for (var i = 0; i < result.snapshotLength; i++) out.push(result.snapshotItem(i));
+            } catch (_) {}
+            return out;
+        }
+        addRewriter('both', function (details) { return urlMatches.test(details.url); }, function (text) {
+            if (!/^\s*</.test(text)) return text;
+            var doc = new DOMParser().parseFromString(text, 'text/xml');
+            if (doc.querySelector('parsererror')) return text;
+            if (selectorCheck && !query(doc, selectorCheck).length) return text;
+            var nodes = query(doc, selector);
+            if (!nodes.length) return text;
+            nodes.forEach(function (node) {
+                if (node.nodeType === 2 && node.ownerElement) node.ownerElement.removeAttribute(node.name);
+                else if (node.parentNode) node.parentNode.removeChild(node);
+            });
+            return new XMLSerializer().serializeToString(doc);
+        });
+    };
+
+    /** Removes ad segments from HLS playlists (a matching line and the URI that follows it). */
+    scriptlets['m3u-prune'] = function (m3uPattern, urlPattern) {
+        if (!m3uPattern) return;
+        var urlMatches = toRegex(urlPattern);
+        var isRegex = /^\/.+\/[a-z]*$/.test(m3uPattern);
+        var re = toRegex(m3uPattern, isRegex ? 'gm' : '');
+        addRewriter('both', function (details) { return urlMatches.test(details.url); }, function (text) {
+            if (text.indexOf('#EXTM3U') === -1) return text;
+            if (isRegex && /\\n|\[\\s/.test(m3uPattern)) return text.replace(re, '');
+            var lines = text.split('\n'), out = [];
+            for (var i = 0; i < lines.length; i++) {
+                if (!re.test(lines[i])) { out.push(lines[i]); continue; }
+                // A dropped #EXTINF takes its segment URI with it.
+                if (/^#EXTINF/.test(lines[i]) && i + 1 < lines.length && !/^#/.test(lines[i + 1])) i++;
+            }
+            return out.join('\n');
+        });
+    };
+
+    // ---- values, storage, cookies -------------------------------------------------------
+
+    /** Values of the trusted-* scriptlets: uBO constants, numbers, "json:" or plain JSON, else text. */
+    function trustedValue(raw) {
+        var parsed = constant(raw);
+        if (parsed) return parsed;
+        if (raw === undefined) return null;
+        var text = String(raw);
+        if (/^-?\d+(\.\d+)?$/.test(text)) return { value: parseFloat(text) };
+        if (text.indexOf('json:') === 0) text = text.slice(5);
+        try { return { value: JSON.parse(text) }; } catch (_) {}
+        return { value: String(raw) };
+    }
+    scriptlets['trusted-set-constant'] = function (chain, rawValue) {
+        chain = normalizeChain(chain);
+        var parsed = trustedValue(rawValue);
+        if (!chain || !parsed) return;
+        var value = parsed.value;
+        trapChain(window, chain, function (owner, prop) {
+            try {
+                defineProperty(owner, prop, { configurable: true, get: function () { return value; }, set: noopFunc });
+            } catch (_) { try { owner[prop] = value; } catch (__) {} }
+        });
+    };
+
+    function dynamicValue(text) {
+        if (text === '$now$') return String(Date.now());
+        if (text === '$currentDate$') return new Date().toISOString();
+        if (text === '$currentISODate$') return new Date().toISOString();
+        return text;
+    }
+    function storageSetter(storageName, trusted) {
+        return function (key, value) {
+            if (!key || value === undefined) return;
+            var storage;
+            try { storage = window[storageName]; } catch (_) { return; }
+            if (!storage) return;
+            try {
+                if (value === '$remove$') { storage.removeItem(key); return; }
+                var mapped = { 'emptyArr': '[]', 'emptyObj': '{}', 'undefined': 'undefined', 'null': 'null', "''": '' };
+                var text = Object.prototype.hasOwnProperty.call(mapped, value) ? mapped[value] : dynamicValue(String(value));
+                if (!trusted && !safeValues.test(text) && text !== '[]' && text !== '{}' && text !== 'undefined' && text !== 'null') return;
+                storage.setItem(key, text);
+            } catch (_) {}
+        };
+    }
+    scriptlets['set-session-storage-item'] = storageSetter('sessionStorage', false);
+    scriptlets['trusted-set-session-storage-item'] = storageSetter('sessionStorage', true);
+    scriptlets['trusted-set-local-storage-item'] = storageSetter('localStorage', true);
+
+    function writeCookie(name, value, maxAgeSeconds, path) {
+        var cookie = encodeURIComponent(name) + '=' + value + '; path=' + (path === 'none' ? location.pathname : (path || '/'));
+        if (maxAgeSeconds) cookie += '; max-age=' + maxAgeSeconds;
+        document.cookie = cookie;
+    }
+    scriptlets['trusted-set-cookie'] = function (name, value, offsetSeconds, path) {
+        if (!name || value === undefined) return;
+        var text = dynamicValue(String(value));
+        var maxAge = parseInt(offsetSeconds, 10);
+        try { writeCookie(name, encodeURIComponent(text), isNaN(maxAge) ? 31536000 : maxAge, path); } catch (_) {}
+    };
+    scriptlets['trusted-set-cookie-reload'] = function (name, value, offsetSeconds, path) {
+        if (!name || value === undefined) return;
+        var text = encodeURIComponent(dynamicValue(String(value)));
+        var current = (document.cookie || '').split(/;\s*/).indexOf(encodeURIComponent(name) + '=' + text) !== -1;
+        if (current) return;
+        scriptlets['trusted-set-cookie'](name, value, offsetSeconds, path);
+        // Reload once: only when the cookie really changed, so this can never loop.
+        if ((document.cookie || '').split(/;\s*/).indexOf(encodeURIComponent(name) + '=' + text) !== -1) {
+            try { location.reload(); } catch (_) {}
+        }
+    };
+    scriptlets['remove-cookie'] = function (needle) {
+        var matches = matcher(needle || '');
+        function clear() {
+            String(document.cookie || '').split(';').forEach(function (pair) {
+                var name = pair.split('=')[0].trim();
+                if (!name || !matches(decodeURIComponent(name))) return;
+                var host = location.hostname, parts = host.split('.');
+                var domains = [''];
+                for (var i = 0; i < parts.length - 1; i++) domains.push('; domain=.' + parts.slice(i).join('.'));
+                domains.forEach(function (domain) {
+                    ['/', location.pathname].forEach(function (path) {
+                        try { document.cookie = name + '=; max-age=0; path=' + path + domain; } catch (_) {}
+                    });
+                });
+            });
+        }
+        clear();
+        onReady(clear);
+        if (typeof window.addEventListener === 'function') window.addEventListener('beforeunload', clear);
+    };
+
+    // ---- DOM helpers ---------------------------------------------------------------------
+
+    /** Runs [fn] now, when the DOM is ready and (throttled) on later DOM changes. */
+    function onDomChanges(fn, attributes) {
+        fn();
+        onReady(function () {
+            fn();
+            if (typeof MutationObserver !== 'function' || !document.documentElement) return;
+            var pending = false;
+            var options = { childList: true, subtree: true };
+            if (attributes) { options.attributes = true; options.attributeFilter = attributes; }
+            new MutationObserver(function () {
+                if (pending) return;
+                pending = true;
+                setTimeout(function () { pending = false; fn(); }, 100);
+            }).observe(document.documentElement, options);
+        });
+    }
+    function selectAll(selector) {
+        try { return Array.from(document.querySelectorAll(selector)); } catch (_) { return []; }
+    }
+
+    var safeAttributeValue = /^(?:|true|false|-?\d+|\[[a-zA-Z0-9_-]+\])$/;
+    function attrSetter(trusted) {
+        return function (selector, attribute, value) {
+            if (!selector || !attribute || /^on/i.test(attribute)) return;
+            var text = value === undefined ? '' : String(value);
+            if (!trusted && !safeAttributeValue.test(text)) return;
+            var copyFrom = /^\[([a-zA-Z0-9_-]+)\]$/.exec(text);
+            onDomChanges(function () {
+                selectAll(selector).forEach(function (el) {
+                    var next = copyFrom ? el.getAttribute(copyFrom[1]) : text;
+                    if (next !== null && el.getAttribute(attribute) !== next) el.setAttribute(attribute, next);
+                });
+            }, copyFrom ? [copyFrom[1]] : [attribute]);
+        };
+    }
+    scriptlets['set-attr'] = attrSetter(false);
+    scriptlets['trusted-set-attr'] = attrSetter(true);
+
+    /** Links whose real destination sits in their text, an attribute or a query parameter. */
+    scriptlets['href-sanitizer'] = function (selector, source) {
+        if (!selector) return;
+        var from = source || 'text';
+        function destination(el) {
+            var value = null;
+            if (from === 'text') value = (el.textContent || '').trim();
+            else if (/^\[.+\]$/.test(from)) value = el.getAttribute(from.slice(1, -1));
+            else if (from.charAt(0) === '?') {
+                try { value = new URL(el.href, location.href).searchParams.get(from.slice(1)); } catch (_) {}
+            }
+            if (!value) return null;
+            try {
+                var url = new URL(value, location.href);
+                return /^https?:$/.test(url.protocol) ? url.href : null;
+            } catch (_) { return null; }
+        }
+        onDomChanges(function () {
+            selectAll(selector).forEach(function (el) {
+                var target = destination(el);
+                if (target && el.href !== target) el.setAttribute('href', target);
+            });
+        }, ['href']);
+    };
+
+    scriptlets['refresh-defuser'] = function () {
+        onDomChanges(function () {
+            selectAll('meta[http-equiv="refresh" i]').forEach(function (meta) {
+                if (meta.parentNode) meta.parentNode.removeChild(meta);
+            });
+        });
+    };
+
+    scriptlets['disable-newtab-links'] = function () {
+        if (typeof document.addEventListener !== 'function') return;
+        document.addEventListener('click', function (event) {
+            var el = event.target;
+            while (el && el.tagName !== 'A') el = el.parentElement;
+            if (el && el.getAttribute && el.getAttribute('target') && el.getAttribute('target') !== '_self') {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
+    };
+
+    scriptlets['window-close-if'] = function (needle) {
+        if (matcher(needle || '')(location.href)) {
+            try { window.close(); } catch (_) {}
+        }
+    };
+
+    scriptlets['alert-buster'] = function () {
+        try { window.alert = noopFunc; } catch (_) {}
+    };
+
+    scriptlets['no-requestAnimationFrame-if'] = function (needle) {
+        var matches = matcher(needle || '');
+        wrapFunction(window, 'requestAnimationFrame', function (target, self, args) {
+            if (matches(stringOf(args[0]))) args[0] = noopFunc;
+            return Reflect_.apply(target, self, args);
+        });
+    };
+
+    scriptlets['prevent-canvas'] = function (contextType) {
+        var matches = matcher(contextType || '');
+        var proto = window.HTMLCanvasElement && HTMLCanvasElement.prototype;
+        wrapFunction(proto, 'getContext', function (target, self, args) {
+            if (matches(args[0])) return null;
+            return Reflect_.apply(target, self, args);
+        });
+    };
+
+    scriptlets['prevent-innerHTML'] = function (selector, pattern) {
+        var proto = window.Element && Element.prototype;
+        var descriptor = proto && getOwnPropertyDescriptor(proto, 'innerHTML');
+        if (!descriptor || !descriptor.set) return;
+        var re = toRegex(pattern);
+        try {
+            defineProperty(proto, 'innerHTML', {
+                configurable: true, enumerable: descriptor.enumerable, get: descriptor.get,
+                set: function (value) {
+                    var selected = true;
+                    if (selector) { try { selected = this.matches(selector); } catch (_) { selected = false; } }
+                    if (selected && re.test(String(value))) return;
+                    descriptor.set.call(this, value);
+                }
+            });
+        } catch (_) {}
+    };
+
+    // ---- method and argument overrides ---------------------------------------------------
+
+    /** Owner object and property of a dotted path such as "Element.prototype.append". */
+    function resolveMethod(path) {
+        var parts = normalizeChain(path).split('.');
+        var owner = window;
+        for (var i = 0; i < parts.length - 1; i++) {
+            if (!isObjectLike(owner)) return null;
+            owner = owner[parts[i]];
+        }
+        if (!isObjectLike(owner)) return null;
+        return { owner: owner, name: parts[parts.length - 1] };
+    }
+
+    scriptlets['trusted-replace-argument'] = function (path, position, rawValue, condition, pattern) {
+        var target = path && resolveMethod(path);
+        var index = parseInt(position, 10);
+        var parsed = trustedValue(rawValue);
+        if (!target || isNaN(index) || !parsed) return;
+        var replaceMatch = typeof rawValue === 'string' && /^repl:\/(.+)\/(.*)\/$/.exec(rawValue);
+        var test = condition === 'condition' && pattern !== undefined ? toRegex(pattern) : null;
+        wrapFunction(target.owner, target.name, function (fn, self, args) {
+            var at = index < 0 ? args.length + index : index;
+            if (at >= 0 && (!test || test.test(stringOf(args[at])))) {
+                if (replaceMatch) {
+                    try { args[at] = String(args[at]).replace(new RegExp(replaceMatch[1]), replaceMatch[2]); } catch (_) {}
+                } else args[at] = parsed.value;
+            }
+            return Reflect_.apply(fn, self, args);
+        });
+    };
+
+    /** Signature: "|"-separated argument matchers; "how" is "abort" (throw) or a return value. */
+    scriptlets['trusted-suppress-native-method'] = function (path, signature, how) {
+        var target = path && resolveMethod(path);
+        if (!target) return;
+        var tests = String(signature || '').split('|').map(function (part) {
+            return part === '' ? null : matcher(part);
+        });
+        wrapFunction(target.owner, target.name, function (fn, self, args) {
+            for (var i = 0; i < tests.length; i++) {
+                if (tests[i] && !tests[i](stringOf(args[i]))) return Reflect_.apply(fn, self, args);
+            }
+            if (how === 'abort') abort();
+            return undefined;
+        });
+    };
+
+    scriptlets['trusted-override-element-method'] = function (path, selector, disposition) {
+        var target = path && resolveMethod(path);
+        if (!target) return;
+        wrapFunction(target.owner, target.name, function (fn, self, args) {
+            if (selector) {
+                var selected = false;
+                try { selected = self && typeof self.matches === 'function' && self.matches(selector); } catch (_) {}
+                if (!selected) return Reflect_.apply(fn, self, args);
+            }
+            if (disposition === 'throw') abort();
+            var parsed = disposition ? trustedValue(disposition) : null;
+            return parsed ? parsed.value : undefined;
+        });
+    };
+
+    /** Computed-style answers for elements that pages probe to detect hidden ads. */
+    scriptlets['spoof-css'] = function (selector) {
+        if (!selector || typeof window.getComputedStyle !== 'function' || !Proxy_) return;
+        var overrides = {};
+        var rest = [].slice.call(arguments, 1);
+        for (var i = 0; i + 1 < rest.length; i += 2) overrides[rest[i]] = rest[i + 1];
+        function camel(name) { return name.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); }); }
+        Object.keys(overrides).forEach(function (key) { overrides[camel(key)] = overrides[key]; });
+        wrapFunction(window, 'getComputedStyle', function (target, self, args) {
+            var style = Reflect_.apply(target, self, args);
+            var el = args[0], selected = false;
+            try { selected = el && typeof el.matches === 'function' && el.matches(selector); } catch (_) {}
+            if (!selected) return style;
+            return new Proxy_(style, {
+                get: function (obj, prop) {
+                    if (prop === 'getPropertyValue') {
+                        return function (name) {
+                            return Object.prototype.hasOwnProperty.call(overrides, name) ? overrides[name] : obj.getPropertyValue(name);
+                        };
+                    }
+                    if (typeof prop === 'string' && Object.prototype.hasOwnProperty.call(overrides, prop)) return overrides[prop];
+                    var value = obj[prop];
+                    return typeof value === 'function' ? value.bind(obj) : value;
+                }
+            });
+        });
+    };
+
+    // ---- page actions ----------------------------------------------------------------------
+
+    /** Clicks consent/continue buttons in order, each as soon as it appears (10 s at most). */
+    scriptlets['trusted-click-element'] = function (selectors, extraMatch, delay) {
+        var queue = String(selectors || '').split(/\s*,\s*/).filter(Boolean);
+        if (!queue.length) return;
+        var wait = Math.max(0, Math.min(10000, parseInt(delay, 10) || 0));
+        var deadline = Date.now() + 10000 + wait;
+        function step() {
+            if (!queue.length || Date.now() > deadline) return;
+            var found = selectAll(queue[0])[0];
+            if (found) {
+                queue.shift();
+                try { found.click(); } catch (_) {}
+            }
+            if (queue.length) setTimeout(step, found ? 50 : 250);
+        }
+        onReady(function () { setTimeout(step, wait); });
+    };
+
+    scriptlets['trusted-create-html'] = function (parentSelector, html, duration) {
+        if (!parentSelector || !html || typeof DOMParser !== 'function') return;
+        onReady(function () {
+            var parent = selectAll(parentSelector)[0];
+            if (!parent) return;
+            var doc = new DOMParser().parseFromString(String(html), 'text/html');
+            var nodes = Array.from(doc.body.childNodes).map(function (node) { return document.importNode(node, true); });
+            nodes.forEach(function (node) { parent.appendChild(node); });
+            var ms = parseInt(duration, 10);
+            if (ms > 0) setTimeout(function () {
+                nodes.forEach(function (node) { if (node.parentNode) node.parentNode.removeChild(node); });
+            }, ms);
+        });
+    };
+
     // ---- procedural and action filters (uBO "##sel:has-text(..)", ":remove()", ":style()") --
 
     function textMatcher(arg) {
@@ -747,6 +1281,83 @@
     // trusted resources we do not ship and could fight with it.
     var host = String(location.hostname).toLowerCase();
     if (/(^|\.)youtube(-nocookie)?\.com$/.test(host)) return;
+
+    // Generic hiding (EasyList "##.ad-banner", "###sponsor"): like uBO, only the classes and ids
+    // that really occur in the page are sent to the engine, in batches, each name once.
+    if (!data.generichide && typeof bridge.hiddenSelectors === 'function') {
+        var seenClasses = new Set(), seenIds = new Set(), budget = 4000;
+        var newClasses = [], newIds = [], queue = [], scheduled = false, genericSheet = null, genericStyle = null;
+        var collect = function (el) {
+            var id = el.id;
+            if (typeof id === 'string' && id && !seenIds.has(id) && seenIds.size < budget && !/\s/.test(id)) {
+                seenIds.add(id); newIds.push(id);
+            }
+            var list = el.classList;
+            if (!list) return;
+            for (var i = 0; i < list.length && seenClasses.size < budget; i++) {
+                if (!seenClasses.has(list[i])) { seenClasses.add(list[i]); newClasses.push(list[i]); }
+            }
+        };
+        var addGeneric = function (selectors) {
+            for (var i = 0; i < selectors.length; i++) {
+                var rule = selectors[i] + '{display:none!important}';
+                try {
+                    if (genericSheet) { genericSheet.insertRule(rule, genericSheet.cssRules.length); continue; }
+                } catch (_) { continue; }
+                if (!genericStyle) {
+                    var root = document.head || document.documentElement;
+                    if (!root) return;
+                    genericStyle = document.createElement('style');
+                    root.appendChild(genericStyle);
+                }
+                genericStyle.appendChild(document.createTextNode(rule + '\n'));
+            }
+        };
+        var flushGeneric = function () {
+            scheduled = false;
+            var nodes = queue; queue = [];
+            for (var n = 0; n < nodes.length; n++) {
+                var node = nodes[n].node;
+                collect(node);
+                if (nodes[n].subtree && node.querySelectorAll) {
+                    var inner = node.querySelectorAll('[id],[class]');
+                    for (var k = 0; k < inner.length; k++) collect(inner[k]);
+                }
+            }
+            if (!newClasses.length && !newIds.length) return;
+            var result = [];
+            try { result = JSON.parse(bridge.hiddenSelectors(href, newClasses.join(' '), newIds.join(' ')) || '[]'); } catch (_) {}
+            newClasses = []; newIds = [];
+            if (Array.isArray(result) && result.length) addGeneric(result);
+        };
+        var enqueue = function (node, subtree) {
+            if (!node || node.nodeType !== 1) return;
+            queue.push({ node: node, subtree: subtree });
+            if (!scheduled) { scheduled = true; setTimeout(flushGeneric, 250); }
+        };
+        try {
+            if (typeof CSSStyleSheet === 'function' && 'adoptedStyleSheets' in document) {
+                genericSheet = new CSSStyleSheet();
+                document.adoptedStyleSheets = document.adoptedStyleSheets.concat([genericSheet]);
+            }
+        } catch (_) { genericSheet = null; }
+        onReady(function () {
+            if (!document.documentElement) return;
+            enqueue(document.documentElement, true);
+            flushGeneric();
+            if (typeof MutationObserver !== 'function') return;
+            var observer = new MutationObserver(function (mutations) {
+                if (seenClasses.size >= budget && seenIds.size >= budget) { observer.disconnect(); return; }
+                for (var m = 0; m < mutations.length; m++) {
+                    var mutation = mutations[m];
+                    if (mutation.type === 'attributes') { enqueue(mutation.target, false); continue; }
+                    var added = mutation.addedNodes;
+                    for (var a = 0; a < added.length; a++) enqueue(added[a], true);
+                }
+            });
+            observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'id'] });
+        });
+    }
 
     var script = typeof data.script === 'string' ? data.script : '';
     var marker = /\/\*@VIREO@\*\/(\[[\s\S]*?\])\/\*@END@\*\//g, found;

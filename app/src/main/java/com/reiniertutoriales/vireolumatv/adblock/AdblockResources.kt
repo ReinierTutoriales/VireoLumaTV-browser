@@ -29,9 +29,9 @@ object AdblockResources {
         "addEventListener-defuser" to listOf("aeld", "prevent-addEventListener"),
         "no-window-open-if" to listOf("nowoif", "window.open-defuser", "prevent-window-open"),
         "remove-node-text" to listOf("rmnt"),
-        "replace-node-text" to listOf("rpnt"),
-        "no-fetch-if" to listOf("prevent-fetch"),
-        "no-xhr-if" to listOf("prevent-xhr"),
+        "replace-node-text" to listOf("rpnt", "trusted-rpnt", "trusted-replace-node-text"),
+        "no-fetch-if" to listOf("prevent-fetch", "trusted-prevent-fetch"),
+        "no-xhr-if" to listOf("prevent-xhr", "trusted-prevent-xhr"),
         "noeval-if" to listOf("prevent-eval-if"),
         "noeval" to listOf("silent-noeval"),
         "json-prune" to emptyList(),
@@ -42,7 +42,36 @@ object AdblockResources {
         "set-local-storage-item" to emptyList(),
         "popads-dummy" to listOf("popads.net"),
         "nofab" to listOf("fuckadblock.js-3.2.0"),
-        "nobab" to listOf("bab-defuser")
+        "nobab" to listOf("bab-defuser", "nobab2"),
+        "json-prune-fetch-response" to emptyList(),
+        "json-prune-xhr-response" to emptyList(),
+        "trusted-replace-fetch-response" to listOf("trusted-rpfr"),
+        "trusted-replace-xhr-response" to emptyList(),
+        "xml-prune" to emptyList(),
+        "m3u-prune" to emptyList(),
+        "trusted-set-constant" to listOf("trusted-set"),
+        "set-session-storage-item" to emptyList(),
+        "trusted-set-session-storage-item" to emptyList(),
+        "trusted-set-local-storage-item" to emptyList(),
+        "trusted-set-cookie" to emptyList(),
+        "trusted-set-cookie-reload" to emptyList(),
+        "remove-cookie" to listOf("cookie-remover"),
+        "set-attr" to emptyList(),
+        "trusted-set-attr" to emptyList(),
+        "href-sanitizer" to emptyList(),
+        "refresh-defuser" to emptyList(),
+        "disable-newtab-links" to emptyList(),
+        "window-close-if" to emptyList(),
+        "alert-buster" to emptyList(),
+        "no-requestAnimationFrame-if" to listOf("norafif", "requestAnimationFrame-defuser", "prevent-requestAnimationFrame"),
+        "prevent-canvas" to emptyList(),
+        "prevent-innerHTML" to emptyList(),
+        "trusted-replace-argument" to emptyList(),
+        "trusted-suppress-native-method" to emptyList(),
+        "trusted-override-element-method" to emptyList(),
+        "spoof-css" to emptyList(),
+        "trusted-click-element" to emptyList(),
+        "trusted-create-html" to emptyList()
     )
 
     private const val GIF_1X1 = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
@@ -64,6 +93,8 @@ object AdblockResources {
             list.put(resource(name, aliases.toList(), JSONObject().put("mime", mime), base64Body))
         fun asset(name: String, path: String, vararg aliases: String) = text(name, "application/javascript",
             context.assets.open(path).bufferedReader().use { it.readText() }, *aliases)
+        fun media(name: String, mime: String, path: String, vararg aliases: String) =
+            binary(name, mime, base64(context.assets.open(path).use { it.readBytes() }), *aliases)
 
         text("noopjs", "application/javascript", "(function(){})();", "noop.js", "blank-js")
         text("nooptext", "text/plain", "", "noop.txt", "blank-text")
@@ -81,6 +112,17 @@ object AdblockResources {
         binary("2x2.png", "image/png", PNG_2X2, "2x2-transparent.png")
         binary("3x2.png", "image/png", PNG_3X2, "3x2-transparent.png")
         binary("32x32.png", "image/png", PNG_32X32, "32x32-transparent.png")
+        // Silent clips for blocked ad media: players see a playable file that ends at once.
+        media("noop-0.1s.mp3", "audio/mp3", "adblock/noop-0.1s.mp3", "noopmp3-0.1s", "abp-resource:blank-mp3")
+        media("noop-1s.mp4", "video/mp4", "adblock/noop-1s.mp4", "noopmp4-1s", "abp-resource:blank-mp4")
+        // IMA SDK stand-in: answers every ad request with "no ads", players start the content.
+        asset("google-ima.js", "surrogates/google-ima.js", "google-ima3", "ima3.js")
+        text("fingerprint2.js", "application/javascript", "(function(){var h='74656c6c6d65';" +
+            "function F(){}F.prototype.get=function(a,b){var c=typeof a==='function'?a:b;" +
+            "if(typeof c==='function')setTimeout(function(){c(h,[])},1)};" +
+            "F.get=function(a,b){var c=typeof a==='function'?a:b;if(typeof c==='function')setTimeout(function(){c([])},1)};" +
+            "F.getPromise=function(){return Promise.resolve([])};F.getV18=F.get;" +
+            "F.x64hash128=function(){return h};F.VERSION='2.1.0';window.Fingerprint2=F;})();", "fingerprint2")
         asset("googlesyndication_adsbygoogle.js", "surrogates/adsbygoogle.js", "googlesyndication.com/adsbygoogle.js")
         asset("googletagservices_gpt.js", "surrogates/gpt.js", "googletagservices.com/gpt.js")
         asset("google-analytics_analytics.js", "surrogates/analytics.js", "google-analytics.com/analytics.js", "googletagmanager_gtag.js")

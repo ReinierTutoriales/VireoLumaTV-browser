@@ -60,7 +60,7 @@ android {
 
     defaultConfig {
         applicationId = "com.reiniertutoriales.vireolumatv"
-        versionCode = 88
+        versionCode = 89
         versionName = "1.1.0"
         ndk {
             abiFilters += rustAbis

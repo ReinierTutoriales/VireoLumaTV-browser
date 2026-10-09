@@ -42,6 +42,16 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         return webEngine.pageFilters(url)
     }
 
+    /** Generic hiding selectors for the classes/ids found in a frame (space-separated). */
+    @JavascriptInterface
+    fun hiddenSelectors(url: String?, classes: String?, ids: String?): String {
+        if (url.isNullOrEmpty() || url.length > 4096 ||
+            !(url.startsWith("http://") || url.startsWith("https://"))) return "[]"
+        val c = classes.orEmpty(); val i = ids.orEmpty()
+        if (c.length + i.length > 64 * 1024) return "[]"
+        return webEngine.hiddenSelectors(url, c, i)
+    }
+
     /** A video/audio element started playing in some frame of the page (see page_filters.js). */
     @JavascriptInterface
     fun mediaStarted() {

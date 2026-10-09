@@ -1,6 +1,7 @@
 package com.reiniertutoriales.vireolumatv.adblock
 
 import android.net.Uri
+import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
@@ -76,16 +77,34 @@ class RustAdBlockEngineTest {
         // uBO discards a filter whose redirect resource it lacks; blocking without a replacement
         // would break players waiting for e.g. the IMA SDK.
         val blocker = engine.compile(listOf(
-            "||ima.example/ima3.js\$script,redirect=google-ima.js\n||media.example/ad.mp4\$media,redirect=noop-1s.mp4:5",
+            "||ima.example/sdk.js\$script,redirect=unknown-sdk.js\n||media.example/ad.mp4\$media,redirect=noop-9s.mp4:5\n" +
+                "||imasdk.example/ima3.js\$script,redirect=google-ima.js\n||media.example/ad.mp3\$media,redirect=noopmp3-0.1s",
             "||known.example/ad.js\$script,redirect=noopjs:5\n||blocked.example^\nexample.test##.redirect-banner"
         ))!!
         try {
-            assertEquals(ContentBlocker.ALLOW, blocker.decision("https://ima.example/ima3.js", "script"))
+            assertEquals(ContentBlocker.ALLOW, blocker.decision("https://ima.example/sdk.js", "script"))
             assertEquals(ContentBlocker.ALLOW, blocker.decision("https://media.example/ad.mp4", "media"))
+            // Shipped stand-ins: the IMA SDK and silent media.
+            assertEquals(ContentBlocker.BLOCK_REDIRECT, blocker.decision("https://imasdk.example/ima3.js", "script"))
+            val ima = blocker.redirect(Uri.parse("https://imasdk.example/ima3.js"), "script", page)!!
+            assertTrue(String(android.util.Base64.decode(ima.substringAfter(','), 0)).contains("AdsLoader"))
+            val mp3 = blocker.redirect(Uri.parse("https://media.example/ad.mp3"), "media", page)!!
+            assertTrue(mp3, mp3.startsWith("data:audio/mp3;base64,"))
             assertEquals(ContentBlocker.BLOCK_REDIRECT, blocker.decision("https://known.example/ad.js", "script"))
             assertEquals(ContentBlocker.BLOCK, blocker.decision("https://blocked.example/x.js", "script"))
             // Cosmetic lines that merely contain the word are kept.
             assertTrue(blocker.pageFilters("https://example.test/").contains(".redirect-banner"))
+        } finally { blocker.release() }
+    }
+
+    @Test fun genericClassAndIdHidingHonoursExceptionsAndGenerichide() {
+        val blocker = engine.compile("##.ad-banner\n###sponsor\nexample.test#@#.ad-banner\n@@||plain.test^\$generichide")!!
+        try {
+            val selectors = JSONArray(blocker.hiddenSelectors("https://news.example/", "ad-banner content", "sponsor main"))
+            val list = (0 until selectors.length()).map { selectors.getString(it) }.toSet()
+            assertEquals(setOf(".ad-banner", "#sponsor"), list)
+            assertEquals("[\"#sponsor\"]", blocker.hiddenSelectors("https://example.test/", "ad-banner", "sponsor"))
+            assertEquals("[]", blocker.hiddenSelectors("https://plain.test/", "ad-banner", "sponsor"))
         } finally { blocker.release() }
     }
 

@@ -165,6 +165,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         adblockModel = ActiveModelsRepository.get(AdblockModel::class, this)
         val filterSource = adblockModel
         WebViewWebEngine.pageFiltersProvider = { url -> filterSource.pageFilters(url) }
+        WebViewWebEngine.hiddenSelectorsProvider = { url, classes, ids -> filterSource.hiddenSelectors(url, classes, ids) }
         tabsModel = ActiveModelsRepository.get(TabsModel::class, this)
         autoUpdateModel = ActiveModelsRepository.get(AutoUpdateModel::class, this)
         uiHandler = Handler(Looper.getMainLooper())

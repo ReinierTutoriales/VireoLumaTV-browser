@@ -24,6 +24,8 @@ object AdblockSurrogates {
             (host == "www.google-analytics.com" || host == "google-analytics.com" ||
                 host == "ssl.google-analytics.com") && path == "/analytics.js" -> "analytics.js"
             host == "www.googletagmanager.com" && (path == "/gtm.js" || path == "/gtag/js") -> "gtm.js"
+            host == "imasdk.googleapis.com" &&
+                (path == "/js/sdkloader/ima3.js" || path == "/js/sdkloader/ima3_debug.js") -> "google-ima.js"
             else -> null
         }
     }

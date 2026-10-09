@@ -51,5 +51,29 @@ function page(setup) {
     `, c);
     c.flush();
     assert.equal(vm.runInContext('done', c), 3);
-    console.log('Adblock surrogates passed: adsbygoogle, GPT command queue, analytics hitCallback, GTM/gtag callbacks');
+    // IMA: the usual player flow (video.js-ima, JW, custom) gets "no ads" and resumes content.
+    c = page('var events = [];');
+    vm.runInContext(read('google-ima.js'), c);
+    vm.runInContext(`
+        var ima = google.ima;
+        var container = new ima.AdDisplayContainer({}, {});
+        container.initialize();
+        var loader = new ima.AdsLoader(container);
+        loader.getSettings().setVpaidMode(ima.ImaSdkSettings.VpaidMode.ENABLED);
+        loader.addEventListener(ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED, function () { events.push('loaded'); }, false);
+        loader.addEventListener(ima.AdErrorEvent.Type.AD_ERROR, function (e) {
+            events.push('error:' + e.getError().getErrorCode());
+        }, false);
+        var request = new ima.AdsRequest();
+        request.adTagUrl = 'https://ads.example/vast';
+        request.setAdWillAutoPlay(true);
+        loader.requestAds(request);
+        var manager = new ima.AdsManager();
+        manager.addEventListener(ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, function () { events.push('resume'); });
+        manager.init(640, 360, ima.ViewMode.NORMAL);
+        manager.start();
+    `, c);
+    c.flush();
+    assert.equal(vm.runInContext('events.join()', c), 'error:1009,resume');
+    console.log('Adblock surrogates passed: adsbygoogle, GPT command queue, analytics hitCallback, GTM/gtag callbacks, IMA no-ads');
 })().catch(error => { console.error(error); process.exit(1); });

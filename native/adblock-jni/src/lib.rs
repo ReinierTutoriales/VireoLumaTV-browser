@@ -234,3 +234,38 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
         })
         .resolve::<ThrowRuntimeExAndDefault>()
 }
+
+/// Generic `##.class` / `###id` hiding rules for the classes and ids found in a page, as a JSON
+/// array of selectors. `classes` and `ids` are space-separated (neither can contain a space).
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdblock_nativeHiddenSelectors<'caller>(
+    mut unowned: EnvUnowned<'caller>,
+    _class: JClass<'caller>,
+    handle: jlong,
+    url: JString<'caller>,
+    classes: JString<'caller>,
+    ids: JString<'caller>,
+) -> JString<'caller> {
+    unowned
+        .with_env(|env| -> jni::errors::Result<JString<'caller>> {
+            let (url, classes, ids) = (text(env, &url)?, text(env, &classes)?, text(env, &ids)?);
+            let selectors = match engine(handle) {
+                Some(engine) => {
+                    // Exceptions (`#@#.class`) and `$generichide` are per page.
+                    let page = engine.url_cosmetic_resources(&url);
+                    if page.generichide {
+                        Vec::new()
+                    } else {
+                        engine.hidden_class_id_selectors(
+                            classes.split_ascii_whitespace(),
+                            ids.split_ascii_whitespace(),
+                            &page.exceptions,
+                        )
+                    }
+                }
+                None => Vec::new(),
+            };
+            env.new_string(serde_json::Value::from(selectors).to_string())
+        })
+        .resolve::<ThrowRuntimeExAndDefault>()
+}

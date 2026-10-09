@@ -87,6 +87,10 @@ class AdblockModel @JvmOverloads constructor(
             override fun sizeOf(key: DecisionKey, value: Int): Int =
                 64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length)
         }
+        // Page filters of recent frame URLs (ad iframes and reloads repeat them): ~1 MiB of text.
+        val pageFilters = object : LruCache<String, String>(512 * 1024) {
+            override fun sizeOf(key: String, value: String): Int = key.length + value.length
+        }
     }
     // Publishing a new generation must not make Main wait for a WebView request/native matcher.
     @Volatile private var installedClient: InstalledClient? = null
@@ -574,6 +578,7 @@ class AdblockModel @JvmOverloads constructor(
     /** Memory pressure: decisions are rebuilt on demand, rules stay loaded. */
     fun trimMemory() {
         installedClient?.decisions?.evictAll()
+        installedClient?.pageFilters?.evictAll()
     }
 
     /**
@@ -629,11 +634,23 @@ class AdblockModel @JvmOverloads constructor(
      */
     fun pageFilters(pageUrl: String): String {
         val current = installedClient ?: return ""
+        current.pageFilters.get(pageUrl)?.let { return it }
         return try {
-            if (current.blocker.isConcurrent) current.blocker.pageFilters(pageUrl)
-            else synchronized(current.lock) { current.blocker.pageFilters(pageUrl) }
+            (if (current.blocker.isConcurrent) current.blocker.pageFilters(pageUrl)
+            else synchronized(current.lock) { current.blocker.pageFilters(pageUrl) })
+                .also { if (pageUrl.length <= 2048) current.pageFilters.put(pageUrl, it) }
         } catch (e: Exception) {
             ""
+        }
+    }
+
+    fun hiddenSelectors(pageUrl: String, classes: String, ids: String): String {
+        val current = installedClient ?: return "[]"
+        return try {
+            if (current.blocker.isConcurrent) current.blocker.hiddenSelectors(pageUrl, classes, ids)
+            else synchronized(current.lock) { current.blocker.hiddenSelectors(pageUrl, classes, ids) }
+        } catch (e: Exception) {
+            "[]"
         }
     }
 }

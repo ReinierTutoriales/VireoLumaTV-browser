@@ -1,7 +1,10 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const source = fs.readFileSync('app/src/main/assets/adblock/page_filters.js', 'utf8');
+// The app injects the asset compacted (AdblockPageController.compact): test exactly that text.
+const compact = (text) => text.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join('\n');
+const source = compact(fs.readFileSync('app/src/main/assets/adblock/page_filters.js', 'utf8'));
+new Function(compact(fs.readFileSync('app/src/main/assets/window_open_decoy.js', 'utf8')));
 
 /** Output format of adblock-rust's injected_script for our template resources. */
 function call(name, ...args) {
@@ -90,6 +93,33 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.equal(playingListener, null);
     `, c);
 
+    // Trusted values, storage, argument replacement, frame callbacks, window close.
+    c = page({ script: call('trusted-set-constant', 'cfg.ads', 'json:{"on":false}') + call('set-session-storage-item', 'seen', 'true') +
+        call('set-session-storage-item', 'evil', '<x>') + call('trusted-set-local-storage-item', 'ts', '$now$') +
+        call('trusted-replace-argument', 'decide', '0', 'false', 'condition', 'adblock') +
+        call('no-requestAnimationFrame-if', 'detect') + call('window-close-if', '/watch') + call('alert-buster') },
+        'stream.example', `
+        sessionStorage = { items: {}, setItem(k, v) { this.items[k] = v; }, removeItem(k) { delete this.items[k]; } };
+        window.decide = function (v) { return v; };
+        var frames = [];
+        window.requestAnimationFrame = function (fn) { frames.push(fn); return 1; };
+        var closed = 0; window.close = function () { closed++; };
+        window.alert = function () { throw new Error('alert'); };
+    `);
+    vm.runInContext(`
+        window.cfg = {};
+        assert.equal(JSON.stringify(cfg.ads), '{"on":false}');
+        assert.equal(sessionStorage.items.seen, 'true');
+        assert.equal(sessionStorage.items.evil, undefined);
+        assert.match(localStorage.items.ts, /^\\d{13}$/);
+        assert.equal(decide('adblock on'), false);
+        assert.equal(decide('normal'), 'normal');
+        requestAnimationFrame(function detectAdblock() { throw new Error('ran'); });
+        frames[0]();
+        assert.equal(closed, 1);
+        alert('x');
+    `, c);
+
     // set-constant on existing and later-created chains; type mismatch leaves the property alone.
     c = page({ script: call('set-constant', 'adblock.detected', 'false') + call('set-constant', 'canRunAds', 'true') + call('set-constant', 'title', '0') },
         'stream.example', 'window.title = "keep";');
@@ -171,5 +201,5 @@ function page(filters, host = 'stream.example', setup = '') {
     vm.runInContext(source, c);
     vm.runInContext(`assert.equal(document.adoptedStyleSheets.length, 1);`, c);
 
-    console.log('Page filters passed: constructed stylesheet, procedural/action filters, media report, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
+    console.log('Page filters passed: trusted values/storage/arguments, constructed stylesheet, procedural/action filters, media report, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
 })().catch((error) => { console.error(error); process.exit(1); });

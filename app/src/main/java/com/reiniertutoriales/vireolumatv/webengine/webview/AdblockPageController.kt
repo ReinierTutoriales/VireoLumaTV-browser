@@ -14,11 +14,26 @@ import androidx.webkit.WebViewFeature
 internal class AdblockPageController(private val view: WebView) {
     private var enabled = false
     private val registrations = ArrayList<ScriptHandler>(2)
-    private var sources: List<String>? = null
 
-    private fun scripts(): List<String> = sources ?: listOf("window_open_decoy.js", "adblock/page_filters.js")
-        .map { path -> view.context.assets.open(path).bufferedReader().use { it.readText() } }
-        .also { sources = it }
+    private fun scripts(): List<String> = sources ?: synchronized(Companion) {
+        sources ?: listOf("window_open_decoy.js", "adblock/page_filters.js")
+            .map { path -> compact(view.context.assets.open(path).bufferedReader().use { it.readText() }) }
+            .also { sources = it }
+    }
+
+    companion object {
+        // Shared by every WebView: the text is parsed in each frame, so it is read and trimmed once.
+        @Volatile private var sources: List<String>? = null
+
+        /**
+         * Drops indentation and whole-line comments (about a quarter of the text). Safe for these
+         * assets: they contain no multi-line strings or template literals, and line breaks are kept.
+         */
+        internal fun compact(script: String): String = script.lineSequence()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() && !it.startsWith("//") }
+            .joinToString("\n")
+    }
 
     fun setEnabled(value: Boolean) {
         if (enabled == value) return

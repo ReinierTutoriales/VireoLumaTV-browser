@@ -28,6 +28,9 @@ interface ContentBlocker {
     /** Element hiding and scriptlets for a document URL as JSON (see adblock-jni), or "". */
     fun pageFilters(pageUrl: String): String = ""
 
+    /** Generic class/id hiding selectors (JSON array) for space-separated [classes] and [ids]. */
+    fun hiddenSelectors(pageUrl: String, classes: String, ids: String): String = "[]"
+
     /** Frees native memory once no caller can use this instance any more. */
     fun release() {}
 

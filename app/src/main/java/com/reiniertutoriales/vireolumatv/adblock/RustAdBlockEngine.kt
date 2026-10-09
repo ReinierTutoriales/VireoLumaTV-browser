@@ -54,6 +54,10 @@ private class RustContentBlocker(private var handle: Long) : ContentBlocker {
         if (handle == 0L) "" else RustAdblock.nativeCosmetic(handle, pageUrl)
     }
 
+    override fun hiddenSelectors(pageUrl: String, classes: String, ids: String): String = lifecycle.read {
+        if (handle == 0L) "[]" else RustAdblock.nativeHiddenSelectors(handle, pageUrl, classes, ids)
+    }
+
     override fun serialize(file: File): Boolean {
         val data = lifecycle.read { if (handle == 0L) ByteArray(0) else RustAdblock.nativeSerialize(handle) }
         if (data.isEmpty()) return false
