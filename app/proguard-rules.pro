@@ -1,6 +1,6 @@
 # Add project specific ProGuard rules here.
 # By default, the flags in this file are appended to flags specified
-# in /Users/fedex/libs/android_sdk/tools/proguard/proguard-android.txt
+# in the default proguard-android-optimize.txt file.
 # You can edit the include path and order by changing the proguardFiles
 # directive in build.gradle.
 #
@@ -13,10 +13,6 @@
 
 -keepclassmembers class com.reiniertutoriales.vireolumatv.model.** {
    public *;
-}
--keepclassmembers class com.brave.adblock.AdBlockClient {
-   public *;
-   private *;
 }
 -keepclassmembers class com.reiniertutoriales.vireolumatv.webengine.webview.AndroidJSInterface {
    public *;

@@ -252,7 +252,6 @@ Opciones: conservar el historial por trazabilidad, o construir una rama limpia p
 |---|---|
 | Favicons | `readTimeout` es por lectura, no un límite total; pico transitorio de hasta ~2× el icono |
 | Adblock | Una caché de lista personalizada queda huérfana si cambia la URL |
-| Adblock | `onBlockedAds` comprueba `config.adBlockEnabled`, no la configuración por host |
 | Escritura atómica | Sin `fsync`: protege frente a `lmkd`, no frente a un corte de luz |
 
 ## No tocar sin evidencia

@@ -55,4 +55,4 @@ The upstream default branch was inspected; the exact published 1.0.0 artifact an
 
 ## Other declared dependencies and resources
 
-AndroidX, Kotlin, coroutines, build tooling, test dependencies, filter lists, icons, logos, and screenshots require the artifact-specific inventory described in [the audit](docs/LICENSE_REBRANDING_AUDIT.md). Do not interpret this partial notice inventory as certification of all transitive dependencies or as permission to use third-party trademarks.
+AndroidX, Kotlin, coroutines, build tooling, test dependencies, filter lists, icons, logos, and screenshots require the artifact-specific inventory described in [the audit](docs/audit/archive-2026-10-01/LICENSE_REBRANDING_AUDIT.md). Do not interpret this partial notice inventory as certification of all transitive dependencies or as permission to use third-party trademarks.

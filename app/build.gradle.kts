@@ -184,14 +184,14 @@ fun BuildRustAdblock.configureCrate() {
     abis.set(rustAbis)
 }
 
-val buildRustAdblock by tasks.registering(BuildRustAdblock::class) {
+val buildRustAdblock = tasks.register<BuildRustAdblock>("buildRustAdblock") {
     configureCrate()
     hostLibrary.set(false)
     outputDir.set(layout.buildDirectory.dir("rust/jniLibs"))
 }
 
 // Host build of the same engine: JVM unit tests load it instead of a fake.
-val buildRustAdblockHost by tasks.registering(BuildRustAdblock::class) {
+val buildRustAdblockHost = tasks.register<BuildRustAdblock>("buildRustAdblockHost") {
     configureCrate()
     hostLibrary.set(true)
     outputDir.set(layout.buildDirectory.dir("rust/host"))

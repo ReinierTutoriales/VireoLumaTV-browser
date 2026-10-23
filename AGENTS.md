@@ -21,7 +21,7 @@ Prefer the wrapper. Release builds use R8.
 - Keep the app small, simple, and predictable on low-memory Android TV hardware.
 - WebView only — do not reintroduce GeckoView or multi-engine complexity.
 - Optimize for TV remote navigation, focus, and D-pad usability.
-- Preserve license/attribution requirements (distinct name, app ID, icon, About screen credit to original TV Bro; see LICENSE.md, NOTICE.md, docs/LICENSE_REBRANDING_AUDIT.md).
+- Preserve license/attribution requirements (distinct name, app ID, icon, About screen credit to original TV Bro; see LICENSE.md, NOTICE.md, docs/audit/archive-2026-10-01/LICENSE_REBRANDING_AUDIT.md).
 - Prefer native Android / WebView APIs. Avoid unnecessary dependencies.
 - Do not invent APIs, behaviors, or engine features not present in the codebase.
 
