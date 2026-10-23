@@ -86,13 +86,16 @@ class FavoritesDialog(context: Context, val scope: CoroutineScope, private val c
         listView.visibility = View.GONE
         tvPlaceholder.visibility = View.GONE
         scope.launch(Dispatchers.Main) {
-            if (item.id == 0L) {
-                val lastInsertRowId = AppDatabase.db.favoritesDao().insert(item)
-                item.id = lastInsertRowId
-                items.add(0, item)
-                onItemsChanged()
-            } else {
-                AppDatabase.db.favoritesDao().update(item)
+            try {
+                if (item.id == 0L) {
+                    val lastInsertRowId = AppDatabase.db.favoritesDao().insert(item)
+                    item.id = lastInsertRowId
+                    items.add(0, item)
+                } else {
+                    AppDatabase.db.favoritesDao().update(item)
+                }
+            } finally {
+                // Also on failure: the spinner must not stay on screen.
                 onItemsChanged()
             }
         }
