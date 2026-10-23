@@ -1273,8 +1273,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 return true
             }
 
-            //try to handle intent for non-network urls by external apps
-            //TODO: ask user if he wants to open this url in external app
+            //try to handle intent for non-network urls by external apps (after the user confirms)
             return try {
                 Log.d(TAG, "shouldOverrideUrlLoading: non-network url: $url")
                 val intent = Intent(Intent.ACTION_VIEW, uri)

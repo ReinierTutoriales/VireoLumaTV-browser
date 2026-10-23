@@ -474,7 +474,9 @@ class AdblockModel @JvmOverloads constructor(
     private fun deleteLegacyCaches() {
         VireoLumaTVApp.instance.filesDir.listFiles()?.forEach { file ->
             val otherRevision = OTHER_REVISION.matches(file.name) && !file.name.startsWith("${AdblockCache.REVISION}-")
-            if (otherRevision || LEGACY_CACHE_SUFFIXES.any { file.name.endsWith(it) }) file.delete()
+            // Temporaries left by a write that was interrupted (see AdblockCache.write).
+            val interruptedWrite = file.name.startsWith("adblock-") && file.name.endsWith(".tmp")
+            if (otherRevision || interruptedWrite || LEGACY_CACHE_SUFFIXES.any { file.name.endsWith(it) }) file.delete()
         }
     }
 
