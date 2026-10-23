@@ -52,6 +52,8 @@ class AdblockModel @JvmOverloads constructor(
         )
         // Brave ad-block 0.0.4 caches left by earlier versions.
         private val LEGACY_CACHE_SUFFIXES = listOf("-adblock_ser.dat", "-adblock_ser.dat.popup", "-adblock_ser.dat.cosmetic")
+        // Compiled-cache files of an earlier AdblockCache.REVISION (see AdblockCache.fileFor).
+        private val OTHER_REVISION = Regex("v\\d+-[0-9a-f]{64}-.*")
     }
 
     private data class FilterList(
@@ -471,7 +473,8 @@ class AdblockModel @JvmOverloads constructor(
     /** Removes caches of the former ad-block 0.0.4 engine once the new engine saved its own. */
     private fun deleteLegacyCaches() {
         VireoLumaTVApp.instance.filesDir.listFiles()?.forEach { file ->
-            if (LEGACY_CACHE_SUFFIXES.any { file.name.endsWith(it) }) file.delete()
+            val otherRevision = OTHER_REVISION.matches(file.name) && !file.name.startsWith("${AdblockCache.REVISION}-")
+            if (otherRevision || LEGACY_CACHE_SUFFIXES.any { file.name.endsWith(it) }) file.delete()
         }
     }
 
