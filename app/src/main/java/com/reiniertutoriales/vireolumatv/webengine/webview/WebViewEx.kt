@@ -485,7 +485,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                     if (pendingBlockedAds.getAndIncrement() == 0) {
                         uiHandler.postDelayed(reportBlockedAdsRunnable, BLOCKED_ADS_REPORT_DELAY_MS)
                     }
-                    currentPageUrl?.let { callback.adRedirect(request, it) }
+                    currentPageUrl.let { callback.adRedirect(request, it) }
                         ?.let { dataUrlResponse(it, request.requestHeaders) }?.let { return it }
                     AdblockSurrogates.responseFor(view.context, request.url, request.requestHeaders)?.let { return it }
                     val response = WebResourceResponse("text/plain", "utf-8", "".byteInputStream())

@@ -117,8 +117,8 @@ class CursorMenuView @JvmOverloads constructor(
     }
 
     private fun enterDirectNavigationMode(mc: MenuContext) {
-        mc.tab.webEngine?.setVirtualCursorMode(false)
-        mc.backNavigationEventsAdapter?.gameControllersLongPressBForBackNavigation = true
+        mc.tab.webEngine.setVirtualCursorMode(false)
+        mc.backNavigationEventsAdapter.gameControllersLongPressBForBackNavigation = true
     }
 
     private fun showDirectNavigationModeDialog(mc: MenuContext) {

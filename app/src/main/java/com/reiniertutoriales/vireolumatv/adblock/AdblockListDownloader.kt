@@ -40,7 +40,7 @@ internal object AdblockListDownloader {
                 // transparently, which cuts the ~3.7 MB default lists to under 1 MB on the wire.
                 val conditional = cached != null && cached.url == url
                 if (conditional) {
-                    cached!!.etag?.let { connection.setRequestProperty("If-None-Match", it) }
+                    cached.etag?.let { connection.setRequestProperty("If-None-Match", it) }
                     cached.lastModified?.let { connection.setRequestProperty("If-Modified-Since", it) }
                 }
                 try {

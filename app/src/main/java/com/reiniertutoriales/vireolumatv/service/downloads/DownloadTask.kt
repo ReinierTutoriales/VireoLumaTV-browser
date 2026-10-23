@@ -101,7 +101,7 @@ class FileDownloadTask(override var downloadInfo: Download, private val userAgen
                 }
             } while (true)
 
-            input = connection!!.inputStream
+            input = connection.inputStream
 
             val fileLength = connection.contentLength
             downloadInfo.size = fileLength.toLong()
