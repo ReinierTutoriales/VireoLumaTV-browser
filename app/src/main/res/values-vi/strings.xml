@@ -52,7 +52,7 @@
   <string name="action">Hoạt động:</string>
   <string name="current_key">Phím hiện tại:</string>
   <string name="set_key_for_action">Đặt phím cho hành động</string>
-  <string name="press_eny_key">Nhấn phím bất kỳ...</string>
+  <string name="press_eny_key">Nhấn phím bất kỳ…</string>
   <string name="shortcut_key_reserved_for_navigation">Phím này được dành riêng cho điều hướng trình duyệt</string>
   <string name="clear">Xoá</string>
   <string name="install">Cài đặt</string>

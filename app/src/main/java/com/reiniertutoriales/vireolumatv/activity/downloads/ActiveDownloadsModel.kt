@@ -1,6 +1,5 @@
 package com.reiniertutoriales.vireolumatv.activity.downloads
 
-import android.net.Uri
 import android.os.Build
 import android.util.Log
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
@@ -11,6 +10,7 @@ import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import java.io.File
+import androidx.core.net.toUri
 
 class ActiveDownloadsModel: ActiveModel() {
     val activeDownloads = ObservableList<DownloadTask>()
@@ -26,7 +26,7 @@ class ActiveDownloadsModel: ActiveModel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val contentResolver = VireoLumaTVApp.instance.contentResolver
             val rowsDeleted = try {
-                contentResolver.delete(Uri.parse(download.filepath), null)
+                contentResolver.delete(download.filepath.toUri(), null)
             } catch (e: Exception) {
                 Log.w(FileDownloadTask.TAG, "Failed to delete file from MediaStore", e)
                 0

@@ -54,7 +54,7 @@
   <string name="action">Akcja:</string>
   <string name="current_key">Obecnie wybrany klawisz:</string>
   <string name="set_key_for_action">Ustaw klawisz do akcji</string>
-  <string name="press_eny_key">Naciśnij dowolny klawisz...</string>
+  <string name="press_eny_key">Naciśnij dowolny klawisz…</string>
   <string name="shortcut_key_reserved_for_navigation">Ten klawisz jest zarezerwowany do nawigacji w przeglądarce</string>
   <string name="clear">Wyczyść</string>
   <string name="install">Zainstaluj</string>

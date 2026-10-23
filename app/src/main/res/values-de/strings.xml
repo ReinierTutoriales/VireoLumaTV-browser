@@ -52,7 +52,7 @@
   <string name="action">Aktion:</string>
   <string name="current_key">Aktuelle Taste:</string>
   <string name="set_key_for_action">Taste konfigurieren</string>
-  <string name="press_eny_key">Taste drücken...</string>
+  <string name="press_eny_key">Taste drücken…</string>
   <string name="shortcut_key_reserved_for_navigation">Diese Taste ist für die Browser-Navigation reserviert</string>
   <string name="clear">Löschen</string>
   <string name="install">Installieren</string>

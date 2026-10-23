@@ -23,6 +23,7 @@ import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepositor
 import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
+import androidx.core.net.toUri
 
 /**
  * Created by PDT on 23.01.2017.
@@ -150,7 +151,7 @@ open class DownloadService : Service() {
 
     fun launchInstallAPKActivity(context: Context, download: Download) {
         val apkURI = if (download.filepath.startsWith("content://")) {
-            android.net.Uri.parse(download.filepath)
+            download.filepath.toUri()
         } else {
             FileProvider.getUriForFile(context,
                 context.applicationContext.packageName + ".provider", File(download.filepath))

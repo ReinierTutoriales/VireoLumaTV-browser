@@ -25,6 +25,7 @@ import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.core.view.isGone
 
 class MainSettingsView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -287,7 +288,7 @@ class MainSettingsView @JvmOverloads constructor(
         }
         vb.spTitles.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                if (position == settingsModel.userAgentStringTitles.size - 1 && vb.llUAString.visibility == View.GONE) {
+                if (position == settingsModel.userAgentStringTitles.size - 1 && vb.llUAString.isGone) {
                     vb.llUAString.visibility = View.VISIBLE
                     vb.llUAString.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_in))
                     vb.etUAString.requestFocus()
@@ -324,7 +325,7 @@ class MainSettingsView @JvmOverloads constructor(
         vb.spEngine.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 if (position == (Config.SearchEnginesTitles.size - 1)) {
-                    if (vb.llURL.visibility == View.GONE) {
+                    if (vb.llURL.isGone) {
                         vb.llURL.visibility = View.VISIBLE
                         vb.llURL.startAnimation(
                             AnimationUtils.loadAnimation(context, android.R.anim.fade_in)

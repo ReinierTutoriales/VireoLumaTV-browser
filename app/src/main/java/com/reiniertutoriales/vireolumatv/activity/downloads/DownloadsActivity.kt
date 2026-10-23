@@ -29,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
+import androidx.core.net.toUri
 
 open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListener, ActiveDownloadsModel.Listener, AdapterView.OnItemLongClickListener{
     private lateinit var vb: ActivityDownloadsBinding
@@ -122,7 +123,7 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
 
 
         val fileURI = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Uri.parse(download.filepath)
+            download.filepath.toUri()
         } else {
             val file = File(download.filepath)
             if (!file.exists()) {
@@ -210,7 +211,7 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
                         val intentSettings = Intent()
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             intentSettings.action = Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
-                            intentSettings.data = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+                            intentSettings.data = "package:${BuildConfig.APPLICATION_ID}".toUri()
                         } else {
                             intentSettings.action = Settings.ACTION_SECURITY_SETTINGS
                         }
@@ -277,7 +278,7 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         fun launchInstallAPKActivity(activity: Activity, download: Download) {
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk")
             val apkURI = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Uri.parse(download.filepath)
+                download.filepath.toUri()
             } else {
                 val file = File(download.filepath)
                 FileProvider.getUriForFile(

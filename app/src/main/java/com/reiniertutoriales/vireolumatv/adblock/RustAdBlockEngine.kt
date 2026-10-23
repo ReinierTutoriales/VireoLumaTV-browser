@@ -5,6 +5,7 @@ import java.io.File
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+import androidx.core.net.toUri
 
 /**
  * [ContentBlockerEngine] backed by Brave's adblock-rust (MPL-2.0) through native/adblock-jni.
@@ -38,7 +39,7 @@ private class RustContentBlocker(private var handle: Long) : ContentBlocker {
     override val isConcurrent: Boolean get() = true
 
     override fun shouldBlock(url: Uri, type: String?, baseHost: String): Boolean =
-        check(url, type, Uri.parse("https://$baseHost/")) != ContentBlocker.ALLOW
+        check(url, type, "https://$baseHost/".toUri()) != ContentBlocker.ALLOW
 
     override fun check(url: Uri, type: String?, page: Uri): Int = lifecycle.read {
         if (handle == 0L) ContentBlocker.ALLOW

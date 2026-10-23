@@ -16,6 +16,7 @@ import com.reiniertutoriales.vireolumatv.databinding.ViewTabsBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
+import androidx.core.view.isNotEmpty
 
 class TabsView @JvmOverloads constructor(
   context: Context,
@@ -101,7 +102,7 @@ class TabsView @JvmOverloads constructor(
   }
 
   override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
-    if (gainFocus && childCount > 0) {
+    if (gainFocus && isNotEmpty()) {
       for (i in 0 until vb.rvTabs.childCount) {
         val child = vb.rvTabs.getChildAt(i)
 

@@ -107,6 +107,7 @@ import java.net.URLEncoder
 import java.util.Calendar
 import java.util.Locale
 import kotlin.system.exitProcess
+import androidx.core.net.toUri
 
 
 open class MainActivity : AppCompatActivity(), ActionBar.Callback {
@@ -532,7 +533,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         if (navigateImmediately) {
             navigate(url)
         }
-        if (needToHideMenuOverlay && vb.rlActionBar.visibility == View.VISIBLE) {
+        if (needToHideMenuOverlay && vb.rlActionBar.isVisible) {
             hideMenuOverlay(true)
         }
         return tab.webEngine
@@ -576,7 +577,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
             val appPackageName = "com.google.android.webview"
             val intent =
-                Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appPackageName"))
+                Intent(Intent.ACTION_VIEW, "market://details?id=$appPackageName".toUri())
             val activities = packageManager.queryIntentActivities(intent, 0)
             if (activities.size > 0) {
                 dialogBuilder.setPositiveButton(R.string.find_in_apps_store) { _, _ ->
@@ -1179,7 +1180,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
         override fun onDownloadRequested(url: String) {
             Log.i(TAG, "onDownloadRequested url: $url")
-            val fileName = Uri.parse(url).lastPathSegment
+            val fileName = url.toUri().lastPathSegment
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(url))
             onDownloadRequested(url, tab.url,
                 fileName, tab.webEngine.userAgentString, mimeType)
@@ -1253,7 +1254,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             tab.lastLoadingUrl = url
 
             val uri = try {
-                Uri.parse(url)
+                url.toUri()
             } catch (e: Exception) {
                 Log.e(TAG, "shouldOverrideUrlLoading: ", e)
                 return true
@@ -1273,7 +1274,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
             if (uri.scheme.equals("intent", true)) {
                 Log.d(TAG, "shouldOverrideUrlLoading: intent url: $url")
-                onOpenInExternalAppRequested(url)
+                // A page must not open another app by itself: ask first, like other external schemes.
+                runOnUiThread { askUserToOpenIntentUrl(url) }
                 return true
             }
 
@@ -1341,7 +1343,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 val newThumbnail = tab.webEngine.renderThumbnail(tab.thumbnail)
                 if (newThumbnail != null) {
                     tab.updateThumbnail(this@MainActivity, newThumbnail)
-                    if (vb.rlActionBar.visibility == View.VISIBLE && tab == tabsModel.currentTab.value) {
+                    if (vb.rlActionBar.isVisible && tab == tabsModel.currentTab.value) {
                         displayThumbnail(tab)
                     }
                 }
@@ -1434,7 +1436,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             if (isAdBlockingEnabled()) {
                 // Keep the opener alive until the popup's destination is known: switching tabs
                 // destroys the opener's WebView, and a blocked popunder would cost a page reload.
-                val opener = runCatching { Uri.parse(currentTab.url) }.getOrNull()
+                val opener = runCatching { currentTab.url.toUri() }.getOrNull()
                 val model = adblockModel
                 tab.popupGuard = PopupGuard(
                     isAd = { url -> model.isPopupAd(url, opener) },
@@ -1663,6 +1665,21 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         lastBlockedNotificationTime = now
         val msg = getString(if (newTab) R.string.new_tab_blocked else R.string.popup_dialog_blocked)
         NotificationView.showBottomRight(vb.rlRoot, R.drawable.ic_block_popups, msg)
+    }
+
+    private fun askUserToOpenIntentUrl(url: String) {
+        val intent = try {
+            Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+        } catch (e: URISyntaxException) {
+            Toast.makeText(this, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
+            return
+        }
+        intent.addCategory(Intent.CATEGORY_BROWSABLE)
+        if (intent.resolveActivity(packageManager)?.packageName == packageName) {
+            Toast.makeText(this, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
+            return
+        }
+        askUserAndOpenInExternalApp(url, intent)
     }
 
     private fun askUserAndOpenInExternalApp(url: String, intent: Intent) {

@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel
+import androidx.core.view.isGone
 
 /**
  * Created by fedex on 18.01.17.
@@ -49,7 +50,7 @@ object SearchEngineConfigDialogFactory {
         }
         spEngine.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                if (position == Config.SearchEnginesTitles.size - 1 && llUrl.visibility == View.GONE) {
+                if (position == Config.SearchEnginesTitles.size - 1 && llUrl.isGone) {
                     llUrl.visibility = View.VISIBLE
                     llUrl.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_in))
                     etUrl.requestFocus()

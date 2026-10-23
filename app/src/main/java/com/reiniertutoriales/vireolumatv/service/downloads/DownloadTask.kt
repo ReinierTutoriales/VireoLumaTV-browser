@@ -1,7 +1,7 @@
 package com.reiniertutoriales.vireolumatv.service.downloads
 
+import android.annotation.TargetApi
 import android.content.ContentValues
-import android.net.Uri
 import android.os.Build
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream
 import android.provider.MediaStore
@@ -15,6 +15,7 @@ import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
+import androidx.core.net.toUri
 
 /**
  * Created by PDT on 23.01.2017.
@@ -253,7 +254,7 @@ private fun cancelDownloadIfNeeded(downloadInfo: Download) {
     try {
     if (downloadInfo.cancelled || downloadInfo.size == Download.BROKEN_MARK) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val rowsDeleted = contentResolver.delete(Uri.parse(filePath), null)
+            val rowsDeleted = contentResolver.delete(filePath.toUri(), null)
             if (rowsDeleted < 1) {
                 Log.e(FileDownloadTask.TAG, "Download cancelled but content not deleted??")
             }
@@ -264,13 +265,15 @@ private fun cancelDownloadIfNeeded(downloadInfo: Download) {
         val downloadDetails = ContentValues().apply {
             put(MediaStore.Downloads.IS_PENDING, 0)
         }
-        contentResolver.update(Uri.parse(filePath), downloadDetails, null, null)
+        contentResolver.update(filePath.toUri(), downloadDetails, null, null)
     }
     } catch (error: Exception) {
         Log.w(FileDownloadTask.TAG, "Could not finalize download output", error)
     }
 }
 
+// Callers run only on Android 11+ (MediaStore.Downloads columns are API 29+).
+@TargetApi(Build.VERSION_CODES.R)
 internal fun buildDownloadDetails(downloadInfo: Download) = ContentValues().apply {
     if (downloadInfo.filename.isNotEmpty()) put(MediaStore.Downloads.DISPLAY_NAME, downloadInfo.filename)
     if (!downloadInfo.incognito) {

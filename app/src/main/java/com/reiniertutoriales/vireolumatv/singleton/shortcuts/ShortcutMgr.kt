@@ -11,6 +11,7 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
+import androidx.core.content.edit
 
 /**
  * Created by PDT on 06.08.2017.
@@ -36,22 +37,22 @@ class ShortcutMgr private constructor() {
 
     fun save(shortcut: Shortcut) {
         if (shortcut.keyCode == 0) {
-            prefs.edit()
-                    .remove(shortcut.prefsKey)
-                    .remove(shortcut.prefsKey + "_mod")
-                    .remove(shortcut.prefsKey + "_lp")
-                    .apply()
+            prefs.edit {
+                remove(shortcut.prefsKey)
+                remove(shortcut.prefsKey + "_mod")
+                remove(shortcut.prefsKey + "_lp")
+            }
             shortcuts.remove(shortcut)
             return
         }
         if (!shortcuts.contains(shortcut)) {
             shortcuts.add(shortcut)
         }
-        prefs.edit()
-                .putInt(shortcut.prefsKey, shortcut.keyCode)
-                .putInt(shortcut.prefsKey + "_mod", shortcut.modifiers)
-                .putBoolean(shortcut.prefsKey + "_lp", shortcut.longPressFlag)
-                .apply()
+        prefs.edit {
+            putInt(shortcut.prefsKey, shortcut.keyCode)
+            putInt(shortcut.prefsKey + "_mod", shortcut.modifiers)
+            putBoolean(shortcut.prefsKey + "_lp", shortcut.longPressFlag)
+        }
     }
 
     fun findForId(id: Int): Shortcut {

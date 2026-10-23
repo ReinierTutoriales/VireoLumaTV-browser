@@ -52,7 +52,7 @@
   <string name="action">动作：</string>
   <string name="current_key">当前按键：</string>
   <string name="set_key_for_action">更改按键</string>
-  <string name="press_eny_key">按任意键...</string>
+  <string name="press_eny_key">按任意键…</string>
   <string name="shortcut_key_reserved_for_navigation">此按键已保留用于浏览器导航</string>
   <string name="clear">清除</string>
   <string name="install">安装</string>

@@ -10,6 +10,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 
 import java.text.SimpleDateFormat
+import java.util.Locale
 import java.util.Date
 
 /**
@@ -51,7 +52,7 @@ class HistoryItemView(context: Context, private val viewType: Int) : FrameLayout
             HistoryAdapter.VIEW_TYPE_HISTORY_ITEM -> {
                 tvTitle!!.text = historyItem.title
                 tvURL!!.text = historyItem.url
-                val sdf = SimpleDateFormat("HH:mm")
+                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
                 tvTime!!.text = sdf.format(Date(historyItem.time))
                 cbSelection!!.visibility = if (multiselectMode) VISIBLE else GONE
                 cbSelection!!.isChecked = historyItem.selected

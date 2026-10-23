@@ -11,8 +11,8 @@
     <string name="deny">拒絕</string>
     <string name="location">位置</string>
     <string name="open_in_new_tab">在新分頁開啟</string>
-    <string name="download_started">已開始下載...\n檔案將儲存到：\n%s</string>
-    <string name="downloading_file">正在下載檔案...</string>
+    <string name="download_started">已開始下載…\n檔案將儲存到：\n%s</string>
+    <string name="downloading_file">正在下載檔案…</string>
     <string name="err_cant_open_file_chooser">無法開啟檔案選擇器</string>
     <string name="bookmarks">書籤</string>
     <string name="add">新增</string>
@@ -54,7 +54,7 @@
     <string name="action">操作：</string>
     <string name="current_key">目前按鍵：</string>
     <string name="set_key_for_action">設定操作按鍵</string>
-    <string name="press_eny_key">點擊任意按鍵...</string>
+    <string name="press_eny_key">點擊任意按鍵…</string>
     <string name="shortcut_key_reserved_for_navigation">此按鍵已保留供瀏覽器導覽使用</string>
     <string name="clear">清除</string>
     <string name="install">安裝</string>

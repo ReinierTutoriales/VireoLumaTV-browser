@@ -12,10 +12,10 @@
   <string name="deny">"דחה"</string>
   <string name="location">"מיקום"</string>
   <string name="open_in_new_tab">"פתח בכרטיסיה חדשה"</string>
-  <string name="download_started">"ההורדה התחילה...
+  <string name="download_started">"ההורדה התחילה…
 הקובץ יאוחסן ב:
 %s"</string>
-  <string name="downloading_file">"מוריד קובץ..."</string>
+  <string name="downloading_file">"מוריד קובץ…"</string>
   <string name="err_cant_open_file_chooser">"לא ניתן לפתוח את בוחר הקבצים"</string>
   <string name="bookmarks">"סימניות"</string>
   <string name="add">"הוסף"</string>
@@ -55,7 +55,7 @@
   <string name="action">"פעולה:"</string>
   <string name="current_key">"מקש נוכחי:"</string>
   <string name="set_key_for_action">"הגדר מקש לפעולה:"</string>
-  <string name="press_eny_key">"לחץ על כל מקש..."</string>
+  <string name="press_eny_key">"לחץ על כל מקש…"</string>
   <string name="shortcut_key_reserved_for_navigation">מקש זה שמור לניווט בדפדפן</string>
   <string name="clear">"נקה"</string>
   <string name="install">"התקן"</string>

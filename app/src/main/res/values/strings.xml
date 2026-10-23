@@ -59,7 +59,7 @@
     <string name="action">Action:</string>
     <string name="current_key">Current key:</string>
     <string name="set_key_for_action">Set key for action</string>
-    <string name="press_eny_key">Press any key...</string>
+    <string name="press_eny_key">Press any key…</string>
     <string name="shortcut_key_reserved_for_navigation">This key is reserved for browser navigation</string>
     <string name="clear">Clear</string>
     <string name="install">Install</string>

@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PorterDuff
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognitionListener
@@ -23,6 +22,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.databinding.ViewSpeachRecognizerResultsBinding
+import androidx.core.net.toUri
 
 
 class VoiceSearchHelper(private val activity: Activity, private val requestCode: Int, private val permissionRequestCode: Int) {
@@ -74,7 +74,7 @@ class VoiceSearchHelper(private val activity: Activity, private val requestCode:
             .setNeutralButton(android.R.string.ok) { _, _ -> }
         val appPackageName =
             if (Utils.isTV(activity)) "com.google.android.katniss" else "com.google.android.googlequicksearchbox"
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appPackageName"))
+        val intent = Intent(Intent.ACTION_VIEW, "market://details?id=$appPackageName".toUri())
         val activities = activity.packageManager.queryIntentActivities(intent, 0)
         if (activities.size > 0) {
             dialogBuilder.setPositiveButton(R.string.find_in_apps_store) { _, _ ->

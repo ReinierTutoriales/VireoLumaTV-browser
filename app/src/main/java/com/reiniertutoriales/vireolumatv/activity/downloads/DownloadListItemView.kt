@@ -11,6 +11,7 @@ import android.widget.TextView
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.Download
 import java.text.SimpleDateFormat
+import java.util.Locale
 import java.util.Date
 
 /**
@@ -38,7 +39,7 @@ class DownloadListItemView(private val downloadsActivity: DownloadsActivity, pri
             DownloadListAdapter.VIEW_TYPE_DOWNLOAD_ITEM -> {
                 tvTitle!!.text = field!!.filename
                 tvURL!!.text = field!!.url
-                val sdf = SimpleDateFormat("HH:mm")
+                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
                 tvTime!!.text = sdf.format(Date(field!!.time))
                 updateUI(field!!)
             }

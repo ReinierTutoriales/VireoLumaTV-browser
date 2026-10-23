@@ -1,7 +1,6 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
@@ -16,6 +15,8 @@ import com.reiniertutoriales.vireolumatv.utils.sameDay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
+import androidx.core.net.toUri
+import androidx.core.content.edit
 
 class AutoUpdateModel: ActiveModel() {
     val config = AppContext.provideConfig()
@@ -60,9 +61,9 @@ class AutoUpdateModel: ActiveModel() {
             throw IllegalStateException()
         }
         lastUpdateNotificationTime = now
-        config.prefs.edit()
-            .putLong(Config.LAST_UPDATE_USER_NOTIFICATION_TIME_KEY, lastUpdateNotificationTime.timeInMillis)
-            .apply()
+        config.prefs.edit {
+            putLong(Config.LAST_UPDATE_USER_NOTIFICATION_TIME_KEY, lastUpdateNotificationTime.timeInMillis)
+        }
 
         updateChecker.showUpdateDialog(activity, object : UpdateChecker.DialogCallback {
             override fun download() {
@@ -87,7 +88,7 @@ class AutoUpdateModel: ActiveModel() {
                             val intent = Intent()
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                 intent.action = Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
-                                intent.data = Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+                                intent.data = "package:${BuildConfig.APPLICATION_ID}".toUri()
                             } else {
                                 intent.action = Settings.ACTION_SECURITY_SETTINGS
                             }

@@ -14,9 +14,9 @@ The reviewed application source does not include a developer-operated analytics 
 
 Websites and your selected search provider receive page requests, search queries and information transmitted by WebView, such as IP address, browser headers and applicable cookies. Their policies apply. HTTP pages may transmit information without transport encryption.
 
-VireoLumaTV downloads and caches filters from configured ad-block providers. Defaults include EasyList, EasyPrivacy and EasyList Spanish. Their hosts receive connection information, including IP address, even when you are not visiting those websites. Lists can be checked at browser startup and when refreshed.
+VireoLumaTV downloads and caches filters from the configured ad-block provider. By default these are EasyList, EasyPrivacy, EasyList Spanish and the uBlock Origin lists (filters, quick fixes, unbreak, badware), fetched from easylist-downloads.adblockplus.org, easylist.to, ublockorigin.github.io, ublockorigin.pages.dev and cdn.jsdelivr.net. Those hosts receive connection information, including IP address, even when you are not visiting those websites. Lists are checked when the app starts and at most once a day when it resumes.
 
-Site icons may be requested from websites, referenced icon hosts, and a Google-hosted favicon service used by the internal home page. That service receives the requested website origin in its URL. Default bookmark suggestions can load third-party icons. These requests are separate from developer analytics.
+Site icons are requested from the websites you visit, the icon hosts they reference, and the sites of your bookmarks. The internal home page uses icons bundled with the app and does not contact a Google favicon service. These requests are separate from developer analytics.
 
 Opening source, license, support and policy links contacts GitHub or the linked provider. Android WebView, the operating system and installed device services may perform their own network activity under their policies.
 

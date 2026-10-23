@@ -560,7 +560,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 handler.cancel()
                 val errUrl = error.url ?: return
                 val origUrl = currentOriginalUrl ?: return
-                if (Uri.parse(errUrl).host == origUrl.host) {//skip ssl errors during loading non-page resources (Chrome did like this too)
+                if (errUrl.toUri().host == origUrl.host) {//skip ssl errors during loading non-page resources (Chrome did like this too)
                     showCertificateErrorPage(error)
                 }
             }
@@ -674,7 +674,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
             }
             url.startsWith(INTERNAL_SCHEME) -> {
-                val uri = Uri.parse(url)
+                val uri = url.toUri()
                 when (uri.authority) {
                     INTERNAL_SCHEME_WARNING_DOMAIN -> {
                         when (uri.getQueryParameter("type")) {
@@ -687,7 +687,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 }
             }
             else -> {
-                currentOriginalUrl = Uri.parse(url)
+                currentOriginalUrl = url.toUri()
                 super.loadUrl(url)
             }
         }

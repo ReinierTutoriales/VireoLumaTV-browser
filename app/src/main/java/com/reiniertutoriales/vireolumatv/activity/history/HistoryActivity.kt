@@ -24,6 +24,8 @@ import com.reiniertutoriales.vireolumatv.utils.VoiceSearchHelper
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 
 /**
  * Created by fedex on 29.12.16.
@@ -161,7 +163,7 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
         exitMultiselectOnBack.isEnabled = adapter?.isMultiselectMode == true
         val selection = adapter!!.selectedItems
         if (selection.isEmpty()) {
-            if (ibDelete!!.visibility == View.GONE) return
+            if (ibDelete!!.isGone) return
             val anim = AnimationUtils.loadAnimation(this, R.anim.right_menu_out_anim)
             anim.setAnimationListener(object : BaseAnimationListener() {
                 override fun onAnimationEnd(animation: Animation) {
@@ -170,7 +172,7 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
             })
             ibDelete!!.startAnimation(anim)
         } else {
-            if (ibDelete!!.visibility == View.VISIBLE) return
+            if (ibDelete!!.isVisible) return
             ibDelete!!.visibility = View.VISIBLE
             ibDelete!!.startAnimation(AnimationUtils.loadAnimation(this, R.anim.right_menu_in_anim))
         }

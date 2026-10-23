@@ -44,7 +44,7 @@
   <string name="no_file_explorer_msg">Похоже, на вашем устройстве нет подходящего файлового менеджера</string>
   <string name="not_set">Не задано</string>
   <string name="open_folder">Открыть содержащую папку</string>
-  <string name="press_eny_key">Нажмите любую клавишу...</string>
+  <string name="press_eny_key">Нажмите любую клавишу…</string>
   <string name="shortcut_key_reserved_for_navigation">Эта клавиша зарезервирована для навигации в браузере</string>
   <string name="refresh_page">Обновить страницу</string>
   <string name="set_key_for_action">Установить клавишу для действия</string>

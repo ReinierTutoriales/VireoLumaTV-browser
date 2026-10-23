@@ -44,7 +44,7 @@
   <string name="no_file_explorer_msg">Схоже, на вашому пристрої немає відповідного файлового менеджера</string>
   <string name="not_set">Не задано</string>
   <string name="open_folder">Відкрити папку</string>
-  <string name="press_eny_key">Натисніть будь-яку клавішу...</string>
+  <string name="press_eny_key">Натисніть будь-яку клавішу…</string>
   <string name="shortcut_key_reserved_for_navigation">Ця клавіша зарезервована для навігації в браузері</string>
   <string name="refresh_page">Оновити сторінку</string>
   <string name="set_key_for_action">Встановити клавішу для дії</string>
