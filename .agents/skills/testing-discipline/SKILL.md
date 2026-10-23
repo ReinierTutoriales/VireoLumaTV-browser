@@ -15,3 +15,4 @@ description: Use when adding features or changing logic. Enforces running releva
 - Prefer focused tests for changed behavior (especially adblock, navigation, downloads, or WebView integration).
 - A change is incomplete until consistent with the test baseline and release build expectations (R8).
 - Explicitly call out gaps that need real Android TV device validation.
+- Follow agent-governance rules on branches and authorship.
