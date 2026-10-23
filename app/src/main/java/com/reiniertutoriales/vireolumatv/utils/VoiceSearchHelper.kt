@@ -113,12 +113,15 @@ class VoiceSearchHelper(private val activity: Activity, private val requestCode:
 
             override fun onResults(results: Bundle?) {
                 disposeResultsView()
+                // Each search creates its own recognizer; it holds a service connection until destroyed.
+                speechRecognizer.destroy()
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 callback.onResult(matches?.firstOrNull())
             }
 
             override fun onError(error: Int) {
                 disposeResultsView()
+                speechRecognizer.destroy()
                 Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
             }
 

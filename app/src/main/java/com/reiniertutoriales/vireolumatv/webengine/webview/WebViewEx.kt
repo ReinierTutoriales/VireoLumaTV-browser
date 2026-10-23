@@ -359,7 +359,12 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             }
 
             override fun onGeolocationPermissionsShowPrompt(origin: String, callback: GeolocationPermissions.Callback) {
-                val activity = this@WebViewEx.callback.getActivity() ?: return
+                val activity = this@WebViewEx.callback.getActivity()
+                if (activity == null) {
+                    // Answer, or the page's geolocation request waits forever.
+                    callback.invoke(origin, false, false)
+                    return
+                }
                 geoPermissionOrigin = origin
                 geoPermissionsCallback = callback
                 permRequestDialog = AlertDialog.Builder(activity)
