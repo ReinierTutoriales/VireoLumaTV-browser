@@ -36,4 +36,16 @@ class ExternalWebNavigationTest {
             assertFalse(it, ExternalWebNavigation.isAllowed(Uri.parse(it)))
         }
     }
+
+    @Test fun malformedIntentUrlsAreRejectedInsteadOfThrowing() {
+        assertEquals(null, ExternalWebNavigation.parseIntentUrl("intent:#Intent;bad"))
+        assertEquals(null, ExternalWebNavigation.parseIntentUrl("intent:#Intent;S.x;end"))
+    }
+
+    @Test fun wellFormedIntentUrlBecomesABrowsableIntent() {
+        val intent = ExternalWebNavigation.parseIntentUrl("intent://example.com/path#Intent;scheme=https;end")
+        assertTrue(intent != null)
+        assertEquals("https", intent!!.scheme)
+        assertTrue(intent.categories.contains(Intent.CATEGORY_BROWSABLE))
+    }
 }
