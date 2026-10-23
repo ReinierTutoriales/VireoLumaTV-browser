@@ -4,7 +4,9 @@ import android.provider.MediaStore
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -18,7 +20,7 @@ import java.io.InputStream
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class IncognitoDownloadTest {
-    @Before fun resetHistory() { AppDatabase.db.clearAllTables() }
+    @Before fun resetHistory() = runBlocking { withContext(Dispatchers.IO) { AppDatabase.db.clearAllTables() } }
 
     private fun download(privateMode: Boolean) = Download().apply {
         incognito = privateMode
@@ -62,7 +64,8 @@ class IncognitoDownloadTest {
 
     @Test fun ordinaryDownloadStillRecordsCompletionAndMediaStoreKeepsItsSource() = runBlocking {
         val ordinary = download(false)
-        StreamDownloadTask(ordinary, "hello".byteInputStream(), callback).run()
+        // Downloads run on DownloadService's pool; Room rejects the DAO write on the test's main thread.
+        withContext(Dispatchers.IO) { StreamDownloadTask(ordinary, "hello".byteInputStream(), callback).run() }
         val row = AppDatabase.db.downloadDao().getAll().single()
         assertEquals(5L, row.bytesReceived)
         assertEquals(ordinary.url, row.url)

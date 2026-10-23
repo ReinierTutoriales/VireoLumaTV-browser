@@ -150,6 +150,12 @@ android {
     }
 }
 
+// KSP runs Room's processor; the schema location must be passed here, not via javaCompileOptions.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+}
+
 dependencies {
     implementation(project(":app:common"))
 
