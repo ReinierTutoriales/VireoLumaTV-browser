@@ -62,12 +62,6 @@ android {
         applicationId = "com.reiniertutoriales.vireolumatv"
         versionCode = 89
         versionName = "1.1.0"
-        // With ABI splits the splits block selects the ABIs; AGP rejects abiFilters alongside it.
-        if (!project.hasProperty("enableAbiSplits")) {
-            ndk {
-                abiFilters += rustAbis
-            }
-        }
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -115,7 +109,8 @@ android {
 
     splits {
         abi {
-            isEnable = project.hasProperty("enableAbiSplits")
+            // One APK per ABI: a 32-bit TV installs ~4 MB instead of the universal ~10.7 MB.
+            isEnable = true
             reset()
             include(*rustAbis.toTypedArray())
             isUniversalApk = false
