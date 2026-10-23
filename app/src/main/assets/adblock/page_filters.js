@@ -1364,6 +1364,8 @@
     while ((found = marker.exec(script)) !== null) {
         try {
             var call = JSON.parse(found[1]);
+            // Own entries only: a name such as "constructor" must not reach Object.prototype members.
+            if (!Object.prototype.hasOwnProperty.call(scriptlets, call[0])) continue;
             var fn = scriptlets[call[0]];
             if (typeof fn !== 'function') continue;
             var args = (call[1] || []).filter(function (arg) { return !/^\{\{\d+\}\}$/.test(arg); });

@@ -17,11 +17,13 @@ class DownloadsHistoryModel: ActiveModel() {
       return@launch
     }
     loading = true
-
-    val newItems = AppDatabase.db.downloadDao().allByLimitOffset(allItems.size.toLong())
-    lastLoadedItems.value = newItems
-    allItems.addAll(newItems)
-
-    loading = false
+    try {
+      val newItems = AppDatabase.db.downloadDao().allByLimitOffset(allItems.size.toLong())
+      lastLoadedItems.value = newItems
+      allItems.addAll(newItems)
+    } finally {
+      // An exception must not leave later pages unloadable.
+      loading = false
+    }
   }
 }

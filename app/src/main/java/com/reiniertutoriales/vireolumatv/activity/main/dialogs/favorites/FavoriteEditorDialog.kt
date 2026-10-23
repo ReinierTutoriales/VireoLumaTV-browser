@@ -10,6 +10,7 @@ import android.widget.TextView
 
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
+import com.reiniertutoriales.vireolumatv.utils.Utils
 
 /**
  * Created by PDT on 13.09.2016.
@@ -56,8 +57,13 @@ class FavoriteEditorDialog(context: Context, private val callback: Callback, pri
         }
 
         btnDone.setOnClickListener {
+            var urlStr = etUrl.text.toString().trim()
+            // "https://" alone is not a bookmark: keep the dialog open instead of saving it.
+            if (urlStr.isEmpty()) {
+                Utils.showToast(context, R.string.error)
+                return@setOnClickListener
+            }
             this@FavoriteEditorDialog.item.title = etTitle.text.toString()
-            var urlStr = etUrl.text.toString()
             //add https:// if url not starts with any schema
             if (!urlStr.matches( Regex("^[A-Za-z]+://.*$"))) {
                 urlStr = "https://$urlStr"
