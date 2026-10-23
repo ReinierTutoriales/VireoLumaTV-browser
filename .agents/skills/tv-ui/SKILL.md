@@ -11,3 +11,4 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
 - Avoid heavy animations or memory-intensive views that hurt low-RAM devices.
 - Test focus chains mentally against typical TV remote flows.
 - Note what requires real device validation (focus, remote, performance).
+- Follow agent-governance rules on branches and authorship. Do not invent UI behaviors.
