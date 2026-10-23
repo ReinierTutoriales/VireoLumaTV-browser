@@ -255,8 +255,8 @@ Opciones: conservar el historial por trazabilidad, o construir una rama limpia p
 | Adblock | Una caché de lista personalizada queda huérfana si cambia la URL |
 | Escritura atómica | Sin `fsync`: protege frente a `lmkd`, no frente a un corte de luz |
 | `intent:` de una página | Se abren sin confirmación, a diferencia de otros esquemas externos (`askUserAndOpenInExternalApp`); decidir si pedir confirmación |
-| `androidx.webkit` | 1.17.1 fijada; 1.18.0 es estable: subir solo con prueba en el onn |
-| Robolectric | Sin metadatos accesibles desde el entorno de auditoría; comprobar versión |
+| `androidx.webkit` | 1.18.0 adoptada en la auditoría (compila y pasa tests); validar el WebView en el onn |
+| Robolectric | Se queda en 4.16.1: 4.17 no puede acceder a los internos de `FileDescriptor` del JDK 21 y rompe `FaviconExtractorTest` |
 
 ## No tocar sin evidencia
 

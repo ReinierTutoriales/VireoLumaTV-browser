@@ -163,5 +163,16 @@
   <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Algorithmische Abdunkelung für Webseiten (dunkles Design, nur WebView, Neustart erforderlich)</string>
   <string name="allow_autoplay_media">Automatische Medienwiedergabe zulassen</string>
   <string name="web_engine_debug">Web-Engine-Debugging (Neustart erforderlich)</string>
-  <string name="web_engine_debug_warning_message">Das Aktivieren des Web-Engine-Debuggings kann Seiteninhalte, Cookies und sensible Sitzungsdaten fuer jeden mit Zugriff auf das Geraetedebugging offenlegen. Nur auf vertrauenswuerdigen Geraeten zur Fehlersuche aktivieren.</string>
+  <string name="web_engine_debug_warning_message">Das Aktivieren des Web-Engine-Debuggings kann Seiteninhalte, Cookies und sensible Sitzungsdaten für jeden mit Zugriff auf das Gerätedebugging offenlegen. Nur auf vertrauenswürdigen Geräten zur Fehlersuche aktivieren.</string>
+    <string name="vireo_project_credit">VireoLumaTV von ReinierTutoriales · Quellcode</string>
+    <string name="based_on_tv_bro_sources">Basiert auf dem Quellcode von TV Bro: %s</string>
+    <string name="cursor_grab_mode">Seite verschieben</string>
+    <string name="link_actions">Linkaktionen</string>
+    <string name="support_original_author">☕ Fedir Tsapana unterstützen (ursprünglicher Autor von TV Bro)</string>
+    <string name="adblock_updating">Filterlisten werden aktualisiert…</string>
+    <string name="adblock_updated">Filterlisten aktualisiert</string>
+    <string name="adblock_partial_update">Einige Listen aktualisiert; gespeicherte Regeln bleiben erhalten. Neuer Versuch in 6 Stunden.</string>
+    <string name="adblock_using_saved">Gespeicherte Regeln werden verwendet. Es wurde keine neue Liste heruntergeladen.</string>
+    <string name="adblock_update_error">Filterlisten konnten nicht geladen werden. Prüfe die Verbindung oder die Listen-URL.</string>
+    <string name="video_max_quality">Maximale Videoqualität</string>
 </resources>

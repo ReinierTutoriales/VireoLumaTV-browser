@@ -165,4 +165,15 @@
   <string name="allow_autoplay_media">Cho phép tự động phát phương tiện</string>
   <string name="web_engine_debug">Gỡ lỗi công cụ web (cần khởi động lại)</string>
   <string name="web_engine_debug_warning_message">Việc bật gỡ lỗi công cụ web có thể làm lộ nội dung trang, cookie và dữ liệu phiên nhạy cảm cho bất kỳ ai có quyền truy cập gỡ lỗi thiết bị. Chỉ bật trên thiết bị đáng tin cậy để khắc phục sự cố.</string>
+    <string name="vireo_project_credit">VireoLumaTV của ReinierTutoriales · Mã nguồn</string>
+    <string name="based_on_tv_bro_sources">Dựa trên mã nguồn của TV Bro: %s</string>
+    <string name="cursor_grab_mode">Di chuyển trang</string>
+    <string name="link_actions">Thao tác liên kết</string>
+    <string name="support_original_author">☕ Ủng hộ Fedir Tsapana (tác giả gốc của TV Bro)</string>
+    <string name="adblock_updating">Đang cập nhật danh sách bộ lọc…</string>
+    <string name="adblock_updated">Đã cập nhật danh sách bộ lọc</string>
+    <string name="adblock_partial_update">Một số danh sách đã được cập nhật; giữ lại các quy tắc đã lưu. Thử lại sau 6 giờ.</string>
+    <string name="adblock_using_saved">Đang dùng quy tắc đã lưu. Không tải được danh sách mới.</string>
+    <string name="adblock_update_error">Không thể tải danh sách bộ lọc. Kiểm tra kết nối hoặc URL danh sách.</string>
+    <string name="video_max_quality">Chất lượng video tối đa</string>
 </resources>

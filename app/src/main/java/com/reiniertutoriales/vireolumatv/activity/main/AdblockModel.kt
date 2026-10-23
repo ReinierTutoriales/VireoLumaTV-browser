@@ -216,7 +216,7 @@ class AdblockModel @JvmOverloads constructor(
                         if (freshClient != null) {
                             val cacheWritten = AdblockCache.write(serializedFile, freshClient)
                             if (!cacheWritten) Log.w(TAG, "Compiled rules active but cache write failed; will retry")
-                            else deleteLegacyCaches()
+                            else deleteLegacyCaches(filterLists)
                             loadedClient = freshClient
                             updated = true
                             partialUpdate = !cacheWritten || missingLists || usedCacheFallback
@@ -471,12 +471,15 @@ class AdblockModel @JvmOverloads constructor(
     }
 
     /** Removes caches of the former ad-block 0.0.4 engine once the new engine saved its own. */
-    private fun deleteLegacyCaches() {
+    private fun deleteLegacyCaches(filterLists: List<FilterList>) {
+        val configured = filterLists.mapTo(HashSet()) { it.cacheFileName }
         VireoLumaTVApp.instance.filesDir.listFiles()?.forEach { file ->
             val otherRevision = OTHER_REVISION.matches(file.name) && !file.name.startsWith("${AdblockCache.REVISION}-")
             // Temporaries left by a write that was interrupted (see AdblockCache.write).
             val interruptedWrite = file.name.startsWith("adblock-") && file.name.endsWith(".tmp")
-            if (otherRevision || interruptedWrite || LEGACY_CACHE_SUFFIXES.any { file.name.endsWith(it) }) file.delete()
+            // Text of lists no longer configured (e.g. an earlier custom URL), with its .meta validators.
+            val unconfiguredList = file.name.startsWith("adblock_list_") && file.name.removeSuffix(".meta") !in configured
+            if (otherRevision || interruptedWrite || unconfiguredList || LEGACY_CACHE_SUFFIXES.any { file.name.endsWith(it) }) file.delete()
         }
     }
 

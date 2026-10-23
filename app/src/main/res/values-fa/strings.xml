@@ -169,4 +169,15 @@
   <string name="allow_autoplay_media">اجازه پخش خودکار رسانه</string>
   <string name="web_engine_debug">اشکال‌زدایی موتور وب (نیاز به راه‌اندازی مجدد)</string>
   <string name="web_engine_debug_warning_message">فعال‌سازی اشکال‌زدایی موتور وب می‌تواند محتوای صفحات، کوکی‌ها و داده‌های حساس نشست را برای هر کسی که به اشکال‌زدایی دستگاه دسترسی دارد افشا کند. فقط برای رفع اشکال و روی دستگاه‌های مورداعتماد فعال کنید.</string>
+    <string name="vireo_project_credit">VireoLumaTV از ReinierTutoriales · کد منبع</string>
+    <string name="based_on_tv_bro_sources">بر پایه کد منبع TV Bro: %s</string>
+    <string name="cursor_grab_mode">جابجایی صفحه</string>
+    <string name="link_actions">اقدامات پیوند</string>
+    <string name="support_original_author">☕ حمایت از Fedir Tsapana (نویسنده اصلی TV Bro)</string>
+    <string name="adblock_updating">در حال به‌روزرسانی فهرست‌های فیلتر…</string>
+    <string name="adblock_updated">فهرست‌های فیلتر به‌روزرسانی شد</string>
+    <string name="adblock_partial_update">برخی فهرست‌ها به‌روزرسانی شدند؛ قواعد ذخیره‌شده حفظ شد. ۶ ساعت بعد دوباره تلاش کنید.</string>
+    <string name="adblock_using_saved">از قواعد ذخیره‌شده استفاده می‌شود. فهرست جدیدی دانلود نشد.</string>
+    <string name="adblock_update_error">فهرست‌های فیلتر بارگذاری نشدند. اتصال یا نشانی فهرست را بررسی کنید.</string>
+    <string name="video_max_quality">حداکثر کیفیت ویدیو</string>
 </resources>

@@ -36,6 +36,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/etTitle"
+            android:hint="@string/title"
+            android:importantForAutofill="no"
             android:visibility="gone"
             android:lines="1"
             android:inputType="text" />
@@ -74,6 +76,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/etUrl"
+            android:hint="@string/url"
+            android:importantForAutofill="no"
             android:visibility="gone"
             android:lines="1"
             android:inputType="text" />

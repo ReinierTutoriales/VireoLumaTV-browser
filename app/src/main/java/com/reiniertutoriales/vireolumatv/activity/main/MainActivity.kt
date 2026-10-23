@@ -734,12 +734,16 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     override fun onStart() {
         super.onStart()
-        bindService(DownloadService.intent(this, config.incognitoMode), downloadServiceConnection, Context.BIND_AUTO_CREATE)
+        downloadServiceBound = bindService(DownloadService.intent(this, config.incognitoMode), downloadServiceConnection, Context.BIND_AUTO_CREATE)
     }
 
     override fun onStop() {
         super.onStop()
-        unbindService(downloadServiceConnection)
+        // unbindService throws if the bind above did not succeed.
+        if (downloadServiceBound) {
+            unbindService(downloadServiceConnection)
+            downloadServiceBound = false
+        }
         downloadService = null
     }
 
@@ -825,18 +829,18 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    override fun search(aText: String) {
-        var text = aText
-        val trimmedLowercased = text.trim { it <= ' ' }.lowercase(Locale.ROOT)
-        if (Patterns.WEB_URL.matcher(text).matches() || trimmedLowercased.startsWith("http://") || trimmedLowercased.startsWith("https://")) {
-            if (!text.lowercase(Locale.ROOT).contains("://")) {
-                text = "https://$text"
+    override fun search(text: String) {
+        var input = text
+        val trimmedLowercased = input.trim { it <= ' ' }.lowercase(Locale.ROOT)
+        if (Patterns.WEB_URL.matcher(input).matches() || trimmedLowercased.startsWith("http://") || trimmedLowercased.startsWith("https://")) {
+            if (!input.lowercase(Locale.ROOT).contains("://")) {
+                input = "https://$input"
             }
-            navigate(text)
+            navigate(input)
         } else {
             var query: String? = null
             try {
-                query = URLEncoder.encode(text, "utf-8")
+                query = URLEncoder.encode(input, "utf-8")
             } catch (e1: UnsupportedEncodingException) {
                 e1.printStackTrace()
                 Utils.showToast(this, R.string.error)
@@ -1686,6 +1690,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             .show()
     }
 
+    private var downloadServiceBound = false
     private val downloadServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             val binder = service as? DownloadService.Binder

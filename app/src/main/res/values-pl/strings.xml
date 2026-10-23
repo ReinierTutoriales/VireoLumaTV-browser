@@ -165,4 +165,15 @@
   <string name="allow_autoplay_media">Zezwól na automatyczne odtwarzanie multimediów</string>
   <string name="web_engine_debug">Debugowanie silnika webowego (wymagany restart)</string>
   <string name="web_engine_debug_warning_message">Wlaczenie debugowania silnika webowego moze ujawnic zawartosc stron, pliki cookie oraz wrazliwe dane sesji kazdej osobie z dostepem do debugowania urzadzenia. Wlaczaj tylko na zaufanych urzadzeniach do diagnozowania problemow.</string>
+    <string name="vireo_project_credit">VireoLumaTV autorstwa ReinierTutoriales · Kod źródłowy</string>
+    <string name="based_on_tv_bro_sources">Oparte na kodzie źródłowym TV Bro: %s</string>
+    <string name="cursor_grab_mode">Przesuń stronę</string>
+    <string name="link_actions">Akcje linku</string>
+    <string name="support_original_author">☕ Wesprzyj Fedira Tsapanę (oryginalnego autora TV Bro)</string>
+    <string name="adblock_updating">Aktualizowanie list filtrów…</string>
+    <string name="adblock_updated">Listy filtrów zaktualizowane</string>
+    <string name="adblock_partial_update">Część list zaktualizowano; zapisane reguły zachowano. Ponowna próba za 6 godzin.</string>
+    <string name="adblock_using_saved">Używane są zapisane reguły. Nie pobrano nowej listy.</string>
+    <string name="adblock_update_error">Nie można wczytać list filtrów. Sprawdź połączenie lub adres URL listy.</string>
+    <string name="video_max_quality">Maksymalna jakość wideo</string>
 </resources>

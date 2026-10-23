@@ -165,4 +165,15 @@
   <string name="allow_autoplay_media">Дозволити автовідтворення медіа</string>
   <string name="web_engine_debug">Налагодження вебрушія (потрібен перезапуск)</string>
   <string name="web_engine_debug_warning_message">Увімкнення налагодження вебрушія може розкрити вміст сторінок, cookie та чутливі дані сесії будь-кому, хто має доступ до налагодження пристрою. Вмикайте лише на довірених пристроях для усунення несправностей.</string>
+    <string name="vireo_project_credit">VireoLumaTV від ReinierTutoriales · Вихідний код</string>
+    <string name="based_on_tv_bro_sources">Основано на вихідному коді TV Bro: %s</string>
+    <string name="cursor_grab_mode">Перемістити сторінку</string>
+    <string name="link_actions">Дії з посиланням</string>
+    <string name="support_original_author">☕ Підтримати Федіра Цапану (автора TV Bro)</string>
+    <string name="adblock_updating">Оновлення списків фільтрів…</string>
+    <string name="adblock_updated">Списки фільтрів оновлено</string>
+    <string name="adblock_partial_update">Деякі списки оновлено; збережені правила збережено. Повторна спроба через 6 годин.</string>
+    <string name="adblock_using_saved">Використовуються збережені правила. Новий список не завантажено.</string>
+    <string name="adblock_update_error">Не вдалося завантажити списки фільтрів. Перевірте з\'єднання або URL списку.</string>
+    <string name="video_max_quality">Максимальна якість відео</string>
 </resources>

@@ -165,4 +165,15 @@
   <string name="allow_autoplay_media">Consenti riproduzione automatica dei contenuti multimediali</string>
   <string name="web_engine_debug">Debug del motore web (riavvio necessario)</string>
   <string name="web_engine_debug_warning_message">L\'attivazione del debug del motore web puo esporre contenuti delle pagine, cookie e dati di sessione sensibili a chiunque abbia accesso al debug del dispositivo. Abilita solo su dispositivi attendibili per la risoluzione dei problemi.</string>
+    <string name="vireo_project_credit">VireoLumaTV di ReinierTutoriales · Codice sorgente</string>
+    <string name="based_on_tv_bro_sources">Basato sul codice sorgente di TV Bro: %s</string>
+    <string name="cursor_grab_mode">Sposta la pagina</string>
+    <string name="link_actions">Azioni sui link</string>
+    <string name="support_original_author">☕ Sostieni Fedir Tsapana (autore originale di TV Bro)</string>
+    <string name="adblock_updating">Aggiornamento delle liste di filtri…</string>
+    <string name="adblock_updated">Liste di filtri aggiornate</string>
+    <string name="adblock_partial_update">Alcune liste aggiornate; regole salvate mantenute. Riprova tra 6 ore.</string>
+    <string name="adblock_using_saved">Uso delle regole salvate. Nessuna nuova lista scaricata.</string>
+    <string name="adblock_update_error">Impossibile caricare le liste di filtri. Controlla la connessione o l\'URL della lista.</string>
+    <string name="video_max_quality">Qualità video massima</string>
 </resources>

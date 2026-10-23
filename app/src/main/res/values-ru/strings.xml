@@ -165,4 +165,15 @@
   <string name="allow_autoplay_media">Разрешить автовоспроизведение медиа</string>
   <string name="web_engine_debug">Отладка веб-движка (требуется перезапуск)</string>
   <string name="web_engine_debug_warning_message">Включение отладки веб-движка может раскрыть содержимое страниц, cookie и чувствительные данные сессии любому, у кого есть доступ к отладке устройства. Включайте только на доверенных устройствах для устранения неполадок.</string>
+    <string name="vireo_project_credit">VireoLumaTV от ReinierTutoriales · Исходный код</string>
+    <string name="based_on_tv_bro_sources">Основано на исходном коде TV Bro: %s</string>
+    <string name="cursor_grab_mode">Переместить страницу</string>
+    <string name="link_actions">Действия со ссылкой</string>
+    <string name="support_original_author">☕ Поддержать Федира Цапану (автора TV Bro)</string>
+    <string name="adblock_updating">Обновление списков фильтров…</string>
+    <string name="adblock_updated">Списки фильтров обновлены</string>
+    <string name="adblock_partial_update">Некоторые списки обновлены; сохранённые правила сохранены. Повтор через 6 часов.</string>
+    <string name="adblock_using_saved">Используются сохранённые правила. Новый список не загружен.</string>
+    <string name="adblock_update_error">Не удалось загрузить списки фильтров. Проверьте соединение или URL списка.</string>
+    <string name="video_max_quality">Максимальное качество видео</string>
 </resources>
