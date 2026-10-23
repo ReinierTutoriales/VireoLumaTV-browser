@@ -257,6 +257,7 @@ Opciones: conservar el historial por trazabilidad, o construir una rama limpia p
 | `intent:` de una página | Se abren sin confirmación, a diferencia de otros esquemas externos (`askUserAndOpenInExternalApp`); decidir si pedir confirmación |
 | `androidx.webkit` | 1.18.0 adoptada en la auditoría (compila y pasa tests); validar el WebView en el onn |
 | Robolectric | Se queda en 4.16.1: 4.17 no puede acceder a los internos de `FileDescriptor` del JDK 21 y rompe `FaviconExtractorTest` |
+| Crates Rust transitivos | `psl`, `icu_*` y `url` no se actualizan: participan en la coincidencia de dominios del bloqueador. Actualizarlos exige comparar resultados sobre un corpus de URLs |
 
 ## No tocar sin evidencia
 

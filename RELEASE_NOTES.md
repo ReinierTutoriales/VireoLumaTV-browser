@@ -1,3 +1,33 @@
+# VireoLumaTV 1.1.1
+
+Actualización sobre la 1.1.0. Se instala encima de la 1.1.0 con la misma firma; los datos se conservan.
+
+## Qué APK instalar
+
+Cada release trae un APK por arquitectura. Elige el que corresponde a tu dispositivo:
+
+- **armeabi-v7a**: televisores de 32 bits, incluido el onn 4K Streaming Device. Es el APK más pequeño.
+- **arm64-v8a**: televisores y móviles de 64 bits.
+- **x86_64**: emuladores y equipos Intel/AMD. No es para televisores.
+
+## Cambios
+
+- Un enlace `intent:` mal formado en una página ya no cierra la app.
+- La instalación de APK descargados comprueba el permiso de instalar aplicaciones desconocidas en Android 8 y versiones posteriores.
+- Búsqueda del historial: encuentra coincidencias parciales. Antes solo encontraba entradas idénticas a lo escrito.
+- Favoritos: no se guarda un favorito con URL vacía, y la barra de progreso se oculta aunque falle el guardado.
+- Descargas y historial: un error al cargar una página ya no impide cargar las siguientes.
+- Bloqueador: al actualizar, las listas se recompilan una vez. Se borran las cachés de versiones anteriores.
+- Accesibilidad: botones de borrar y editar con etiqueta; iconos decorativos ocultos a los lectores de pantalla.
+- Mensajes del bloqueador traducidos a alemán, ruso, vietnamita, ucraniano, persa, italiano, polaco, hebreo y chino. Estas traducciones no han sido revisadas por hablantes nativos.
+- Dependencias actualizadas: `androidx.webkit` 1.18.0, Kotlin 2.4.21, serde_json (JNI).
+
+## Validación
+
+Pruebas JVM (125, sin fallos), builds debug y release con R8, y pruebas de consulta y búsqueda con base de datos en memoria. Pendiente de prueba en dispositivo.
+
+---
+
 # VireoLumaTV 1.1.0
 
 Navegador WebView para Android TV, optimizado para equipos de 2 GB de RAM. Se instala sobre la 1.0.0 sin perder datos (mismo certificado).
