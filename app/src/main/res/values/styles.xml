@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="AppTheme" parent="@style/Theme.VireoLumaTV" />
+    <style name="BrowserControl" parent="Widget.AppCompat.ImageButton" tools:targetApi="26">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:background">@drawable/button_bg_selector</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:defaultFocusHighlightEnabled">false</item>
+    </style>
 </resources>

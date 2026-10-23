@@ -2,6 +2,9 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.EditText
+import android.widget.Spinner
+import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
@@ -36,10 +39,29 @@ class MainSettingsLifecycleTest {
         val root = FrameLayout(activity)
         activity.setContentView(root)
         val sourceObservers = model.config.adBlockListURL.observers.size
+        val originalUserAgent = model.config.userAgentString.value
+        val customUserAgent = "CustomBrowser/1.0 (Android TV)"
         try {
             repeat(3) {
+                model.config.userAgentString.value = customUserAgent
                 val settings = MainSettingsView(activity)
                 root.addView(settings)
+                val spinner = settings.findViewById<Spinner>(R.id.spTitles)
+                val editor = settings.findViewById<EditText>(R.id.etUAString)
+                val customPosition = settings.settingsModel.userAgentStringTitles.lastIndex
+                // Exercise the real listener, including the callback dispatched when opening settings.
+                spinner.onItemSelectedListener!!.onItemSelected(spinner, TextView(activity), customPosition, 0)
+                assertEquals(customUserAgent, editor.text.toString())
+                editor.setText("EditedBrowser/2.0")
+                spinner.onItemSelectedListener!!.onItemSelected(spinner, TextView(activity), customPosition, 0)
+                assertEquals("EditedBrowser/2.0", editor.text.toString())
+                settings.save()
+                assertEquals("EditedBrowser/2.0", model.config.userAgentString.value)
+                spinner.onItemSelectedListener!!.onItemSelected(spinner, TextView(activity), 1, 0)
+                assertEquals(settings.settingsModel.uaStrings[1], editor.text.toString())
+                assertEquals(View.GONE, settings.findViewById<View>(R.id.llUAString).visibility)
+                spinner.onItemSelectedListener!!.onItemSelected(spinner, TextView(activity), customPosition, 0)
+                assertEquals("EditedBrowser/2.0", editor.text.toString())
                 assertEquals(1, model.clientLoading.observers.size)
                 assertEquals(1, model.updateResult.observers.size)
                 assertEquals(sourceObservers + 1, model.config.adBlockListURL.observers.size)
@@ -55,6 +77,7 @@ class MainSettingsLifecycleTest {
                 model.clientLoading.value = false
             }
         } finally {
+            model.config.userAgentString.value = originalUserAgent
             controller.pause().stop().destroy()
             if (previous == null) holders.remove(key) else holders[key] = previous
             model.clear()

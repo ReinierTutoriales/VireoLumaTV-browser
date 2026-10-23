@@ -1,58 +1,62 @@
-# VireoLumaTV — Roadmap WebView-only
+# VireoLumaTV — trabajo unificado
 
-Documento de trabajo de la rama de integración `fixes/audit`.
+Base comprobada: `521c214`, build 80 de `fixes/audit`.
+Rama de trabajo: `fixes/consolidated-audit-20261007`.
 
-VireoLumaTV es WebView-only: Gecko está eliminado del build (módulo `:app:gecko`, flavor
-`webengine` y dependencia de Mozilla) y ya no queda selector de motor en la app. El
-dispositivo objetivo es el onn 4K Streaming Device (Realtek RTD1325, 2 GB de RAM,
-sistema solo 32 bits `armeabi-v7a`, Android 14).
+El [registro de auditoría actual](audit/CONSOLIDATED_AUDIT_20261007.md)
+reúne los defectos comprobados, cambios, decisiones sobre ramas y verificaciones.
+El [roadmap anterior](audit/archive-2026-10-07/ROADMAP_PRE_CONSOLIDATION.md)
+queda conservado como referencia histórica; sus pendientes requieren contraste
+con el código actual antes de aplicarlos.
 
-## Estado de referencia
+## Estado
 
-| Dato | Valor |
-|---|---|
-| Rama de integración | `fixes/audit` |
-| Base real de este documento | `f7c216d` |
-| Línea base W0 | `f2ed4ecb3656759e41b6813b939d4ee2aacd369d` |
-| Tag `w0-baseline` | Pendiente; el SHA completo es suficiente para medir |
-| `applicationId` | `com.reiniertutoriales.vireolumatv` (debug y release comparten id) |
-| APK de medición | `genericRelease` firmado con el debug keystore compartido |
+| Área | Estado de esta rama |
+| --- | --- |
+| Tema guardado fuera de rango | Corrección y pruebas de regresión pasan en CI. |
+| User-Agent personalizado | Corrección y pruebas del selector pasan en CI. |
+| Room v19 | Esquema generado, inspeccionado y versionado; CI comprueba cambios inesperados. |
+| JavaScript de inicio, controles y YouTube | Tres suites locales pasan. |
+| Pruebas Android y APK debug/release | Primera CI completa en verde; consultar los checks del PR para el tip actual. |
+| Publicación de rama y CI remoto | Rama publicada y CI ejecutada en el PR #76. |
+| Limpieza remota de ramas | Ocho ramas verificadas eliminadas; seis referencias históricas conservadas. |
+| Restauración rechazada y UA Default efectivo (F03/F07) | Arreglos publicados con pruebas que fallaron antes; aceptación mediante CI del tip actual. Ver [lote sin TV](audit/OFF_DEVICE_FIXES_20261007.md). |
+| Actualización adblock: solicitudes y disparadores | Correcciones publicadas con HTTP local/Robolectric; aceptación mediante CI del tip. Salud por fuente y sitios reales pendientes. Ver [lote adblock](audit/ADBLOCK_OFF_DEVICE_20261007.md). |
+| Renovación visual TV | Recursos de barras, pestañas y paleta; capturas/contraste/geometría automáticos. Validación de mando y rendimiento real pendiente. Ver [lote UI](audit/TV_UI_REFRESH_20261007.md). |
+| Rendimiento, reproducción y mando en TV | Requieren dispositivo físico y medición. |
 
-## Cerrado
+## Línea de trabajo vigente
 
-| Bloque | PR | Commits en `fixes/audit` | Resultado |
-|---|---|---|---|
-| Release CI | #2 | `ee63b43` | La CI ejecuta `assembleGenericRelease` además de tests y debug |
-| Favicons | #1, #3 | `f2ed4ec`, `b592e4a`, `c928c3e` | Parser de manifest endurecido; timeouts, descarga única, límite de 2 MB, `use {}` |
-| Patch queue | #6 | `c1bee2c` | Workflow `Apply patch queue` para aplicar parches desde móvil |
-| Logs en release | #4 | `c8886dc`, `017e3fb`, `2ffad09`, `6534645` | R8 elimina `Log.v`/`Log.d`; `Log.i` se conserva; eliminados en el código fuente los `Log.d` por petición de `WebViewEx` |
-| F1 `ContentBlocker` | #7 | `ab7b79b` | Interfaz `ContentBlocker`/`ContentBlockerEngine`; `ad-block 0.0.4` aislado en `BraveAdBlockEngine` |
-| F2 pipeline de listas | #8 | `de4fb10`, `b8939a1`, `71a8689`, `eb01295` | Validación de contenido, caché de texto por lista, escritura atómica, BOM aceptado, reintento a 24 h, reutilización del serializado |
-| F3 coalescing | #9 | `abd443e` | `onBlockedAds(count)` como máximo cada 250 ms; un `Log.i` de resumen por ráfaga |
-| Selector de motor | #10 | `c945a88`, `996cbbb`, `29dbbee`, `1ed20c4` | UI, layout, preferencia y lectura en `WebEngineFactory` eliminados; cada commit compila |
-| Cadenas huérfanas | #11 | `f7c216d` | 4 cadenas eliminadas en 11 `strings.xml`; retirado el workaround `translatable="false"` |
-| Roadmap | #5 | `908d92b` | Versión anterior de este documento |
+Seguir el [plan detallado de ejecución](IMPLEMENTATION_PLAN.md): tareas por
+etapa, contrato fullscreen→barras→puntero, bloqueo, recursos, actualización
+de aplicación y condiciones de release. Este es el desarrollo del roadmap,
+no una cola adicional de cambios.
 
-## Reglas de trabajo
+La [política de estabilidad y modernización](REGRESSION_POLICY.md) y `AGENTS.md`
+son el contrato para este trabajo. La auditoría identifica evidencia; no impone
+parches que eliminen las barras ni cambia por sí sola el diseño de navegación.
 
-1. Un problema → un commit (o serie pequeña) → CI verde → revisión → merge con rebase.
-2. Cada commit debe compilar por sí solo: primero se eliminan los usos y después las
-   definiciones.
-3. No mezclar código, documentación, traducciones y CI en el mismo PR.
-4. CI verde demuestra compilación, tests y validación de release; no demuestra
-   comportamiento en el onn.
-5. Todo cambio en memoria, renderizado, fullscreen, ciclo de vida de WebView, bloqueo o
-   descargas necesita prueba física antes de darse por bueno.
-6. Merge con rebase, no squash: se conservan los commits y su patch-id.
-7. No tocar el prefijo `gecko:` de `WebTabState`: limpia estados de pestañas de
-   instalaciones anteriores.
-8. No reescribir el historial remoto de `fixes/audit` sin una decisión explícita.
+| Etapa | Trabajo | Condición de cierre |
+| --- | --- | --- |
+| 0 — Protección | Política, contrato N01–N10, plantilla PR y mapa de cobertura. | Documentado en esta rama; ampliar pruebas de eventos reales y TV sigue pendiente. |
+| 1 — Navegación | Estados separados para menú, barras, historial, IME, fullscreen, dialogs y salida; corregir restauración y callbacks. | Conservar controles inferiores/superiores y su foco; sin bucle ni pestaña vacía; regresiones cubiertas y validación TV. |
+| 2 — Experiencia protegida | Reintento observable de adblock, reglas válidas, política de popups/redirecciones y descargas explícitas con límites. | Sitios de prueba legítimos/abusivos; login, target=_blank y descargas voluntarias preservados; sin ráfagas de diálogos. |
+| 3 — Pestañas y recursos | Ahorro y evaluación de Equilibrado, precarga acotada, estado restaurable y presupuestos agregados. | Base y mediciones en onn 2 GB y dispositivo low-RAM; timers globales coordinados; pestaña activa y vídeo prioritarios. |
+| 4 — Motor WebView | Evaluar startup/navegación/cache/favicons de APIs estables existentes y recuperación. | Feature checks por proveedor, fallback, release y medición antes/después. |
+| 5 — UI TV | Renovar barra superior, estilos, tipografía/iconos/espaciado/foco y transiciones conservando acciones y barra inferior. | Propuesta visual, capturas comparables y N01–N10 intactos; mando, contraste y legibilidad comprobados. |
+| 6 — Actualizaciones y release | Revisar librerías/toolchain por grupos compatibles, pruebas minificadas, perfiles y documentación. | Changelog oficial actual, SHA con CI verde y evidencia pertinente; no actualización masiva ni release implícito. |
 
-## Método estándar: patch queue
+Correcciones concretas F01–F09 y riesgos R01–R08 están en la
+[auditoría Android TV](audit/ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md).
+F01 requiere acordar la secuencia de salida respetando N01–N10; no quitar el
+menú ni reinterpretar el botón inferior Atrás. Estas etapas son pendientes de
+implementación, no mejoras ya entregadas. Comenzar cada etapa con los fallos
+reproducibles y sus pruebas, sin reescritura general del motor.
 
-Para cualquier cambio de código desde el móvil, sin edición por hunk en el conector.
+Las ramas históricas conservadas se revisan por contenido único antes de
+eliminarlas; no se usan como cola automática de parches.
 
-### Reglas
+## Reglas de integración
 
 1. Los parches se generan con `git format-patch`. Nunca se escriben ni se reescriben a
    mano; un contador de hunk incorrecto produce `corrupt patch`.

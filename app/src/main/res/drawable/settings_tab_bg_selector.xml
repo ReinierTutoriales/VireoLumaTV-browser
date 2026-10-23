@@ -1,11 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:enterFadeDuration="0" android:exitFadeDuration="500">
+<?xml version='1.0' encoding='utf-8'?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/button_background_pressed" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/settings_tab_color_focused" />
+            <corners android:radius="12dp" />
+            <stroke android:width="2dp" android:color="@color/ui_focus_border" />
+        </shape>
+    </item>
     <item android:state_activated="true">
         <layer-list>
             <item>
                 <shape android:shape="rectangle">
                     <solid android:color="@color/settings_tab_color_activated" />
+                    <corners android:radius="12dp" />
                 </shape>
             </item>
             <item android:gravity="bottom">
@@ -16,19 +29,10 @@
             </item>
         </layer-list>
     </item>
-    <item android:state_pressed="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/settings_tab_color" />
-        </shape>
-    </item>
-    <item android:state_focused="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/settings_tab_color_focused" />
-        </shape>
-    </item>
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@color/settings_tab_color" />
+            <corners android:radius="12dp" />
         </shape>
     </item>
 </selector>
