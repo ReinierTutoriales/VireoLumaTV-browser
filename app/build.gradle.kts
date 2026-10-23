@@ -157,8 +157,6 @@ ksp {
 dependencies {
     implementation(project(":app:common"))
 
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.constraintlayout)

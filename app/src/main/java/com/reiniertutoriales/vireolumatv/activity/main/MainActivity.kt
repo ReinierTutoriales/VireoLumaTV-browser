@@ -101,6 +101,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 import java.io.UnsupportedEncodingException
+import java.net.URISyntaxException
 import java.net.URL
 import java.net.URLEncoder
 import java.util.Calendar
@@ -1480,7 +1481,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
 
         override fun onOpenInExternalAppRequested(url: String) {
-            val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+            // Called from WebView callbacks: a malformed intent: URL from a page must not crash the app.
+            val intent = try {
+                Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+            } catch (e: URISyntaxException) {
+                Toast.makeText(this@MainActivity, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
+                return
+            }
             intent.addCategory(Intent.CATEGORY_BROWSABLE)
             val activityComponent = intent.resolveActivity(this@MainActivity.packageManager)
             if (activityComponent != null && activityComponent.packageName == this@MainActivity.packageName) {

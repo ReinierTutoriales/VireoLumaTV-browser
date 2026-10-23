@@ -55,6 +55,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/button_bg_selector"
             android:id="@+id/ibTitle"
+            android:contentDescription="@string/edit"
             android:src="@drawable/ic_mode_edit_grey_400_18dp" />
     </LinearLayout>
 
@@ -92,6 +93,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/button_bg_selector"
             android:id="@+id/ibUrl"
+            android:contentDescription="@string/edit"
             android:src="@drawable/ic_mode_edit_grey_400_18dp" />
     </LinearLayout>
 

@@ -35,5 +35,6 @@
         android:nextFocusLeft="@+id/listView"
         android:focusable="true"
         android:onClick="onClearHistoryItemsClick"
+        android:contentDescription="@string/delete"
         android:id="@+id/ibDelete"/>
 </RelativeLayout>
