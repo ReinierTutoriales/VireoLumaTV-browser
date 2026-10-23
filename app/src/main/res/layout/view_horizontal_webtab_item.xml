@@ -12,6 +12,7 @@
     android:background="@drawable/webtab_horizontal_bkg_selector">
     <ImageView
         android:id="@+id/ivFavicon"
+        android:contentDescription="@null"
         android:layout_width="40dp"
         android:layout_height="40dp"
         tools:src="@drawable/ic_launcher"
