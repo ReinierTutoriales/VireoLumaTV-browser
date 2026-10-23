@@ -62,8 +62,11 @@ android {
         applicationId = "com.reiniertutoriales.vireolumatv"
         versionCode = 89
         versionName = "1.1.0"
-        ndk {
-            abiFilters += rustAbis
+        // With ABI splits the splits block selects the ABIs; AGP rejects abiFilters alongside it.
+        if (!project.hasProperty("enableAbiSplits")) {
+            ndk {
+                abiFilters += rustAbis
+            }
         }
 
         javaCompileOptions {
