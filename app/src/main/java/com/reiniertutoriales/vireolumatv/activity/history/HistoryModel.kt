@@ -13,17 +13,27 @@ class HistoryModel: ActiveModel() {
     var searchQuery = ""
 
 
-    fun loadItems(eraseOldResults: Boolean, offset: Long = 0) = modelScope.launch(Dispatchers.Main) {
+    fun loadItems(offset: Long = 0) = modelScope.launch(Dispatchers.Main) {
         if (loading) {
             return@launch
         }
         loading = true
-
-        lastLoadedItems.value = if ("" == searchQuery) {
-            AppDatabase.db.historyDao().allByLimitOffset(offset)
-        } else {
-            AppDatabase.db.historyDao().search(searchQuery, searchQuery)
+        try {
+            lastLoadedItems.value = if ("" == searchQuery) {
+                AppDatabase.db.historyDao().allByLimitOffset(offset)
+            } else {
+                val pattern = likePattern(searchQuery)
+                AppDatabase.db.historyDao().search(pattern, pattern)
+            }
+        } finally {
+            // An exception must not leave the model stuck in "loading" and every later load ignored.
+            loading = false
         }
-        loading = false
+    }
+
+    companion object {
+        /** Contains-match for LIKE. The DAO declares ESCAPE '\\', so typed % _ and \\ match literally. */
+        internal fun likePattern(query: String): String =
+            "%" + query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
     }
 }
