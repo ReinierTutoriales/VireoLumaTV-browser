@@ -256,7 +256,8 @@ Opciones: conservar el historial por trazabilidad, o construir una rama limpia p
 | Escritura atómica | Sin `fsync`: protege frente a `lmkd`, no frente a un corte de luz |
 | `intent:` de una página | Se abren sin confirmación, a diferencia de otros esquemas externos (`askUserAndOpenInExternalApp`); decidir si pedir confirmación |
 | `androidx.webkit` | 1.18.0 adoptada en la auditoría (compila y pasa tests); validar el WebView en el onn |
-| Robolectric | Se queda en 4.16.1: 4.17 no puede acceder a los internos de `FileDescriptor` del JDK 21 y rompe `FaviconExtractorTest` |
+| Robolectric | 4.17 con targetSdk 37 en JDK 21. Los tests de `FaviconExtractorTest` fijan SDK 28 porque no necesitan APIs nuevas |
+| targetSdk 37 | Subido en 1.1.1. Lint sin errores; el comportamiento en ejecución (bordes de pantalla, permisos) solo se valida en el onn |
 | Crates Rust transitivos | `psl` y `icu_*` actualizados tras comparar 48 120 decisiones del motor (listas integradas) antes y después: sin diferencias. `url` ya estaba en su última versión compatible. El corpus sale de las propias listas y no es tráfico real |
 
 ## No tocar sin evidencia

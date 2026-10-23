@@ -24,7 +24,7 @@ Cada release trae un APK por arquitectura. Elige el que corresponde a tu disposi
 
 ## Validación
 
-Pruebas JVM (125, sin fallos), builds debug y release con R8, y pruebas de consulta y búsqueda con base de datos en memoria. Pendiente de prueba en dispositivo.
+Pruebas JVM (127, sin fallos), builds debug y release con R8, y pruebas de consulta y búsqueda con base de datos en memoria. Compilada con targetSdk 37 (Android 17). Pendiente de prueba en dispositivo.
 
 ---
 
