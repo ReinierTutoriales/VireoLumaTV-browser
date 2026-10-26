@@ -12,7 +12,7 @@ import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.model.HomePageLink
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
-import com.reiniertutoriales.vireolumatv.utils.UpdateChecker
+import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import com.reiniertutoriales.vireolumatv.utils.deleteDirectory
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
@@ -55,7 +55,7 @@ class MainActivityViewModel: ActiveModel() {
             Log.i(TAG, "App version code changed from ${config.appVersionCodeMark} to ${BuildConfig.VERSION_CODE}")
             config.appVersionCodeMark = BuildConfig.VERSION_CODE
             withContext(Dispatchers.IO) {
-                UpdateChecker.clearTempFilesIfAny(VireoLumaTVApp.instance)
+                ReleaseUpdater.clearDownloads(VireoLumaTVApp.instance)
             }
         }
     }

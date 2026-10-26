@@ -73,8 +73,6 @@
     <string name="build_flavor_s">建構變體：%1$s · %2$s</string>
     <string name="view_license">📃 授權條款</string>
     <string name="privacy_policy">🔒 隱私權政策</string>
-    <string name="update_channel">更新頻道：</string>
-    <string name="auto_check_for_updates">自動檢查更新</string>
     <string name="update">更新</string>
     <string name="new_version_available_s">有可用的新版本：%s</string>
     <string name="web_browser_optimized_for_tvs">針對電視強化的網頁瀏覽器</string>
@@ -165,4 +163,6 @@
   <string name="allow_autoplay_media">允許媒體自動播放</string>
   <string name="web_engine_debug">Web 引擎偵錯（需要重新啟動）</string>
   <string name="web_engine_debug_warning_message">啟用 Web 引擎偵錯可能會將頁面內容、Cookie 與敏感的工作階段資料暴露給任何具有裝置偵錯存取權的人。僅在受信任裝置上為疑難排解時啟用。</string>
+    <string name="up_to_date">目前已是最新版本</string>
+    <string name="update_check_failed">無法檢查或安裝更新</string>
 </resources>

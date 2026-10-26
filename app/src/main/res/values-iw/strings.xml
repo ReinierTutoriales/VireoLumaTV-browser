@@ -74,8 +74,6 @@
   <string name="build_flavor_s">גרסת בנייה: %1$s · %2$s</string>
   <string name="view_license">📃 רישיון</string>
   <string name="privacy_policy">🔒 מדיניות פרטיות</string>
-  <string name="update_channel">"ערוץ עדכונים:"</string>
-  <string name="auto_check_for_updates">"בדוק אוטומטית לעדכונים:"</string>
   <string name="update">"עדכן:"</string>
   <string name="new_version_available_s">"גרסא חדשה זמינה: %s"</string>
   <string name="warning">"אזהרה"</string>
@@ -99,7 +97,6 @@
   <string name="navigate_forward">"נווט קדימה"</string>
   <string name="web_browser_optimized_for_tvs">"דפדפן רשת מותאם לטלויזיות"</string>
   <string name="never">לעולם לא</string>
-  <string name="last_update">העדכון אחרון</string>
   <string name="update_ad_blocker_list">עדכן את רשימת חוסמי המודעות</string>
   <string name="toggle_ads_blocking">החלף החלפת מודעות</string>
   <string name="need_restart">צריך הפעלה מחדש של האפליקציה</string>
@@ -179,4 +176,7 @@
     <string name="adblock_using_saved">משתמש בכללים השמורים. לא הורדה רשימה חדשה.</string>
     <string name="adblock_update_error">לא ניתן לטעון את רשימות הסינון. בדקו את החיבור או את כתובת הרשימה.</string>
     <string name="video_max_quality">איכות וידאו מרבית</string>
+    <string name="up_to_date">יש לך את הגרסה האחרונה</string>
+    <string name="update_check_failed">לא ניתן לבדוק או להתקין את העדכון</string>
+    <string name="last_update">העדכון אחרון</string>
 </resources>

@@ -7,23 +7,28 @@ import android.text.Html
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.ScrollView
+import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewCompat
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.BuildConfig
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.IncognitoModeMainActivity
-import com.reiniertutoriales.vireolumatv.activity.main.AutoUpdateModel
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel
 import com.reiniertutoriales.vireolumatv.databinding.ViewSettingsVersionBinding
+import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
+import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.activity
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import androidx.core.net.toUri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @SuppressLint("SetTextI18n")
 class VersionSettingsView @JvmOverloads constructor(
@@ -43,7 +48,6 @@ class VersionSettingsView @JvmOverloads constructor(
     private var vb = ViewSettingsVersionBinding.inflate(LayoutInflater.from(getContext()), this, true)
     var config = AppContext.provideConfig()
     var settingsModel = ActiveModelsRepository.get(SettingsModel::class, activity!!)
-    var autoUpdateModel = ActiveModelsRepository.get(AutoUpdateModel::class, activity!!)
     var callback: Callback? = null
 
     interface Callback {
@@ -90,43 +94,9 @@ class VersionSettingsView @JvmOverloads constructor(
         }
 
         if (BuildConfig.BUILT_IN_AUTO_UPDATE) {
-            vb.chkAutoCheckUpdates.isChecked = autoUpdateModel.needAutoCheckUpdates
-
-            vb.chkAutoCheckUpdates.setOnCheckedChangeListener { _, isChecked ->
-                autoUpdateModel.saveAutoCheckUpdates(isChecked)
-
-                updateUIVisibility()
-            }
-
-            vb.spUpdateChannel.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View,
-                    position: Int,
-                    id: Long
-                ) {
-                    val selectedChannel =
-                        autoUpdateModel.updateChecker.versionCheckResult!!.availableChannels[position]
-                    if (selectedChannel == config.updateChannel) return
-                    config.updateChannel = selectedChannel
-                    autoUpdateModel.checkUpdate(true) {
-                        updateUIVisibility()
-                    }
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>) {
-
-                }
-            }
-
-            vb.btnUpdate.setOnClickListener {
-                callback?.onNeedToCloseSettings()
-                autoUpdateModel.showUpdateDialogIfNeeded(activity as MainActivity, true)
-            }
-
-            updateUIVisibility()
+            vb.btnUpdate.setOnClickListener { checkForUpdates() }
         } else {
-            vb.chkAutoCheckUpdates.visibility = View.INVISIBLE
+            vb.btnUpdate.visibility = View.GONE
         }
     }
 
@@ -139,38 +109,37 @@ class VersionSettingsView @JvmOverloads constructor(
         activity?.startActivity(intent)
     }
 
-    private fun updateUIVisibility() {
-        if (autoUpdateModel.updateChecker.versionCheckResult == null) {
-            autoUpdateModel.checkUpdate(false) {
-                if (autoUpdateModel.updateChecker.versionCheckResult != null) {
-                    updateUIVisibility()
-                }
-            }
-            return
-        }
-
-        vb.tvUpdateChannel.visibility = if (autoUpdateModel.needAutoCheckUpdates) View.VISIBLE else View.INVISIBLE
-        vb.spUpdateChannel.visibility = if (autoUpdateModel.needAutoCheckUpdates) View.VISIBLE else View.INVISIBLE
-
-        if (autoUpdateModel.needAutoCheckUpdates) {
-            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item,
-                autoUpdateModel.updateChecker.versionCheckResult!!.availableChannels)
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            vb.spUpdateChannel.adapter = adapter
-            val selected = autoUpdateModel.updateChecker.versionCheckResult!!.availableChannels.indexOf(config.updateChannel)
-            if (selected != -1) {
-                val tmp = vb.spUpdateChannel.onItemSelectedListener
-                vb.spUpdateChannel.onItemSelectedListener = null
-                vb.spUpdateChannel.setSelection(selected)
-                vb.spUpdateChannel.onItemSelectedListener = tmp
+    private fun checkForUpdates() {
+        val owner = activity as? LifecycleOwner ?: return
+        vb.btnUpdate.isEnabled = false
+        owner.lifecycleScope.launch {
+            val result = runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() } }
+            vb.btnUpdate.isEnabled = true
+            result.onFailure {
+                Utils.showToast(context, R.string.update_check_failed)
+            }.onSuccess { release ->
+                if (release == null) Utils.showToast(context, R.string.up_to_date) else confirmUpdate(release)
             }
         }
+    }
 
-        val hasUpdate = autoUpdateModel.updateChecker.hasUpdate()
-        vb.tvNewVersion.visibility = if (autoUpdateModel.needAutoCheckUpdates && hasUpdate) View.VISIBLE else View.INVISIBLE
-        vb.btnUpdate.visibility = if (autoUpdateModel.needAutoCheckUpdates && hasUpdate) View.VISIBLE else View.INVISIBLE
-        if (hasUpdate) {
-            vb.tvNewVersion.text = context.getString(R.string.new_version_available_s, autoUpdateModel.updateChecker.versionCheckResult!!.latestVersionName)
+    private fun confirmUpdate(release: ReleaseUpdater.Release) {
+        AlertDialog.Builder(context)
+            .setTitle(R.string.new_version_dialog_title)
+            .setMessage(context.getString(R.string.new_version_available_s, release.version))
+            .setPositiveButton(R.string.update) { _, _ -> downloadAndInstall(release) }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun downloadAndInstall(release: ReleaseUpdater.Release) {
+        val owner = activity as? LifecycleOwner ?: return
+        vb.btnUpdate.isEnabled = false
+        owner.lifecycleScope.launch {
+            val apk = runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.download(context, release) } }
+            vb.btnUpdate.isEnabled = true
+            apk.onSuccess { ReleaseUpdater.install(context, it) }
+                .onFailure { Utils.showToast(context, R.string.update_check_failed) }
         }
     }
 }

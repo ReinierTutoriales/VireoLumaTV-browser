@@ -2,7 +2,6 @@ package com.reiniertutoriales.vireolumatv
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
 
 class Config(val prefs: SharedPreferences) {
@@ -12,9 +11,6 @@ class Config(val prefs: SharedPreferences) {
         const val HOME_PAGE_KEY = "home_page"
         const val USER_AGENT_PREF_KEY = "user_agent"
         const val THEME_KEY = "theme"
-        const val LAST_UPDATE_USER_NOTIFICATION_TIME_KEY = "last_update_notif"
-        const val AUTO_CHECK_UPDATES_KEY = "auto_check_updates"
-        const val UPDATE_CHANNEL_KEY = "update_channel"
         const val HOME_URL_ALIAS = "about:home"
         const val KEEP_SCREEN_ON_KEY = "keep_screen_on"
         /** When true, analog stick / hat axes from generic motion events are not translated to DPAD keys. */
@@ -228,18 +224,6 @@ class Config(val prefs: SharedPreferences) {
         get() = prefs.getInt(APP_WEB_EXTENSION_VERSION_KEY, 0)
         set(value) {
             prefs.edit().putInt(APP_WEB_EXTENSION_VERSION_KEY, value).apply()
-        }
-
-    var autoCheckUpdates: Boolean
-        get() = prefs.getBoolean(AUTO_CHECK_UPDATES_KEY, Utils.isInstalledByAPK(AppContext.get()))
-        set(value) {
-            prefs.edit().putBoolean(AUTO_CHECK_UPDATES_KEY, value).apply()
-        }
-
-    var updateChannel: String
-        get() = prefs.getString(UPDATE_CHANNEL_KEY, "release")!!
-        set(value) {
-            prefs.edit().putString(UPDATE_CHANNEL_KEY, value).apply()
         }
 
     var appVersionCodeMark: Int

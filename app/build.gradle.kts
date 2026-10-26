@@ -121,8 +121,8 @@ android {
     productFlavors {
         create("generic") {
             dimension = "appstore"
-            //disabled until this fork has its own update channel and release key
-            buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "false")
+            //updates come from this repository's GitHub releases, which publish the generic APKs
+            buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "true")
         }
         create("google") {
             dimension = "appstore"

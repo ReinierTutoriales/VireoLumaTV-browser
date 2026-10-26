@@ -74,8 +74,6 @@
     <string name="build_flavor_s">Variante: %1$s · %2$s</string>
     <string name="view_license">📃 Licencia</string>
     <string name="privacy_policy">🔒 Política de privacidad</string>
-    <string name="update_channel">Canal de actualización:</string>
-    <string name="auto_check_for_updates">Buscar actualizaciones automáticamente</string>
     <string name="update">Actualizar</string>
     <string name="new_version_available_s">Nueva versión disponible: %s</string>
     <string name="web_browser_optimized_for_tvs">Navegador web optimizado para TV</string>
@@ -107,7 +105,6 @@
     <string name="navigate_forward">Adelante</string>
     <string name="toggle_ads_blocking">Activar o desactivar el bloqueo de anuncios</string>
     <string name="never">nunca</string>
-    <string name="last_update">Última actualización</string>
     <string name="update_ad_blocker_list">Actualizar listas del bloqueador</string>
     <string name="toggle_keep_screen_on">Mantener la pantalla encendida</string>
     <string name="navigate_with_joystick_axes">Navegar con los ejes del mando</string>
@@ -180,4 +177,7 @@
         <item>720p</item>
         <item>480p</item>
     </array>
+    <string name="up_to_date">Ya tienes la última versión</string>
+    <string name="update_check_failed">No se pudo comprobar ni instalar la actualización</string>
+    <string name="last_update">Última actualización</string>
 </resources>

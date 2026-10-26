@@ -71,8 +71,6 @@
   <string name="build_flavor_s">构建变体：%1$s · %2$s</string>
   <string name="view_license">📃 许可协议</string>
   <string name="privacy_policy">🔒 隐私政策</string>
-  <string name="update_channel">更新频道：</string>
-  <string name="auto_check_for_updates">自动检查更新</string>
   <string name="update">更新资料</string>
   <string name="new_version_available_s">新版本可用: %s</string>
   <string name="web_browser_optimized_for_tvs">针对电视进行了优化的网络浏览器</string>
@@ -104,7 +102,6 @@
   <string name="navigate_forward">前进</string>
   <string name="toggle_ads_blocking">广告屏蔽</string>
   <string name="never">从不</string>
-  <string name="last_update">最后更新</string>
   <string name="update_ad_blocker_list">更新广告拦截器列表</string>
   <string name="need_restart">需要重启应用</string>
   <string name="theme">主题</string>
@@ -176,4 +173,7 @@
     <string name="adblock_using_saved">正在使用已保存的规则。未下载新列表。</string>
     <string name="adblock_update_error">无法加载过滤列表。请检查网络连接或列表 URL。</string>
     <string name="video_max_quality">最高视频质量</string>
+    <string name="up_to_date">当前已是最新版本</string>
+    <string name="update_check_failed">无法检查或安装更新</string>
+    <string name="last_update">最后更新</string>
 </resources>

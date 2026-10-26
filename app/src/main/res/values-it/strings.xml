@@ -73,8 +73,6 @@
   <string name="build_flavor_s">Variante build: %1$s · %2$s</string>
   <string name="view_license">📃 Licenza</string>
   <string name="privacy_policy">🔒 Informativa sulla privacy</string>
-  <string name="update_channel">Canale aggiornamenti:</string>
-  <string name="auto_check_for_updates">Verifica aggiornamenti</string>
   <string name="update">Aggiorna</string>
   <string name="new_version_available_s">Nuova versione disponibile: %s</string>
   <string name="web_browser_optimized_for_tvs">Web browser ottimizzato per le TV</string>
@@ -106,7 +104,6 @@
   <string name="navigate_forward">Avanti</string>
   <string name="toggle_ads_blocking">Blocca pubblicità</string>
   <string name="never">Mai</string>
-  <string name="last_update">Ultimo aggiornamento</string>
   <string name="update_ad_blocker_list">Aggiorna lista blocco pubblicità</string>
   <string name="toggle_keep_screen_on">Mantieni schermo acceso</string>
   <string name="navigate_with_joystick_axes">Naviga con gli assi del joystick</string>
@@ -176,4 +173,7 @@
     <string name="adblock_using_saved">Uso delle regole salvate. Nessuna nuova lista scaricata.</string>
     <string name="adblock_update_error">Impossibile caricare le liste di filtri. Controlla la connessione o l\'URL della lista.</string>
     <string name="video_max_quality">Qualità video massima</string>
+    <string name="up_to_date">Hai l\'ultima versione</string>
+    <string name="update_check_failed">Impossibile verificare o installare l\'aggiornamento</string>
+    <string name="last_update">Ultimo aggiornamento</string>
 </resources>

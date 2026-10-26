@@ -211,17 +211,16 @@ comprobación con `WebViewFeature.isFeatureSupported`).
 
 ### W6 — actualizador
 
-`latest_version.json` contiene canales y changelog vacíos: todavía no hay una versión
-propia publicada para actualización automática. El actualizador está desactivado en
-todos los builds y no consulta la red cuando está desactivado. No se ofrecen APK del
-proyecto original como actualización de VireoLumaTV.
+Activo solo en la variante `generic`. Consulta `releases/latest` de este repositorio, elige el APK
+del ABI del dispositivo, verifica su SHA-256 contra `SHA256SUMS.txt` de la misma release e
+instala con el instalador del sistema. Las variantes `google` y `foss` no se actualizan desde la app.
+Android solo acepta una actualización firmada con el mismo certificado que la instalada; las
+releases publicadas (1.0.0 a 1.2.0) usan el certificado compartido de CI.
 
 Pendiente:
 
-- decidir el canal de actualización propio del fork;
-- apuntar a APK reales publicados por este repositorio;
-- definir la clave de firma de release;
-- no publicar metadatos de actualización hasta tener una release firmada y probada.
+- verificar en el onn la descarga, la instalación y la actualización sobre 1.2.0 con datos conservados;
+- sustituir el certificado compartido de CI por una clave de release dedicada;
 
 ### Limpieza de historial
 
