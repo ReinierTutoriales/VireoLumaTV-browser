@@ -115,7 +115,7 @@ jobs:
           match = re.search(r'RELEASE_PUBLIC_KEY_PEM = """(-----BEGIN PUBLIC KEY-----.*?-----END PUBLIC KEY-----)"""', source, re.S)
           if match is None:
               raise SystemExit('Pinned release public key is missing')
-          Path(os.environ['RUNNER_TEMP'], 'release-public.pem').write_text(match.group(1) + '\\n')
+          Path(os.environ['RUNNER_TEMP'], 'release-public.pem').write_text(match.group(1) + '\n')
           PY
           openssl dgst -sha256 -verify "$RUNNER_TEMP/release-public.pem" -signature dist/SHA256SUMS.txt.sig dist/SHA256SUMS.txt
           rm -f "$key"
