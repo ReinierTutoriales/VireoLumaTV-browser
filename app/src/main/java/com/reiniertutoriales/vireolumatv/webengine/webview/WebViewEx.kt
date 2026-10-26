@@ -476,7 +476,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                         } else {
                             Log.w(TAG, "shouldInterceptRequest url: ${request.url} -> not found in assets")
                         }
-                        return response ?: super.shouldInterceptRequest(view, request)
+                        return super.shouldInterceptRequest(view, request)
                     }
                 }
 
