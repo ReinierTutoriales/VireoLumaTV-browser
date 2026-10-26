@@ -17,6 +17,9 @@ import com.reiniertutoriales.vireolumatv.adblock.RustAdBlockEngine
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlocker
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlockerEngine
 import com.reiniertutoriales.vireolumatv.adblock.FilterListPreprocessor
+import com.reiniertutoriales.vireolumatv.adblock.SubListCache
+import com.reiniertutoriales.vireolumatv.adblock.readValidators
+import com.reiniertutoriales.vireolumatv.adblock.writeValidators
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
 import kotlinx.coroutines.CancellationException
@@ -25,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -343,22 +347,29 @@ class AdblockModel @JvmOverloads constructor(
                 when (val result = AdblockListDownloader.fetch(listOf(filterList.url) + filterList.mirrors,
                     filterList.requiresAdblockHeader, validators)) {
                     AdblockListDownloader.Result.NotModified -> {
+                        // The main list is current, but its sub-lists have validators of their own.
+                        val base = checkNotNull(validators).url
+                        val mainText = readSavedMainText(filterList, cacheFile)
+                            ?: throw IOException("Saved adblock list text unavailable: ${filterList.name}")
+                        val composed = composeSubLists(filterList, cacheFile, mainText, base)
                         Log.i(TAG, "Adblock list not modified: ${filterList.name}")
-                        ResolvedFilterList(filterList, cachedText!!, FilterListSource.NOT_MODIFIED)
+                        val source = if (composed.changed) FilterListSource.DOWNLOAD else FilterListSource.NOT_MODIFIED
+                        ResolvedFilterList(filterList, composed.text, source)
                     }
                     is AdblockListDownloader.Result.Downloaded -> {
-                        val downloadedText = prepareDownloadedList(filterList, result)
-                        if (!isValidFilterList(filterList, downloadedText)) {
+                        if (!isValidFilterList(filterList, result.text)) {
                             throw IllegalArgumentException("Invalid adblock list content: ${filterList.name}")
                         }
-                        if (AdblockCache.writeText(cacheFile, downloadedText)) {
+                        // Sub-lists first: if one fails, the saved main text keeps its previous validators.
+                        val composed = composeSubLists(filterList, cacheFile, result.text, result.url)
+                        if (AdblockCache.writeText(cacheFile, result.text)) {
                             writeValidators(validatorsFile, result.validators)
                         } else {
                             validatorsFile.delete()
                             Log.w(TAG, "Valid download available, but text cache could not be saved: ${filterList.name}")
                         }
                         Log.i(TAG, "Downloaded valid adblock list: ${filterList.name}")
-                        ResolvedFilterList(filterList, downloadedText, FilterListSource.DOWNLOAD)
+                        ResolvedFilterList(filterList, composed.text, FilterListSource.DOWNLOAD)
                     }
                 }
             } catch (e: Exception) {
@@ -375,45 +386,18 @@ class AdblockModel @JvmOverloads constructor(
         }
     }
 
-    /** uBO directives are evaluated once here; the saved text is what gets compiled. */
-    private fun prepareDownloadedList(filterList: FilterList, result: AdblockListDownloader.Result.Downloaded): String {
-        if (filterList.uboTitle == null) return result.text
-        val text = FilterListPreprocessor.applyDirectives(result.text)
-        val includes = FilterListPreprocessor.includes(text)
-        if (includes.isEmpty()) return text
-        val base = result.url.substringBeforeLast('/') + "/"
-        return buildString(text.length * 2) {
-            append(text)
-            for (name in includes) {
-                // A missing sub-list makes the whole list fail and fall back to the saved copy.
-                val included = AdblockListDownloader.download(listOf(base + name), requiresAdblockHeader = false)
-                append('\n').append(FilterListPreprocessor.applyDirectives(included))
-            }
+    /** uBO lists get their `!#include` sub-lists, each revalidated; other lists have none. */
+    private fun composeSubLists(
+        filterList: FilterList,
+        cacheFile: File,
+        mainText: String,
+        sourceUrl: String
+    ): SubListCache.Composed {
+        if (filterList.uboTitle == null) return SubListCache.Composed(mainText, false)
+        val base = sourceUrl.substringBeforeLast('/') + "/"
+        return SubListCache(cacheFile.parentFile!!, cacheFile.name).refresh(mainText, base) { url, cached ->
+            AdblockListDownloader.fetch(listOf(url), requiresAdblockHeader = false, cached = cached)
         }
-    }
-
-    private fun readValidators(file: File): AdblockListDownloader.Validators? = try {
-        if (!file.exists() || file.length() > 4096) null else {
-            val lines = file.readLines()
-            val url = lines.getOrNull(0)?.takeIf { it.isNotEmpty() }
-            val etag = lines.getOrNull(1)?.takeIf { it.isNotEmpty() }
-            val lastModified = lines.getOrNull(2)?.takeIf { it.isNotEmpty() }
-            if (url == null || (etag == null && lastModified == null)) null
-            else AdblockListDownloader.Validators(url, etag, lastModified)
-        }
-    } catch (e: Exception) {
-        null
-    }
-
-    private fun writeValidators(file: File, validators: AdblockListDownloader.Validators?) {
-        if (validators == null) {
-            file.delete()
-            return
-        }
-        // Header values cannot contain line breaks; keep the file line based.
-        val text = listOf(validators.url, validators.etag ?: "", validators.lastModified ?: "")
-            .joinToString("\n") { it.replace('\n', ' ').replace('\r', ' ') }
-        if (!AdblockCache.writeText(file, text)) file.delete()
     }
 
     private fun popupFileFor(source: String) =
@@ -477,13 +461,22 @@ class AdblockModel @JvmOverloads constructor(
             val otherRevision = OTHER_REVISION.matches(file.name) && !file.name.startsWith("${AdblockCache.REVISION}-")
             // Temporaries left by a write that was interrupted (see AdblockCache.write).
             val interruptedWrite = file.name.startsWith("adblock-") && file.name.endsWith(".tmp")
-            // Text of lists no longer configured (e.g. an earlier custom URL), with its .meta validators.
-            val unconfiguredList = file.name.startsWith("adblock_list_") && file.name.removeSuffix(".meta") !in configured
+            // Text of lists no longer configured (e.g. an earlier custom URL), with its .meta and sub-list files.
+            val unconfiguredList = file.name.startsWith("adblock_list_") &&
+                file.name.removeSuffix(".meta").substringBefore(".inc.") !in configured
             if (otherRevision || interruptedWrite || unconfiguredList || LEGACY_CACHE_SUFFIXES.any { file.name.endsWith(it) }) file.delete()
         }
     }
 
+    /** The saved list as the engine uses it: main text plus sub-lists, or null if any part is missing. */
     private fun readCachedFilterList(filterList: FilterList, cacheFile: File): String? {
+        val mainText = readSavedMainText(filterList, cacheFile) ?: return null
+        if (filterList.uboTitle == null) return mainText
+        return SubListCache(cacheFile.parentFile!!, cacheFile.name).cached(mainText)
+    }
+
+    /** The main list text as downloaded, before its sub-lists are added. */
+    private fun readSavedMainText(filterList: FilterList, cacheFile: File): String? {
         if (!cacheFile.exists()) return null
         return try {
             val cachedText = BoundedReader(cacheFile.bufferedReader(), 8 * 1024 * 1024).use { it.readText() }
