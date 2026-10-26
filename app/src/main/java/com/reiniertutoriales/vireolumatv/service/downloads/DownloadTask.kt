@@ -1,6 +1,6 @@
 package com.reiniertutoriales.vireolumatv.service.downloads
 
-import android.annotation.TargetApi
+import androidx.annotation.RequiresApi
 import android.content.ContentValues
 import android.os.Build
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream
@@ -273,7 +273,7 @@ private fun cancelDownloadIfNeeded(downloadInfo: Download) {
 }
 
 // Callers run only on Android 11+ (MediaStore.Downloads columns are API 29+).
-@TargetApi(Build.VERSION_CODES.R)
+@RequiresApi(Build.VERSION_CODES.R)
 internal fun buildDownloadDetails(downloadInfo: Download) = ContentValues().apply {
     if (downloadInfo.filename.isNotEmpty()) put(MediaStore.Downloads.DISPLAY_NAME, downloadInfo.filename)
     if (!downloadInfo.incognito) {

@@ -1187,11 +1187,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
         override fun onProgressChanged(newProgress: Int) {
             vb.progressBar.visibility = View.VISIBLE
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                vb.progressBar.setProgress(newProgress, true)
-            } else {
-                vb.progressBar.progress = newProgress
-            }
+            vb.progressBar.setProgress(newProgress, true)
             uiHandler.removeCallbacks(progressBarHideRunnable)
             if (newProgress == 100) {
                 uiHandler.postDelayed(progressBarHideRunnable, 1000)

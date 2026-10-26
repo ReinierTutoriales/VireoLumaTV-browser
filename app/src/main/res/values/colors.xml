@@ -3,7 +3,6 @@
     <color name="default_url_color">#182433</color>
     <color name="selected_link_bkg">#AEBBFF</color>
     <color name="top_bar_background">#F3F6FA</color>
-    <color name="top_bar_background2">#E6EDF5</color>
     <color name="day_night_text_color">#536174</color>
     <color name="day_night_text_color_contrast">#182433</color>
     <color name="day_night_background_color">#F3F6FA</color>
@@ -14,7 +13,6 @@
     <color name="button_background_focused">#D7E8FF</color>
     <color name="button_background_pressed">#B7D3F5</color>
     <color name="button_background_disabled">#EFF2F6</color>
-    <color name="button_corner">#CFDFF4</color>
     <color name="day_night_icon_color">#182433</color>
     <color name="day_night_disabled_icon_color">#8390A1</color>
     <color name="badge_bg">#CFDFF4</color>

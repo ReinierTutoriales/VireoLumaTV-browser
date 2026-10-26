@@ -13,6 +13,7 @@
       android:layout_weight="1"
       />
   <Button
+      tools:targetApi="26"
       android:id="@+id/btnAdd"
       android:defaultFocusHighlightEnabled="false"
       android:textColor="@color/day_night_text_color_contrast"

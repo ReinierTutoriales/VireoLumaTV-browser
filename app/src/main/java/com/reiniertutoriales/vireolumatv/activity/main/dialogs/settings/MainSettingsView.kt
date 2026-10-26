@@ -289,7 +289,7 @@ class MainSettingsView @JvmOverloads constructor(
         vb.spTitles.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 if (position == settingsModel.userAgentStringTitles.size - 1) {
-                    if (vb.llUAString.visibility == View.GONE) {
+                    if (vb.llUAString.isGone) {
                         vb.llUAString.visibility = View.VISIBLE
                         vb.llUAString.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_in))
                         vb.etUAString.setText(config.userAgentString.value.orEmpty())

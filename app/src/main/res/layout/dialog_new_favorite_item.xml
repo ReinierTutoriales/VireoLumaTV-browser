@@ -80,7 +80,7 @@
             android:importantForAutofill="no"
             android:visibility="gone"
             android:lines="1"
-            android:inputType="text" />
+            android:inputType="textUri" />
 
         <TextView
             android:layout_width="0dp"
