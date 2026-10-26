@@ -338,38 +338,42 @@ class AdblockModel @JvmOverloads constructor(
         return filterLists.mapNotNull { filterList ->
             val cacheFile = File(VireoLumaTVApp.instance.filesDir, filterList.cacheFileName)
             val validatorsFile = File(cacheFile.path + ".meta")
+            val mainFile = mainFileFor(cacheFile)
             try {
                 Log.i(TAG, "Downloading adblock list: ${filterList.name}")
-                // Validators are only sent while the saved copy they describe is usable.
+                // The last complete generation (composed text). It stays in place until a new one is saved.
+                val previous = readCachedFilterList(filterList, cacheFile)
+                // Validators are only sent together with the un-composed main text they describe.
                 val savedValidators = readValidators(validatorsFile)
-                val cachedText = savedValidators?.let { readCachedFilterList(filterList, cacheFile) }
-                val validators = if (cachedText != null) savedValidators else null
+                val savedMain = if (previous != null && savedValidators != null) readCachedFilterList(filterList, mainFile) else null
+                val validators = if (savedMain != null) savedValidators else null
                 when (val result = AdblockListDownloader.fetch(listOf(filterList.url) + filterList.mirrors,
                     filterList.requiresAdblockHeader, validators)) {
                     AdblockListDownloader.Result.NotModified -> {
-                        // The main list is current, but its sub-lists have validators of their own.
-                        val base = checkNotNull(validators).url
-                        val mainText = readSavedMainText(filterList, cacheFile)
-                            ?: throw IOException("Saved adblock list text unavailable: ${filterList.name}")
-                        val composed = composeSubLists(filterList, cacheFile, mainText, base)
+                        // The main list is current; its sub-lists are still checked against their own validators.
+                        val main = checkNotNull(savedMain)
+                        val composed = composeSubLists(filterList, cacheFile, main, checkNotNull(validators).url)
                         Log.i(TAG, "Adblock list not modified: ${filterList.name}")
-                        val source = if (composed.changed) FilterListSource.DOWNLOAD else FilterListSource.NOT_MODIFIED
-                        ResolvedFilterList(filterList, composed.text, source)
+                        if (composed == previous) {
+                            ResolvedFilterList(filterList, composed, FilterListSource.NOT_MODIFIED)
+                        } else {
+                            saveGeneration(mainFile, cacheFile, validatorsFile, main, composed, validators)
+                            ResolvedFilterList(filterList, composed, FilterListSource.DOWNLOAD)
+                        }
                     }
                     is AdblockListDownloader.Result.Downloaded -> {
                         if (!isValidFilterList(filterList, result.text)) {
                             throw IllegalArgumentException("Invalid adblock list content: ${filterList.name}")
                         }
-                        // Sub-lists first: if one fails, the saved main text keeps its previous validators.
+                        // Sub-lists first: if one fails, the previous generation and its validators stay untouched.
                         val composed = composeSubLists(filterList, cacheFile, result.text, result.url)
-                        if (AdblockCache.writeText(cacheFile, result.text)) {
-                            writeValidators(validatorsFile, result.validators)
-                        } else {
-                            validatorsFile.delete()
-                            Log.w(TAG, "Valid download available, but text cache could not be saved: ${filterList.name}")
+                        if (!saveGeneration(mainFile, cacheFile, validatorsFile, result.text, composed, result.validators)) {
+                            Log.w(TAG, "Valid download available, but the list could not be saved: ${filterList.name}")
                         }
                         Log.i(TAG, "Downloaded valid adblock list: ${filterList.name}")
-                        ResolvedFilterList(filterList, composed.text, FilterListSource.DOWNLOAD)
+                        // Same rules as the saved generation: validators moved on, the compiled engine is kept.
+                        val source = if (composed == previous) FilterListSource.NOT_MODIFIED else FilterListSource.DOWNLOAD
+                        ResolvedFilterList(filterList, composed, source)
                     }
                 }
             } catch (e: Exception) {
@@ -386,18 +390,30 @@ class AdblockModel @JvmOverloads constructor(
         }
     }
 
+    /** Un-composed main text of a list; its sub-lists are composed on top when it is downloaded. */
+    private fun mainFileFor(cacheFile: File) = File(cacheFile.path + ".main")
+
     /** uBO lists get their `!#include` sub-lists, each revalidated; other lists have none. */
-    private fun composeSubLists(
-        filterList: FilterList,
-        cacheFile: File,
-        mainText: String,
-        sourceUrl: String
-    ): SubListCache.Composed {
-        if (filterList.uboTitle == null) return SubListCache.Composed(mainText, false)
+    private fun composeSubLists(filterList: FilterList, cacheFile: File, mainText: String, sourceUrl: String): String {
+        if (filterList.uboTitle == null) return mainText
         val base = sourceUrl.substringBeforeLast('/') + "/"
         return SubListCache(cacheFile.parentFile!!, cacheFile.name).refresh(mainText, base) { url, cached ->
             AdblockListDownloader.fetch(listOf(url), requiresAdblockHeader = false, cached = cached)
         }
+    }
+
+    /** Writes main text, composed text and validators; a partial write leaves no validators behind. */
+    private fun saveGeneration(
+        mainFile: File,
+        cacheFile: File,
+        validatorsFile: File,
+        mainText: String,
+        composed: String,
+        validators: AdblockListDownloader.Validators?
+    ): Boolean {
+        val saved = AdblockCache.writeText(mainFile, mainText) && AdblockCache.writeText(cacheFile, composed)
+        writeValidators(validatorsFile, if (saved) validators else null)
+        return saved
     }
 
     private fun popupFileFor(source: String) =
@@ -463,20 +479,12 @@ class AdblockModel @JvmOverloads constructor(
             val interruptedWrite = file.name.startsWith("adblock-") && file.name.endsWith(".tmp")
             // Text of lists no longer configured (e.g. an earlier custom URL), with its .meta and sub-list files.
             val unconfiguredList = file.name.startsWith("adblock_list_") &&
-                file.name.removeSuffix(".meta").substringBefore(".inc.") !in configured
+                file.name.removeSuffix(".meta").removeSuffix(".main").substringBefore(".inc.") !in configured
             if (otherRevision || interruptedWrite || unconfiguredList || LEGACY_CACHE_SUFFIXES.any { file.name.endsWith(it) }) file.delete()
         }
     }
 
-    /** The saved list as the engine uses it: main text plus sub-lists, or null if any part is missing. */
     private fun readCachedFilterList(filterList: FilterList, cacheFile: File): String? {
-        val mainText = readSavedMainText(filterList, cacheFile) ?: return null
-        if (filterList.uboTitle == null) return mainText
-        return SubListCache(cacheFile.parentFile!!, cacheFile.name).cached(mainText)
-    }
-
-    /** The main list text as downloaded, before its sub-lists are added. */
-    private fun readSavedMainText(filterList: FilterList, cacheFile: File): String? {
         if (!cacheFile.exists()) return null
         return try {
             val cachedText = BoundedReader(cacheFile.bufferedReader(), 8 * 1024 * 1024).use { it.readText() }
