@@ -41,8 +41,8 @@ object ReleaseUpdater {
      * as the RELEASE_SIGNING_KEY secret. The public key is pinned here; a missing or invalid signature is rejected.
      */
     private const val RELEASE_PUBLIC_KEY_PEM = """-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgTesrRJBat1i6nzBmHFGSmYEk/Lj
-hQKFCFuhCX7aRO/mQuIM8CQTH83thw7DWFmHuHsKRD0i1QAhfl0XaQQw+Q==
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEqh3z4qDCrNE8mHndizJhzHqGZT1w
+jK8Zz2xz6Xup5EInVEUP8IbtkAaTdTf/Hgo9l/Df1RUh4oNvF9e/9WkkMA==
 -----END PUBLIC KEY-----"""
 
     class Release(val version: String, val apkName: String, val apkUrl: String, val sha256: String)
