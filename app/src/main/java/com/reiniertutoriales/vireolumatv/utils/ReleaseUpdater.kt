@@ -38,9 +38,12 @@ object ReleaseUpdater {
 
     /**
      * Public half of the key that signs SHA256SUMS.txt in every release. The private key exists only
-     * as the RELEASE_SIGNING_KEY secret. Until this is replaced, updates are refused.
+     * as the RELEASE_SIGNING_KEY secret. The public key is pinned here; a missing or invalid signature is rejected.
      */
-    private const val RELEASE_PUBLIC_KEY_PEM = "REPLACE-WITH-RELEASE-PUBLIC-KEY"
+    private const val RELEASE_PUBLIC_KEY_PEM = """-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgTesrRJBat1i6nzBmHFGSmYEk/Lj
+hQKFCFuhCX7aRO/mQuIM8CQTH83thw7DWFmHuHsKRD0i1QAhfl0XaQQw+Q==
+-----END PUBLIC KEY-----"""
 
     class Release(val version: String, val apkName: String, val apkUrl: String, val sha256: String)
 
