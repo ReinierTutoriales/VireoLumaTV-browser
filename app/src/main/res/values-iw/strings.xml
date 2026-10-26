@@ -15,7 +15,6 @@
   <string name="download_started">"ההורדה התחילה…
 הקובץ יאוחסן ב:
 %s"</string>
-  <string name="downloading_file">"מוריד קובץ…"</string>
   <string name="err_cant_open_file_chooser">"לא ניתן לפתוח את בוחר הקבצים"</string>
   <string name="bookmarks">"סימניות"</string>
   <string name="add">"הוסף"</string>
@@ -65,7 +64,6 @@
   <string name="can_not_create_downloads">"לא ניתן ליצור ספריית הורדות"</string>
   <string name="voice_search_not_found">"חיפוש קולי לא נמצא"</string>
   <string name="new_version_dialog_title">"גרסא חדשה זמינה"</string>
-  <string name="later">"מאוחר יותר"</string>
   <string name="downloads">"הורדות"</string>
   <string name="downloads_notifications_description">"התראות בנוגע לסטטוס הורדות"</string>
   <string name="main">"ראשי"</string>

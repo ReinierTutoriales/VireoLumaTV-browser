@@ -12,7 +12,6 @@
   <string name="location">Lokalizacja</string>
   <string name="open_in_new_tab">Otwórz w nowej karcie</string>
   <string name="download_started">Rozpoczynam pobieranie…\nPlik zostanie zapisany w:\n%s</string>
-  <string name="downloading_file">Pobieram plik</string>
   <string name="err_cant_open_file_chooser">Nie można otworzyć programu do wybierania plików</string>
   <string name="bookmarks">Zakładki</string>
   <string name="add">Dodaj</string>
@@ -64,7 +63,6 @@
   <string name="can_not_create_downloads">Nie mogę stworzyć folderu Pobrane</string>
   <string name="voice_search_not_found">Nie znaleziono wyszukiwania głosowego</string>
   <string name="new_version_dialog_title">Dostępna nowa wersja!</string>
-  <string name="later">Później</string>
   <string name="downloads">Pobrane</string>
   <string name="downloads_notifications_description">Powiadomienia o statusie pobierania</string>
   <string name="main">Ustawienia główne</string>

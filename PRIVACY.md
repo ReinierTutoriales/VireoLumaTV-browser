@@ -18,7 +18,7 @@ VireoLumaTV downloads and caches filters from the configured ad-block provider. 
 
 Site icons are requested from the websites you visit, the icon hosts they reference, and the sites of your bookmarks. The internal home page uses icons bundled with the app and does not contact a Google favicon service. These requests are separate from developer analytics.
 
-Opening source, license, support and policy links contacts GitHub or the linked provider. Android WebView, the operating system and installed device services may perform their own network activity under their policies.
+Opening source, license, support and policy links contacts GitHub or the linked provider. In the generic build, checking for updates is started by you from the settings screen: the app requests the latest release metadata from api.github.com, and if you choose to update it downloads the APK and SHA256SUMS.txt from the release assets on github.com. GitHub receives connection information such as your IP address and the app's user agent. The Google Play and FOSS builds do not check for updates. Android WebView, the operating system and installed device services may perform their own network activity under their policies.
 
 ## Voice and permissions
 

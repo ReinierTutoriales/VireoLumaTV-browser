@@ -12,7 +12,6 @@
   <string name="location">Posizione</string>
   <string name="open_in_new_tab">Apri in nuova scheda</string>
   <string name="download_started">Download iniziato…\nIl file sarà salvato in:\n%s</string>
-  <string name="downloading_file">Scaricamento file…</string>
   <string name="err_cant_open_file_chooser">Impossibile aprire Seleziona file</string>
   <string name="bookmarks">Segnalibri</string>
   <string name="add">Aggiungi</string>
@@ -64,7 +63,6 @@
   <string name="can_not_create_downloads">Impossibile creare cartella di download</string>
   <string name="voice_search_not_found">Ricerca vocale non trovata</string>
   <string name="new_version_dialog_title">Nuova versione disponibile</string>
-  <string name="later">Più tardi</string>
   <string name="downloads">File scaricati</string>
   <string name="downloads_notifications_description">Notifiche sullo stato dei download</string>
   <string name="main">Principale</string>

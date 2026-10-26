@@ -12,7 +12,6 @@
   <string name="location">Standort</string>
   <string name="open_in_new_tab">In neuem Tab öffnen</string>
   <string name="download_started">Download startet…\nSpeicherort:\n%s</string>
-  <string name="downloading_file">Lade Datei herunter…</string>
   <string name="err_cant_open_file_chooser">Kann Dateimanager nicht öffnen</string>
   <string name="bookmarks">Lesezeichen</string>
   <string name="add">Hinzufügen</string>
@@ -62,7 +61,6 @@
   <string name="can_not_create_downloads">Kann Downloadordner nicht erstellen</string>
   <string name="voice_search_not_found">Sprachsuche nicht gefunden</string>
   <string name="new_version_dialog_title">Neue Version verfügbar</string>
-  <string name="later">Später</string>
   <string name="downloads">Downloads</string>
   <string name="downloads_notifications_description">Benachrichtigungen über Download-Status</string>
   <string name="main">Haupt</string>

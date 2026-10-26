@@ -155,11 +155,6 @@ object Utils {
         return installer != null && validInstallers.contains(installer)
     }
 
-    fun isInstalledByAPK(context: Context): Boolean {
-        val installer = context.packageManager.getInstallerPackageName(context.packageName)
-        return installer == null || "com.google.android.packageinstaller".equals(installer)
-    }
-
     fun convertJsonToBundle(json: JSONObject): Bundle? {
         val bundle = Bundle()
         try {

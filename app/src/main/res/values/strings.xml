@@ -14,7 +14,6 @@
     <string name="location">Location</string>
     <string name="open_in_new_tab">Open in new tab</string>
     <string name="download_started">Download started…\nFile will be stored at:\n%s</string>
-    <string name="downloading_file">Downloading file…</string>
     <string name="err_cant_open_file_chooser">Cannot Open File Chooser</string>
     <string name="bookmarks">Bookmarks</string>
     <string name="add">Add</string>
@@ -69,7 +68,6 @@
     <string name="can_not_create_downloads">Can not create downloads dir</string>
     <string name="voice_search_not_found">Voice search not found</string>
     <string name="new_version_dialog_title">New version available</string>
-    <string name="later">Later</string>
     <string name="downloads">Downloads</string>
     <string name="downloads_notifications_description">Notifications regarding downloads statuses</string>
     <string name="main">Main</string>

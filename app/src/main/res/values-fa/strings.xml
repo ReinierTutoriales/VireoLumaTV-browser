@@ -16,7 +16,6 @@
   <string name="download_started">"بارگیری آغاز شد …
 پرونده در این قسمت ذخیره می شود:
 %s"</string>
-  <string name="downloading_file">"در حال بارگیری پرونده…"</string>
   <string name="err_cant_open_file_chooser">"انتخاب پرونده نمی تواند باز شود"</string>
   <string name="bookmarks">"نشانک ها"</string>
   <string name="add">"افزودن"</string>
@@ -66,7 +65,6 @@
   <string name="can_not_create_downloads">"نمی توان بارگیری ها را ایجاد کرد"</string>
   <string name="voice_search_not_found">"جستجوی صوتی یافت نشد"</string>
   <string name="new_version_dialog_title">"نسخه جدید در دسترس است"</string>
-  <string name="later">"بعد"</string>
   <string name="downloads">"بارگیری ها"</string>
   <string name="downloads_notifications_description">"اعلان های مربوط به وضعیت بارگیری ها"</string>
   <string name="main">"اصلی"</string>

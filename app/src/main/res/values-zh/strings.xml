@@ -12,7 +12,6 @@
   <string name="location">位置信息</string>
   <string name="open_in_new_tab">在新标签页中打开</string>
   <string name="download_started">开始下载…\n文件将存储在:\n%s</string>
-  <string name="downloading_file">正在下载文件…</string>
   <string name="err_cant_open_file_chooser">无法打开文件选择器</string>
   <string name="bookmarks">书签</string>
   <string name="add">添加</string>
@@ -62,7 +61,6 @@
   <string name="can_not_create_downloads">无法创建下载目录</string>
   <string name="voice_search_not_found">找不到语音搜索</string>
   <string name="new_version_dialog_title">新版本可用</string>
-  <string name="later">稍后提醒</string>
   <string name="downloads">下载</string>
   <string name="downloads_notifications_description">关于下载状态的通知</string>
   <string name="main">主要</string>

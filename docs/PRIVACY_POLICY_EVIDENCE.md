@@ -13,7 +13,7 @@ Base: fixes/audit c339fcfb848593491a683f8aeec6efb50d73dadb. Source review, not a
 | Camera/audio/location/DRM | WebViewEx.onPermissionRequest/onGeolocationPermissionsShowPrompt; manifest |
 | Backup | Manifest allowBackup=true; no explicit exclusions |
 | No developer analytics found in reviewed source | Direct dependency/source search; not a guarantee about all transitive artifacts, WebView or services |
-| App updater disabled | All Gradle flavors set BUILT_IN_AUTO_UPDATE=false |
+| Updater (manual, generic only) | BUILT_IN_AUTO_UPDATE=true only in generic; api.github.com/releases/latest is requested only when the user presses Update; APK SHA-256 is checked before install |
 
 Privacy fixes #42–46 are not integrated in this base. Revise claims only after checking the distributed build. Remaining checks: traffic capture, complete APK dependency inventory, actual retention/deletion behavior and applicable jurisdictional requirements.
 

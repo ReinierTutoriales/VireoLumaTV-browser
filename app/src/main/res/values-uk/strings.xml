@@ -7,7 +7,6 @@
   <string name="can_not_recognize">Не можу розпізнати</string>
   <string name="deny">Заборонити</string>
   <string name="download_started">Завантаження розпочато…\nФайл буде збережено по шляху:\n%s</string>
-  <string name="downloading_file">Завантаження файла…</string>
   <string name="edit">Редагувати</string>
   <string name="err_cant_open_file_chooser">Не можу запустити інтерфейс вибора файлу</string>
   <string name="error">Помилка</string>
@@ -60,7 +59,6 @@
   <string name="voice_search_not_found">Додаток голосового пошуку не знайдено</string>
   <string name="msg_delete_history_all">Видалити усю історію?</string>
   <string name="new_version_dialog_title">Доступна нова версія</string>
-  <string name="later">Пізніше</string>
   <string name="downloads_notifications_description">Сповіщення про завантаження</string>
   <string name="downloads">Завантаження</string>
   <string name="main">Головні</string>

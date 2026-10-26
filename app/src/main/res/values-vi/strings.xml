@@ -12,7 +12,6 @@
   <string name="location">Vị trí</string>
   <string name="open_in_new_tab">Mở trong trang mới</string>
   <string name="download_started">Bắt đầu tải xuống… \nTệp tin sẽ được lưu trữ tại: \n%s</string>
-  <string name="downloading_file">Đang tải tệp tin…</string>
   <string name="err_cant_open_file_chooser">Không thể mở Trình chọn tệp</string>
   <string name="bookmarks">Dấu trang</string>
   <string name="add">Thêm</string>
@@ -62,7 +61,6 @@
   <string name="can_not_create_downloads">Không thể tạo thư mục tải xuống</string>
   <string name="voice_search_not_found">Không tìm thấy tìm kiếm bằng giọng nói</string>
   <string name="new_version_dialog_title">Có phiên bản mới</string>
-  <string name="later">Để sau</string>
   <string name="downloads">Tải xuống</string>
   <string name="downloads_notifications_description">Thông báo về trạng thái tải xuống</string>
   <string name="main">Cài đặt chính</string>
