@@ -13,7 +13,8 @@ interface WebEngine {
 
     fun getWebEngineName(): String
     fun saveState(): Any?//Bundle or any Object convertible to string
-    fun restoreState(savedInstanceState: Any)
+    /** True only when the engine restored navigation history; false requests a URL fallback. */
+    fun restoreState(savedInstanceState: Any): Boolean
     fun stateFromBytes(bytes: ByteArray): Any?
     fun loadUrl(url: String)
     fun canGoForward(): Boolean

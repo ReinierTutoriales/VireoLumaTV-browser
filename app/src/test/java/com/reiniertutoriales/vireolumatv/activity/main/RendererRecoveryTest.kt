@@ -18,8 +18,7 @@ class RendererRecoveryTest {
         var restores = 0
         val engine = Proxy.newProxyInstance(WebEngine::class.java.classLoader,
             arrayOf(WebEngine::class.java)) { _, method, _ ->
-            if (method.name == "restoreState") restores++
-            null
+            if (method.name == "restoreState") { restores++; true } else null
         } as WebEngine
         val callback = Proxy.newProxyInstance(WebEngineProviderCallback::class.java.classLoader,
             arrayOf(WebEngineProviderCallback::class.java)) { _, method, _ ->

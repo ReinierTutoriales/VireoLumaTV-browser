@@ -5,13 +5,14 @@
     android:layout_height="170dp">
 
     <ImageButton
+        style="@style/BrowserControl"
         android:id="@+id/btnGrabMode"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="@drawable/button_bg_selector"
         android:src="@drawable/ic_circle_plus"
         android:contentDescription="@string/cursor_grab_mode"
-        app:tint="#60768E"
+        app:tint="@color/day_night_icon_color"
         android:defaultFocusHighlightEnabled="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,6 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
+        style="@style/BrowserControl"
         android:id="@+id/btnZoomIn"
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -26,11 +28,12 @@
         android:background="@drawable/button_bg_selector"
         android:src="@drawable/ic_zoom_in_gray_24dp"
         android:contentDescription="@string/zoom_in"
-        app:tint="#60768E"
+        app:tint="@color/day_night_icon_color"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     <ImageButton
+        style="@style/BrowserControl"
         android:id="@+id/btnZoomOut"
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -38,11 +41,12 @@
         android:background="@drawable/button_bg_selector"
         android:src="@drawable/ic_zoom_out_gray_24dp"
         android:contentDescription="@string/zoom_out"
-        app:tint="#60768E"
+        app:tint="@color/day_night_icon_color"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     <ImageButton
+        style="@style/BrowserControl"
         android:id="@+id/btnContextMenu"
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -50,11 +54,12 @@
         android:background="@drawable/button_bg_selector"
         android:src="@drawable/ic_menu_24"
         android:contentDescription="@string/link_actions"
-        app:tint="#60768E"
+        app:tint="@color/day_night_icon_color"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     <ImageButton
+        style="@style/BrowserControl"
         android:id="@+id/btnDPADMode"
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -62,7 +67,7 @@
         android:background="@drawable/button_bg_selector"
         android:src="@drawable/gamepad_circle_up_24px"
         android:contentDescription="@string/direct_navigation_mode_title"
-        app:tint="#60768E"
+        app:tint="@color/day_night_icon_color"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

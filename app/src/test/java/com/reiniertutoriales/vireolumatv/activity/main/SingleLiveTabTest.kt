@@ -43,7 +43,7 @@ class SingleLiveTabTest {
                                 putString("history", histories[tab])
                                 events.add("save:${tab.url}")
                             }
-                            "restoreState" -> { histories[tab] = (values!![0] as Bundle).getString("history")!!; null }
+                            "restoreState" -> { histories[tab] = (values!![0] as Bundle).getString("history")!!; true }
                             "onDetachFromWindow" -> {
                                 if (values!![0] == true) {
                                     views.remove(tab)
