@@ -49,6 +49,35 @@ jobs:
           echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
           keytool -list -v -keystore ~/.android/debug.keystore -storepass android | grep "SHA256:"
 
+
+      - name: Verify release signing configuration
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+        run: |
+          umask 077
+          work=$(mktemp -d)
+          trap 'rm -rf "$work"' EXIT
+          test -n "$RELEASE_SIGNING_KEY" || { echo 'RELEASE_SIGNING_KEY is missing'; exit 1; }
+          printf '%s\n' "$RELEASE_SIGNING_KEY" > "$work/private.pem"
+          python - "$work/public.pem" <<'PY'
+          import re, sys
+          from pathlib import Path
+          source = Path('app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdater.kt').read_text()
+          match = re.search(r'RELEASE_PUBLIC_KEY_PEM = """(-----BEGIN PUBLIC KEY-----.*?-----END PUBLIC KEY-----)"""', source, re.S)
+          if match is None:
+              raise SystemExit('Pinned public key is missing')
+          Path(sys.argv[1]).write_text(match.group(1) + '\n')
+          PY
+          printf 'release signing verification\n' > "$work/message"
+          openssl dgst -sha256 -sign "$work/private.pem" -out "$work/signature" "$work/message"
+          openssl dgst -sha256 -verify "$work/public.pem" -signature "$work/signature" "$work/message"
+          printf 'altered checksums\n' > "$work/altered"
+          if openssl dgst -sha256 -verify "$work/public.pem" -signature "$work/signature" "$work/altered" >/dev/null 2>&1; then
+            echo 'Altered content was incorrectly accepted'
+            exit 1
+          fi
+
       - name: Unit tests
         run: |
           node scripts/test-home-page-security.cjs
