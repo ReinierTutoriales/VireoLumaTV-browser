@@ -108,7 +108,15 @@ jobs:
           key="$RUNNER_TEMP/release-signing-key.pem"
           printf '%s\n' "$RELEASE_SIGNING_KEY" > "$key"
           openssl dgst -sha256 -sign "$key" -out dist/SHA256SUMS.txt.sig dist/SHA256SUMS.txt
-          openssl ec -in "$key" -pubout -out "$RUNNER_TEMP/release-public.pem" 2>/dev/null
+          python - <<'PY'
+          import os, re
+          from pathlib import Path
+          source = Path('app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdater.kt').read_text()
+          match = re.search(r'RELEASE_PUBLIC_KEY_PEM = """(-----BEGIN PUBLIC KEY-----.*?-----END PUBLIC KEY-----)"""', source, re.S)
+          if match is None:
+              raise SystemExit('Pinned release public key is missing')
+          Path(os.environ['RUNNER_TEMP'], 'release-public.pem').write_text(match.group(1) + '\\n')
+          PY
           openssl dgst -sha256 -verify "$RUNNER_TEMP/release-public.pem" -signature dist/SHA256SUMS.txt.sig dist/SHA256SUMS.txt
           rm -f "$key"
       - name: Create release
@@ -123,4 +131,4 @@ jobs:
           files: dist/*
       - name: Remove signing key
         if: always()
-        run: rm -f "$HOME/.android/debug.keystore"
+        run: rm -f "$HOME/.android/debug.keystore" "$RUNNER_TEMP/release-signing-key.pem"
