@@ -220,7 +220,11 @@ releases publicadas (1.0.0 a 1.2.0) usan el certificado compartido de CI.
 Pendiente:
 
 - verificar en el onn la descarga, la instalación y la actualización sobre 1.2.0 con datos conservados;
-- sustituir el certificado compartido de CI por una clave de release dedicada;
+- activar la firma de checksums: crear la clave, guardar la privada como secreto `RELEASE_SIGNING_KEY`
+  y poner la pública en `ReleaseUpdater.RELEASE_PUBLIC_KEY_PEM`. Hasta entonces el actualizador
+  rechaza todas las releases (fallo cerrado).
+- el APK sigue firmado con el certificado compartido de CI; cambiarlo rompe la actualización de las
+  instalaciones existentes y requiere rotación (API 28+) o reinstalación.
 
 ### Limpieza de historial
 
