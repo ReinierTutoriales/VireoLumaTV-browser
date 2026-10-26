@@ -1,7 +1,7 @@
 # VireoLumaTV — trabajo unificado
 
-Base comprobada: `521c214`, build 80 de `fixes/audit`.
-Rama de trabajo: `fixes/consolidated-audit-20261007`.
+Base comprobada: `7a95715` (1.2.0, `master`).
+Rama de trabajo: `fixes/integrated-audit`.
 
 El [registro de auditoría actual](audit/CONSOLIDATED_AUDIT_20261007.md)
 reúne los defectos comprobados, cambios, decisiones sobre ramas y verificaciones.
@@ -61,7 +61,7 @@ eliminarlas; no se usan como cola automática de parches.
 1. Los parches se generan con `git format-patch`. Nunca se escriben ni se reescriben a
    mano; un contador de hunk incorrecto produce `corrupt patch`.
 2. La rama destino debe existir antes que la cola.
-3. La rama `patchq/<rama-destino>` se crea **siempre desde `fixes/audit`**, nunca desde la
+3. La rama `patchq/<rama-destino>` se crea **siempre desde `master`**, nunca desde la
    rama destino: en un `push`, GitHub solo ejecuta los workflows presentes en el árbol
    del commit empujado.
 4. `.patchq/expect` es obligatorio cuando el cambio toca XML, localizaciones o archivos

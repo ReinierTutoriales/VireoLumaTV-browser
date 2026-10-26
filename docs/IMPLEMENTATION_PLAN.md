@@ -2,7 +2,7 @@
 
 Fecha: 2026-10-07. Base examinada: `f614e51`, CI
 [37609889851](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/37609889851)
-completada correctamente. Trabajo en `fixes/consolidated-audit-20261007`, PR #76.
+completada correctamente. Trabajo histórico en `fixes/consolidated-audit-20261007`, PR #76; el estado actual está en `docs/ROADMAP.md`.
 
 Este documento desarrolla el roadmap vigente; no es otra cola de parches.
 El avance F03/F07 y su evidencia previa están en el

@@ -41,9 +41,9 @@ class VersionSettingsView @JvmOverloads constructor(
         // Required by the original license for modified binaries: credit the original sources
         private const val URL_TV_BRO_SOURCES = "https://github.com/truefedex/tv-bro"
         private const val URL_LICENSE =
-            "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/fixes/audit/LICENSE.md"
+            "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/LICENSE.md"
         private const val URL_PRIVACY_POLICY =
-            "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/fixes/audit/PRIVACY.md"
+            "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/PRIVACY.md"
     }
     private var vb = ViewSettingsVersionBinding.inflate(LayoutInflater.from(getContext()), this, true)
     var config = AppContext.provideConfig()
