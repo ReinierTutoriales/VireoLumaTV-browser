@@ -65,8 +65,8 @@ android {
 
     defaultConfig {
         applicationId = "com.reiniertutoriales.vireolumatv"
-        versionCode = 92
-        versionName = "1.2.1"
+        versionCode = 93
+        versionName = "1.2.2"
 
         javaCompileOptions {
             annotationProcessorOptions {
