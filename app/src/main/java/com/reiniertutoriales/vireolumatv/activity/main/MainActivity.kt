@@ -551,7 +551,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         try {
             webView = tab.webEngine.getOrCreateView(this) //WebViewEx(this, WebViewCallback(tab), AndroidJSInterface(this, viewModel, tabsModel, tab))
         } catch (e: Throwable) {
-            e.printStackTrace()
+            Log.w(TAG, "Web view creation failed", e)
 
             val dialogBuilder = AlertDialog.Builder(this)
                 .setTitle(R.string.error)
@@ -568,7 +568,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                     try {
                         startActivity(intent)
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        Log.w(TAG, "Opening the app store failed", e)
                     }
                     finish()
                 }
@@ -859,7 +859,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             try {
                 query = URLEncoder.encode(input, "utf-8")
             } catch (e1: UnsupportedEncodingException) {
-                e1.printStackTrace()
+                Log.w(TAG, "Search query encoding failed", e1)
                 Utils.showToast(this, R.string.error)
                 return
             }
@@ -1259,19 +1259,16 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
 
             if (uri.scheme == null) {
-                Log.d(TAG, "shouldOverrideUrlLoading: no scheme: $url")
                 return true
             }
 
             if (URLUtil.isNetworkUrl(url) || uri.scheme.equals("javascript", true) ||
                     uri.scheme.equals("data", true) || uri.scheme.equals("about", true) ||
                     uri.scheme.equals("blob", true)) {
-                Log.d(TAG, "shouldOverrideUrlLoading: network url: $url")
                 return false
             }
 
             if (uri.scheme.equals("intent", true)) {
-                Log.d(TAG, "shouldOverrideUrlLoading: intent url: $url")
                 // A page must not open another app by itself: ask first, like other external schemes.
                 runOnUiThread { askUserToOpenIntentUrl(url) }
                 return true
@@ -1279,7 +1276,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
             //try to handle intent for non-network urls by external apps (after the user confirms)
             return try {
-                Log.d(TAG, "shouldOverrideUrlLoading: non-network url: $url")
                 val intent = Intent(Intent.ACTION_VIEW, uri)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 runOnUiThread {
@@ -1458,7 +1454,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
 
         override fun onScaleChanged(oldScale: Float, newScale: Float) {
-            Log.d(TAG, "onScaleChanged: oldScale: $oldScale newScale: $newScale")
             tab.scale = newScale
         }
 
@@ -1477,7 +1472,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             try {
                 startActivity(share)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.w(TAG, "Share intent failed", e)
                 Toast.makeText(this@MainActivity, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
             }
         }
@@ -1493,15 +1488,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 Toast.makeText(this@MainActivity, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
                 return
             }
-            try {
-                startActivity(intent)
-            } catch (e: ActivityNotFoundException) {
-                e.printStackTrace()
-                Toast.makeText(this@MainActivity, R.string.err_no_app_to_handle_url, Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(this@MainActivity, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
-            }
+            startExternalIntent(intent)
         }
 
         override fun initiateVoiceSearch() {
@@ -1640,6 +1627,19 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         askUserAndOpenInExternalApp(url, intent)
     }
 
+    /** Opens [intent] in another app and tells the user when none can handle it. */
+    private fun startExternalIntent(intent: Intent) {
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Log.w(TAG, "No app handles the external intent", e)
+            Toast.makeText(this, R.string.err_no_app_to_handle_url, Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Log.w(TAG, "Opening the external intent failed", e)
+            Toast.makeText(this, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun askUserAndOpenInExternalApp(url: String, intent: Intent) {
         if (openUrlInExternalAppDialog != null) {
             return
@@ -1647,17 +1647,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         openUrlInExternalAppDialog = AlertDialog.Builder(this)
             .setTitle(R.string.site_asks_to_open_unknown_url)
             .setMessage(getString(R.string.site_asks_to_open_unknown_url_message) + "\n\n" + url)
-            .setPositiveButton(R.string.yes) { _, _ ->
-                try {
-                    startActivity(intent)
-                } catch (e: ActivityNotFoundException) {
-                    e.printStackTrace()
-                    Toast.makeText(this@MainActivity, R.string.err_no_app_to_handle_url, Toast.LENGTH_SHORT).show()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(this@MainActivity, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
-                }
-            }
+            .setPositiveButton(R.string.yes) { _, _ -> startExternalIntent(intent) }
             .setNegativeButton(R.string.no, null)
             .setOnDismissListener {
                 openUrlInExternalAppDialog = null
