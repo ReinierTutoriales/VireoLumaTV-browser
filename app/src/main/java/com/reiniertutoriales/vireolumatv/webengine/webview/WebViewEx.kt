@@ -424,7 +424,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             }
 
             override fun onReceivedIcon(view: WebView?, icon: Bitmap) {
-                Log.d(TAG, "onReceivedIcon: ${icon.width}x${icon.height}")
                 callback.onReceivedIcon(icon)
             }
 
@@ -463,15 +462,16 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                     HomePageHelper.shouldInterceptRequest(request)?.let {
                         return it
                     }
-                    if (request.url.toString().startsWith(Config.HOME_PAGE_URL)) {
-                        var relativePath = request.url.toString().substring(Config.HOME_PAGE_URL.length)
+                    // One conversion per request: this runs for every resource of the home page.
+                    val requestUrl = request.url.toString()
+                    if (requestUrl.startsWith(Config.HOME_PAGE_URL)) {
+                        var relativePath = requestUrl.substring(Config.HOME_PAGE_URL.length)
                         if (relativePath.isEmpty() || relativePath == "/") {
                             relativePath = "index.html"
                         }
                         val assetsPath = "pages/home/$relativePath"
                         val response = Utils.getWebResourceResponseFromAssets(view.context, assetsPath)
                         if (response != null) {
-                            Log.d(TAG, "shouldInterceptRequest url: ${request.url} -> $assetsPath")
                             return response
                         } else {
                             Log.w(TAG, "shouldInterceptRequest url: ${request.url} -> not found in assets")
@@ -732,7 +732,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             try {
                 thumbnail = createBitmap(previewWidth, previewHeight, Bitmap.Config.RGB_565)
             } catch (e: Throwable) {
-                e.printStackTrace()
+                Log.w(TAG, "Preview thumbnail allocation failed", e)
             }
         }
         if (thumbnail == null) {
