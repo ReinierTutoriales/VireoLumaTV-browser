@@ -8,7 +8,7 @@ Causa comprobada:
 
 - [ ] Leí AGENTS.md, docs/REGRESSION_POLICY.md y docs/ROADMAP.md.
 - [ ] Una causa por cambio; dependencias, estilos y lógica separados o vínculo técnico explicado.
-- [ ] Conservé ambas barras, foco, comandos de la pestaña seleccionada y salida de fullscreen.
+- [ ] Conservé la cápsula superior, las pestañas, el foco, los comandos de la pestaña seleccionada y la salida de fullscreen.
 - [ ] Identifiqué N01–N10 afectados y comprobé los recorridos vecinos pertinentes.
 - [ ] Conservé persistencia, sesiones, incógnito, descargas y migraciones.
 - [ ] No reapliqué propuestas históricas sin verificarlas contra este SHA.
