@@ -20,6 +20,7 @@ import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepositor
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
+import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,6 +33,34 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
+    @Test fun pageDownloadsRequireAFreshSingleUseActivationBeforeEnteringTheQueue() = Fixture().use { f ->
+        val callback = Class.forName("com.reiniertutoriales.vireolumatv.activity.main.MainActivity\$WebEngineCallback")
+            .getDeclaredConstructor(MainActivity::class.java, WebTabState::class.java)
+            .apply { isAccessible = true }.newInstance(f.activity, f.tab) as WebEngineWindowProviderCallback
+        val pending = MainActivity::class.java.getDeclaredField("pendingDownloads")
+            .apply { isAccessible = true }.get(f.activity) as Collection<*>
+        // Keep accepted downloads queued without opening a platform permission dialog or service.
+        f.set("downloadPermissionRequestPending", true)
+        UserActivation.consume()
+        fun download() = callback.onDownloadRequested("https://example.test/file.zip", "test-agent",
+            "attachment; filename=file.zip", "application/zip", 32L)
+        try {
+            download()
+            assertEquals("A page script cannot enqueue a download", 0, pending.size)
+            UserActivation.onKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER))
+            download()
+            assertEquals("A recent remote press reaches the real download queue", 1, pending.size)
+            download()
+            assertEquals("A consumed activation cannot authorize another request", 1, pending.size)
+            UserActivation.onKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BUTTON_A))
+            org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofSeconds(3))
+            download()
+            assertEquals("An expired gesture is rejected by the callback", 1, pending.size)
+        } finally {
+            UserActivation.consume()
+        }
+    }
+
     private class Fixture : AutoCloseable {
         val host = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
             get().setTheme(R.style.AppTheme)
