@@ -43,6 +43,7 @@ import android.widget.FrameLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
@@ -114,7 +115,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         const val MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS = 10003
         const val MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS = 10004
         const val PICK_FILE_REQUEST_CODE = 10005
-        private const val REQUEST_CODE_HISTORY_ACTIVITY = 10006
         private const val MY_PERMISSIONS_REQUEST_VOICE_SEARCH_PERMISSIONS = 10008
         private const val COMMON_REQUESTS_START_CODE = 10100
         private const val THUMBNAIL_CAPTURE_DELAY_MS = 1500L
@@ -133,6 +133,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private var isFullscreen: Boolean = false
     private lateinit var prefs: SharedPreferences
     protected val config = AppContext.provideConfig()
+    // Result API: delivered to the current instance even after the activity was recreated.
+    private val historyResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.getStringExtra(HistoryActivity.KEY_URL)?.let { navigate(it) }
+            hideMenuOverlay()
+        }
+    }
     private val voiceSearchHelper = VoiceSearchHelper(this, VOICE_SEARCH_REQUEST_CODE,
         MY_PERMISSIONS_REQUEST_VOICE_SEARCH_PERMISSIONS)
     private var lastCommonRequestsCode = COMMON_REQUESTS_START_CODE
@@ -338,9 +345,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     fun showHistory() {
-        startActivityForResult(
-                Intent(this@MainActivity, HistoryActivity::class.java),
-                REQUEST_CODE_HISTORY_ACTIVITY)
+        historyResult.launch(Intent(this@MainActivity, HistoryActivity::class.java))
         hideMenuOverlay()
     }
 
@@ -736,13 +741,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         when (requestCode) {
             PICK_FILE_REQUEST_CODE -> {
                 tabsModel.currentTab.value?.webEngine?.onFilePicked(resultCode, data)
-            }
-            REQUEST_CODE_HISTORY_ACTIVITY -> if (resultCode == Activity.RESULT_OK) {
-                val url = data?.getStringExtra(HistoryActivity.KEY_URL)
-                if (url != null) {
-                    navigate(url)
-                }
-                hideMenuOverlay()
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
