@@ -100,6 +100,25 @@ jobs:
           cp licenses/*.txt dist/
           cp app/src/main/assets/licenses/SOURCES.txt dist/
           (cd dist && sha256sum * > SHA256SUMS.txt)
+      - name: Sign checksums
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+        run: |
+          test -n "$RELEASE_SIGNING_KEY" || { echo 'RELEASE_SIGNING_KEY secret is required to publish a verifiable release'; exit 1; }
+          key="$RUNNER_TEMP/release-signing-key.pem"
+          printf '%s\n' "$RELEASE_SIGNING_KEY" > "$key"
+          openssl dgst -sha256 -sign "$key" -out dist/SHA256SUMS.txt.sig dist/SHA256SUMS.txt
+          python - <<'PY'
+          import os, re
+          from pathlib import Path
+          source = Path('app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdater.kt').read_text()
+          match = re.search(r'RELEASE_PUBLIC_KEY_PEM = """(-----BEGIN PUBLIC KEY-----.*?-----END PUBLIC KEY-----)"""', source, re.S)
+          if match is None:
+              raise SystemExit('Pinned release public key is missing')
+          Path(os.environ['RUNNER_TEMP'], 'release-public.pem').write_text(match.group(1) + '\n')
+          PY
+          openssl dgst -sha256 -verify "$RUNNER_TEMP/release-public.pem" -signature dist/SHA256SUMS.txt.sig dist/SHA256SUMS.txt
+          rm -f "$key"
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
@@ -112,4 +131,4 @@ jobs:
           files: dist/*
       - name: Remove signing key
         if: always()
-        run: rm -f "$HOME/.android/debug.keystore"
+        run: rm -f "$HOME/.android/debug.keystore" "$RUNNER_TEMP/release-signing-key.pem"

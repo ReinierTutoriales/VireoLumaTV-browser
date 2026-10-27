@@ -1,6 +1,7 @@
 package com.reiniertutoriales.vireolumatv.utils
 
 import android.content.Context
+import android.util.Base64
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
@@ -9,12 +10,17 @@ import androidx.core.net.toUri
 import com.reiniertutoriales.vireolumatv.BuildConfig
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.security.KeyFactory
+import java.security.PublicKey
+import java.security.Signature
+import java.security.spec.X509EncodedKeySpec
 import java.security.MessageDigest
 
 /**
@@ -30,6 +36,15 @@ object ReleaseUpdater {
     private const val MAX_TEXT_BYTES = 1024 * 1024
     private val ABIS = listOf("arm64-v8a", "armeabi-v7a", "x86_64")
 
+    /**
+     * Public half of the key that signs SHA256SUMS.txt in every release. The private key exists only
+     * as the RELEASE_SIGNING_KEY secret. The public key is pinned here; a missing or invalid signature is rejected.
+     */
+    private const val RELEASE_PUBLIC_KEY_PEM = """-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEU470N7LLJVCIVOiICWLXJA6qri5h
+nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
+-----END PUBLIC KEY-----"""
+
     class Release(val version: String, val apkName: String, val apkUrl: String, val sha256: String)
 
     /** The release newer than the installed version for this device's ABI, or null when up to date. */
@@ -41,8 +56,12 @@ object ReleaseUpdater {
             ?: throw IOException("No APK for this device ABI")
         val apkName = apkNameFor(version, abi)
         val assets = json.getJSONArray("assets")
-        val sums = readText(assetUrl(assets, "SHA256SUMS.txt"), null)
-        return Release(version, apkName, assetUrl(assets, apkName), checksumFor(sums, apkName))
+        val sumsBytes = readBytes(assetUrl(assets, "SHA256SUMS.txt"), null)
+        val signature = readBytes(assetUrl(assets, "SHA256SUMS.txt.sig"), null)
+        if (!verifySignature(releasePublicKey(), sumsBytes, signature)) {
+            throw IOException("Release checksums are not signed by the release key")
+        }
+        return Release(version, apkName, assetUrl(assets, apkName), checksumFor(String(sumsBytes, Charsets.UTF_8), apkName))
     }
 
     /** Downloads [release] into the app cache. The file is kept only when its checksum matches. */
@@ -114,17 +133,34 @@ object ReleaseUpdater {
         throw IOException("Release has no $name")
     }
 
-    private fun readText(url: String, accept: String?): String =
-        open(url, accept).inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
-            val text = StringBuilder()
-            val buffer = CharArray(8 * 1024)
+    private fun readText(url: String, accept: String?): String = String(readBytes(url, accept), Charsets.UTF_8)
+
+    private fun readBytes(url: String, accept: String?): ByteArray {
+        val out = ByteArrayOutputStream()
+        open(url, accept).inputStream.use { input ->
+            val buffer = ByteArray(8 * 1024)
             while (true) {
-                val n = reader.read(buffer)
+                val n = input.read(buffer)
                 if (n < 0) break
-                text.appendRange(buffer, 0, n)
-                if (text.length > MAX_TEXT_BYTES) throw IOException("Response too large")
+                out.write(buffer, 0, n)
+                if (out.size() > MAX_TEXT_BYTES) throw IOException("Response too large")
             }
-            text.toString()
+        }
+        return out.toByteArray()
+    }
+
+    private fun releasePublicKey(): PublicKey {
+        check(RELEASE_PUBLIC_KEY_PEM.startsWith("-----BEGIN")) { "Release public key is not configured" }
+        val body = RELEASE_PUBLIC_KEY_PEM.lines().filterNot { it.startsWith("-----") }.joinToString("")
+        return KeyFactory.getInstance("EC").generatePublic(X509EncodedKeySpec(Base64.decode(body, Base64.DEFAULT)))
+    }
+
+    /** ECDSA P-256 over SHA-256, the format `openssl dgst -sha256 -sign` produces. */
+    internal fun verifySignature(publicKey: PublicKey, data: ByteArray, signature: ByteArray): Boolean =
+        Signature.getInstance("SHA256withECDSA").run {
+            initVerify(publicKey)
+            update(data)
+            verify(signature)
         }
 
     private fun open(url: String, accept: String?): HttpURLConnection {

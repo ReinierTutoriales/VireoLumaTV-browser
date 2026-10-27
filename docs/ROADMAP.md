@@ -220,7 +220,12 @@ releases publicadas (1.0.0 a 1.2.0) usan el certificado compartido de CI.
 Pendiente:
 
 - verificar en el onn la descarga, la instalación y la actualización sobre 1.2.0 con datos conservados;
-- sustituir el certificado compartido de CI por una clave de release dedicada;
+- la firma de checksums usa ECDSA P-256: `RELEASE_SIGNING_KEY` en GitHub y la pública
+  fijada en `ReleaseUpdater.RELEASE_PUBLIC_KEY_PEM`. CI comprueba su correspondencia;
+  las actualizaciones rechazan manifiestos sin firma válida. Las releases anteriores sin
+  `SHA256SUMS.txt.sig` no son aceptadas por este verificador.
+- el APK sigue firmado con el certificado compartido de CI; cambiarlo rompe la actualización de las
+  instalaciones existentes y requiere rotación (API 28+) o reinstalación.
 
 ### Limpieza de historial
 
