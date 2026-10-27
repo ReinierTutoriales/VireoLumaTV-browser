@@ -44,6 +44,9 @@ cápsula superior única con URL, Atrás, Adelante, Recargar, Inicio, escudo del
 y voz pasan al menú de aplicación. Pulsación larga en el escudo abre el detalle del bloqueador. Los recorridos
 N01–N06 se leen con esta cápsula; el resto de comportamiento no cambia. Pendiente de validación en onn.
 
+**Búsqueda por voz eliminada (2026-10-27, petición del propietario):** no hay entrada de menú, atajo ni
+callback. El permiso `RECORD_AUDIO` se conserva para el micrófono que piden las páginas web.
+
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 

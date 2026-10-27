@@ -18,7 +18,6 @@ import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
-import com.reiniertutoriales.vireolumatv.utils.VoiceSearchHelper
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,8 +34,6 @@ class HistoryActivity : AppCompatActivity() {
     private var ibDelete: ImageButton? = null
     private val adapter = HistoryAdapter(::onItemClick, ::onItemLongClick)
     private lateinit var historyModel: HistoryModel
-    private val voiceSearchHelper = VoiceSearchHelper(this, VOICE_SEARCH_REQUEST_CODE,
-        VOICE_SEARCH_PERMISSIONS_REQUEST_CODE)
 
     // Loads the next page when the last visible row is within one row of the end of the list.
     private val onListScrollListener = object : RecyclerView.OnScrollListener() {
@@ -91,44 +88,6 @@ class HistoryActivity : AppCompatActivity() {
                 .show()
     }
 
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        when (event.keyCode) {
-            KeyEvent.KEYCODE_SEARCH -> {
-                if (event.action == KeyEvent.ACTION_DOWN) {
-                    //nop
-                } else if (event.action == KeyEvent.ACTION_UP) {
-                    voiceSearchHelper.initiateVoiceSearch(object : VoiceSearchHelper.Callback {
-                        override fun onResult(text: String?) {
-                            if (text == null) {
-                                Utils.showToast(this@HistoryActivity, getString(R.string.can_not_recognize))
-                                return
-                            }
-                            adapter.erase()
-                            historyModel.searchQuery = text
-                            historyModel.loadItems()
-                        }
-                    })
-                }
-                return true
-            }
-        }
-        return super.dispatchKeyEvent(event)
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (!voiceSearchHelper.processActivityResult(requestCode, resultCode, data)) {
-            super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
-        grantResults: IntArray) {
-        if (!voiceSearchHelper.processPermissionsResult(requestCode, permissions, grantResults)) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
-    }
-
     private fun onItemClick(item: HistoryItem) {
         if (adapter.isMultiselectMode) {
             adapter.toggleSelection(item)
@@ -179,8 +138,6 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val VOICE_SEARCH_REQUEST_CODE = 10001
-        private const val VOICE_SEARCH_PERMISSIONS_REQUEST_CODE = 10002
 
         const val KEY_URL = "url"
     }

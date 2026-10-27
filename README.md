@@ -7,7 +7,6 @@ VireoLumaTV is a WebView-only Android TV browser based on the source code of TV 
 Features:
 - works with TV remote
 - tabs and bookmarks support
-- voice search support
 - switch user agent support
 - uses Android built-in web rendering engine (WebView / WebKit-Blink based)
 - built-in download manager

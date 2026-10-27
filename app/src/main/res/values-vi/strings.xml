@@ -4,7 +4,6 @@
   <string name="error">Lỗi</string>
   <string name="ok">OK</string>
   <string name="url_prompt">Nhập văn bản hoặc URL</string>
-  <string name="can_not_recognize">Không thể xác nhận</string>
   <string name="speak">Truy vấn tìm kiếm</string>
   <string name="web_perm_request_confirmation">Trang web này muốn sử dụng các tài nguyên sau: \n\n%s</string>
   <string name="allow">Cho phép</string>
@@ -44,7 +43,6 @@
   <string name="navigate_back">Phím quay lại</string>
   <string name="navigate_home">Trở về trang chủ</string>
   <string name="refresh_page">Làm mới trang</string>
-  <string name="voice_search">Tìm kiếm bằng giọng nói</string>
   <string name="zoom_in">Phóng to</string>
   <string name="zoom_out">Thu nhỏ</string>
   <string name="not_set">Không được thiết lập</string>
@@ -59,7 +57,6 @@
   <string name="turn_on_unknown_sources_for_app">Vui lòng cho phép VireoLumaTV cài đặt ứng dụng từ \"Nguồn không xác định\" trong cài đặt hệ thống</string>
   <string name="storage_not_mounted">Bộ nhớ không được gắn kết</string>
   <string name="can_not_create_downloads">Không thể tạo thư mục tải xuống</string>
-  <string name="voice_search_not_found">Không tìm thấy tìm kiếm bằng giọng nói</string>
   <string name="new_version_dialog_title">Có phiên bản mới</string>
   <string name="downloads">Tải xuống</string>
   <string name="downloads_notifications_description">Thông báo về trạng thái tải xuống</string>

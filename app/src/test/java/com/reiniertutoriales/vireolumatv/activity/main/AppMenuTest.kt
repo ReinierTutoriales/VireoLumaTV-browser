@@ -8,17 +8,9 @@ import org.junit.Test
 class AppMenuTest {
     @Test
     fun entriesKeepDisplayOrderAndEndWithClosingTheApplication() {
-        val entries = appMenuEntries(voiceSearchAvailable = true)
+        val entries = appMenuEntries()
 
-        assertEquals(AppMenuEntry.entries, entries)
+        assertEquals(AppMenuEntry.entries.toList(), entries)
         assertEquals(AppMenuEntry.CLOSE_APPLICATION, entries.last())
-    }
-
-    @Test
-    fun voiceSearchIsHiddenWhenUnavailable() {
-        val entries = appMenuEntries(voiceSearchAvailable = false)
-
-        assertFalse(AppMenuEntry.VOICE_SEARCH in entries)
-        assertTrue(AppMenuEntry.HISTORY in entries)
     }
 }

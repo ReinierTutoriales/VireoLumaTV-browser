@@ -4,7 +4,6 @@
   <string name="error">"שגיאה"</string>
   <string name="ok">"OK"</string>
   <string name="url_prompt">"הכנס טקסט לחיפוש או URL"</string>
-  <string name="can_not_recognize">"לא ניתן לזהות"</string>
   <string name="speak">"בקשת חיפוש"</string>
   <string name="web_perm_request_confirmation">"הדף הזה מבקש להשתמש במקורות הבאים:
 %s"</string>
@@ -47,7 +46,6 @@
   <string name="navigate_back">"נווט חזרה"</string>
   <string name="navigate_home">"נווט לבית"</string>
   <string name="refresh_page">"רענן עמוד"</string>
-  <string name="voice_search">"חיפוש קולי"</string>
   <string name="zoom_in">"הגדל"</string>
   <string name="zoom_out">"הקטן"</string>
   <string name="not_set">"לא הוגדר"</string>
@@ -62,7 +60,6 @@
   <string name="turn_on_unknown_sources_for_app">"אנא אפשר לVireoLumaTV להתקין מ\"מקורות לא ידועים\" בהגדרות המערכת"</string>
   <string name="storage_not_mounted">"האחסון לא עוגן"</string>
   <string name="can_not_create_downloads">"לא ניתן ליצור ספריית הורדות"</string>
-  <string name="voice_search_not_found">"חיפוש קולי לא נמצא"</string>
   <string name="new_version_dialog_title">"גרסא חדשה זמינה"</string>
   <string name="downloads">"הורדות"</string>
   <string name="downloads_notifications_description">"התראות בנוגע לסטטוס הורדות"</string>

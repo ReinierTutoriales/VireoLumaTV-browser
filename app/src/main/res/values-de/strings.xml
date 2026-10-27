@@ -4,7 +4,6 @@
   <string name="error">Fehler</string>
   <string name="ok">OK</string>
   <string name="url_prompt">Suchbegriff oder URL eingeben</string>
-  <string name="can_not_recognize">Kann nicht erkannt werden</string>
   <string name="speak">Suchanfrage</string>
   <string name="web_perm_request_confirmation">Diese Webseite nutzt folgende Ressourcen:\n\n%s</string>
   <string name="allow">Erlauben</string>
@@ -44,7 +43,6 @@
   <string name="navigate_back">Zurück</string>
   <string name="navigate_home">Startseite</string>
   <string name="refresh_page">Seite aktualisieren</string>
-  <string name="voice_search">Sprachsuche</string>
   <string name="zoom_in">Vergrößern</string>
   <string name="zoom_out">Verkleinern</string>
   <string name="not_set">Nicht konfiguriert</string>
@@ -59,7 +57,6 @@
   <string name="turn_on_unknown_sources_for_app">Bitte erlaube VireoLumaTV die Installation von Apps aus \"Unbekannten Quellen\" in den Systemeinstellungen</string>
   <string name="storage_not_mounted">Speicher nicht verfügbar</string>
   <string name="can_not_create_downloads">Kann Downloadordner nicht erstellen</string>
-  <string name="voice_search_not_found">Sprachsuche nicht gefunden</string>
   <string name="new_version_dialog_title">Neue Version verfügbar</string>
   <string name="downloads">Downloads</string>
   <string name="downloads_notifications_description">Benachrichtigungen über Download-Status</string>

@@ -22,7 +22,7 @@ Opening source, license, support and policy links contacts GitHub or the linked 
 
 ## Voice and permissions
 
-Voice search uses your device's speech recognition service. That service may send audio to remote servers; VireoLumaTV does not require on-device-only recognition. Recognized text may be sent to your selected search provider.
+VireoLumaTV has no voice search. It does not record audio by itself.
 
 Websites may request camera, microphone or approximate location access. VireoLumaTV displays prompts and uses Android permissions where required. If you allow access, websites may receive the corresponding data under their own policies. Protected-media websites may interact with device DRM facilities through WebView.
 
@@ -30,7 +30,7 @@ Other declared permissions support connectivity, download notifications, foregro
 
 ## Incognito limitations
 
-Incognito is intended to reduce ordinary browsing history. It does not hide activity from websites, search providers, speech services, network operators or the operating system.
+Incognito is intended to reduce ordinary browsing history. It does not hide activity from websites, search providers, network operators or the operating system.
 
 In the currently reviewed code, private-tab URLs/state and previews, favicon/host information and download records can still be written to persistent storage. Cleanup is not guaranteed after a crash or forced termination. Downloads remain until removed. Do not rely on this version to prevent all local traces. This section will be revised when fixes are integrated and verified in the distributed build.
 

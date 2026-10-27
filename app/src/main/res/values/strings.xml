@@ -6,7 +6,6 @@
     <string name="error">Error</string>
     <string name="ok">OK</string>
     <string name="url_prompt">Input query text or URL</string>
-    <string name="can_not_recognize">Can not recognize</string>
     <string name="speak">Search query</string>
     <string name="web_perm_request_confirmation">This web page wants to use following resources:\n\n%s</string>
     <string name="allow">Allow</string>
@@ -49,7 +48,6 @@
     <string name="navigate_back">Navigate back</string>
     <string name="navigate_home">Navigate home</string>
     <string name="refresh_page">Refresh page</string>
-    <string name="voice_search">Voice search</string>
     <string name="zoom_in">Zoom in</string>
     <string name="zoom_out">Zoom out</string>
     <string name="cursor_grab_mode">Move the page</string>
@@ -66,7 +64,6 @@
     <string name="turn_on_unknown_sources_for_app">Please allow VireoLumaTV to install apps from \"Unknown sources\" in system settings</string>
     <string name="storage_not_mounted">Storage not mounted</string>
     <string name="can_not_create_downloads">Can not create downloads dir</string>
-    <string name="voice_search_not_found">Voice search not found</string>
     <string name="new_version_dialog_title">New version available</string>
     <string name="downloads">Downloads</string>
     <string name="downloads_notifications_description">Notifications regarding downloads statuses</string>

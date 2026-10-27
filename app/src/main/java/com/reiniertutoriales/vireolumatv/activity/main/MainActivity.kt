@@ -82,7 +82,6 @@ import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
-import com.reiniertutoriales.vireolumatv.utils.VoiceSearchHelper
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.childs
 import com.reiniertutoriales.vireolumatv.utils.sameDay
@@ -111,11 +110,9 @@ import androidx.core.net.toUri
 open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     companion object {
         private val TAG = MainActivity::class.java.simpleName
-        const val VOICE_SEARCH_REQUEST_CODE = 10001
         const val MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS = 10003
         const val MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS = 10004
         const val PICK_FILE_REQUEST_CODE = 10005
-        private const val MY_PERMISSIONS_REQUEST_VOICE_SEARCH_PERMISSIONS = 10008
         private const val COMMON_REQUESTS_START_CODE = 10100
         private const val THUMBNAIL_CAPTURE_DELAY_MS = 1500L
         // A popup that has not requested a page by then (about:blank + document.write) is shown.
@@ -140,8 +137,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             hideMenuOverlay()
         }
     }
-    private val voiceSearchHelper = VoiceSearchHelper(this, VOICE_SEARCH_REQUEST_CODE,
-        MY_PERMISSIONS_REQUEST_VOICE_SEARCH_PERMISSIONS)
     private var lastCommonRequestsCode = COMMON_REQUESTS_START_CODE
     private var downloadService: DownloadService? = null
     private val pendingDownloads = ArrayDeque<Download>()
@@ -318,7 +313,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     override fun showAppMenu() {
-        val entries = appMenuEntries(voiceSearchAvailable = !Utils.isFireTV(this))
+        val entries = appMenuEntries()
         AlertDialog.Builder(this)
             .setItems(entries.map { getString(it.label) }.toTypedArray()) { _, which ->
                 runAppMenuEntry(entries[which])
@@ -333,7 +328,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             AppMenuEntry.DOWNLOADS -> showDownloads()
             AppMenuEntry.INCOGNITO -> toggleIncognitoMode()
             AppMenuEntry.SETTINGS -> showSettings()
-            AppMenuEntry.VOICE_SEARCH -> initiateVoiceSearch()
             AppMenuEntry.CLOSE_TAB -> closeTab(tabsModel.currentTab.value)
             AppMenuEntry.CLOSE_APPLICATION -> closeWindow()
         }
@@ -704,9 +698,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
-        if (voiceSearchHelper.processPermissionsResult(requestCode, permissions, grantResults)) {
-            return
-        }
         if (tabsModel.currentTab.value?.webEngine?.onPermissionsResult(requestCode, permissions, grantResults) == true) return
         if (requestCode == MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS) {
             // POST_NOTIFICATIONS only controls download progress notifications, it is not required to download.
@@ -735,9 +726,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (voiceSearchHelper.processActivityResult(requestCode, resultCode, data)) {
-            return
-        }
         when (requestCode) {
             PICK_FILE_REQUEST_CODE -> {
                 tabsModel.currentTab.value?.webEngine?.onFilePicked(resultCode, data)
@@ -1147,20 +1135,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         showMenuOverlay()
     }
 
-    fun initiateVoiceSearch() {
-        hideMenuOverlay()
-        voiceSearchHelper.initiateVoiceSearch(object : VoiceSearchHelper.Callback {
-            override fun onResult(text: String?) {
-                if (text == null) {
-                    Utils.showToast(this@MainActivity, getString(R.string.can_not_recognize))
-                    return
-                }
-                search(text)
-                hideMenuOverlay()
-            }
-        })
-    }
-
     private fun onEditHomePageBookmark(favoriteItem: FavoriteItem) {
         FavoriteEditorDialog(this, object : FavoriteEditorDialog.Callback {
             override fun onDone(item: FavoriteItem) {
@@ -1489,10 +1463,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 return
             }
             startExternalIntent(intent)
-        }
-
-        override fun initiateVoiceSearch() {
-            this@MainActivity.initiateVoiceSearch()
         }
 
         override fun getHomePageLinks(): List<HomePageLink> {

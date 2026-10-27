@@ -4,7 +4,6 @@
   <string name="error">错误</string>
   <string name="ok">OK</string>
   <string name="url_prompt">输入搜索查询文字或网址</string>
-  <string name="can_not_recognize">无法识别</string>
   <string name="speak">搜索查询</string>
   <string name="web_perm_request_confirmation">该网页想要使用以下资源:\n\n%s</string>
   <string name="allow">允许</string>
@@ -44,7 +43,6 @@
   <string name="navigate_back">后退</string>
   <string name="navigate_home">转到主页</string>
   <string name="refresh_page">刷新页面</string>
-  <string name="voice_search">语音搜索</string>
   <string name="zoom_in">放大</string>
   <string name="zoom_out">缩小</string>
   <string name="not_set">没有设置</string>
@@ -59,7 +57,6 @@
   <string name="turn_on_unknown_sources_for_app">请允许 VireoLumaTV 在系统设置中从“未知来源”安装应用</string>
   <string name="storage_not_mounted">存储未挂载</string>
   <string name="can_not_create_downloads">无法创建下载目录</string>
-  <string name="voice_search_not_found">找不到语音搜索</string>
   <string name="new_version_dialog_title">新版本可用</string>
   <string name="downloads">下载</string>
   <string name="downloads_notifications_description">关于下载状态的通知</string>

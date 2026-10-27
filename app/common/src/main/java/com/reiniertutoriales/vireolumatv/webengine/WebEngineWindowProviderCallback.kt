@@ -44,7 +44,6 @@ interface WebEngineWindowProviderCallback {
     fun onCopyTextToClipboardRequested(url: String)
     fun onShareUrlRequested(url: String)
     fun onOpenInExternalAppRequested(url: String)
-    fun initiateVoiceSearch()
     fun getHomePageLinks(): List<HomePageLink>
     fun onPrepareForFullscreen()
     fun onExitFullscreen()

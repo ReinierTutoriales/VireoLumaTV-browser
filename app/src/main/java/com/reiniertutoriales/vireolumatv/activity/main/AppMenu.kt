@@ -10,10 +10,8 @@ internal enum class AppMenuEntry(@StringRes val label: Int) {
     DOWNLOADS(R.string.downloads),
     INCOGNITO(R.string.incognito_mode),
     SETTINGS(R.string.settings),
-    VOICE_SEARCH(R.string.voice_search),
     CLOSE_TAB(R.string.close_tab),
     CLOSE_APPLICATION(R.string.close_application),
 }
 
-internal fun appMenuEntries(voiceSearchAvailable: Boolean): List<AppMenuEntry> =
-    AppMenuEntry.entries.filter { it != AppMenuEntry.VOICE_SEARCH || voiceSearchAvailable }
+internal fun appMenuEntries(): List<AppMenuEntry> = AppMenuEntry.entries.toList()
