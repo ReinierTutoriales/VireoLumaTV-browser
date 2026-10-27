@@ -4,15 +4,13 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="@color/day_night_background_color">
-    <de.halfbit.pinnedsection.PinnedSectionListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:nextFocusRight="@+id/ibDelete"
-        android:nextFocusUp="@+id/btnClear"
-        android:divider="@color/day_night_list_divider_color"
-        android:dividerHeight="1dp"
-        android:listSelector="@drawable/list_item_bg_selector"/>
+        android:nextFocusUp="@+id/btnClear"/>
     <Button
         android:id="@+id/btnClear"
         android:layout_width="wrap_content"

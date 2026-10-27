@@ -1,115 +1,154 @@
 package com.reiniertutoriales.vireolumatv.activity.history
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-
+import android.widget.CheckBox
+import android.widget.TextView
+import androidx.recyclerview.widget.AsyncDifferConfig
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.utils.Utils
-
-import java.util.ArrayList
-
-import de.halfbit.pinnedsection.PinnedSectionListView
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
- * Created by fedex on 29.12.16.
+ * History rows with a date header before each day. Only the rows that changed are rebound:
+ * the list is diffed off the main thread and applied with [submitList].
+ *
+ * [realCount] counts stored entries on screen, which is the offset for the next page.
  */
+class HistoryAdapter(
+    private val onItemClick: (HistoryItem) -> Unit,
+    private val onItemLongClick: (HistoryItem) -> Boolean,
+    config: AsyncDifferConfig<HistoryItem> = AsyncDifferConfig.Builder(DIFF_CALLBACK).build(),
+) : ListAdapter<HistoryItem, RecyclerView.ViewHolder>(config) {
 
-class HistoryAdapter : BaseAdapter(), PinnedSectionListView.PinnedSectionListAdapter {
-    val items = ArrayList<HistoryItem>()
-    private var lastHeaderDate: Long = -1
-    var realCount: Long = 0
-        private set
+    private val realItems = ArrayList<HistoryItem>()
+    private val dateFormat: DateFormat = DateFormat.getDateInstance()
+    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+    val realCount: Long get() = realItems.size.toLong()
+
+    val selectedItems: List<HistoryItem> get() = realItems.filter { it.selected }
+
     var isMultiselectMode = false
-        set(multiselectMode) {
-            field = multiselectMode
-            if (!multiselectMode) {
-                for (hi in items) {
-                    hi.selected = false
-                }
-            }
-            notifyDataSetChanged()
-        }
-    private val _tmpSelected = ArrayList<HistoryItem>()
-
-    val selectedItems: List<HistoryItem>
-        get() {
-            _tmpSelected.clear()
-            for (hi in items) {
-                if (hi.selected) {
-                    _tmpSelected.add(hi)
-                }
-            }
-            return _tmpSelected
+        set(value) {
+            if (field == value) return
+            field = value
+            if (!value) realItems.forEach { it.selected = false }
+            notifyItemRangeChanged(0, itemCount)
         }
 
     fun addItems(items: List<HistoryItem>) {
-        if (items.isEmpty()) {
-            return
-        }
-        for (hi in items) {
-            if (!Utils.isSameDate(hi.time, lastHeaderDate)) {
-                lastHeaderDate = hi.time
-                this.items.add(HistoryItem.createDateHeaderInfo(hi.time))
-            }
-            this.items.add(hi)
-            realCount++
-        }
-        notifyDataSetChanged()
+        if (items.isEmpty()) return
+        realItems.addAll(items)
+        submit()
     }
 
-    override fun getCount(): Int {
-        return items.size
+    fun remove(item: HistoryItem) {
+        realItems.remove(item)
+        submit()
     }
 
-    override fun getItem(position: Int): Any {
-        return items[position]
-    }
-
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val hiv: HistoryItemView
-        if (convertView != null) {
-            hiv = convertView as HistoryItemView
-        } else {
-            hiv = HistoryItemView(parent.context, getItemViewType(position))
-        }
-        hiv.setHistoryItem(items[position], isMultiselectMode)
-        return hiv
-    }
-
-    override fun getViewTypeCount(): Int {
-        return 2
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        return if (items[position].isDateHeader) VIEW_TYPE_HEADER else VIEW_TYPE_HISTORY_ITEM
-    }
-
-    override fun isItemViewTypePinned(viewType: Int): Boolean {
-        return viewType == VIEW_TYPE_HEADER
+    fun remove(items: List<HistoryItem>) {
+        realItems.removeAll(items.toSet())
+        submit()
     }
 
     fun erase() {
-        items.clear()
-        notifyDataSetChanged()
+        realItems.clear()
+        submit()
     }
 
-    fun remove(historyItem: HistoryItem) {
-        items.remove(historyItem)
-        notifyDataSetChanged()
+    fun toggleSelection(item: HistoryItem) {
+        item.selected = !item.selected
+        val position = currentList.indexOf(item)
+        if (position >= 0) notifyItemChanged(position)
     }
 
-    fun remove(selectedItems: List<HistoryItem>) {
-        items.removeAll(selectedItems)
-        notifyDataSetChanged()
+    private fun submit() = submitList(withDateHeaders(realItems))
+
+    private fun withDateHeaders(items: List<HistoryItem>): List<HistoryItem> {
+        val rows = ArrayList<HistoryItem>(items.size + 8)
+        var lastHeaderTime = -1L
+        for (item in items) {
+            if (!Utils.isSameDate(item.time, lastHeaderTime)) {
+                lastHeaderTime = item.time
+                rows.add(HistoryItem.createDateHeaderInfo(item.time))
+            }
+            rows.add(item)
+        }
+        return rows
+    }
+
+    override fun getItemViewType(position: Int): Int =
+        if (getItem(position).isDateHeader) VIEW_TYPE_HEADER else VIEW_TYPE_HISTORY_ITEM
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        if (viewType == VIEW_TYPE_HEADER) {
+            return HeaderHolder(inflater.inflate(R.layout.view_history_header_item, parent, false))
+        }
+        val holder = ItemHolder(inflater.inflate(R.layout.view_history_item, parent, false))
+        holder.itemView.setOnClickListener {
+            val position = holder.bindingAdapterPosition
+            if (position != RecyclerView.NO_POSITION) onItemClick(getItem(position))
+        }
+        holder.itemView.setOnLongClickListener {
+            val position = holder.bindingAdapterPosition
+            position != RecyclerView.NO_POSITION && onItemLongClick(getItem(position))
+        }
+        return holder
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val item = getItem(position)
+        when (holder) {
+            is HeaderHolder -> holder.tvDate.text = dateFormat.format(Date(item.time))
+            is ItemHolder -> holder.bind(item, isMultiselectMode, timeFormat)
+        }
+    }
+
+    private class HeaderHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val tvDate: TextView = view.findViewById(R.id.tvDate)
+    }
+
+    private class ItemHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val tvTitle: TextView = view.findViewById(R.id.tvTitle)
+        private val tvUrl: TextView = view.findViewById(R.id.tvURL)
+        private val tvTime: TextView = view.findViewById(R.id.tvTime)
+        private val cbSelection: CheckBox = view.findViewById(R.id.cbSelection)
+
+        fun bind(item: HistoryItem, multiselect: Boolean, timeFormat: SimpleDateFormat) {
+            tvTitle.text = item.title
+            tvUrl.text = item.url
+            tvTime.text = timeFormat.format(Date(item.time))
+            cbSelection.visibility = if (multiselect) View.VISIBLE else View.GONE
+            cbSelection.isChecked = item.selected
+        }
     }
 
     companion object {
-        val VIEW_TYPE_HISTORY_ITEM = 0
-        val VIEW_TYPE_HEADER = 1
+        const val VIEW_TYPE_HISTORY_ITEM = 0
+        const val VIEW_TYPE_HEADER = 1
+
+        internal val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HistoryItem>() {
+            override fun areItemsTheSame(oldItem: HistoryItem, newItem: HistoryItem): Boolean =
+                if (oldItem.isDateHeader || newItem.isDateHeader) {
+                    oldItem.isDateHeader && newItem.isDateHeader && Utils.isSameDate(oldItem.time, newItem.time)
+                } else {
+                    oldItem.id == newItem.id
+                }
+
+            override fun areContentsTheSame(oldItem: HistoryItem, newItem: HistoryItem): Boolean =
+                oldItem.title == newItem.title && oldItem.url == newItem.url &&
+                    oldItem.time == newItem.time && oldItem.selected == newItem.selected
+        }
     }
 }
