@@ -59,7 +59,7 @@ Una auditoría o propuesta antigua no autoriza aplicar automáticamente sus parc
 
 - La barra inferior sigue permitiendo Inicio, Atrás, Adelante, Recargar, cerrar
   pestaña y controles de bloqueo. La superior conserva dirección/búsqueda,
-  voz cuando esté disponible, ajustes y salida. No eliminar una barra para
+  ajustes y salida. La búsqueda por voz se eliminó por petición del propietario (2026-10-27). No eliminar una barra para
   resolver un problema de Atrás ni reinterpretar una acción existente en silencio.
 - En fullscreen, Atrás debe cerrar el vídeo y mostrar ambas barras en la misma
   acción, con foco inferior y ruta a la superior; conservar el callback existente.
