@@ -9,6 +9,7 @@ import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -33,7 +34,20 @@ class HomePageNetworkTest {
             arrayOf(WebResourceRequest::class.java)) { _, method, _ ->
             if (method.name == "getUrl") Uri.parse("favicon://missing.example") else null
         } as WebResourceRequest
-        try { assertEquals(404, HomePageHelper.shouldInterceptRequest(view, request)!!.statusCode) }
+        try { assertEquals(404, HomePageHelper.shouldInterceptRequest(request)!!.statusCode) }
         finally { view.destroy(); FaviconsPool.databaseDelegate = previous; FaviconsPool.clear() }
     }
+
+    @Test fun regularPageRequestsAreNotIntercepted() {
+        assertNull(HomePageHelper.shouldInterceptRequest(requestFor("https://example.test/index.html")))
+    }
+
+    @Test fun faviconRequestWithoutHostIsNotIntercepted() {
+        assertNull(HomePageHelper.shouldInterceptRequest(requestFor("favicon:")))
+    }
+
+    private fun requestFor(url: String) = Proxy.newProxyInstance(WebResourceRequest::class.java.classLoader,
+        arrayOf(WebResourceRequest::class.java)) { _, method, _ ->
+        if (method.name == "getUrl") Uri.parse(url) else null
+    } as WebResourceRequest
 }

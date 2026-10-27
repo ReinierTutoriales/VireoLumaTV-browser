@@ -460,7 +460,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
                 if (currentPageUrl != null && currentPageUrl.toString().startsWith(Config.HOME_PAGE_URL,
                         ignoreCase = true)) {
-                    HomePageHelper.shouldInterceptRequest(view, request)?.let {
+                    HomePageHelper.shouldInterceptRequest(request)?.let {
                         return it
                     }
                     if (request.url.toString().startsWith(Config.HOME_PAGE_URL)) {
