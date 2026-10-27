@@ -25,6 +25,19 @@ con el código actual antes de aplicarlos.
 | Renovación visual TV | Recursos de barras, pestañas y paleta; capturas/contraste/geometría automáticos. Validación de mando y rendimiento real pendiente. Ver [lote UI](audit/TV_UI_REFRESH_20261007.md). |
 | Rendimiento, reproducción y mando en TV | Requieren dispositivo físico y medición. |
 
+## Revisión de dependencias — 2026-10-26
+
+[PR #78](https://github.com/ReinierTutoriales/VireoLumaTV-browser/pull/78):
+revisión de Google Maven, Maven Central y crates.io; se conservan las versiones
+estables actuales de Android/Gradle/Kotlin. NDK actualizado de r28c a
+[r30 LTS](https://developer.android.com/ndk/downloads) (30.0.16248370), con
+compilación nativa de las tres ABI como control. Cambios compatibles: smallvec
+1.16.4, syn 3.0.9 y acciones de CI/release actualizadas; inventario de licencias
+sincronizado con los paquetes comprobados. La CI incluye ahora lint de release.
+Room 3 requiere migrar al paquete `androidx.room3`; se mantiene Room 2.8.5.
+Las versiones mayores de transitivos se conservan según los requisitos de sus
+consumidores. El PR registra los resultados de CI; validación física pendiente.
+
 ## Línea de trabajo vigente
 
 Seguir el [plan detallado de ejecución](IMPLEMENTATION_PLAN.md): tareas por

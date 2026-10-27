@@ -23,6 +23,11 @@ abstract class BuildRustAdblock : DefaultTask() {
     @get:Internal
     abstract val ndkDirectory: DirectoryProperty
 
+    // Track the selected toolchain without snapshotting the entire NDK directory.
+    @get:Input
+    @get:Optional
+    abstract val ndkVersion: Property<String>
+
     @get:Input
     abstract val minSdk: Property<Int>
 
@@ -60,8 +65,8 @@ android {
 
     defaultConfig {
         applicationId = "com.reiniertutoriales.vireolumatv"
-        versionCode = 92
-        versionName = "1.2.1"
+        versionCode = 93
+        versionName = "1.2.2"
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -189,6 +194,7 @@ fun BuildRustAdblock.configureCrate() {
 val buildRustAdblock = tasks.register<BuildRustAdblock>("buildRustAdblock") {
     configureCrate()
     hostLibrary.set(false)
+    ndkVersion.set(libs.versions.android.ndk)
     outputDir.set(layout.buildDirectory.dir("rust/jniLibs"))
 }
 
