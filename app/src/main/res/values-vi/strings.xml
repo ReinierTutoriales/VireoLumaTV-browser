@@ -4,7 +4,6 @@
   <string name="error">Lỗi</string>
   <string name="ok">OK</string>
   <string name="url_prompt">Nhập văn bản hoặc URL</string>
-  <string name="speak">Truy vấn tìm kiếm</string>
   <string name="web_perm_request_confirmation">Trang web này muốn sử dụng các tài nguyên sau: \n\n%s</string>
   <string name="allow">Cho phép</string>
   <string name="deny">Từ chối</string>
@@ -119,7 +118,6 @@
   <string name="clear_web_cache">Xóa bộ nhớ cache của web</string>
   <string name="no_bookmarks_yet">Chưa có dấu trang nào</string>
   <string name="done">Xong</string>
-  <string name="block_popups">Chặn cửa sổ bật lên</string>
   <string name="block_popups_s">Chặn cửa sổ bật lên (%s)</string>
   <string name="popup_dialog_blocked">Hộp thoại bật lên bị chặn</string>
   <string name="new_tab_blocked">Tab mới bị chặn</string>

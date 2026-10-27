@@ -6,7 +6,6 @@
     <string name="error">Error</string>
     <string name="ok">OK</string>
     <string name="url_prompt">Input query text or URL</string>
-    <string name="speak">Search query</string>
     <string name="web_perm_request_confirmation">This web page wants to use following resources:\n\n%s</string>
     <string name="allow">Allow</string>
     <string name="deny">Deny</string>
@@ -136,7 +135,6 @@
     <string name="incognito_mode_hint">Now you can browse privately, and other people who use this device won’t see your activity. VireoLumaTV won’t save your browsing history, cookies and site data, information entered in forms.\n\nHowever, downloads and bookmarks will be saved. Your activity might still be visible to websites you visit, your organization or internet service provider.</string>
     <string name="don_t_show_again">Don\'t show again</string>
     <string name="clear_web_cache">Clear web cache</string>
-    <string name="block_popups">Popups blocking</string>
     <string name="block_popups_s">Popups blocking (%s)</string>
     <string name="popup_dialog_blocked">Popup dialog blocked</string>
     <string name="new_tab_blocked">New tab blocked</string>

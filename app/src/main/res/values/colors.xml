@@ -8,15 +8,11 @@
     <color name="day_night_background_color">#F3F6FA</color>
     <color name="day_night_list_header_background_color">#E6EDF5</color>
     <color name="day_night_list_focused_background_color">#DDF2E4</color>
-    <color name="day_night_list_divider_color">#E6EDF5</color>
     <color name="button_background">#E6EDF5</color>
     <color name="button_background_focused">#DDF2E4</color>
     <color name="button_background_pressed">#C4E8CF</color>
     <color name="button_background_disabled">#EFF2F6</color>
     <color name="day_night_icon_color">#182433</color>
-    <color name="day_night_disabled_icon_color">#8390A1</color>
-    <color name="badge_bg">#CFDFF4</color>
-    <color name="badge_stroke">#38A858</color>
     <color name="progressbar_tint">#38A858</color>
     <color name="web_tab_text_color">#182433</color>
     <color name="web_tab_selected_text_color">#182433</color>

@@ -4,7 +4,6 @@
   <string name="error">Błąd</string>
   <string name="ok">OK</string>
   <string name="url_prompt">Wpisz zapytanie lub adres URL</string>
-  <string name="speak">Wyszukaj</string>
   <string name="web_perm_request_confirmation">Ta strona próbuje użyć następujących zasobów:\n\n%s</string>
   <string name="allow">Pozwól</string>
   <string name="deny">Zabroń</string>
@@ -119,7 +118,6 @@
   <string name="incognito_mode_hint">Teraz możesz przeglądać internet prywatnie, a pozostali ludzie którzy używają tego urządzenia nie zobaczą Twojej aktywności. Aplikacja VireoLumaTV nie będzie zapisywać Twojej historii przeglądania, ciasteczek oraz danych stron, informacji dodanych w formularzach.\n\nJednakże, zapisane zostaną pobrane pliki i zakładki. Twoja aktywność będzie nadal widoczna dla stron które odwiedzasz, twojej organizacji oraz dostawcy internetu.</string>
   <string name="don_t_show_again">Nie pokazuj ponownie</string>
   <string name="clear_web_cache">Wyczyść pamięć podręczną</string>
-  <string name="block_popups">Blokowanie wyskakujących okienek</string>
   <string name="block_popups_s">Blokowanie wyskakujących okienek (%s)</string>
   <string name="popup_dialog_blocked">Zablokowano wyskakujące okno dialogowe</string>
   <string name="new_tab_blocked">Nowa karta zablokowana</string>

@@ -4,7 +4,6 @@
   <string name="error">错误</string>
   <string name="ok">OK</string>
   <string name="url_prompt">输入搜索查询文字或网址</string>
-  <string name="speak">搜索查询</string>
   <string name="web_perm_request_confirmation">该网页想要使用以下资源:\n\n%s</string>
   <string name="allow">允许</string>
   <string name="deny">拒绝</string>
@@ -119,7 +118,6 @@
   <string name="clear_web_cache">清除网络缓存</string>
   <string name="no_bookmarks_yet">还没有书签</string>
   <string name="done">完成</string>
-  <string name="block_popups">弹出窗口阻止</string>
   <string name="block_popups_s">弹出窗口阻止 (%s)</string>
   <string name="popup_dialog_blocked">弹出对话框被阻止</string>
   <string name="new_tab_blocked">新标签页被阻止</string>

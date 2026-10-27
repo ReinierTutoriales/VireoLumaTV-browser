@@ -13,7 +13,6 @@
   <string name="new_bookmark">Новая закладка</string>
   <string name="ok">ОК</string>
   <string name="open_in_new_tab">Открыть в новой вкладке</string>
-  <string name="speak">Искать запрос</string>
   <string name="title">Название</string>
   <string name="url_prompt">Введите искомый запрос или URL</string>
   <string name="web_perm_request_confirmation">Эта страница запрашивает следующие ресурсы:\n\n%s</string>
@@ -119,7 +118,6 @@
   <string name="clear_web_cache">Очистить веб-кеш</string>
   <string name="no_bookmarks_yet">Закладок пока нет</string>
   <string name="done">Выполнено</string>
-  <string name="block_popups">Блокировка всплывающих окон</string>
   <string name="block_popups_s">Блокировка всплывающих окон (%s)</string>
   <string name="popup_dialog_blocked">Всплывающее диалоговое окно заблокировано</string>
   <string name="new_tab_blocked">Новая вкладка заблокирована</string>

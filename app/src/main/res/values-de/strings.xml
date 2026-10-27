@@ -4,7 +4,6 @@
   <string name="error">Fehler</string>
   <string name="ok">OK</string>
   <string name="url_prompt">Suchbegriff oder URL eingeben</string>
-  <string name="speak">Suchanfrage</string>
   <string name="web_perm_request_confirmation">Diese Webseite nutzt folgende Ressourcen:\n\n%s</string>
   <string name="allow">Erlauben</string>
   <string name="deny">Ablehnen</string>
@@ -119,7 +118,6 @@
   <string name="clear_web_cache">Webcache löschen</string>
   <string name="no_bookmarks_yet">Noch keine Lesezeichen</string>
   <string name="done">Erledigt</string>
-  <string name="block_popups">Blockieren von Popups</string>
   <string name="block_popups_s">Blockieren von Popups (%s)</string>
   <string name="popup_dialog_blocked">Popup-Dialog blockiert</string>
   <string name="new_tab_blocked">Neuer Tab blockiert</string>

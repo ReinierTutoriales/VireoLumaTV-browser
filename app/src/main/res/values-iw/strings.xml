@@ -4,7 +4,6 @@
   <string name="error">"שגיאה"</string>
   <string name="ok">"OK"</string>
   <string name="url_prompt">"הכנס טקסט לחיפוש או URL"</string>
-  <string name="speak">"בקשת חיפוש"</string>
   <string name="web_perm_request_confirmation">"הדף הזה מבקש להשתמש במקורות הבאים:
 %s"</string>
   <string name="allow">"אפשר"</string>
@@ -122,7 +121,6 @@
   </string-array>
   <string name="no_bookmarks_yet">עדיין אין סימניות</string>
   <string name="done">בוצע</string>
-  <string name="block_popups">חסימת חלונות קופצים</string>
   <string name="block_popups_s">חסימת חלונות קופצים (%s)</string>
   <string name="popup_dialog_blocked">דו-שיח קופץ חסום</string>
   <string name="new_tab_blocked">כרטיסייה חדשה נחסמה</string>

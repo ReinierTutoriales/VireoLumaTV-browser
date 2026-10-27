@@ -3,7 +3,6 @@
     <string name="error">Error</string>
     <string name="ok">Aceptar</string>
     <string name="url_prompt">Escribe una búsqueda o una URL</string>
-    <string name="speak">Búsqueda</string>
     <string name="web_perm_request_confirmation">Esta página quiere usar los siguientes recursos:\n\n%s</string>
     <string name="allow">Permitir</string>
     <string name="deny">Denegar</string>
@@ -132,7 +131,6 @@
     <string name="incognito_mode_hint">Ahora puedes navegar en privado y las demás personas que usen este dispositivo no verán tu actividad. VireoLumaTV no guardará tu historial, cookies ni datos de sitios, ni la información que escribas en formularios.\n\nSin embargo, las descargas y los marcadores sí se guardan. Tu actividad aún puede ser visible para las webs que visites, tu organización o tu proveedor de internet.</string>
     <string name="don_t_show_again">No volver a mostrar</string>
     <string name="clear_web_cache">Borrar caché web</string>
-    <string name="block_popups">Bloqueo de ventanas emergentes</string>
     <string name="block_popups_s">Bloqueo de ventanas emergentes (%s)</string>
     <string name="popup_dialog_blocked">Diálogo emergente bloqueado</string>
     <string name="new_tab_blocked">Pestaña nueva bloqueada</string>

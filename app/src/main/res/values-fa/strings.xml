@@ -4,7 +4,6 @@
   <string name="error">"خطا"</string>
   <string name="ok">"خوب"</string>
   <string name="url_prompt">"جستجو یا URL را تایپ کنید"</string>
-  <string name="speak">"صحبت کردن"</string>
   <string name="web_perm_request_confirmation">"این صفحه وب می خواهد از منابع زیر استفاده کند:
 
 %s"</string>
@@ -123,7 +122,6 @@
   </string-array>
   <string name="no_bookmarks_yet">هنوز هیچ نشانکی وجود ندارد</string>
   <string name="done">انجام شده</string>
-  <string name="block_popups">مسدود شدن پنجره های بازشو</string>
   <string name="block_popups_s">مسدود کردن پنجره های بازشو (%s)</string>
   <string name="popup_dialog_blocked">پنجره بازشو مسدود شد</string>
   <string name="new_tab_blocked">برگه جدید مسدود شده است</string>

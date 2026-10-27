@@ -4,7 +4,6 @@
     <string name="error">錯誤</string>
     <string name="ok">OK</string>
     <string name="url_prompt">輸入關鍵字或網址</string>
-    <string name="speak">搜尋查詢</string>
     <string name="web_perm_request_confirmation">此網頁想要使用下列資源：\n\n%s</string>
     <string name="allow">允許</string>
     <string name="deny">拒絕</string>
@@ -108,7 +107,6 @@
     <string name="incognito_mode_hint">您現在可以私密瀏覽，其他使用此裝置的人無法看到您的活動。VireoLumaTV 不會儲存您的歷史紀錄、Cookies、網站資料，以及輸入表單的資訊。\n\n然而，下載和書籤仍會被儲存。您的活動仍可能會被您造訪的網站、您的組織，或是網路服務供應商看到。</string>
     <string name="don_t_show_again">不再顯示</string>
     <string name="clear_web_cache">清除網路快取</string>
-    <string name="block_popups">阻擋彈出式視窗</string>
     <string name="block_popups_s">阻擋彈出式視窗 (%s)</string>
     <string name="popup_dialog_blocked">已阻擋彈出式視窗</string>
     <string name="new_tab_blocked">已阻擋新分頁</string>
