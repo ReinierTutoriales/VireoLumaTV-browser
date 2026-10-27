@@ -45,7 +45,6 @@ interface WebEngineWindowProviderCallback {
     fun onShareUrlRequested(url: String)
     fun onOpenInExternalAppRequested(url: String)
     fun initiateVoiceSearch()
-    fun onEditHomePageBookmarkSelected(index: Int)
     fun getHomePageLinks(): List<HomePageLink>
     fun onPrepareForFullscreen()
     fun onExitFullscreen()
@@ -55,7 +54,6 @@ interface WebEngineWindowProviderCallback {
     fun suggestActionsForLink(baseUri: String?, linkUri: String?, srcUri: String?,
                               title: String?, altText: String?, textContent: String?,
                               x: Int, y: Int)
-    fun markBookmarkRecommendationAsUseful(bookmarkOrder: Int)
     fun onContextMenu(
         cursorDrawer: CursorDrawerDelegate, baseUri: String?, linkUri: String?, srcUri: String?,
         title: String?, altText: String?,

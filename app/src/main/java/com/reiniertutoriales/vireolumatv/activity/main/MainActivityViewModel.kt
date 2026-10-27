@@ -209,12 +209,4 @@ class MainActivityViewModel: ActiveModel() {
         }
     }
 
-    fun markBookmarkRecommendationAsUseful(bookmarkOrder: Int) {
-        val link = homePageLinks.find { it.order == bookmarkOrder } ?: return
-        val favoriteId = link.favoriteId ?: return
-        if (link.validUntil == null) return
-        modelScope.launch {
-            AppDatabase.db.favoritesDao().markAsUseful(favoriteId)
-        }
-    }
 }

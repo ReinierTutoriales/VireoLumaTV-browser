@@ -1510,34 +1510,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             this@MainActivity.initiateVoiceSearch()
         }
 
-        override fun onEditHomePageBookmarkSelected(index: Int) {
-            lifecycleScope.launch {
-                val bookmark = viewModel.homePageLinks.firstOrNull { it.order == index }
-                var favoriteItem: FavoriteItem? = bookmark?.favoriteId?.let {
-                    AppDatabase.db.favoritesDao().getById(it)
-                }
-
-                if (favoriteItem == null) {
-                    favoriteItem = FavoriteItem()
-                    favoriteItem.title = bookmark?.title
-                    favoriteItem.url = bookmark?.url
-                    favoriteItem.order = index
-                    favoriteItem.homePageBookmark = true
-                    onEditHomePageBookmark(favoriteItem)
-                } else {
-                    AlertDialog.Builder(this@MainActivity)
-                        .setTitle(R.string.bookmarks)
-                        .setItems(arrayOf(getString(R.string.edit), getString(R.string.delete))) { _, which ->
-                            when (which) {
-                                0 -> onEditHomePageBookmark(favoriteItem)
-                                1 -> viewModel.removeHomePageLink(bookmark!!)
-                            }
-                        }
-                        .show()
-                }
-            }
-        }
-
         override fun getHomePageLinks(): List<HomePageLink> {
             return viewModel.homePageLinks
         }
@@ -1639,9 +1611,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
 
-        override fun markBookmarkRecommendationAsUseful(bookmarkOrder: Int) {
-            viewModel.markBookmarkRecommendationAsUseful(bookmarkOrder)
-        }
     }
 
     private fun onPopupAdBlocked(popup: WebTabState, opener: WebTabState) {

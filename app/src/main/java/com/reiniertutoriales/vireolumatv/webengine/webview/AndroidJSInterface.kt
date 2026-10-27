@@ -81,8 +81,6 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     @JavascriptInterface
     fun getStringByName(name: String): String {
         val ctx = VireoLumaTVApp.instance
-        //val resId = ctx.resources.getIdentifier(name, "string", ctx.packageName)
-        //return ctx.getString(resId)
         when (name) {
             "connection_isnt_secure" -> return ctx.getString(R.string.connection_isnt_secure)
             "hostname" -> return ctx.getString(R.string.hostname)
@@ -92,29 +90,6 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
             "go_im_aware" -> return ctx.getString(R.string.go_im_aware)
             else -> return ""
         }
-    }
-
-    @JavascriptInterface
-    fun startVoiceSearch() {
-        if (!isHomePage()) return
-        val callback = webEngine.callback ?: return
-        callback.getActivity().runOnUiThread { if (isHomePage()) callback.initiateVoiceSearch() }
-    }
-
-    @JavascriptInterface
-    fun setSearchEngine(engine: String, customSearchEngineURL: String) {
-        if (!isHomePage()) return
-        val callback = webEngine.callback ?: return
-        callback.getActivity().runOnUiThread {
-            if (isHomePage()) AppContext.provideConfig().searchEngineURL.value = customSearchEngineURL
-        }
-    }
-
-    @JavascriptInterface
-    fun onEditBookmark(index: Int) {
-        if (!isHomePage()) return
-        val callback = webEngine.callback ?: return
-        callback.getActivity().runOnUiThread { if (isHomePage()) callback.onEditHomePageBookmarkSelected(index) }
     }
 
     @JavascriptInterface
@@ -219,17 +194,6 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
             return null
         }
         return if (pending.token == token) pending else null
-    }
-
-    @JavascriptInterface
-    fun markBookmarkRecommendationAsUseful(bookmarkOrder: Int) {
-        if (!isHomePage()) return
-        val callback = webEngine.callback ?: return
-        callback.getActivity().runOnUiThread { if (isHomePage()) callback.markBookmarkRecommendationAsUseful(bookmarkOrder) }
-    }
-
-    private fun isHomePage(): Boolean {
-        return (webEngine.getView() as? WebViewEx)?.currentOriginalUrl?.toString() == Config.HOME_PAGE_URL
     }
 
     private fun isNormalWebPage(): Boolean {
