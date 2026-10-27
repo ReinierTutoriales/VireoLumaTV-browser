@@ -50,6 +50,7 @@
     <string name="not_set">Sin asignar</string>
     <string name="action">Acción:</string>
     <string name="current_key">Tecla actual:</string>
+    <string name="key_code_d">Tecla %d</string>
     <string name="set_key_for_action">Asignar tecla a la acción</string>
     <string name="press_eny_key">Pulsa cualquier tecla…</string>
     <string name="shortcut_key_reserved_for_navigation">Esta tecla está reservada para la navegación del navegador</string>

@@ -21,18 +21,16 @@ class ShortcutsSettingsView @JvmOverloads constructor(
             .findViewById<LinearLayout>(R.id.settingsList))
         val shortcuts = ShortcutMgr.getInstance()
         Shortcut.entries.forEach { entry ->
-            val shortcut = shortcuts.findForId(entry.ordinal)
             lateinit var key: TextView
-            key = rows.value(context.getString(entry.titleResId), keyText(shortcut)) {
-                ShortcutDialog(context, shortcut).apply {
-                    setOnDismissListener { key.text = keyText(shortcut) }
+            key = rows.value(context.getString(entry.titleResId), keyText(shortcuts, entry)) {
+                ShortcutDialog(context, entry).apply {
+                    setOnDismissListener { key.text = keyText(shortcuts, entry) }
                     show()
                 }
             }
         }
     }
 
-    private fun keyText(shortcut: Shortcut): String =
-        if (shortcut.keyCode == 0) context.getString(R.string.not_set)
-        else Shortcut.shortcutKeysToString(shortcut, context)
+    private fun keyText(shortcuts: ShortcutMgr, shortcut: Shortcut): String =
+        shortcuts.binding(shortcut)?.describe(context) ?: context.getString(R.string.not_set)
 }

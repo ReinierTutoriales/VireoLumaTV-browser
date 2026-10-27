@@ -54,6 +54,7 @@
     <string name="not_set">Not set</string>
     <string name="action">Action:</string>
     <string name="current_key">Current key:</string>
+    <string name="key_code_d">Key %d</string>
     <string name="set_key_for_action">Set key for action</string>
     <string name="press_eny_key">Press any key…</string>
     <string name="shortcut_key_reserved_for_navigation">This key is reserved for browser navigation</string>

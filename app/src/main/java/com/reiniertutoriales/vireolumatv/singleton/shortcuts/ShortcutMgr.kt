@@ -6,168 +6,116 @@ import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
 import androidx.annotation.UiThread
+import androidx.core.content.edit
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.webengine.WebEngine
-import androidx.core.content.edit
+import java.util.EnumMap
 
 /**
- * Created by PDT on 06.08.2017.
+ * Remote key bindings for [Shortcut]s: stored in the "shortcuts" preferences and matched against
+ * key events. A short binding fires on release; a long-press binding fires once while the key is held,
+ * and that press then fires nothing else.
  */
-
-class ShortcutMgr private constructor() {
-    private val shortcuts = ArrayList<Shortcut>()
-    private var trackingShortcuts: List<Shortcut>? = null
-    private val prefs: SharedPreferences =
-        VireoLumaTVApp.instance.getSharedPreferences(PREFS_SHORTCUTS, Context.MODE_PRIVATE)
+class ShortcutMgr internal constructor(private val prefs: SharedPreferences) {
+    private val bindings = EnumMap<Shortcut, KeyBinding>(Shortcut::class.java)
     private val uiHandler = Handler(Looper.getMainLooper())
+
+    // The press being followed: its key code and modifiers, and whether its long press already fired.
+    private var pressedCode: Int? = null
+    private var pressedModifiers = 0
+    private var longPressFired = false
+
+    /** Whether a key event belongs to a shortcut press, and the shortcut it fires, if any. */
+    data class KeyResult(val consumed: Boolean, val fire: Shortcut? = null)
 
     init {
         for (shortcut in Shortcut.entries) {
-            shortcut.keyCode = prefs.getInt(shortcut.prefsKey, shortcut.keyCode)
-            shortcut.modifiers = prefs.getInt(shortcut.prefsKey + "_mod", shortcut.modifiers)
-            shortcut.longPressFlag = prefs.getBoolean(shortcut.prefsKey + "_lp", shortcut.longPressFlag)
-            if (shortcut.keyCode != 0) {
-                shortcuts.add(shortcut)
-            }
+            val code = prefs.getInt(shortcut.prefsKey, shortcut.defaultKey)
+            if (code != 0) bindings[shortcut] = KeyBinding(code, prefs.getInt(shortcut.prefsKey + MODIFIERS, 0),
+                prefs.getBoolean(shortcut.prefsKey + LONG_PRESS, false))
         }
     }
 
-    fun save(shortcut: Shortcut) {
-        if (shortcut.keyCode == 0) {
-            prefs.edit {
-                remove(shortcut.prefsKey)
-                remove(shortcut.prefsKey + "_mod")
-                remove(shortcut.prefsKey + "_lp")
-            }
-            shortcuts.remove(shortcut)
-            return
-        }
-        if (!shortcuts.contains(shortcut)) {
-            shortcuts.add(shortcut)
-        }
+    fun binding(shortcut: Shortcut): KeyBinding? = bindings[shortcut]
+
+    /** Stores [binding]; null clears it, and the cleared state survives restarts (no default comes back). */
+    fun set(shortcut: Shortcut, binding: KeyBinding?) {
+        if (binding == null) bindings.remove(shortcut) else bindings[shortcut] = binding
         prefs.edit {
-            putInt(shortcut.prefsKey, shortcut.keyCode)
-            putInt(shortcut.prefsKey + "_mod", shortcut.modifiers)
-            putBoolean(shortcut.prefsKey + "_lp", shortcut.longPressFlag)
+            putInt(shortcut.prefsKey, binding?.code ?: 0)
+            putInt(shortcut.prefsKey + MODIFIERS, binding?.modifiers ?: 0)
+            putBoolean(shortcut.prefsKey + LONG_PRESS, binding?.longPress ?: false)
         }
     }
 
-    fun findForId(id: Int): Shortcut {
-        val shortcut = Shortcut.entries[id]
-        for (s in shortcuts) {
-            if (s == shortcut) {
-                return s
+    private fun matching(code: Int, modifiers: Int) =
+        bindings.entries.filter { it.value.code == code && it.value.modifiers == modifiers }
+
+    fun onKeyEvent(event: KeyEvent): KeyResult {
+        val code = KeyBinding.codeOf(event)
+        when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                if (event.repeatCount == 0) {
+                    if (matching(code, event.modifiers).isEmpty()) return KeyResult(false)
+                    pressedCode = code
+                    pressedModifiers = event.modifiers
+                    longPressFired = false
+                    event.startTracking()
+                    return KeyResult(true)
+                }
+                if (code != pressedCode) return KeyResult(false)
+                if (event.isLongPress && !longPressFired) {
+                    val long = matching(code, pressedModifiers).firstOrNull { it.value.longPress }?.key
+                    if (long != null) {
+                        longPressFired = true
+                        return KeyResult(true, long)
+                    }
+                }
+                return KeyResult(true)
+            }
+            KeyEvent.ACTION_UP -> {
+                if (code != pressedCode) return KeyResult(false)
+                pressedCode = null
+                if (longPressFired) return KeyResult(true)
+                return KeyResult(true, matching(code, pressedModifiers).firstOrNull { !it.value.longPress }?.key)
             }
         }
-        return shortcut
+        return KeyResult(false)
+    }
+
+    /** Key events from the activity window; a fired shortcut runs on the next UI turn. */
+    fun handle(event: KeyEvent, mainActivity: MainActivity, tab: WebTabState?): Boolean {
+        val result = onKeyEvent(event)
+        result.fire?.let { shortcut -> uiHandler.post { process(shortcut, mainActivity, tab) } }
+        return result.consumed
     }
 
     @UiThread
-    fun process(shortcut: Shortcut, mainActivity: MainActivity, webEngine: WebEngine?) {
+    private fun process(shortcut: Shortcut, mainActivity: MainActivity, tab: WebTabState?) {
+        val engine = tab?.webEngine
         when (shortcut) {
-            Shortcut.NAVIGATE_BACK -> {
-                mainActivity.navigateBack()
-            }
-            Shortcut.NAVIGATE_HOME -> {
-                mainActivity.navigate(Config.HOME_URL_ALIAS)
-            }
-            Shortcut.REFRESH_PAGE -> {
-                mainActivity.refresh()
-            }
-            Shortcut.PLAY_PAUSE -> {
-                webEngine?.togglePlayback()
-            }
-            Shortcut.MEDIA_STOP -> {
-                webEngine?.stopPlayback()
-            }
-            Shortcut.MEDIA_REWIND -> {
-                webEngine?.rewind()
-            }
-            Shortcut.MEDIA_FAST_FORWARD -> {
-                webEngine?.fastForward()
-            }
+            Shortcut.NAVIGATE_BACK -> mainActivity.navigateBack()
+            Shortcut.NAVIGATE_HOME -> mainActivity.navigate(Config.HOME_URL_ALIAS)
+            Shortcut.REFRESH_PAGE -> mainActivity.refresh()
+            Shortcut.PLAY_PAUSE -> engine?.togglePlayback()
+            Shortcut.MEDIA_STOP -> engine?.stopPlayback()
+            Shortcut.MEDIA_REWIND -> engine?.rewind()
+            Shortcut.MEDIA_FAST_FORWARD -> engine?.fastForward()
         }
-    }
-
-    private fun shortCutsForEvent(keyCode: Int, modifiers: Int): List<Shortcut> {
-        val findings = ArrayList<Shortcut>()
-        for (shortcut in shortcuts) {
-            if (shortcut.keyCode == keyCode) {
-                if (shortcut.modifiers == modifiers) {
-                    findings.add(shortcut)
-                }
-            }
-        }
-        return findings
-    }
-
-    private fun onKeyDown(event: KeyEvent, mainActivity: MainActivity, tab: WebTabState?): Boolean {
-        val shortcuts = shortCutsForEvent(event.keyCode, event.modifiers)
-        if (shortcuts.isEmpty()) return false
-        trackingShortcuts = shortcuts
-        if (event.repeatCount == 0) {
-            event.startTracking()
-        }
-        if (event.isLongPress) {
-            return onKeyLongPress(event, mainActivity, tab)
-        }
-        return true
-    }
-
-    private fun onKeyUp(event: KeyEvent, mainActivity: MainActivity, tab: WebTabState?): Boolean {
-        val trackingShortcuts = trackingShortcuts ?: return false
-        for (shortcut in trackingShortcuts) {
-            if (shortcut.longPressFlag || event.modifiers != shortcut.modifiers) {
-                continue
-            }
-            uiHandler.post { process(shortcut, mainActivity, tab?.webEngine) }
-            this.trackingShortcuts = null
-            return true
-        }
-        return false
-    }
-
-    private fun onKeyLongPress(event: KeyEvent, mainActivity: MainActivity, tab: WebTabState?): Boolean {
-        val trackingShortcuts = trackingShortcuts ?: return false
-        for (shortcut in trackingShortcuts) {
-            if (!shortcut.longPressFlag || event.modifiers != shortcut.modifiers) {
-                continue
-            }
-            uiHandler.post { process(shortcut, mainActivity, tab?.webEngine) }
-            this.trackingShortcuts = null
-            return true
-        }
-        return false
-    }
-
-    fun handle(event: KeyEvent, mainActivity: MainActivity, value: WebTabState?): Boolean {
-        return when (event.action) {
-            KeyEvent.ACTION_DOWN -> onKeyDown(event, mainActivity, value)
-            KeyEvent.ACTION_UP -> onKeyUp(event, mainActivity, value)
-            else -> false
-        }
-    }
-
-    fun tryHandleEmulatedSimpleKeyPress(keyCode: Int, mainActivity: MainActivity, tab: WebTabState?): Boolean {
-        val shortcuts = shortCutsForEvent(keyCode, 0)
-        if (shortcuts.isEmpty()) return false
-        uiHandler.post { process(shortcuts.first(), mainActivity, tab?.webEngine) }
-        return true
     }
 
     companion object {
         const val PREFS_SHORTCUTS = "shortcuts"
+        private const val MODIFIERS = "_mod"
+        private const val LONG_PRESS = "_lp"
 
-        private var instance: ShortcutMgr? = null
+        @Volatile private var instance: ShortcutMgr? = null
 
-        @Synchronized fun getInstance(): ShortcutMgr {
-            if (instance == null) {
-                instance = ShortcutMgr()
-            }
-            return instance!!
+        fun getInstance(): ShortcutMgr = instance ?: synchronized(this) {
+            instance ?: ShortcutMgr(VireoLumaTVApp.instance.getSharedPreferences(PREFS_SHORTCUTS, Context.MODE_PRIVATE))
+                .also { instance = it }
         }
     }
 }

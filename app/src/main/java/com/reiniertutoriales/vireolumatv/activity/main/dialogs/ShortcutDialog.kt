@@ -2,122 +2,80 @@ package com.reiniertutoriales.vireolumatv.activity.main.dialogs
 
 import android.app.Dialog
 import android.content.Context
-import android.util.Log
 import android.view.KeyEvent
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-
 import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.singleton.shortcuts.KeyBinding
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcut
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
 import com.reiniertutoriales.vireolumatv.utils.NavigationReservedShortcutKeyCodes
 
 /**
- * Created by PDT on 06.08.2017.
+ * Edits the key of one [Shortcut]. While recording, the next key press is stored: released before
+ * the long-press timeout as a short binding, held past it as a long-press binding.
  */
-
 class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(context) {
-    private val tvActionTitle: TextView
-    private val tvActionKey: TextView
-    private val btnSetKey: Button
-    private val btnClearKey: Button
-    private var keyListenMode = false
+    private val shortcuts = ShortcutMgr.getInstance()
+    private val keyText: TextView
+    private val recordButton: Button
+    private var recording = false
 
     init {
         setCancelable(true)
         setContentView(R.layout.dialog_shortcut)
         setTitle(R.string.shortcut)
-
-        tvActionTitle = findViewById(R.id.tvActionTitle)
-        tvActionKey = findViewById(R.id.tvActionKey)
-        btnSetKey = findViewById(R.id.btnSetKey)
-        btnClearKey = findViewById(R.id.btnClearKey)
-
-        tvActionTitle.setText(shortcut.titleResId)
-        updateShortcutNameDisplay()
-        btnSetKey.setOnClickListener { toggleKeyListenState() }
-
-        btnClearKey.setOnClickListener { clearKey() }
-    }
-
-    private fun clearKey() {
-        if (keyListenMode) {
-            toggleKeyListenState()
+        findViewById<TextView>(R.id.tvActionTitle).setText(shortcut.titleResId)
+        keyText = findViewById(R.id.tvActionKey)
+        recordButton = findViewById(R.id.btnSetKey)
+        recordButton.setOnClickListener { setRecording(!recording) }
+        findViewById<Button>(R.id.btnClearKey).setOnClickListener {
+            setRecording(false)
+            shortcuts.set(shortcut, null)
+            showKey()
         }
-        shortcut.keyCode = 0
-        shortcut.modifiers = 0
-        shortcut.longPressFlag = false
-        ShortcutMgr.getInstance().save(shortcut)
-        updateShortcutNameDisplay()
+        showKey()
     }
 
-    private fun updateShortcutNameDisplay() {
-        tvActionKey.text = if (shortcut.keyCode == 0)
-            context.getString(R.string.not_set)
-        else {
-            Shortcut.shortcutKeysToString(shortcut, context)
+    private fun showKey() {
+        val key = shortcuts.binding(shortcut)?.describe(context) ?: context.getString(R.string.not_set)
+        keyText.text = context.getString(R.string.current_key) + " " + key
+    }
+
+    private fun setRecording(on: Boolean) {
+        recording = on
+        recordButton.setText(if (on) R.string.press_eny_key else R.string.set_key_for_action)
+    }
+
+    /** Stores the press as the new key unless the browser needs that key for navigation. */
+    private fun record(event: KeyEvent, longPress: Boolean) {
+        setRecording(false)
+        val code = KeyBinding.codeOf(event)
+        if (code in NavigationReservedShortcutKeyCodes.reservedForUserShortcuts) {
+            Toast.makeText(context, R.string.shortcut_key_reserved_for_navigation, Toast.LENGTH_SHORT).show()
+            return
         }
+        shortcuts.set(shortcut, KeyBinding(code, event.modifiers, longPress))
+        showKey()
     }
-
-    private fun toggleKeyListenState() {
-        keyListenMode = !keyListenMode
-        btnSetKey.setText(if (keyListenMode) R.string.press_eny_key else R.string.set_key_for_action)
-    }
-
-    private fun resolveKeyCode(keyCode: Int, event: KeyEvent): Int =
-        if (keyCode != 0) keyCode else event.scanCode
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (!keyListenMode) {
-            return super.onKeyDown(keyCode, event)
-        }
-        Log.d(TAG, "onKeyDown: keyCode = $keyCode, event = $event")
-        event.startTracking()
-        shortcut.longPressFlag = false
-        return true
-    }
-
-    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        if (!keyListenMode) {
-            return super.onKeyUp(keyCode, event)
-        }
-        Log.d(TAG, "onKeyUp: keyCode = $keyCode, event = $event")
-        val resolved = resolveKeyCode(keyCode, event)
-        if (resolved in NavigationReservedShortcutKeyCodes.reservedForUserShortcuts) {
-            Toast.makeText(context, R.string.shortcut_key_reserved_for_navigation, Toast.LENGTH_SHORT).show()
-            toggleKeyListenState()
-            return true
-        }
-        shortcut.keyCode = resolved
-        shortcut.modifiers = event.modifiers
-        ShortcutMgr.getInstance().save(shortcut)
-        toggleKeyListenState()
-        updateShortcutNameDisplay()
+        if (!recording) return super.onKeyDown(keyCode, event)
+        event.startTracking() // Lets the framework report onKeyLongPress for a held key.
         return true
     }
 
     override fun onKeyLongPress(keyCode: Int, event: KeyEvent): Boolean {
-        if (!keyListenMode) {
-            return super.onKeyLongPress(keyCode, event)
-        }
-        Log.d(TAG, "onKeyLongPress: keyCode = $keyCode, event = $event")
-        val resolved = resolveKeyCode(keyCode, event)
-        if (resolved in NavigationReservedShortcutKeyCodes.reservedForUserShortcuts) {
-            Toast.makeText(context, R.string.shortcut_key_reserved_for_navigation, Toast.LENGTH_SHORT).show()
-            toggleKeyListenState()
-            return true
-        }
-        shortcut.keyCode = resolved
-        shortcut.modifiers = event.modifiers
-        shortcut.longPressFlag = true
-        ShortcutMgr.getInstance().save(shortcut)
-        toggleKeyListenState()
-        updateShortcutNameDisplay()
+        if (!recording) return super.onKeyLongPress(keyCode, event)
+        record(event, longPress = true)
         return true
     }
 
-    companion object {
-        val TAG: String = ShortcutDialog::class.java.simpleName
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        // After a long press recording is already off, so its release is not recorded again.
+        if (!recording) return super.onKeyUp(keyCode, event)
+        record(event, longPress = false)
+        return true
     }
 }
