@@ -96,3 +96,18 @@ en [ROADMAP](ROADMAP.md), sección del motor adblock-rust.
 **Límite:** `94b3264` no es ancestro de `rewrite/independent-core`; las ramas divergen desde bases distintas.
 Por eso estas cifras no certifican el código actual. Para compararlas hay que generar el APK de esta
 rama y ejecutar el protocolo W2 completo sobre ambos builds, en el mismo dispositivo y sesión.
+
+## APK release generado (no validado en dispositivo)
+
+Commit: `f820459` (rama `rewrite/independent-core`). Variante `generic`, `assembleGenericRelease`, con R8.
+Firma: clave de depuración local (`CI_SIGN_RELEASE_WITH_DEBUG_KEY=true`), certificado SHA-256
+`D110AD58E9C2E8D08F872B981EF2170E1FA4DAB1BA6ABD747C75CC0AF0B9F831`. No es la clave de CI del protocolo W2.
+
+| Archivo | SHA-256 |
+|---|---|
+| `app-generic-armeabi-v7a-release.apk` (32 bits, como el onn) | `2f452d1882946ce882c430f39df2add2946fd5a3d001eab3f19e0ee67db91b21` |
+| `app-generic-arm64-v8a-release.apk` | `8c40a5ddf4887cc80c3dd9cde2e609c238bc292b5714c3110ff97254b282d838` |
+| `app-generic-x86_64-release.apk` | `8e4ee3a8e15b27717646e280ec29265c7850c81d31461736109d9335eed37c3e` |
+
+Instalación: `adb install -r` sobre una app firmada con otra clave falla (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`).
+Para medir sobre la instalación existente hace falta la clave de CI o desinstalar, lo que borra los datos del usuario.
