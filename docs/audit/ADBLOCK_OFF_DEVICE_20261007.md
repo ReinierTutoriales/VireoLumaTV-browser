@@ -59,6 +59,13 @@ para su resultado y SHA exacto; este documento no anticipa su éxito.
 
 ## Alcance pendiente
 
+En `rewrite/independent-core`, el modelo expone los nombres de las listas que no se
+renovaron en el último intento (`unavailableLists`) y Ajustes los muestra. La prueba
+añadida cubre una URL personalizada (`Custom`) con descarga correcta y fallida;
+no simula las siete fuentes predeterminadas. Ajustes muestra sus nombres desde
+la misma configuración que usa el descargador. El estado parcial ya no promete
+un plazo fijo: el reintento depende de si se alcanzó algún servidor.
+
 La integración de eventos se revisó en código; el receptor Android real, WebView,
 matcher nativo, consumo y compatibilidad de sitios requieren dispositivo/proveedor.
 Las pruebas de modelo no prueban el sistema de red Android ni anuncios reales.

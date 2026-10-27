@@ -273,7 +273,7 @@ Opciones: conservar el historial por trazabilidad, o construir una rama limpia p
 | Área | Detalle |
 |---|---|
 | Favicons | `readTimeout` es por lectura, no un límite total; pico transitorio de hasta ~2× el icono |
-| Adblock | Una caché de lista personalizada queda huérfana si cambia la URL |
+| Adblock | Al cambiar la URL personalizada, la caché anterior se elimina tras guardar una nueva generación compilada; si esa escritura falla, la caché antigua puede permanecer hasta el próximo éxito. |
 | Escritura atómica | Sin `fsync`: protege frente a `lmkd`, no frente a un corte de luz |
 | `intent:` de una página | Se abren sin confirmación, a diferencia de otros esquemas externos (`askUserAndOpenInExternalApp`); decidir si pedir confirmación |
 | `androidx.webkit` | 1.18.0 adoptada en la auditoría (compila y pasa tests); validar el WebView en el onn |
