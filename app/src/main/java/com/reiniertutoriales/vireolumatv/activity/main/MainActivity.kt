@@ -112,7 +112,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         private val TAG = MainActivity::class.java.simpleName
         const val MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS = 10003
         const val MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS = 10004
-        const val PICK_FILE_REQUEST_CODE = 10005
         private const val COMMON_REQUESTS_START_CODE = 10100
         private const val THUMBNAIL_CAPTURE_DELAY_MS = 1500L
         // A popup that has not requested a page by then (about:blank + document.write) is shown.
@@ -131,6 +130,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private lateinit var prefs: SharedPreferences
     protected val config = AppContext.provideConfig()
     // Result API: delivered to the current instance even after the activity was recreated.
+    private val filePickerResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        tabsModel.currentTab.value?.webEngine?.onFilePicked(result.resultCode, result.data)
+    }
     private val historyResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.getStringExtra(HistoryActivity.KEY_URL)?.let { navigate(it) }
@@ -724,16 +726,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            PICK_FILE_REQUEST_CODE -> {
-                tabsModel.currentTab.value?.webEngine?.onFilePicked(resultCode, data)
-            }
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
     override fun onStart() {
         super.onStart()
         downloadServiceBound = bindService(DownloadService.intent(this, config.incognitoMode), downloadServiceConnection, Context.BIND_AUTO_CREATE)
@@ -1204,12 +1196,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
         override fun onShowFileChooser(intent: Intent): Boolean {
             try {
-                startActivityForResult(intent, PICK_FILE_REQUEST_CODE)
+                filePickerResult.launch(intent)
             } catch (e: ActivityNotFoundException) {
                 try {
                     //trying again with type */* (seems file pickers usually doesn't support specific types in intent filters but still can do the job)
                     intent.type = "*/*"
-                    startActivityForResult(intent, PICK_FILE_REQUEST_CODE)
+                    filePickerResult.launch(intent)
                 } catch (e: ActivityNotFoundException) {
                     Utils.showToast(applicationContext, getString(R.string.err_cant_open_file_chooser))
                     return false

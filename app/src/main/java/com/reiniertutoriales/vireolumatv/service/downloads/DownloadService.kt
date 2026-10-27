@@ -20,6 +20,7 @@ import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
 import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
@@ -136,7 +137,7 @@ open class DownloadService : Service() {
                     Settings.Secure.getInt(this.contentResolver, Settings.Secure.INSTALL_NON_MARKET_APPS) == 1
                 }
                 if (canInstallFromOtherSources) {
-                    launchInstallAPKActivity(this, task.downloadInfo)
+                    ApkInstaller.launch(this, task.downloadInfo)
                 }
             }
             Download.OperationAfterDownload.NOP -> {
@@ -144,29 +145,11 @@ open class DownloadService : Service() {
         }
         model.onDownloadEnded(task)
         if (model.activeDownloads.isEmpty()) {
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
     }
 
-    fun launchInstallAPKActivity(context: Context, download: Download) {
-        val apkURI = if (download.filepath.startsWith("content://")) {
-            download.filepath.toUri()
-        } else {
-            FileProvider.getUriForFile(context,
-                context.applicationContext.packageName + ".provider", File(download.filepath))
-        }
-        val mimeType = "application/vnd.android.package-archive"
-
-        val install = Intent(Intent.ACTION_INSTALL_PACKAGE)
-        install.setDataAndType(apkURI, mimeType)
-        install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-        try {
-            context.startActivity(install)
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
-        }
-    }
 
     fun startDownload(download: Download) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {

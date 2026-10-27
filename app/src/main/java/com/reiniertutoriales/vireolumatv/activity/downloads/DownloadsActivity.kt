@@ -25,6 +25,7 @@ import com.reiniertutoriales.vireolumatv.databinding.ActivityDownloadsBinding
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -182,7 +183,7 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
             Settings.Secure.getInt(this.contentResolver, Settings.Secure.INSTALL_NON_MARKET_APPS) == 1
 
         if(canInstallFromOtherSources) {
-            launchInstallAPKActivity(this, download)
+            ApkInstaller.launch(this, download)
         } else {
             AlertDialog.Builder(this)
                     .setTitle(R.string.app_name)
@@ -198,9 +199,9 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
                         }
                         intentSettings.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
                         try {
-                            startActivityForResult(intentSettings, REQUEST_CODE_UNKNOWN_APP_SOURCES)
+                            startActivity(intentSettings)
                         } catch (e: Exception) {
-                            e.printStackTrace()
+                            Log.w(TAG, "Opening the unknown-sources settings failed", e)
                             Toast.makeText(this, R.string.error, Toast.LENGTH_SHORT).show()
                         }
                     }})
@@ -238,30 +239,7 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
     override fun onAllDownloadsComplete() {}
 
     companion object {
-        const val REQUEST_CODE_UNKNOWN_APP_SOURCES = 10007
-        private const val REQUEST_CODE_INSTALL_PACKAGE = 10008
         val TAG: String = DownloadsActivity::class.java.simpleName
 
-        fun launchInstallAPKActivity(activity: Activity, download: Download) {
-            val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk")
-            val apkURI = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                download.filepath.toUri()
-            } else {
-                val file = File(download.filepath)
-                FileProvider.getUriForFile(
-                    activity,
-                    activity.applicationContext.packageName + ".provider", file
-                )
-            }
-
-            val install = Intent(Intent.ACTION_INSTALL_PACKAGE)
-            install.setDataAndType(apkURI, mimeType)
-            install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            try {
-                activity.startActivityForResult(install, REQUEST_CODE_INSTALL_PACKAGE)//we are not using result for now
-            } catch (e: Exception) {
-                Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 }

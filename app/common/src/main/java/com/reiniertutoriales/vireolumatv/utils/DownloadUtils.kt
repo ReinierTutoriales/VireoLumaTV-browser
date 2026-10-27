@@ -171,7 +171,8 @@ object DownloadUtils {
                 val encodedFileName = m.group(4)
                 val encoding = m.group(3)
 
-                if (encodedFileName != null) {
+                // The encoding group only matches together with the encoded name.
+                if (encodedFileName != null && encoding != null) {
                     return decodeHeaderField(encodedFileName, encoding)
                 }
 
@@ -201,7 +202,7 @@ object DownloadUtils {
             if (symbol.startsWith("%")) {
                 stream.write(Integer.parseInt(symbol.substring(1), 16))
             } else {
-                stream.write(symbol[0].toInt())
+                stream.write(symbol[0].code)
             }
         }
 
