@@ -76,3 +76,23 @@ Sin cambiar: cada uno altera comportamiento visible y necesita comprobación en 
 | WebViewEx.kt | 215 | 'static field FORCE_DARK_OFF: Int' is deprecated. Deprecated in Java. | Oscurecimiento de páginas con y sin tema oscuro |
 | WebViewWebEngine.kt | 80 | 'fun canZoomIn(): Boolean' is deprecated. Deprecated in Java. | Zoom por mando y por puntero |
 | WebViewWebEngine.kt | 88 | 'fun canZoomOut(): Boolean' is deprecated. Deprecated in Java. | Zoom por mando y por puntero |
+
+## Referencias medidas ya existentes (no repetir sin motivo)
+
+Fuente: [W2_MEASUREMENT.md](../W2_MEASUREMENT.md), commit medido `94b3264` (PR #31, «Keep at most two live tab WebViews»).
+Dispositivo: onn 2 GB, 32 bits. Mismas URLs del protocolo W2.
+
+| Escenario | PSS del renderer |
+|---|---|
+| `02_one_tab` | ~149 MB |
+| `03_four_tabs` | ~301 MB (línea base W1; W2 apunta a 200–240 MB) |
+| `04_after_close` | ~202 MB |
+| `05_youtube_default_ua` | ~351 MB, jank ~23,8 % |
+| UA de escritorio | descartado: ~612 MB y swap intenso |
+
+Medición de bloqueo en x86 (no en TV): compilación de listas y coste por petición,
+en [ROADMAP](ROADMAP.md), sección del motor adblock-rust.
+
+**Límite:** `94b3264` no es ancestro de `rewrite/independent-core`; las ramas divergen desde bases distintas.
+Por eso estas cifras no certifican el código actual. Para compararlas hay que generar el APK de esta
+rama y ejecutar el protocolo W2 completo sobre ambos builds, en el mismo dispositivo y sesión.
