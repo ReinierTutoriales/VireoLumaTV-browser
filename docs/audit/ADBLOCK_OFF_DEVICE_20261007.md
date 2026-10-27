@@ -34,7 +34,15 @@ no certifica compatibilidad con sitios reales ni cierra toda la etapa ADS.
 
 ## Cobertura y aceptación
 
-`AdblockUpdateTest` usa HTTP local, motor doble y Robolectric SDK 28:
+Estado en `rewrite/independent-core`: `acfb8e7` retiró `AdblockUpdateTest` al
+integrar `fixes/audit`, que no adopta 0641da9 ni 7176ed8 (sondeo en primer
+plano y cola de refresco manual). Este árbol conserva `updateIfDue()` al volver
+a primer plano y al recuperar red, sin sondeo de 15 minutos. Se restaura solo
+el caso de caché expirada con descarga fallida (1 prueba, API vigente; una
+alteración de `CACHED` la hace fallar). Lo siguiente describe el lote original,
+no este árbol, salvo ese caso:
+
+`AdblockUpdateTest` original usa HTTP local, motor doble y Robolectric SDK 28:
 
 - Caché válida bloquea mientras llega la respuesta; descarga válida la sustituye.
 - HTML, respuesta vacía y HTTP 503 conservan reglas/fecha de último éxito;
