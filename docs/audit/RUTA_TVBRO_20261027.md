@@ -43,3 +43,36 @@ pública); `Scripts.kt` queda como propio; el documento de contrato de navegaci�
 - Ninguna mejora de rendimiento está medida en dispositivo.
 - Las pruebas no cubren el mando real, el renderer ni la reproducción de vídeo.
 - Las cifras de retención de TV Bro son por líneas, una aproximación.
+
+## Avisos del compilador pendientes de dispositivo (`0a0109c`)
+
+Sin cambiar: cada uno altera comportamiento visible y necesita comprobación en el onn antes de migrarlo.
+
+| Archivo | Línea | Aviso | Qué validar en el onn |
+|---|---|---|---|
+| Utils.kt | 154 | 'fun getInstallerPackageName(p0: String): String?' is deprecated. Deprecated in Java. | Detección de origen de instalación |
+| Utils.kt | 40 | 'val defaultDisplay: Display!' is deprecated. Deprecated in Java. | Tamaño de pantalla en TV y cursor |
+| Utils.kt | 42 | 'fun getSize(p0: Point!): Unit' is deprecated. Deprecated in Java. | Tamaño de pantalla en TV y cursor |
+| CursorDrawerDelegate.kt | 93 | 'val defaultDisplay: Display!' is deprecated. Deprecated in Java. | Tamaño de pantalla en TV y cursor |
+| CursorDrawerDelegate.kt | 95 | 'fun getSize(p0: Point!): Unit' is deprecated. Deprecated in Java. | Tamaño de pantalla en TV y cursor |
+| VireoLumaTVApp.kt | 60 | 'static field MODE_MULTI_PROCESS: Int' is deprecated. Deprecated in Java. | Arranque y renderer en proceso separado (N10) |
+| DownloadsActivity.kt | 183 | 'static field INSTALL_NON_MARKET_APPS: String' is deprecated. Deprecated in Java. | Instalación de APK desde descargas |
+| MainActivity.kt | 1468 | 'var systemUiVisibility: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| MainActivity.kt | 1468 | 'static field SYSTEM_UI_FLAG_LAYOUT_STABLE: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| MainActivity.kt | 1469 | 'static field SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| MainActivity.kt | 1470 | 'static field SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| MainActivity.kt | 1471 | 'static field SYSTEM_UI_FLAG_HIDE_NAVIGATION: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| MainActivity.kt | 1472 | 'static field SYSTEM_UI_FLAG_FULLSCREEN: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| MainActivity.kt | 1473 | 'static field SYSTEM_UI_FLAG_IMMERSIVE_STICKY: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| MainActivity.kt | 1482 | 'var systemUiVisibility: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| MainActivity.kt | 1483 | 'static field SYSTEM_UI_FLAG_LAYOUT_STABLE: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| MainActivity.kt | 1483 | 'static field SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN: Int' is deprecated. Deprecated in Java. | Fullscreen: barras, inmersión y retorno (N05) |
+| ActionBar.kt | 71 | 'static field SHOW_IMPLICIT: Int' is deprecated. Deprecated in Java. | Abrir el teclado de dirección en TV |
+| DownloadService.kt | 137 | 'static field INSTALL_NON_MARKET_APPS: String' is deprecated. Deprecated in Java. | Instalación de APK desde descargas |
+| ApkInstaller.kt | 19 | 'static field ACTION_INSTALL_PACKAGE: String' is deprecated. Deprecated in Java. | Instalación de APK desde descargas |
+| WebViewEx.kt | 213 | 'static fun setForceDark(p0: WebSettings, p1: Int): Unit' is deprecated. Deprecated in Java. | Oscurecimiento de páginas con y sin tema oscuro |
+| WebViewEx.kt | 213 | 'static field FORCE_DARK_ON: Int' is deprecated. Deprecated in Java. | Oscurecimiento de páginas con y sin tema oscuro |
+| WebViewEx.kt | 215 | 'static fun setForceDark(p0: WebSettings, p1: Int): Unit' is deprecated. Deprecated in Java. | Oscurecimiento de páginas con y sin tema oscuro |
+| WebViewEx.kt | 215 | 'static field FORCE_DARK_OFF: Int' is deprecated. Deprecated in Java. | Oscurecimiento de páginas con y sin tema oscuro |
+| WebViewWebEngine.kt | 80 | 'fun canZoomIn(): Boolean' is deprecated. Deprecated in Java. | Zoom por mando y por puntero |
+| WebViewWebEngine.kt | 88 | 'fun canZoomOut(): Boolean' is deprecated. Deprecated in Java. | Zoom por mando y por puntero |
