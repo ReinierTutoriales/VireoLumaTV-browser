@@ -47,6 +47,11 @@ N01–N06 se leen con esta cápsula; el resto de comportamiento no cambia. Pendi
 **Búsqueda por voz eliminada (2026-10-27, petición del propietario):** no hay entrada de menú, atajo ni
 callback. El permiso `RECORD_AUDIO` se conserva para el micrófono que piden las páginas web.
 
+**Puntero y mando (2026-10-27, petición del propietario):** el clic con OK sigue siendo un toque de dedo; el
+scroll de borde, el modo agarrar y el desplazamiento del puntero se envían a la página como rueda y hover de ratón.
+El stick analógico mueve el puntero a velocidad proporcional; el hat del gamepad es su D-pad. «Navegar con los ejes
+del joystick» desactivado apaga solo el stick. Pendiente de validación en Android TV.
+
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 
@@ -84,7 +89,8 @@ La recomendación oficial de TV exige foco comprensible y salida por Atrás [O2]
 Suites de partida ya existentes, ampliar según fallo:
 
 - Navegación: BrowserNavigationTest, CursorMenuFocusTest, CursorLayoutRecoveryTest,
-  VirtualCursorPointerTest, TabRowsTest y scripts/test-webview-controls.cjs.
+  VirtualCursorPointerTest, CursorPointerMouseTest, RemoteInputContractTest, TabRowsTest
+  y scripts/test-webview-controls.cjs.
 - Pestañas/estado: SingleLiveTabTest, RendererRecoveryTest, AtomicTabSaveTest,
   ExitPersistenceTest e IncognitoSessionTabsTest.
 - Bloqueo: AdblockUpdateTest, AdblockCacheTest, AdblockFilterListValidatorTest,

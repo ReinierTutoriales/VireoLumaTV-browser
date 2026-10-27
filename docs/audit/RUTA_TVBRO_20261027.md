@@ -22,6 +22,7 @@ e [inventario por archivo](UPSTREAM_TVBRO_INVENTORY_REWRITE_20261027.tsv).
 | `e9328b5` | Búsqueda por voz eliminada (menú, atajo, historial, permisos, cadenas, documentos) | Suite; `RECORD_AUDIO` conservado para web |
 | `0a0109c` | Selector de archivos y permisos de instalación por ActivityResult; `ApkInstaller` único; `STOP_FOREGROUND_REMOVE` | Suite; falta validar descargas e instalación en Android TV |
 | `44f630f` | Ajustes principales construidos con filas propias (`SettingsRows`); el botón Actualizar del bloqueador pasa a ser alcanzable con D-pad; interruptores como fila completa. Heredado en la página: 761/856 → 128/631 líneas (`git blame -w -C`; lo restante son llaves, imports y llamadas a API) | 205 tests; `MainSettingsFocusTest` falla en `15638e1`; falta validar foco, IME y desplazamiento en Android TV |
+| `f6be67f`, `2919791` | Puntero y mando propios: rueda y hover de ratón en la página, stick proporcional, modo agarrar operativo, `RemoteInput` sustituye a `DPADNavigationEventsAdapter` (eventos de gamepad consumidos, `isFromSource`, sin reflexión de `BUTTON_DPAD_*`). Heredado en el bloque: 1 253/1 386 → 161/667 líneas | 216 tests; `RemoteInputContractTest` falla 5/7 con la entrada anterior; falta validar en Android TV scroll de WebView, hover, gamepads reales y zona muerta |
 
 Decisiones fijadas: `DPADNavigationEventsAdapter` conserva la reflexión sobre `BUTTON_DPAD_*` (no es API
 pública); `Scripts.kt` queda como propio; el documento de contrato de navegación se actualizó para la cápsula.
