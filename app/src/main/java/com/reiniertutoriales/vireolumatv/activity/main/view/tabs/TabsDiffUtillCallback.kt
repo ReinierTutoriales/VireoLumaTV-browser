@@ -14,6 +14,10 @@ class TabsDiffUtillCallback(val oldList: List<WebTabState>, val newList: List<We
         return old === new || (old.id != 0L && old.id == new.id)
     }
 
-    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-        areItemsTheSame(oldItemPosition, newItemPosition)
+    // Title, address and position are what a row shows or uses for its selected state.
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val old = oldList[oldItemPosition]
+        val new = newList[newItemPosition]
+        return old.title == new.title && old.url == new.url && old.position == new.position
+    }
 }
