@@ -66,12 +66,12 @@ Una auditoría o propuesta antigua no autoriza aplicar automáticamente sus parc
 
 ## Contratos que debe conservar cada cambio
 
-- La barra inferior sigue permitiendo Inicio, Atrás, Adelante, Recargar, cerrar
-  pestaña y controles de bloqueo. La superior conserva dirección/búsqueda,
-  ajustes y salida. La búsqueda por voz se eliminó por petición del propietario (2026-10-27). No eliminar una barra para
-  resolver un problema de Atrás ni reinterpretar una acción existente en silencio.
-- En fullscreen, Atrás debe cerrar el vídeo y mostrar ambas barras en la misma
-  acción, con foco inferior y ruta a la superior; conservar el callback existente.
+- La cápsula superior contiene dirección/búsqueda, Atrás, Adelante, Recargar,
+  Inicio, escudo del bloqueador y menú. Cerrar pestaña está en el menú.
+  La barra inferior y la búsqueda por voz se eliminaron por petición del propietario
+  (2026-10-27). No reinterpretar una acción existente en silencio.
+- En fullscreen, Atrás debe cerrar el vídeo y restaurar la cápsula y las pestañas
+  en la misma acción, con foco accionable; conservar el callback existente.
 - Separar Atrás del sistema, historial de la página, cierre de fullscreen,
   cierre de IME/diálogo y apertura/cierre del menú. Probar cada transición.
 - Foco visible y controles alcanzables con D-pad. Foco no ejecuta acciones ni

@@ -49,6 +49,24 @@ Reemplazos hechos, con pruebas:
 - `webengine/webview/HomePageHelper.kt`: sin parámetro `view` sin uso; pruebas de paso y de 404.
 - `webengine/webview/AndroidJSInterface.kt`: eliminados cuatro métodos expuestos al JavaScript de cualquier página sin llamantes, y su cadena de callbacks. Prueba de superficie.
 
+## Recuento de rutas presentes en `5471650` (2026-10-27)
+
+El TSV se generó para una base anterior. Al contrastar sus rutas con el árbol de
+`rewrite/independent-core` en `5471650`, siguen presentes 136 rutas etiquetadas
+`MODIFICADO`, 56 `IDENTICO` y 21 `IDENTICO_BLOB`. Otras 14 rutas de esas
+clases ya no existen. Entre las presentes, 48 son Kotlin/Java, 71 son recursos
+y 15 son assets. La presencia de una ruta no demuestra que su contenido siga
+igual: **este recuento no es una nueva medición de líneas ni un porcentaje
+de código heredado**. Regenerar el inventario por contenido antes de declarar
+un bloque sustituido.
+
+La barra inferior y la búsqueda por voz ya no están en esta rama. La cápsula
+superior integra los controles de navegación y el escudo; Favoritos sigue activo.
+El callback de descargas de `MainActivity` tiene una prueba de cuatro casos
+de activación en `5471650`, pero WebView real y la descarga final siguen fuera
+de esa prueba. Los avisos de licencia de TV Bro permanecen mientras haya
+fuentes derivadas distribuidas.
+
 Decisiones:
 
 - `DPADNavigationEventsAdapter`: la reflexión sobre `BUTTON_DPAD_*` se conserva. Esas constantes no son API pública.
