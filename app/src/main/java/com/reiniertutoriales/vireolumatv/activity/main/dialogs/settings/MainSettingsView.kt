@@ -256,7 +256,10 @@ class MainSettingsView @JvmOverloads constructor(
             adblockModel.updateResult.value == AdblockModel.UpdateResult.ERROR -> R.string.adblock_update_error
             else -> null
         }
-        vb.tvAdBlockerListInfo.text = infoText + (status?.let { "\n" + context.getString(it) } ?: "")
+        val notRefreshed = adblockModel.unavailableLists.value
+        val notRefreshedLine = if (loadingAdBlockList || notRefreshed.isEmpty()) "" else
+            "\n" + context.getString(R.string.adblock_lists_not_refreshed, notRefreshed.joinToString(" · "))
+        vb.tvAdBlockerListInfo.text = infoText + (status?.let { "\n" + context.getString(it) } ?: "") + notRefreshedLine
         // Keep the focused TV button in place; the click handler rejects duplicate refreshes.
         vb.btnAdBlockerUpdate.isEnabled = true
         vb.btnAdBlockerUpdate.visibility = View.VISIBLE

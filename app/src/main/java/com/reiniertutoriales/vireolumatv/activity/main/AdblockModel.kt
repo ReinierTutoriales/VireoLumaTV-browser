@@ -123,6 +123,8 @@ class AdblockModel @JvmOverloads constructor(
 
     enum class UpdateResult { IDLE, UPDATED, PARTIAL, CACHED, ERROR }
     val updateResult = ObservableValue(UpdateResult.IDLE)
+    // Lists the last attempt did not refresh: saved text was used, or no usable text existed.
+    val unavailableLists = ObservableValue<List<String>>(emptyList())
     val clientLoading = ObservableValue(false)
     val config = AppContext.provideConfig()
     val hasActiveRules: Boolean get() = hasCurrentClient(config.adBlockListURL.value)
@@ -161,6 +163,7 @@ class AdblockModel @JvmOverloads constructor(
         var updated = false
         var partialUpdate = false
         var reachedServer = false
+        var unavailable: List<String> = emptyList()
         try {
             withContext(Dispatchers.IO) ioContext@ {
                 val filesDir = VireoLumaTVApp.instance.filesDir
@@ -196,6 +199,9 @@ class AdblockModel @JvmOverloads constructor(
                     reachedServer = resolvedLists.any { it.source != FilterListSource.CACHE }
                     val missingLists = resolvedLists.size < filterLists.size
                     val usedCacheFallback = resolvedLists.any { it.source == FilterListSource.CACHE }
+                    unavailable = filterLists.filter { list ->
+                        resolvedLists.none { it.filterList == list && it.source != FilterListSource.CACHE }
+                    }.map { it.name }
                     if (resolvedLists.isEmpty()) {
                         Log.w(TAG, "No usable adblock filter list text available")
                     } else {
@@ -266,6 +272,7 @@ class AdblockModel @JvmOverloads constructor(
                     else -> 0L
                 }
             }
+            if (downloadAttempted) unavailableLists.value = unavailable
             updateResult.value = when {
                 updated && reachedServer && !partialUpdate -> UpdateResult.UPDATED
                 updated && reachedServer -> UpdateResult.PARTIAL

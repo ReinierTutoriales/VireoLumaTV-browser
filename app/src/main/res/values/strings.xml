@@ -174,6 +174,7 @@
     <string name="adblock_updated">Filter lists updated</string>
     <string name="adblock_partial_update">Some lists updated; saved rules retained. Retry in 6 hours.</string>
     <string name="adblock_using_saved">Using saved rules. No new list was downloaded.</string>
+    <string name="adblock_lists_not_refreshed">Not refreshed: %1$s</string>
     <string name="adblock_update_error">Could not load filter lists. Check the connection or list URL.</string>
     <string name="video_max_quality">Maximum video quality</string>
     <array name="video_max_qualities">

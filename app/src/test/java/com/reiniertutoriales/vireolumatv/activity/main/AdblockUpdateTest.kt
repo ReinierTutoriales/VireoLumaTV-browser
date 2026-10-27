@@ -71,6 +71,7 @@ class AdblockUpdateTest {
             assertFalse(blocks("old-ads.test"))
             assertEquals(1, compiles)
             assertEquals(1, restores)
+            assertTrue("A downloaded list is not reported as unavailable", model.unavailableLists.value.isEmpty())
             val successTime = model.config.adBlockListLastUpdate
             failedDownload.set(true)
             finish(model.loadAdBlockList(true))
@@ -80,6 +81,7 @@ class AdblockUpdateTest {
             assertFalse(model.clientLoading.value)
             assertEquals(successTime, model.config.adBlockListLastUpdate)
             assertEquals(AdblockModel.UpdateResult.CACHED, model.updateResult.value)
+            assertEquals(listOf("Custom"), model.unavailableLists.value)
             assertTrue(model.config.adBlockListNextRetry > System.currentTimeMillis())
         } finally {
             release.countDown()
