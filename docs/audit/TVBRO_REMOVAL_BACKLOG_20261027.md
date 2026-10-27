@@ -69,6 +69,6 @@ fuentes derivadas distribuidas.
 
 Decisiones:
 
-- `DPADNavigationEventsAdapter`: la reflexión sobre `BUTTON_DPAD_*` se conserva. Esas constantes no son API pública.
+- `DPADNavigationEventsAdapter` fue sustituido por `RemoteInput` en `2919791`; comprobar en TV real la entrada de gamepad y el cursor.
 - `Scripts.kt`: 33 % heredado, una constante; sin reemplazo.
 - `WebViewEx.kt`: pendiente, con pruebas de fullscreen y renderer antes de tocarlo.

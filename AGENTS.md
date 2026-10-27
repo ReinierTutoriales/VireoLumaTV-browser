@@ -43,7 +43,8 @@ exact head is the integration gate; report local tests and CI separately.
 Read only the relevant `.agents/skills/` instructions: `precise-coding` for
 implementation, `testing-discipline` for functional changes, `tv-ui` for
 focus/layout, `code-quality` for refactors, and `agent-governance` before Git
-mutations. The contracts and acceptance criteria live in
+mutations. Use `source-migration` when replacing inherited code or resources.
+The contracts and acceptance criteria live in
 `docs/REGRESSION_POLICY.md`; do not duplicate them in skills.
 
 ## Reglas para modificar este repositorio
