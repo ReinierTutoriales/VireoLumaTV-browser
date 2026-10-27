@@ -23,28 +23,27 @@
         android:progressTint="@color/progressbar_tint"
         android:visibility="visible" />
 
+    <!-- One surface for the capsule and the tab strip: a single element on screen. -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/rlActionBar"
-        android:background="@color/top_bar_background"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/capsule_bg"
         android:elevation="0dp"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp"
         android:clipChildren="false"
         android:clipToPadding="false">
 
         <com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
             android:id="@+id/vActionBar"
-            android:background="@drawable/capsule_bg"
             android:gravity="center_vertical"
             android:baselineAligned="false"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 

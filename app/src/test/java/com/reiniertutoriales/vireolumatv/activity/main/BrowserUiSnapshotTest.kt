@@ -82,7 +82,7 @@ class BrowserUiSnapshotTest {
             val output = File("build/reports/ui/browser-$name.png")
             output.parentFile!!.mkdirs()
             output.outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
-            assertTrue("Native drawing must include browser controls", bitmap.getPixel(10, 10) !=
+            assertTrue("Native drawing must include browser controls", bitmap.getPixel(40, 40) !=
                 Color.rgb(100, 116, 139))
             bitmap.recycle()
             val address = vb.root.findViewById<TextView>(R.id.etUrl)
@@ -120,10 +120,14 @@ class BrowserUiSnapshotTest {
                 assertTrue(view.bottom <= parent.height - parent.paddingBottom)
                 assertTrue(view.right <= parent.width - parent.paddingRight)
             }
-            val capsule = vb.vActionBar
-            assertTrue("Capsule must fit within TV overscan at $width", capsule.left >= 16 &&
-                capsule.right <= width - 16)
-            assertTrue("Capsule must stay on screen at $width", capsule.top >= 0 && capsule.bottom <= vb.root.height)
+            // Measure in root coordinates: the capsule sits inside the tab-strip surface.
+            val surface = vb.rlActionBar
+            val capsuleLeft = surface.left + vb.vActionBar.left
+            val capsuleRight = surface.left + vb.vActionBar.right
+            assertTrue("Capsule must fit within TV overscan at $width", capsuleLeft >= 16 &&
+                capsuleRight <= width - 16)
+            assertTrue("Capsule must stay on screen at $width",
+                surface.top >= 0 && surface.bottom <= vb.root.height)
             val address = vb.root.findViewById<View>(R.id.etUrl)
             assertTrue("Address remains usable at $width", address.width >= 240)
             if (fontScale == 1f) assertEquals("Default address height", 48, address.height)
