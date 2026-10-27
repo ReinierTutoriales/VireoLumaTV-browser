@@ -14,13 +14,11 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
-import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
 import com.reiniertutoriales.vireolumatv.databinding.ViewActionbarBinding
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 
 class ActionBar @JvmOverloads constructor(
@@ -39,19 +37,19 @@ class ActionBar @JvmOverloads constructor(
     }
 
     interface Callback {
-        fun closeWindow()
         fun showAppMenu()
-        fun showDownloads()
-        fun showFavorites()
-        fun showHistory()
-        fun showSettings()
-        fun initiateVoiceSearch()
         fun search(text: String)
-        fun onExtendedAddressBarMode()
+        fun onExtendedAddressBarMode() {}
         fun onUrlInputDone()
         fun onAddressInputCancelled() {}
-        fun toggleIncognitoMode()
     }
+
+    /** Page commands and blocker state owned by the activity; the bar only lays them out. */
+    val backButton: ImageButton get() = vb.ibBack
+    val forwardButton: ImageButton get() = vb.ibForward
+    val refreshButton: ImageButton get() = vb.ibRefresh
+    val homeButton: ImageButton get() = vb.ibHome
+    val adBlockButton: ImageButton get() = vb.ibAdBlock
 
     private val etUrlFocusChangeListener = OnFocusChangeListener { _, focused ->
         if (!focused) {
@@ -114,23 +112,7 @@ class ActionBar @JvmOverloads constructor(
 
         if (isInEditMode) return
 
-        val incognitoMode = AppContext.provideConfig().incognitoMode
-
         vb.ibMenu.setOnClickListener { callback?.showAppMenu() }
-        vb.ibDownloads.setOnClickListener { callback?.showDownloads() }
-        vb.ibFavorites.setOnClickListener { callback?.showFavorites() }
-        vb.ibHistory.setOnClickListener { callback?.showHistory() }
-        vb.ibIncognito.setOnClickListener { callback?.toggleIncognitoMode() }
-        vb.ibSettings.setOnClickListener { callback?.showSettings() }
-
-        if (Utils.isFireTV(context)) {
-            vb.etUrl.nextFocusRightId = R.id.ibHistory
-            removeView(vb.ibVoiceSearch)
-        } else {
-            vb.ibVoiceSearch.setOnClickListener { callback?.initiateVoiceSearch() }
-        }
-
-        vb.ibIncognito.isChecked = incognitoMode
 
         vb.etUrl.onFocusChangeListener = etUrlFocusChangeListener
         vb.etUrl.showSoftInputOnFocus = false
@@ -147,16 +129,17 @@ class ActionBar @JvmOverloads constructor(
         }
 
 
+        // Downloads have no button of their own: the menu button signals active transfers.
         downloadsModel.activeDownloads.subscribe(context as AppCompatActivity) {
             if (it.isNotEmpty()) {
                 if (downloadAnimation == null) {
                     downloadAnimation = AnimationUtils.loadAnimation(context, R.anim.infinite_fadeinout_anim)
-                    vb.ibDownloads.startAnimation(downloadAnimation)
+                    vb.ibMenu.startAnimation(downloadAnimation)
                 }
             } else {
                 downloadAnimation?.apply {
                     this.reset()
-                    vb.ibDownloads.clearAnimation()
+                    vb.ibMenu.clearAnimation()
                     downloadAnimation = null
                 }
             }
@@ -210,12 +193,12 @@ class ActionBar @JvmOverloads constructor(
     }
 
     fun catchFocus() {
-        vb.ibHistory.requestFocus()
+        vb.ibBack.requestFocus()
     }
 
     override fun onDetachedFromWindow() {
         removeCallbacks(selectAddressRunnable)
-        vb.ibDownloads.clearAnimation()
+        vb.ibMenu.clearAnimation()
         downloadAnimation = null
         super.onDetachedFromWindow()
     }

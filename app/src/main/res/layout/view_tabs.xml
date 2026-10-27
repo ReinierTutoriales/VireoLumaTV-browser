@@ -31,7 +31,6 @@
       tools:ignore="HardcodedText"
       android:gravity="center"
       android:nextFocusUp="@+id/etUrl"
-      android:nextFocusDown="@+id/ibCloseTab"
       />
   <View
       android:id="@+id/vSpacer"

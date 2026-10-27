@@ -61,22 +61,21 @@ class BrowserUiSnapshotTest {
         tabs.currentTab.value = tabs.tabsStates[0]
         val vb = ActivityMainBinding.inflate(activity.layoutInflater)
         try {
-            assertTrue("Blocker status needs a readable initial label",
-                vb.tvAdBlockStatus.text.isNotBlank())
-            vb.tvAdBlockStatus.text = activity.getString(R.string.adblock_status_active)
+            assertTrue("Blocker shield needs a readable initial description",
+                !vb.vActionBar.adBlockButton.contentDescription.isNullOrBlank())
             vb.flWebViewContainer.setBackgroundColor(Color.rgb(100, 116, 139))
             vb.ivMiniatures.visibility = View.GONE
             vb.vCursorMenu.visibility = View.INVISIBLE
             vb.progressBar.visibility = View.GONE
             vb.progressBarGeneric.visibility = View.GONE
             vb.vActionBar.setAddressBoxText("https://example.test/documentacion/una-direccion-larga")
-            vb.ibForward.isEnabled = false
+            vb.vActionBar.forwardButton.isEnabled = false
             activity.setContentView(vb.root)
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, 960, 540)
-            vb.ibBack.isFocusableInTouchMode = true
-            assertTrue(vb.ibBack.requestFocus())
+            vb.vActionBar.backButton.isFocusableInTouchMode = true
+            assertTrue(vb.vActionBar.backButton.requestFocus())
             vb.root.refreshDrawableState()
             val bitmap = Bitmap.createBitmap(960, 540, Bitmap.Config.ARGB_8888)
             vb.root.draw(Canvas(bitmap))
@@ -87,7 +86,7 @@ class BrowserUiSnapshotTest {
                 Color.rgb(100, 116, 139))
             bitmap.recycle()
             val address = vb.root.findViewById<TextView>(R.id.etUrl)
-            assertEquals("System font scaling is honored", 18f * fontScale, address.textSize, 0.1f)
+            assertEquals("System font scaling is honored", 20f * fontScale, address.textSize, 0.1f)
             assertTrue("Enlarged URL text fits vertically: line=${address.layout.getLineBottom(0)}, height=${address.height}, padding=${address.compoundPaddingTop + address.compoundPaddingBottom}", address.layout.getLineBottom(0) <=
                 address.height - address.compoundPaddingTop - address.compoundPaddingBottom)
             verifyGeometry(vb, fontScale)
@@ -102,39 +101,29 @@ class BrowserUiSnapshotTest {
         }
     }
     private fun verifyGeometry(vb: ActivityMainBinding, fontScale: Float) {
-        val topIds = listOf(R.id.ibVoiceSearch, R.id.ibHistory, R.id.ibFavorites,
-            R.id.ibDownloads, R.id.ibIncognito, R.id.ibSettings, R.id.ibMenu)
-        val bottomIds = listOf(R.id.ibCloseTab, R.id.ibBack, R.id.ibForward, R.id.ibRefresh,
-            R.id.ibAdBlock, R.id.ibPopupBlock, R.id.ibHome)
+        // One capsule row: every command is a 48dp control in a single focus chain.
+        val capsuleIds = listOf(R.id.ibBack, R.id.ibForward, R.id.ibRefresh,
+            R.id.ibHome, R.id.ibAdBlock, R.id.ibMenu)
         for (width in listOf(720, 960, 1280)) {
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(width * 9 / 16, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, width, width * 9 / 16)
-            for (ids in listOf(topIds, bottomIds)) {
-                var previousRight = -1
-                for (id in ids) {
-                    val view = vb.root.findViewById<View>(id)
-                    assertEquals("Uniform control width at $width", 48, view.width)
-                    assertEquals("Uniform control height at $width", 48, view.height)
-                    assertTrue("Controls must not overlap at $width", view.left >= previousRight)
-                    previousRight = view.right
-                    val parent = view.parent as View
-                    assertTrue(view.top >= parent.paddingTop)
-                    assertTrue(view.bottom <= parent.height - parent.paddingBottom)
-                    assertTrue(view.right <= parent.width - parent.paddingRight)
-                }
+            var previousRight = -1
+            for (id in capsuleIds) {
+                val view = vb.root.findViewById<View>(id)
+                assertEquals("Uniform control width at $width", 48, view.width)
+                assertEquals("Uniform control height at $width", 48, view.height)
+                assertTrue("Controls must not overlap at $width", view.left >= previousRight)
+                previousRight = view.right
+                val parent = view.parent as View
+                assertTrue(view.top >= parent.paddingTop)
+                assertTrue(view.bottom <= parent.height - parent.paddingBottom)
+                assertTrue(view.right <= parent.width - parent.paddingRight)
             }
-            val floatingBar = vb.llBottomPanel
-            val blockerStatus = vb.tvAdBlockStatus
-            assertTrue("Toolbar must fit within TV overscan at $width", floatingBar.left >= 16 &&
-                floatingBar.right <= width - 16)
-            assertTrue("Toolbar must float above the screen edge at $width",
-                floatingBar.bottom < vb.root.height)
-            assertEquals(48, blockerStatus.height)
-            assertTrue("Status must have a laid out text line", blockerStatus.layout != null &&
-                blockerStatus.layout.lineCount > 0)
-            assertTrue("Blocker status must sit between its toggle and popup control",
-                blockerStatus.left >= vb.ibAdBlock.right && blockerStatus.right <= vb.ibPopupBlock.left)
+            val capsule = vb.vActionBar
+            assertTrue("Capsule must fit within TV overscan at $width", capsule.left >= 16 &&
+                capsule.right <= width - 16)
+            assertTrue("Capsule must stay on screen at $width", capsule.top >= 0 && capsule.bottom <= vb.root.height)
             val address = vb.root.findViewById<View>(R.id.etUrl)
             assertTrue("Address remains usable at $width", address.width >= 240)
             if (fontScale == 1f) assertEquals("Default address height", 48, address.height)

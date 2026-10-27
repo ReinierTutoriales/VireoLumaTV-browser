@@ -38,8 +38,13 @@
 
         <com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
             android:id="@+id/vActionBar"
+            android:background="@drawable/capsule_bg"
             android:gravity="center_vertical"
             android:baselineAligned="false"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
@@ -51,7 +56,6 @@
             android:layout_marginTop="8dp"
             android:focusable="true"
             android:nextFocusUp="@+id/etUrl"
-            android:nextFocusDown="@+id/ibCloseTab"
             />
     </RelativeLayout>
 
@@ -61,7 +65,6 @@
         android:layout_height="match_parent"
         android:scaleType="centerInside"
         android:layout_below="@id/rlActionBar"
-        android:layout_above="@id/llBottomPanel"
         android:background="@color/top_bar_background"
         tools:ignore="ContentDescription" />
 
@@ -88,179 +91,6 @@
             android:text="@string/open_a_new_tab_here" />
     </LinearLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/llBottomPanel"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
-        android:background="@drawable/floating_toolbar_bg"
-        android:elevation="12dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
-        android:clipChildren="false"
-        android:gravity="center">
-
-        <ImageButton
-            style="@style/BrowserControl"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            app:layout_constraintTop_toTopOf="parent"
-            android:id="@+id/ibCloseTab"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/close_tab"
-            android:src="@drawable/ic_close_grey_900_24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/ibBack"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <ImageButton
-            style="@style/BrowserControl"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            app:layout_constraintTop_toTopOf="parent"
-            android:id="@+id/ibBack"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/navigate_back"
-            android:src="@drawable/back_icon_selector"
-            app:layout_constraintEnd_toStartOf="@+id/ibForward"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@+id/ibCloseTab"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <ImageButton
-            style="@style/BrowserControl"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            app:layout_constraintTop_toTopOf="parent"
-            android:id="@+id/ibForward"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/navigate_forward"
-            android:src="@drawable/forward_icon_selector"
-            app:layout_constraintEnd_toStartOf="@+id/ibRefresh"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@+id/ibBack"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <ImageButton
-            style="@style/BrowserControl"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            app:layout_constraintTop_toTopOf="parent"
-            android:id="@+id/ibRefresh"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/refresh_page"
-            android:src="@drawable/ic_refresh_grey_900_24dp"
-            app:layout_constraintEnd_toStartOf="@+id/ibAdBlock"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@+id/ibForward"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <ImageButton
-            style="@style/BrowserControl"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            app:layout_constraintTop_toTopOf="parent"
-            android:id="@+id/ibAdBlock"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/toggle_ads_blocking"
-            android:src="@drawable/ic_adblock_on"
-            app:layout_constraintEnd_toStartOf="@+id/tvAdBlockStatus"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@+id/ibRefresh"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <!-- Label of ibAdBlock: one focus stop per action, so the status is not focusable. -->
-        <TextView
-            android:id="@+id/tvAdBlockStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:minWidth="72dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:focusable="false"
-            android:importantForAccessibility="no"
-            android:gravity="center"
-            android:maxLines="1"
-            android:text="@string/adblock_status_loading"
-            android:textColor="@color/default_url_color"
-            android:textSize="12sp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/ibAdBlock"
-            app:layout_constraintEnd_toStartOf="@id/ibPopupBlock" />
-
-        <ImageButton
-            style="@style/BrowserControl"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            app:layout_constraintTop_toTopOf="parent"
-            android:id="@+id/ibPopupBlock"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/block_popups"
-            android:src="@drawable/ic_block_popups"
-            app:layout_constraintEnd_toStartOf="@+id/ibHome"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@+id/tvAdBlockStatus"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <ImageButton
-            style="@style/BrowserControl"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            app:layout_constraintTop_toTopOf="parent"
-            android:id="@+id/ibHome"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/navigate_home"
-            android:src="@drawable/ic_home_grey_900_24dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@+id/ibPopupBlock"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <TextView
-            android:id="@+id/tvBlockedAdCounter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="20dp"
-            android:textSize="12sp"
-            app:layout_constraintTop_toTopOf="@+id/ibAdBlock"
-            app:layout_constraintBottom_toTopOf="@+id/ibAdBlock"
-            app:layout_constraintStart_toEndOf="@+id/ibAdBlock"
-            app:layout_constraintEnd_toEndOf="@+id/ibAdBlock"
-            android:background="@drawable/gray_badge_bg"
-            android:gravity="center"
-            android:visibility="gone"
-            tools:visibility="visible"
-            tools:text="1" />
-
-        <TextView
-            android:id="@+id/tvBlockedPopupCounter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="20dp"
-            android:textSize="12sp"
-            app:layout_constraintTop_toTopOf="@+id/ibPopupBlock"
-            app:layout_constraintBottom_toTopOf="@+id/ibPopupBlock"
-            app:layout_constraintStart_toEndOf="@+id/ibPopupBlock"
-            app:layout_constraintEnd_toEndOf="@+id/ibPopupBlock"
-            android:background="@drawable/gray_badge_bg"
-            android:gravity="center"
-            android:visibility="gone"
-            tools:visibility="visible"
-            tools:text="1" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
     
     <com.reiniertutoriales.vireolumatv.activity.main.view.CursorMenuView
         android:id="@+id/vCursorMenu"

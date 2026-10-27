@@ -3,11 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:parentTag="android.widget.LinearLayout"
     tools:orientation="horizontal">
+
+  <!-- One focus row: address field, page commands, blocker state, application menu. -->
   <FrameLayout
       android:layout_width="0dp"
       android:layout_weight="1"
       android:layout_height="wrap_content"
-      android:layout_marginEnd="12dp"
+      android:layout_marginEnd="8dp"
       android:id="@+id/flUrl">
     <EditText
         android:layout_width="match_parent"
@@ -20,11 +22,11 @@
         android:paddingBottom="6dp"
         android:gravity="center_vertical"
         android:fontFamily="sans-serif"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textColorHint="@color/ui_url_hint"
         android:singleLine="true"
         android:id="@+id/etUrl"
-        android:nextFocusRight="@id/ibVoiceSearch"
+        android:nextFocusRight="@id/ibBack"
         android:nextFocusDown="@id/vTabs"
         android:iconifiedByDefault="false"
         android:textCursorDrawable="@null"
@@ -36,82 +38,75 @@
   </FrameLayout>
 
   <ImageButton
+      style="@style/BrowserControl"
       android:layout_width="48dp"
       android:layout_height="48dp"
-      style="@style/BrowserControl"
-      android:layout_marginEnd="8dp"
-      android:id="@+id/ibVoiceSearch"
-      android:src="@drawable/ic_mic_none_grey_900_36dp"
-      android:nextFocusRight="@+id/ibHistory"
-      android:nextFocusDown="@+id/vTabs"
-      android:contentDescription="@string/voice_search" />
+      android:layout_marginEnd="4dp"
+      android:id="@+id/ibBack"
+      android:contentDescription="@string/navigate_back"
+      android:src="@drawable/back_icon_selector"
+      android:nextFocusLeft="@id/etUrl"
+      android:nextFocusRight="@id/ibForward"
+      android:nextFocusDown="@id/vTabs" />
 
   <ImageButton
       style="@style/BrowserControl"
-      android:layout_marginEnd="8dp"
-      android:id="@+id/ibHistory"
       android:layout_width="48dp"
       android:layout_height="48dp"
-      android:contentDescription="@string/history"
-      android:nextFocusRight="@+id/ibFavorites"
-      android:nextFocusDown="@+id/vTabs"
-      android:src="@drawable/ic_history_grey_900_36dp"
-      />
-
-  <ImageButton
-      android:layout_width="48dp"
-      android:layout_height="48dp"
-      style="@style/BrowserControl"
-      android:layout_marginEnd="8dp"
-      android:id="@+id/ibFavorites"
-      android:src="@drawable/ic_star_border_grey_900_36dp"
-      android:nextFocusRight="@+id/ibDownloads"
-      android:nextFocusDown="@+id/vTabs"
-      android:contentDescription="@string/favorites" />
+      android:layout_marginEnd="4dp"
+      android:id="@+id/ibForward"
+      android:contentDescription="@string/navigate_forward"
+      android:src="@drawable/forward_icon_selector"
+      android:nextFocusLeft="@id/ibBack"
+      android:nextFocusRight="@id/ibRefresh"
+      android:nextFocusDown="@id/vTabs" />
 
   <ImageButton
       style="@style/BrowserControl"
-      android:layout_marginEnd="8dp"
-      android:id="@+id/ibDownloads"
       android:layout_width="48dp"
       android:layout_height="48dp"
-      android:contentDescription="@string/downloads"
-      android:nextFocusRight="@+id/ibIncognito"
-      android:nextFocusDown="@+id/vTabs"
-      android:src="@drawable/ic_file_download_grey_900"
-      />
-
-  <com.reiniertutoriales.vireolumatv.widgets.CheckableImageButton
-      style="@style/BrowserControl"
-      android:layout_marginEnd="8dp"
-      android:id="@+id/ibIncognito"
-      android:layout_width="48dp"
-      android:layout_height="48dp"
-      android:contentDescription="@string/incognito_mode"
-      android:nextFocusRight="@+id/ibSettings"
-      android:nextFocusDown="@+id/vTabs"
-      android:src="@drawable/ic_incognito"
-      />
+      android:layout_marginEnd="4dp"
+      android:id="@+id/ibRefresh"
+      android:contentDescription="@string/refresh_page"
+      android:src="@drawable/ic_refresh_grey_900_24dp"
+      android:nextFocusLeft="@id/ibForward"
+      android:nextFocusRight="@id/ibHome"
+      android:nextFocusDown="@id/vTabs" />
 
   <ImageButton
-      android:src="@drawable/ic_settings_grey_900_24dp"
+      style="@style/BrowserControl"
       android:layout_width="48dp"
       android:layout_height="48dp"
-      android:nextFocusRight="@+id/ibMenu"
-      android:nextFocusDown="@+id/vTabs"
+      android:layout_marginEnd="4dp"
+      android:id="@+id/ibHome"
+      android:contentDescription="@string/navigate_home"
+      android:src="@drawable/ic_home_grey_900_24dp"
+      android:nextFocusLeft="@id/ibRefresh"
+      android:nextFocusRight="@id/ibAdBlock"
+      android:nextFocusDown="@id/vTabs" />
+
+  <!-- Click toggles blocking; long press opens the blocker details. -->
+  <ImageButton
       style="@style/BrowserControl"
-      android:layout_marginEnd="8dp"
-      android:id="@+id/ibSettings"
-      android:contentDescription="@string/settings" />
+      android:layout_width="48dp"
+      android:layout_height="48dp"
+      android:layout_marginEnd="4dp"
+      android:id="@+id/ibAdBlock"
+      android:contentDescription="@string/toggle_ads_blocking"
+      android:src="@drawable/ic_adblock_on"
+      android:nextFocusLeft="@id/ibHome"
+      android:nextFocusRight="@id/ibMenu"
+      android:nextFocusDown="@id/vTabs" />
 
   <ImageButton
+      style="@style/BrowserControl"
       android:layout_width="48dp"
       android:layout_height="48dp"
-      style="@style/BrowserControl"
       android:id="@+id/ibMenu"
+      android:contentDescription="@string/app_menu"
       android:src="@drawable/ic_menu_24"
-      android:nextFocusDown="@+id/vTabs"
+      android:nextFocusLeft="@id/ibAdBlock"
+      android:nextFocusDown="@id/vTabs"
       android:focusable="true"
-      android:focusableInTouchMode="true"
-      android:contentDescription="@string/app_menu" />
+      android:focusableInTouchMode="true" />
 </merge>

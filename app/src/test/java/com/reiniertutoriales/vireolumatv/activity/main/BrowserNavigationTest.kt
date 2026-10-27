@@ -79,7 +79,6 @@ class BrowserNavigationTest {
             set("uiHandler", Handler(Looper.getMainLooper()))
             vb.flWebViewContainer.addView(page)
             vb.rlActionBar.visibility = View.INVISIBLE
-            vb.llBottomPanel.visibility = View.INVISIBLE
             vb.ivMiniatures.visibility = View.INVISIBLE
             vb.progressBarGeneric.visibility = View.GONE
             host.get().setContentView(vb.root)
@@ -107,37 +106,40 @@ class BrowserNavigationTest {
         }
     }
 
-    @Test fun backOpensBothRowsAndUpReachesTabsWithoutHidingControls() = Fixture().use { f ->
+    @Test fun backOpensCapsuleAndDownReachesTabsAndTabsDownReturnsToPage() = Fixture().use { f ->
+        val bar = f.vb.vActionBar
         f.call("handleBackNavigation")
         assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
-        assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
-        assertTrue(f.vb.ibBack.hasFocus())
-        f.vb.ibRefresh.requestFocus()
-        assertEquals("Focusing a lower command must not hide search/settings", View.VISIBLE, f.vb.rlActionBar.visibility)
-        f.key(f.vb.ibRefresh, KeyEvent.KEYCODE_DPAD_UP)
-        assertTrue("Up must reach an actionable tab control", f.vb.vTabs.hasFocus())
-        assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
-        f.vb.ibRefresh.requestFocus()
-        f.key(f.vb.ibRefresh, KeyEvent.KEYCODE_DPAD_DOWN)
+        assertTrue(bar.backButton.hasFocus())
+        bar.refreshButton.requestFocus()
+        assertEquals("Focusing a command must not hide the capsule", View.VISIBLE, f.vb.rlActionBar.visibility)
+        assertSame("Down from a command must reach the tab strip", f.vb.vTabs, bar.refreshButton.focusSearch(View.FOCUS_DOWN))
+        assertSame("Up from the tab strip must return to the address field",
+            bar.findViewById<View>(R.id.etUrl), f.vb.vTabs.focusSearch(View.FOCUS_UP))
+        assertTrue("Tab strip must accept focus", f.vb.vTabs.requestFocus())
+        assertTrue("Focus must be inside the tab strip before Down", f.vb.vTabs.hasFocus() || f.vb.vTabs.findFocus() != null)
+        assertTrue("Down from the tab strip must leave it for the page", downLeavesTabStrip(
+            overlayVisible = true, tabsFocused = f.vb.vTabs.hasFocus(),
+            keyCode = KeyEvent.KEYCODE_DPAD_DOWN, action = KeyEvent.ACTION_DOWN, repeatCount = 0))
+        f.call("hideMenuOverlay")
         assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
-        assertEquals(View.INVISIBLE, f.vb.llBottomPanel.visibility)
         assertTrue(f.page.hasFocus())
     }
 
     @Test fun controlsRefreshBackAfterHistoryChangedWithoutPageLoad() = Fixture().use { f ->
         // pushState (YouTube and other SPAs) changes history without onPageStarted/onPageFinished.
-        f.vb.ibBack.isEnabled = false
-        f.vb.ibForward.isEnabled = false
+        f.vb.vActionBar.backButton.isEnabled = false
+        f.vb.vActionBar.forwardButton.isEnabled = false
         f.call("handleBackNavigation")
-        assertTrue(f.vb.ibBack.isEnabled)
-        assertTrue(f.vb.ibForward.isEnabled)
-        assertTrue("Back must be reachable as the first bottom-bar command", f.vb.ibBack.hasFocus())
+        assertTrue(f.vb.vActionBar.backButton.isEnabled)
+        assertTrue(f.vb.vActionBar.forwardButton.isEnabled)
+        assertTrue("Back must be reachable as the first bottom-bar command", f.vb.vActionBar.backButton.hasFocus())
     }
 
     @Test fun tabsLeadToSearchAndExitingAddressDoesNotFocusCloseApp() = Fixture().use { f ->
         val bar = f.vb.vActionBar
         val address = bar.findViewById<EditText>(R.id.etUrl)
-        val close = bar.findViewById<View>(R.id.ibMenu)
+        val menu = bar.findViewById<View>(R.id.ibMenu)
         assertEquals(R.id.flUrl, bar.getChildAt(0).id)
         assertEquals(R.id.ibMenu, bar.getChildAt(bar.childCount - 1).id)
         f.call("handleBackNavigation")
@@ -152,13 +154,10 @@ class BrowserNavigationTest {
         assertSame("Up from the real tab must target Search", address, tabUpTarget)
         assertTrue(tabUpTarget.requestFocus())
         assertTrue("Up from the real tab must focus Search", address.hasFocus())
-        assertFalse("Focusing Search must leave the toolbar available", bar.isEditingAddress)
-        assertEquals(View.VISIBLE, bar.findViewById<View>(R.id.ibSettings).visibility)
+        assertFalse("Focusing Search must leave the capsule available", bar.isEditingAddress)
         f.key(address, KeyEvent.KEYCODE_DPAD_RIGHT)
-        val voice = bar.findViewById<View>(R.id.ibVoiceSearch)
-        val expectedRight = if (voice.parent == bar) voice else bar.findViewById<View>(R.id.ibHistory)
-        assertTrue("Right from Search must reach the next toolbar action", expectedRight.hasFocus())
-        assertFalse(close.hasFocus())
+        assertTrue("Right from Search must reach the first capsule command", bar.backButton.hasFocus())
+        assertFalse(menu.hasFocus())
         assertFalse(bar.isEditingAddress)
 
         val add = f.vb.vTabs.findViewById<View>(R.id.btnAdd)
@@ -172,9 +171,8 @@ class BrowserNavigationTest {
         assertTrue(bar.isEditingAddress)
         f.call("handleBackNavigation")
         assertFalse(bar.isEditingAddress)
-        assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
-        assertFalse(close.hasFocus())
-        assertTrue(bar.findViewById<View>(R.id.ibHistory).hasFocus())
+        assertFalse(menu.hasFocus())
+        assertTrue(bar.backButton.hasFocus())
     }
 
     @Test fun activePageStaysSharpAndFirstTouchReachesTheRealPage() = Fixture().use { f ->
@@ -212,37 +210,34 @@ class BrowserNavigationTest {
 
     @Test fun pageCommandsRunOnceAndRestorePageFocus() = Fixture().use { f ->
         f.call("handleBackNavigation")
-        f.vb.ibBack.performClick()
+        f.vb.vActionBar.backButton.performClick()
         assertEquals(1, f.wentBack)
         assertTrue(f.page.hasFocus())
         f.call("handleBackNavigation")
-        f.vb.ibRefresh.performClick()
+        f.vb.vActionBar.refreshButton.performClick()
         assertEquals(1, f.refreshed)
         assertTrue(f.page.hasFocus())
     }
 
-    @Test fun floatingBlockerStatusTogglesTheSelectedTabAndReportsPause() = Fixture().use { f ->
+    @Test fun blockerShieldTogglesTheSelectedTabAndReportsPause() = Fixture().use { f ->
         f.set("adblockModel", AdblockModel(autoLoad = false))
         f.tab.adblock = true
         f.vb.vTabs.current = 0
         f.call("handleBackNavigation")
-        assertEquals(f.host.get().getString(R.string.adblock_status_unavailable),
-            f.vb.tvAdBlockStatus.text.toString())
-        // The label never takes focus: the shield is the single D-pad stop for this action.
-        assertFalse(f.vb.tvAdBlockStatus.isFocusable)
-        assertSame(f.vb.ibPopupBlock, f.vb.ibAdBlock.focusSearch(View.FOCUS_RIGHT))
-        assertTrue(f.vb.ibAdBlock.requestFocus())
-        f.key(f.vb.ibAdBlock, KeyEvent.KEYCODE_DPAD_UP)
-        assertTrue(f.vb.vTabs.hasFocus())
-        assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
-        f.vb.ibAdBlock.performClick()
+        val shield = f.vb.vActionBar.adBlockButton
+        val unavailable = f.host.get().getString(R.string.adblock_status_unavailable)
+        assertEquals(f.host.get().getString(R.string.adblock_status_action_s, unavailable, 0),
+            shield.contentDescription)
+        // The shield is one focus stop: Right reaches the menu, Down reaches the tab strip.
+        assertSame(f.vb.vActionBar.findViewById<View>(R.id.ibMenu), shield.focusSearch(View.FOCUS_RIGHT))
+        assertSame(f.vb.vTabs, shield.focusSearch(View.FOCUS_DOWN))
+        assertTrue(shield.requestFocus())
+        shield.performClick()
         assertEquals(false, f.tab.adblock)
-        assertEquals(f.host.get().getString(R.string.adblock_status_paused),
-            f.vb.tvAdBlockStatus.text.toString())
-        assertEquals(1, f.refreshed)
         assertEquals(f.host.get().getString(R.string.adblock_status_action_s,
-            f.host.get().getString(R.string.adblock_status_paused), 0),
-            f.vb.ibAdBlock.contentDescription)
+            f.host.get().getString(R.string.adblock_status_paused), 0), shield.contentDescription)
+        assertEquals(1, f.refreshed)
+        assertTrue("Long press must open the blocker details", shield.performLongClick())
     }
 
     @Test fun fullscreenExitRestoresOneCoherentMenuAndNextBackReturnsToPage() = Fixture().use { f ->
@@ -265,12 +260,10 @@ class BrowserNavigationTest {
         assertNull(video.parent)
         assertTrue(f.vb.flWebViewContainer.cursorEnabled)
         assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
-        assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
-        assertTrue(f.vb.ibBack.hasFocus())
+        assertTrue(f.vb.vActionBar.backButton.hasFocus())
         f.call("handleBackNavigation")
         assertEquals("Back must close the existing menu, not reopen bars in an unknown state",
             View.INVISIBLE, f.vb.rlActionBar.visibility)
-        assertEquals(View.INVISIBLE, f.vb.llBottomPanel.visibility)
         assertTrue(f.page.hasFocus())
     }
 
@@ -282,8 +275,7 @@ class BrowserNavigationTest {
         assertTrue(f.vb.vActionBar.isEditingAddress)
         f.call("handleBackNavigation")
         assertFalse(f.vb.vActionBar.isEditingAddress)
-        assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
-        assertEquals(View.VISIBLE, f.vb.vActionBar.findViewById<View>(R.id.ibSettings).visibility)
+        assertEquals(View.VISIBLE, f.vb.vActionBar.findViewById<View>(R.id.ibMenu).visibility)
         address.requestFocus()
         address.performClick()
         address.setText("android tv navegador")
@@ -321,13 +313,10 @@ class BrowserNavigationTest {
         assertTrue(f.page.hasFocus())
         f.call("handleBackNavigation")
         assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
-        assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
-        assertTrue(f.vb.ibBack.hasFocus())
+        assertTrue(f.vb.vActionBar.backButton.hasFocus())
         f.vb.rlActionBar.animate().cancel()
-        f.vb.llBottomPanel.animate().cancel()
         f.call("handleBackNavigation")
         assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
-        assertEquals(View.INVISIBLE, f.vb.llBottomPanel.visibility)
         assertTrue(f.page.hasFocus())
     }
 }

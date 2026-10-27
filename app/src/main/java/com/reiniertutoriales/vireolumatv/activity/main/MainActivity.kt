@@ -170,7 +170,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         setContentView(vb.root)
 
         vb.ivMiniatures.visibility = View.INVISIBLE
-        vb.llBottomPanel.visibility = View.INVISIBLE
         vb.rlActionBar.visibility = View.INVISIBLE
         vb.progressBar.visibility = View.GONE
 
@@ -301,7 +300,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    override fun closeWindow() {
+    fun closeWindow() {
         Log.d(TAG, "closeWindow")
         lifecycleScope.launch {
             if (config.incognitoMode) {
@@ -333,19 +332,19 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    override fun showDownloads() {
+    fun showDownloads() {
         startActivity(Intent(this@MainActivity, if (config.incognitoMode)
             IncognitoDownloadsActivity::class.java else DownloadsActivity::class.java))
     }
 
-    override fun showHistory() {
+    fun showHistory() {
         startActivityForResult(
                 Intent(this@MainActivity, HistoryActivity::class.java),
                 REQUEST_CODE_HISTORY_ACTIVITY)
         hideMenuOverlay()
     }
 
-    override fun showFavorites() {
+    fun showFavorites() {
         val currentTab = tabsModel.currentTab.value
         val currentPageTitle = currentTab?.title ?: ""
         val currentPageUrl = currentTab?.url ?: ""
@@ -368,54 +367,25 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 action()
             }
         }
-        pageCommand(vb.ibHome) { navigate(settingsModel.homePage) }
-        pageCommand(vb.ibBack) { navigateBack() }
-        pageCommand(vb.ibForward) {
+        pageCommand(vb.vActionBar.homeButton) { navigate(settingsModel.homePage) }
+        pageCommand(vb.vActionBar.backButton) { navigateBack() }
+        pageCommand(vb.vActionBar.forwardButton) {
             tabsModel.currentTab.value?.webEngine?.let { if (it.canGoForward()) it.goForward() }
         }
-        pageCommand(vb.ibRefresh) { refresh() }
-        pageCommand(vb.ibCloseTab) { closeTab(tabsModel.currentTab.value) }
-        vb.ibAdBlock.setOnClickListener { syncTabWithTitles(); toggleAdBlockForTab() }
-        vb.ibPopupBlock.setOnClickListener {
+        pageCommand(vb.vActionBar.refreshButton) { refresh() }
+        vb.vActionBar.adBlockButton.setOnClickListener { syncTabWithTitles(); toggleAdBlockForTab() }
+        vb.vActionBar.adBlockButton.setOnLongClickListener {
             syncTabWithTitles()
-            lifecycleScope.launch(Dispatchers.Main) { showPopupBlockOptions() }
-        }
-        vb.llBottomPanel.childs.forEach { button ->
-            button.setOnKeyListener { _, _, event ->
-                when (event.keyCode) {
-                    KeyEvent.KEYCODE_DPAD_UP -> {
-                        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-                            vb.vTabs.focusCurrentTab()
-                        }
-                        true
-                    }
-                    KeyEvent.KEYCODE_DPAD_DOWN -> {
-                        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) hideMenuOverlay()
-                        true
-                    }
-                    else -> false
-                }
-            }
+            showBlockerDetails()
+            true
         }
     }
 
     private fun tabByTitleIndex(index: Int) =
             if (index >= 0 && index < tabsModel.tabsStates.size) tabsModel.tabsStates[index] else null
 
-    override fun showSettings() {
+    fun showSettings() {
         SettingsDialog(this, settingsModel).show()
-    }
-
-    override fun onExtendedAddressBarMode() {
-        hideBottomPanel()
-    }
-
-    override fun onAddressInputCancelled() {
-        if (thumbnailOverlayVisible) {
-            vb.llBottomPanel.visibility = View.VISIBLE
-            vb.llBottomPanel.alpha = 1f
-            vb.llBottomPanel.translationY = 0f
-        }
     }
 
     override fun onUrlInputDone() {
@@ -544,7 +514,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             navigate(url)
         }
         if (needToHideMenuOverlay && vb.rlActionBar.isVisible) {
-            hideMenuOverlay(true)
+            hideMenuOverlay()
         }
         return tab.webEngine
     }
@@ -563,8 +533,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             else -> changeTab(tabsModel.tabsStates[position + 1])
         }
         tabsModel.onCloseTab(tab)
-        hideMenuOverlay(true)
-        hideBottomPanel()
+        hideMenuOverlay()
     }
 
     private fun changeTab(newTab: WebTabState, loadInitialUrl: Boolean = true) {
@@ -616,27 +585,21 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun onWebViewUpdated(tab: WebTabState) {
-        vb.ibBack.isEnabled = tab.webEngine.canGoBack() == true
-        vb.ibForward.isEnabled = tab.webEngine.canGoForward() == true
+        vb.vActionBar.backButton.isEnabled = tab.webEngine.canGoBack() == true
+        vb.vActionBar.forwardButton.isEnabled = tab.webEngine.canGoForward() == true
 
         val adblockEnabled = tab.adblock ?: config.adBlockEnabled
-        vb.ibAdBlock.setImageResource(if (adblockEnabled) R.drawable.ic_adblock_on else R.drawable.ic_adblock_off)
-        vb.tvBlockedAdCounter.visibility = if (adblockEnabled && tab.blockedAds != 0) View.VISIBLE else View.GONE
-        vb.tvBlockedAdCounter.text = tab.blockedAds.toString()
+        vb.vActionBar.adBlockButton.setImageResource(if (adblockEnabled) R.drawable.ic_adblock_on else R.drawable.ic_adblock_off)
         updateAdblockStatus(tab)
-
-        vb.tvBlockedPopupCounter.visibility = if (tab.blockedPopups != 0) View.VISIBLE else View.GONE
-        vb.tvBlockedPopupCounter.text = tab.blockedPopups.toString()
     }
 
-    private fun updateAdblockStatus(tab: WebTabState) {
+    private fun blockerStatusLabel(tab: WebTabState): Int {
         val enabled = tab.adblock ?: config.adBlockEnabled
         val ready = ::adblockModel.isInitialized && adblockModel.hasActiveRules
         val loading = ::adblockModel.isInitialized && adblockModel.clientLoading.value
         val result = if (::adblockModel.isInitialized) adblockModel.updateResult.value
             else AdblockModel.UpdateResult.IDLE
-        val status = blockerIndicator(enabled, ready, loading, result)
-        val label = when (status) {
+        return when (blockerIndicator(enabled, ready, loading, result)) {
             BlockerIndicator.PAUSED -> R.string.adblock_status_paused
             BlockerIndicator.LOADING -> R.string.adblock_status_loading
             BlockerIndicator.REFRESHING -> R.string.adblock_status_refreshing
@@ -645,12 +608,33 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             BlockerIndicator.SAVED -> R.string.adblock_status_saved
             BlockerIndicator.UNAVAILABLE -> R.string.adblock_status_unavailable
         }
-        val state = getString(label)
-        vb.tvAdBlockStatus.text = state
-        val description = getString(R.string.adblock_status_action_s, state, tab.blockedAds)
-        vb.ibAdBlock.contentDescription = description
-        vb.tvAdBlockStatus.isActivated = enabled && ready
-        vb.ibAdBlock.isActivated = enabled && ready
+    }
+
+    private fun updateAdblockStatus(tab: WebTabState) {
+        val enabled = tab.adblock ?: config.adBlockEnabled
+        val ready = ::adblockModel.isInitialized && adblockModel.hasActiveRules
+        val state = getString(blockerStatusLabel(tab))
+        vb.vActionBar.adBlockButton.contentDescription =
+            getString(R.string.adblock_status_action_s, state, tab.blockedAds)
+        vb.vActionBar.adBlockButton.isActivated = enabled && ready
+    }
+
+    private fun showBlockerDetails() {
+        val tab = tabsModel.currentTab.value ?: return
+        val state = getString(blockerStatusLabel(tab))
+        AlertDialog.Builder(this)
+            .setTitle(state)
+            .setMessage(getString(R.string.adblock_status_action_s, state, tab.blockedAds))
+            .setItems(arrayOf(
+                getString(R.string.toggle_ads_blocking),
+                getString(R.string.block_popups_s, tab.blockedPopups.toString()),
+            )) { _, which ->
+                when (which) {
+                    0 -> { syncTabWithTitles(); toggleAdBlockForTab() }
+                    1 -> lifecycleScope.launch(Dispatchers.Main) { showPopupBlockOptions() }
+                }
+            }
+            .show()
     }
 
     private fun onDownloadRequested(url: String, referer: String, originalDownloadFileName: String, userAgent: String?, mimeType: String? = null,
@@ -887,7 +871,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    override fun toggleIncognitoMode() {
+    fun toggleIncognitoMode() {
         toggleIncognitoMode(true)
     }
 
@@ -977,6 +961,11 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
                 // A hidden/detached menu can leave the framework focus path outside the page.
                 // Route cursor input exactly once while the live browser surface owns the screen.
+                if (downLeavesTabStrip(thumbnailOverlayVisible, vb.vTabs.hasFocus(), event.keyCode,
+                        event.action, event.repeatCount)) {
+                    hideMenuOverlay()
+                    return true
+                }
                 if (browserOwnsCursorInput() && event.keyCode in
                     NavigationReservedShortcutKeyCodes.dpadNavigationKeys &&
                     vb.flWebViewContainer.dispatchKeyEvent(event)) return true
@@ -1005,7 +994,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         ::vb.isInitialized && window.decorView.hasWindowFocus() &&
             vb.flWebViewContainer.isShown && vb.flWebViewContainer.cursorEnabled &&
             !vb.flWebViewContainer.cursorSuppressed && !vb.flWebViewContainer.isTextInputActive() &&
-            !vb.vCursorMenu.isVisible && !vb.rlActionBar.isVisible && !vb.llBottomPanel.isVisible &&
+            !vb.vCursorMenu.isVisible && !vb.rlActionBar.isVisible &&
             ViewCompat.getRootWindowInsets(window.decorView)?.isVisible(WindowInsetsCompat.Type.ime()) != true
 
     /**
@@ -1051,12 +1040,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         if (thumbnailOverlayVisible) return
         thumbnailOverlayVisible = true
         thumbnailGeneration++
-        vb.llBottomPanel.animate().cancel()
         vb.rlActionBar.animate().cancel()
         vb.ivMiniatures.animate().cancel()
         vb.ivMiniatures.visibility = View.INVISIBLE
         vb.ivMiniatures.setImageResource(0)
-        vb.llBottomPanel.visibility = View.VISIBLE
         vb.flWebViewContainer.cursorSuppressed = true
         vb.flWebViewContainer.onPageTouch = {
             if (vb.vActionBar.isEditingAddress) vb.vActionBar.cancelAddressInput()
@@ -1067,15 +1054,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             View.VISIBLE else View.INVISIBLE
         lifecycleScope.launch { displayThumbnail(previewTab) }
 
-        vb.llBottomPanel.translationY = vb.llBottomPanel.height.toFloat()
-        vb.llBottomPanel.alpha = 0f
-        vb.llBottomPanel.animate()
-                .setDuration(220)
-                .setInterpolator(DecelerateInterpolator())
-                .translationY(0f)
-                .alpha(1f)
-                .start()
-
         vb.vActionBar.dismissExtendedAddressBarMode()
 
         vb.rlActionBar.visibility = View.VISIBLE
@@ -1083,7 +1061,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         // Back/Forward before choosing the initial focus, or Back stays disabled and unreachable.
         tabsModel.currentTab.value?.let { onWebViewUpdated(it) }
         // Focus is part of the transition, not an animation completion callback.
-        if (!vb.ibBack.requestFocus()) vb.ibHome.requestFocus()
+        if (!vb.vActionBar.backButton.requestFocus()) vb.vActionBar.homeButton.requestFocus()
         vb.rlActionBar.translationY = -vb.rlActionBar.height.toFloat()
         vb.rlActionBar.alpha = 0f
         vb.rlActionBar.animate()
@@ -1127,7 +1105,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.ivMiniatures.setImageBitmap(thumbnail)
     }
 
-    private fun hideMenuOverlay(hideBottomButtons: Boolean = true) {
+    private fun hideMenuOverlay() {
         val wasVisible = thumbnailOverlayVisible
         thumbnailOverlayVisible = false
         vb.flWebViewContainer.onPageTouch = null
@@ -1146,11 +1124,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.ivMiniatures.translationY = 0f
         vb.ivMiniatures.setImageResource(0)
         vb.llMiniaturePlaceholder.visibility = View.INVISIBLE
-        if (hideBottomButtons) hideBottomPanel()
         if (wasVisible) syncTabWithTitles()
         if (!vb.vCursorMenu.isVisible) {
             vb.flWebViewContainer.visibility = View.VISIBLE
-            if (hideBottomButtons) tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
+            tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
         }
     }
 
@@ -1166,20 +1143,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    private fun hideBottomPanel() {
-        vb.llBottomPanel.animate().cancel()
-        vb.llBottomPanel.visibility = View.INVISIBLE
-        vb.llBottomPanel.translationY = 0f
-        vb.llBottomPanel.alpha = 1f
-    }
-
     private fun onDownloadStarted(fileName: String) {
         Utils.showToast(this, getString(R.string.download_started,
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separator + fileName))
         showMenuOverlay()
     }
 
-    override fun initiateVoiceSearch() {
+    fun initiateVoiceSearch() {
         hideMenuOverlay()
         voiceSearchHelper.initiateVoiceSearch(object : VoiceSearchHelper.Callback {
             override fun onResult(text: String?) {
@@ -1429,8 +1399,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             tab.blockedAds += count
             Log.i(TAG, "onBlockedAds: +$count (page total ${tab.blockedAds})")
             if (tabsModel.currentTab.value == tab) {
-                vb.tvBlockedAdCounter.visibility = if (tab.blockedAds > 0) View.VISIBLE else View.GONE
-                vb.tvBlockedAdCounter.text = tab.blockedAds.toString()
                 updateAdblockStatus(tab)
             }
         }
@@ -1686,8 +1654,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     private fun showBlockedPopup(tab: WebTabState, newTab: Boolean) {
         if (isDestroyed || tabsModel.currentTab.value !== tab) return
-        vb.tvBlockedPopupCounter.visibility = if (tab.blockedPopups > 0) View.VISIBLE else View.GONE
-        vb.tvBlockedPopupCounter.text = tab.blockedPopups.toString()
         val now = android.os.SystemClock.uptimeMillis()
         if (now - lastBlockedNotificationTime < BLOCKED_NOTIFICATION_INTERVAL_MS) return
         lastBlockedNotificationTime = now

@@ -27,4 +27,5 @@
     <color name="ui_focus_border">#2563EB</color>
     <color name="ui_control_checked">#CFDFF4</color>
     <color name="ui_url_hint">#536174</color>
+    <color name="ui_capsule_surface">#FFFFFF</color>
 </resources>
