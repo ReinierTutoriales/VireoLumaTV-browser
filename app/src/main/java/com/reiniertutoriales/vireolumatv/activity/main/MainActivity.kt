@@ -33,7 +33,6 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.animation.DecelerateInterpolator
 import android.webkit.CookieManager
@@ -80,8 +79,8 @@ import com.reiniertutoriales.vireolumatv.utils.DPADNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.NavigationReservedShortcutKeyCodes
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
-import com.reiniertutoriales.vireolumatv.utils.BaseAnimationListener
 import com.reiniertutoriales.vireolumatv.utils.Utils
+import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
 import com.reiniertutoriales.vireolumatv.utils.VoiceSearchHelper
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.childs
@@ -237,11 +236,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     private var progressBarHideRunnable: Runnable = Runnable {
         val anim = AnimationUtils.loadAnimation(this@MainActivity, android.R.anim.fade_out)
-        anim.setAnimationListener(object : BaseAnimationListener() {
-            override fun onAnimationEnd(animation: Animation) {
-                vb.progressBar.visibility = View.GONE
-            }
-        })
+        anim.onAnimationEnd { vb.progressBar.visibility = View.GONE }
         vb.progressBar.startAnimation(anim)
     }
 

@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
-import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.AbsListView
 import android.widget.AdapterView
@@ -18,8 +17,8 @@ import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.databinding.ActivityHistoryBinding
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
-import com.reiniertutoriales.vireolumatv.utils.BaseAnimationListener
 import com.reiniertutoriales.vireolumatv.utils.Utils
+import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
 import com.reiniertutoriales.vireolumatv.utils.VoiceSearchHelper
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import kotlinx.coroutines.Dispatchers
@@ -165,11 +164,7 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
         if (selection.isEmpty()) {
             if (ibDelete!!.isGone) return
             val anim = AnimationUtils.loadAnimation(this, R.anim.right_menu_out_anim)
-            anim.setAnimationListener(object : BaseAnimationListener() {
-                override fun onAnimationEnd(animation: Animation) {
-                    ibDelete!!.visibility = View.GONE
-                }
-            })
+            anim.onAnimationEnd { ibDelete!!.visibility = View.GONE }
             ibDelete!!.startAnimation(anim)
         } else {
             if (ibDelete!!.isVisible) return
