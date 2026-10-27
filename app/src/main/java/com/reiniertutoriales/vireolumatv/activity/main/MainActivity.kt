@@ -311,6 +311,28 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
+    override fun showAppMenu() {
+        val entries = appMenuEntries(voiceSearchAvailable = !Utils.isFireTV(this))
+        AlertDialog.Builder(this)
+            .setItems(entries.map { getString(it.label) }.toTypedArray()) { _, which ->
+                runAppMenuEntry(entries[which])
+            }
+            .show()
+    }
+
+    private fun runAppMenuEntry(entry: AppMenuEntry) {
+        when (entry) {
+            AppMenuEntry.HISTORY -> showHistory()
+            AppMenuEntry.FAVORITES -> showFavorites()
+            AppMenuEntry.DOWNLOADS -> showDownloads()
+            AppMenuEntry.INCOGNITO -> toggleIncognitoMode()
+            AppMenuEntry.SETTINGS -> showSettings()
+            AppMenuEntry.VOICE_SEARCH -> initiateVoiceSearch()
+            AppMenuEntry.CLOSE_TAB -> closeTab(tabsModel.currentTab.value)
+            AppMenuEntry.CLOSE_APPLICATION -> closeWindow()
+        }
+    }
+
     override fun showDownloads() {
         startActivity(Intent(this@MainActivity, if (config.incognitoMode)
             IncognitoDownloadsActivity::class.java else DownloadsActivity::class.java))

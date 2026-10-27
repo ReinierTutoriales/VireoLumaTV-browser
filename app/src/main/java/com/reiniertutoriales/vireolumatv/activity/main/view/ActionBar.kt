@@ -40,6 +40,7 @@ class ActionBar @JvmOverloads constructor(
 
     interface Callback {
         fun closeWindow()
+        fun showAppMenu()
         fun showDownloads()
         fun showFavorites()
         fun showHistory()
@@ -115,7 +116,7 @@ class ActionBar @JvmOverloads constructor(
 
         val incognitoMode = AppContext.provideConfig().incognitoMode
 
-        vb.ibMenu.setOnClickListener { callback?.closeWindow() }
+        vb.ibMenu.setOnClickListener { callback?.showAppMenu() }
         vb.ibDownloads.setOnClickListener { callback?.showDownloads() }
         vb.ibFavorites.setOnClickListener { callback?.showFavorites() }
         vb.ibHistory.setOnClickListener { callback?.showHistory() }
