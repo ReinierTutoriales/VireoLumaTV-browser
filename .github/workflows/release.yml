@@ -29,7 +29,7 @@ jobs:
     env:
       VERSION: ${{ inputs.version }}
       GH_TOKEN: ${{ github.token }}
-      EXPECTED_CERT_SHA256: 325056725415ab511afeb5d554e75f3de6cdc89aab906432c770b8fdcf6d149f
+      EXPECTED_CERT_SHA256: 7485dc06a3e9b12528679ff8c5f8d06b308300ff454fce8f9f0193e66adf051f
     steps:
       - uses: actions/checkout@v6
       - name: Validate version and refuse existing releases
@@ -54,17 +54,21 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           cache-provider: basic
-      - name: Restore existing signing key
+      - name: Decode release keystore
         env:
-          SHARED_KEY: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          test -n "$SHARED_KEY"
-          mkdir -p "$HOME/.android"
-          printf '%s' "$SHARED_KEY" | base64 --decode > "$HOME/.android/debug.keystore"
-          keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey
+          test -n "$KEYSTORE_BASE64"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS"
       - name: Run tests and build release APKs
         env:
-          CI_SIGN_RELEASE_WITH_DEBUG_KEY: 'true'
+          KEYSTORE_PATH: ${{ runner.temp }}/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           for test in scripts/test-*.cjs; do node "$test"; done
           ./gradlew testGenericDebugUnitTest assembleGenericRelease --stacktrace
@@ -94,7 +98,7 @@ jobs:
             printf '\n%s\n' "$apk" >> dist/SIGNING.txt
             cat "$RUNNER_TEMP/signature.txt" >> dist/SIGNING.txt
           done
-          printf '\nFirma: certificado compartido de CI existente (debug), igual al de 1.0.0 y 1.1.0; APK release con R8.\n' >> dist/SIGNING.txt
+          printf '\nFirma: certificado de release vigente desde 1.2.1 (clave nueva); APK release con R8.\n' >> dist/SIGNING.txt
           printf 'Application source: https://github.com/%s/tree/%s\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > dist/RELEASE_SOURCE.txt
           cp LICENSE.md NOTICE.md dist/
           cp licenses/*.txt dist/
@@ -129,6 +133,6 @@ jobs:
           prerelease: ${{ inputs.prerelease == 'pre-release' }}
           fail_on_unmatched_files: true
           files: dist/*
-      - name: Remove signing key
+      - name: Remove signing material
         if: always()
-        run: rm -f "$HOME/.android/debug.keystore" "$RUNNER_TEMP/release-signing-key.pem"
+        run: rm -f "$RUNNER_TEMP/release.jks" "$RUNNER_TEMP/release-signing-key.pem"
