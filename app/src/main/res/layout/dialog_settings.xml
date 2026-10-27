@@ -1,53 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Page tabs on top, the selected page below. Focus alone never switches the page (SettingsPages). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <RadioGroup
         android:id="@+id/sbTabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:checkedButton="@id/btnMainTab"
         android:orientation="horizontal"
-        android:checkedButton="@id/btnMainTab">
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp">
+
         <RadioButton
             android:id="@+id/btnMainTab"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:button="@null"
-            android:gravity="center"
-            android:nextFocusDown="@id/flTabsContent"
-            android:text="@string/main"
-            android:background="@drawable/settings_tab_bg_selector"/>
+            style="@style/SettingsTab"
+            android:text="@string/main" />
+
         <RadioButton
             android:id="@+id/btnShortcutsTab"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:button="@null"
-            android:gravity="center"
-            android:nextFocusDown="@id/flTabsContent"
-            android:text="@string/shortcuts"
-            android:background="@drawable/settings_tab_bg_selector"
-            android:layout_marginStart="1dp"
-            android:layout_marginEnd="1dp"/>
+            style="@style/SettingsTab"
+            android:text="@string/shortcuts" />
+
         <RadioButton
             android:id="@+id/btnVersionTab"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:button="@null"
-            android:gravity="center"
-            android:nextFocusDown="@id/flTabsContent"
-            android:text="@string/version_and_updates"
-            android:background="@drawable/settings_tab_bg_selector"/>
+            style="@style/SettingsTab"
+            android:text="@string/version_and_updates" />
     </RadioGroup>
 
     <FrameLayout
         android:id="@+id/flTabsContent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-    </FrameLayout>
+        android:layout_weight="1" />
 </LinearLayout>

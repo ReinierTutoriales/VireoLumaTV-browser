@@ -1,14 +1,14 @@
 package com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.text.Html
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.ScrollView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.AppContext
@@ -16,103 +16,70 @@ import com.reiniertutoriales.vireolumatv.BuildConfig
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.IncognitoModeMainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
-import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel
-import com.reiniertutoriales.vireolumatv.databinding.ViewSettingsVersionBinding
 import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
 import com.reiniertutoriales.vireolumatv.utils.Utils
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.activity
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
-import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@SuppressLint("SetTextI18n")
+/** About page: identity, the credit the TV Bro license requires, versions, links and updates. */
 class VersionSettingsView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : ScrollView(context, attrs, defStyleAttr) {
-
-    companion object {
-        private const val URL_VIREO_SOURCES = "https://github.com/ReinierTutoriales/VireoLumaTV-browser"
-        // Required by the original license for modified binaries: credit the original sources
-        private const val URL_TV_BRO_SOURCES = "https://github.com/truefedex/tv-bro"
-        private const val URL_LICENSE =
-            "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/LICENSE.md"
-        private const val URL_PRIVACY_POLICY =
-            "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/PRIVACY.md"
-    }
-    private var vb = ViewSettingsVersionBinding.inflate(LayoutInflater.from(getContext()), this, true)
-    var config = AppContext.provideConfig()
-    var settingsModel = ActiveModelsRepository.get(SettingsModel::class, activity!!)
-    var callback: Callback? = null
 
     interface Callback {
         fun onNeedToCloseSettings()
     }
 
+    var callback: Callback? = null
+    private var updateButton: Button? = null
+
     init {
-        vb.tvVersion.text = context.getString(R.string.version_s, BuildConfig.VERSION_NAME)
-
-        val registeredEngines = WebEngineFactory.getProviders().joinToString("/") { it.name }
-        vb.tvBuildFlavor.text = context.getString(
-            R.string.build_flavor_s,
-            BuildConfig.FLAVOR,
-            registeredEngines
-        )
-
-        val engineVersion = "Engine: " + WebEngineFactory.getWebEngineVersionString()
-        vb.tvWebViewVersion.text = engineVersion
-
-        vb.tvProjectCredit.text = context.getString(R.string.vireo_project_credit)
-        vb.tvProjectCredit.setOnClickListener {
-            loadUrl(URL_VIREO_SOURCES)
+        val rows = SettingsRows(LayoutInflater.from(context).inflate(R.layout.view_settings_main, this, true)
+            .findViewById<LinearLayout>(R.id.settingsList))
+        rows.info(context.getString(R.string.app_name_short), sizeSp = 20f)
+        rows.info(context.getString(R.string.web_browser_optimized_for_tvs))
+        rows.value(context.getString(R.string.vireo_project_credit), null, R.id.rowProjectSource) { open(SOURCES_URL) }
+        // Modified binaries must state in an About window that they use TV Bro's sources, with the link.
+        rows.value(context.getString(R.string.based_on_tv_bro_sources, TV_BRO_SOURCES_URL), null, R.id.rowTvBroSource) {
+            open(TV_BRO_SOURCES_URL)
         }
-
-        vb.tvLink.text = Html.fromHtml("<p>" + context.getString(R.string.based_on_tv_bro_sources,
-            "<u>$URL_TV_BRO_SOURCES</u>") + "</p>", Html.FROM_HTML_MODE_LEGACY)
-        vb.tvLink.setOnClickListener {
-            loadUrl(URL_TV_BRO_SOURCES)
-        }
-
-        vb.tvLicense.text = context.getString(R.string.view_license)
-        vb.tvLicense.setOnClickListener {
-            loadUrl(URL_LICENSE)
-        }
-
-        vb.tvPrivacy.text = context.getString(R.string.privacy_policy)
-        vb.tvPrivacy.setOnClickListener {
-            loadUrl(URL_PRIVACY_POLICY)
-        }
-
+        rows.info(context.getString(R.string.version_s, BuildConfig.VERSION_NAME))
+        rows.info(context.getString(R.string.build_flavor_s, BuildConfig.FLAVOR,
+            WebEngineFactory.getProviders().joinToString("/") { it.name }))
+        rows.info(context.getString(R.string.web_engine_version_s, WebEngineFactory.getWebEngineVersionString()))
+        rows.value(context.getString(R.string.view_license), null, R.id.rowLicense) { open(LICENSE_URL) }
+        rows.value(context.getString(R.string.privacy_policy), null, R.id.rowPrivacyPolicy) { open(PRIVACY_URL) }
         if (BuildConfig.BUILT_IN_AUTO_UPDATE) {
-            vb.btnUpdate.setOnClickListener { checkForUpdates() }
-        } else {
-            vb.btnUpdate.visibility = View.GONE
+            updateButton = rows.button(R.string.update, R.id.btnCheckUpdate) { checkForUpdates() }
         }
     }
 
-    private fun loadUrl(url: String) {
+    /** Opens [url] in a browser tab of the current mode, closing the settings first. */
+    private fun open(url: String) {
         callback?.onNeedToCloseSettings()
-        val activityClass = if (settingsModel.config.incognitoMode)
+        val target = if (AppContext.provideConfig().incognitoMode)
             IncognitoModeMainActivity::class.java else MainActivity::class.java
-        val intent = Intent(activity, activityClass)
-        intent.data = url.toUri()
-        activity?.startActivity(intent)
+        activity?.startActivity(Intent(activity, target).setData(url.toUri()))
     }
 
-    private fun checkForUpdates() {
+    /** Runs [work] with the update button disabled, so a second press cannot start it twice. */
+    private fun whileUpdating(work: suspend () -> Unit) {
         val owner = activity as? LifecycleOwner ?: return
-        vb.btnUpdate.isEnabled = false
+        updateButton?.isEnabled = false
         owner.lifecycleScope.launch {
-            val result = runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() } }
-            vb.btnUpdate.isEnabled = true
-            result.onFailure {
-                Utils.showToast(context, R.string.update_check_failed)
-            }.onSuccess { release ->
+            try { work() } finally { updateButton?.isEnabled = true }
+        }
+    }
+
+    private fun checkForUpdates() = whileUpdating {
+        runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() } }
+            .onFailure { Utils.showToast(context, R.string.update_check_failed) }
+            .onSuccess { release ->
                 if (release == null) Utils.showToast(context, R.string.up_to_date) else confirmUpdate(release)
             }
-        }
     }
 
     private fun confirmUpdate(release: ReleaseUpdater.Release) {
@@ -124,14 +91,16 @@ class VersionSettingsView @JvmOverloads constructor(
             .show()
     }
 
-    private fun downloadAndInstall(release: ReleaseUpdater.Release) {
-        val owner = activity as? LifecycleOwner ?: return
-        vb.btnUpdate.isEnabled = false
-        owner.lifecycleScope.launch {
-            val apk = runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.download(context, release) } }
-            vb.btnUpdate.isEnabled = true
-            apk.onSuccess { ReleaseUpdater.install(context, it) }
-                .onFailure { Utils.showToast(context, R.string.update_check_failed) }
-        }
+    private fun downloadAndInstall(release: ReleaseUpdater.Release) = whileUpdating {
+        runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.download(context, release) } }
+            .onSuccess { ReleaseUpdater.install(context, it) }
+            .onFailure { Utils.showToast(context, R.string.update_check_failed) }
+    }
+
+    private companion object {
+        const val SOURCES_URL = "https://github.com/ReinierTutoriales/VireoLumaTV-browser"
+        const val TV_BRO_SOURCES_URL = "https://github.com/truefedex/tv-bro"
+        const val LICENSE_URL = "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/LICENSE.md"
+        const val PRIVACY_URL = "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/PRIVACY.md"
     }
 }

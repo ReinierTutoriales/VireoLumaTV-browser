@@ -17,7 +17,6 @@
     <color name="web_tab_text_color">#182433</color>
     <color name="web_tab_selected_text_color">#182433</color>
     <color name="settings_tab_color">#E6EDF5</color>
-    <color name="settings_tab_color_focused">#DDF2E4</color>
     <color name="settings_tab_color_activated">#CFDFF4</color>
     <color name="settings_tab_activated_underline_color">#38A858</color>
     <color name="ui_focus_border">#1B6B3A</color>

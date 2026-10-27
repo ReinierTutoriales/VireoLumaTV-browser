@@ -66,6 +66,7 @@
     <string name="version_and_updates">Versión y actualizaciones</string>
     <string name="version_s">Versión: %s</string>
     <string name="build_flavor_s">Variante: %1$s · %2$s</string>
+    <string name="web_engine_version_s">Motor: %s</string>
     <string name="view_license">📃 Licencia</string>
     <string name="privacy_policy">🔒 Política de privacidad</string>
     <string name="update">Actualizar</string>

@@ -12,4 +12,15 @@
         <item name="android:stateListAnimator">@null</item>
         <item name="android:defaultFocusHighlightEnabled">false</item>
     </style>
+    <style name="SettingsTab">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:background">@drawable/settings_tab_bg_selector</item>
+    </style>
 </resources>

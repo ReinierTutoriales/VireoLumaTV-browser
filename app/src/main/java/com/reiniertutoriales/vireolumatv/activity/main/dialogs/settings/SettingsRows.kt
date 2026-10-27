@@ -115,13 +115,32 @@ internal class SettingsRows(private val parent: ViewGroup) {
         return status
     }
 
-    fun button(@StringRes text: Int, @IdRes id: Int, onClick: () -> Unit) {
+    /** Read-only text between rows; never a focus stop. */
+    fun info(text: CharSequence, sizeSp: Float = 16f) {
+        (row(R.layout.view_setting_info) as TextView).apply {
+            this.text = text
+            textSize = sizeSp
+        }
+    }
+
+    /** A row that opens something on activation; returns its value text so callers can update it. */
+    fun value(title: CharSequence, value: CharSequence?, @IdRes id: Int = View.NO_ID, onClick: () -> Unit): TextView {
+        val rowView = row(R.layout.view_setting_value)
+        rowView.id = id
+        rowView.findViewById<TextView>(R.id.settingTitle).text = title
+        rowView.setOnClickListener { onClick() }
+        return rowView.findViewById<TextView>(R.id.settingValue).apply {
+            text = value
+            visibility = if (value.isNullOrEmpty()) View.GONE else View.VISIBLE
+        }
+    }
+
+    fun button(@StringRes text: Int, @IdRes id: Int, onClick: () -> Unit): Button =
         (row(R.layout.view_setting_button) as Button).apply {
             this.id = id
             setText(text)
             setOnClickListener { onClick() }
         }
-    }
 
     /** Rows built inside [build] go into one container that can be hidden as a unit. */
     fun group(visible: Boolean, build: SettingsRows.() -> Unit): LinearLayout {

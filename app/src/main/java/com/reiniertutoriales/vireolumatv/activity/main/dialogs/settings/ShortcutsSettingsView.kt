@@ -3,82 +3,36 @@ package com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.BaseAdapter
-import android.widget.ListView
-import android.widget.RelativeLayout
-import androidx.core.content.res.ResourcesCompat
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.ShortcutDialog
-import com.reiniertutoriales.vireolumatv.databinding.ViewShortcutBinding
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcut
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
-import com.reiniertutoriales.vireolumatv.utils.activity
 
-
+/** One row per remote shortcut with its assigned key; activating a row edits that shortcut. */
 class ShortcutsSettingsView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : ListView(context, attrs, defStyleAttr), AdapterView.OnItemClickListener {
-
-    val items = Shortcut.entries.map { it.titleResId }
+) : ScrollView(context, attrs, defStyleAttr) {
 
     init {
-        selector = ResourcesCompat.getDrawable(context.resources, R.drawable.list_item_bg_selector, null)
-        adapter = ShortcutItemAdapter()
-        onItemClickListener = this
-    }
-
-    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        val dialog = ShortcutDialog(context,
-                ShortcutMgr.getInstance()
-                        .findForId(position)
-        )
-        dialog.setOnDismissListener {
-            (adapter as BaseAdapter).notifyDataSetChanged()
-        }
-        dialog.show()
-    }
-
-    inner class ShortcutItemAdapter: BaseAdapter() {
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-            val view = if (convertView != null) {
-                convertView as ShortcutItemView
-            } else {
-                ShortcutItemView(context)
+        val rows = SettingsRows(LayoutInflater.from(context).inflate(R.layout.view_settings_main, this, true)
+            .findViewById<LinearLayout>(R.id.settingsList))
+        val shortcuts = ShortcutMgr.getInstance()
+        Shortcut.entries.forEach { entry ->
+            val shortcut = shortcuts.findForId(entry.ordinal)
+            lateinit var key: TextView
+            key = rows.value(context.getString(entry.titleResId), keyText(shortcut)) {
+                ShortcutDialog(context, shortcut).apply {
+                    setOnDismissListener { key.text = keyText(shortcut) }
+                    show()
+                }
             }
-            view.bind(position, items[position])
-            return view
-        }
-
-        override fun getItem(position: Int): Any {
-            return items[position]
-        }
-
-        override fun getItemId(position: Int): Long {
-            return position.toLong()
-        }
-
-        override fun getCount(): Int {
-            return items.size
         }
     }
 
-    inner class ShortcutItemView @JvmOverloads constructor(
-            context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-    ) : RelativeLayout(context, attrs, defStyleAttr) {
-        private var vb: ViewShortcutBinding =
-            ViewShortcutBinding.inflate(LayoutInflater.from(context), this)
-
-        fun bind(position: Int, titleRes: Int) {
-            val shortcut = ShortcutMgr.getInstance().findForId(position)
-
-            vb.tvTitle.setText(titleRes)
-            vb.tvKey.text = if (shortcut.keyCode == 0)
-                context.getString(R.string.not_set)
-            else
-                Shortcut.shortcutKeysToString(shortcut, context)
-        }
-    }
+    private fun keyText(shortcut: Shortcut): String =
+        if (shortcut.keyCode == 0) context.getString(R.string.not_set)
+        else Shortcut.shortcutKeysToString(shortcut, context)
 }
