@@ -42,7 +42,7 @@ No concluir que cada resultado CACHED significa fallo del bloqueador.
 **Cambio de contrato (2026-10-27, petición del propietario):** la barra inferior flotante se sustituye por una
 cápsula superior única con URL, Atrás, Adelante, Recargar, Inicio, escudo del bloqueador y menú. Cerrar pestaña
 y voz pasan al menú de aplicación. Pulsación larga en el escudo abre el detalle del bloqueador. Los recorridos
-N01–N06 se leen con esta cápsula; el resto de comportamiento no cambia. Pendiente de validación en onn.
+N01–N06 se leen con esta cápsula; el resto de comportamiento no cambia. Pendiente de validación en Android TV.
 
 **Búsqueda por voz eliminada (2026-10-27, petición del propietario):** no hay entrada de menú, atajo ni
 callback. El permiso `RECORD_AUDIO` se conserva para el micrófono que piden las páginas web.

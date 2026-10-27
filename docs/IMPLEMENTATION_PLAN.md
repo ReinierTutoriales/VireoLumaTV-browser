@@ -100,8 +100,8 @@ del vídeo pueden exigir mecanismos distintos; no se garantiza bloqueo completo.
 
 ## Medición reproducible y criterio de no regresión
 
-Usar onn Android 14/2 GB/32 bits como dispositivo principal informado, verificar
-sus datos reales; incluir dispositivo marcado low-RAM y Android 15+ para F08.
+Medir en al menos un Android TV de referencia de 2 GB (por ejemplo, Android 14, 32 bits) y en un
+dispositivo marcado low-RAM; incluir Android 15+ para F08. El modelo no es un requisito del producto.
 Registrar proveedor/versión WebView: la biblioteca AndroidX y Blink instalado
 son componentes distintos. Sin TV física, el trabajo puede avanzar con pruebas,
 pero no se certifica rendimiento o interacción reales.

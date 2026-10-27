@@ -25,6 +25,15 @@ Prefer the wrapper. Release builds use R8.
 - Prefer native Android / WebView APIs. Avoid unnecessary dependencies.
 - Do not invent APIs, behaviors, or engine features not present in the codebase.
 
+## Target and validation (mandatory)
+- The product is a browser for Android TV in general: any API 24+ TV-class device, D-pad and gamepad input,
+  1–2 GB RAM. No behavior may depend on one model.
+- Verify in this order, and report only what was run: (1) build and unit tests, (2) Android TV emulator or
+  device with D-pad input for focus and navigation changes, (3) a reference low-RAM device for memory and
+  rendering claims. Do not ask the owner for a specific device unless the change cannot be checked otherwise.
+- Never describe a change as performance-improved without a measurement; never call a flow validated without
+  a run.
+
 ## Working style
 1. Brief analysis + risks (especially memory, focus, and license).
 2. Propose the smallest grounded solution.
