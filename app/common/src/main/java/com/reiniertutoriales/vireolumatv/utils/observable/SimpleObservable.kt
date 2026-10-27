@@ -34,10 +34,6 @@ interface Subscribable<O> {
     }
 
     fun subscribe(lifecycle: Lifecycle, notifyOnSubscribe: Boolean = true, observer: O) {
-        /*if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-            subscribe(observer, notifyOnSubscribe)
-        }*/
-
         lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                 when (source.lifecycle.currentState) {
@@ -96,65 +92,4 @@ open class ObservableValue<T>(default: T) : Subscribable<ValueObserver<T>> {
 
     operator fun getValue(thisRef: Any, prop: KProperty<*>): T = this.value
     operator fun setValue(thisRef: Any, prop: KProperty<*>, value: T) {this.value = value}
-}
-
-/*fun <T>makeObservable(property: KMutableProperty<T>): ObservableValue<T> {
-    return object : ObservableValue<T>(property.getter.call()) {
-        override var value: T = property.getter.call()
-            set(value) {
-                property.setter.call(value)
-                field = value
-                notifyObservers()
-            }
-            get() = property.getter.call()
-    }
-}*/
-
-typealias EventObserver = () -> Unit
-
-class EventSource: Subscribable<EventObserver> {
-    override val observers = ArrayList<EventObserver>()
-    
-    var wasEmitted: Boolean = false
-
-    fun emit() {
-        wasEmitted = true
-        notifyObservers()
-    }
-
-    override fun notifyObservers() {
-        if (!wasEmitted) return
-        for (i in observers.size - 1 downTo 0) {
-            observers[i]()
-        }
-    }
-
-    override fun notifyObserver(observer: EventObserver) {
-        if (!wasEmitted) return
-        observer()
-    }
-}
-
-typealias ParameterizedEventObserver<T> = (T) -> Unit
-
-class ParameterizedEventSource<T>: Subscribable<ParameterizedEventObserver<T>> {
-    override val observers = ArrayList<ParameterizedEventObserver<T>>()
-    var lastEvent: T? = null
-    
-    fun emit(event: T) {
-        lastEvent = event
-        notifyObservers()
-    }
-
-    override fun notifyObservers() {
-        val event = lastEvent ?: return
-        for (i in observers.size - 1 downTo 0) {
-            observers[i](event)
-        }
-    }
-
-    override fun notifyObserver(observer: ParameterizedEventObserver<T>) {
-        val event = lastEvent ?: return
-        observer(event)
-    }
 }
