@@ -65,22 +65,11 @@
         tools:text="WebView Version: 10.0.1" />
 
     <TextView
-        android:id="@+id/tvSupportAuthor"
+        android:id="@+id/tvLicense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvWebViewVersion"
         android:layout_marginTop="10dp"
-        android:lines="1"
-        android:background="@drawable/text_link_background_selector"
-        android:focusable="true"
-        android:clickable="true"
-        tools:text="Support the author" />
-
-    <TextView
-        android:id="@+id/tvLicense"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tvSupportAuthor"
         android:lines="1"
         android:background="@drawable/text_link_background_selector"
         android:focusable="true"

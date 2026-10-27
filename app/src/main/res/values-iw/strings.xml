@@ -167,7 +167,6 @@
     <string name="based_on_tv_bro_sources">מבוסס על קוד המקור של TV Bro: %s</string>
     <string name="cursor_grab_mode">הזזת הדף</string>
     <string name="link_actions">פעולות קישור</string>
-    <string name="support_original_author">☕ תמיכה ב-Fedir Tsapana (המחבר המקורי של TV Bro)</string>
     <string name="adblock_updating">מעדכן רשימות סינון…</string>
     <string name="adblock_updated">רשימות הסינון עודכנו</string>
     <string name="adblock_partial_update">חלק מהרשימות עודכנו; הכללים השמורים נשמרו. ניסיון חוזר בעוד 6 שעות.</string>

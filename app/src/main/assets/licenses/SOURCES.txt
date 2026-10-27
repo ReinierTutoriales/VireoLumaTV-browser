@@ -11,7 +11,4 @@ adblock-rust 0.13.3 sources (native ad blocking engine, MPL 2.0):
 https://github.com/brave/adblock-rust/tree/v0.13.3
 JNI bridge and pinned dependency versions: native/adblock-jni (Cargo.lock) in the application source commit.
 
-segmented-button v1.0.0:
-https://github.com/truefedex/segmented-button/tree/238b39df3f090a804b60401c2169275fe8d28770
-
 Each public release must identify its exact application source commit. These pointers document inspected sources; they do not certify the resolved transitive artifacts. Preserve notices and make corresponding covered source available when distributing changed versions.

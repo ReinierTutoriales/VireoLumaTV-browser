@@ -4,39 +4,29 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
-import android.view.View
 import android.view.WindowManager
-import com.fedir.segmentedbutton.SegmentedButton
+import android.widget.RadioGroup
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel
-import com.reiniertutoriales.vireolumatv.widgets.SegmentedButtonTabsAdapter
 
 class SettingsDialog(context: Context, val model: SettingsModel) :
     Dialog(context, R.style.SettingsDialog),
     DialogInterface.OnDismissListener, VersionSettingsView.Callback {
     private var mainView: MainSettingsView? = null
-    private var sbTabs: SegmentedButton
-
     init {
         setTitle(R.string.settings)
         setContentView(R.layout.dialog_settings)
 
-        sbTabs = findViewById(R.id.sbTabs)
-
-        val tabContentAdapter = object : SegmentedButtonTabsAdapter(sbTabs, findViewById(R.id.flTabsContent)) {
-            override fun createContentViewForSegmentButtonId(id: Int): View {
-                return when (id) {
-                    R.id.btnMainTab -> {
-                        mainView = MainSettingsView(context)
-                        mainView!!
-                    }
-                    R.id.btnShortcutsTab -> ShortcutsSettingsView(context)
-                    else -> {
-                        val view = VersionSettingsView(context)
-                        view.callback = this@SettingsDialog
-                        view
-                    }
-                }
+        SettingsPages(
+            findViewById<RadioGroup>(R.id.sbTabs),
+            findViewById(R.id.flTabsContent),
+            setOf(R.id.btnMainTab, R.id.btnShortcutsTab, R.id.btnVersionTab),
+        ) { id ->
+            when (id) {
+                R.id.btnMainTab -> MainSettingsView(context).also { mainView = it }
+                R.id.btnShortcutsTab -> ShortcutsSettingsView(context)
+                R.id.btnVersionTab -> VersionSettingsView(context).also { it.callback = this }
+                else -> error("Unknown settings page: $id")
             }
         }
 

@@ -175,7 +175,6 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 
-    implementation(libs.segmented.button)
     implementation(libs.pinned.section.listview)
 
     testImplementation(libs.junit)

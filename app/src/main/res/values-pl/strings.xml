@@ -164,7 +164,6 @@
     <string name="based_on_tv_bro_sources">Oparte na kodzie źródłowym TV Bro: %s</string>
     <string name="cursor_grab_mode">Przesuń stronę</string>
     <string name="link_actions">Akcje linku</string>
-    <string name="support_original_author">☕ Wesprzyj Fedira Tsapanę (oryginalnego autora TV Bro)</string>
     <string name="adblock_updating">Aktualizowanie list filtrów…</string>
     <string name="adblock_updated">Listy filtrów zaktualizowane</string>
     <string name="adblock_partial_update">Część list zaktualizowano; zapisane reguły zachowano. Ponowna próba za 6 godzin.</string>

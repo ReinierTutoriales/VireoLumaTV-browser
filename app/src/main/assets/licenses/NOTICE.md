@@ -18,15 +18,6 @@ The original license, conditions, and disclaimer are retained verbatim in [LICEN
 Source and modifications: https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/43ffce3ec0bb21c7f6cfddc9af6d9208d509e154/app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt
 For each published binary, provide the corresponding source tag or immutable commit, rather than relying solely on this moving branch link.
 
-## segmented-button v1.0.0
-
-`com.github.truefedex:segmented-button:v1.0.0`
-
-Copyright (c) 2018, Fedir Tsapana. All rights reserved.
-
-BSD 2-Clause license; full copyright, conditions, and disclaimer: [license text](licenses/segmented-button-BSD-2-Clause.txt).
-Source: https://github.com/truefedex/segmented-button/tree/v1.0.0 (commit `238b39df3f090a804b60401c2169275fe8d28770`).
-
 ## adblock-rust 0.13.3 and the JNI bridge
 
 `adblock` 0.13.3 (Brave Software), built from crates.io into `libvireoadblock.so` by

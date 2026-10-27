@@ -36,7 +36,6 @@ class VersionSettingsView @JvmOverloads constructor(
 ) : ScrollView(context, attrs, defStyleAttr) {
 
     companion object {
-        private const val URL_SUPPORT_AUTHOR = "https://donatello.to/truefedex"
         private const val URL_VIREO_SOURCES = "https://github.com/ReinierTutoriales/VireoLumaTV-browser"
         // Required by the original license for modified binaries: credit the original sources
         private const val URL_TV_BRO_SOURCES = "https://github.com/truefedex/tv-bro"
@@ -76,11 +75,6 @@ class VersionSettingsView @JvmOverloads constructor(
             "<u>$URL_TV_BRO_SOURCES</u>") + "</p>", Html.FROM_HTML_MODE_LEGACY)
         vb.tvLink.setOnClickListener {
             loadUrl(URL_TV_BRO_SOURCES)
-        }
-
-        vb.tvSupportAuthor.text = context.getString(R.string.support_original_author)
-        vb.tvSupportAuthor.setOnClickListener {
-            loadUrl(URL_SUPPORT_AUTHOR)
         }
 
         vb.tvLicense.text = context.getString(R.string.view_license)
