@@ -2,7 +2,6 @@ package com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,12 +11,10 @@ import android.widget.ListView
 import android.widget.RelativeLayout
 import androidx.core.content.res.ResourcesCompat
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.ShortcutDialog
 import com.reiniertutoriales.vireolumatv.databinding.ViewShortcutBinding
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcut
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.activity
 
 

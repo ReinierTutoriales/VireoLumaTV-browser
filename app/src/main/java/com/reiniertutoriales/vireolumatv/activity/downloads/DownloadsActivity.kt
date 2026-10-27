@@ -1,6 +1,5 @@
 package com.reiniertutoriales.vireolumatv.activity.downloads
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.*
 import android.net.Uri
@@ -11,7 +10,6 @@ import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
 import android.view.View
-import android.webkit.MimeTypeMap
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView

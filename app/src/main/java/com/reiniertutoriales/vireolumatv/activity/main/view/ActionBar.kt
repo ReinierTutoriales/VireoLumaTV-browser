@@ -16,7 +16,6 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
 import com.reiniertutoriales.vireolumatv.databinding.ViewActionbarBinding
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository

@@ -3,17 +3,14 @@ package com.reiniertutoriales.vireolumatv.service.downloads
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.Service
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.os.*
 import android.provider.Settings
 import android.text.format.Formatter
 import android.util.Log
-import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import androidx.core.content.FileProvider
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
@@ -24,7 +21,6 @@ import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
 import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
-import androidx.core.net.toUri
 
 /**
  * Created by PDT on 23.01.2017.

@@ -4,8 +4,6 @@ import android.net.http.SslError
 import android.os.SystemClock
 import android.util.Base64
 import android.webkit.JavascriptInterface
-import com.reiniertutoriales.vireolumatv.AppContext
-import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.Download

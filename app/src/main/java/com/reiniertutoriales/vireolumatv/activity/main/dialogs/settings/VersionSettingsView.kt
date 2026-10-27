@@ -11,11 +11,9 @@ import android.widget.ScrollView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import androidx.webkit.WebViewCompat
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.BuildConfig
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.IncognitoModeMainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel

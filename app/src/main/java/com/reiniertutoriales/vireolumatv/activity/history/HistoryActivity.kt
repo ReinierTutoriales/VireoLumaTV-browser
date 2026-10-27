@@ -3,7 +3,6 @@ package com.reiniertutoriales.vireolumatv.activity.history
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ImageButton
@@ -16,7 +15,6 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.databinding.ActivityHistoryBinding
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import kotlinx.coroutines.Dispatchers

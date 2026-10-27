@@ -74,7 +74,6 @@ import com.reiniertutoriales.vireolumatv.model.PopupGuard
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.service.downloads.DownloadService
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
-import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
 import com.reiniertutoriales.vireolumatv.utils.DPADNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.NavigationReservedShortcutKeyCodes
@@ -83,8 +82,6 @@ import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
-import com.reiniertutoriales.vireolumatv.utils.childs
-import com.reiniertutoriales.vireolumatv.utils.sameDay
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
