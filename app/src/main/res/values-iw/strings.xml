@@ -90,6 +90,7 @@
   <string name="details">"פרטים:"</string>
   <string name="exit">"יציאה"</string>
   <string name="find_in_apps_store">"מצא בחנות האפליקציות"</string>
+  <string name="app_menu">תפריט</string>
   <string name="close_application">"סגור יישום"</string>
   <string name="close_tab">"סגור כרטיסיה"</string>
   <string name="navigate_forward">"נווט קדימה"</string>

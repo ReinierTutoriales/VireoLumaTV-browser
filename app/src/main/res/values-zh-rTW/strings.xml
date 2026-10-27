@@ -90,6 +90,7 @@
     <string name="details">詳細資訊：</string>
     <string name="exit">退出</string>
     <string name="find_in_apps_store">在應用程式商店搜尋</string>
+    <string name="app_menu">選單</string>
     <string name="close_application">關閉應用程式</string>
     <string name="close_tab">關閉分頁</string>
     <string name="navigate_forward">向前瀏覽</string>

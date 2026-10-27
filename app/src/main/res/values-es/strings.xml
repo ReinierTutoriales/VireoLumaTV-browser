@@ -98,6 +98,7 @@
     <string name="details">Detalles:</string>
     <string name="exit">Salir</string>
     <string name="find_in_apps_store">Buscar en la tienda de aplicaciones</string>
+    <string name="app_menu">Menú</string>
     <string name="close_application">Cerrar aplicación</string>
     <string name="close_tab">Cerrar pestaña</string>
     <string name="navigate_forward">Adelante</string>

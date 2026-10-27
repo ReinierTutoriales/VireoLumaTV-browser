@@ -93,6 +93,7 @@
   <string name="details">Подробности:</string>
   <string name="exit">Выход</string>
   <string name="find_in_apps_store">Найти в магазине приложений</string>
+  <string name="app_menu">Меню</string>
   <string name="close_application">Закрыть приложение</string>
   <string name="close_tab">Закрыть вкладку</string>
   <string name="navigate_forward">Перейти вперед</string>

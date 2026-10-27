@@ -91,6 +91,7 @@
   <string name="details">"جزئیات:"</string>
   <string name="exit">"خروج"</string>
   <string name="find_in_apps_store">"در فروشگاه برنامه ها پیدا کنید"</string>
+  <string name="app_menu">منو</string>
   <string name="close_application">"بستن برنامه"</string>
   <string name="close_tab">"بستن برگه"</string>
   <string name="navigate_forward">"حرکت به جلو"</string>

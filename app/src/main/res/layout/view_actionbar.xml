@@ -109,9 +109,9 @@
       android:layout_height="48dp"
       style="@style/BrowserControl"
       android:id="@+id/ibMenu"
-      android:src="@drawable/ic_close_grey_900_36dp"
+      android:src="@drawable/ic_menu_24"
       android:nextFocusDown="@+id/vTabs"
       android:focusable="true"
       android:focusableInTouchMode="true"
-      android:contentDescription="@string/close_application" />
+      android:contentDescription="@string/app_menu" />
 </merge>

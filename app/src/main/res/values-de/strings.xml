@@ -95,6 +95,7 @@
   <string name="details">Details:</string>
   <string name="exit">Verlassen</string>
   <string name="find_in_apps_store">Im AppStore finden</string>
+  <string name="app_menu">Menü</string>
   <string name="close_application">Schließe App</string>
   <string name="close_tab">Schließe Tab</string>
   <string name="navigate_forward">Navigiere vorwärts</string>

@@ -95,6 +95,7 @@
   <string name="details">细节：</string>
   <string name="exit">退出</string>
   <string name="find_in_apps_store">在应用商店中查找</string>
+  <string name="app_menu">菜单</string>
   <string name="close_application">关闭应用</string>
   <string name="close_tab">关闭标签页</string>
   <string name="navigate_forward">前进</string>

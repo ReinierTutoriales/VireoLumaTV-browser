@@ -97,6 +97,7 @@
   <string name="details">Szczegóły:</string>
   <string name="exit">Wyjście</string>
   <string name="find_in_apps_store">Znajdź w sklepie z aplikacjami</string>
+  <string name="app_menu">Menu</string>
   <string name="close_application">Zamknij aplikację</string>
   <string name="close_tab">Zamknij kartę</string>
   <string name="navigate_forward">Nawiguj do przodu</string>
