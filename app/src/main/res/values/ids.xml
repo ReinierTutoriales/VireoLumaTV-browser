@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stable ids for the rows MainSettingsView builds; used by tests and focus checks. -->
+<resources>
+    <item name="spEngine" type="id" />
+    <item name="spHomePage" type="id" />
+    <item name="spTitles" type="id" />
+    <item name="llUAString" type="id" />
+    <item name="etUAString" type="id" />
+    <item name="llAdblock" type="id" />
+    <item name="etAdBlockerListUrl" type="id" />
+    <item name="tvAdBlockerListInfo" type="id" />
+    <item name="btnAdBlockerUpdate" type="id" />
+    <item name="spTheme" type="id" />
+    <item name="llWebViewAlgorithmicDarkening" type="id" />
+    <item name="llAllowAutoplayMedia" type="id" />
+    <item name="spVideoMaxQuality" type="id" />
+    <item name="llWebEngineDebug" type="id" />
+    <item name="llKeepScreenOn" type="id" />
+    <item name="llNavigateWithJoystickAxes" type="id" />
+    <item name="sbCursorMaxSpeed" type="id" />
+    <item name="sbCursorAcceleration" type="id" />
+    <item name="btnClearWebCache" type="id" />
+</resources>

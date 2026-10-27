@@ -5,11 +5,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
-import android.view.animation.AnimationUtils
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.ScrollView
-import android.widget.SeekBar
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.AppContext
@@ -18,47 +17,41 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.AdblockModel
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel
-import com.reiniertutoriales.vireolumatv.databinding.ViewSettingsMainBinding
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsRows.Companion.reveal
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.activity
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
-import androidx.core.view.isGone
+import java.util.Date
+import java.util.Locale
 
+/** General settings page. Choices apply at once; text fields are applied by [save] on close. */
 class MainSettingsView @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : ScrollView(context, attrs, defStyleAttr) {
-    private var vb = ViewSettingsMainBinding.inflate(LayoutInflater.from(getContext()), this, true)
     var settingsModel = ActiveModelsRepository.get(SettingsModel::class, activity!!)
     var adblockModel = ActiveModelsRepository.get(AdblockModel::class, activity!!)
     var config = AppContext.provideConfig()
 
+    private val rows = SettingsRows(
+        LayoutInflater.from(context).inflate(R.layout.view_settings_main, this, true)
+            .findViewById<LinearLayout>(R.id.settingsList))
+    private lateinit var searchEngineUrl: EditText
+    private lateinit var homePageMode: Spinner
+    private lateinit var customHomePageUrl: EditText
+    private lateinit var userAgent: EditText
+    private lateinit var adBlockListUrl: EditText
+    private lateinit var adBlockStatus: SettingsRows.Status
+
     init {
-        initHomePageAndSearchEngineConfigUI()
-
-        initUAStringConfigUI(context)
-
-        initAdBlockConfigUI()
-
-        initThemeSettingsUI()
-
-        initWebViewAlgorithmicDarkeningWithDarkUiModeUI()
-
-        initAllowAutoplayMediaUI()
-
-        initVideoPlaybackUI()
-
-        initWebEngineDebugUI()
-
-        initKeepScreenOnUI()
-
-        initJoystickAxesNavigationUI()
-
-        initVirtualCursorPhysicsSettingsUI()
-
-        vb.btnClearWebCache.setOnClickListener {
+        addSearchEngine()
+        addHomePage()
+        addUserAgent()
+        addAdBlock()
+        addAppearanceAndPlayback()
+        addInput()
+        rows.button(R.string.clear_web_cache, R.id.btnClearWebCache) {
             (activity as MainActivity).lifecycleScope.launch {
                 WebEngineFactory.clearCache(context)
                 Toast.makeText(context, android.R.string.ok, Toast.LENGTH_SHORT).show()
@@ -66,129 +59,139 @@ class MainSettingsView @JvmOverloads constructor(
         }
     }
 
-    private fun initThemeSettingsUI() {
-        val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, context.resources.getStringArray(R.array.themes))
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        vb.spTheme.adapter = adapter
-
-        vb.spTheme.setSelection(config.theme.value.ordinal, false)
-
-        vb.spTheme.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                if (config.theme.value.ordinal == position) return
-                config.theme.value = Config.Theme.values()[position]
-                Toast.makeText(context, context.getString(R.string.need_restart), Toast.LENGTH_SHORT).show()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-    }
-
-    private fun initWebViewAlgorithmicDarkeningWithDarkUiModeUI() {
-        vb.scWebViewAlgorithmicDarkeningWithDarkUiMode.isChecked =
-            config.webviewUseAlgorithmicDarkeningWithDarkUiMode
-        vb.scWebViewAlgorithmicDarkeningWithDarkUiMode.setOnCheckedChangeListener { _, isChecked ->
-            config.webviewUseAlgorithmicDarkeningWithDarkUiMode = isChecked
-        }
-    }
-
-    private fun initVideoPlaybackUI() {
-        fun spinner(view: android.widget.Spinner, items: Int, selected: Int, onSelected: (Int) -> Unit) {
-            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, context.resources.getStringArray(items))
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            view.adapter = adapter
-            view.setSelection(selected, false)
-            view.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) = onSelected(position)
-                override fun onNothingSelected(parent: AdapterView<*>) {}
+    private fun addSearchEngine() {
+        val urls = Config.SearchEnginesURLs
+        val custom = Config.SearchEnginesTitles.lastIndex
+        val saved = config.searchEngineURL.value
+        val known = if (saved == "") 0 else urls.indexOf(saved)
+        rows.choice(R.string.choose_default_search_engine, R.id.spEngine, Config.SearchEnginesTitles,
+            if (known == -1) custom else known) { position ->
+            val group = searchEngineUrl.parent as View
+            if (position == custom) {
+                reveal(group)
+                searchEngineUrl.setText(config.searchEngineURL.value)
+                searchEngineUrl.requestFocus()
+            } else {
+                group.visibility = View.GONE
+                searchEngineUrl.setText(urls[position])
             }
         }
-        // Applied from the next page load on (document-start script). Codecs follow the
-        // device's hardware decoders automatically; only the quality cap is user-selectable.
+        searchEngineUrl = rows.field(R.string.url, R.string.search_engine_url_with_query_placeholder_query,
+            visible = known == -1)
+        searchEngineUrl.setText(if (known == -1) saved else urls[known])
+        if (known == -1) searchEngineUrl.requestFocus()
+    }
+
+    private fun addHomePage() {
+        val modes = Config.HomePageMode.entries
+        homePageMode = rows.choice(R.string.home_page, R.id.spHomePage,
+            resources.getStringArray(R.array.home_page_modes), settingsModel.homePageMode.ordinal) { position ->
+            (customHomePageUrl.parent as View).visibility =
+                if (modes[position] == Config.HomePageMode.CUSTOM) View.VISIBLE else View.GONE
+        }
+        customHomePageUrl = rows.field(R.string.custom_home_page_url, R.string.url,
+            visible = settingsModel.homePageMode == Config.HomePageMode.CUSTOM)
+        customHomePageUrl.setText(settingsModel.homePage)
+    }
+
+    private fun addUserAgent() {
+        if (config.userAgentString.value?.contains("TV Bro/1.0 ") == true) {
+            config.userAgentString.value = null // Legacy value: the default user agent applies now.
+        }
+        val presets = settingsModel.uaStrings
+        val custom = settingsModel.userAgentStringTitles.lastIndex
+        val saved = config.userAgentString.value
+        val known = if (saved == null) 0 else presets.indexOf(saved)
+        rows.choice(R.string.choose_user_agent_string, R.id.spTitles, settingsModel.userAgentStringTitles,
+            if (known == -1) custom else known) { position ->
+            val group = userAgent.parent as View
+            if (position == custom) {
+                // Repeated custom selections keep a saved or half-typed value.
+                if (group.visibility != View.VISIBLE) {
+                    reveal(group)
+                    userAgent.setText(config.userAgentString.value.orEmpty())
+                    userAgent.requestFocus()
+                }
+            } else {
+                group.visibility = View.GONE
+                userAgent.setText(presets[position])
+            }
+        }
+        userAgent = rows.field(R.string.user_agent_string, R.string.edit_user_agent_string,
+            id = R.id.etUAString, groupId = R.id.llUAString, visible = known == -1)
+        userAgent.setText(if (known == -1) saved.orEmpty() else presets[known])
+        if (known == -1) userAgent.requestFocus()
+    }
+
+    private fun addAdBlock() {
+        lateinit var details: View
+        rows.toggle(R.string.toggle_ads_blocking, R.id.llAdblock, config.adBlockEnabled) { _, enabled ->
+            config.adBlockEnabled = enabled
+            (activity as MainActivity).refreshAdblockSettings()
+            details.visibility = if (enabled) View.VISIBLE else View.GONE
+        }
+        details = rows.group(config.adBlockEnabled) {
+            adBlockListUrl = field(null, R.string.url, id = R.id.etAdBlockerListUrl)
+            adBlockStatus = status(R.id.tvAdBlockerListInfo, R.id.btnAdBlockerUpdate,
+                R.drawable.ic_refresh_grey_900_24dp, R.string.update_ad_blocker_list) {
+                if (!adblockModel.clientLoading.value) {
+                    saveAdBlockListUrl()
+                    adblockModel.loadAdBlockList(true)
+                }
+            }
+        }
+        adBlockListUrl.setText(config.adBlockListURL.value)
+        updateAdBlockInfo()
+    }
+
+    private fun addAppearanceAndPlayback() {
+        rows.choice(R.string.theme, R.id.spTheme, resources.getStringArray(R.array.themes),
+            config.theme.value.ordinal) { position ->
+            if (config.theme.value.ordinal != position) {
+                config.theme.value = Config.Theme.entries[position]
+                Toast.makeText(context, R.string.need_restart, Toast.LENGTH_SHORT).show()
+            }
+        }
+        rows.toggle(R.string.webview_use_algorithmic_darkening_with_dark_ui_mode, R.id.llWebViewAlgorithmicDarkening,
+            config.webviewUseAlgorithmicDarkeningWithDarkUiMode) { _, on ->
+            config.webviewUseAlgorithmicDarkeningWithDarkUiMode = on
+        }
+        rows.toggle(R.string.allow_autoplay_media, R.id.llAllowAutoplayMedia, config.allowAutoplayMedia) { _, on ->
+            config.allowAutoplayMedia = on
+        }
+        // Read by the document-start script from the next page load; codecs follow the hardware decoders.
         val heights = intArrayOf(0, 1080, 720, 480)
-        spinner(vb.spVideoMaxQuality, R.array.video_max_qualities,
-            heights.indexOf(config.videoMaxHeight).coerceAtLeast(0)) {
-            config.videoMaxHeight = heights[it]
-        }
-    }
-
-    private fun initAllowAutoplayMediaUI() {
-        vb.scAllowAutoplayMedia.isChecked = config.allowAutoplayMedia
-        vb.scAllowAutoplayMedia.setOnCheckedChangeListener { _, isChecked ->
-            config.allowAutoplayMedia = isChecked
-        }
-    }
-
-    private fun initWebEngineDebugUI() {
-        vb.scWebEngineDebug.isChecked = config.webEngineDebug
-        vb.scWebEngineDebug.setOnCheckedChangeListener { _, isChecked ->
-            if (!isChecked) {
+        rows.choice(R.string.video_max_quality, R.id.spVideoMaxQuality, resources.getStringArray(R.array.video_max_qualities),
+            heights.indexOf(config.videoMaxHeight).coerceAtLeast(0)) { config.videoMaxHeight = heights[it] }
+        rows.toggle(R.string.web_engine_debug, R.id.llWebEngineDebug, config.webEngineDebug) { switch, on ->
+            if (!on) {
                 config.webEngineDebug = false
-                return@setOnCheckedChangeListener
+                return@toggle
             }
-
             AlertDialog.Builder(context)
                 .setTitle(R.string.warning)
                 .setMessage(R.string.web_engine_debug_warning_message)
                 .setPositiveButton(R.string.ok) { _, _ ->
                     config.webEngineDebug = true
-                    Toast.makeText(context, context.getString(R.string.need_restart), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.need_restart, Toast.LENGTH_SHORT).show()
                 }
-                .setNegativeButton(R.string.cancel) { _, _ ->
-                    vb.scWebEngineDebug.isChecked = false
-                }
-                .setOnCancelListener {
-                    vb.scWebEngineDebug.isChecked = false
-                }
+                .setNegativeButton(R.string.cancel) { _, _ -> switch.isChecked = false }
+                .setOnCancelListener { switch.isChecked = false }
                 .show()
         }
     }
 
-    private fun initKeepScreenOnUI() {
-        vb.scKeepScreenOn.isChecked = settingsModel.keepScreenOn.value
-
-        vb.scKeepScreenOn.setOnCheckedChangeListener { buttonView, isChecked ->
-            settingsModel.keepScreenOn.value = isChecked
+    private fun addInput() {
+        rows.toggle(R.string.toggle_keep_screen_on, R.id.llKeepScreenOn, settingsModel.keepScreenOn.value) { _, on ->
+            settingsModel.keepScreenOn.value = on
         }
-    }
-
-    private fun initJoystickAxesNavigationUI() {
-        vb.scNavigateWithJoystickAxes.isChecked = !config.disableMotionAxesDpadNavigation
-        vb.scNavigateWithJoystickAxes.setOnCheckedChangeListener { _, isChecked ->
-            config.disableMotionAxesDpadNavigation = !isChecked
-        }
-    }
-
-    private fun initVirtualCursorPhysicsSettingsUI() {
-        val minP = Config.CURSOR_PHYSICS_PERCENT_MIN
-        val maxP = Config.CURSOR_PHYSICS_PERCENT_MAX
-        val range = maxP - minP
-        vb.sbCursorMaxSpeed.max = range
-        vb.sbCursorAcceleration.max = range
-        fun refreshValueLabels() {
-            vb.tvCursorMaxSpeedValue.text = context.getString(R.string.cursor_physics_percent, config.cursorMaxSpeedPercent)
-            vb.tvCursorAccelerationValue.text = context.getString(R.string.cursor_physics_percent, config.cursorAccelerationPercent)
-        }
-        vb.sbCursorMaxSpeed.progress = config.cursorMaxSpeedPercent - minP
-        vb.sbCursorAcceleration.progress = config.cursorAccelerationPercent - minP
-        refreshValueLabels()
-        vb.sbCursorMaxSpeed.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                config.cursorMaxSpeedPercent = minP + progress
-                refreshValueLabels()
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-        vb.sbCursorAcceleration.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                config.cursorAccelerationPercent = minP + progress
-                refreshValueLabels()
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+        rows.toggle(R.string.navigate_with_joystick_axes, R.id.llNavigateWithJoystickAxes,
+            !config.disableMotionAxesDpadNavigation) { _, on -> config.disableMotionAxesDpadNavigation = !on }
+        val percent = { value: Int -> context.getString(R.string.cursor_physics_percent, value) }
+        rows.slider(R.string.cursor_max_speed, R.id.sbCursorMaxSpeed, Config.CURSOR_PHYSICS_PERCENT_MIN,
+            Config.CURSOR_PHYSICS_PERCENT_MAX, config.cursorMaxSpeedPercent, percent) { config.cursorMaxSpeedPercent = it }
+        rows.slider(R.string.cursor_acceleration, R.id.sbCursorAcceleration, Config.CURSOR_PHYSICS_PERCENT_MIN,
+            Config.CURSOR_PHYSICS_PERCENT_MAX, config.cursorAccelerationPercent, percent) { config.cursorAccelerationPercent = it }
     }
 
     private val loadingObserver: (Boolean) -> Unit = { updateAdBlockInfo() }
@@ -209,29 +212,8 @@ class MainSettingsView @JvmOverloads constructor(
         super.onDetachedFromWindow()
     }
 
-    private fun initAdBlockConfigUI() {
-        vb.scAdblock.isChecked = config.adBlockEnabled
-        vb.etAdBlockerListUrl.setText(config.adBlockListURL.value)
-        vb.llAdblock.setOnClickListener {
-            vb.scAdblock.isChecked = !vb.scAdblock.isChecked
-            config.adBlockEnabled = vb.scAdblock.isChecked
-            (activity as MainActivity).refreshAdblockSettings()
-            vb.llAdBlockerDetails.visibility = if (vb.scAdblock.isChecked) VISIBLE else GONE
-        }
-        vb.llAdBlockerDetails.visibility = if (config.adBlockEnabled) VISIBLE else GONE
-
-        vb.btnAdBlockerUpdate.setOnClickListener {
-            if (adblockModel.clientLoading.value) return@setOnClickListener
-            saveAdBlockListUrl()
-            adblockModel.loadAdBlockList(true)
-        }
-
-        updateAdBlockInfo()
-    }
-
     private fun saveAdBlockListUrl() {
-        val value = vb.etAdBlockerListUrl.text.toString().trim()
-        val source = value.ifEmpty { Config.DEFAULT_ADBLOCK_LIST_URL }
+        val source = adBlockListUrl.text.toString().trim().ifEmpty { Config.DEFAULT_ADBLOCK_LIST_URL }
         if (config.adBlockListURL.value != source) {
             config.adBlockListLastUpdate = 0L
             config.adBlockListNextRetry = 0L
@@ -240,146 +222,40 @@ class MainSettingsView @JvmOverloads constructor(
     }
 
     private fun updateAdBlockInfo() {
-        val dateFormat = SimpleDateFormat("hh:mm dd MMMM yyyy", Locale.getDefault())
-        val lastUpdate = if (config.adBlockListLastUpdate == 0L)
-            context.getString(R.string.never) else
-            dateFormat.format(Date(config.adBlockListLastUpdate))
+        val loading = adblockModel.clientLoading.value
+        val lastUpdate = if (config.adBlockListLastUpdate == 0L) context.getString(R.string.never)
+            else SimpleDateFormat("hh:mm dd MMMM yyyy", Locale.getDefault()).format(Date(config.adBlockListLastUpdate))
         val lists = if (config.adBlockListURL.value == Config.DEFAULT_ADBLOCK_LIST_URL)
             adblockModel.configuredListNames().joinToString(" · ") else config.adBlockListURL.value
-        val infoText = "${context.getString(R.string.last_update)}: $lastUpdate\n$lists"
-        val loadingAdBlockList = adblockModel.clientLoading.value
-        val status = when {
-            loadingAdBlockList -> R.string.adblock_updating
-            adblockModel.updateResult.value == AdblockModel.UpdateResult.UPDATED -> R.string.adblock_updated
-            adblockModel.updateResult.value == AdblockModel.UpdateResult.PARTIAL -> R.string.adblock_partial_update
-            adblockModel.updateResult.value == AdblockModel.UpdateResult.CACHED -> R.string.adblock_using_saved
-            adblockModel.updateResult.value == AdblockModel.UpdateResult.ERROR -> R.string.adblock_update_error
-            else -> null
+        val state = when {
+            loading -> R.string.adblock_updating
+            else -> when (adblockModel.updateResult.value) {
+                AdblockModel.UpdateResult.UPDATED -> R.string.adblock_updated
+                AdblockModel.UpdateResult.PARTIAL -> R.string.adblock_partial_update
+                AdblockModel.UpdateResult.CACHED -> R.string.adblock_using_saved
+                AdblockModel.UpdateResult.ERROR -> R.string.adblock_update_error
+                else -> null
+            }
         }
         val notRefreshed = adblockModel.unavailableLists.value
-        val notRefreshedLine = if (loadingAdBlockList || notRefreshed.isEmpty()) "" else
-            "\n" + context.getString(R.string.adblock_lists_not_refreshed, notRefreshed.joinToString(" · "))
-        vb.tvAdBlockerListInfo.text = infoText + (status?.let { "\n" + context.getString(it) } ?: "") + notRefreshedLine
-        // Keep the focused TV button in place; the click handler rejects duplicate refreshes.
-        vb.btnAdBlockerUpdate.isEnabled = true
-        vb.btnAdBlockerUpdate.visibility = View.VISIBLE
-        vb.pbAdBlockerListLoading.visibility = if (loadingAdBlockList) View.VISIBLE else View.INVISIBLE
-    }
-
-    private fun initUAStringConfigUI(context: Context) {
-        if (config.userAgentString.value?.contains("TV Bro/1.0 ") == true) {//legacy ua string - now default one should be used
-            config.userAgentString.value = null
-        }
-        val selected = if (config.userAgentString.value == null) {
-            0
-        } else {
-            settingsModel.uaStrings.indexOf(config.userAgentString.value ?: "")
-        }
-
-        val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, settingsModel.userAgentStringTitles)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        vb.spTitles.adapter = adapter
-
-        if (selected != -1) {
-            vb.spTitles.setSelection(selected, false)
-            vb.etUAString.setText(settingsModel.uaStrings[selected])
-        } else {
-            vb.spTitles.setSelection(settingsModel.userAgentStringTitles.size - 1, false)
-            vb.llUAString.visibility = View.VISIBLE
-            vb.etUAString.setText(config.userAgentString.value ?: "")
-            vb.etUAString.requestFocus()
-        }
-        vb.spTitles.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                if (position == settingsModel.userAgentStringTitles.size - 1) {
-                    if (vb.llUAString.isGone) {
-                        vb.llUAString.visibility = View.VISIBLE
-                        vb.llUAString.startAnimation(AnimationUtils.loadAnimation(context, android.R.anim.fade_in))
-                        vb.etUAString.setText(config.userAgentString.value.orEmpty())
-                        vb.etUAString.requestFocus()
-                    }
-                    // Initial/repeated selection must not erase a saved or in-progress custom value.
-                    return
-                }
-                vb.llUAString.visibility = View.GONE
-                vb.etUAString.setText(settingsModel.uaStrings[position])
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-
-            }
-        }
-    }
-
-    private fun initHomePageAndSearchEngineConfigUI() {
-        var selected = 0
-        if ("" != config.searchEngineURL.value) {
-            selected = Config.SearchEnginesURLs.indexOf(config.searchEngineURL.value)
-        }
-
-        val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, Config.SearchEnginesTitles)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        vb.spEngine.adapter = adapter
-
-        if (selected != -1) {
-            vb.spEngine.setSelection(selected)
-            vb.etUrl.setText(Config.SearchEnginesURLs[selected])
-        } else {
-            vb.spEngine.setSelection(Config.SearchEnginesTitles.size - 1)
-            vb.llURL.visibility = View.VISIBLE
-            vb.etUrl.setText(config.searchEngineURL.value)
-            vb.etUrl.requestFocus()
-        }
-        vb.spEngine.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                if (position == (Config.SearchEnginesTitles.size - 1)) {
-                    if (vb.llURL.isGone) {
-                        vb.llURL.visibility = View.VISIBLE
-                        vb.llURL.startAnimation(
-                            AnimationUtils.loadAnimation(context, android.R.anim.fade_in)
-                        )
-                    }
-                    vb.etUrl.setText(config.searchEngineURL.value)
-                    vb.etUrl.requestFocus()
-                    return
-                } else {
-                    vb.llURL.visibility = View.GONE
-                    vb.etUrl.setText(Config.SearchEnginesURLs[position])
-                }
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
-        val homePageSpinnerAdapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, context.resources.getStringArray(R.array.home_page_modes))
-        homePageSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        vb.spHomePage.adapter = homePageSpinnerAdapter
-        vb.spHomePage.setSelection(settingsModel.homePageMode.ordinal)
-
-        vb.spHomePage.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                val homePageMode = Config.HomePageMode.entries[position]
-                vb.llCustomHomePage.visibility = if (homePageMode == Config.HomePageMode.CUSTOM) View.VISIBLE else View.GONE
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
-        vb.etCustomHomePageUrl.setText(settingsModel.homePage)
+        adBlockStatus.text.text = buildList {
+            add("${context.getString(R.string.last_update)}: $lastUpdate")
+            add(lists)
+            state?.let { add(context.getString(it)) }
+            if (!loading && notRefreshed.isNotEmpty())
+                add(context.getString(R.string.adblock_lists_not_refreshed, notRefreshed.joinToString(" · ")))
+        }.joinToString("\n")
+        // The focused TV button stays in place while busy; its click ignores duplicate refreshes.
+        adBlockStatus.action.isEnabled = true
+        adBlockStatus.action.visibility = View.VISIBLE
+        adBlockStatus.progress.visibility = if (loading) View.VISIBLE else View.INVISIBLE
     }
 
     fun save() {
-        val customSearchEngineUrl = vb.etUrl.text.toString()
-        settingsModel.setSearchEngineURL(customSearchEngineUrl)
-
-        val homePageMode = Config.HomePageMode.entries[vb.spHomePage.selectedItemPosition]
-        val customHomePageURL = vb.etCustomHomePageUrl.text.toString()
-        val homePageLinksMode = settingsModel.homePageLinksMode
-        settingsModel.setHomePageProperties(homePageMode, customHomePageURL, homePageLinksMode)
-
-        val userAgent = vb.etUAString.text.toString().trim(' ')
-        config.userAgentString.value = userAgent.ifEmpty { null }
+        settingsModel.setSearchEngineURL(searchEngineUrl.text.toString())
+        settingsModel.setHomePageProperties(Config.HomePageMode.entries[homePageMode.selectedItemPosition],
+            customHomePageUrl.text.toString(), settingsModel.homePageLinksMode)
+        config.userAgentString.value = userAgent.text.toString().trim(' ').ifEmpty { null }
         saveAdBlockListUrl()
     }
 }
