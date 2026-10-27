@@ -8,13 +8,11 @@
     android:background="@color/day_night_background_color"
     tools:context="com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity">
 
-    <de.halfbit.pinnedsection.PinnedSectionListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@color/day_night_list_divider_color"
-        android:dividerHeight="1dp"
-        android:listSelector="@drawable/list_item_bg_selector"/>
+        android:clipToPadding="false"/>
 
     <TextView
         android:text="@string/nothing"

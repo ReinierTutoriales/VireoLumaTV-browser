@@ -20,7 +20,6 @@ room = "2.8.5"
 
 junit = "4.13.2"
 robolectric = "4.17"
-pinned-section-listview = "1.0.0"
 
 [libraries]
 # build logic (buildSrc)
@@ -44,7 +43,6 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 
 # Third-party
-pinned-section-listview = { group = "de.halfbit", name = "pinned-section-listview", version.ref = "pinned-section-listview" }
 
 # Test
 junit = { group = "junit", name = "junit", version.ref = "junit" }

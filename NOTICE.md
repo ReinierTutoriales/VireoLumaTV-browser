@@ -34,16 +34,6 @@ Filter lists (EasyList, EasyPrivacy, EasyList Spanish, uBlock Origin filters) ar
 run time as data and are not part of the application package. The redirect resources and
 scriptlets in `assets/adblock` and `assets/surrogates` are written for VireoLumaTV.
 
-## pinned-section-listview
-
-`de.halfbit:pinned-section-listview:1.0.0`
-
-Upstream README: Copyright 2013-2016 Sergej Shafarenka, halfbit.de; Apache 2.0.
-Source: https://github.com/beworker/pinned-section-listview
-License text: [Apache 2.0](licenses/Apache-2.0.txt).
-
-The upstream default branch was inspected; the exact published 1.0.0 artifact and its complete notices remain to be checked.
-
 ## Other declared dependencies and resources
 
 AndroidX, Kotlin, coroutines, build tooling, test dependencies, filter lists, icons, logos, and screenshots require the artifact-specific inventory described in [the audit](docs/audit/archive-2026-10-01/LICENSE_REBRANDING_AUDIT.md). Do not interpret this partial notice inventory as certification of all transitive dependencies or as permission to use third-party trademarks.

@@ -12,9 +12,9 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.webkit.MimeTypeMap
-import android.widget.AbsListView
-import android.widget.AdapterView
 import android.widget.PopupMenu
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
@@ -31,22 +31,19 @@ import java.io.File
 import java.util.*
 import androidx.core.net.toUri
 
-open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListener, ActiveDownloadsModel.Listener, AdapterView.OnItemLongClickListener{
+open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listener {
     private lateinit var vb: ActivityDownloadsBinding
-    private lateinit var adapter: DownloadListAdapter
-    private val listeners = ArrayList<ActiveDownloadsModel.Listener>()
+    private val adapter = DownloadListAdapter(::onItemClick, ::onItemLongClick)
     private val privateSession: Boolean get() = this is IncognitoDownloadsActivity
 
     private lateinit var activeDownloadsModel: ActiveDownloadsModel
     private lateinit var downloadsHistoryModel: DownloadsHistoryModel
 
-    internal var onListScrollListener: AbsListView.OnScrollListener = object : AbsListView.OnScrollListener {
-        override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
-
-        }
-
-        override fun onScroll(view: AbsListView, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
-            if (!privateSession && totalItemCount != 0 && firstVisibleItem + visibleItemCount >= totalItemCount - 1) {
+    // Loads the next page when the last visible row is within one row of the end of the list.
+    private val onListScrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            val lastVisible = (recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+            if (!privateSession && adapter.itemCount != 0 && lastVisible >= adapter.itemCount - 2) {
                 downloadsHistoryModel.loadNextItems()
             }
         }
@@ -61,12 +58,9 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         activeDownloadsModel = ActiveModelsRepository.get(ActiveDownloadsModel::class, this)
         downloadsHistoryModel = ActiveModelsRepository.get(DownloadsHistoryModel::class, this)
 
-        adapter = DownloadListAdapter(this)
+        vb.listView.layoutManager = LinearLayoutManager(this)
         vb.listView.adapter = adapter
-
-        vb.listView.setOnScrollListener(onListScrollListener)
-        vb.listView.onItemClickListener = this
-        vb.listView.onItemLongClickListener = this
+        vb.listView.addOnScrollListener(onListScrollListener)
 
         downloadsHistoryModel.lastLoadedItems.subscribe(this, false, {
             if (it.isNotEmpty()) {
@@ -108,14 +102,7 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         super.onPause()
     }
 
-    override fun onItemClick(adapterView: AdapterView<*>, view: View, i: Int, l: Long) {
-        val v = view as DownloadListItemView
-        val download = v.download ?: return
-
-        if (download.isDateHeader) {
-            return
-        }
-
+    private fun onItemClick(download: Download) {
         if (download.size != download.bytesReceived) {
             //file should be already marked in UI as broken
             return
@@ -149,34 +136,28 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
 
     }
 
-    override fun onItemLongClick(adapterView: AdapterView<*>, view: View, i: Int, l: Long): Boolean {
-        val v = view as DownloadListItemView
-        val download = v.download ?: return false
-        if (download.isDateHeader) {
-            return true
-        }
+    private fun onItemLongClick(anchor: View, download: Download): Boolean {
         if (download.size == Download.BROKEN_MARK || download.size == Download.CANCELLED_MARK ||
                 download.size == download.bytesReceived) {
-            showFinishedDownloadOptionsPopup(v)
+            showFinishedDownloadOptionsPopup(anchor, download)
         } else {
-            showUnfinishedDownloadOptionsPopup(v)
+            showUnfinishedDownloadOptionsPopup(anchor, download)
         }
         return true
     }
 
-    private fun showUnfinishedDownloadOptionsPopup(v: DownloadListItemView) {
-        val pm = PopupMenu(this, v, Gravity.BOTTOM)
+    private fun showUnfinishedDownloadOptionsPopup(anchor: View, download: Download) {
+        val pm = PopupMenu(this, anchor, Gravity.BOTTOM)
         pm.menu.add(R.string.cancel)
         pm.setOnMenuItemClickListener {
-            activeDownloadsModel.cancelDownload(v.download!!)
+            activeDownloadsModel.cancelDownload(download)
             true
         }
         pm.show()
     }
 
-    private fun showFinishedDownloadOptionsPopup(v: DownloadListItemView) {
-        val download = v.download ?: return
-        val pm = PopupMenu(this, v, Gravity.BOTTOM)
+    private fun showFinishedDownloadOptionsPopup(anchor: View, download: Download) {
+        val pm = PopupMenu(this, anchor, Gravity.BOTTOM)
         if (download.filename.endsWith(".apk", true) &&
             download.size == download.bytesReceived) {
             pm.menu.add(0, 0, 0, R.string.install)
@@ -186,8 +167,8 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         pm.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 0 -> installAPK(download)
-                1 -> openFolder(v)
-                2 -> deleteItem(v)
+                1 -> openFolder()
+                2 -> deleteItem(download)
             }
             true
         }
@@ -228,7 +209,7 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         }
     }
 
-    private fun openFolder(v: DownloadListItemView) {
+    private fun openFolder() {
         val uri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath)
         val intent = Intent(Intent.ACTION_VIEW)
         intent.setDataAndType(uri, "resource/folder")
@@ -239,36 +220,22 @@ open class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         }
     }
 
-    private fun deleteItem(v: DownloadListItemView) = lifecycleScope.launch(Dispatchers.Main) {
-        v.download?.let {
-            activeDownloadsModel.deleteItem(it)
-            adapter.remove(it)
-        }
+    private fun deleteItem(download: Download) = lifecycleScope.launch(Dispatchers.Main) {
+        activeDownloadsModel.deleteItem(download)
+        adapter.remove(download)
     }
 
     override fun onDownloadUpdated(downloadInfo: Download) {
         if (privateSession && downloadInfo.incognito) showPrivateDownload(downloadInfo)
-        for (i in listeners.indices) {
-            listeners[i].onDownloadUpdated(downloadInfo)
-        }
+        adapter.updateDownload(downloadInfo)
     }
 
     override fun onDownloadError(downloadInfo: Download, responseCode: Int, responseMessage: String) {
         if (privateSession && downloadInfo.incognito) showPrivateDownload(downloadInfo)
-        for (i in listeners.indices) {
-            listeners[i].onDownloadError(downloadInfo, responseCode, responseMessage)
-        }
+        adapter.updateDownload(downloadInfo)
     }
 
     override fun onAllDownloadsComplete() {}
-
-    fun registerListener(listener: ActiveDownloadsModel.Listener) {
-        listeners.add(listener)
-    }
-
-    fun unregisterListener(listener: ActiveDownloadsModel.Listener) {
-        listeners.remove(listener)
-    }
 
     companion object {
         const val REQUEST_CODE_UNKNOWN_APP_SOURCES = 10007
