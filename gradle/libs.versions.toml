@@ -3,8 +3,8 @@ android-compileSdk = "37"
 android-compileSdkMinor = "1"
 android-minSdk = "24"
 android-targetSdk = "37"
-# NDK used by AGP 9.4.1 by default; links the Rust adblock engine (native/adblock-jni)
-android-ndk = "28.2.13676358"
+# NDK r30 LTS; links the Rust adblock engine (native/adblock-jni)
+android-ndk = "30.0.16248370"
 agp = "9.4.1"
 kotlin = "2.4.21"
 kotlin-stdlib = "2.4.21"
