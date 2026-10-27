@@ -39,17 +39,22 @@ No concluir que cada resultado CACHED significa fallo del bloqueador.
 
 ## 2. Contrato de navegación protegido
 
+**Cambio de contrato (2026-10-27, petición del propietario):** la barra inferior flotante se sustituye por una
+cápsula superior única con URL, Atrás, Adelante, Recargar, Inicio, escudo del bloqueador y menú. Cerrar pestaña
+y voz pasan al menú de aplicación. Pulsación larga en el escudo abre el detalle del bloqueador. Los recorridos
+N01–N06 se leen con esta cápsula; el resto de comportamiento no cambia. Pendiente de validación en onn.
+
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 
 | ID | Recorrido | Resultado obligatorio |
 | --- | --- | --- |
-| N01 | Página → abrir menú | Ambas barras disponibles; foco visible en control accionable. |
-| N02 | Mover foco por barra inferior → Arriba → pestañas → búsqueda | Controles alcanzables, sin ocultar filas por recibir foco; buscar no abre IME hasta activar edición. |
-| N03 | Barra inferior Atrás/Adelante/Inicio/Recargar | Ejecutar una sola acción sobre la pestaña seleccionada; botones coherentes con historial. |
+| N01 | Página → abrir cápsula | Cápsula visible con foco en Atrás; foco visible en control accionable. |
+| N02 | Mover foco por la cápsula → Abajo → pestañas → Arriba → URL | Controles alcanzables, sin ocultar filas por recibir foco; buscar no abre IME hasta activar edición. |
+| N03 | Cápsula Atrás/Adelante/Recargar/Inicio | Ejecutar una sola acción sobre la pestaña seleccionada; botones coherentes con historial. |
 | N04 | Editar dirección → Atrás/cancelar | Cerrar IME/edición antes de alterar historial; no enfocar accidentalmente Salir. |
-| N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view una vez y mostrar ambas barras en esa misma pulsación; foco inferior accionable, acceso a superior y retorno al puntero, sin navegar otra URL. |
-| N06 | Pestaña A → preview B → comando inferior | Aplicar al contenido seleccionado B, sin quedarse apuntando a A. |
+| N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view una vez y mostrar la cápsula en esa misma pulsación; foco en Atrás accionable, acceso a pestañas y retorno al puntero, sin navegar otra URL. |
+| N06 | Pestaña A → preview B → comando de la cápsula | Aplicar al contenido seleccionado B, sin quedarse apuntando a A. |
 | N07 | Diálogo/selector/permiso → cancelar o volver | Resolver callback una vez con su propietario; foco vuelve al lugar correcto. |
 | N08 | Atrás desde raíz | Salida al launcher alcanzable y sin bucle, conservando acceso al menú y comandos inferiores. La secuencia exacta debe especificarse antes de implementarla. |
 | N09 | Mando OK, D-pad, pulsación larga, gamepad y puntero | Un gesto físico produce una acción; se conserva selección, scroll y clic en enlaces. |
