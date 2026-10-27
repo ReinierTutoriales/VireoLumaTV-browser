@@ -2,14 +2,6 @@
 
 **Esta versión usa una clave de firma nueva. No se instala encima de la 1.1.1 ni de la 1.2.0 firmada con la clave anterior: hay que desinstalar la versión que tengas e instalar la 1.2.1. Los datos (favoritos, historial, ajustes) se pierden salvo que se exporten antes.**
 
-Incluye los cambios de la 1.2.0 que aparecen a continuación.
-
----
-
-# VireoLumaTV 1.2.0
-
-**Esta versión usa una clave de firma nueva. No se instala encima de la 1.1.1: hay que desinstalar la 1.1.1 e instalar la 1.2.0. Los datos (favoritos, historial, ajustes) se pierden salvo que se exporten antes.**
-
 Actualización sobre la 1.1.1.
 
 ## Qué APK instalar
