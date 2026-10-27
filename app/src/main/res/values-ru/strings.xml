@@ -162,8 +162,9 @@
     <string name="link_actions">Действия со ссылкой</string>
     <string name="adblock_updating">Обновление списков фильтров…</string>
     <string name="adblock_updated">Списки фильтров обновлены</string>
-    <string name="adblock_partial_update">Некоторые списки обновлены; сохранённые правила сохранены. Повтор через 6 часов.</string>
+    <string name="adblock_partial_update">Некоторые списки обновлены; сохранённые правила сохранены.</string>
     <string name="adblock_using_saved">Используются сохранённые правила. Новый список не загружен.</string>
+    <string name="adblock_lists_not_refreshed">Не обновлены: %1$s</string>
     <string name="adblock_update_error">Не удалось загрузить списки фильтров. Проверьте соединение или URL списка.</string>
     <string name="video_max_quality">Максимальное качество видео</string>
     <string name="up_to_date">У вас последняя версия</string>

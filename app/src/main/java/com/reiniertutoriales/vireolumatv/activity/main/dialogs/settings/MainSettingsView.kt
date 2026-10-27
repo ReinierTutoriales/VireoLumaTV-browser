@@ -245,7 +245,7 @@ class MainSettingsView @JvmOverloads constructor(
             context.getString(R.string.never) else
             dateFormat.format(Date(config.adBlockListLastUpdate))
         val lists = if (config.adBlockListURL.value == Config.DEFAULT_ADBLOCK_LIST_URL)
-            "EasyList · EasyPrivacy · EasyList Spanish" else config.adBlockListURL.value
+            adblockModel.configuredListNames().joinToString(" · ") else config.adBlockListURL.value
         val infoText = "${context.getString(R.string.last_update)}: $lastUpdate\n$lists"
         val loadingAdBlockList = adblockModel.clientLoading.value
         val status = when {

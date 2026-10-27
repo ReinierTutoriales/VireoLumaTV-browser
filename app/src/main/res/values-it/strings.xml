@@ -162,8 +162,9 @@
     <string name="link_actions">Azioni sui link</string>
     <string name="adblock_updating">Aggiornamento delle liste di filtri…</string>
     <string name="adblock_updated">Liste di filtri aggiornate</string>
-    <string name="adblock_partial_update">Alcune liste aggiornate; regole salvate mantenute. Riprova tra 6 ore.</string>
+    <string name="adblock_partial_update">Alcune liste aggiornate; regole salvate mantenute.</string>
     <string name="adblock_using_saved">Uso delle regole salvate. Nessuna nuova lista scaricata.</string>
+    <string name="adblock_lists_not_refreshed">Non aggiornate: %1$s</string>
     <string name="adblock_update_error">Impossibile caricare le liste di filtri. Controlla la connessione o l\'URL della lista.</string>
     <string name="video_max_quality">Qualità video massima</string>
     <string name="up_to_date">Hai l\'ultima versione</string>

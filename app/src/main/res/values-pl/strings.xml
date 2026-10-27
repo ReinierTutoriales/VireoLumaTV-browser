@@ -162,8 +162,9 @@
     <string name="link_actions">Akcje linku</string>
     <string name="adblock_updating">Aktualizowanie list filtrów…</string>
     <string name="adblock_updated">Listy filtrów zaktualizowane</string>
-    <string name="adblock_partial_update">Część list zaktualizowano; zapisane reguły zachowano. Ponowna próba za 6 godzin.</string>
+    <string name="adblock_partial_update">Część list zaktualizowano; zapisane reguły zachowano.</string>
     <string name="adblock_using_saved">Używane są zapisane reguły. Nie pobrano nowej listy.</string>
+    <string name="adblock_lists_not_refreshed">Nie zaktualizowano: %1$s</string>
     <string name="adblock_update_error">Nie można wczytać list filtrów. Sprawdź połączenie lub adres URL listy.</string>
     <string name="video_max_quality">Maksymalna jakość wideo</string>
     <string name="up_to_date">Masz najnowszą wersję</string>

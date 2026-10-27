@@ -21,6 +21,18 @@ import java.util.concurrent.atomic.AtomicBoolean
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class AdblockUpdateTest {
+    @Test fun configuredListNamesReflectActualSources() {
+        val model = AdblockModel(autoLoad = false)
+        try {
+            assertEquals(listOf("EasyList", "EasyPrivacy", "EasyList Spanish", "uBlock filters",
+                "uBlock Quick fixes", "uBlock Unbreak", "uBlock Badware risks"),
+                model.configuredListNames(com.reiniertutoriales.vireolumatv.Config.DEFAULT_ADBLOCK_LIST_URL))
+            assertEquals(listOf("Custom"), model.configuredListNames("https://example.com/custom.txt"))
+        } finally {
+            model.clear()
+        }
+    }
+
     @Test fun expiredCacheBlocksWhileDownloadingAndFailedRefreshKeepsWorkingRules() {
         val entered = CountDownLatch(1)
         val release = CountDownLatch(1)

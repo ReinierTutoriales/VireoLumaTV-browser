@@ -168,7 +168,7 @@
     <string name="based_on_tv_bro_sources">Basado en el código fuente de TV Bro: %s</string>
     <string name="adblock_updating">Actualizando listas…</string>
     <string name="adblock_updated">Listas actualizadas</string>
-    <string name="adblock_partial_update">Actualización parcial; se conservan las reglas guardadas. Reintento en 6 horas.</string>
+    <string name="adblock_partial_update">Actualización parcial; se conservan las reglas guardadas.</string>
     <string name="adblock_using_saved">Usando reglas guardadas. No se descargaron listas nuevas.</string>
     <string name="adblock_lists_not_refreshed">No actualizadas: %1$s</string>
     <string name="adblock_update_error">No se pudieron cargar las listas. Revisa la conexión o la URL.</string>

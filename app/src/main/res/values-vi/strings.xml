@@ -162,8 +162,9 @@
     <string name="link_actions">Thao tác liên kết</string>
     <string name="adblock_updating">Đang cập nhật danh sách bộ lọc…</string>
     <string name="adblock_updated">Đã cập nhật danh sách bộ lọc</string>
-    <string name="adblock_partial_update">Một số danh sách đã được cập nhật; giữ lại các quy tắc đã lưu. Thử lại sau 6 giờ.</string>
+    <string name="adblock_partial_update">Một số danh sách đã được cập nhật; giữ lại các quy tắc đã lưu.</string>
     <string name="adblock_using_saved">Đang dùng quy tắc đã lưu. Không tải được danh sách mới.</string>
+    <string name="adblock_lists_not_refreshed">Chưa cập nhật: %1$s</string>
     <string name="adblock_update_error">Không thể tải danh sách bộ lọc. Kiểm tra kết nối hoặc URL danh sách.</string>
     <string name="video_max_quality">Chất lượng video tối đa</string>
     <string name="up_to_date">Bạn đang dùng phiên bản mới nhất</string>

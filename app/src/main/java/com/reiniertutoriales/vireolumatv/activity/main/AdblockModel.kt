@@ -123,6 +123,8 @@ class AdblockModel @JvmOverloads constructor(
 
     enum class UpdateResult { IDLE, UPDATED, PARTIAL, CACHED, ERROR }
     val updateResult = ObservableValue(UpdateResult.IDLE)
+    fun configuredListNames(url: String = config.adBlockListURL.value): List<String> =
+        getConfiguredFilterLists(url).map { it.name }
     // Lists the last attempt did not refresh: saved text was used, or no usable text existed.
     val unavailableLists = ObservableValue<List<String>>(emptyList())
     val clientLoading = ObservableValue(false)

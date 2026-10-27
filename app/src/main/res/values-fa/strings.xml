@@ -166,8 +166,9 @@
     <string name="link_actions">اقدامات پیوند</string>
     <string name="adblock_updating">در حال به‌روزرسانی فهرست‌های فیلتر…</string>
     <string name="adblock_updated">فهرست‌های فیلتر به‌روزرسانی شد</string>
-    <string name="adblock_partial_update">برخی فهرست‌ها به‌روزرسانی شدند؛ قواعد ذخیره‌شده حفظ شد. ۶ ساعت بعد دوباره تلاش کنید.</string>
+    <string name="adblock_partial_update">برخی فهرست‌ها به‌روزرسانی شدند؛ قواعد ذخیره‌شده حفظ شد.</string>
     <string name="adblock_using_saved">از قواعد ذخیره‌شده استفاده می‌شود. فهرست جدیدی دانلود نشد.</string>
+    <string name="adblock_lists_not_refreshed">به‌روزرسانی‌نشده: %1$s</string>
     <string name="adblock_update_error">فهرست‌های فیلتر بارگذاری نشدند. اتصال یا نشانی فهرست را بررسی کنید.</string>
     <string name="video_max_quality">حداکثر کیفیت ویدیو</string>
     <string name="up_to_date">شما آخرین نسخه را دارید</string>

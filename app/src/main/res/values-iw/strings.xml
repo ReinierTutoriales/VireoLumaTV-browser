@@ -165,8 +165,9 @@
     <string name="link_actions">פעולות קישור</string>
     <string name="adblock_updating">מעדכן רשימות סינון…</string>
     <string name="adblock_updated">רשימות הסינון עודכנו</string>
-    <string name="adblock_partial_update">חלק מהרשימות עודכנו; הכללים השמורים נשמרו. ניסיון חוזר בעוד 6 שעות.</string>
+    <string name="adblock_partial_update">חלק מהרשימות עודכנו; הכללים השמורים נשמרו.</string>
     <string name="adblock_using_saved">משתמש בכללים השמורים. לא הורדה רשימה חדשה.</string>
+    <string name="adblock_lists_not_refreshed">לא עודכנו: %1$s</string>
     <string name="adblock_update_error">לא ניתן לטעון את רשימות הסינון. בדקו את החיבור או את כתובת הרשימה.</string>
     <string name="video_max_quality">איכות וידאו מרבית</string>
     <string name="up_to_date">יש לך את הגרסה האחרונה</string>
