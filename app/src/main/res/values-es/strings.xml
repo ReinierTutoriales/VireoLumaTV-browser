@@ -102,6 +102,14 @@
     <string name="close_tab">Cerrar pestaña</string>
     <string name="navigate_forward">Adelante</string>
     <string name="toggle_ads_blocking">Activar o desactivar el bloqueo de anuncios</string>
+    <string name="adblock_status_paused">Pausado</string>
+    <string name="adblock_status_loading">Cargando</string>
+    <string name="adblock_status_refreshing">Actualizando</string>
+    <string name="adblock_status_active">Bloqueando</string>
+    <string name="adblock_status_partial">Parcial</string>
+    <string name="adblock_status_saved">Con caché</string>
+    <string name="adblock_status_unavailable">Sin reglas</string>
+    <string name="adblock_status_action_s">Cambiar bloqueo. %1$s. %2$d bloqueados en esta página.</string>
     <string name="never">nunca</string>
     <string name="update_ad_blocker_list">Actualizar listas del bloqueador</string>
     <string name="toggle_keep_screen_on">Mantener la pantalla encendida</string>

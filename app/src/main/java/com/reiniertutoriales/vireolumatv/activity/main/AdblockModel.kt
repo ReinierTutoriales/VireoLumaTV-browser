@@ -126,6 +126,7 @@ class AdblockModel @JvmOverloads constructor(
     val updateResult = ObservableValue(UpdateResult.IDLE)
     val clientLoading = ObservableValue(false)
     val config = AppContext.provideConfig()
+    val hasActiveRules: Boolean get() = hasCurrentClient(config.adBlockListURL.value)
 
     private val sourceObserver: (String) -> Unit = { loadAdBlockList(true) }
 

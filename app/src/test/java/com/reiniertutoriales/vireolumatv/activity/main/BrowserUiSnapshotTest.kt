@@ -121,6 +121,15 @@ class BrowserUiSnapshotTest {
                     assertTrue(view.right <= parent.width - parent.paddingRight)
                 }
             }
+            val floatingBar = vb.llBottomPanel
+            val blockerStatus = vb.tvAdBlockStatus
+            assertTrue("Toolbar must fit within TV overscan at $width", floatingBar.left >= 16 &&
+                floatingBar.right <= width - 16)
+            assertTrue("Toolbar must float above the screen edge at $width",
+                floatingBar.bottom < vb.root.height)
+            assertEquals(48, blockerStatus.height)
+            assertTrue("Blocker status must sit between its toggle and popup control",
+                blockerStatus.left >= vb.ibAdBlock.right && blockerStatus.right <= vb.ibPopupBlock.left)
             val address = vb.root.findViewById<View>(R.id.etUrl)
             assertTrue("Address remains usable at $width", address.width >= 240)
             if (fontScale == 1f) assertEquals("Default address height", 48, address.height)

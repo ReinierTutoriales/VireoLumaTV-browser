@@ -90,14 +90,17 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/llBottomPanel"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="@color/top_bar_background"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:background="@drawable/floating_toolbar_bg"
+        android:elevation="12dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
         android:paddingTop="8dp"
-        android:paddingBottom="16dp"
+        android:paddingBottom="8dp"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
         android:clipChildren="false"
         android:gravity="center">
 
@@ -171,10 +174,30 @@
             android:layout_height="48dp"
             android:contentDescription="@string/toggle_ads_blocking"
             android:src="@drawable/ic_adblock_on"
-            app:layout_constraintEnd_toStartOf="@+id/ibPopupBlock"
+            app:layout_constraintEnd_toStartOf="@+id/tvAdBlockStatus"
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintStart_toEndOf="@+id/ibRefresh"
             app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/tvAdBlockStatus"
+            android:layout_width="96dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/button_bg_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:text="@string/adblock_status_loading"
+            android:textColor="@color/default_url_color"
+            android:textSize="12sp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ibAdBlock"
+            app:layout_constraintEnd_toStartOf="@id/ibPopupBlock" />
 
         <ImageButton
             style="@style/BrowserControl"
@@ -188,7 +211,7 @@
             android:src="@drawable/ic_block_popups"
             app:layout_constraintEnd_toStartOf="@+id/ibHome"
             app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@+id/ibAdBlock"
+            app:layout_constraintStart_toEndOf="@+id/tvAdBlockStatus"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
         <ImageButton

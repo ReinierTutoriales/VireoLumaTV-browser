@@ -106,6 +106,14 @@
     <string name="close_tab">Close tab</string>
     <string name="navigate_forward">Navigate forward</string>
     <string name="toggle_ads_blocking">Toggle ads blocking</string>
+    <string name="adblock_status_paused">Paused</string>
+    <string name="adblock_status_loading">Loading</string>
+    <string name="adblock_status_refreshing">Updating</string>
+    <string name="adblock_status_active">Blocking</string>
+    <string name="adblock_status_partial">Partial</string>
+    <string name="adblock_status_saved">Cached</string>
+    <string name="adblock_status_unavailable">No rules</string>
+    <string name="adblock_status_action_s">Toggle blocking. %1$s. %2$d blocked on this page.</string>
     <string name="never">never</string>
     <string name="update_ad_blocker_list">Update ad-blocker list</string>
     <string name="toggle_keep_screen_on">Keep screen on</string>

@@ -217,6 +217,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
 
+        adblockModel.clientLoading.subscribe(this.lifecycle) {
+            tabsModel.currentTab.value?.let(::updateAdblockStatus)
+        }
+        adblockModel.updateResult.subscribe(this.lifecycle) {
+            tabsModel.currentTab.value?.let(::updateAdblockStatus)
+        }
+
         tabsModel.tabsStates.subscribe(this, false) {
             if (it.isEmpty()) {
                 vb.flWebViewContainer.removeAllViews()
@@ -351,7 +358,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
         pageCommand(vb.ibRefresh) { refresh() }
         pageCommand(vb.ibCloseTab) { closeTab(tabsModel.currentTab.value) }
-        vb.ibAdBlock.setOnClickListener { syncTabWithTitles(); toggleAdBlockForTab() }
+        val toggleBlocker = View.OnClickListener { syncTabWithTitles(); toggleAdBlockForTab() }
+        vb.ibAdBlock.setOnClickListener(toggleBlocker)
+        vb.tvAdBlockStatus.setOnClickListener(toggleBlocker)
         vb.ibPopupBlock.setOnClickListener {
             syncTabWithTitles()
             lifecycleScope.launch(Dispatchers.Main) { showPopupBlockOptions() }
@@ -599,9 +608,35 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.ibAdBlock.setImageResource(if (adblockEnabled) R.drawable.ic_adblock_on else R.drawable.ic_adblock_off)
         vb.tvBlockedAdCounter.visibility = if (adblockEnabled && tab.blockedAds != 0) View.VISIBLE else View.GONE
         vb.tvBlockedAdCounter.text = tab.blockedAds.toString()
+        updateAdblockStatus(tab)
 
         vb.tvBlockedPopupCounter.visibility = if (tab.blockedPopups != 0) View.VISIBLE else View.GONE
         vb.tvBlockedPopupCounter.text = tab.blockedPopups.toString()
+    }
+
+    private fun updateAdblockStatus(tab: WebTabState) {
+        val enabled = tab.adblock ?: config.adBlockEnabled
+        val ready = ::adblockModel.isInitialized && adblockModel.hasActiveRules
+        val loading = ::adblockModel.isInitialized && adblockModel.clientLoading.value
+        val result = if (::adblockModel.isInitialized) adblockModel.updateResult.value
+            else AdblockModel.UpdateResult.IDLE
+        val status = blockerIndicator(enabled, ready, loading, result)
+        val label = when (status) {
+            BlockerIndicator.PAUSED -> R.string.adblock_status_paused
+            BlockerIndicator.LOADING -> R.string.adblock_status_loading
+            BlockerIndicator.REFRESHING -> R.string.adblock_status_refreshing
+            BlockerIndicator.ACTIVE -> R.string.adblock_status_active
+            BlockerIndicator.PARTIAL -> R.string.adblock_status_partial
+            BlockerIndicator.SAVED -> R.string.adblock_status_saved
+            BlockerIndicator.UNAVAILABLE -> R.string.adblock_status_unavailable
+        }
+        val state = getString(label)
+        vb.tvAdBlockStatus.text = state
+        val description = getString(R.string.adblock_status_action_s, state, tab.blockedAds)
+        vb.tvAdBlockStatus.contentDescription = description
+        vb.ibAdBlock.contentDescription = description
+        vb.tvAdBlockStatus.isActivated = enabled && ready
+        vb.ibAdBlock.isActivated = enabled && ready
     }
 
     private fun onDownloadRequested(url: String, referer: String, originalDownloadFileName: String, userAgent: String?, mimeType: String? = null,
@@ -780,6 +815,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             adblock = newState
             webEngine.onUpdateAdblockSetting(newState)
             onWebViewUpdated(this)
+            if (newState && !adblockModel.hasActiveRules && !adblockModel.clientLoading.value) {
+                adblockModel.loadAdBlockList(true)
+            }
             refresh()
         }
     }
@@ -1379,6 +1417,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             if (tabsModel.currentTab.value == tab) {
                 vb.tvBlockedAdCounter.visibility = if (tab.blockedAds > 0) View.VISIBLE else View.GONE
                 vb.tvBlockedAdCounter.text = tab.blockedAds.toString()
+                updateAdblockStatus(tab)
             }
         }
 
