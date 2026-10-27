@@ -221,6 +221,27 @@ class BrowserNavigationTest {
         assertTrue(f.page.hasFocus())
     }
 
+    @Test fun floatingBlockerStatusTogglesTheSelectedTabAndReportsPause() = Fixture().use { f ->
+        f.set("adblockModel", AdblockModel(autoLoad = false))
+        f.tab.adblock = true
+        f.vb.vTabs.current = 0
+        f.call("handleBackNavigation")
+        assertEquals(f.host.get().getString(R.string.adblock_status_unavailable),
+            f.vb.tvAdBlockStatus.text.toString())
+        assertTrue(f.vb.tvAdBlockStatus.requestFocus())
+        f.key(f.vb.tvAdBlockStatus, KeyEvent.KEYCODE_DPAD_UP)
+        assertTrue(f.vb.vTabs.hasFocus())
+        assertEquals(View.VISIBLE, f.vb.llBottomPanel.visibility)
+        f.vb.tvAdBlockStatus.performClick()
+        assertEquals(false, f.tab.adblock)
+        assertEquals(f.host.get().getString(R.string.adblock_status_paused),
+            f.vb.tvAdBlockStatus.text.toString())
+        assertEquals(1, f.refreshed)
+        assertEquals(f.host.get().getString(R.string.adblock_status_action_s,
+            f.host.get().getString(R.string.adblock_status_paused), 0),
+            f.vb.tvAdBlockStatus.contentDescription)
+    }
+
     @Test fun fullscreenExitRestoresOneCoherentMenuAndNextBackReturnsToPage() = Fixture().use { f ->
         // Exercise the real engine's fullscreen teardown and the real Activity callback together.
         val callback = Class.forName("com.reiniertutoriales.vireolumatv.activity.main.MainActivity\$WebEngineCallback")

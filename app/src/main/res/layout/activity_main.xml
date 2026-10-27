@@ -189,7 +189,7 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:singleLine="true"
+            android:maxLines="1"
             android:ellipsize="end"
             android:text="@string/adblock_status_loading"
             android:textColor="@color/default_url_color"

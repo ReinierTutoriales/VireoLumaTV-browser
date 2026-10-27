@@ -173,4 +173,12 @@
     <string name="up_to_date">当前已是最新版本</string>
     <string name="update_check_failed">无法检查或安装更新</string>
     <string name="last_update">最后更新</string>
+  <string name="adblock_status_paused">已暂停</string>
+  <string name="adblock_status_loading">加载中</string>
+  <string name="adblock_status_refreshing">更新中</string>
+  <string name="adblock_status_active">拦截中</string>
+  <string name="adblock_status_partial">部分生效</string>
+  <string name="adblock_status_saved">已缓存</string>
+  <string name="adblock_status_unavailable">无规则</string>
+  <string name="adblock_status_action_s">切换拦截状态。%1$s。本页已拦截 %2$d 项。</string>
 </resources>

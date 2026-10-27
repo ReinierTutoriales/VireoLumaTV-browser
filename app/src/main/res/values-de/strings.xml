@@ -172,4 +172,12 @@
     <string name="up_to_date">Du hast die neueste Version</string>
     <string name="update_check_failed">Update konnte nicht geprüft oder installiert werden</string>
     <string name="last_update">Letztes Update</string>
+  <string name="adblock_status_paused">Pausiert</string>
+  <string name="adblock_status_loading">Wird geladen</string>
+  <string name="adblock_status_refreshing">Aktualisierung</string>
+  <string name="adblock_status_active">Blockiert</string>
+  <string name="adblock_status_partial">Teilweise</string>
+  <string name="adblock_status_saved">Aus dem Cache</string>
+  <string name="adblock_status_unavailable">Keine Regeln</string>
+  <string name="adblock_status_action_s">Blockierung umschalten. %1$s. %2$d Elemente auf dieser Seite blockiert.</string>
 </resources>

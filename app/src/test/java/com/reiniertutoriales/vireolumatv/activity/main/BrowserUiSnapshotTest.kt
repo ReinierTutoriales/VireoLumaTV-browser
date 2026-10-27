@@ -61,6 +61,9 @@ class BrowserUiSnapshotTest {
         tabs.currentTab.value = tabs.tabsStates[0]
         val vb = ActivityMainBinding.inflate(activity.layoutInflater)
         try {
+            assertTrue("Blocker status needs a readable initial label",
+                vb.tvAdBlockStatus.text.isNotBlank())
+            vb.tvAdBlockStatus.text = activity.getString(R.string.adblock_status_active)
             vb.flWebViewContainer.setBackgroundColor(Color.rgb(100, 116, 139))
             vb.ivMiniatures.visibility = View.GONE
             vb.vCursorMenu.visibility = View.INVISIBLE
@@ -128,6 +131,8 @@ class BrowserUiSnapshotTest {
             assertTrue("Toolbar must float above the screen edge at $width",
                 floatingBar.bottom < vb.root.height)
             assertEquals(48, blockerStatus.height)
+            assertTrue("Status must have a laid out text line", blockerStatus.layout != null &&
+                blockerStatus.layout.lineCount > 0)
             assertTrue("Blocker status must sit between its toggle and popup control",
                 blockerStatus.left >= vb.ibAdBlock.right && blockerStatus.right <= vb.ibPopupBlock.left)
             val address = vb.root.findViewById<View>(R.id.etUrl)

@@ -173,4 +173,12 @@
     <string name="up_to_date">У вас остання версія</string>
     <string name="update_check_failed">Не вдалося перевірити або встановити оновлення</string>
     <string name="last_update">Останнє оновлення</string>
+  <string name="adblock_status_paused">Призупинено</string>
+  <string name="adblock_status_loading">Завантаження</string>
+  <string name="adblock_status_refreshing">Оновлення</string>
+  <string name="adblock_status_active">Блокує</string>
+  <string name="adblock_status_partial">Частково</string>
+  <string name="adblock_status_saved">Із кешу</string>
+  <string name="adblock_status_unavailable">Немає правил</string>
+  <string name="adblock_status_action_s">Перемкнути блокування. %1$s. На цій сторінці заблоковано: %2$d.</string>
 </resources>

@@ -177,4 +177,12 @@
     <string name="up_to_date">شما آخرین نسخه را دارید</string>
     <string name="update_check_failed">بررسی یا نصب به‌روزرسانی انجام نشد</string>
     <string name="last_update">اخرین بروزرسانی  Mo</string>
+  <string name="adblock_status_paused">متوقف</string>
+  <string name="adblock_status_loading">در حال بارگیری</string>
+  <string name="adblock_status_refreshing">در حال به‌روزرسانی</string>
+  <string name="adblock_status_active">در حال مسدودسازی</string>
+  <string name="adblock_status_partial">بخشی</string>
+  <string name="adblock_status_saved">از حافظهٔ پنهان</string>
+  <string name="adblock_status_unavailable">بدون قانون</string>
+  <string name="adblock_status_action_s">تغییر وضعیت مسدودسازی. %1$s. %2$d مورد در این صفحه مسدود شد.</string>
 </resources>

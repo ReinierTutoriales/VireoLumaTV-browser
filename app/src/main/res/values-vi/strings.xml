@@ -173,4 +173,12 @@
     <string name="up_to_date">Bạn đang dùng phiên bản mới nhất</string>
     <string name="update_check_failed">Không thể kiểm tra hoặc cài đặt bản cập nhật</string>
     <string name="last_update">Cập nhật mới nhất</string>
+  <string name="adblock_status_paused">Tạm dừng</string>
+  <string name="adblock_status_loading">Đang tải</string>
+  <string name="adblock_status_refreshing">Đang cập nhật</string>
+  <string name="adblock_status_active">Đang chặn</string>
+  <string name="adblock_status_partial">Một phần</string>
+  <string name="adblock_status_saved">Từ bộ nhớ đệm</string>
+  <string name="adblock_status_unavailable">Không có quy tắc</string>
+  <string name="adblock_status_action_s">Bật hoặc tắt chặn. %1$s. Đã chặn %2$d mục trên trang này.</string>
 </resources>

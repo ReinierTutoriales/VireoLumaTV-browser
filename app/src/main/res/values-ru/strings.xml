@@ -173,4 +173,12 @@
     <string name="up_to_date">У вас последняя версия</string>
     <string name="update_check_failed">Не удалось проверить или установить обновление</string>
     <string name="last_update">Последнее обновлени</string>
+  <string name="adblock_status_paused">Приостановлено</string>
+  <string name="adblock_status_loading">Загрузка</string>
+  <string name="adblock_status_refreshing">Обновление</string>
+  <string name="adblock_status_active">Блокирует</string>
+  <string name="adblock_status_partial">Частично</string>
+  <string name="adblock_status_saved">Из кэша</string>
+  <string name="adblock_status_unavailable">Нет правил</string>
+  <string name="adblock_status_action_s">Переключить блокировку. %1$s. На этой странице заблокировано: %2$d.</string>
 </resources>

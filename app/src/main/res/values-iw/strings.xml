@@ -176,4 +176,12 @@
     <string name="up_to_date">יש לך את הגרסה האחרונה</string>
     <string name="update_check_failed">לא ניתן לבדוק או להתקין את העדכון</string>
     <string name="last_update">העדכון אחרון</string>
+  <string name="adblock_status_paused">מושהה</string>
+  <string name="adblock_status_loading">בטעינה</string>
+  <string name="adblock_status_refreshing">בעדכון</string>
+  <string name="adblock_status_active">חוסם</string>
+  <string name="adblock_status_partial">חלקי</string>
+  <string name="adblock_status_saved">מהמטמון</string>
+  <string name="adblock_status_unavailable">אין כללים</string>
+  <string name="adblock_status_action_s">החלפת מצב חסימה. %1$s. נחסמו %2$d פריטים בדף הזה.</string>
 </resources>
