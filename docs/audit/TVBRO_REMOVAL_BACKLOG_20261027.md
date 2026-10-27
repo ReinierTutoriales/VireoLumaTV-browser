@@ -32,3 +32,25 @@ Retención de líneas en los 79 derivados: 84 % (9 029 de 10 736). 64 archivos t
 
 - Este backlog no prueba que una reescritura esté libre de expresión heredada. La medición por líneas es una aproximación.
 - No se ha validado comportamiento en TV física.
+
+## Estado medido — 80d0478
+
+| Medida | Valor |
+|---|---|
+| Kotlin/Java modificados a partir de TV Bro | 77 (antes: 79) |
+| Líneas de TV Bro retenidas en esos archivos | 82 % (8 742 de 10 707) |
+| Archivos con ≥ 80 % retenido | 57 |
+| Archivos de TV Bro sin equivalente | 39 |
+
+Reemplazos hechos, con pruebas:
+
+- `utils/Extensions.kt`, `FileUtils.kt`, `BaseAnimationListener` y `StringUtils` (eliminados o reescritos).
+- `utils/observable/*`: eliminados `EventSource` y `ParameterizedEventSource` sin consumidores; pruebas de comportamiento añadidas.
+- `webengine/webview/HomePageHelper.kt`: sin parámetro `view` sin uso; pruebas de paso y de 404.
+- `webengine/webview/AndroidJSInterface.kt`: eliminados cuatro métodos expuestos al JavaScript de cualquier página sin llamantes, y su cadena de callbacks. Prueba de superficie.
+
+Decisiones:
+
+- `DPADNavigationEventsAdapter`: la reflexión sobre `BUTTON_DPAD_*` se conserva. Esas constantes no son API pública.
+- `Scripts.kt`: 33 % heredado, una constante; sin reemplazo.
+- `WebViewEx.kt`: pendiente, con pruebas de fullscreen y renderer antes de tocarlo.
