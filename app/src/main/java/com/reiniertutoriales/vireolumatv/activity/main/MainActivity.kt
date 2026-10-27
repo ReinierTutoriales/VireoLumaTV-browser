@@ -1164,6 +1164,11 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         override fun onDownloadRequested(url: String, userAgent: String?, contentDisposition: String,
                                          mimetype: String?, contentLength: Long ) {
             Log.i(TAG, "DownloadListener.onDownloadStart url: $url")
+            // Redirects and page scripts start downloads without a gesture; only a recent press may start one.
+            if (!UserActivation.consume()) {
+                Log.i(TAG, "Download without a recent user activation ignored")
+                return
+            }
             onDownloadRequested(url= url, referer = tab.url, originalDownloadFileName = null,
                 userAgent = userAgent, mimeType = mimetype, size = contentLength, contentDisposition = contentDisposition)
         }
