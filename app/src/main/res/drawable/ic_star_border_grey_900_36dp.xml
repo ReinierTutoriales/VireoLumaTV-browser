@@ -1,4 +1,10 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="36dp" android:viewportHeight="24.0" android:viewportWidth="24.0" android:width="36dp">
-    <path android:fillColor="@color/day_night_icon_color" android:pathData="M22,9.24l-7.19,-0.62L12,2 9.19,8.63 2,9.24l5.46,4.73L5.82,21 12,17.27 18.18,21l-1.63,-7.03L22,9.24zM12,15.4l-3.76,2.27 1,-4.28 -3.32,-2.88 4.38,-0.38L12,6.1l1.71,4.04 4.38,0.38 -3.32,2.88 1,4.28L12,15.4z"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Owned line icon, 24dp grid, theme-tinted. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/day_night_icon_color" android:strokeWidth="1.8"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M12,3.5L14.6,9L20.5,9.6L16,13.6L17.3,19.5L12,16.4L6.7,19.5L8,13.6L3.5,9.6L9.4,9Z" />
 </vector>
