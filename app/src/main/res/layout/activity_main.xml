@@ -179,18 +179,18 @@
             app:layout_constraintStart_toEndOf="@+id/ibRefresh"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
+        <!-- Label of ibAdBlock: one focus stop per action, so the status is not focusable. -->
         <TextView
             android:id="@+id/tvAdBlockStatus"
-            android:layout_width="96dp"
+            android:layout_width="wrap_content"
             android:layout_height="48dp"
+            android:minWidth="72dp"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
-            android:background="@drawable/button_bg_selector"
-            android:clickable="true"
-            android:focusable="true"
+            android:focusable="false"
+            android:importantForAccessibility="no"
             android:gravity="center"
             android:maxLines="1"
-            android:ellipsize="end"
             android:text="@string/adblock_status_loading"
             android:textColor="@color/default_url_color"
             android:textSize="12sp"

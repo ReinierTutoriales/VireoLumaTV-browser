@@ -358,9 +358,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
         pageCommand(vb.ibRefresh) { refresh() }
         pageCommand(vb.ibCloseTab) { closeTab(tabsModel.currentTab.value) }
-        val toggleBlocker = View.OnClickListener { syncTabWithTitles(); toggleAdBlockForTab() }
-        vb.ibAdBlock.setOnClickListener(toggleBlocker)
-        vb.tvAdBlockStatus.setOnClickListener(toggleBlocker)
+        vb.ibAdBlock.setOnClickListener { syncTabWithTitles(); toggleAdBlockForTab() }
         vb.ibPopupBlock.setOnClickListener {
             syncTabWithTitles()
             lifecycleScope.launch(Dispatchers.Main) { showPopupBlockOptions() }
@@ -633,7 +631,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val state = getString(label)
         vb.tvAdBlockStatus.text = state
         val description = getString(R.string.adblock_status_action_s, state, tab.blockedAds)
-        vb.tvAdBlockStatus.contentDescription = description
         vb.ibAdBlock.contentDescription = description
         vb.tvAdBlockStatus.isActivated = enabled && ready
         vb.ibAdBlock.isActivated = enabled && ready
