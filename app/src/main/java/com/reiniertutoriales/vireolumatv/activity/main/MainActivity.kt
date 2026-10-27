@@ -75,7 +75,7 @@ import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.service.downloads.DownloadService
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
-import com.reiniertutoriales.vireolumatv.utils.DPADNavigationEventsAdapter
+import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import com.reiniertutoriales.vireolumatv.utils.NavigationReservedShortcutKeyCodes
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
@@ -958,7 +958,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                     return true
                 }
                 if (browserOwnsCursorInput() &&
-                    DPADNavigationEventsAdapter.isNavigationGenericMotionSource(event.source) &&
+                    RemoteInput.isNavigationSource(event) &&
                     vb.flWebViewContainer.dispatchGenericMotionEvent(event)) return true
                 return localCallback.dispatchGenericMotionEvent(event)
             }

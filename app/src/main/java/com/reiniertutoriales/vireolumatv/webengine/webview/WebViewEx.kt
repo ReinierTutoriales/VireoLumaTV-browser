@@ -53,7 +53,7 @@ import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.adblock.AdblockSurrogates
-import com.reiniertutoriales.vireolumatv.utils.DPADNavigationEventsAdapter
+import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import com.reiniertutoriales.vireolumatv.utils.Utils
 import java.net.URLEncoder
 import java.util.UUID
@@ -633,7 +633,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     }
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
-        if (virtualCursorMode && DPADNavigationEventsAdapter.isNavigationGenericMotionSource(event.source))
+        if (virtualCursorMode && RemoteInput.isNavigationSource(event))
             return false
         return super.dispatchGenericMotionEvent(event)
     }

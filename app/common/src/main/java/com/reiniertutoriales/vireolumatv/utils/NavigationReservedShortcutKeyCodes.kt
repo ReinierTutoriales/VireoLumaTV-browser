@@ -3,7 +3,7 @@ package com.reiniertutoriales.vireolumatv.utils
 import android.view.KeyEvent
 
 /**
- * Keys consumed by [DPADNavigationEventsAdapter] and [BackNavigationEventsAdapter].
+ * Keys consumed by [RemoteInput] and [BackNavigationEventsAdapter].
  * User-configurable shortcuts must not use these codes.
  */
 object NavigationReservedShortcutKeyCodes {
