@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Intent
 import com.reiniertutoriales.vireolumatv.model.Download
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,6 +33,27 @@ class ApkInstallerTest {
         assertTrue(started.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION != 0)
         assertTrue("Starting from a non-Activity context needs NEW_TASK",
             started.flags and Intent.FLAG_ACTIVITY_NEW_TASK != 0)
+    }
+
+    @Test
+    fun fileInsideTheCacheIsSharedThroughTheProviderAuthority() {
+        val app = RuntimeEnvironment.getApplication()
+        val apk = java.io.File(app.cacheDir, "app.apk").apply { writeText("apk") }
+
+        ApkInstaller.launch(app, download(apk.absolutePath))
+
+        val started: Intent = shadowOf(app).nextStartedActivity ?: error("No activity was started")
+        assertEquals("content", started.data?.scheme)
+        assertEquals(app.packageName + ".provider", started.data?.authority)
+    }
+
+    @Test
+    fun fileOutsideTheProviderPathsDoesNotCrashOrStartInstaller() {
+        val app = RuntimeEnvironment.getApplication()
+
+        ApkInstaller.launch(app, download("/data/not-shared/app.apk"))
+
+        assertNull(shadowOf(app).nextStartedActivity)
     }
 
     @Test
