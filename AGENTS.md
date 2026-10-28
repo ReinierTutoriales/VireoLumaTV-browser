@@ -7,15 +7,13 @@ Simple WebView-only Android TV browser optimized for remote control and low-memo
 - Kotlin / Android (WebView)
 - Gradle Kotlin DSL
 - Native adblock-rust (Brave) integrated for arm64/armv7/x86_64
-- Modules: `:app`, `:app:common`
+- Module: `:app` (the `:app:common` split for GeckoView was removed on 2026-10-28)
 
-## Commands
-```bash
-./gradlew assembleDebug
-./gradlew assembleRelease
-./gradlew test
-```
-Prefer the wrapper. Release builds use R8.
+## Verification commands
+Use the Gradle wrapper. For a functional change, run the affected unit tests first;
+use `testGenericDebugUnitTest`, `lintGenericDebug` and `assembleGenericRelease`
+before integration when the environment supports Android/Rust builds. CI on the
+exact head is the integration gate; report local tests and CI separately.
 
 ## Priorities
 - Keep the app small, simple, and predictable on low-memory Android TV hardware.
@@ -25,12 +23,14 @@ Prefer the wrapper. Release builds use R8.
 - Prefer native Android / WebView APIs. Avoid unnecessary dependencies.
 - Do not invent APIs, behaviors, or engine features not present in the codebase.
 
-## Working style
-1. Brief analysis + risks (especially memory, focus, and license).
-2. Propose the smallest grounded solution.
-3. Implement cleanly, matching existing style.
-4. Verify against existing code and tests.
-5. Note any need for real Android TV device validation.
+## Target and validation (mandatory)
+- The product is a browser for Android TV in general: any API 24+ TV-class device, D-pad and gamepad input,
+  1–2 GB RAM. No behavior may depend on one model.
+- Verify in this order, and report only what was run: (1) build and unit tests, (2) Android TV emulator or
+  device with D-pad input for focus and navigation changes, (3) a reference low-RAM device for memory and
+  rendering claims. Do not ask the owner for a specific device unless the change cannot be checked otherwise.
+- Never describe a change as performance-improved without a measurement; never call a flow validated without
+  a run.
 
 ## Hard Rules for All Agents (mandatory)
 - **Branches**: Never create or push branches whose name contains an AI name, model name, tool name, or any non-owner identifier (examples forbidden: `claude-*`, `gpt-*`, `grok-*`, `ai-*`, `agent-*`, `copilot-*`). Use only descriptive, owner-neutral names.
@@ -39,30 +39,30 @@ Prefer the wrapper. Release builds use R8.
 - **Documentation**: Update or create documentation only when it reflects verified current behavior. Do not invent APIs, policies, or guarantees. Prefer updating existing docs over creating new ones. Keep docs short, precise, and consistent with the code.
 - **Optimal code**: Prefer the simplest correct solution that matches existing style and patterns. Avoid speculative refactors, unused helpers, extra abstractions, or "improvements" without measured benefit. Verify against tests and contracts before considering the change complete.
 
-## Rules
-- Match existing Kotlin/Android style and patterns.
-- Keep changes focused; do not touch unrelated files.
-- Prefer the simplest correct fix that preserves remote UX and low-memory behavior.
-- Respect ProGuard/R8 rules and native library integration.
-
 ## Skills
-Use skills from `.agents/skills/` when relevant, especially `precise-coding` and `agent-governance` for any code or documentation change.
+Read only the relevant `.agents/skills/` instructions: `precise-coding` for
+implementation, `testing-discipline` for functional changes, `tv-ui` for
+focus/layout, `code-quality` for refactors, and `agent-governance` before Git
+mutations. Use `source-migration` when replacing inherited code or resources.
+The contracts and acceptance criteria live in
+`docs/REGRESSION_POLICY.md`; do not duplicate them in skills.
 
 ## Reglas para modificar este repositorio
 
-Antes de editar código, leer `docs/REGRESSION_POLICY.md` y `docs/ROADMAP.md`.
-La política define contratos de producto y evidencias; el roadmap define el orden.
-Leer también `docs/IMPLEMENTATION_PLAN.md` para tareas y aceptación detalladas.
+Antes de editar, consultar la sección afectada de `docs/REGRESSION_POLICY.md`.
+Consultar `docs/ROADMAP.md` para prioridad y `docs/IMPLEMENTATION_PLAN.md`
+cuando haga falta el criterio detallado; contrastar cualquier estado histórico
+con el SHA actual.
 Una auditoría o propuesta antigua no autoriza aplicar automáticamente sus parches.
 
 ## Contratos que debe conservar cada cambio
 
-- La barra inferior sigue permitiendo Inicio, Atrás, Adelante, Recargar, cerrar
-  pestaña y controles de bloqueo. La superior conserva dirección/búsqueda,
-  voz cuando esté disponible, ajustes y salida. No eliminar una barra para
-  resolver un problema de Atrás ni reinterpretar una acción existente en silencio.
-- En fullscreen, Atrás debe cerrar el vídeo y mostrar ambas barras en la misma
-  acción, con foco inferior y ruta a la superior; conservar el callback existente.
+- La cápsula superior contiene dirección/búsqueda, Atrás, Adelante, Recargar,
+  Inicio, escudo del bloqueador y menú. Cerrar pestaña está en el menú.
+  La barra inferior y la búsqueda por voz se eliminaron por petición del propietario
+  (2026-10-27). No reinterpretar una acción existente en silencio.
+- En fullscreen, Atrás debe cerrar el vídeo y restaurar la cápsula y las pestañas
+  en la misma acción, con foco accionable; conservar el callback existente.
 - Separar Atrás del sistema, historial de la página, cierre de fullscreen,
   cierre de IME/diálogo y apertura/cierre del menú. Probar cada transición.
 - Foco visible y controles alcanzables con D-pad. Foco no ejecuta acciones ni

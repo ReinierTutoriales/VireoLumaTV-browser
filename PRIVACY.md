@@ -1,6 +1,6 @@
 # VireoLumaTV privacy policy
 
-Last updated: October 1, 2026.
+Source review updated: October 28, 2026. The current rewrite remains a draft; consult the source tag for your installed release.
 
 VireoLumaTV is an Android TV browser maintained by ReinierTutoriales and distributed through GitHub. It uses sources from [TV Bro](https://github.com/truefedex/tv-bro); this policy describes VireoLumaTV, not the original project.
 
@@ -14,7 +14,7 @@ The reviewed application source does not include a developer-operated analytics 
 
 Websites and your selected search provider receive page requests, search queries and information transmitted by WebView, such as IP address, browser headers and applicable cookies. Their policies apply. HTTP pages may transmit information without transport encryption.
 
-VireoLumaTV downloads and caches filters from the configured ad-block provider. By default these are EasyList, EasyPrivacy, EasyList Spanish and the uBlock Origin lists (filters, quick fixes, unbreak, badware), fetched from easylist-downloads.adblockplus.org, easylist.to, ublockorigin.github.io, ublockorigin.pages.dev and cdn.jsdelivr.net. Those hosts receive connection information, including IP address, even when you are not visiting those websites. Lists are checked when the app starts and at most once a day when it resumes.
+VireoLumaTV downloads and caches filters from the configured ad-block provider. By default these are EasyList, EasyPrivacy, EasyList Spanish and the uBlock Origin lists (filters, quick fixes, unbreak, badware), fetched from easylist-downloads.adblockplus.org, easylist.to, ublockorigin.github.io, ublockorigin.pages.dev and cdn.jsdelivr.net. Those hosts receive connection information, including IP address, even when you are not visiting those websites. Automatic refresh decisions run at startup, on foreground/connectivity events and during long sessions; retry timing depends on the previous result. You can also request an update from settings.
 
 Site icons are requested from the websites you visit, the icon hosts they reference, and the sites of your bookmarks. The internal home page uses icons bundled with the app and does not contact a Google favicon service. These requests are separate from developer analytics.
 
@@ -22,17 +22,17 @@ Opening source, license, support and policy links contacts GitHub or the linked 
 
 ## Voice and permissions
 
-Voice search uses your device's speech recognition service. That service may send audio to remote servers; VireoLumaTV does not require on-device-only recognition. Recognized text may be sent to your selected search provider.
+VireoLumaTV has no voice search. It does not record audio by itself.
 
 Websites may request camera, microphone or approximate location access. VireoLumaTV displays prompts and uses Android permissions where required. If you allow access, websites may receive the corresponding data under their own policies. Protected-media websites may interact with device DRM facilities through WebView.
 
-Other declared permissions support connectivity, download notifications, foreground downloads, keeping the device awake, file access on supported Android versions and package-installation flows. The reviewed variants disable the built-in app updater. Declared permissions are not necessarily used in every session.
+Other declared permissions support connectivity, download notifications, foreground downloads, keeping the device awake, file access on supported Android versions and package-installation flows. Declared permissions are not necessarily used in every session.
 
 ## Incognito limitations
 
-Incognito is intended to reduce ordinary browsing history. It does not hide activity from websites, search providers, speech services, network operators or the operating system.
+Incognito is intended to reduce ordinary browsing history. It does not hide activity from websites, search providers, network operators or the operating system.
 
-In the currently reviewed code, private-tab URLs/state and previews, favicon/host information and download records can still be written to persistent storage. Cleanup is not guaranteed after a crash or forced termination. Downloads remain until removed. Do not rely on this version to prevent all local traces. This section will be revised when fixes are integrated and verified in the distributed build.
+The current source excludes private downloads from the Room download history and keeps their records in the private process. Downloaded files and saved bookmarks remain. Private tabs can still create stored tab state and previews; private WebView storage is cleared before a new private process configures its data directory on supported Android versions. This is not a guarantee of immediate removal after closing, a crash or forced termination, and it does not erase externally saved files or backups. Do not rely on private mode to prevent every local trace.
 
 ## Backup, retention and deletion
 

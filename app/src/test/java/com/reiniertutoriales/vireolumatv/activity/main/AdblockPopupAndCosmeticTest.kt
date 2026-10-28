@@ -48,15 +48,15 @@ class AdblockPopupAndCosmeticTest {
         }
         server.start()
         val engine = CountingEngine()
-        val model = AdblockModel(engine, autoLoad = false)
+        val model = AdBlocker(engine, autoLoad = false)
         val source = "http://127.0.0.1:${server.address.port}/"
-        model.config.adBlockListURL.value = source
-        model.config.adBlockListLastUpdate = 0
-        model.config.adBlockListNextRetry = 0
+        model.config.blockListUrl.value = source
+        model.config.blockListUpdatedAt = 0
+        model.config.blockListRetryAt = 0
         val dir = VireoLumaTVApp.instance.filesDir
         val cache = AdblockCache.fileFor(dir, engine, source)
         try {
-            finish(model.loadAdBlockList(true))
+            finish(model.loadBlockList(true))
             assertEquals("Main list + popup client", 2, engine.compiles)
             val page = Uri.parse("https://site.test/video")
             assertTrue("\$popup rules are enforced", model.isPopupAd(Uri.parse("https://popads.test/go"), page))
@@ -75,19 +75,19 @@ class AdblockPopupAndCosmeticTest {
             assertEquals(0, org.json.JSONObject(model.pageFilters("https://site.test/")).getJSONArray("hide").length())
 
             val compiled = engine.compiles
-            val firstUpdate = model.config.adBlockListLastUpdate
+            val firstUpdate = model.config.blockListUpdatedAt
             Thread.sleep(5)
-            finish(model.loadAdBlockList(true))
+            finish(model.loadBlockList(true))
             assertEquals(2, requests.get())
             assertEquals("HTTP 304 must not recompile", compiled, engine.compiles)
-            assertEquals(AdblockModel.UpdateResult.UPDATED, model.updateResult.value)
-            assertTrue("A 304 is a successful check", model.config.adBlockListLastUpdate > firstUpdate)
-            assertEquals(0L, model.config.adBlockListNextRetry)
+            assertEquals(AdBlocker.UpdateResult.UPDATED, model.updateResult.value)
+            assertTrue("A 304 is a successful check", model.config.blockListUpdatedAt > firstUpdate)
+            assertEquals(0L, model.config.blockListRetryAt)
 
             // A new process restores popup and element hiding rules from their own caches.
-            val restored = AdblockModel(engine, autoLoad = false)
+            val restored = AdBlocker(engine, autoLoad = false)
             try {
-                finish(restored.loadAdBlockList(false))
+                finish(restored.loadBlockList(false))
                 assertEquals(2, requests.get())
                 assertTrue(restored.isPopupAd(Uri.parse("https://popads.test/go"), page))
                 assertTrue(restored.pageFilters("https://example.test/").contains(".ad-box"))

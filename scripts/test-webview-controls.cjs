@@ -39,7 +39,7 @@ const media = (overrides = {}) => ({tag: 'video', currentTime: 0, paused: false,
     const dynamic = media({seekable: {length: 1, start() { throw Error('window moved'); }}});
     sandbox.vireoLumaTVSeek(dynamic, 10); assert.equal(dynamic.currentTime, 0);
     const links = ['ESPN', 'OP2', 'OP3', 'Disney+'].map((name, i) => ({href: 'https://example.com/' + i}));
-    const script = fs.readFileSync('app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/Scripts.kt', 'utf8').split('"""')[1];
+    const script = fs.readFileSync('app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageScripts.kt', 'utf8').split('"""')[1];
     links.forEach(link => {
         const child = {isConnected: true, closest: selector => { assert.equal(selector, 'a[href]'); return link; }};
         listeners.mousedown({isTrusted: true, target: child, clientX: 12, clientY: 34});

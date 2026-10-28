@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.os.Looper
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.model.HostConfig
+import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -28,41 +28,41 @@ class FaviconResourceTest {
             bitmap.recycle()
         }
         var readOnMain = true
-        FaviconsPool.databaseDelegate = object : FaviconsPool.DatabaseDelegate {
-            override fun findByHostName(host: String): HostConfig {
+        Favicons.store = object : Favicons.Store {
+            override fun find(host: String): SiteSettings {
                 readOnMain = Looper.myLooper() == Looper.getMainLooper()
-                return HostConfig(host).apply { favicon = file.name }
+                return SiteSettings(host).apply { favicon = file.name }
             }
         }
-        val icon = runBlocking { FaviconsPool.get("https://sample.test") }
+        val icon = runBlocking { Favicons.get("https://sample.test") }
         assertNotNull(icon)
         assertTrue(icon!!.width <= 256 && icon.height <= 256)
         assertFalse(readOnMain)
-        assertSame(icon, runBlocking { FaviconsPool.get("https://SAMPLE.test") })
+        assertSame(icon, runBlocking { Favicons.get("https://SAMPLE.test") })
     }
 
     @Test fun cancellationIsPropagatedInsteadOfStartingNetworkDiscovery() = withCache {
-        FaviconsPool.databaseDelegate = object : FaviconsPool.DatabaseDelegate {
-            override fun findByHostName(host: String): HostConfig? { throw CancellationException("row left screen") }
+        Favicons.store = object : Favicons.Store {
+            override fun find(host: String): SiteSettings? { throw CancellationException("row left screen") }
         }
         var cancelled = false
-        try { runBlocking { FaviconsPool.get("https://cancelled.invalid") } }
+        try { runBlocking { Favicons.get("https://cancelled.invalid") } }
         catch (_: CancellationException) { cancelled = true }
         assertTrue(cancelled)
     }
 
     private fun withCache(test: (File) -> Unit) {
         val app = RuntimeEnvironment.getApplication()
-        val config = Config(app.getSharedPreferences("favicon-resource-test", 0)).apply { incognitoMode = false }
+        val config = Config(app.getSharedPreferences("favicon-resource-test", 0)).apply { privateBrowsing = false }
         AppContext.init(app, config)
-        val previous = FaviconsPool.databaseDelegate
-        val directory = File(FaviconsPool.favIconsDir())
+        val previous = Favicons.store
+        val directory = Favicons.directory
         directory.deleteRecursively()
         directory.mkdirs()
-        FaviconsPool.clear()
+        Favicons.clear()
         try { test(directory) } finally {
-            FaviconsPool.databaseDelegate = previous
-            FaviconsPool.clear()
+            Favicons.store = previous
+            Favicons.clear()
             directory.deleteRecursively()
         }
     }

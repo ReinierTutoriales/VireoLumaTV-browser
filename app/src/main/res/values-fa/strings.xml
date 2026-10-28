@@ -1,181 +1,178 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">VireoLumaTV</string>
-  <string name="error">"خطا"</string>
-  <string name="ok">"خوب"</string>
-  <string name="url_prompt">"جستجو یا URL را تایپ کنید"</string>
-  <string name="can_not_recognize">"قابل تشخیص نیست"</string>
-  <string name="speak">"صحبت کردن"</string>
-  <string name="web_perm_request_confirmation">"این صفحه وب می خواهد از منابع زیر استفاده کند:
-
-%s"</string>
-  <string name="allow">"پذیرفتن"</string>
-  <string name="deny">"رد کردن"</string>
-  <string name="location">"موقعیت"</string>
-  <string name="open_in_new_tab">"در برگه جدیدی باز کن"</string>
-  <string name="download_started">"بارگیری آغاز شد …
-پرونده در این قسمت ذخیره می شود:
-%s"</string>
-  <string name="err_cant_open_file_chooser">"انتخاب پرونده نمی تواند باز شود"</string>
-  <string name="bookmarks">"نشانک ها"</string>
-  <string name="add">"افزودن"</string>
-  <string name="edit">"ویرایش"</string>
-  <string name="new_bookmark">"نشانک جدید"</string>
-  <string name="title">"عنوان"</string>
-  <string name="engine">"موتور جستجو"</string>
-  <string name="choose_default_search_engine">"موتور جستجوی پیش فرض را انتخاب کنید"</string>
-  <string name="save">"ذخیره"</string>
-  <string name="search_engine_url_with_query_placeholder_query">"URL موتور جستجو"</string>
-  <string name="user_agent_string">"نمایه کاربری"</string>
-  <string name="choose_user_agent_string">"نمایه کاربری را انتخاب کنید"</string>
-  <string name="edit_user_agent_string">"نمایه کاربری را ویرایش کنید"</string>
-  <string name="nothing">"هیچ"</string>
-  <string name="cancelled">"لغو شد"</string>
-  <string name="download">"دانلود"</string>
-  <string name="file_not_found">"پرونده یافت نشد"</string>
-  <string name="no_app_for_file_type">"هیچ برنامه ای برای باز کردن این نوع پرونده یافت نشد"</string>
-  <string name="delete">"حذف"</string>
-  <string name="cancel">"لغو"</string>
-  <string name="msg_delete_history">"موارد تاریخچه انتخاب شده حذف شود؟"</string>
-  <string name="msg_delete_history_all">"همه موارد سابقه حذف شود؟"</string>
-  <string name="open_folder">"بازکردن پوشه حاوی"</string>
-  <string name="no_file_explorer_msg">"به نظر می رسد هیچ برنامه مناسبی برای مرور فایل روی دستگاه شما نصب نشده است"</string>
-  <string name="shortcuts">"میانبرها"</string>
-  <string name="favorites">"موارد دلخواه"</string>
-  <string name="history">"تاریخچه"</string>
-  <string name="settings">"تنظیمات"</string>
-  <string name="shortcut">"میانبر"</string>
-  <string name="navigate_back">"بازگشت به عقب"</string>
-  <string name="navigate_home">"به خانه بروید"</string>
-  <string name="refresh_page">"تازه سازی صفحه"</string>
-  <string name="voice_search">"جستجوی صوتی"</string>
-  <string name="zoom_in">"بزرگ نمایی"</string>
-  <string name="zoom_out">"کوچک نمایی"</string>
-  <string name="not_set">"تنظیم نشده"</string>
-  <string name="action">"اقدام:"</string>
-  <string name="current_key">"کلید فعلی:"</string>
-  <string name="set_key_for_action">"کلید را برای اقدام تنظیم کنید"</string>
-  <string name="press_eny_key">"هر کلید را فشار دهید…"</string>
-  <string name="shortcut_key_reserved_for_navigation">این کلید برای پیمایش مرورگر رزرو شده است</string>
-  <string name="clear">"پاک کردن"</string>
-  <string name="install">"نصب"</string>
-  <string name="turn_on_unknown_sources">"لطفاً تنظیمات سیستم \"منابع ناشناخته\" را فعال کنید"</string>
-  <string name="turn_on_unknown_sources_for_app">"لطفاً به VireoLumaTV اجازه دهید برنامه ها را از \"منابع ناشناخته\" در تنظیمات سیستم نصب کند"</string>
-  <string name="storage_not_mounted">"حافظه متصل نشده است"</string>
-  <string name="can_not_create_downloads">"نمی توان بارگیری ها را ایجاد کرد"</string>
-  <string name="voice_search_not_found">"جستجوی صوتی یافت نشد"</string>
-  <string name="new_version_dialog_title">"نسخه جدید در دسترس است"</string>
-  <string name="downloads">"بارگیری ها"</string>
-  <string name="downloads_notifications_description">"اعلان های مربوط به وضعیت بارگیری ها"</string>
-  <string name="main">"اصلی"</string>
-  <string name="version_and_updates">نسخه و به روزرسانی ها</string>
-  <string name="version_s">"نسخه: %s"</string>
-  <string name="build_flavor_s">نوع ساخت: %1$s · %2$s</string>
-  <string name="view_license">📃 مجوز</string>
-  <string name="privacy_policy">🔒 سیاست حریم خصوصی</string>
-  <string name="update">"به روز رسانی"</string>
-  <string name="new_version_available_s">"نسخه جدید موجود است: %s"</string>
-  <string name="warning">"هشدار"</string>
-  <string name="err_webview_can_not_link">"نمی توان به وب نما متصل شد.ابتدا وب نما سیستم Android را نصب کنید."</string>
-  <string name="open_a_new_tab_here">"یک برگه جدید در اینجا باز کنید"</string>
-  <string name="tabs">"برگه ها"</string>
-  <string name="ssl_expired">"گواهی منقضی شده است"</string>
-  <string name="ssl_idmismatch">"عدم تطابق نام میزبان"</string>
-  <string name="ssl_date_invalid">"تاریخ گواهی نامعتبر است"</string>
-  <string name="ssl_invalid">"یک خطای عمومی رخ داد"</string>
-  <string name="back_to_safety">"بازگشت به ایمنی"</string>
-  <string name="go_im_aware">"برو.من از خطر آگاه هستم"</string>
-  <string name="connection_isnt_secure">"اتصال امن نیست"</string>
-  <string name="hostname">"نام میزبان:"</string>
-  <string name="err_desk">"شرح خطا:"</string>
-  <string name="details">"جزئیات:"</string>
-  <string name="exit">"خروج"</string>
-  <string name="find_in_apps_store">"در فروشگاه برنامه ها پیدا کنید"</string>
-  <string name="close_application">"بستن برنامه"</string>
-  <string name="close_tab">"بستن برگه"</string>
-  <string name="navigate_forward">"حرکت به جلو"</string>
-  <string name="web_browser_optimized_for_tvs">"مرورگر وب برای تلویزیون بهینه شده است"</string>
-  <string name="never">هرگز</string>
-  <string name="update_ad_blocker_list">لیست مسدودکننده تبلیغات را به روز کنید</string>
-  <string name="toggle_ads_blocking">مسدود کردن تبلیغات را تغییر دهید</string>
-  <string name="need_restart">نیاز به راه اندازی مجدد برنامه</string>
-  <string name="theme">موضوع</string>
-  <array name="themes">
-    <item>سیستم</item>
-    <item>سفید</item>
-    <item>تاریک</item>
-  </array>
-  <string name="toggle_keep_screen_on">صفحه نمایش را روشن بگذارید</string>
-  <string name="navigate_with_joystick_axes">پیمایش با محورهای جوی‌استیک</string>
-  <string name="cursor_max_speed">حداکثر سرعت مکان‌نمای مجازی</string>
-  <string name="cursor_acceleration">شتاب مکان‌نمای مجازی</string>
-  <string name="cursor_physics_percent">%d%% از پیش‌فرض</string>
-  <string name="direct_navigation_mode_title">حالت پیمایش مستقیم</string>
-  <string name="direct_navigation_mode_message">پیمایش مستقیم مکان‌نما را پنهان می‌کند و فشردن کلیدهای ریموت یا دسته بازی را مستقیماً به صفحه وب می‌فرستد تا سایت‌هایی که فوکوس تلویزیونی یا صفحه‌کلید را پشتیبانی می‌کنند بتوانند پیوندها و کنترل‌ها را برجسته کنند.\n\nبرای خروج از این حالت: «برگشت» را روی ریموت تلویزیون بزنید یا دکمه B دسته را نگه دارید.\n\nاین حالت با موتور WebView بهتر کار می‌کند: WebView جابه‌جایی فوکوس در صفحه با D-pad را پشتیبانی می‌کند.</string>
-  <string name="incognito_mode">حالت ناشناس</string>
-  <string name="incognito_mode_hint">اکنون می توانید به صورت خصوصی مرور کنید و سایر افرادی که از این دستگاه استفاده می کنند فعالیت شما را نخواهند دید. VireoLumaTV تاریخچه مرور، کوکی ها و داده های سایت، اطلاعات وارد شده در فرم ها را ذخیره نمی کند.  با این حال، دانلودها و نشانک ها ذخیره خواهند شد. ممکن است فعالیت شما همچنان برای وب‌سایت‌هایی که بازدید می‌کنید، سازمان یا ارائه‌دهنده خدمات اینترنتی شما قابل مشاهده باشد.</string>
-  <string name="don_t_show_again">دیگر نشان نده</string>
-  <string name="clear_web_cache">کش وب را پاک کنید</string>
-  <string-array name="tabs_options">
-    <item>ورودی جدید</item>
-    <item>جریان را ببند</item>
-    <item>همه را ببند</item>
-    <item>حرکت به سمت چپ</item>
-    <item>برو راست</item>
-  </string-array>
-  <string name="no_bookmarks_yet">هنوز هیچ نشانکی وجود ندارد</string>
-  <string name="done">انجام شده</string>
-  <string name="block_popups">مسدود شدن پنجره های بازشو</string>
-  <string name="block_popups_s">مسدود کردن پنجره های بازشو (%s)</string>
-  <string name="popup_dialog_blocked">پنجره بازشو مسدود شد</string>
-  <string name="new_tab_blocked">برگه جدید مسدود شده است</string>
-  <string name="copy_to_clipboard">کپی به کلیپ بورد</string>
-  <string name="copied_to_clipboard">در کلیپ بورد کپی شد</string>
-  <string name="share_url">URL را به اشتراک بگذارید</string>
-  <string name="open_in_external_application">در برنامه خارجی باز کنید</string>
-  <string name="external_app_open_error">نمی توان برنامه مناسب را پیدا کرد</string>
-  <string-array name="popup_blocking_level">
-    <item>مسدود نیست</item>
-    <item>مسدود کردن دیالوگ ها</item>
-    <item>همچنین برگه های جدید را مسدود کنید (شروع اسکریپت)</item>
-    <item>مسدود کردن هر پنجره جدید (حداکثر مسدود شدن)</item>
-  </string-array>
-  <string name="home_page">صفحه نخست</string>
-  <string name="custom_home_page_url">URL صفحه اصلی سفارشی</string>
-  <string-array name="home_page_modes">
-    <item>تلویزیون برادر خانه</item>
-    <item>موتور جستجو</item>
-    <item>سفارشی</item>
-    <item>جای خالی</item>
-  </string-array>
-
-  <string name="yes">آره</string>
-  <string name="no">خیر</string>
-  <string name="site_asks_to_open_unknown_url">سایت می خواهد URL ناشناخته را باز کند</string>
-  <string name="site_asks_to_open_unknown_url_message">آیا می خواهید این URL را در برنامه خارجی باز کنید؟</string>
-  <string name="err_no_app_to_handle_url">نمی توان برنامه مناسبی برای مدیریت این URL پیدا کرد</string>
-  <string name="http_auth_title">احراز هویت لازم است</string>
-  <string name="play_pause">پخش/توقف</string>
-  <string name="media_stop">توقف رسانه</string>
-  <string name="media_rewind">عقب بردن رسانه</string>
-  <string name="media_fast_forward">جلو بردن سریع رسانه</string>
-  <string name="long_press">فشار طولانی</string>
-  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">تیره‌سازی الگوریتمی برای صفحات وب (تم تیره، فقط WebView، نیاز به راه‌اندازی مجدد)</string>
-  <string name="allow_autoplay_media">اجازه پخش خودکار رسانه</string>
-  <string name="web_engine_debug">اشکال‌زدایی موتور وب (نیاز به راه‌اندازی مجدد)</string>
-  <string name="web_engine_debug_warning_message">فعال‌سازی اشکال‌زدایی موتور وب می‌تواند محتوای صفحات، کوکی‌ها و داده‌های حساس نشست را برای هر کسی که به اشکال‌زدایی دستگاه دسترسی دارد افشا کند. فقط برای رفع اشکال و روی دستگاه‌های مورداعتماد فعال کنید.</string>
-    <string name="vireo_project_credit">VireoLumaTV از ReinierTutoriales · کد منبع</string>
-    <string name="based_on_tv_bro_sources">بر پایه کد منبع TV Bro: %s</string>
-    <string name="cursor_grab_mode">جابجایی صفحه</string>
-    <string name="link_actions">اقدامات پیوند</string>
-    <string name="support_original_author">☕ حمایت از Fedir Tsapana (نویسنده اصلی TV Bro)</string>
-    <string name="adblock_updating">در حال به‌روزرسانی فهرست‌های فیلتر…</string>
-    <string name="adblock_updated">فهرست‌های فیلتر به‌روزرسانی شد</string>
-    <string name="adblock_partial_update">برخی فهرست‌ها به‌روزرسانی شدند؛ قواعد ذخیره‌شده حفظ شد. ۶ ساعت بعد دوباره تلاش کنید.</string>
-    <string name="adblock_using_saved">از قواعد ذخیره‌شده استفاده می‌شود. فهرست جدیدی دانلود نشد.</string>
-    <string name="adblock_update_error">فهرست‌های فیلتر بارگذاری نشدند. اتصال یا نشانی فهرست را بررسی کنید.</string>
-    <string name="video_max_quality">حداکثر کیفیت ویدیو</string>
-    <string name="up_to_date">شما آخرین نسخه را دارید</string>
-    <string name="update_check_failed">بررسی یا نصب به‌روزرسانی انجام نشد</string>
-    <string name="last_update">اخرین بروزرسانی  Mo</string>
+    <string name="about_source">VireoLumaTV از ReinierTutoriales · کد منبع</string>
+    <string name="about_tv_bro_credit">بر پایهٔ کد منبع TV Bro: %s</string>
+    <string name="about_tagline">مرورگر وب ساخته‌شده برای کنترل تلویزیون</string>
+    <string name="about_version">نسخهٔ %s</string>
+    <string name="about_build">ساخت: %1$s · %2$s</string>
+    <string name="about_license">مجوز</string>
+    <string name="about_privacy">سیاست حریم خصوصی</string>
+    <string name="error">خطا</string>
+    <string name="action_allow">اجازه</string>
+    <string name="action_deny">اجازه نده</string>
+    <string name="action_edit">ویرایش</string>
+    <string name="action_done">تمام</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_cancel">لغو</string>
+    <string name="action_clear">پاک کردن</string>
+    <string name="action_update">به‌روزرسانی</string>
+    <string name="action_exit">خروج</string>
+    <string name="action_open_store">یافتن در فروشگاه</string>
+    <string name="action_dont_show_again">دوباره نشان نده</string>
+    <string name="action_open">باز کردن</string>
+    <string name="address_hint">جست‌وجو یا وارد کردن نشانی وب</string>
+    <string name="nav_back">بازگشت</string>
+    <string name="nav_forward">جلو</string>
+    <string name="nav_reload">بارگیری دوباره</string>
+    <string name="nav_home">خانه</string>
+    <string name="nav_menu">منو</string>
+    <string name="blocker_toggle">مسدودسازی تبلیغات</string>
+    <string name="tabs_new">زبانهٔ جدید</string>
+    <string name="tabs_title">زبانه</string>
+    <string name="menu_history">تاریخچه</string>
+    <string name="menu_favorites">علاقه‌مندی‌ها</string>
+    <string name="menu_downloads">بارگیری‌ها</string>
+    <string name="menu_private">حالت ناشناس</string>
+    <string name="menu_settings">تنظیمات</string>
+    <string name="menu_close_tab">بستن زبانه</string>
+    <string name="menu_quit">خروج از VireoLumaTV</string>
+    <string name="pointer_move_page">جابه‌جایی صفحه</string>
+    <string name="pointer_link_options">گزینه‌های پیوند</string>
+    <string name="pointer_zoom_in">بزرگ‌نمایی</string>
+    <string name="pointer_zoom_out">کوچک‌نمایی</string>
+    <string name="dpad_mode_title">حالت دکمه‌های جهت</string>
+    <string name="dpad_mode_message">نشانگر پنهان می‌شود و دکمه‌های جهت بین پیوندها و کنترل‌های صفحه جابه‌جا می‌شوند، در سایت‌هایی که از آن پشتیبانی کنند.\n\nبرای خروج، روی کنترل «بازگشت» را بزنید یا دکمهٔ B دستهٔ بازی را نگه دارید.</string>
+    <string name="link_open_in_new_tab">باز کردن در زبانهٔ جدید</string>
+    <string name="link_open_in_app">باز کردن در برنامهٔ دیگر</string>
+    <string name="link_download">بارگیری</string>
+    <string name="link_copy">کپی نشانی</string>
+    <string name="link_copied">نشانی کپی شد</string>
+    <string name="link_share">اشتراک‌گذاری</string>
+    <string name="permission_request">این صفحه می‌خواهد از این‌ها استفاده کند:\n\n%s</string>
+    <string name="permission_location">موقعیت مکانی شما</string>
+    <string name="error_no_file_picker">هیچ برنامه‌ای در این دستگاه نمی‌تواند فایل انتخاب کند</string>
+    <string name="external_open_title">در برنامهٔ دیگری باز شود؟</string>
+    <string name="external_open_message">این صفحه می‌خواهد نشانی‌ای را باز کند که برنامهٔ دیگری آن را مدیریت می‌کند:</string>
+    <string name="external_no_app">هیچ برنامه‌ای در این دستگاه نمی‌تواند این نشانی را باز کند</string>
+    <string name="error_no_app">هیچ برنامه‌ای نمی‌تواند این را باز کند</string>
+    <string name="http_auth_title">ورود به این سایت</string>
+    <string name="http_auth_user">نام کاربری</string>
+    <string name="http_auth_password">گذرواژه</string>
+    <string name="error_no_webview">این دستگاه WebView قابل‌استفاده ندارد. Android System WebView را نصب یا به‌روز کنید.</string>
+    <string name="cert_title">این اتصال خصوصی نیست</string>
+    <string name="cert_site">سایت</string>
+    <string name="cert_problem">مشکل</string>
+    <string name="cert_details">گواهی</string>
+    <string name="cert_go_back">بازگشت</string>
+    <string name="cert_proceed">به‌هرحال ادامه بده (ناامن)</string>
+    <string name="cert_expired">گواهی منقضی شده است</string>
+    <string name="cert_wrong_site">گواهی متعلق به سایت دیگری است</string>
+    <string name="cert_bad_date">گواهی در این تاریخ معتبر نیست</string>
+    <string name="cert_invalid">گواهی معتبر نیست</string>
+    <string name="cert_untrusted">گواهی را مرجع مورد اعتمادی صادر نکرده است</string>
+    <string name="blocker_state_paused">متوقف</string>
+    <string name="blocker_state_loading">در حال بارگیری قوانین</string>
+    <string name="blocker_state_updating">در حال به‌روزرسانی قوانین</string>
+    <string name="blocker_state_active">فعال</string>
+    <string name="blocker_state_partial">برخی قوانین</string>
+    <string name="blocker_state_saved">قوانین ذخیره‌شده</string>
+    <string name="blocker_state_none">بدون قانون</string>
+    <string name="blocker_summary">مسدودسازی تبلیغات: %1$s. %2$d مورد در این صفحه مسدود شد.</string>
+    <string name="popups_title">پنجره‌های بازشو: %s</string>
+    <string name="popups_dialog_blocked">یک پنجرهٔ گفتگوی این صفحه مسدود شد</string>
+    <string name="popups_window_blocked">یک پنجرهٔ بازشو مسدود شد</string>
+    <string name="blocker_never">هرگز</string>
+    <string name="blocker_last_update">آخرین به‌روزرسانی</string>
+    <string name="blocker_update_lists">به‌روزرسانی فهرست‌های فیلتر</string>
+    <string name="blocker_updating">در حال به‌روزرسانی فهرست‌های فیلتر…</string>
+    <string name="blocker_updated">فهرست‌های فیلتر به‌روز هستند</string>
+    <string name="blocker_partial">برخی فهرست‌ها به‌روز شدند؛ بقیه قوانین ذخیره‌شدهٔ خود را نگه می‌دارند.</string>
+    <string name="blocker_using_saved">قوانین ذخیره‌شده استفاده می‌شوند؛ هیچ فهرستی بارگیری نشد.</string>
+    <string name="blocker_not_refreshed">به‌روز نشده: %1$s</string>
+    <string name="blocker_update_failed">فهرست‌های فیلتر بارگیری نشدند. اتصال یا نشانی فهرست را بررسی کنید.</string>
+    <string name="favorites_add">افزودن این صفحه</string>
+    <string name="favorites_empty">هنوز علاقه‌مندی‌ای نیست</string>
+    <string name="favorites_new">علاقه‌مندی جدید</string>
+    <string name="field_title">عنوان</string>
+    <string name="field_address">نشانی</string>
+    <string name="history_delete_selected">صفحه‌های انتخاب‌شده از تاریخچه حذف شوند؟</string>
+    <string name="history_delete_all">کل تاریخچه پاک شود؟</string>
+    <string name="download_started">بارگیری اضافه شد. محل ذخیره:\n%s</string>
+    <string name="nav_menu_downloads">منو. %1$d بارگیری در جریان است</string>
+    <string name="downloads_empty">هنوز بارگیری‌ای نیست</string>
+    <string name="download_cancelled">لغو شد</string>
+    <string name="download_file_missing">فایل دیگر وجود ندارد</string>
+    <string name="download_no_app">هیچ برنامه‌ای این نوع فایل را باز نمی‌کند</string>
+    <string name="download_open_folder">نمایش در پوشه</string>
+    <string name="download_no_file_manager">هیچ مدیر فایلی نصب نیست</string>
+    <string name="download_install">نصب</string>
+    <string name="install_allow_unknown_sources">برای نصب برنامه‌ها، «منابع ناشناس» را در تنظیمات سیستم روشن کنید.</string>
+    <string name="install_allow_this_app">در تنظیمات سیستم به VireoLumaTV اجازهٔ نصب برنامه بدهید.</string>
+    <string name="download_storage_unavailable">حافظه در دسترس نیست</string>
+    <string name="download_folder_error">پوشهٔ بارگیری‌ها ساخته نشد</string>
+    <string name="downloads_channel_description">پیشرفت بارگیری‌ها</string>
+    <string name="update_available_title">به‌روزرسانی در دسترس است</string>
+    <string name="update_available_message">نسخهٔ %s در دسترس است.</string>
+    <string name="update_none">VireoLumaTV به‌روز است</string>
+    <string name="update_failed">بررسی یا نصب به‌روزرسانی ممکن نشد</string>
+    <string name="settings_tab_general">عمومی</string>
+    <string name="settings_tab_shortcuts">میان‌برها</string>
+    <string name="settings_tab_about">درباره</string>
+    <string name="settings_search_engine">موتور جست‌وجو</string>
+    <string name="settings_search_engine_address">نشانی جست‌وجو ([query] با عبارت جست‌وجو جایگزین می‌شود)</string>
+    <string name="settings_home_page">صفحهٔ خانه</string>
+    <string name="settings_home_page_address">نشانی صفحهٔ خانه</string>
+    <string name="settings_user_agent_choice">معرفی مرورگر به‌عنوان</string>
+    <string name="settings_user_agent">عامل کاربر</string>
+    <string name="settings_user_agent_custom">عامل کاربر سفارشی</string>
+    <string name="settings_keep_screen_on">روشن نگه‌داشتن صفحه</string>
+    <string name="settings_stick_moves_pointer">حرکت نشانگر با اهرم</string>
+    <string name="settings_pointer_speed">بیشینهٔ سرعت نشانگر</string>
+    <string name="settings_pointer_acceleration">شتاب نشانگر</string>
+    <string name="settings_percent_of_default">%d%% از مقدار پیش‌فرض</string>
+    <string name="settings_darken_pages">تیره کردن صفحه‌های وب (پس از راه‌اندازی دوباره)</string>
+    <string name="settings_autoplay">پخش خودکار ویدیو و صدا توسط صفحه‌ها</string>
+    <string name="settings_video_quality">بیشترین کیفیت ویدیو</string>
+    <string name="settings_debugging">اشکال‌زدایی صفحه‌های وب (پس از راه‌اندازی دوباره)</string>
+    <string name="settings_debugging_warning">اشکال‌زدایی به هر کسی که به این دستگاه دسترسی اشکال‌زدایی دارد اجازه می‌دهد محتوای صفحه، کوکی‌ها و داده‌های نشست را بخواند. فقط روی دستگاه مورد اعتماد و هنگام رفع اشکال روشنش کنید.</string>
+    <string name="settings_restart_needed">برای اعمال، VireoLumaTV را دوباره راه‌اندازی کنید</string>
+    <string name="settings_clear_cache">پاک کردن دادهٔ وب ذخیره‌شده</string>
+    <string name="warning_title">هشدار</string>
+    <string name="private_explained">مرور خصوصی پس از خروج، تاریخچه، کوکی‌ها، داده‌های سایت و ورودی‌های فرم را نگه نمی‌دارد.\n\nبارگیری‌ها و علاقه‌مندی‌ها حفظ می‌شوند. سایت‌هایی که بازدید می‌کنید، شبکهٔ شما و ارائه‌دهندهٔ اینترنت همچنان فعالیت شما را می‌بینند.</string>
+    <string name="shortcut_unassigned">تعیین نشده</string>
+    <string name="shortcut_current_key">کلید:</string>
+    <string name="shortcut_key_code">کلید %d</string>
+    <string name="shortcut_assign">تعیین کلید</string>
+    <string name="shortcut_waiting">یک دکمهٔ کنترل را بزنید…</string>
+    <string name="shortcut_reserved">این کلید برای حرکت در مرورگر است و نمی‌توان آن را تعیین کرد</string>
+    <string name="shortcut_long_press">نگه‌داشتن</string>
+    <string name="media_play_pause">پخش / توقف</string>
+    <string name="media_stop">توقف پخش</string>
+    <string name="media_rewind">۱۰ ثانیه عقب</string>
+    <string name="media_fast_forward">۱۰ ثانیه جلو</string>
+    <string-array name="tabs_actions">
+        <item>زبانهٔ جدید</item>
+        <item>بستن</item>
+        <item>بستن همه</item>
+        <item>انتقال به چپ</item>
+        <item>انتقال به راست</item>
+    </string-array>
+    <string-array name="popups_levels">
+        <item>اجازه به همه</item>
+        <item>مسدود کردن پنجره‌های گفتگو</item>
+        <item>مسدود کردن پنجره‌های گفتگو و پنجره‌هایی که اسکریپت‌ها باز می‌کنند</item>
+        <item>مسدود کردن همهٔ پنجره‌های جدید</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>صفحهٔ آغاز VireoLumaTV</item>
+        <item>موتور جست‌وجو</item>
+        <item>نشانی سفارشی</item>
+        <item>صفحهٔ خالی</item>
+    </string-array>
+    <string-array name="settings_video_qualities">
+        <item>خودکار</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </string-array>
 </resources>

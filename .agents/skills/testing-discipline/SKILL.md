@@ -1,18 +1,15 @@
 ---
 name: testing-discipline
-description: Use when adding features or changing logic. Enforces running relevant tests and not relaxing existing coverage.
+description: Use when changing product logic, adding features, or fixing regressions in VireoLumaTV. Selects relevant tests and records what CI and device checks actually covered.
 ---
 
 # Testing Discipline
 
-- Prefer running or reasoning about:
-  ```bash
-  ./gradlew test
-  ./gradlew assembleDebug
-  ./gradlew assembleRelease
-  ```
-- Do not relax or weaken existing tests.
-- Prefer focused tests for changed behavior (especially adblock, navigation, downloads, or WebView integration).
-- A change is incomplete until consistent with the test baseline and release build expectations (R8).
-- Explicitly call out gaps that need real Android TV device validation.
-- Follow agent-governance rules on branches and authorship.
+- Identify the changed behavior and run its focused test first; require an assertion
+  that detects the old defect for functional fixes.
+- Run affected neighboring suites. Do not weaken existing assertions.
+- Before integration, check the exact SHA in CI for unit tests, lint and a minified
+  release build. Record any unavailable check rather than treating it as passed.
+- For WebView, gamepad, fullscreen, video or memory, name the physical TV check
+  still needed; tests using doubles do not validate the device path.
+- Use `docs/REGRESSION_POLICY.md` for the N01–N10 contracts and evidence matrix.

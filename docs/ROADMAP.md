@@ -263,7 +263,7 @@ Opciones: conservar el historial por trazabilidad, o construir una rama limpia p
 |---|---|
 | `AdBlockClient::parse()` siempre devuelve `true` | La validez de una lista se comprueba por su contenido, no con `parse()` |
 | El motor nativo ignora `$popup` y las reglas cosméticas | Las reglas `$popup` se compilan en un cliente aparte y la ocultación por sitio (`dominio##selector`) se inyecta al inicio del documento; las reglas cosméticas genéricas y procedurales siguen sin aplicarse |
-| `onDetachFromWindow` pone `callback = null` | Las pestañas en segundo plano no actualizan el contador de bloqueos |
+| `PageEngine.detach` pone `window = null` | Las pestañas en segundo plano no actualizan el contador de bloqueos |
 | `-assumenosideeffects` no garantiza eliminar la evaluación de argumentos | Los logs del camino caliente se eliminan en el código fuente |
 | `isAd()` no tiene contador de invocaciones | W0 no puede medir la proporción bloqueadas/totales sin instrumentación |
 | `AppDatabase.kt` es idéntico en `v1.0.0`, `v1.1.0` y `f1146b5`, con `version = 19` | Las versiones publicadas no usan las versiones 2, 3 ni 7; los huecos de migración 2→3, 3→4 y 6→7 no son alcanzables desde instalaciones publicadas |
@@ -273,7 +273,7 @@ Opciones: conservar el historial por trazabilidad, o construir una rama limpia p
 | Área | Detalle |
 |---|---|
 | Favicons | `readTimeout` es por lectura, no un límite total; pico transitorio de hasta ~2× el icono |
-| Adblock | Una caché de lista personalizada queda huérfana si cambia la URL |
+| Adblock | Al cambiar la URL personalizada, la caché anterior se elimina tras guardar una nueva generación compilada; si esa escritura falla, la caché antigua puede permanecer hasta el próximo éxito. |
 | Escritura atómica | Sin `fsync`: protege frente a `lmkd`, no frente a un corte de luz |
 | `intent:` de una página | Se abren sin confirmación, a diferencia de otros esquemas externos (`askUserAndOpenInExternalApp`); decidir si pedir confirmación |
 | `androidx.webkit` | 1.18.0 adoptada en la auditoría (compila y pasa tests); validar el WebView en el onn |

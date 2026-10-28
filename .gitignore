@@ -1,10 +1,16 @@
+# Build output (every module's build/ folder, Gradle and Kotlin caches)
+build/
+.gradle/
+.kotlin/
+native/adblock-jni/target/
+
+# Machine-specific settings and IDE files
+local.properties
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea
 .DS_Store
-/build
-/captures
+
+# Never commit signing keys or memory dumps
+*.jks
 *.keystore
 *.hprof
-/buildSrc/build

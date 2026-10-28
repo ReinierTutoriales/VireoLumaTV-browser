@@ -39,17 +39,49 @@ No concluir que cada resultado CACHED significa fallo del bloqueador.
 
 ## 2. Contrato de navegación protegido
 
+**Cambio de contrato (2026-10-27, petición del propietario):** la barra inferior flotante se sustituye por una
+cápsula superior única con URL, Atrás, Adelante, Recargar, Inicio, escudo del bloqueador y menú. Cerrar pestaña
+y voz pasan al menú de aplicación. Pulsación larga en el escudo abre el detalle del bloqueador. Los recorridos
+N01–N06 se leen con esta cápsula; el resto de comportamiento no cambia. Pendiente de validación en Android TV.
+
+**Búsqueda por voz eliminada (2026-10-27, petición del propietario):** no hay entrada de menú, atajo ni
+callback. El permiso `RECORD_AUDIO` se conserva para el micrófono que piden las páginas web.
+
+**Puntero y mando (2026-10-27, petición del propietario):** el clic con OK sigue siendo un toque de dedo; el
+scroll de borde, el modo agarrar y el desplazamiento del puntero se envían a la página como rueda y hover de ratón.
+El stick analógico mueve el puntero a velocidad proporcional; el hat del gamepad es su D-pad. «Navegar con los ejes
+del joystick» desactivado apaga solo el stick. Pendiente de validación en Android TV.
+
+**Interfaz solo oscura (2026-10-27, petición del propietario):** el tema de la aplicación es oscuro siempre;
+se retiran el ajuste Tema y la paleta clara. «Oscurecer las páginas web» depende solo de su ajuste
+(activado por defecto), ya no del modo noche del sistema. Pendiente de validación en Android TV.
+
+**Sugerencias de dirección (2026-10-27, petición del propietario):** al editar la dirección se muestran hasta
+seis sugerencias locales (favoritos e historial; solo favoritos en incógnito) en lugar de la tira de pestañas.
+Abajo entra en la lista sin cancelar la edición, Arriba vuelve al campo, OK abre la sugerencia y Atrás sigue N04.
+El campo ya no prohíbe las sugerencias del teclado (`textUri`) ni abre el teclado a pantalla completa.
+Nada sale del dispositivo. Pendiente de validación en Android TV con varios teclados.
+
+**Rediseño TV (2026-10-28, petición del propietario):** interfaz nativa de Android TV con vistas
+AppCompat, sin dependencias nuevas. El foco invierte el control (superficie clara, contenido oscuro) y lo
+escala 1,1 (botones), 1,05 (pestañas y botones de texto) o 1,025 (filas), según el sistema de foco de TV.
+Los controles del navegador son una capa superior sobre un degradado, dentro de los márgenes seguros de
+48/27 dp; las pestañas son píldoras de 188 dp (caben cuatro y «+»). El menú de aplicación es un panel
+lateral a la derecha con icono por entrada; Atrás lo cierra sin elegir. La vista previa de otra pestaña
+ocupa la pantalla detrás de los controles, sin recortar. Las mismas acciones y el mismo orden de foco
+(N01–N06) se conservan. Pendiente de validación en Android TV.
+
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 
 | ID | Recorrido | Resultado obligatorio |
 | --- | --- | --- |
-| N01 | Página → abrir menú | Ambas barras disponibles; foco visible en control accionable. |
-| N02 | Mover foco por barra inferior → Arriba → pestañas → búsqueda | Controles alcanzables, sin ocultar filas por recibir foco; buscar no abre IME hasta activar edición. |
-| N03 | Barra inferior Atrás/Adelante/Inicio/Recargar | Ejecutar una sola acción sobre la pestaña seleccionada; botones coherentes con historial. |
+| N01 | Página → abrir cápsula | Cápsula visible con foco en Atrás; foco visible en control accionable. |
+| N02 | Mover foco por la cápsula → Abajo → pestañas → Arriba → URL | Controles alcanzables, sin ocultar filas por recibir foco; buscar no abre IME hasta activar edición. |
+| N03 | Cápsula Atrás/Adelante/Recargar/Inicio | Ejecutar una sola acción sobre la pestaña seleccionada; botones coherentes con historial. |
 | N04 | Editar dirección → Atrás/cancelar | Cerrar IME/edición antes de alterar historial; no enfocar accidentalmente Salir. |
-| N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view una vez y mostrar ambas barras en esa misma pulsación; foco inferior accionable, acceso a superior y retorno al puntero, sin navegar otra URL. |
-| N06 | Pestaña A → preview B → comando inferior | Aplicar al contenido seleccionado B, sin quedarse apuntando a A. |
+| N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view una vez y mostrar la cápsula en esa misma pulsación; foco en Atrás accionable, acceso a pestañas y retorno al puntero, sin navegar otra URL. |
+| N06 | Pestaña A → preview B → comando de la cápsula | Aplicar al contenido seleccionado B, sin quedarse apuntando a A. |
 | N07 | Diálogo/selector/permiso → cancelar o volver | Resolver callback una vez con su propietario; foco vuelve al lugar correcto. |
 | N08 | Atrás desde raíz | Salida al launcher alcanzable y sin bucle, conservando acceso al menú y comandos inferiores. La secuencia exacta debe especificarse antes de implementarla. |
 | N09 | Mando OK, D-pad, pulsación larga, gamepad y puntero | Un gesto físico produce una acción; se conserva selección, scroll y clic en enlaces. |
@@ -76,7 +108,8 @@ La recomendación oficial de TV exige foco comprensible y salida por Atrás [O2]
 Suites de partida ya existentes, ampliar según fallo:
 
 - Navegación: BrowserNavigationTest, CursorMenuFocusTest, CursorLayoutRecoveryTest,
-  VirtualCursorPointerTest, TabRowsTest y scripts/test-webview-controls.cjs.
+  VirtualCursorPointerTest, CursorPointerMouseTest, RemoteInputContractTest, TabRowsTest
+  y scripts/test-webview-controls.cjs.
 - Pestañas/estado: SingleLiveTabTest, RendererRecoveryTest, AtomicTabSaveTest,
   ExitPersistenceTest e IncognitoSessionTabsTest.
 - Bloqueo: AdblockUpdateTest, AdblockCacheTest, AdblockFilterListValidatorTest,

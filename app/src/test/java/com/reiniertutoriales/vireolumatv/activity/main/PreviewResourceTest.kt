@@ -4,8 +4,8 @@ import android.app.Application
 import android.graphics.Bitmap
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.model.HostConfig
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.SiteSettings
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,15 +22,15 @@ class PreviewResourceTest {
     @Test fun legacyLargePreviewIsBoundedAndDoesNotRetainBackgroundBitmap() {
         val app = RuntimeEnvironment.getApplication()
         AppContext.init(app, Config(app.getSharedPreferences("preview-test", 0)))
-        val directory = File(app.cacheDir, WebTabState.TAB_THUMBNAILS_DIR).apply { mkdirs() }
+        val directory = File(app.cacheDir, BrowserTab.PREVIEW_DIR).apply { mkdirs() }
         val file = File(directory, "large-preview.png")
         Bitmap.createBitmap(1920, 1080, Bitmap.Config.ARGB_8888).also { bitmap ->
             file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
             bitmap.recycle()
         }
         try {
-            val tab = WebTabState(thumbnailHash = "large-preview")
-            val preview = tab.loadThumbnail()
+            val tab = BrowserTab(thumbnailHash = "large-preview")
+            val preview = tab.loadPreview()
             assertNotNull(preview)
             assertTrue(preview!!.width <= 480 && preview.height <= 480)
             assertNull(tab.thumbnail)
@@ -40,13 +40,13 @@ class PreviewResourceTest {
     @Test fun popupPolicyUsesOnlyConfigurationForTheCurrentHost() {
         val app = RuntimeEnvironment.getApplication()
         AppContext.init(app, Config(app.getSharedPreferences("popup-policy-test", 0)))
-        val model = TabsModel()
+        val model = TabStore()
         try {
-            val tab = WebTabState(url = "https://one.test")
-            tab.cachedHostConfig = HostConfig("one.test").apply { popupBlockLevel = HostConfig.POPUP_BLOCK_NONE }
-            assertEquals(HostConfig.POPUP_BLOCK_NONE, model.popupBlockingLevel(tab))
+            val tab = BrowserTab(url = "https://one.test")
+            tab.cachedSiteSettings = SiteSettings("one.test").apply { popupBlockLevel = SiteSettings.POPUPS_ALLOWED }
+            assertEquals(SiteSettings.POPUPS_ALLOWED, model.popupBlockingLevel(tab))
             tab.url = "https://two.test"
-            assertEquals(HostConfig.DEFAULT_BLOCK_POPUPS_VALUE, model.popupBlockingLevel(tab))
+            assertEquals(SiteSettings.DEFAULT_POPUP_POLICY, model.popupBlockingLevel(tab))
         } finally { model.clear() }
     }
 }

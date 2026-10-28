@@ -34,7 +34,15 @@ no certifica compatibilidad con sitios reales ni cierra toda la etapa ADS.
 
 ## Cobertura y aceptación
 
-`AdblockUpdateTest` usa HTTP local, motor doble y Robolectric SDK 28:
+Estado en `rewrite/independent-core`: `acfb8e7` retiró `AdblockUpdateTest` al
+integrar `fixes/audit`, que no adopta 0641da9 ni 7176ed8 (sondeo en primer
+plano y cola de refresco manual). Este árbol conserva `updateIfDue()` al volver
+a primer plano y al recuperar red, sin sondeo de 15 minutos. Se restaura solo
+el caso de caché expirada con descarga fallida (1 prueba, API vigente; una
+alteración de `CACHED` la hace fallar). Lo siguiente describe el lote original,
+no este árbol, salvo ese caso:
+
+`AdblockUpdateTest` original usa HTTP local, motor doble y Robolectric SDK 28:
 
 - Caché válida bloquea mientras llega la respuesta; descarga válida la sustituye.
 - HTML, respuesta vacía y HTTP 503 conservan reglas/fecha de último éxito;
@@ -50,6 +58,13 @@ APK debug, ausencia de deriva Room y APK release minificado. Consultar checks
 para su resultado y SHA exacto; este documento no anticipa su éxito.
 
 ## Alcance pendiente
+
+En `rewrite/independent-core`, el modelo expone los nombres de las listas que no se
+renovaron en el último intento (`unavailableLists`) y Ajustes los muestra. La prueba
+añadida cubre una URL personalizada (`Custom`) con descarga correcta y fallida;
+no simula las siete fuentes predeterminadas. Ajustes muestra sus nombres desde
+la misma configuración que usa el descargador. El estado parcial ya no promete
+un plazo fijo: el reintento depende de si se alcanzó algún servidor.
 
 La integración de eventos se revisó en código; el receptor Android real, WebView,
 matcher nativo, consumo y compatibilidad de sitios requieren dispositivo/proveedor.

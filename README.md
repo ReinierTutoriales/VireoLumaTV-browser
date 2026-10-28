@@ -1,25 +1,13 @@
 # VireoLumaTV
 
-Simple web browser optimized to use with Android TV remotes.
+An Android TV browser maintained by ReinierTutoriales. It uses the system WebView and supports TV remotes and gamepads on Android API 24 and later.
 
-VireoLumaTV is a WebView-only Android TV browser based on the source code of TV Bro. The GeckoView engine, Gecko build variant, and Gecko module sources have been removed to keep the app smaller, simpler, and more predictable on low-memory Android TV hardware.
+The interface has one top command capsule, a tab strip and native dialogs. Local address suggestions use bookmarks and history; the app also provides downloads, remote shortcuts, per-site blocking and a Rust filter engine. One WebView stays live at a time while other tabs retain their saved state.
 
-Features:
-- works with TV remote
-- tabs and bookmarks support
-- voice search support
-- switch user agent support
-- uses Android built-in web rendering engine (WebView / WebKit-Blink based)
-- built-in download manager
-- browsing history
-- shortcuts
+The current source migration is tracked in [the removal backlog](docs/audit/TVBRO_REMOVAL_BACKLOG_20261027.md). Automated checks cover parts of the behavior; real TV navigation, playback and memory measurements remain separate acceptance steps.
 
-Historical discussion of the original TV Bro project:
-- https://forum.xda-developers.com/android/apps-games/tv-bro-browser-android-based-tvs-t3545295
-
-Source:
-- VireoLumaTV repository: https://github.com/ReinierTutoriales/VireoLumaTV-browser
-- Original TV Bro source code: https://github.com/truefedex/tv-bro
+Source and support: https://github.com/ReinierTutoriales/VireoLumaTV-browser
+Original TV Bro source code: https://github.com/truefedex/tv-bro
 
 ## License and attribution
 

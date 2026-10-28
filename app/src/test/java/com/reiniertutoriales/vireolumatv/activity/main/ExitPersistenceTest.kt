@@ -3,7 +3,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.os.Bundle
 import android.os.Looper
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -21,22 +21,19 @@ import org.robolectric.annotation.Config
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class ExitPersistenceTest {
     @Test fun exitReturnsBeforeDiskWriteAndPersistsAfterModelIsCleared() = runBlocking {
-        val model = TabsModel()
-        val mutex = TabsModel::class.java.getDeclaredField("saveMutex").let {
-            it.isAccessible = true
-            it.get(model) as Mutex
-        }
-        val tab = WebTabState(url = "https://exit.test", selected = true).apply {
+        val model = TabStore()
+        val mutex = model.storage
+        val tab = BrowserTab(url = "https://exit.test", selected = true).apply {
             savedState = Bundle().apply { putString("history", "kept after exit") }
         }
         mutex.lock() // Hold the IO transaction so completion cannot race the assertion.
-        val previous = WebTabState(url = "https://previous.test").apply {
+        val previous = BrowserTab(url = "https://previous.test").apply {
             savedState = Bundle().apply { putString("history", "previous tab history") }
         }
-        val previousSave = model.modelScope.launch { model.saveTab(previous) }
+        val previousSave = model.workScope.launch { model.saveTab(previous) }
         tab.selected = false
         tab.title = "obsolete"
-        val obsoleteSave = model.modelScope.launch { model.saveTab(tab) }
+        val obsoleteSave = model.workScope.launch { model.saveTab(tab) }
         tab.selected = true
         tab.title = "latest"
         val pending = model.saveTabBeforeExit(tab)
@@ -55,13 +52,13 @@ class ExitPersistenceTest {
         assertNotNull(previous.wvStateFileName)
         assertTrue(tab.id > 0)
         assertNotNull(tab.wvStateFileName)
-        val stored = AppDatabase.db.tabsDao().getAll(false).single { it.url == tab.url }
+        val stored = AppDatabase.db.tabDao().getAll(false).single { it.url == tab.url }
         assertEquals(tab.id, stored.id)
         assertEquals("latest", stored.title)
         assertTrue(stored.selected)
-        AppDatabase.db.tabsDao().delete(tab)
+        AppDatabase.db.tabDao().delete(tab)
         tab.removeFiles()
-        AppDatabase.db.tabsDao().delete(previous)
+        AppDatabase.db.tabDao().delete(previous)
         previous.removeFiles()
     }
 }

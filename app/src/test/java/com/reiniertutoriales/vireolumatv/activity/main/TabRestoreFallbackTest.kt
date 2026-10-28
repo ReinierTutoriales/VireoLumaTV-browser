@@ -5,11 +5,10 @@ import android.view.View
 import android.widget.FrameLayout
 import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.utils.Utils
-import com.reiniertutoriales.vireolumatv.webengine.WebEngine
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
-import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.webengine.PageEngine
+import com.reiniertutoriales.vireolumatv.webengine.PageWindow
+import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import kotlinx.coroutines.cancel
 import org.junit.Assert.*
 import org.junit.Test
@@ -20,13 +19,14 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.io.File
 import java.lang.reflect.Proxy
+import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class TabRestoreFallbackTest {
-    private fun tabWithEngine(engine: WebEngine, privateMode: Boolean = false) =
-        WebTabState(url = "https://saved.test/page", incognito = privateMode).apply {
-            WebTabState::class.java.getDeclaredField("webEngine\$delegate")
+    private fun tabWithEngine(engine: PageEngine, privateMode: Boolean = false) =
+        BrowserTab(url = "https://saved.test/page", incognito = privateMode).apply {
+            BrowserTab::class.java.getDeclaredField("engine\$delegate")
                 .apply { isAccessible = true }.set(this, lazyOf(engine))
         }
 
@@ -36,21 +36,21 @@ class TabRestoreFallbackTest {
             var liveView: View? = null
             val loads = mutableListOf<String>()
             var restores = 0
-            val engine = Proxy.newProxyInstance(WebEngine::class.java.classLoader,
-                arrayOf(WebEngine::class.java)) { _, method, args ->
+            val engine = Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+                arrayOf(PageEngine::class.java)) { _, method, args ->
                 when (method.name) {
                     "getView" -> liveView
-                    "restoreState" -> { restores++; false }
-                    "loadUrl" -> { loads.add(args!![0] as String); null }
+                    "restoreHistory" -> { restores++; false }
+                    "load" -> { loads.add(args!![0] as String); null }
                     else -> null
                 }
-            } as WebEngine
+            } as PageEngine
             val tab = tabWithEngine(engine, privateMode).apply { savedState = Bundle() }
-            val model = TabsModel()
-            model.modelScope.cancel() // Persistence is covered by separate Room/atomic-file tests.
-            model.tabsStates.add(tab)
-            val window = Proxy.newProxyInstance(WebEngineWindowProviderCallback::class.java.classLoader,
-                arrayOf(WebEngineWindowProviderCallback::class.java)) { _, _, _ -> null } as WebEngineWindowProviderCallback
+            val model = TabStore()
+            model.workScope.cancel() // Persistence is covered by separate Room/atomic-file tests.
+            model.openTabs.add(tab)
+            val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
+                arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
             try {
                 model.changeTab(tab, { View(app).also { liveView = it } }, FrameLayout(app), window)
                 assertEquals(1, restores)
@@ -65,55 +65,55 @@ class TabRestoreFallbackTest {
 
     @Test fun rejectedDiskStateDoesNotReportSuccessfulRestoration() {
         val app = RuntimeEnvironment.getApplication()
-        val engine = Proxy.newProxyInstance(WebEngine::class.java.classLoader,
-            arrayOf(WebEngine::class.java)) { _, method, args ->
+        val engine = Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+            arrayOf(PageEngine::class.java)) { _, method, args ->
             when (method.name) {
-                "stateFromBytes" -> Utils.bytesToBundle(args!![0] as ByteArray)
-                "restoreState" -> false
+                "readHistory" -> BundleBytes.decode(args!![0] as ByteArray)
+                "restoreHistory" -> false
                 else -> null
             }
-        } as WebEngine
+        } as PageEngine
         val tab = tabWithEngine(engine).apply { wvStateFileName = "tab-rejected-state-test" }
-        val file = File(app.filesDir, "${WebTabState.TAB_WVSTATES_DIR}/${tab.wvStateFileName}")
+        val file = File(app.filesDir, "${BrowserTab.HISTORY_DIR}/${tab.wvStateFileName}")
         file.parentFile!!.mkdirs()
-        file.writeBytes(requireNotNull(Utils.bundleToBytes(Bundle())))
+        file.writeBytes(requireNotNull(BundleBytes.encode(Bundle())))
         try {
-            assertFalse(tab.restoreWebView())
+            assertFalse(tab.restorePage())
             assertEquals("https://saved.test/page", tab.url)
             assertTrue("Restoration failure must not delete persisted user data", file.exists())
         } finally { file.delete() }
     }
 
     @Test fun invalidMemoryStateFallsBackInsteadOfThrowing() {
-        val engine = WebViewWebEngine(WebTabState())
+        val engine = WebViewPageEngine(BrowserTab())
         val tab = tabWithEngine(engine).apply { savedState = "invalid legacy payload" }
-        assertFalse(tab.restoreWebView())
+        assertFalse(tab.restorePage())
         assertEquals("https://saved.test/page", tab.url)
     }
 
     @Test fun realEngineRestoresValidHistoryAndRejectsEmptyBundle() {
         val app = RuntimeEnvironment.getApplication()
-        val engine = WebViewWebEngine(WebTabState())
+        val engine = WebViewPageEngine(BrowserTab())
         val tab = tabWithEngine(engine)
         try {
-            val live = engine.getOrCreateView(app) as WebView
-            engine.loadUrl("https://saved.test/first")
+            val live = engine.createView(app) as WebView
+            engine.load("https://saved.test/first")
             shadowOf(live).pushEntryToHistory("https://saved.test/first")
-            engine.loadUrl("https://saved.test/second")
+            engine.load("https://saved.test/second")
             shadowOf(live).pushEntryToHistory("https://saved.test/second")
-            tab.savedState = requireNotNull(engine.saveState())
-            engine.onDetachFromWindow(completely = true, destroyTab = false)
-            engine.getOrCreateView(app)
-            assertTrue(tab.restoreWebView())
+            tab.savedState = requireNotNull(engine.saveHistory())
+            engine.detach(destroyView = true)
+            engine.createView(app)
+            assertTrue(tab.restorePage())
             assertEquals("https://saved.test/second", engine.url)
-            assertTrue(engine.canGoBack())
+            assertTrue(engine.canGoBack)
             tab.savedState = Bundle()
-            assertFalse(tab.restoreWebView())
+            assertFalse(tab.restorePage())
             assertNull(tab.savedState)
-        } finally { engine.onDetachFromWindow(completely = true, destroyTab = true) }
+        } finally { engine.detach(destroyView = true) }
     }
 
     @Test fun engineWithoutLiveViewDoesNotManufactureSavedState() {
-        assertNull(WebViewWebEngine(WebTabState()).saveState())
+        assertNull(WebViewPageEngine(BrowserTab()).saveHistory())
     }
 }

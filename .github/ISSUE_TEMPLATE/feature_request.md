@@ -1,21 +1,15 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: TV browsing improvement
+about: Propose a specific change to VireoLumaTV
 title: ''
 labels: enhancement
 assignees: ''
-
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+Which browsing task is difficult today?
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+Describe the proposed behavior and how it should work with a TV remote.
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+Which existing actions and data must it preserve?
 
-### VireoLumaTV support
-
-Use this repository for VireoLumaTV issues. Include the app version, device model, and steps to reproduce. Support for this fork is independent of the original TV Bro project.
+How would you check that the change solves the problem?

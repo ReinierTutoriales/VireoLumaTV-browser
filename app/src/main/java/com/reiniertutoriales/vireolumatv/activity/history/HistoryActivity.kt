@@ -1,216 +1,120 @@
 package com.reiniertutoriales.vireolumatv.activity.history
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.Gravity
-import android.view.KeyEvent
-import android.view.View
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.widget.AbsListView
-import android.widget.AdapterView
-import android.widget.ImageButton
-import android.widget.PopupMenu
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.databinding.ActivityHistoryBinding
-import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
-import com.reiniertutoriales.vireolumatv.utils.BaseAnimationListener
-import com.reiniertutoriales.vireolumatv.utils.Utils
-import com.reiniertutoriales.vireolumatv.utils.VoiceSearchHelper
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.databinding.HistoryScreenBinding
+import com.reiniertutoriales.vireolumatv.model.HistoryItem
+import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
+import kotlinx.coroutines.launch
 
 /**
- * Created by fedex on 29.12.16.
+ * Visited pages, newest first. OK returns the address to the browser through [KEY_URL]. A long
+ * press starts selecting rows; "Delete" then removes the selection and Back leaves selection mode.
  */
+class HistoryActivity : AppCompatActivity() {
+    private lateinit var vb: HistoryScreenBinding
+    private lateinit var model: HistoryPages
+    private var consumedPage: List<HistoryItem>? = null
+    private val adapter = HistoryRows(::onItemClick, ::onItemLongClick)
 
-class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
-
-    private lateinit var vb: ActivityHistoryBinding
-    private var ibDelete: ImageButton? = null
-    private var adapter: HistoryAdapter? = null
-    private lateinit var historyModel: HistoryModel
-    private val voiceSearchHelper = VoiceSearchHelper(this, VOICE_SEARCH_REQUEST_CODE,
-        VOICE_SEARCH_PERMISSIONS_REQUEST_CODE)
-
-    internal var onListScrollListener: AbsListView.OnScrollListener = object : AbsListView.OnScrollListener {
-        override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
-
-        }
-
-        override fun onScroll(view: AbsListView, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
-            if (totalItemCount != 0 && firstVisibleItem + visibleItemCount >= totalItemCount - 1 && "" == historyModel.searchQuery) {
-                historyModel.loadItems(adapter!!.realCount)
-            }
+    /** Back leaves selection mode first; only then does it close the screen. */
+    private val leaveSelection = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            adapter.selectionMode = false
+            updateCommands()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        vb = ActivityHistoryBinding.inflate(layoutInflater)
+        vb = HistoryScreenBinding.inflate(layoutInflater)
         setContentView(vb.root)
+        model = ScreenModels.get(HistoryPages::class, this)
+        onBackPressedDispatcher.addCallback(this, leaveSelection)
 
-        historyModel = ActiveModelsRepository.get(HistoryModel::class, this)
-        onBackPressedDispatcher.addCallback(this, exitMultiselectOnBack)
+        vb.itemList.layoutManager = LinearLayoutManager(this)
+        vb.itemList.adapter = adapter
+        vb.itemList.addOnScrollListener(nextPageLoader)
+        vb.clearButton.setOnClickListener { confirmDelete(all = true) }
+        vb.deleteSelectedButton.setOnClickListener { confirmDelete(all = false) }
 
-        ibDelete = findViewById(R.id.ibDelete)
-
-        adapter = HistoryAdapter()
-        vb.listView.adapter = adapter
-
-        vb.listView.setOnScrollListener(onListScrollListener)
-        vb.listView.onItemClickListener = this
-        vb.listView.onItemLongClickListener = this
-
-        historyModel.lastLoadedItems.subscribe(this, false) {
-            if (it.isEmpty()) return@subscribe
-            adapter!!.addItems(it)
-            vb.listView.requestFocus()
+        model.loadedPage.observe(this) {
+            if (it.isEmpty() || it === consumedPage) return@observe
+            consumedPage = it
+            adapter.addItems(it)
+            vb.itemList.requestFocus()
         }
-
-        historyModel.loadItems()
+        model.loadItems()
     }
 
-    private fun showDeleteDialog(deleteAll: Boolean) {
-        if (adapter!!.items.isEmpty() || (adapter!!.selectedItems.isEmpty() && !deleteAll)) return
-        AlertDialog.Builder(this)
-                .setTitle(R.string.delete)
-                .setMessage(if (deleteAll) R.string.msg_delete_history_all else R.string.msg_delete_history)
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        if (deleteAll) {
-                            AppDatabase.db.historyDao().deleteWhereTimeLessThan(Long.MAX_VALUE)
-                            adapter!!.erase()
-                        } else {
-                            AppDatabase.db.historyDao().delete(*(adapter!!.selectedItems).toTypedArray())
-                            adapter!!.remove(adapter!!.selectedItems)
-                        }
-                    }
-                }
-                .setNeutralButton(android.R.string.cancel) { dialogInterface, i -> }
-                .show()
-    }
-
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        when (event.keyCode) {
-            KeyEvent.KEYCODE_SEARCH -> {
-                if (event.action == KeyEvent.ACTION_DOWN) {
-                    //nop
-                } else if (event.action == KeyEvent.ACTION_UP) {
-                    voiceSearchHelper.initiateVoiceSearch(object : VoiceSearchHelper.Callback {
-                        override fun onResult(text: String?) {
-                            if (text == null) {
-                                Utils.showToast(this@HistoryActivity, getString(R.string.can_not_recognize))
-                                return
-                            }
-                            adapter!!.erase()
-                            historyModel.searchQuery = text
-                            historyModel.loadItems()
-                        }
-                    })
-                }
-                return true
+    /** Asks for the next page when the last visible row is one of the last two; search shows one page. */
+    private val nextPageLoader = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            val last = (recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+            if (model.searchQuery.isEmpty() && adapter.itemCount > 0 && last >= adapter.itemCount - 2) {
+                model.loadItems(append = true)
             }
         }
-        return super.dispatchKeyEvent(event)
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (!voiceSearchHelper.processActivityResult(requestCode, resultCode, data)) {
-            super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
-        grantResults: IntArray) {
-        if (!voiceSearchHelper.processPermissionsResult(requestCode, permissions, grantResults)) {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
-    }
-
-    override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-        val hi = (view as HistoryItemView).historyItem
-        if (hi!!.isDateHeader) return
-        if (adapter!!.isMultiselectMode) {
-            view.setSelection(!hi.selected)
-            updateMenu()
+    private fun onItemClick(item: HistoryItem) {
+        if (adapter.selectionMode) {
+            adapter.toggleSelection(item)
+            updateCommands()
         } else {
-            val resultIntent = Intent()
-            resultIntent.putExtra(KEY_URL, hi.url)
-            setResult(RESULT_OK, resultIntent)
+            setResult(RESULT_OK, Intent().putExtra(KEY_URL, item.url))
             finish()
         }
     }
 
-    override fun onItemLongClick(adapterView: AdapterView<*>, view: View, i: Int, l: Long): Boolean {
-        if (adapter!!.isMultiselectMode) return false
-        adapter!!.isMultiselectMode = true
-        val v = view as HistoryItemView
-        v.setSelection(true)
-        updateMenu()
+    private fun onItemLongClick(item: HistoryItem): Boolean {
+        if (adapter.selectionMode) return false
+        adapter.selectionMode = true
+        adapter.toggleSelection(item)
+        updateCommands()
         return true
     }
 
-    private fun updateMenu() {
-        exitMultiselectOnBack.isEnabled = adapter?.isMultiselectMode == true
-        val selection = adapter!!.selectedItems
-        if (selection.isEmpty()) {
-            if (ibDelete!!.isGone) return
-            val anim = AnimationUtils.loadAnimation(this, R.anim.right_menu_out_anim)
-            anim.setAnimationListener(object : BaseAnimationListener() {
-                override fun onAnimationEnd(animation: Animation) {
-                    ibDelete!!.visibility = View.GONE
+    private fun updateCommands() {
+        leaveSelection.isEnabled = adapter.selectionMode
+        vb.deleteSelectedButton.isVisible = adapter.selectedItems.isNotEmpty()
+    }
+
+    private fun confirmDelete(all: Boolean) {
+        val selection = adapter.selectedItems
+        if (adapter.rowCount == 0L || (!all && selection.isEmpty())) return
+        AlertDialog.Builder(this)
+            .setTitle(R.string.action_delete)
+            .setMessage(if (all) R.string.history_delete_all else R.string.history_delete_selected)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                lifecycleScope.launch {
+                    val history = AppDatabase.db.visitDao()
+                    if (all) {
+                        history.deleteWhereTimeLessThan(Long.MAX_VALUE)
+                        adapter.erase()
+                    } else {
+                        history.delete(*selection.toTypedArray())
+                        adapter.remove(selection)
+                    }
+                    adapter.selectionMode = false
+                    updateCommands()
+                    vb.clearButton.requestFocus()
                 }
-            })
-            ibDelete!!.startAnimation(anim)
-        } else {
-            if (ibDelete!!.isVisible) return
-            ibDelete!!.visibility = View.VISIBLE
-            ibDelete!!.startAnimation(AnimationUtils.loadAnimation(this, R.anim.right_menu_in_anim))
-        }
-    }
-
-    // onBackPressed() is not called for apps targeting API 36 on Android 16 (predictive back).
-    private val exitMultiselectOnBack = object : OnBackPressedCallback(false) {
-        override fun handleOnBackPressed() {
-            adapter?.isMultiselectMode = false
-            updateMenu()
-        }
-    }
-
-    private fun showItemOptionsPopup(v: HistoryItemView) {
-        val pm = PopupMenu(this, v, Gravity.BOTTOM)
-        pm.menu.add(R.string.delete)
-        pm.setOnMenuItemClickListener {
-            lifecycleScope.launch(Dispatchers.Main) {
-                AppDatabase.db.historyDao().delete(v.historyItem!!)
-                adapter!!.remove(v.historyItem!!)
             }
-            true
-        }
-        pm.show()
-    }
-
-    fun onClearHistoryClick(view: View) {
-        showDeleteDialog(true)
-    }
-
-    fun onClearHistoryItemsClick(view: View) {
-        showDeleteDialog(false)
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     companion object {
-        private const val VOICE_SEARCH_REQUEST_CODE = 10001
-        private const val VOICE_SEARCH_PERMISSIONS_REQUEST_CODE = 10002
-
         const val KEY_URL = "url"
     }
 }

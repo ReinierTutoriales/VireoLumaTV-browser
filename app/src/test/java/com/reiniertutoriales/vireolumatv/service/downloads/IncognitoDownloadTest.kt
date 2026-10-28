@@ -30,19 +30,19 @@ class IncognitoDownloadTest {
         referer = "https://example.com/private-page"
     }
 
-    private val callback = object : DownloadTask.Callback {
-        override fun onProgress(task: DownloadTask) {}
-        override fun onError(task: DownloadTask, responseCode: Int, responseMessage: String) { DownloadHistory.update(task.downloadInfo) }
-        override fun onDone(task: DownloadTask) { DownloadHistory.update(task.downloadInfo) }
+    private val callback = object : Transfer.Callback {
+        override fun onProgress(task: Transfer) {}
+        override fun onError(task: Transfer, responseCode: Int, responseMessage: String) { DownloadHistory.update(task.job) }
+        override fun onDone(task: Transfer) { DownloadHistory.update(task.job) }
     }
 
     @Test fun privateStreamAndBlobDownloadsWriteFilesButLeaveNoHistory() = runBlocking {
         val stream = download(true)
-        StreamDownloadTask(stream, "hello".byteInputStream(), callback).run()
+        StreamTransfer(stream, "hello".byteInputStream(), callback).run()
         assertEquals("hello", File(stream.filepath).readText())
         assertEquals(0L, stream.id)
         val blob = download(true)
-        BlobDownloadTask(blob, "data:text/plain;base64,d29ybGQ=", callback).run()
+        BlobTransfer(blob, "data:text/plain;base64,d29ybGQ=", callback).run()
         assertEquals("world", File(blob.filepath).readText())
         assertEquals(0L, blob.id)
         assertTrue(AppDatabase.db.downloadDao().getAll().isEmpty())
@@ -51,21 +51,21 @@ class IncognitoDownloadTest {
     @Test fun privateFailureAndCancellationLeaveNoHistory() = runBlocking {
         val broken = download(true)
         val input = object : InputStream() { override fun read(): Int = throw IOException("test failure") }
-        StreamDownloadTask(broken, input, callback).run()
-        assertEquals(Download.BROKEN_MARK, broken.size)
+        StreamTransfer(broken, input, callback).run()
+        assertEquals(Download.SIZE_FAILED, broken.size)
         val cancelled = download(true).apply { this.cancelled = true }
-        StreamDownloadTask(cancelled, "hello".byteInputStream(), callback).run()
-        assertEquals(Download.CANCELLED_MARK, cancelled.size)
+        StreamTransfer(cancelled, "hello".byteInputStream(), callback).run()
+        assertEquals(Download.SIZE_CANCELLED, cancelled.size)
         val badUrl = download(true).apply { url = "not a URL" }
-        FileDownloadTask(badUrl, null, callback).run()
-        assertEquals(Download.BROKEN_MARK, badUrl.size)
+        FileTransfer(badUrl, null, callback).run()
+        assertEquals(Download.SIZE_FAILED, badUrl.size)
         assertTrue(AppDatabase.db.downloadDao().getAll().isEmpty())
     }
 
     @Test fun ordinaryDownloadStillRecordsCompletionAndMediaStoreKeepsItsSource() = runBlocking {
         val ordinary = download(false)
         // Downloads run on DownloadService's pool; Room rejects the DAO write on the test's main thread.
-        withContext(Dispatchers.IO) { StreamDownloadTask(ordinary, "hello".byteInputStream(), callback).run() }
+        withContext(Dispatchers.IO) { StreamTransfer(ordinary, "hello".byteInputStream(), callback).run() }
         val row = AppDatabase.db.downloadDao().getAll().single()
         assertEquals(5L, row.bytesReceived)
         assertEquals(ordinary.url, row.url)

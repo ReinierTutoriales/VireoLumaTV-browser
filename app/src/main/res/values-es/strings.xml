@@ -1,181 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">VireoLumaTV</string>
+    <string name="about_source">VireoLumaTV de ReinierTutoriales · Código fuente</string>
+    <string name="about_tv_bro_credit">Basado en el código fuente de TV Bro: %s</string>
+    <string name="about_tagline">Un navegador web pensado para el mando de la TV</string>
+    <string name="about_version">Versión %s</string>
+    <string name="about_build">Compilación: %1$s · %2$s</string>
+    <string name="about_license">Licencia</string>
+    <string name="about_privacy">Política de privacidad</string>
     <string name="error">Error</string>
-    <string name="ok">Aceptar</string>
-    <string name="url_prompt">Escribe una búsqueda o una URL</string>
-    <string name="can_not_recognize">No se pudo reconocer</string>
-    <string name="speak">Búsqueda</string>
-    <string name="web_perm_request_confirmation">Esta página quiere usar los siguientes recursos:\n\n%s</string>
-    <string name="allow">Permitir</string>
-    <string name="deny">Denegar</string>
-    <string name="location">Ubicación</string>
-    <string name="open_in_new_tab">Abrir en pestaña nueva</string>
-    <string name="download_started">Descarga iniciada…\nEl archivo se guardará en:\n%s</string>
-    <string name="err_cant_open_file_chooser">No se puede abrir el selector de archivos</string>
-    <string name="bookmarks">Marcadores</string>
-    <string name="add">Añadir</string>
-    <string name="edit">Editar</string>
-    <string name="no_bookmarks_yet">Aún no hay marcadores</string>
-    <string name="new_bookmark">Nuevo marcador</string>
-    <string name="done">Hecho</string>
-    <string name="title">Título</string>
-    <string name="engine">Buscador</string>
-    <string name="choose_default_search_engine">Elige el buscador predeterminado</string>
-    <string name="save">Guardar</string>
-    <string name="search_engine_url_with_query_placeholder_query">URL del buscador con el marcador [query]</string>
-    <string name="user_agent_string">Agente de usuario</string>
-    <string name="choose_user_agent_string">Elige el agente de usuario</string>
-    <string name="edit_user_agent_string">Editar agente de usuario</string>
-    <string name="nothing">Nada</string>
-    <string name="cancelled">Cancelado</string>
-    <string name="download">Descargar</string>
-    <string name="file_not_found">Archivo no encontrado</string>
-    <string name="no_app_for_file_type">No hay aplicaciones para abrir este tipo de archivo</string>
-    <string name="delete">Eliminar</string>
-    <string name="cancel">Cancelar</string>
-    <string name="msg_delete_history">¿Eliminar las entradas del historial seleccionadas?</string>
-    <string name="msg_delete_history_all">¿Eliminar todo el historial?</string>
-    <string name="open_folder">Abrir carpeta</string>
-    <string name="no_file_explorer_msg">No hay ningún explorador de archivos adecuado instalado en el dispositivo</string>
-    <string name="shortcuts">Atajos</string>
-    <string name="favorites">Favoritos</string>
-    <string name="history">Historial</string>
-    <string name="settings">Ajustes</string>
-    <string name="shortcut">Atajo</string>
-    <string name="navigate_back">Atrás</string>
-    <string name="navigate_home">Inicio</string>
-    <string name="refresh_page">Recargar página</string>
-    <string name="voice_search">Búsqueda por voz</string>
-    <string name="zoom_in">Acercar</string>
-    <string name="zoom_out">Alejar</string>
-    <string name="cursor_grab_mode">Mover la página</string>
-    <string name="link_actions">Acciones del enlace</string>
-    <string name="not_set">Sin asignar</string>
-    <string name="action">Acción:</string>
-    <string name="current_key">Tecla actual:</string>
-    <string name="set_key_for_action">Asignar tecla a la acción</string>
-    <string name="press_eny_key">Pulsa cualquier tecla…</string>
-    <string name="shortcut_key_reserved_for_navigation">Esta tecla está reservada para la navegación del navegador</string>
-    <string name="clear">Borrar</string>
-    <string name="install">Instalar</string>
-    <string name="turn_on_unknown_sources">Activa \"Orígenes desconocidos\" en los ajustes del sistema</string>
-    <string name="turn_on_unknown_sources_for_app">Permite que VireoLumaTV instale aplicaciones de \"Orígenes desconocidos\" en los ajustes del sistema</string>
-    <string name="storage_not_mounted">Almacenamiento no disponible</string>
-    <string name="can_not_create_downloads">No se puede crear la carpeta de descargas</string>
-    <string name="voice_search_not_found">Búsqueda por voz no disponible</string>
-    <string name="new_version_dialog_title">Nueva versión disponible</string>
-    <string name="downloads">Descargas</string>
-    <string name="downloads_notifications_description">Notificaciones sobre el estado de las descargas</string>
-    <string name="main">General</string>
-    <string name="version_and_updates">Versión y actualizaciones</string>
-    <string name="version_s">Versión: %s</string>
-    <string name="build_flavor_s">Variante: %1$s · %2$s</string>
-    <string name="view_license">📃 Licencia</string>
-    <string name="privacy_policy">🔒 Política de privacidad</string>
-    <string name="update">Actualizar</string>
-    <string name="new_version_available_s">Nueva versión disponible: %s</string>
-    <string name="web_browser_optimized_for_tvs">Navegador web optimizado para TV</string>
-    <string name="warning">Advertencia</string>
-    <string name="err_webview_can_not_link">No se puede usar el componente WebView. Instala o actualiza Android System WebView.</string>
-    <string name="open_a_new_tab_here">Abre una pestaña nueva aquí</string>
-    <string name="tabs">Pestañas</string>
-    <array name="tabs_options">
-        <item>Abrir pestaña nueva</item>
-        <item>Cerrar actual</item>
+    <string name="action_allow">Permitir</string>
+    <string name="action_deny">No permitir</string>
+    <string name="action_edit">Editar</string>
+    <string name="action_done">Listo</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_clear">Borrar</string>
+    <string name="action_update">Actualizar</string>
+    <string name="action_exit">Salir</string>
+    <string name="action_open_store">Buscar en la tienda</string>
+    <string name="action_dont_show_again">No volver a mostrar</string>
+    <string name="action_open">Abrir</string>
+    <string name="address_hint">Busca o escribe una dirección web</string>
+    <string name="nav_back">Atrás</string>
+    <string name="nav_forward">Adelante</string>
+    <string name="nav_reload">Recargar</string>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_menu">Menú</string>
+    <string name="blocker_toggle">Bloqueo de anuncios</string>
+    <string name="tabs_new">Nueva pestaña</string>
+    <string name="tabs_title">Pestaña</string>
+    <string name="menu_history">Historial</string>
+    <string name="menu_favorites">Favoritos</string>
+    <string name="menu_downloads">Descargas</string>
+    <string name="menu_private">Modo incógnito</string>
+    <string name="menu_settings">Ajustes</string>
+    <string name="menu_close_tab">Cerrar pestaña</string>
+    <string name="menu_quit">Salir de VireoLumaTV</string>
+    <string name="pointer_move_page">Mover la página</string>
+    <string name="pointer_link_options">Opciones del enlace</string>
+    <string name="pointer_zoom_in">Acercar</string>
+    <string name="pointer_zoom_out">Alejar</string>
+    <string name="dpad_mode_title">Modo cruceta</string>
+    <string name="dpad_mode_message">El puntero se oculta y las flechas se mueven entre los enlaces y controles de la página, en los sitios que lo admiten.\n\nPara salir, pulsa Atrás en el mando o mantén pulsado B en un mando de juegos.</string>
+    <string name="link_open_in_new_tab">Abrir en una pestaña nueva</string>
+    <string name="link_open_in_app">Abrir en otra aplicación</string>
+    <string name="link_download">Descargar</string>
+    <string name="link_copy">Copiar dirección</string>
+    <string name="link_copied">Dirección copiada</string>
+    <string name="link_share">Compartir</string>
+    <string name="permission_request">Esta página quiere usar:\n\n%s</string>
+    <string name="permission_location">Tu ubicación</string>
+    <string name="error_no_file_picker">Ninguna aplicación de este dispositivo puede elegir archivos</string>
+    <string name="external_open_title">¿Abrir en otra aplicación?</string>
+    <string name="external_open_message">Esta página quiere abrir una dirección que gestiona otra aplicación:</string>
+    <string name="external_no_app">Ninguna aplicación de este dispositivo puede abrir esta dirección</string>
+    <string name="error_no_app">Ninguna aplicación puede abrir esto</string>
+    <string name="http_auth_title">Inicia sesión en este sitio</string>
+    <string name="http_auth_user">Usuario</string>
+    <string name="http_auth_password">Contraseña</string>
+    <string name="error_no_webview">Este dispositivo no tiene un WebView utilizable. Instala o actualiza Android System WebView.</string>
+    <string name="cert_title">Esta conexión no es privada</string>
+    <string name="cert_site">Sitio</string>
+    <string name="cert_problem">Problema</string>
+    <string name="cert_details">Certificado</string>
+    <string name="cert_go_back">Volver</string>
+    <string name="cert_proceed">Continuar de todos modos (no seguro)</string>
+    <string name="cert_expired">El certificado ha caducado</string>
+    <string name="cert_wrong_site">El certificado pertenece a otro sitio</string>
+    <string name="cert_bad_date">El certificado no es válido en esta fecha</string>
+    <string name="cert_invalid">El certificado no es válido</string>
+    <string name="cert_untrusted">El certificado no lo emitió una autoridad de confianza</string>
+    <string name="blocker_state_paused">En pausa</string>
+    <string name="blocker_state_loading">Cargando reglas</string>
+    <string name="blocker_state_updating">Actualizando reglas</string>
+    <string name="blocker_state_active">Bloqueando</string>
+    <string name="blocker_state_partial">Reglas parciales</string>
+    <string name="blocker_state_saved">Reglas guardadas</string>
+    <string name="blocker_state_none">Sin reglas</string>
+    <string name="blocker_summary">Bloqueo de anuncios: %1$s. %2$d bloqueados en esta página.</string>
+    <string name="popups_title">Ventanas emergentes: %s</string>
+    <string name="popups_dialog_blocked">Se bloqueó un diálogo de esta página</string>
+    <string name="popups_window_blocked">Se bloqueó una ventana emergente</string>
+    <string name="blocker_never">nunca</string>
+    <string name="blocker_last_update">Última actualización</string>
+    <string name="blocker_update_lists">Actualizar listas de filtros</string>
+    <string name="blocker_updating">Actualizando listas de filtros…</string>
+    <string name="blocker_updated">Las listas de filtros están al día</string>
+    <string name="blocker_partial">Se actualizaron algunas listas; las demás conservan sus reglas guardadas.</string>
+    <string name="blocker_using_saved">Se usan las reglas guardadas; no se descargó ninguna lista.</string>
+    <string name="blocker_not_refreshed">Sin actualizar: %1$s</string>
+    <string name="blocker_update_failed">No se pudieron cargar las listas de filtros. Revisa la conexión o la dirección de la lista.</string>
+    <string name="favorites_add">Añadir esta página</string>
+    <string name="favorites_empty">Aún no hay favoritos</string>
+    <string name="favorites_new">Nuevo favorito</string>
+    <string name="field_title">Título</string>
+    <string name="field_address">Dirección</string>
+    <string name="history_delete_selected">¿Eliminar del historial las páginas seleccionadas?</string>
+    <string name="history_delete_all">¿Borrar todo el historial?</string>
+    <string name="download_started">Descarga añadida. Se guardará en:\n%s</string>
+    <string name="nav_menu_downloads">Menú. %1$d descargas en curso</string>
+    <string name="downloads_empty">Aún no hay descargas</string>
+    <string name="download_cancelled">Cancelada</string>
+    <string name="download_file_missing">El archivo ya no está</string>
+    <string name="download_no_app">Ninguna aplicación puede abrir este tipo de archivo</string>
+    <string name="download_open_folder">Mostrar en la carpeta</string>
+    <string name="download_no_file_manager">No hay ningún gestor de archivos instalado</string>
+    <string name="download_install">Instalar</string>
+    <string name="install_allow_unknown_sources">Activa «Orígenes desconocidos» en los ajustes del sistema para instalar aplicaciones.</string>
+    <string name="install_allow_this_app">Permite que VireoLumaTV instale aplicaciones en los ajustes del sistema.</string>
+    <string name="download_storage_unavailable">El almacenamiento no está disponible</string>
+    <string name="download_folder_error">No se pudo crear la carpeta Descargas</string>
+    <string name="downloads_channel_description">Progreso de tus descargas</string>
+    <string name="update_available_title">Actualización disponible</string>
+    <string name="update_available_message">La versión %s está disponible.</string>
+    <string name="update_none">VireoLumaTV está actualizado</string>
+    <string name="update_failed">No se pudo comprobar ni instalar la actualización</string>
+    <string name="settings_tab_general">General</string>
+    <string name="settings_tab_shortcuts">Atajos</string>
+    <string name="settings_tab_about">Acerca de</string>
+    <string name="settings_search_engine">Buscador</string>
+    <string name="settings_search_engine_address">Dirección de búsqueda ([query] se sustituye por lo que buscas)</string>
+    <string name="settings_home_page">Página de inicio</string>
+    <string name="settings_home_page_address">Dirección de la página de inicio</string>
+    <string name="settings_user_agent_choice">Identificar el navegador como</string>
+    <string name="settings_user_agent">Agente de usuario</string>
+    <string name="settings_user_agent_custom">Agente de usuario personalizado</string>
+    <string name="settings_keep_screen_on">Mantener la pantalla encendida</string>
+    <string name="settings_stick_moves_pointer">Mover el puntero con el joystick</string>
+    <string name="settings_pointer_speed">Velocidad máxima del puntero</string>
+    <string name="settings_pointer_acceleration">Aceleración del puntero</string>
+    <string name="settings_percent_of_default">%d%% del valor predeterminado</string>
+    <string name="settings_darken_pages">Oscurecer las páginas web (al reiniciar)</string>
+    <string name="settings_autoplay">Permitir que las páginas reproduzcan vídeo y sonido solas</string>
+    <string name="settings_video_quality">Calidad de vídeo máxima</string>
+    <string name="settings_debugging">Depuración de páginas web (al reiniciar)</string>
+    <string name="settings_debugging_warning">La depuración permite que cualquiera con acceso de depuración a este dispositivo lea el contenido de las páginas, las cookies y los datos de sesión. Actívala solo en un dispositivo de confianza y mientras resuelves un problema.</string>
+    <string name="settings_restart_needed">Reinicia VireoLumaTV para aplicarlo</string>
+    <string name="settings_clear_cache">Borrar los datos web en caché</string>
+    <string name="warning_title">Advertencia</string>
+    <string name="private_explained">La navegación privada no guarda el historial, las cookies, los datos de sitios ni lo que escribes en formularios cuando sales de ella.\n\nLas descargas y los favoritos sí se conservan. Los sitios que visitas, tu red y tu proveedor de internet pueden seguir viendo tu actividad.</string>
+    <string name="shortcut_unassigned">Sin asignar</string>
+    <string name="shortcut_current_key">Tecla:</string>
+    <string name="shortcut_key_code">Tecla %d</string>
+    <string name="shortcut_assign">Asignar una tecla</string>
+    <string name="shortcut_waiting">Pulsa una tecla del mando…</string>
+    <string name="shortcut_reserved">Esta tecla sirve para moverse por el navegador y no se puede asignar</string>
+    <string name="shortcut_long_press">Mantener</string>
+    <string name="media_play_pause">Reproducir / pausar</string>
+    <string name="media_stop">Detener reproducción</string>
+    <string name="media_rewind">Retroceder 10 segundos</string>
+    <string name="media_fast_forward">Avanzar 10 segundos</string>
+    <string-array name="tabs_actions">
+        <item>Nueva pestaña</item>
+        <item>Cerrar</item>
         <item>Cerrar todas</item>
         <item>Mover a la izquierda</item>
         <item>Mover a la derecha</item>
-    </array>
-    <string name="ssl_expired">El certificado ha caducado</string>
-    <string name="ssl_idmismatch">El nombre del servidor no coincide</string>
-    <string name="ssl_date_invalid">La fecha del certificado no es válida</string>
-    <string name="ssl_invalid">Se produjo un error de certificado</string>
-    <string name="back_to_safety">Volver a un lugar seguro</string>
-    <string name="go_im_aware">Continuar. Conozco el riesgo</string>
-    <string name="connection_isnt_secure">La conexión no es segura</string>
-    <string name="hostname">Servidor:</string>
-    <string name="err_desk">Descripción del error:</string>
-    <string name="details">Detalles:</string>
-    <string name="exit">Salir</string>
-    <string name="find_in_apps_store">Buscar en la tienda de aplicaciones</string>
-    <string name="close_application">Cerrar aplicación</string>
-    <string name="close_tab">Cerrar pestaña</string>
-    <string name="navigate_forward">Adelante</string>
-    <string name="toggle_ads_blocking">Activar o desactivar el bloqueo de anuncios</string>
-    <string name="never">nunca</string>
-    <string name="update_ad_blocker_list">Actualizar listas del bloqueador</string>
-    <string name="toggle_keep_screen_on">Mantener la pantalla encendida</string>
-    <string name="navigate_with_joystick_axes">Navegar con los ejes del mando</string>
-    <string name="cursor_max_speed">Velocidad máxima del cursor</string>
-    <string name="cursor_acceleration">Aceleración del cursor</string>
-    <string name="cursor_physics_percent">%d%% del valor predeterminado</string>
-    <string name="direct_navigation_mode_title">Modo de navegación directa</string>
-    <string name="direct_navigation_mode_message">La navegación directa oculta el cursor y envía las teclas del mando o del control de juegos directamente a la página, para que las webs compatibles con TV o teclado resalten enlaces y controles.\n\nPara salir de este modo: pulsa Atrás en el mando de la TV, o mantén pulsado el botón B en un control de juegos.\n\nEste modo funciona mejor con el motor WebView: WebView permite mover el foco por la página con la cruceta.</string>
-    <string name="need_restart">Hay que reiniciar la aplicación</string>
-    <string name="theme">Tema</string>
-    <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Oscurecer las páginas web con el tema oscuro (requiere reiniciar)</string>
-    <string name="allow_autoplay_media">Permitir reproducción automática</string>
-    <string name="web_engine_debug">Depuración del motor web (requiere reiniciar)</string>
-    <string name="web_engine_debug_warning_message">Activar la depuración del motor web puede exponer el contenido de las páginas, las cookies y datos de sesión sensibles a cualquiera con acceso de depuración al dispositivo. Actívala solo en dispositivos de confianza para diagnosticar problemas.</string>
-    <array name="themes">
-        <item>Sistema</item>
-        <item>Claro</item>
-        <item>Oscuro</item>
-    </array>
-    <string name="incognito_mode">Modo incógnito</string>
-    <string name="incognito_mode_hint">Ahora puedes navegar en privado y las demás personas que usen este dispositivo no verán tu actividad. VireoLumaTV no guardará tu historial, cookies ni datos de sitios, ni la información que escribas en formularios.\n\nSin embargo, las descargas y los marcadores sí se guardan. Tu actividad aún puede ser visible para las webs que visites, tu organización o tu proveedor de internet.</string>
-    <string name="don_t_show_again">No volver a mostrar</string>
-    <string name="clear_web_cache">Borrar caché web</string>
-    <string name="block_popups">Bloqueo de ventanas emergentes</string>
-    <string name="block_popups_s">Bloqueo de ventanas emergentes (%s)</string>
-    <string name="popup_dialog_blocked">Diálogo emergente bloqueado</string>
-    <string name="new_tab_blocked">Pestaña nueva bloqueada</string>
-    <array name="popup_blocking_level">
-        <item>No bloquear</item>
+    </string-array>
+    <string-array name="popups_levels">
+        <item>Permitir todo</item>
         <item>Bloquear diálogos</item>
-        <item>Bloquear también pestañas nuevas (abiertas por scripts)</item>
-        <item>Bloquear cualquier ventana nueva (bloqueo máximo)</item>
-    </array>
-    <string name="copy_to_clipboard">Copiar al portapapeles</string>
-    <string name="copied_to_clipboard">Copiado al portapapeles</string>
-    <string name="share_url">Compartir URL</string>
-    <string name="open_in_external_application">Abrir en aplicación externa</string>
-    <string name="external_app_open_error">No se encontró una aplicación adecuada</string>
-    <string name="home_page">Página de inicio</string>
-    <string name="custom_home_page_url">URL de inicio personalizada</string>
-    <array name="home_page_modes">
-        <item>Inicio de VireoLumaTV</item>
+        <item>Bloquear diálogos y ventanas abiertas por scripts</item>
+        <item>Bloquear toda ventana nueva</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>Página de inicio de VireoLumaTV</item>
         <item>Buscador</item>
-        <item>Personalizada</item>
-        <item>En blanco</item>
-    </array>
-    <string name="yes">Sí</string>
-    <string name="no">No</string>
-    <string name="site_asks_to_open_unknown_url">El sitio quiere abrir una URL desconocida</string>
-    <string name="site_asks_to_open_unknown_url_message">¿Quieres abrir esta URL en una aplicación externa?</string>
-    <string name="err_no_app_to_handle_url">No se encontró una aplicación para abrir esta URL</string>
-    <string name="http_auth_title">Se requiere autenticación</string>
-    <string name="play_pause">Reproducir/Pausar</string>
-    <string name="media_stop">Detener reproducción</string>
-    <string name="media_rewind">Retroceder</string>
-    <string name="media_fast_forward">Avanzar</string>
-    <string name="long_press">Pulsación larga</string>
-    <string name="vireo_project_credit">VireoLumaTV de ReinierTutoriales · Código fuente</string>
-    <string name="based_on_tv_bro_sources">Basado en el código fuente de TV Bro: %s</string>
-    <string name="support_original_author">☕ Apoyar a Fedir Tsapana (autor original de TV Bro)</string>
-    <string name="adblock_updating">Actualizando listas…</string>
-    <string name="adblock_updated">Listas actualizadas</string>
-    <string name="adblock_partial_update">Actualización parcial; se conservan las reglas guardadas. Reintento en 6 horas.</string>
-    <string name="adblock_using_saved">Usando reglas guardadas. No se descargaron listas nuevas.</string>
-    <string name="adblock_update_error">No se pudieron cargar las listas. Revisa la conexión o la URL.</string>
-    <string name="video_max_quality">Calidad máxima de vídeo</string>
-    <array name="video_max_qualities">
+        <item>Dirección personalizada</item>
+        <item>Página en blanco</item>
+    </string-array>
+    <string-array name="settings_video_qualities">
         <item>Automática</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>
-    </array>
-    <string name="up_to_date">Ya tienes la última versión</string>
-    <string name="update_check_failed">No se pudo comprobar ni instalar la actualización</string>
-    <string name="last_update">Última actualización</string>
+    </string-array>
 </resources>

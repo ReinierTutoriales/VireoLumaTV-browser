@@ -35,19 +35,32 @@ internal class UserActivationTracker(private val clock: () -> Long) {
 
 internal object UserActivation {
     private val tracker = UserActivationTracker { SystemClock.uptimeMillis() }
+    private val heldKeys = mutableSetOf<Int>()
+    private val spentKeys = mutableSetOf<Int>()
 
-    fun onKeyEvent(event: KeyEvent) {
+    @Synchronized fun onKeyEvent(event: KeyEvent) {
         if (!isActivationKey(event.keyCode)) return
         val isPress = event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0
-        val isRelease = event.action == KeyEvent.ACTION_UP && !event.isCanceled
-        if (isPress || isRelease) tracker.mark()
+        if (isPress) {
+            heldKeys.add(event.keyCode)
+            spentKeys.remove(event.keyCode)
+            tracker.mark()
+        } else if (event.action == KeyEvent.ACTION_UP) {
+            val held = heldKeys.remove(event.keyCode)
+            val spent = spentKeys.remove(event.keyCode)
+            if (held && !spent && !event.isCanceled) tracker.mark()
+        }
     }
 
     fun onTouchEvent(event: MotionEvent) {
         if (event.actionMasked == MotionEvent.ACTION_UP) tracker.mark()
     }
 
-    fun consume(): Boolean = tracker.consume()
+    @Synchronized fun consume(): Boolean {
+        val accepted = tracker.consume()
+        if (accepted) spentKeys.addAll(heldKeys)
+        return accepted
+    }
 
     private fun isActivationKey(keyCode: Int): Boolean = when (keyCode) {
         KeyEvent.KEYCODE_DPAD_CENTER,

@@ -4,7 +4,7 @@ import android.app.Application
 import android.graphics.Bitmap
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.model.HostConfig
+import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -22,22 +22,23 @@ import java.net.InetSocketAddress
 class IncognitoFaviconTest {
     @Test fun downloadedPrivateIconNeverReadsOrWritesPersistentCache() = verify(true)
     @Test fun downloadedNormalIconStillPersists() = verify(false)
+    @Test fun anIconWhoseRecordFailsIsStillShown() = verify(false, recordFails = true)
 
-    private fun verify(privateMode: Boolean) = runBlocking {
+    private fun verify(privateMode: Boolean, recordFails: Boolean = false) = runBlocking {
         val app = RuntimeEnvironment.getApplication()
         val config = Config(app.getSharedPreferences("favicon-test", 0))
-        config.incognitoMode = privateMode
+        config.privateBrowsing = privateMode
         AppContext.init(app, config)
-        FaviconsPool.clear()
-        val directory = File(FaviconsPool.favIconsDir())
+        Favicons.clear()
+        val directory = Favicons.directory
         directory.deleteRecursively()
         var reads = 0
         var writes = 0
-        val previousDelegate = FaviconsPool.databaseDelegate
-        FaviconsPool.databaseDelegate = object : FaviconsPool.DatabaseDelegate {
-            override fun findByHostName(host: String): HostConfig? { reads++; return null }
-            override suspend fun insert(newHostConfig: HostConfig) { writes++ }
-            override suspend fun update(hostConfig: HostConfig) { writes++ }
+        val previousDelegate = Favicons.store
+        Favicons.store = object : Favicons.Store {
+            override fun find(host: String): SiteSettings? { reads++; return null }
+            override suspend fun insert(row: SiteSettings) { writes++; if (recordFails) error("disk full") }
+            override suspend fun update(row: SiteSettings) { writes++ }
         }
         val icon = ByteArrayOutputStream().also {
             Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888).compress(Bitmap.CompressFormat.PNG, 100, it)
@@ -51,14 +52,14 @@ class IncognitoFaviconTest {
         }
         server.start()
         try {
-            assertNotNull(FaviconsPool.get("http://127.0.0.1:${server.address.port}/"))
+            assertNotNull(Favicons.get("http://127.0.0.1:${server.address.port}/"))
             assertEquals(if (privateMode) 0 else 1, reads)
             assertEquals(if (privateMode) 0 else 1, writes)
             assertEquals(!privateMode, directory.listFiles()?.isNotEmpty() == true)
         } finally {
             server.stop(0)
-            FaviconsPool.databaseDelegate = previousDelegate
-            FaviconsPool.clear()
+            Favicons.store = previousDelegate
+            Favicons.clear()
             directory.deleteRecursively()
         }
     }

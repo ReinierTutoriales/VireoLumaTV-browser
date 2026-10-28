@@ -15,20 +15,19 @@ class MinimalHomeConfigTest {
     @Test fun existingInstallSwitchesSearchOnceWithoutResettingOtherSettings() {
         val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("minimal-home", 0)
         prefs.edit().clear()
-            .putString(Config.SEARCH_ENGINE_URL_PREF_KEY, Config.SearchEnginesURLs[0])
-            .putBoolean(Config.ADBLOCK_ENABLED_PREF_KEY, true)
-            .putString(Config.ADBLOCK_LIST_URL_KEY, "https://list.example/filter.txt")
+            .putString(Config.SEARCH_URL_KEY, Config.SEARCH_ENGINES[0].url)
+            .putBoolean(Config.BLOCKER_ENABLED_KEY, true)
+            .putString(Config.BLOCK_LIST_URL_KEY, "https://list.example/filter.txt")
             .putString(Config.HOME_PAGE_KEY, "https://custom.example/")
-            .putInt(Config.CURSOR_MAX_SPEED_PERCENT_KEY, 75).commit()
+            .putInt(Config.POINTER_SPEED_KEY, 75).commit()
         val config = Config(prefs)
-        assertEquals(Config.DUCKDUCKGO_SEARCH_URL, config.searchEngineURL.value)
-        assertEquals("ddg", config.guessSearchEngineName())
+        assertEquals(Config.DUCKDUCKGO_SEARCH_URL, config.searchAddress.value)
         assertTrue(config.adBlockEnabled)
-        assertEquals("https://list.example/filter.txt", config.adBlockListURL.value)
+        assertEquals("https://list.example/filter.txt", config.blockListUrl.value)
         assertEquals("https://custom.example/", config.homePage)
-        assertEquals(75, config.cursorMaxSpeedPercent)
+        assertEquals(75, config.pointerSpeedPercent)
         // A later explicit settings change must survive reopening the app.
-        config.searchEngineURL.value = "https://custom.example/?q=[query]"
-        assertEquals("https://custom.example/?q=[query]", Config(prefs).searchEngineURL.value)
+        config.searchAddress.value = "https://custom.example/?q=[query]"
+        assertEquals("https://custom.example/?q=[query]", Config(prefs).searchAddress.value)
     }
 }

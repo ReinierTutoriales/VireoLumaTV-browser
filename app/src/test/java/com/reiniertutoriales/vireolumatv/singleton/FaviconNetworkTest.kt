@@ -3,7 +3,7 @@ package com.reiniertutoriales.vireolumatv.singleton
 import android.app.Application
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.utils.FaviconExtractor
+import com.reiniertutoriales.vireolumatv.utils.IconFinder
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -23,9 +23,9 @@ import java.util.concurrent.atomic.AtomicInteger
 class FaviconNetworkTest {
     @Test fun repeatedAndConcurrentMissingIconsHaveAFixedRequestBudget() = runBlocking {
         val app = RuntimeEnvironment.getApplication()
-        val config = Config(app.getSharedPreferences("favicon-network-test", 0)).apply { incognitoMode = true }
+        val config = Config(app.getSharedPreferences("favicon-network-test", 0)).apply { privateBrowsing = true }
         AppContext.init(app, config)
-        FaviconsPool.clear()
+        Favicons.clear()
         val requests = AtomicInteger()
         val manifests = AtomicInteger()
         val html = buildString {
@@ -44,19 +44,19 @@ class FaviconNetworkTest {
         server.start()
         try {
             val url = "http://127.0.0.1:${server.address.port}/"
-            (1..16).map { async { assertNull(FaviconsPool.get(url)) } }.awaitAll()
-            FaviconsPool.trimMemory()
-            repeat(10) { assertNull(FaviconsPool.get(url)) }
+            (1..16).map { async { assertNull(Favicons.get(url)) } }.awaitAll()
+            Favicons.trimMemory()
+            repeat(10) { assertNull(Favicons.get(url)) }
             assertEquals("One HTML request and at most three distinct icon attempts", 4, requests.get())
             assertEquals("Do not fetch a manifest when HTML supplies usable candidates", 0, manifests.get())
-        } finally { server.stop(0); FaviconsPool.clear() }
+        } finally { server.stop(0); Favicons.clear() }
     }
 
     @Test fun htmlAndManifestCandidateStorageIsBounded() {
-        val extractor = FaviconExtractor()
+        val extractor = IconFinder()
         val html = "<head>" + (1..1000).joinToString("") { "<link rel=\"icon\" href=\"/$it.png\">" } + "</head>"
-        assertEquals(32, extractor.extractFavIconsFromHTML(URL("https://test.example"), html.reader().buffered()).first.size)
+        assertEquals(32, extractor.iconsFromDocument(URL("https://test.example"), html.reader().buffered()).first.size)
         val manifest = "{\"icons\":[" + (1..1000).joinToString(",") { "{\"src\":\"/$it.png\"}" } + "]}"
-        assertEquals(32, extractor.extractFavIconsFromWebManifest(URL("https://test.example/manifest.json"), manifest.reader()).size)
+        assertEquals(32, extractor.iconsFromManifest(URL("https://test.example/manifest.json"), manifest.reader()).size)
     }
 }

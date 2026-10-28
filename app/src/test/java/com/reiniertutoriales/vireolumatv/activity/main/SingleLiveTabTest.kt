@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.webengine.*
 import kotlinx.coroutines.cancel
 import org.junit.Assert.*
@@ -25,54 +25,52 @@ class SingleLiveTabTest {
 
     private fun verify(privateMode: Boolean) {
         val app = RuntimeEnvironment.getApplication()
-        val views = IdentityHashMap<WebTabState, View>()
-        val engines = IdentityHashMap<WebTabState, WebEngine>()
-        val histories = IdentityHashMap<WebTabState, String>()
+        val views = IdentityHashMap<BrowserTab, View>()
+        val engines = IdentityHashMap<BrowserTab, PageEngine>()
+        val histories = IdentityHashMap<BrowserTab, String>()
         val events = mutableListOf<String>()
         var loads = 0
-        val providerCallback = Proxy.newProxyInstance(WebEngineProviderCallback::class.java.classLoader,
-            arrayOf(WebEngineProviderCallback::class.java)) { _, method, args ->
-            if (method.name != "createWebEngine") null else {
-                val tab = args!![0] as WebTabState
+        val providerCallback = Proxy.newProxyInstance(EngineBackend::class.java.classLoader,
+            arrayOf(EngineBackend::class.java)) { _, method, args ->
+            if (method.name != "create") null else {
+                val tab = args!![0] as BrowserTab
                 engines.getOrPut(tab) {
-                    Proxy.newProxyInstance(WebEngine::class.java.classLoader,
-                        arrayOf(WebEngine::class.java)) { _, call, values ->
+                    Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+                        arrayOf(PageEngine::class.java)) { _, call, values ->
                         when (call.name) {
                             "getView" -> views[tab]
-                            "saveState" -> Bundle().apply {
+                            "saveHistory" -> Bundle().apply {
                                 putString("history", histories[tab])
                                 events.add("save:${tab.url}")
                             }
-                            "restoreState" -> { histories[tab] = (values!![0] as Bundle).getString("history")!!; true }
-                            "onDetachFromWindow" -> {
+                            "restoreHistory" -> { histories[tab] = (values!![0] as Bundle).getString("history")!!; true }
+                            "detach" -> {
                                 if (values!![0] == true) {
                                     views.remove(tab)
                                     events.add("destroy:${tab.url}")
                                 }
                                 null
                             }
-                            "loadUrl" -> { loads++; null }
+                            "load" -> { loads++; null }
                             else -> null
                         }
-                    } as WebEngine
+                    } as PageEngine
                 }
             }
-        } as WebEngineProviderCallback
-        val field = WebEngineFactory::class.java.getDeclaredField("initializedProvider").apply { isAccessible = true }
-        val previous = field.get(null)
-        field.set(null, WebEngineProvider("test", providerCallback))
-        val model = TabsModel()
+        } as EngineBackend
+        val restore = Engines.replaceForTest(providerCallback)
+        val model = TabStore()
         // Persistence has separate Room/atomic-file tests; keep this test focused on renderer lifetime.
-        model.modelScope.cancel()
+        model.workScope.cancel()
         try {
-            val first = WebTabState(url = "https://one.test", incognito = privateMode)
-            val second = WebTabState(url = "https://two.test", incognito = privateMode)
-            model.tabsStates.add(first)
-            model.tabsStates.add(second)
-            val window = Proxy.newProxyInstance(WebEngineWindowProviderCallback::class.java.classLoader,
-                arrayOf(WebEngineWindowProviderCallback::class.java)) { _, _, _ -> null } as WebEngineWindowProviderCallback
+            val first = BrowserTab(url = "https://one.test", incognito = privateMode)
+            val second = BrowserTab(url = "https://two.test", incognito = privateMode)
+            model.openTabs.add(first)
+            model.openTabs.add(second)
+            val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
+                arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
             val parent = FrameLayout(app)
-            val allocate: (WebTabState) -> View? = { tab ->
+            val allocate: (BrowserTab) -> View? = { tab ->
                 assertTrue("Old renderer must be released before allocating another", views.isEmpty())
                 events.add("create:${tab.url}")
                 View(app).also { views[tab] = it }
@@ -93,14 +91,14 @@ class SingleLiveTabTest {
             val count = events.size
             model.changeTab(first, allocate, parent, window)
             assertEquals(count, events.size)
-            val transportTab = WebTabState(url = "https://transport.test", incognito = privateMode)
-            model.tabsStates.add(transportTab)
+            val transportTab = BrowserTab(url = "https://transport.test", incognito = privateMode)
+            model.openTabs.add(transportTab)
             model.changeTab(transportTab, allocate, parent, window, loadInitialUrl = false)
             assertEquals(2, loads) // Caller/Chromium owns initial navigation, with no duplicate request.
             assertEquals(1, views.size)
         } finally {
             model.clear()
-            field.set(null, previous)
+            restore()
         }
     }
 }

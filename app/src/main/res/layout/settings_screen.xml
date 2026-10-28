@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Full-screen settings: page tabs on top, the selected page below, inside the overscan-safe area.
+     Focus alone never switches the page (SettingsPages). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipToPadding="false"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:clipChildren="false"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/safe_horizontal"
+    android:paddingTop="@dimen/safe_vertical"
+    android:paddingEnd="@dimen/safe_horizontal">
+
+    <RadioGroup
+        android:id="@+id/page_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checkedButton="@id/general_page_tab"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
+
+        <RadioButton
+            android:id="@+id/general_page_tab"
+            style="@style/Widget.Vireo.Tab"
+            android:text="@string/settings_tab_general" />
+
+        <RadioButton
+            android:id="@+id/shortcuts_page_tab"
+            style="@style/Widget.Vireo.Tab"
+            android:text="@string/settings_tab_shortcuts" />
+
+        <RadioButton
+            android:id="@+id/about_page_tab"
+            style="@style/Widget.Vireo.Tab"
+            android:text="@string/settings_tab_about" />
+    </RadioGroup>
+
+    <FrameLayout
+        android:id="@+id/page_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:layout_weight="1"
+        android:clipChildren="false" />
+</LinearLayout>

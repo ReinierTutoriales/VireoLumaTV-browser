@@ -80,7 +80,10 @@ jobs:
 
       - name: Unit tests
         run: |
+          python scripts/check-source-inventory.py
           node scripts/test-home-page-security.cjs
+          python scripts/test-apk-provenance.py
+          node scripts/test-blob-transfer.cjs
           node scripts/test-webview-controls.cjs
           node scripts/test-youtube-adblock.cjs
           node scripts/test-media-policy.cjs
@@ -120,6 +123,23 @@ jobs:
         env:
           CI_SIGN_RELEASE_WITH_DEBUG_KEY: ${{ env.HAS_DEBUG_KEYSTORE }}
         run: ./gradlew assembleGenericRelease lintGenericRelease --stacktrace
+
+      - name: Audit debug and minified APK contents
+        run: |
+          aapt2=$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -n 1)
+          test -n "$aapt2"
+          for apk in app/build/outputs/apk/generic/debug/*.apk app/build/outputs/apk/generic/release/*.apk; do
+            python scripts/audit-apk-provenance.py "$apk" --aapt2 "$aapt2" --output "app/build/reports/provenance/$(basename "$apk").json"
+          done
+
+      - name: Upload APK provenance reports
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: apk-provenance-reports
+          path: app/build/reports/provenance/*.json
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Upload test reports
         if: failure()

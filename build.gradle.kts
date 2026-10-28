@@ -1,7 +1,9 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    // AGP's built-in Kotlin support compiles with this Kotlin version.
+    dependencies { classpath(libs.kotlin.gradle.plugin) }
+}
 
-// Android and Kotlin plugins are applied by buildSrc convention plugins (vireolumatv.android.library / vireolumatv.android.application).
-// Only declare here plugins that subprojects apply via the version catalog and are not on buildSrc classpath.
 plugins {
+    alias(libs.plugins.android.application) apply false
     alias(libs.plugins.ksp) apply false
 }
