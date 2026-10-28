@@ -196,11 +196,11 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserChr
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserWebViewClient.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateTrust.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateWarningPage.kt	PROPIO
-app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageHelper.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/HomePageHelper.kt	48
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageHelper.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/HomePageHelper.kt	78
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicy.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridge.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissions.kt	PROPIO
-app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/Scripts.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/Scripts.kt	69
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/Scripts.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/Scripts.kt	80
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnostics.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActivation.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt	72

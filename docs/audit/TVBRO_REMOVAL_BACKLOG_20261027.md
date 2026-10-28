@@ -120,3 +120,11 @@ manualmente las implementaciones actuales con las rutas originales del TSV:
 Las cuatro rutas pasan a `REESCRITO` en el inventario. La comparación normaliza espacios
 y paquete, excluye imports, comentarios y llaves; no determina derechos de autor.
 Las cifras históricas de este archivo conservan el SHA al que corresponden.
+
+Otras dos rutas contrastadas con `d572b70` y el mismo origen: `HomePageHelper`
+(2/9 líneas de contenido coincidentes) ahora consulta solo el favicon cacheado y
+devuelve 404 sin bloquear el hilo de WebView; `HomePageNetworkTest` cubre ese
+camino. `Scripts` (2/10 líneas coincidentes) cambió el JavaScript de pulsación
+larga para resolver enlaces y descartar elementos desconectados. Ambas pasan
+a `REESCRITO` por implementación distinta; esto no equivale a validación de
+WebView real ni a revisión legal.
