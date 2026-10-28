@@ -129,7 +129,12 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
     }
 
     private fun updateAddress(reported: String?) {
-        (tab.engine.url ?: reported)?.let { tab.url = it }
+        (tab.engine.url ?: reported)?.let { url ->
+            if (tab.url != url) {
+                tab.url = url
+                vb.tabStrip.onFavIconUpdated(tab)
+            }
+        }
         if (browser.tabAtStripSelection() === tab) vb.controlsRow.showAddress(tab.url)
     }
 
@@ -154,6 +159,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
     }
 
     override fun onVisited(url: String) {
+        updateAddress(url)
         val shown = tabs.currentTab.value ?: return
         if (!browser.config.privateBrowsing) browser.visitLog.recordVisit(shown.title, url, shown.faviconHash)
     }

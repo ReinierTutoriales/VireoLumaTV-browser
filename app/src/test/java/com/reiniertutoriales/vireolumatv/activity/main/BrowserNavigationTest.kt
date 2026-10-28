@@ -62,6 +62,40 @@ class BrowserNavigationTest {
         }
     }
 
+    @Test fun changedAddressRefreshesTheTabIconWithoutTitleOrChromiumIconCallbacks() = Fixture().use { f ->
+        val callback = TabWindow(f.activity, f.tab)
+        val list = f.vb.tabStrip.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.tab_list)
+        val adapter = requireNotNull(list.adapter)
+        val changed = mutableListOf<Int>()
+        val observer = object : androidx.recyclerview.widget.RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+                repeat(itemCount) { changed += positionStart + it }
+            }
+        }
+        adapter.registerAdapterDataObserver(observer)
+        val wasPrivate = f.activity.config.privateBrowsing
+        f.activity.config.privateBrowsing = true // No history persistence needed for this UI contract.
+        try {
+            f.tab.title = "Unchanged title"
+            callback.onPageFinished("https://redirected.test/page")
+            assertEquals("https://redirected.test/page", f.tab.url)
+            assertEquals("A new address must rebind the icon loader", listOf(0), changed)
+            changed.clear()
+            // SPA history can change without page-start/page-finish or a new title/icon callback.
+            callback.onVisited("https://redirected.test/another-page")
+            assertEquals("https://redirected.test/another-page", f.tab.url)
+            assertEquals(listOf(0), changed)
+            assertEquals("Unchanged title", f.tab.title)
+            changed.clear()
+            callback.onVisited(f.tab.url)
+            callback.onPageFinished(f.tab.url)
+            assertTrue("Repeated callbacks for the same address must not rebind", changed.isEmpty())
+        } finally {
+            f.activity.config.privateBrowsing = wasPrivate
+            adapter.unregisterAdapterDataObserver(observer)
+        }
+    }
+
     private class Fixture : AutoCloseable {
         val host = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
             get().setTheme(R.style.AppTheme)
