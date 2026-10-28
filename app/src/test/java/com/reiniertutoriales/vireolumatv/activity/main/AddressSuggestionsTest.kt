@@ -39,4 +39,24 @@ class AddressSuggestionsTest {
         val history = (1..20).map { visit("Página $it", "https://site$it.test") }
         assertEquals(AddressSuggestions.MAX, AddressSuggestions.rank("site", emptyList(), history).size)
     }
+    @Test fun strongestMatchesAtTheEndOfALargeBookmarkSetStillWin() {
+        val weaker = (1..10_000).map { bookmark("A page about TV $it", "https://site$it.test") }
+        val strongest = (1..6).map { bookmark("Channel $it", "https://tv$it.test") }
+        val result = AddressSuggestions.rank("tv", weaker + strongest,
+            listOf(visit("TV history", "https://tv-history.test")))
+        assertEquals(strongest.map { it.url }, result.map { it.url })
+        assertTrue(result.all { it.bookmark })
+    }
+
+    @Test fun deduplicationKeepsTheHigherPriorityTitleAndStableOrder() {
+        val result = AddressSuggestions.rank("tv", listOf(
+            bookmark("A page about tv", "https://example.test"),
+            bookmark("TV preferred", "http://www.example.test/"),
+            bookmark("TV second", "https://second.test"),
+            Favorite().apply { title = "TV folder"; url = null }),
+            listOf(visit("TV duplicate", "https://example.test/"), visit("TV third", "https://third.test")))
+        assertEquals(listOf("TV preferred", "TV second", "TV third"), result.map { it.title })
+        assertEquals(listOf(true, true, false), result.map { it.bookmark })
+    }
+
 }
