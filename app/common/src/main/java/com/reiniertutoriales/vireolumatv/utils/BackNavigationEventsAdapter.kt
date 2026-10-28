@@ -56,7 +56,7 @@ class BackNavigationEventsAdapter(
     }
 
     fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.keyCode !in NavigationReservedShortcutKeyCodes.backNavigationKeys) return false
+        if (event.keyCode !in BACK_KEYS) return false
         when (event.action) {
             KeyEvent.ACTION_DOWN -> {
                 if (event.repeatCount == 0 || keyPress?.code != event.keyCode) {
@@ -126,8 +126,11 @@ class BackNavigationEventsAdapter(
         }
     }
 
-    private companion object {
+    companion object {
         // Only correlate deliveries from the same physical gesture; consecutive Back presses work.
-        const val CROSS_CHANNEL_WINDOW_MS = 150L
+        private const val CROSS_CHANNEL_WINDOW_MS = 150L
+
+        /** Keys that mean Back: the remote's, a gamepad's B and a keyboard's Escape. */
+        val BACK_KEYS: Set<Int> = setOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_ESCAPE)
     }
 }

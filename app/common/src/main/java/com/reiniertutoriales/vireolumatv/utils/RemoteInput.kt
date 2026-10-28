@@ -39,7 +39,7 @@ class RemoteInput(
 
     fun dispatchKeyEvent(event: KeyEvent): Boolean {
         val code = event.keyCode
-        if (code !in NavigationReservedShortcutKeyCodes.dpadNavigationKeys || isTyping()) return false
+        if (code !in NAVIGATION_KEYS || isTyping()) return false
         // The same KeyEvent can be dispatched twice (window callback and view tree); act once.
         val signature = Triple(event.eventTime, event.action, code)
         if (signature == lastKey) return true
@@ -142,6 +142,11 @@ class RemoteInput(
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_UP,
             KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_UP_LEFT, KeyEvent.KEYCODE_DPAD_UP_RIGHT,
             KeyEvent.KEYCODE_DPAD_DOWN_LEFT, KeyEvent.KEYCODE_DPAD_DOWN_RIGHT,
+        )
+
+        /** Directions and the select keys: the pointer owns them, so they cannot be shortcuts. */
+        val NAVIGATION_KEYS: Set<Int> = DIRECTION_KEYS + setOf(
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_BUTTON_A,
         )
 
         /** Gamepads, joysticks and D-pads, matched on every bit of the source (not one shared bit). */

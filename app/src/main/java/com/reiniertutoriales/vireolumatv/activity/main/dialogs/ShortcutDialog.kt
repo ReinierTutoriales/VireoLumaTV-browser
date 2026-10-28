@@ -10,7 +10,8 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.KeyBinding
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcut
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
-import com.reiniertutoriales.vireolumatv.utils.NavigationReservedShortcutKeyCodes
+import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
+import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 
 /**
  * Edits the key of one [Shortcut]. While recording, the next key press is stored: released before
@@ -51,7 +52,7 @@ class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(
     private fun record(event: KeyEvent, longPress: Boolean) {
         setRecording(false)
         val code = KeyBinding.codeOf(event)
-        if (code in NavigationReservedShortcutKeyCodes.reservedForUserShortcuts) {
+        if (code in RemoteInput.NAVIGATION_KEYS || code in BackNavigationEventsAdapter.BACK_KEYS) {
             Toast.makeText(context, R.string.shortcut_key_reserved_for_navigation, Toast.LENGTH_SHORT).show()
             return
         }

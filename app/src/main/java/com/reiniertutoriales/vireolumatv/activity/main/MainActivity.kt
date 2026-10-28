@@ -75,7 +75,6 @@ import com.reiniertutoriales.vireolumatv.service.downloads.DownloadService
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
 import com.reiniertutoriales.vireolumatv.utils.RemoteInput
-import com.reiniertutoriales.vireolumatv.utils.NavigationReservedShortcutKeyCodes
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
@@ -966,7 +965,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                     return true
                 }
                 if (browserOwnsCursorInput() && event.keyCode in
-                    NavigationReservedShortcutKeyCodes.dpadNavigationKeys &&
+                    RemoteInput.NAVIGATION_KEYS &&
                     vb.flWebViewContainer.dispatchKeyEvent(event)) return true
                 return localCallback.dispatchKeyEvent(event)
             }

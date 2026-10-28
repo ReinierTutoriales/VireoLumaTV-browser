@@ -43,7 +43,7 @@ app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DPADNavigationE
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/DownloadUtils.kt	99
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Extensions.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/Extensions.kt	2
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/FaviconExtractor.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/FaviconExtractor.kt	88
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/NavigationReservedShortcutKeyCodes.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/NavigationReservedShortcutKeyCodes.kt	3
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/NavigationReservedShortcutKeyCodes.kt	ELIMINADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/NavigationReservedShortcutKeyCodes.kt
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/RemoteInput.kt	PROPIO		
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Toasts.kt	PROPIO
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Dates.kt	PROPIO
@@ -192,7 +192,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewWebEngine.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt	32
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockController.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableContainer.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableContainer.kt
-app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableImageButton.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableImageButton.kt	3
+app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableImageButton.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableImageButton.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/NotificationView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/NotificationView.kt	31
 app/src/main/res/anim/infinite_fadeinout_anim.xml	IDENTICO	app/src/main/res/anim/infinite_fadeinout_anim.xml	0
 app/src/main/res/anim/right_menu_in_anim.xml	ELIMINADO	app/src/main/res/anim/right_menu_in_anim.xml
@@ -353,6 +353,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtilsSanitizeF
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/FaviconExtractorTest.kt	REESCRITO	app/src/test/java/com/phlox/tvwebbrowser/utils/FaviconExtractorTest.kt	90
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/IncognitoWebViewSessionTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdaterTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ReservedKeysTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveModelsRetentionTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicyTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorLayoutRecoveryTest.kt	PROPIO		
