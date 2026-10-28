@@ -170,7 +170,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRe
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadService.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt	75
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadTask.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt	85
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/IncognitoDownloadService.kt	PROPIO		
-app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/AppDatabase.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt	4
+app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/AppDatabase.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt	40
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/Shortcut.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/Shortcut.kt	79
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/ShortcutMgr.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt	87
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BaseAnimationListener.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/utils/BaseAnimationListener.kt
@@ -342,6 +342,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/FaviconNetworkTest
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/FaviconResourceTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/IncognitoFaviconTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/ShortcutMgrTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/AppDatabaseSchemaTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BundleBytesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapterTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BoundedReaderTest.kt	PROPIO		
