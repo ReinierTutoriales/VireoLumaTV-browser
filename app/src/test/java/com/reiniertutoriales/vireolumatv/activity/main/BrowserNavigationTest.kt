@@ -18,7 +18,6 @@ import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import org.junit.Assert.*
@@ -34,9 +33,7 @@ import java.lang.reflect.Proxy
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
     @Test fun pageDownloadsRequireAFreshSingleUseActivationBeforeEnteringTheQueue() = Fixture().use { f ->
-        val callback = Class.forName("com.reiniertutoriales.vireolumatv.activity.main.MainActivity\$WebEngineCallback")
-            .getDeclaredConstructor(MainActivity::class.java, WebTabState::class.java)
-            .apply { isAccessible = true }.newInstance(f.activity, f.tab) as WebEngineWindowProviderCallback
+        val callback = TabWindow(f.activity, f.tab)
         val pending = f.activity.downloads.pending
         // Keep accepted downloads queued without opening a platform permission dialog or service.
         f.activity.downloads.waitingForPermission = true
@@ -106,10 +103,10 @@ class BrowserNavigationTest {
             tabs.tabsStates.clear()
             tabs.tabsStates.add(tab)
             tabs.currentTab.value = tab
-            set("vb", vb)
-            set("tabsModel", tabs)
-            set("settingsModel", ActiveModelsRepository.get(SettingsModel::class, host.get()))
-            set("uiHandler", Handler(Looper.getMainLooper()))
+            activity.vb = vb
+            activity.tabsModel = tabs
+            activity.settingsModel = ActiveModelsRepository.get(SettingsModel::class, host.get())
+            activity.uiHandler = Handler(Looper.getMainLooper())
             vb.flWebViewContainer.addView(page)
             vb.rlActionBar.visibility = View.INVISIBLE
             vb.ivMiniatures.visibility = View.INVISIBLE
@@ -118,13 +115,9 @@ class BrowserNavigationTest {
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(1280, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, 1280, 720)
-            call("configureBrowserControls")
+            activity.configureBrowserControls()
             page.requestFocus()
         }
-        fun set(name: String, value: Any) = MainActivity::class.java.getDeclaredField(name)
-            .apply { isAccessible = true }.set(activity, value)
-        fun call(name: String) = MainActivity::class.java.getDeclaredMethod(name)
-            .apply { isAccessible = true }.invoke(activity)
         fun key(view: View, code: Int) {
             view.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
             view.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
@@ -141,7 +134,7 @@ class BrowserNavigationTest {
 
     @Test fun backOpensCapsuleAndDownReachesTabsAndTabsDownReturnsToPage() = Fixture().use { f ->
         val bar = f.vb.vActionBar
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
         assertTrue(bar.backButton.hasFocus())
         bar.refreshButton.requestFocus()
@@ -154,7 +147,7 @@ class BrowserNavigationTest {
         assertTrue("Down from the tab strip must leave it for the page", downLeavesTabStrip(
             overlayVisible = true, tabsFocused = f.vb.vTabs.hasFocus(),
             keyCode = KeyEvent.KEYCODE_DPAD_DOWN, action = KeyEvent.ACTION_DOWN, repeatCount = 0))
-        f.call("hideMenuOverlay")
+        f.activity.closeCapsule()
         assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
         assertTrue(f.page.hasFocus())
     }
@@ -163,7 +156,7 @@ class BrowserNavigationTest {
         // pushState (YouTube and other SPAs) changes history without onPageStarted/onPageFinished.
         f.vb.vActionBar.backButton.isEnabled = false
         f.vb.vActionBar.forwardButton.isEnabled = false
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         assertTrue(f.vb.vActionBar.backButton.isEnabled)
         assertTrue(f.vb.vActionBar.forwardButton.isEnabled)
         assertTrue("Back must be reachable as the first bottom-bar command", f.vb.vActionBar.backButton.hasFocus())
@@ -175,7 +168,7 @@ class BrowserNavigationTest {
         val menu = bar.findViewById<View>(R.id.ibMenu)
         assertEquals(R.id.flUrl, bar.getChildAt(0).id)
         assertEquals(R.id.ibMenu, bar.getChildAt(bar.childCount - 1).id)
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         val tab = f.vb.vTabs.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvTabs)
             .getChildAt(0)
         assertNotNull("The real tab must be attached for this focus test", tab)
@@ -202,7 +195,7 @@ class BrowserNavigationTest {
         assertFalse(bar.isEditingAddress)
         f.key(address, KeyEvent.KEYCODE_DPAD_CENTER)
         assertTrue(bar.isEditingAddress)
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         assertFalse(bar.isEditingAddress)
         assertFalse(menu.hasFocus())
         assertTrue(bar.backButton.hasFocus())
@@ -211,7 +204,7 @@ class BrowserNavigationTest {
     @Test fun activePageStaysSharpAndFirstTouchReachesTheRealPage() = Fixture().use { f ->
         var clicks = 0
         f.page.setOnClickListener { clicks++ }
-        f.call("showMenuOverlay")
+        f.activity.openCapsule()
         assertEquals(View.VISIBLE, f.vb.flWebViewContainer.visibility)
         assertEquals(View.INVISIBLE, f.vb.ivMiniatures.visibility)
         assertTrue(f.vb.flWebViewContainer.cursorSuppressed)
@@ -242,21 +235,21 @@ class BrowserNavigationTest {
     }
 
     @Test fun pageCommandsRunOnceAndRestorePageFocus() = Fixture().use { f ->
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         f.vb.vActionBar.backButton.performClick()
         assertEquals(1, f.wentBack)
         assertTrue(f.page.hasFocus())
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         f.vb.vActionBar.refreshButton.performClick()
         assertEquals(1, f.refreshed)
         assertTrue(f.page.hasFocus())
     }
 
     @Test fun blockerShieldTogglesTheSelectedTabAndReportsPause() = Fixture().use { f ->
-        f.set("adblockModel", AdblockModel(autoLoad = false))
+        f.activity.adblockModel = AdblockModel(autoLoad = false)
         f.tab.adblock = true
         f.vb.vTabs.current = 0
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         val shield = f.vb.vActionBar.adBlockButton
         val unavailable = f.host.get().getString(R.string.adblock_status_unavailable)
         assertEquals(f.host.get().getString(R.string.adblock_status_action_s, unavailable, 0),
@@ -271,13 +264,15 @@ class BrowserNavigationTest {
             f.host.get().getString(R.string.adblock_status_paused), 0), shield.contentDescription)
         assertEquals(1, f.refreshed)
         assertTrue("Long press must open the blocker details", shield.performLongClick())
+        val details = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
+        // A dialog message would keep the list out of the layout.
+        assertNotNull("The blocker actions must be in the dialog", details.listView.parent)
+        assertEquals("Both blocker actions must stay reachable in the details", 2, details.listView.adapter.count)
     }
 
     @Test fun fullscreenExitRestoresOneCoherentMenuAndNextBackReturnsToPage() = Fixture().use { f ->
         // Exercise the real engine's fullscreen teardown and the real Activity callback together.
-        val callback = Class.forName("com.reiniertutoriales.vireolumatv.activity.main.MainActivity\$WebEngineCallback")
-            .getDeclaredConstructor(MainActivity::class.java, WebTabState::class.java)
-            .apply { isAccessible = true }.newInstance(f.activity, f.tab) as WebEngineWindowProviderCallback
+        val callback = TabWindow(f.activity, f.tab)
         val engine = WebViewWebEngine(f.tab).apply { window = callback }
         WebViewWebEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
             .set(engine, f.vb.flWebViewContainer)
@@ -287,25 +282,25 @@ class BrowserNavigationTest {
         assertTrue(video.hasFocus())
         f.hideFullscreen = { engine.hideFullscreenView() }
         f.virtualCursor = false
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         assertEquals(1, f.exitedFullscreen)
         assertNull(video.parent)
         assertTrue(f.vb.flWebViewContainer.cursorEnabled)
         assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
         assertTrue(f.vb.vActionBar.backButton.hasFocus())
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         assertEquals("Back must close the existing menu, not reopen bars in an unknown state",
             View.INVISIBLE, f.vb.rlActionBar.visibility)
         assertTrue(f.page.hasFocus())
     }
 
     @Test fun cancelSearchRestoresButtonsAndKeyboardSearchLoadsConfiguredEngine() = Fixture().use { f ->
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         val address = f.vb.vActionBar.findViewById<EditText>(R.id.etUrl)
         address.requestFocus()
         address.performClick()
         assertTrue(f.vb.vActionBar.isEditingAddress)
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         assertFalse(f.vb.vActionBar.isEditingAddress)
         assertEquals(View.VISIBLE, f.vb.vActionBar.findViewById<View>(R.id.ibMenu).visibility)
         address.requestFocus()
@@ -319,7 +314,7 @@ class BrowserNavigationTest {
     }
 
     @Test fun pageUpdatesCannotOverwriteTypingAndPhysicalEnterSubmitsOnce() = Fixture().use { f ->
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         val address = f.vb.vActionBar.findViewById<EditText>(R.id.etUrl)
         f.vb.vActionBar.setAddressBoxText("https://before.test")
         address.requestFocus()
@@ -327,7 +322,7 @@ class BrowserNavigationTest {
         address.setText("my search")
         f.vb.vActionBar.setAddressBoxText("https://redirected.test")
         assertEquals("my search", address.text.toString())
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         assertEquals("https://redirected.test", address.text.toString())
         address.requestFocus()
         address.performClick()
@@ -339,15 +334,15 @@ class BrowserNavigationTest {
 
     @Test fun rapidBackAndReopenCannotLeaveInvisibleOrUnfocusedChrome() = Fixture().use { f ->
         repeat(4) {
-            f.call("handleBackNavigation")
-            f.call("handleBackNavigation")
+            f.activity.handleBackNavigation()
+            f.activity.handleBackNavigation()
         }
         assertTrue(f.page.hasFocus())
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
         assertTrue(f.vb.vActionBar.backButton.hasFocus())
         f.vb.rlActionBar.animate().cancel()
-        f.call("handleBackNavigation")
+        f.activity.handleBackNavigation()
         assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
         assertTrue(f.page.hasFocus())
     }
