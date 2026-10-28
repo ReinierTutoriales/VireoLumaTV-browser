@@ -72,3 +72,30 @@ Decisiones:
 - `DPADNavigationEventsAdapter` fue sustituido por `RemoteInput` en `2919791`; comprobar en TV real la entrada de gamepad y el cursor.
 - `Scripts.kt`: 33 % heredado, una constante; sin reemplazo.
 - `WebViewEx.kt`: pendiente, con pruebas de fullscreen y renderer antes de tocarlo.
+
+## Estado medido — `c0161b0`
+
+Método: por archivo, líneas actuales con contenido (sin vacías, llaves sueltas, `package`/`import`,
+comentarios ni declaraciones XML) que aparecen idénticas, tras normalizar espacios y el paquete, en el
+archivo correspondiente de `truefedex/tv-bro` @ `6cb4b7c`. Es una aproximación por líneas, no una prueba de
+independencia; en XML cuenta como coincidencia cualquier atributo genérico (`layout_width`…), por eso los
+layouts reescritos siguen como `MODIFICADO`.
+
+| Archivo | Retenido | Clase en el inventario |
+|---|---|---|
+| `CursorDrawerDelegate.kt` | 49/276 (18 %) | `REESCRITO` |
+| `CursorLayout.kt` | 9/55 (16 %) | `REESCRITO` |
+| `MainSettingsView.kt` | 24/172 (14 %) | `REESCRITO` |
+| `VersionSettingsView.kt` | 10/57 (18 %) | `REESCRITO` |
+| `ShortcutsSettingsView.kt` | 3/16 (19 %) | `REESCRITO` |
+| `SettingsDialog.kt` | 6/19 (32 %) | `REESCRITO` |
+| `ShortcutMgr.kt` | 9/71 (13 %) | `REESCRITO` |
+| `Shortcut.kt` | 6/28 (21 %) | `REESCRITO` |
+| `ShortcutDialog.kt` | 12/45 (27 %) | `REESCRITO` |
+| `DPADNavigationEventsAdapter.kt`, `view_settings_version.xml`, `view_shortcut.xml`, `text_link_background_selector.xml`, `values-night/colors.xml` | — | `ELIMINADO` |
+
+Las líneas retenidas en los `REESCRITO` son firmas públicas conservadas para no cambiar a sus consumidores
+(`goToGrabMode`, `onLongPress`…), overrides obligatorios del framework (`onKeyDown`, `setContentView`) y
+llamadas sueltas (`surface.postInvalidate()`); no hay lógica ni estructura del original. Revisión manual
+por archivo. Archivos nuevos (`RemoteInput.kt`, `SettingsRows.kt`, filas `view_setting_*`) añadidos como
+`PROPIO`. `REESCRITO` no sustituye la comprobación del APK ni la revisión legal del criterio de cierre.

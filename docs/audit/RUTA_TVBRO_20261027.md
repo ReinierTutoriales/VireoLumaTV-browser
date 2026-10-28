@@ -34,7 +34,7 @@ Decisiones fijadas: `DPADNavigationEventsAdapter` fue sustituido por `RemoteInpu
 
 1. **Validación en Android TV** (emulador o dispositivo con D-pad): recorridos N01–N10 con la cápsula, foco de «Abajo»
    desde pestañas, detalle del escudo, selección múltiple e historial, actualizaciones de progreso
-   en descargas, popups de descargas, colores en claro y oscuro.
+   en descargas, popups de descargas, colores de la interfaz oscura.
 2. **Avisos del compilador medidos en `0a0109c` (26; recuento actual pendiente)**: pantalla completa (`systemUiVisibility`), oscurecimiento
    forzado (`setForceDark`), zoom (`canZoomIn/Out`), `MODE_MULTI_PROCESS`, `SHOW_IMPLICIT` y constantes del
    instalador. Cada uno cambia comportamiento visible; se migran con dispositivo.
