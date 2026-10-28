@@ -9,19 +9,21 @@ import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 import com.reiniertutoriales.vireolumatv.utils.toast
 
 /** Edits a bookmark's title and address; an address without "scheme://" gets https://. */
-class FavoriteEditorDialog(context: Context, private val callback: Callback, private val item: FavoriteItem) :
+class FavoriteEditorDialog(context: Context, private val callback: Callback, item: FavoriteItem) :
     Dialog(context) {
 
     interface Callback {
         fun onDone(item: FavoriteItem)
     }
 
+    private val draft = item.copyForEdit()
+
     init {
         setCancelable(true)
-        setTitle(if (item.id == 0L) R.string.new_bookmark else R.string.edit)
+        setTitle(if (draft.id == 0L) R.string.new_bookmark else R.string.edit)
         setContentView(R.layout.dialog_new_favorite_item)
-        val title = findViewById<EditText>(R.id.etTitle).apply { setText(item.title) }
-        val address = findViewById<EditText>(R.id.etUrl).apply { setText(item.url) }
+        val title = findViewById<EditText>(R.id.etTitle).apply { setText(draft.title) }
+        val address = findViewById<EditText>(R.id.etUrl).apply { setText(draft.url) }
         findViewById<Button>(R.id.btnCancel).setOnClickListener { dismiss() }
         findViewById<Button>(R.id.btnDone).setOnClickListener {
             val url = address.text.toString().trim()
@@ -29,9 +31,9 @@ class FavoriteEditorDialog(context: Context, private val callback: Callback, pri
                 context.toast(R.string.error)
                 return@setOnClickListener
             }
-            item.title = title.text.toString()
-            item.url = if (SCHEME.matches(url)) url else "https://$url"
-            callback.onDone(item)
+            draft.title = title.text.toString()
+            draft.url = if (SCHEME.matches(url)) url else "https://$url"
+            callback.onDone(draft)
             dismiss()
         }
     }

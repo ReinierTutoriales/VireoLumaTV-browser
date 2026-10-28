@@ -31,6 +31,21 @@ class FavoriteItem {
     @ColumnInfo(name = "VALID_UNTIL") var validUntil: Date? = null
     @ColumnInfo(name = "USEFUL") var useful = false
 
+    /** A detached edit keeps the displayed row and legacy columns intact until the write succeeds. */
+    fun copyForEdit() = FavoriteItem().also { copy ->
+        copy.id = id
+        copy.title = title
+        copy.url = url
+        copy.parent = parent
+        copy.favicon = favicon
+        copy.homePageBookmark = homePageBookmark
+        copy.order = order
+        copy.destUrl = destUrl
+        copy.description = description
+        copy.validUntil = validUntil?.let { Date(it.time) }
+        copy.useful = useful
+    }
+
     /** A folder has no address. */
     val isFolder: Boolean get() = url == null
 }
