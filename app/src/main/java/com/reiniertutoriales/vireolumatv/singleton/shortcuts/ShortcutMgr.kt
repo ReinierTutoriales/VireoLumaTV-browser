@@ -11,6 +11,7 @@ import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.webengine.MediaCommand
 import java.util.EnumMap
 
 /**
@@ -94,15 +95,15 @@ class ShortcutMgr internal constructor(private val prefs: SharedPreferences) {
 
     @UiThread
     private fun process(shortcut: Shortcut, mainActivity: MainActivity, tab: WebTabState?) {
-        val engine = tab?.webEngine
+        val engine = tab?.engine
         when (shortcut) {
             Shortcut.NAVIGATE_BACK -> mainActivity.navigateBack()
             Shortcut.NAVIGATE_HOME -> mainActivity.navigate(Config.HOME_URL_ALIAS)
             Shortcut.REFRESH_PAGE -> mainActivity.refresh()
-            Shortcut.PLAY_PAUSE -> engine?.togglePlayback()
-            Shortcut.MEDIA_STOP -> engine?.stopPlayback()
-            Shortcut.MEDIA_REWIND -> engine?.rewind()
-            Shortcut.MEDIA_FAST_FORWARD -> engine?.fastForward()
+            Shortcut.PLAY_PAUSE -> engine?.media(MediaCommand.PLAY_PAUSE)
+            Shortcut.MEDIA_STOP -> engine?.media(MediaCommand.STOP)
+            Shortcut.MEDIA_REWIND -> engine?.media(MediaCommand.REWIND)
+            Shortcut.MEDIA_FAST_FORWARD -> engine?.media(MediaCommand.FAST_FORWARD)
         }
     }
 

@@ -9,7 +9,7 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.view.CursorMenuView
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
-import com.reiniertutoriales.vireolumatv.webengine.WebEngine
+import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
 import org.junit.Assert.*
@@ -39,17 +39,17 @@ class CursorMenuFocusTest {
             View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY))
         root.layout(0, 0, 800, 800)
         var directMode = false
-        val engine = Proxy.newProxyInstance(WebEngine::class.java.classLoader, arrayOf(WebEngine::class.java)) { _, method, args ->
+        val engine = Proxy.newProxyInstance(PageEngine::class.java.classLoader, arrayOf(PageEngine::class.java)) { _, method, args ->
             when (method.name) {
                 "getView" -> page
-                "setVirtualCursorMode" -> { directMode = args!![0] == false; null }
+                "setPointerMode" -> { directMode = args!![0] == false; null }
                 else -> null
             }
-        } as WebEngine
+        } as PageEngine
         val provider = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
             arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
         val tab = WebTabState()
-        WebTabState::class.java.getDeclaredField("webEngine\$delegate").apply { isAccessible = true }
+        WebTabState::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
             .set(tab, lazyOf(engine))
         val config = AppContext.provideConfig()
         val previous = config.directNavigationModeHintSuppress

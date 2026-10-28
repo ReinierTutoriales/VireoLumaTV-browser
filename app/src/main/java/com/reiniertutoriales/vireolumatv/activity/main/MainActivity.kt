@@ -56,8 +56,8 @@ import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepositor
 import com.reiniertutoriales.vireolumatv.utils.hasInternet
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
 import com.reiniertutoriales.vireolumatv.utils.toast
-import com.reiniertutoriales.vireolumatv.webengine.WebEngine
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
+import com.reiniertutoriales.vireolumatv.webengine.PageEngine
+import com.reiniertutoriales.vireolumatv.webengine.Engines
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
 import com.reiniertutoriales.vireolumatv.widgets.NotificationView
@@ -92,7 +92,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     /** Delivered to the current instance even after the window was recreated. */
     internal val filePickerResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        tabsModel.currentTab.value?.webEngine?.onFilePicked(result.resultCode, result.data)
+        tabsModel.currentTab.value?.engine?.onFilePicked(result.resultCode, result.data)
     }
     private val historyResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
@@ -134,7 +134,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun observeModels() {
-        config.userAgentString.subscribe(lifecycle, false) { agent -> tabsModel.tabsStates.forEach { it.webEngine.userAgentString = agent } }
+        config.userAgentString.subscribe(lifecycle, false) { agent -> tabsModel.tabsStates.forEach { it.engine.userAgent = agent } }
         settingsModel.keepScreenOn.subscribe(lifecycle) { on ->
             if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -209,7 +209,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 Log.w(TAG, "No network callback", error)
             }
         }
-        tabsModel.currentTab.value?.webEngine?.onResume()
+        tabsModel.currentTab.value?.engine?.resume()
         // A TV app stays alive for days: the start-up check alone would never refresh the filter lists.
         adblockModel.updateIfDue()
     }
@@ -224,7 +224,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
         tabsModel.currentTab.value?.let { tab ->
-            tab.webEngine.onPause()
+            tab.engine.pause()
             tab.onPause()
             tabsModel.saveTabBeforeExit(tab)
         }
@@ -260,7 +260,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     @Deprecated("Page permission requests use the numeric codes WebView hands out")
     @Suppress("DEPRECATION")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (tabsModel.currentTab.value?.webEngine?.onPermissionsResult(requestCode, permissions, grantResults) == true) return
+        if (tabsModel.currentTab.value?.engine?.onPermissionsResult(requestCode, permissions, grantResults) == true) return
         if (downloads.onPermissionsResult(requestCode, grantResults)) return
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
@@ -282,7 +282,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         uiHandler.post {
             if (isDestroyed) return@post
             val connected = hasInternet()
-            tabsModel.currentTab.value?.webEngine?.setNetworkAvailable(connected)
+            tabsModel.currentTab.value?.engine?.setOnline(connected)
             // A TV often starts before Wi-Fi: fetch the filter lists as soon as it connects.
             if (connected) adblockModel.updateIfDue(networkRestored = true)
         }
@@ -302,7 +302,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
         pageCommand(bar.homeButton) { navigate(settingsModel.homePage) }
         pageCommand(bar.backButton) { navigateBack() }
-        pageCommand(bar.forwardButton) { tabsModel.currentTab.value?.webEngine?.let { if (it.canGoForward()) it.goForward() } }
+        pageCommand(bar.forwardButton) { tabsModel.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } }
         pageCommand(bar.refreshButton) { refresh() }
         bar.adBlockButton.setOnClickListener {
             commitStripSelection()
@@ -404,14 +404,14 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             return
         }
         tab.url = url
-        tab.webEngine.loadUrl(url)
+        tab.engine.load(url)
     }
 
     /** The page's history first; without it the capsule opens or closes, or [goHomeIfNoHistory] goes home. */
     fun navigateBack(goHomeIfNoHistory: Boolean = false) {
-        val engine = tabsModel.currentTab.value?.webEngine
+        val engine = tabsModel.currentTab.value?.engine
         when {
-            engine?.canGoBack() == true -> engine.goBack()
+            engine?.canGoBack == true -> engine.back()
             goHomeIfNoHistory -> navigate(settingsModel.homePage)
             vb.rlActionBar.isVisible -> closeCapsule()
             else -> openCapsule()
@@ -419,7 +419,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     fun refresh() {
-        tabsModel.currentTab.value?.webEngine?.reload()
+        tabsModel.currentTab.value?.engine?.reload()
     }
 
     // Tabs
@@ -456,15 +456,15 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     /** The tab the strip shows as selected, which differs from the shown one while another is previewed. */
     internal fun tabAtStripSelection() = tabAt(vb.vTabs.current)
 
-    internal fun openInNewTab(url: String?, index: Int = 0, closeCapsuleAfter: Boolean = true, navigateImmediately: Boolean): WebEngine? {
+    internal fun openInNewTab(url: String?, index: Int = 0, closeCapsuleAfter: Boolean = true, navigateImmediately: Boolean): PageEngine? {
         if (url == null) return null
         val tab = WebTabState(url = url, incognito = config.incognitoMode)
         tabsModel.tabsStates.add(index, tab)
         changeTab(tab, loadInitialUrl = false)
-        if (tab.webEngine.getView() == null) return null
+        if (tab.engine.view == null) return null
         if (navigateImmediately) navigate(url)
         if (closeCapsuleAfter && vb.rlActionBar.isVisible) closeCapsule()
-        return tab.webEngine
+        return tab.engine
     }
 
     /** Closes [tab] and shows a neighbour; the last tab is replaced by a new home tab. */
@@ -486,13 +486,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     /** The tab's WebView, or null after telling the user that this device has no usable WebView. */
     internal fun createWebView(tab: WebTabState): View? {
         val view = try {
-            tab.webEngine.getOrCreateView(this)
+            tab.engine.createView(this)
         } catch (error: Throwable) {
             Log.w(TAG, "WebView could not be created", error)
             showNoWebViewDialog()
             return null
         }
-        config.userAgentString.value?.let { tab.webEngine.userAgentString = it }
+        config.userAgentString.value?.let { tab.engine.userAgent = it }
         return view
     }
 
@@ -514,8 +514,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     /** The capsule follows the shown tab: Back and Forward availability and the blocker shield. */
     internal fun onWebViewUpdated(tab: WebTabState) {
-        vb.vActionBar.backButton.isEnabled = tab.webEngine.canGoBack()
-        vb.vActionBar.forwardButton.isEnabled = tab.webEngine.canGoForward()
+        vb.vActionBar.backButton.isEnabled = tab.engine.canGoBack
+        vb.vActionBar.forwardButton.isEnabled = tab.engine.canGoForward
         val blocking = tab.adblock ?: config.adBlockEnabled
         vb.vActionBar.adBlockButton.setImageResource(if (blocking) R.drawable.ic_adblock_on else R.drawable.ic_adblock_off)
         updateAdblockStatus(tab)
@@ -583,7 +583,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     /** Applies a change of the ad blocking setting to the shown tab. */
     fun refreshAdblockSettings() {
         tabsModel.currentTab.value?.let { tab ->
-            tab.webEngine.onUpdateAdblockSetting(tab.adblock ?: config.adBlockEnabled)
+            tab.engine.setAdBlocking(tab.adblock ?: config.adBlockEnabled)
             onWebViewUpdated(tab)
         }
     }
@@ -593,7 +593,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val tab = tabsModel.currentTab.value ?: return
         val blocking = !(tab.adblock ?: config.adBlockEnabled)
         tab.adblock = blocking
-        tab.webEngine.onUpdateAdblockSetting(blocking)
+        tab.engine.setAdBlocking(blocking)
         onWebViewUpdated(tab)
         if (blocking && !adblockModel.hasActiveRules && !adblockModel.clientLoading.value) adblockModel.loadAdBlockList(true)
         refresh()
@@ -672,7 +672,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 CookieManager.getInstance().removeAllCookies(null)
                 CookieManager.getInstance().flush()
             }
-            WebEngineFactory.clearCache(this@MainActivity)
+            Engines.clearCache(this@MainActivity)
             tabsModel.onCloseAllTabs().join()
             tabsModel.currentTab.value = null
             viewModel.clearIncognitoData().join()
@@ -698,7 +698,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     fun toggleMenu() {
         when {
-            isFullscreen -> tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
+            isFullscreen -> tabsModel.currentTab.value?.engine?.closeFullscreen()
             overlayVisible -> closeCapsule()
             else -> openCapsule()
         }
@@ -777,12 +777,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val pointer = vb.flWebViewContainer.cursorDrawerDelegate
         when {
             vb.vCursorMenu.isVisible -> vb.vCursorMenu.close()
-            isFullscreen -> tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
+            isFullscreen -> tabsModel.currentTab.value?.engine?.closeFullscreen()
             vb.vActionBar.isEditingAddress -> vb.vActionBar.cancelAddressInput()
             overlayVisible -> closeCapsule()
             pointer.canHandleBackNavigation() -> pointer.handleBackNavigation()
             else -> {
-                tabsModel.currentTab.value?.webEngine?.setVirtualCursorMode(true)
+                tabsModel.currentTab.value?.engine?.setPointerMode(true)
                 backNavigationEventsAdapter.gameControllersLongPressBForBackNavigation = false
                 openCapsule()
             }
@@ -804,7 +804,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     @VisibleForTesting
     internal fun openCapsule() {
         if (isFullscreen) {
-            tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
+            tabsModel.currentTab.value?.engine?.closeFullscreen()
             return
         }
         if (overlayVisible) return
@@ -882,7 +882,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         if (wasVisible) commitStripSelection()
         if (!vb.vCursorMenu.isVisible) {
             vb.flWebViewContainer.visibility = View.VISIBLE
-            tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
+            tabsModel.currentTab.value?.engine?.view?.requestFocus()
         }
     }
 

@@ -13,7 +13,7 @@ import androidx.room.PrimaryKey
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 import com.reiniertutoriales.vireolumatv.utils.md5Name
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
+import com.reiniertutoriales.vireolumatv.webengine.Engines
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -49,7 +49,7 @@ data class WebTabState(
     @Ignore var thumbnail: Bitmap? = null
     /** Engine state taken when the tab was last paused, kept until it is written to its file. */
     @Ignore var savedState: Any? = null
-    @delegate:Ignore val webEngine by lazy { WebEngineFactory.createWebEngine(this) }
+    @delegate:Ignore val engine by lazy { Engines.create(this) }
     @Ignore @Volatile var closed = false
     /** The renderer died: its saved history may be what crashed it, so the address is loaded afresh. */
     @Ignore var rendererLost = false
@@ -77,9 +77,9 @@ data class WebTabState(
     fun restoreWebView(): Boolean {
         if (rendererLost) return false
         return try {
-            val state = savedState ?: stateFile()?.takeIf { it.exists() }?.readBytes()?.let(webEngine::stateFromBytes)
+            val state = savedState ?: stateFile()?.takeIf { it.exists() }?.readBytes()?.let(engine::readHistory)
                 ?: return false
-            val restored = webEngine.restoreState(state)
+            val restored = engine.restoreHistory(state)
             // Keep the snapshot only once the engine accepted it; the file stays until the next save replaces it.
             savedState = if (restored) state else null
             restored
@@ -126,11 +126,11 @@ data class WebTabState(
 
     fun trimMemory() {
         // [savedState] stays until saveTab() has written it: a save may still be on its way.
-        webEngine.trimMemory()
+        engine.releaseHiddenView()
     }
 
     fun onPause() {
-        savedState = webEngine.saveState()
+        savedState = engine.saveHistory()
     }
 
     /** Stores [thumbnail] as this tab's preview, replacing the previous preview file. */

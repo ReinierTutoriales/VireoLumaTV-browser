@@ -15,8 +15,9 @@ import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.adblock.AdblockRequestClassifier
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.BundleBytes
-import com.reiniertutoriales.vireolumatv.webengine.WebEngine
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.PageEngine
+import com.reiniertutoriales.vireolumatv.webengine.EngineBackend
+import com.reiniertutoriales.vireolumatv.webengine.MediaCommand
 import com.reiniertutoriales.vireolumatv.webengine.PagePoint
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
@@ -28,7 +29,7 @@ import org.json.JSONTokener
  * link between the page and the browser [window] it is shown in, which is null while detached.
  * Page fullscreen (video) replaces the WebView in the window and is always undone on detach.
  */
-class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.Callback {
+class WebViewWebEngine(val tab: WebTabState) : PageEngine, CursorDrawerDelegate.Callback {
     private var webView: WebViewEx? = null
     /** The window the tab is shown in; JavaScript bridge calls use it as well. */
     internal var window: PageWindow? = null
@@ -42,47 +43,46 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
     override val url: String? get() = webView?.url
 
-    override var userAgentString: String? = null
+    override var userAgent: String? = null
         set(value) {
             field = value
             // Null restores the WebView's own agent, on a live WebView too.
             webView?.settings?.userAgentString = value
         }
 
-    override fun isSameSession(internalRepresentation: Any): Boolean = internalRepresentation === webView
+    override val view: View? get() = webView
+    override val canGoBack get() = webView?.canGoBack() == true
+    override val canGoForward get() = webView?.canGoForward() == true
 
-    override fun saveState(): Any? = Bundle().takeIf { webView?.saveState(it) != null }
+    override fun ownsView(view: Any): Boolean = view === webView
 
-    override fun restoreState(savedInstanceState: Any): Boolean {
-        require(savedInstanceState is Bundle) { "WebView state is a Bundle" }
-        return webView?.restoreState(savedInstanceState) != null
+    override fun saveHistory(): Any? = Bundle().takeIf { webView?.saveState(it) != null }
+
+    override fun restoreHistory(history: Any): Boolean {
+        require(history is Bundle) { "WebView history is a Bundle" }
+        return webView?.restoreState(history) != null
     }
 
-    override fun stateFromBytes(bytes: ByteArray): Any? = BundleBytes.decode(bytes)
+    override fun readHistory(bytes: ByteArray): Any? = BundleBytes.decode(bytes)
 
-    override fun getView(): View? = webView
-
-    override fun getOrCreateView(activityContext: Context): View =
-        webView ?: WebViewEx(activityContext, this).also {
+    override fun createView(context: Context): View =
+        webView ?: WebViewEx(context, this).also {
             // Before the first navigation, with this tab's choice even before it is attached.
             it.onUpdateAdblockSetting(adblockEnabled)
             webView = it
         }
 
-    override fun loadUrl(url: String) { webView?.loadUrl(url) }
+    override fun load(url: String) { webView?.loadUrl(url) }
     override fun reload() { webView?.reload() }
-    override fun canGoBack() = webView?.canGoBack() == true
-    override fun goBack() { webView?.goBack() }
-    override fun canGoForward() = webView?.canGoForward() == true
-    override fun goForward() { webView?.goForward() }
-    override fun zoomIn() { webView?.zoomIn() }
-    override fun zoomOut() { webView?.zoomOut() }
-    override fun setNetworkAvailable(connected: Boolean) { webView?.setNetworkAvailable(connected) }
+    override fun back() { webView?.goBack() }
+    override fun forward() { webView?.goForward() }
+    override fun zoom(closer: Boolean) { webView?.run { if (closer) zoomIn() else zoomOut() } }
+    override fun setOnline(online: Boolean) { webView?.setNetworkAvailable(online) }
     override fun onFilePicked(resultCode: Int, data: Intent?) { webView?.onFilePicked(resultCode, data) }
-    override fun onUpdateAdblockSetting(newState: Boolean) { webView?.onUpdateAdblockSetting(newState) }
-    override suspend fun renderThumbnail(bitmap: Bitmap?): Bitmap? = webView?.renderThumbnail(bitmap)
+    override fun setAdBlocking(enabled: Boolean) { webView?.onUpdateAdblockSetting(enabled) }
+    override suspend fun preview(reuse: Bitmap?): Bitmap? = webView?.renderThumbnail(reuse)
 
-    override fun onResume() {
+    override fun resume() {
         webView?.apply {
             onUpdateAdblockSetting(adblockEnabled)
             resumeTimers()
@@ -90,7 +90,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
     }
 
-    override fun onPause() {
+    override fun pause() {
         webView?.apply {
             onPause()
             // onPause() alone leaves JavaScript timers running.
@@ -98,14 +98,18 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
     }
 
-    // Media keys call the functions generic_injects.js defines for the page's main video.
-    override fun togglePlayback() = media("vireoLumaTVTogglePlayback()")
-    override fun stopPlayback() = media("vireoLumaTVStopPlayback()")
-    override fun rewind() = media("vireoLumaTVRewind()")
-    override fun fastForward() = media("vireoLumaTVFastForward()")
-    private fun media(call: String) { webView?.evaluateJavascript(call, null) }
+    /** Calls the function generic_injects.js defines for the page's main video. */
+    override fun media(command: MediaCommand) {
+        val call = when (command) {
+            MediaCommand.PLAY_PAUSE -> "vireoLumaTVTogglePlayback()"
+            MediaCommand.STOP -> "vireoLumaTVStopPlayback()"
+            MediaCommand.REWIND -> "vireoLumaTVRewind()"
+            MediaCommand.FAST_FORWARD -> "vireoLumaTVFastForward()"
+        }
+        webView?.evaluateJavascript(call, null)
+    }
 
-    override fun onAttachToWindow(window: PageWindow, parent: ViewGroup) {
+    override fun attach(window: PageWindow, parent: ViewGroup) {
         val view = checkNotNull(webView) { "The WebView must exist before it is attached" }
         val cursor = parent as CursorLayout
         this.window = window
@@ -119,24 +123,24 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         view.requestFocus()
         cursor.cursorDrawerDelegate.callback = this
         cursor.cursorDrawerDelegate.animateAppearing()
-        onResume()
+        resume()
     }
 
-    override fun onDetachFromWindow(completely: Boolean, destroyTab: Boolean) {
+    override fun detach(destroyView: Boolean) {
         exitFullscreen(restoreBrowserControls = false)
-        onPause()
+        pause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
         window = null
         container?.cursorDrawerDelegate?.callback = null
         container = null
-        if (completely) {
+        if (destroyView) {
             permissionRequests.clear()
             webView?.destroy()
             webView = null
         }
     }
 
-    override fun trimMemory() {
+    override fun releaseHiddenView() {
         val view = webView ?: return
         if (view.isAttachedToWindow) return
         exitFullscreen(restoreBrowserControls = false)
@@ -144,12 +148,12 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         webView = null
     }
 
-    override fun hideFullscreenView() {
+    override fun closeFullscreen() {
         webView?.hideCustomView()
         if (fullscreenView != null) exitFullscreen(restoreBrowserControls = true)
     }
 
-    override fun setVirtualCursorMode(enabled: Boolean) {
+    override fun setPointerMode(enabled: Boolean) {
         container?.cursorEnabled = enabled
         if (enabled) container?.cursorDrawerDelegate?.animateAppearing()
         webView?.setVirtualCursorMode(enabled)
@@ -267,13 +271,13 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         @Volatile var pageFiltersProvider: ((String) -> String)? = null
         @Volatile var hiddenSelectorsProvider: ((String, String, String) -> String)? = null
 
-        /** The WebView backend the app installs in WebEngineFactory at start-up. */
-        val Backend = object : WebEngineProviderCallback {
-            override fun createWebEngine(tab: WebTabState): WebEngine = WebViewWebEngine(tab)
+        /** The WebView backend the app installs in Engines at start-up. */
+        val Backend = object : EngineBackend {
+            override fun create(tab: WebTabState): PageEngine = WebViewWebEngine(tab)
 
             // The disk cache belongs to the shared WebView profile, so a short-lived WebView clears it.
-            override suspend fun clearCache(ctx: Context) {
-                val webView = WebView(ctx)
+            override suspend fun clearCache(context: Context) {
+                val webView = WebView(context)
                 try {
                     webView.clearCache(true)
                 } finally {
@@ -281,10 +285,11 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
                 }
             }
 
-            override fun getWebEngineVersionString(): String {
-                val webViewPackage = WebViewCompat.getCurrentWebViewPackage(AppContext.get())
-                return (webViewPackage?.packageName ?: "unknown") + ":" + (webViewPackage?.versionName ?: "unknown")
-            }
+            override val version: String
+                get() {
+                    val webViewPackage = WebViewCompat.getCurrentWebViewPackage(AppContext.get())
+                    return (webViewPackage?.packageName ?: "unknown") + ":" + (webViewPackage?.versionName ?: "unknown")
+                }
         }
     }
 }

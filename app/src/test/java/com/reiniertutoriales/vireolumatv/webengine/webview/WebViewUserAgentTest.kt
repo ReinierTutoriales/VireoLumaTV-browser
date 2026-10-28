@@ -21,16 +21,16 @@ class WebViewUserAgentTest {
         reference.destroy()
         val engine = WebViewWebEngine(WebTabState())
         try {
-            val live = engine.getOrCreateView(app) as WebViewEx
-            engine.userAgentString = "CustomBrowser/2.0"
+            val live = engine.createView(app) as WebViewEx
+            engine.userAgent = "CustomBrowser/2.0"
             assertEquals("CustomBrowser/2.0", live.settings.userAgentString)
-            engine.userAgentString = null
+            engine.userAgent = null
             assertEquals(expectedDefault, live.settings.userAgentString)
             assertNotEquals("CustomBrowser/2.0", live.settings.userAgentString)
-            assertNull(engine.userAgentString)
-            assertSame("Changing UA must not replace the view", live, engine.getView())
-            engine.userAgentString = "DesktopBrowser/3.0"
+            assertNull(engine.userAgent)
+            assertSame("Changing UA must not replace the view", live, engine.view)
+            engine.userAgent = "DesktopBrowser/3.0"
             assertEquals("DesktopBrowser/3.0", live.settings.userAgentString)
-        } finally { engine.onDetachFromWindow(completely = true, destroyTab = true) }
+        } finally { engine.detach(destroyView = true) }
     }
 }

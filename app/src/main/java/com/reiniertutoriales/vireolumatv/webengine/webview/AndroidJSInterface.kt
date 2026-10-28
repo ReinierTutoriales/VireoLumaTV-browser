@@ -11,7 +11,7 @@ import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import java.security.SecureRandom
 
 
-class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
+class AndroidJSInterface(private val engine: WebViewWebEngine) {
     companion object {
         // Covers the XHR + FileReader round trip for the largest accepted blob on a slow TV SoC.
         private const val BLOB_DOWNLOAD_TIMEOUT_MS = 30_000L
@@ -37,7 +37,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     fun pageFilters(url: String?): String {
         if (url.isNullOrEmpty() || url.length > 4096 ||
             !(url.startsWith("http://") || url.startsWith("https://"))) return ""
-        return webEngine.pageFilters(url)
+        return engine.pageFilters(url)
     }
 
     /** Generic hiding selectors for the classes/ids found in a frame (space-separated). */
@@ -47,32 +47,32 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
             !(url.startsWith("http://") || url.startsWith("https://"))) return "[]"
         val c = classes.orEmpty(); val i = ids.orEmpty()
         if (c.length + i.length > 64 * 1024) return "[]"
-        return webEngine.hiddenSelectors(url, c, i)
+        return engine.hiddenSelectors(url, c, i)
     }
 
     /** A video/audio element started playing in some frame of the page (see page_filters.js). */
     @JavascriptInterface
     fun mediaStarted() {
-        webEngine.tab.mediaStarted = true
+        engine.tab.mediaStarted = true
     }
 
     @JavascriptInterface
     fun currentUrl(): String {
         if (!isInternalCertificateErrorPage()) return ""
-        return (webEngine.getView() as? WebViewEx)?.lastSSLError?.url ?: ""
+        return (engine.view as? WebViewEx)?.lastSSLError?.url ?: ""
     }
 
     @JavascriptInterface
     fun reloadWithSslTrust() {
-        val callback = webEngine.window ?: return
+        val callback = engine.window ?: return
         if (!isInternalCertificateErrorPage()) return
-        val error = (webEngine.getView() as? WebViewEx)?.lastSSLError ?: return
+        val error = (engine.view as? WebViewEx)?.lastSSLError ?: return
         callback.activity.runOnUiThread {
             if (!isInternalCertificateErrorPage()) return@runOnUiThread
-            val webview = webEngine.getView() as? WebViewEx ?: return@runOnUiThread
+            val webview = engine.view as? WebViewEx ?: return@runOnUiThread
             if (webview.lastSSLError !== error) return@runOnUiThread
             webview.trustSsl = true
-            webEngine.loadUrl(error.url)
+            engine.load(error.url)
         }
     }
 
@@ -93,7 +93,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     @JavascriptInterface
     fun lastSSLError(getDetails: Boolean): String {
         if (!isInternalCertificateErrorPage()) return "unknown"
-        val lastSSLError = (webEngine.getView() as? WebViewEx)?.lastSSLError ?: return "unknown"
+        val lastSSLError = (engine.view as? WebViewEx)?.lastSSLError ?: return "unknown"
         return if (getDetails) {
             lastSSLError.toString()
         } else {
@@ -115,7 +115,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
      */
     @JavascriptInterface
     fun beginBlobDownload(url: String, fileName: String?): String {
-        val sourceUrl = (webEngine.getView() as? WebViewEx)?.currentOriginalUrl ?: return ""
+        val sourceUrl = (engine.view as? WebViewEx)?.currentOriginalUrl ?: return ""
         if (!BridgePagePolicy.isNormalWebPage(sourceUrl)) return ""
         if (!url.startsWith("blob:", ignoreCase = true)) return ""
 
@@ -163,7 +163,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     fun takeBlobDownloadData(token: String, base64BlobData: String, url: String) {
         // The Java String already exists when this runs; the length check below prevents the
         // decode and disk write from multiplying that cost, it cannot undo the bridge allocation.
-        val sourceUrl = (webEngine.getView() as? WebViewEx)?.currentOriginalUrl ?: return
+        val sourceUrl = (engine.view as? WebViewEx)?.currentOriginalUrl ?: return
         val now = SystemClock.uptimeMillis()
         val pending = synchronized(blobDownloadLock) {
             val pending = livePending(token, now) ?: return
@@ -174,11 +174,11 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         }
 
         if (!BridgePagePolicy.isNormalWebPage(sourceUrl)) return
-        val callback = webEngine.window ?: return
+        val callback = engine.window ?: return
         val finalFileName = DownloadUtils.sanitizeFileName(pending.fileName)
             ?: DownloadUtils.guessFileName(url, null, pending.mimetype)
         callback.activity.runOnUiThread {
-            if (!isNormalWebPage() || (webEngine.getView() as? WebViewEx)?.currentOriginalUrl != pending.sourceUrl) return@runOnUiThread
+            if (!isNormalWebPage() || (engine.view as? WebViewEx)?.currentOriginalUrl != pending.sourceUrl) return@runOnUiThread
             callback.download(Download(url, finalFileName, null, Download.OperationAfterDownload.NOP,
                 pending.mimetype, "", "VireoLumaTV", base64BlobData, null, 0L))
         }
@@ -195,11 +195,11 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
     }
 
     private fun isNormalWebPage(): Boolean {
-        return BridgePagePolicy.isNormalWebPage((webEngine.getView() as? WebViewEx)?.currentOriginalUrl)
+        return BridgePagePolicy.isNormalWebPage((engine.view as? WebViewEx)?.currentOriginalUrl)
     }
 
     private fun isInternalCertificateErrorPage(): Boolean {
-        val view = webEngine.getView() as? WebViewEx ?: return false
+        val view = engine.view as? WebViewEx ?: return false
         return BridgePagePolicy.isCertificatePage(view.currentOriginalUrl, view.certificateErrorPageUrl, view.lastSSLError != null)
     }
 

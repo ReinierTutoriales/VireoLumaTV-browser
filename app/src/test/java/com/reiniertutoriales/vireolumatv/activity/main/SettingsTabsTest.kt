@@ -12,8 +12,8 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.ShortcutsSettingsView
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.VersionSettingsView
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcut
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.Engines
+import com.reiniertutoriales.vireolumatv.webengine.EngineBackend
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -63,10 +63,10 @@ class SettingsTabsTest {
     /** The About page reads the version of the engine the app initialized at start-up. */
     private fun withEngine(test: () -> Unit) {
         val callback = java.lang.reflect.Proxy.newProxyInstance(javaClass.classLoader,
-            arrayOf(WebEngineProviderCallback::class.java)) { _, method, _ ->
-            if (method.name == "getWebEngineVersionString") "test-engine 1.0" else null
-        } as WebEngineProviderCallback
-        val restore = WebEngineFactory.replaceForTest(callback)
+            arrayOf(EngineBackend::class.java)) { _, method, _ ->
+            if (method.name == "getVersion") "test-engine 1.0" else null
+        } as EngineBackend
+        val restore = Engines.replaceForTest(callback)
         try { test() } finally { restore() }
     }
 

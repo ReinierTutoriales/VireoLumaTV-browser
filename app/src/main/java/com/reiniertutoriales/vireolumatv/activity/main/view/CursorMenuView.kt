@@ -53,8 +53,8 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
             hide()
             if (AppContext.provideConfig().directNavigationModeHintSuppress) enterDirectNavigation(t) else explainDirectNavigation(t)
         }
-        vb.btnZoomIn.setOnClickListener { target?.tab?.webEngine?.zoomIn() }
-        vb.btnZoomOut.setOnClickListener { target?.tab?.webEngine?.zoomOut() }
+        vb.btnZoomIn.setOnClickListener { target?.tab?.engine?.zoom(closer = true) }
+        vb.btnZoomOut.setOnClickListener { target?.tab?.engine?.zoom(closer = false) }
     }
 
     fun show(tab: WebTabState, window: PageWindow, cursor: CursorDrawerDelegate, point: PagePoint, back: BackNavigationEventsAdapter) {
@@ -93,7 +93,7 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
         panel.scaleX = 1f
         panel.scaleY = 1f
         if (restoreFocus && closed != null) {
-            closed.tab.webEngine.getView()?.requestFocus()
+            closed.tab.engine.view?.requestFocus()
             closed.cursor.animateAppearing()
         }
     }
@@ -104,7 +104,7 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
     }
 
     private fun enterDirectNavigation(t: Target) {
-        t.tab.webEngine.setVirtualCursorMode(false)
+        t.tab.engine.setPointerMode(false)
         t.back.gameControllersLongPressBForBackNavigation = true
     }
 
@@ -124,7 +124,7 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
                 if (dontAskAgain.isChecked) AppContext.provideConfig().directNavigationModeHintSuppress = true
                 enterDirectNavigation(t)
             }
-            .setOnDismissListener { t.tab.webEngine.getView()?.requestFocus() }
+            .setOnDismissListener { t.tab.engine.view?.requestFocus() }
             .show()
     }
 

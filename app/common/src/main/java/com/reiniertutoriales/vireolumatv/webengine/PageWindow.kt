@@ -15,7 +15,7 @@ interface PageWindow {
     // Navigation and page state
 
     /** Opens [url] in a tab after this one; [load] starts loading at once. */
-    fun openInNewTab(url: String, load: Boolean): WebEngine?
+    fun openInNewTab(url: String, load: Boolean): PageEngine?
     /** True keeps the page from loading [url] itself: it is not a web address. */
     fun interceptNavigation(url: String): Boolean
     fun onPageStarted(url: String?)

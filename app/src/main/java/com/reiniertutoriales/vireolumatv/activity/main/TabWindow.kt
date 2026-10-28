@@ -24,7 +24,7 @@ import com.reiniertutoriales.vireolumatv.model.PopupGuard
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.toast
-import com.reiniertutoriales.vireolumatv.webengine.WebEngine
+import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.PagePoint
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
@@ -43,7 +43,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
 
     override val activity: Activity get() = browser
 
-    override fun openInNewTab(url: String, load: Boolean): WebEngine? {
+    override fun openInNewTab(url: String, load: Boolean): PageEngine? {
         val current = tabs.tabsStates.indexOf(tabs.currentTab.value)
         return browser.openInNewTab(url, if (current == -1) tabs.tabsStates.size else current + 1, true, load)
     }
@@ -64,7 +64,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
     /** The link menu's download: the user chose it; the name and type come from the address. */
     private fun downloadLink(url: String) {
         val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(url))
-        startDownload(url, DownloadUtils.guessFileName(url, null, type), type, tab.webEngine.userAgentString, 0L)
+        startDownload(url, DownloadUtils.guessFileName(url, null, type), type, tab.engine.userAgent, 0L)
     }
 
     private fun startDownload(url: String, name: String, mimeType: String?, userAgent: String?, length: Long) =
@@ -130,15 +130,15 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
     }
 
     private fun updateAddress(reported: String?) {
-        (tab.webEngine.url ?: reported)?.let { tab.url = it }
+        (tab.engine.url ?: reported)?.let { tab.url = it }
         if (browser.tabAtStripSelection() === tab) vb.vActionBar.setAddressBoxText(tab.url)
     }
 
     private val capturePreview = Runnable {
         if (browser.isFinishing || browser.isDestroyed || tab.closed || !isShownTab ||
-            tab.webEngine.getView()?.isAttachedToWindow != true) return@Runnable
+            tab.engine.view?.isAttachedToWindow != true) return@Runnable
         browser.lifecycleScope.launch {
-            val preview = tab.webEngine.renderThumbnail(tab.thumbnail) ?: return@launch
+            val preview = tab.engine.preview(tab.thumbnail) ?: return@launch
             tab.updateThumbnail(browser, preview)
             if (vb.rlActionBar.isVisible && isShownTab) browser.displayThumbnail(tab)
         }
@@ -238,7 +238,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
     }
 
     override fun closeWindow(view: Any) {
-        tabs.tabsStates.firstOrNull { it.webEngine.isSameSession(view) }?.let(browser::closeTab)
+        tabs.tabsStates.firstOrNull { it.engine.ownsView(view) }?.let(browser::closeTab)
     }
 
     // Fullscreen
@@ -283,7 +283,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
             menu.findItem(R.id.miShare).isVisible = url != null
             setOnMenuItemClickListener { item ->
                 when (item.itemId) {
-                    R.id.miRefreshPage -> tab.webEngine.reload()
+                    R.id.miRefreshPage -> tab.engine.reload()
                     R.id.miOpenInNewTab -> url?.let { openInNewTab(it, load = true) }
                     R.id.miOpenInExternalApp -> url?.let(browser.external::openInApp)
                     R.id.miDownload -> url?.let(::downloadLink)

@@ -90,7 +90,7 @@ class TabsModel : ActiveModel() {
 
     fun onCloseTab(tab: WebTabState) {
         tab.closed = true
-        tab.webEngine.onDetachFromWindow(completely = true, destroyTab = true)
+        tab.engine.detach(destroyView = true)
         tabsStates.remove(tab)
         modelScope.launch(Dispatchers.IO) {
             storage.withLock {
@@ -104,7 +104,7 @@ class TabsModel : ActiveModel() {
         val closing = tabsStates.toList()
         for (tab in closing) {
             tab.closed = true
-            tab.webEngine.onDetachFromWindow(completely = true, destroyTab = true)
+            tab.engine.detach(destroyView = true)
         }
         currentTab.value = null
         tabsStates.clear()
@@ -119,7 +119,7 @@ class TabsModel : ActiveModel() {
 
     /** The window is going away: every WebView is destroyed, the tabs stay open. */
     fun onDetachActivity() {
-        for (tab in tabsStates) tab.webEngine.onDetachFromWindow(completely = true, destroyTab = false)
+        for (tab in tabsStates) tab.engine.detach(destroyView = true)
     }
 
     /**
@@ -136,11 +136,11 @@ class TabsModel : ActiveModel() {
         loadInitialUrl: Boolean = true,
     ) {
         val previous = currentTab.value
-        if (previous === newTab && newTab.webEngine.getView() != null) return
+        if (previous === newTab && newTab.engine.view != null) return
         if (previous !== newTab) {
             tabsStates.forEach { it.selected = false }
             previous?.let { old ->
-                old.webEngine.onDetachFromWindow(completely = false, destroyTab = false)
+                old.engine.detach(destroyView = false)
                 old.onPause()
                 modelScope.launch { saveTab(old) }
             }
@@ -149,16 +149,16 @@ class TabsModel : ActiveModel() {
         }
         releaseBackgroundWebViews(newTab)
         var needsLoad = false
-        if (newTab.webEngine.getView() == null) {
+        if (newTab.engine.view == null) {
             webViewProvider(newTab) ?: return
             needsLoad = !newTab.restoreWebView()
         }
-        newTab.webEngine.onAttachToWindow(window, webViewParent)
+        newTab.engine.attach(window, webViewParent)
         if (needsLoad && loadInitialUrl) {
-            newTab.webEngine.loadUrl(newTab.url)
+            newTab.engine.load(newTab.url)
             newTab.rendererLost = false
         }
-        newTab.webEngine.setNetworkAvailable(VireoLumaTVApp.instance.hasInternet())
+        newTab.engine.setOnline(VireoLumaTVApp.instance.hasInternet())
     }
 
     /**
@@ -167,8 +167,8 @@ class TabsModel : ActiveModel() {
      */
     private fun releaseBackgroundWebViews(activeTab: WebTabState) {
         val opener = activeTab.opener?.takeIf { !it.closed && it in tabsStates }
-        val background = tabsStates.filter { it !== activeTab && it !== opener && it.webEngine.getView() != null }
-        background.forEach { it.webEngine.onDetachFromWindow(completely = true, destroyTab = false) }
+        val background = tabsStates.filter { it !== activeTab && it !== opener && it.engine.view != null }
+        background.forEach { it.engine.detach(destroyView = true) }
         if (background.isNotEmpty()) Log.i(TAG, "Released ${background.size} background WebView(s)")
     }
 

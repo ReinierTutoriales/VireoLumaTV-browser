@@ -16,15 +16,15 @@ import java.lang.reflect.Proxy
 class RendererRecoveryTest {
     @Test fun ordinaryRecreationRestoresHistoryButRendererLossSkipsStaleState() {
         var restores = 0
-        val engine = Proxy.newProxyInstance(WebEngine::class.java.classLoader,
-            arrayOf(WebEngine::class.java)) { _, method, _ ->
-            if (method.name == "restoreState") { restores++; true } else null
-        } as WebEngine
-        val callback = Proxy.newProxyInstance(WebEngineProviderCallback::class.java.classLoader,
-            arrayOf(WebEngineProviderCallback::class.java)) { _, method, _ ->
-            if (method.name == "createWebEngine") engine else null
-        } as WebEngineProviderCallback
-        val restore = WebEngineFactory.replaceForTest(callback)
+        val engine = Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+            arrayOf(PageEngine::class.java)) { _, method, _ ->
+            if (method.name == "restoreHistory") { restores++; true } else null
+        } as PageEngine
+        val callback = Proxy.newProxyInstance(EngineBackend::class.java.classLoader,
+            arrayOf(EngineBackend::class.java)) { _, method, _ ->
+            if (method.name == "create") engine else null
+        } as EngineBackend
+        val restore = Engines.replaceForTest(callback)
         try {
             val tab = WebTabState(url = "https://latest.test").apply { savedState = Bundle() }
             assertTrue(tab.restoreWebView())

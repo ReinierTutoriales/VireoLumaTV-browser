@@ -26,39 +26,39 @@ class SingleLiveTabTest {
     private fun verify(privateMode: Boolean) {
         val app = RuntimeEnvironment.getApplication()
         val views = IdentityHashMap<WebTabState, View>()
-        val engines = IdentityHashMap<WebTabState, WebEngine>()
+        val engines = IdentityHashMap<WebTabState, PageEngine>()
         val histories = IdentityHashMap<WebTabState, String>()
         val events = mutableListOf<String>()
         var loads = 0
-        val providerCallback = Proxy.newProxyInstance(WebEngineProviderCallback::class.java.classLoader,
-            arrayOf(WebEngineProviderCallback::class.java)) { _, method, args ->
-            if (method.name != "createWebEngine") null else {
+        val providerCallback = Proxy.newProxyInstance(EngineBackend::class.java.classLoader,
+            arrayOf(EngineBackend::class.java)) { _, method, args ->
+            if (method.name != "create") null else {
                 val tab = args!![0] as WebTabState
                 engines.getOrPut(tab) {
-                    Proxy.newProxyInstance(WebEngine::class.java.classLoader,
-                        arrayOf(WebEngine::class.java)) { _, call, values ->
+                    Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+                        arrayOf(PageEngine::class.java)) { _, call, values ->
                         when (call.name) {
                             "getView" -> views[tab]
-                            "saveState" -> Bundle().apply {
+                            "saveHistory" -> Bundle().apply {
                                 putString("history", histories[tab])
                                 events.add("save:${tab.url}")
                             }
-                            "restoreState" -> { histories[tab] = (values!![0] as Bundle).getString("history")!!; true }
-                            "onDetachFromWindow" -> {
+                            "restoreHistory" -> { histories[tab] = (values!![0] as Bundle).getString("history")!!; true }
+                            "detach" -> {
                                 if (values!![0] == true) {
                                     views.remove(tab)
                                     events.add("destroy:${tab.url}")
                                 }
                                 null
                             }
-                            "loadUrl" -> { loads++; null }
+                            "load" -> { loads++; null }
                             else -> null
                         }
-                    } as WebEngine
+                    } as PageEngine
                 }
             }
-        } as WebEngineProviderCallback
-        val restore = WebEngineFactory.replaceForTest(providerCallback)
+        } as EngineBackend
+        val restore = Engines.replaceForTest(providerCallback)
         val model = TabsModel()
         // Persistence has separate Room/atomic-file tests; keep this test focused on renderer lifetime.
         model.modelScope.cancel()

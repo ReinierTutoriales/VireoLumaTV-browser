@@ -20,7 +20,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsRows.Companion.reveal
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.activity
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
+import com.reiniertutoriales.vireolumatv.webengine.Engines
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -53,7 +53,7 @@ class MainSettingsView @JvmOverloads constructor(
         addInput()
         rows.button(R.string.clear_web_cache, R.id.btnClearWebCache) {
             (activity as MainActivity).lifecycleScope.launch {
-                WebEngineFactory.clearCache(context)
+                Engines.clearCache(context)
                 Toast.makeText(context, android.R.string.ok, Toast.LENGTH_SHORT).show()
             }
         }

@@ -17,7 +17,7 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
-import com.reiniertutoriales.vireolumatv.webengine.WebEngine
+import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import org.junit.Assert.*
@@ -79,26 +79,26 @@ class BrowserNavigationTest {
         var thumbnailRenders = 0
         var loadedUrl: String? = null
         val thumbnail = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-        val engine = Proxy.newProxyInstance(WebEngine::class.java.classLoader,
-            arrayOf(WebEngine::class.java)) { _, method, args ->
+        val engine = Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+            arrayOf(PageEngine::class.java)) { _, method, args ->
             when (method.name) {
                 "getView" -> page
                 "isVirtualCursorMode" -> virtualCursor
-                "setVirtualCursorMode" -> { virtualCursor = args!![0] as Boolean; null }
-                "canGoBack", "canGoForward" -> true
-                "hideFullscreenView" -> { exitedFullscreen++; hideFullscreen?.invoke(); null }
-                "goBack" -> { wentBack++; null }
+                "setPointerMode" -> { virtualCursor = args!![0] as Boolean; null }
+                "getCanGoBack", "getCanGoForward" -> true
+                "closeFullscreen" -> { exitedFullscreen++; hideFullscreen?.invoke(); null }
+                "back" -> { wentBack++; null }
                 "reload" -> { refreshed++; null }
-                "loadUrl" -> { loadedUrl = args!![0] as String; null }
-                "renderThumbnail" -> { thumbnailRenders++; thumbnail }
+                "load" -> { loadedUrl = args!![0] as String; null }
+                "preview" -> { thumbnailRenders++; thumbnail }
                 else -> null
             }
-        } as WebEngine
+        } as PageEngine
         val tab = WebTabState(url = "https://example.test", selected = true).apply {
             thumbnail = this@Fixture.thumbnail
         }
         init {
-            WebTabState::class.java.getDeclaredField("webEngine\$delegate").apply { isAccessible = true }
+            WebTabState::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
                 .set(tab, lazyOf(engine))
             tabs.tabsStates.clear()
             tabs.tabsStates.add(tab)
@@ -280,7 +280,7 @@ class BrowserNavigationTest {
         engine.enterFullscreen(video)
         assertFalse(f.vb.flWebViewContainer.cursorEnabled)
         assertTrue(video.hasFocus())
-        f.hideFullscreen = { engine.hideFullscreenView() }
+        f.hideFullscreen = { engine.closeFullscreen() }
         f.virtualCursor = false
         f.activity.handleBackNavigation()
         assertEquals(1, f.exitedFullscreen)

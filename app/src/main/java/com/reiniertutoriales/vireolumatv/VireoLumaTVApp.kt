@@ -14,7 +14,7 @@ import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
 import com.reiniertutoriales.vireolumatv.utils.IncognitoWebViewData
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
+import com.reiniertutoriales.vireolumatv.webengine.Engines
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
 import java.net.CookieHandler
 import java.net.CookieManager
@@ -78,7 +78,7 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
     private fun initWebEngineStuff() {
         Log.i(TAG, "initWebEngineStuff")
 
-        WebEngineFactory.install(WebViewWebEngine.Backend)
+        Engines.install(WebViewWebEngine.Backend)
 
         val cookieManager = CookieManager()
         CookieHandler.setDefault(cookieManager)
