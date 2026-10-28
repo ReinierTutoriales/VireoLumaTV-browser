@@ -23,8 +23,8 @@ Retención de líneas en los 79 derivados: 84 % (9 029 de 10 736). 64 archivos t
 
 ## Criterio de cierre
 
-- Inventario sin entradas `MODIFICADO`, `IDENTICO` ni `IDENTICO_BLOB` para código fuente ni recursos.
-- Comprobación del APK: ninguna clase, recurso ni cadena de TV Bro distribuida.
+- Inventario sin entradas pendientes para implementaciones y recursos de la aplicación; los avisos obligatorios y herramientas de terceros se identifican por separado y no se atribuyen al proyecto.
+- Comprobación del APK: ninguna implementación o recurso heredado pendiente de sustitución distribuido. Las menciones de origen de los avisos y créditos se conservan; buscar solo nombres de paquete no demuestra independencia.
 - La licencia de TV Bro (`LICENSE.md`, `NOTICE.md`, crédito en «Acerca de») se retira solo después de esa comprobación y con revisión legal; el historial Git conserva el origen.
 - Pruebas en el onn: recorridos N01–N10 y reproducción. No se declara optimización sin medición.
 
@@ -139,3 +139,81 @@ esos once assets y se marcaron `ELIMINADO` en el inventario.
 La página de certificado reemplazó su imagen heredada por una marca CSS y texto
 decorativo (`aria-hidden`); el título sigue anunciando el aviso. La imagen
 `pages/ic_warning.svg` también se eliminó y se marcó `ELIMINADO`.
+
+## Sustitución del lote completo — base `7711f8e`
+
+Trabajo autorizado por el propietario: sustituir las superficies heredadas pendientes,
+conservando datos y contratos de TV. Las cifras anteriores conservan sus bases históricas.
+
+- Barra: implementación nueva de edición/cancelación, entrega de sugerencias y comandos;
+  indicador estático de descargas en lugar de la animación infinita. `ToolbarStateTest`,
+  `AddressSuggestionsFocusTest` y suites de navegación comprueban sus contratos.
+- Historial y descargas: páginas por frontera `(time, id)`, sin OFFSET. Insertar o borrar
+  filas anteriores no desplaza la frontera; `StablePaginationTest` reproduce ambos casos.
+  Una búsqueda reemplaza una petición pendiente; una página completada antes de resume se
+  entrega una vez a la pantalla. Pruebas `HistoryRequestTest` y `HistorySelectionTest`.
+- Favoritos: el editor trabaja en una copia, incluida la información legacy; el diálogo
+  relee la base tras cada escritura y cancela sus operaciones al cerrarse. Pruebas del
+  editor y del esquema instalado. `VALID_UNTIL` conserva milisegundos INTEGER nullable:
+  se elimina el conversor Date, sin cambiar el esquema 19.
+- Aviso privado: DialogFragment restaurable y preferencia de supresión explícita, con prueba.
+- Menú de enlaces: acciones nativas tipadas; eliminado `menu_link.xml`, con pruebas de
+  enlaces web, otros esquemas y ausencia de enlace.
+- JavaScript: implementación en cierre propio para medios y blobs, con cancelación y entrega
+  únicas. Ocho suites JS, incluida `test-blob-transfer.cjs`; no se certifica WebView real.
+- Proveedor: solo `Download/` externo y `cache/updates/`. Se prueban archivos admitidos y rechazo
+  de `Documents/` y caché ajena al actualizador. Las URI content existentes no se alteran.
+- Textos: nueva redacción inglesa y explicaciones en los once idiomas adicionales existentes;
+  se mantienen etiquetas breves traducidas. Se corrigen nombres de Inicio mal traducidos.
+  Es una sustitución parcial de los archivos de traducción, que siguen `MODIFICADO`.
+- Inicio: contrastado contra `6cb4b7c`; el formulario estático con CSP ya sustituía la tabla
+  dinámica del origen. Se actualiza su etiqueta, sin adjudicar una reescritura nueva a este lote.
+- Se eliminan ocho changelogs del producto original y el manifest release redundante. Metadatos,
+  README y plantillas de incidencias pasan a describir el producto actual.
+
+### Sustitución de los contratos de persistencia
+
+Después del primer contraste se reemplazan las operaciones de los cinco DAO desde sus
+consumidores y el esquema instalado, con `StorageWriteContractTest`:
+
+| DAO | Implementación del lote |
+|---|---|
+| DownloadDao | Lectura por frontera y actualización de campos de transferencia; URL/fecha de origen inmutables |
+| FavoritesDao | Escritura exclusiva de título/URL; una copia antigua no sobrescribe las demás columnas |
+| HistoryDao | Fronteras de página, búsqueda literal y decisión acotada de umbral sin contar toda la tabla |
+| HostsDao | Creación idempotente con IGNORE; transacciones separadas de favicon y política de ventanas, sin REPLACE |
+| TabsDao | Copia de `(id, posición)` antes de suspender; guardado y selección transaccionales |
+
+Antes de estas sustituciones coincidían 10/12, 8/10, 15/20, 8/8 y 18/25 líneas
+respectivamente, normalizando espacios y paquete y excluyendo imports, comentarios y llaves.
+No se usa ese porcentaje como criterio de autoría. Las rutas pasan a `REESCRITO` por los
+contratos y algoritmos nuevos, no por sus nombres. Permanecen anotaciones de Room, firmas
+necesarias, nombres de columnas y SQL convencional. No se atribuyen AndroidX ni las APIs del
+framework al proyecto. La clasificación técnica no acredita independencia jurídica.
+
+Los archivos de traducción continúan `MODIFICADO`: se sustituyen las explicaciones extensas
+pero se conservan etiquetas breves y otras traducciones del origen. Mantener los avisos;
+**el objetivo de independencia total no se declara cerrado**.
+
+`Extensions` conserva firmas de extensiones y el adaptador de contexto Android; su resolución
+por tipos y listener de animación sustituyen la implementación original, y los dos helpers sin
+consumidores se eliminan. Las otras fuentes reclasificadas conservan firmas, callbacks y
+llamadas obligatorias del framework, no la estructura de las implementaciones originales.
+
+### Verificación de paquete
+
+`scripts/audit-apk-provenance.py` inspecciona los APK debug y release minificado en CI:
+clases definidas en DEX, namespace original, doce assets retirados, recursos retirados,
+applicationId, coincidencia exacta de assets revisados y presencia de licencia/crédito.
+Escribe un JSON con SHA-256 por APK. Tres pruebas con paquetes sintéticos comprueban el
+lector DEX y la detección de restos. Esta comprobación mecánica no detecta todo código
+copiado o renombrado ni certifica autoría; las traducciones y la revisión de procedencia continúan
+pendientes aunque el paquete pase. Mantener LICENSE, NOTICE y Acerca de.
+
+La CI `543` detectó una pérdida de entrega inicial de historial y dos problemas de preparación
+asíncrona/almacenamiento de las pruebas nuevas. `3f5b642` corrige la entrega. La prueba del
+proveedor necesita además adjuntar una instancia nueva a las raíces de almacenamiento de cada
+caso Robolectric; se conservan las aserciones y se comprueba la raíz `downloaded_files`. Consultar la CI de la cabeza exacta del PR para el resultado del conjunto vigente.
+No se ha ejecutado Gradle local: la descarga del wrapper falla por red y no hay SDK Android.
+Siguen pendientes mando, reproducción, WebView real y medición física; no se atribuye una
+mejora de rendimiento sin esa medición. No se publica una versión.
