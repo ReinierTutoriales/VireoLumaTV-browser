@@ -1,7 +1,6 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -17,7 +16,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.webkit.WebBackForwardList
-import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.core.graphics.createBitmap
@@ -36,52 +34,15 @@ import java.util.concurrent.atomic.AtomicInteger
  * [BrowserChromeClient], loading by [BrowserWebViewClient] and permissions by [PagePermissions].
  */
 @SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
-open class WebViewEx(context: Context, val callback: Callback, val jsInterface: AndroidJSInterface) : WebView(context) {
+open class WebViewEx(context: Context, internal val engine: WebViewWebEngine) : WebView(context) {
+    /** The browser window while the tab is shown, null while it is detached. */
+    internal val window get() = engine.window
 
-    /** What the view reports to its tab's engine. */
-    interface Callback {
-        fun getActivity(): Activity?
-        fun onOpenInNewTabRequested(url: String)
-        fun onDownloadRequested(url: String)
-        fun onShowCustomView(view: View)
-        fun onHideCustomView()
-        fun onProgressChanged(newProgress: Int)
-        fun onReceivedTitle(title: String)
-        fun onShowFileChooser(intent: Intent): Boolean
-        fun onReceivedIcon(icon: Bitmap)
-        fun requestPermissions(array: Array<String>, geo: Boolean)
-        fun shouldOverrideUrlLoading(url: String): Boolean
-        fun onPageStarted(url: String?)
-        fun onPageFinished(url: String?)
-        fun onPageCertificateError(url: String?)
-        fun onRenderProcessGone(): Boolean
-        fun isAdBlockingEnabled(): Boolean
-        fun isDialogsBlockingEnabled(): Boolean
-        fun isAd(request: WebResourceRequest, baseUri: Uri): Boolean
-        /** `data:` URL of the `$redirect` resource for a blocked request, if any. */
-        fun adRedirect(request: WebResourceRequest, baseUri: Uri): String?
-        fun onBlockedAds(count: Int)
-        fun onBlockedDialog(newTab: Boolean)
-        fun onCreateWindow(dialog: Boolean, userGesture: Boolean): WebViewEx?
-        fun closeWindow(window: WebView)
-        fun onDownloadStart(url: String, userAgent: String, contentDisposition: String, mimetype: String?, contentLength: Long)
-        fun onScaleChanged(oldScale: Float, newScale: Float)
-        fun onCopyTextToClipboardRequested(url: String)
-        fun onShareUrlRequested(url: String)
-        fun onOpenInExternalAppRequested(url: String)
-        fun onVisited(url: String)
-        fun onContextMenu(baseUrl: String?, href: String?, x: Int, y: Int)
-        /** Main-frame navigation of a page-opened window; true cancels it as a popup ad. */
-        fun onPopupNavigation(url: Uri): Boolean
-        fun onPopupPageFinished(url: String?)
-        /** Page-initiated main-frame navigation to a popunder network (tab-under). */
-        fun isTabUnderAd(url: Uri): Boolean
-    }
 
     internal val config = AppContext.provideConfig()
     internal val consoleLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     internal val streamLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
-    internal val permissions = PagePermissions({ callback.getActivity() }, callback::requestPermissions)
+    internal val permissions = PagePermissions({ window?.getActivity() }, engine::requestPermissions)
     private val chromeClient = BrowserChromeClient(this)
     private val youtubeAdblock by lazy { YouTubeAdblockController(this) }
     private val adblockPage by lazy { AdblockPageController(this) }
@@ -101,7 +62,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     private val pendingBlockedAds = AtomicInteger(0)
     private val reportBlockedAds = Runnable {
         val count = pendingBlockedAds.getAndSet(0)
-        if (count > 0) callback.onBlockedAds(count)
+        if (count > 0) window?.onBlockedAds(count)
     }
 
     init {
@@ -112,9 +73,9 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         webViewClient = BrowserWebViewClient(this)
         setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
             // Blob downloads are read by the injected script; everything else goes to the download service.
-            if (!url.startsWith("blob:")) callback.onDownloadStart(url, userAgent, contentDisposition, mimetype, contentLength)
+            if (!url.startsWith("blob:")) window?.onDownloadRequested(url, userAgent, contentDisposition, mimetype, contentLength)
         }
-        addJavascriptInterface(jsInterface, JS_INTERFACE_NAME)
+        addJavascriptInterface(engine.jsInterface, JS_INTERFACE_NAME)
         // Before the first navigation, so the first page already sees the codec policy.
         mediaPolicy.refresh()
     }
@@ -192,7 +153,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     /** Replaces the page with the certificate warning, which can offer to trust [error] once. */
     internal fun showCertificateErrorPage(error: SslError) {
-        callback.onPageCertificateError(error.url)
+        window?.onPageCertificateError(error.url)
         lastSSLError = error
         val url = "$INTERNAL_SCHEME$INTERNAL_SCHEME_WARNING_DOMAIN?type=$INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT&url=" +
             URLEncoder.encode(error.url, "UTF-8")

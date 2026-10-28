@@ -19,14 +19,15 @@ import android.webkit.WebView
  * blocked), fullscreen video, progress and title, permissions, files, icons and new windows.
  */
 internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClient() {
-    private val callback get() = view.callback
+    private val window get() = view.window
+    private val engine get() = view.engine
     private var fullscreen: CustomViewCallback? = null
     private var filePicked: ValueCallback<Array<Uri>>? = null
 
     /** Answers a script dialog itself when dialogs are blocked; false lets WebView show it. */
     private fun blockDialog(result: JsResult): Boolean {
-        if (!callback.isDialogsBlockingEnabled()) return false
-        callback.onBlockedDialog(false)
+        if (window?.isDialogsBlockingEnabled() != true) return false
+        window?.onBlockedDialog(false)
         result.cancel()
         return true
     }
@@ -47,20 +48,20 @@ internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClien
             return
         }
         fullscreen = callback
-        this.callback.onShowCustomView(view)
+        engine.enterFullscreen(view)
     }
 
     override fun onHideCustomView() {
-        callback.onHideCustomView()
+        engine.exitFullscreen(restoreBrowserControls = true)
         fullscreen?.onCustomViewHidden()
         fullscreen = null
     }
 
-    override fun onProgressChanged(view: WebView, newProgress: Int) = callback.onProgressChanged(newProgress)
+    override fun onProgressChanged(view: WebView, newProgress: Int) { window?.onProgressChanged(newProgress) }
 
-    override fun onReceivedTitle(view: WebView, title: String) = callback.onReceivedTitle(title)
+    override fun onReceivedTitle(view: WebView, title: String) { window?.onReceivedTitle(title) }
 
-    override fun onReceivedIcon(view: WebView?, icon: Bitmap) = callback.onReceivedIcon(icon)
+    override fun onReceivedIcon(view: WebView?, icon: Bitmap) { window?.onReceivedIcon(icon) }
 
     override fun onPermissionRequest(request: PermissionRequest) = this.view.permissions.onRequest(request)
 
@@ -87,7 +88,7 @@ internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClien
 
     override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri>>, fileChooserParams: FileChooserParams): Boolean {
         filePicked = filePathCallback
-        val shown = callback.onShowFileChooser(fileChooserParams.createIntent())
+        val shown = window?.onShowFileChooser(fileChooserParams.createIntent()) == true
         if (!shown) filePicked = null
         return shown
     }
@@ -100,13 +101,13 @@ internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClien
     }
 
     override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
-        val window = callback.onCreateWindow(isDialog, isUserGesture) ?: return false
-        (resultMsg.obj as WebView.WebViewTransport).webView = window
+        val created = engine.onCreateWindow(isDialog, isUserGesture) ?: return false
+        (resultMsg.obj as WebView.WebViewTransport).webView = created
         resultMsg.sendToTarget()
         return true
     }
 
-    override fun onCloseWindow(window: WebView) = callback.closeWindow(window)
+    override fun onCloseWindow(window: WebView) { this.window?.closeWindow(window) }
 
     private companion object {
         const val MAX_CONSOLE_CHARS = 2048

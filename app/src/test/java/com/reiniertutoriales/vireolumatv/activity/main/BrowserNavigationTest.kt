@@ -279,12 +279,11 @@ class BrowserNavigationTest {
         val callback = Class.forName("com.reiniertutoriales.vireolumatv.activity.main.MainActivity\$WebEngineCallback")
             .getDeclaredConstructor(MainActivity::class.java, WebTabState::class.java)
             .apply { isAccessible = true }.newInstance(f.activity, f.tab) as WebEngineWindowProviderCallback
-        val engine = WebViewWebEngine(f.tab).apply { this.callback = callback }
-        WebViewWebEngine::class.java.getDeclaredField("viewParent").apply { isAccessible = true }
+        val engine = WebViewWebEngine(f.tab).apply { window = callback }
+        WebViewWebEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
             .set(engine, f.vb.flWebViewContainer)
         val video = View(f.host.get()).apply { isFocusableInTouchMode = true }
-        WebViewWebEngine::class.java.getDeclaredMethod("enterFullscreenView", View::class.java)
-            .apply { isAccessible = true }.invoke(engine, video)
+        engine.enterFullscreen(video)
         assertFalse(f.vb.flWebViewContainer.cursorEnabled)
         assertTrue(video.hasFocus())
         f.hideFullscreen = { engine.hideFullscreenView() }

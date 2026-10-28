@@ -192,8 +192,8 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermis
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/Scripts.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/Scripts.kt	69
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnostics.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActivation.kt	PROPIO		
-app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt	62
-app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewWebEngine.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt	32
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt	72
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewWebEngine.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt	80
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockController.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableContainer.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableContainer.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableImageButton.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableImageButton.kt

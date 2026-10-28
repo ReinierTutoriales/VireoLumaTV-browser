@@ -64,7 +64,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
 
     @JavascriptInterface
     fun reloadWithSslTrust() {
-        val callback = webEngine.callback ?: return
+        val callback = webEngine.window ?: return
         if (!isInternalCertificateErrorPage()) return
         val error = (webEngine.getView() as? WebViewEx)?.lastSSLError ?: return
         callback.getActivity().runOnUiThread {
@@ -174,7 +174,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         }
 
         if (!BridgePagePolicy.isNormalWebPage(sourceUrl)) return
-        val callback = webEngine.callback ?: return
+        val callback = webEngine.window ?: return
         val finalFileName = DownloadUtils.sanitizeFileName(pending.fileName)
             ?: DownloadUtils.guessFileName(url, null, pending.mimetype)
         callback.getActivity().runOnUiThread {

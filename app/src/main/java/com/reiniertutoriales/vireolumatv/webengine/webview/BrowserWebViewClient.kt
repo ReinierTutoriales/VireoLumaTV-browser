@@ -29,21 +29,22 @@ import java.net.URLConnection
  * ad blocking, page lifecycle, certificate errors and HTTP authentication.
  */
 internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient() {
-    private val callback get() = view.callback
+    private val window get() = view.window
+    private val engine get() = view.engine
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         if (request.isForMainFrame) {
             // A popunder's redirect chain (ad network, then advertiser) arrives here.
-            if (callback.onPopupNavigation(request.url)) return true
+            if (engine.onPopupNavigation(request.url)) return true
             // Links, scripts and redirects only: loadUrl() from the address bar never comes here.
-            if (callback.isTabUnderAd(request.url)) return true
+            if (engine.isTabUnderAd(request.url)) return true
         }
-        return callback.shouldOverrideUrlLoading(request.url.toString())
+        return window?.shouldOverrideUrlLoading(request.url.toString()) == true
     }
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
         // window.open(url) loads its first document without shouldOverrideUrlLoading.
-        if (request.isForMainFrame && callback.onPopupNavigation(request.url)) return blocked()
+        if (request.isForMainFrame && engine.onPopupNavigation(request.url)) return blocked()
         val page = this.view.currentOriginalUrl
         if (page != null && page.toString().startsWith(Config.HOME_PAGE_URL, ignoreCase = true)) {
             HomePageHelper.shouldInterceptRequest(request)?.let { return it }
@@ -52,11 +53,11 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
                 return homePageAsset(view, address) ?: super.shouldInterceptRequest(view, request)
             }
         }
-        if (page == null || !callback.isAdBlockingEnabled() || !callback.isAd(request, page)) {
+        if (page == null || window?.isAdBlockingEnabled() != true || !engine.isAd(request, page)) {
             return super.shouldInterceptRequest(view, request)
         }
         this.view.countBlockedAd()
-        callback.adRedirect(request, page)?.let { dataUrlResponse(it, request.requestHeaders) }?.let { return it }
+        engine.adRedirect(request, page)?.let { dataUrlResponse(it, request.requestHeaders) }?.let { return it }
         return AdblockSurrogates.responseFor(view.context, request.url, request.requestHeaders) ?: blocked()
     }
 
@@ -75,14 +76,14 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
         this.view.onDocumentStarted(url)
-        callback.onPageStarted(url)
+        engine.onPageStarted(url)
         this.view.onDocumentStartReported(url)
     }
 
     override fun onPageFinished(view: WebView, url: String?) {
         super.onPageFinished(view, url)
-        callback.onPageFinished(url)
-        callback.onPopupPageFinished(url)
+        window?.onPageFinished(url)
+        engine.onPopupPageFinished(url)
         this.view.onDocumentFinished(url)
     }
 
@@ -102,7 +103,7 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
         if (view.streamLogBudget.allow()) Log.w(WebViewEx.WEB_VIEW_TAG, "Stream $kind ${detail()} host=${url.host}")
     }
 
-    override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean = callback.onRenderProcessGone()
+    override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean = engine.onRenderProcessGone()
 
     /**
      * A certificate error stops the load. Only the certificate the user accepted on the warning page,
@@ -124,11 +125,11 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
 
     override fun onScaleChanged(view: WebView?, oldScale: Float, newScale: Float) {
         super.onScaleChanged(view, oldScale, newScale)
-        callback.onScaleChanged(oldScale, newScale)
+        window?.onScaleChanged(oldScale, newScale)
     }
 
     override fun doUpdateVisitedHistory(view: WebView?, url: String, isReload: Boolean) {
-        if (!isReload) callback.onVisited(url)
+        if (!isReload) window?.onVisited(url)
     }
 
     override fun onReceivedHttpAuthRequest(view: WebView?, handler: HttpAuthHandler?, host: String?, realm: String?) {

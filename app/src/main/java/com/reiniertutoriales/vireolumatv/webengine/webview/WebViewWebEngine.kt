@@ -1,459 +1,273 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import com.reiniertutoriales.vireolumatv.adblock.AdblockRequestClassifier
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import org.json.JSONTokener
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.webkit.WebViewCompat
 import com.reiniertutoriales.vireolumatv.AppContext
-import com.reiniertutoriales.vireolumatv.Config
+import com.reiniertutoriales.vireolumatv.adblock.AdblockRequestClassifier
 import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineProviderCallback
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
-import com.reiniertutoriales.vireolumatv.utils.BundleBytes
+import org.json.JSONTokener
 
-
+/**
+ * [tab]'s engine on Android WebView. It owns the tab's [WebViewEx] while one exists and is the
+ * link between the page and the browser [window] it is shown in, which is null while detached.
+ * Page fullscreen (video) replaces the WebView in the window and is always undone on detach.
+ */
 class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.Callback {
     private var webView: WebViewEx? = null
-    internal var callback: WebEngineWindowProviderCallback? = null
-    private var viewParent: CursorLayout? = null
-    private var fullScreenView: View? = null
-    private val permissionsRequests = HashMap<Int, Boolean>()//request code, isGeolocationPermissionRequest
-    private val jsInterface = AndroidJSInterface(this)
+    /** The window the tab is shown in; JavaScript bridge calls use it as well. */
+    internal var window: WebEngineWindowProviderCallback? = null
+    private var container: CursorLayout? = null
+    private var fullscreenView: View? = null
+    /** Pending Android permission requests: code to "is it the location request". */
+    private val permissionRequests = HashMap<Int, Boolean>()
+    internal val jsInterface = AndroidJSInterface(this)
 
-    override fun isSameSession(internalRepresentation: Any): Boolean {
-        return internalRepresentation == webView
-    }
+    private val adblockEnabled get() = tab.adblock ?: AppContext.provideConfig().adBlockEnabled
 
-    override val url: String?
-        get() = webView?.url
+    override val url: String? get() = webView?.url
 
     override var userAgentString: String? = null
         set(value) {
             field = value
-            // null selects the provider default, including on an already live WebView.
+            // Null restores the WebView's own agent, on a live WebView too.
             webView?.settings?.userAgentString = value
         }
 
-    override fun saveState(): Any? {
-        val bundle = Bundle()
-        return if (webView?.saveState(bundle) != null) bundle else null
-    }
+    override fun isSameSession(internalRepresentation: Any): Boolean = internalRepresentation === webView
+
+    override fun saveState(): Any? = Bundle().takeIf { webView?.saveState(it) != null }
 
     override fun restoreState(savedInstanceState: Any): Boolean {
-        require(savedInstanceState is Bundle) { "savedInstanceState must be Bundle" }
+        require(savedInstanceState is Bundle) { "WebView state is a Bundle" }
         return webView?.restoreState(savedInstanceState) != null
     }
 
-    override fun stateFromBytes(bytes: ByteArray): Any? =
-        BundleBytes.decode(bytes)
+    override fun stateFromBytes(bytes: ByteArray): Any? = BundleBytes.decode(bytes)
 
-    override fun loadUrl(url: String) {
-        webView?.loadUrl(url)
-    }
+    override fun getView(): View? = webView
 
-    override fun canGoForward(): Boolean {
-        return webView?.canGoForward() ?: false
-    }
-
-    override fun goForward() {
-        webView?.goForward()
-    }
-
-    override fun zoomIn() {
-        webView?.zoomIn()
-    }
-
-    override fun zoomOut() {
-        webView?.zoomOut()
-    }
-
-    override fun setNetworkAvailable(connected: Boolean) {
-        webView?.setNetworkAvailable(connected)
-    }
-
-    override fun getView(): View? {
-        return webView
-    }
-
-    @Throws(Exception::class)
-    override fun getOrCreateView(activityContext: Context): View {
-        if (webView == null) {
-            webView = WebViewEx(activityContext, webViewCallback, jsInterface).also {
-                // Register before the first navigation, using this tab's setting even before attach.
-                it.onUpdateAdblockSetting(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)
-            }
+    override fun getOrCreateView(activityContext: Context): View =
+        webView ?: WebViewEx(activityContext, this).also {
+            // Before the first navigation, with this tab's choice even before it is attached.
+            it.onUpdateAdblockSetting(adblockEnabled)
+            webView = it
         }
-        return webView!!
-    }
 
-    override fun canGoBack(): Boolean {
-        return webView?.canGoBack() ?: false
-    }
-
-    override fun goBack() {
-        webView?.goBack()
-    }
-
-    override fun reload() {
-        webView?.reload()
-    }
-
-    override fun onFilePicked(resultCode: Int, data: Intent?) {
-        webView?.onFilePicked(resultCode, data)
-    }
+    override fun loadUrl(url: String) { webView?.loadUrl(url) }
+    override fun reload() { webView?.reload() }
+    override fun canGoBack() = webView?.canGoBack() == true
+    override fun goBack() { webView?.goBack() }
+    override fun canGoForward() = webView?.canGoForward() == true
+    override fun goForward() { webView?.goForward() }
+    override fun zoomIn() { webView?.zoomIn() }
+    override fun zoomOut() { webView?.zoomOut() }
+    override fun setNetworkAvailable(connected: Boolean) { webView?.setNetworkAvailable(connected) }
+    override fun onFilePicked(resultCode: Int, data: Intent?) { webView?.onFilePicked(resultCode, data) }
+    override fun onUpdateAdblockSetting(newState: Boolean) { webView?.onUpdateAdblockSetting(newState) }
+    override suspend fun renderThumbnail(bitmap: Bitmap?): Bitmap? = webView?.renderThumbnail(bitmap)
 
     override fun onResume() {
-        webView?.onUpdateAdblockSetting(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)
-        webView?.resumeTimers()
-        webView?.onResume()
+        webView?.apply {
+            onUpdateAdblockSetting(adblockEnabled)
+            resumeTimers()
+            onResume()
+        }
     }
 
     override fun onPause() {
-        webView?.onPause()
-        // onPause alone leaves JavaScript timers running. The process keeps one live renderer.
-        webView?.pauseTimers()
-    }
-
-    override fun onUpdateAdblockSetting(newState: Boolean) {
-        webView?.onUpdateAdblockSetting(newState)
-    }
-
-    override fun hideFullscreenView() {
-        webView?.hideCustomView()
-        if (fullScreenView != null) {
-            exitFullscreenView(restoreBrowserControls = true)
+        webView?.apply {
+            onPause()
+            // onPause() alone leaves JavaScript timers running.
+            pauseTimers()
         }
     }
 
-    override fun togglePlayback() {
-        webView?.evaluateJavascript("vireoLumaTVTogglePlayback()", null)
-    }
-
-    override fun stopPlayback() {
-        webView?.evaluateJavascript("vireoLumaTVStopPlayback()", null)
-    }
-
-    override fun rewind() {
-        webView?.evaluateJavascript("vireoLumaTVRewind()", null)
-    }
-
-    override fun fastForward() {
-        webView?.evaluateJavascript("vireoLumaTVFastForward()", null)
-    }
-
-    override suspend fun renderThumbnail(bitmap: Bitmap?): Bitmap? {
-        return webView?.renderThumbnail(bitmap)
-    }
+    // Media keys call the functions generic_injects.js defines for the page's main video.
+    override fun togglePlayback() = media("vireoLumaTVTogglePlayback()")
+    override fun stopPlayback() = media("vireoLumaTVStopPlayback()")
+    override fun rewind() = media("vireoLumaTVRewind()")
+    override fun fastForward() = media("vireoLumaTVFastForward()")
+    private fun media(call: String) { webView?.evaluateJavascript(call, null) }
 
     override fun onAttachToWindow(callback: WebEngineWindowProviderCallback, parent: ViewGroup) {
-        this.callback = callback
-        if (webView == null) {
-            throw IllegalStateException("WebView is null")
-        }
-        this.viewParent = parent as CursorLayout
-        parent.removeAllViews()
-        parent.addView(webView)
-        viewParent?.resetInput()
-        viewParent?.cursorEnabled = true
-        webView?.setVirtualCursorMode(true)
-        webView?.isFocusableInTouchMode = true
-        webView?.requestFocus()
-        viewParent?.cursorDrawerDelegate?.callback = this
-        viewParent?.cursorDrawerDelegate?.animateAppearing()
+        val view = checkNotNull(webView) { "The WebView must exist before it is attached" }
+        val cursor = parent as CursorLayout
+        window = callback
+        container = cursor
+        cursor.removeAllViews()
+        cursor.addView(view)
+        cursor.resetInput()
+        cursor.cursorEnabled = true
+        view.setVirtualCursorMode(true)
+        view.isFocusableInTouchMode = true
+        view.requestFocus()
+        cursor.cursorDrawerDelegate.callback = this
+        cursor.cursorDrawerDelegate.animateAppearing()
         onResume()
     }
 
     override fun onDetachFromWindow(completely: Boolean, destroyTab: Boolean) {
-        Log.i(TAG, "onDetachFromWindow completely=" + completely + " destroyTab=" + destroyTab + " hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
-        exitFullscreenView(restoreBrowserControls = false)
+        exitFullscreen(restoreBrowserControls = false)
         onPause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
-        callback = null
-        viewParent?.cursorDrawerDelegate?.callback = null
-        viewParent = null
+        window = null
+        container?.cursorDrawerDelegate?.callback = null
+        container = null
         if (completely) {
-            permissionsRequests.clear()
+            permissionRequests.clear()
             webView?.destroy()
             webView = null
         }
     }
 
     override fun trimMemory() {
-        val webView = webView
-        Log.i(TAG, "trimMemory hasWebView=" + (webView != null) + " attached=" + webView?.isAttachedToWindow + " hasFullscreen=" + (fullScreenView != null))
-        if (webView != null && !webView.isAttachedToWindow) {
-            Log.i(TAG, "trimMemory destroying detached WebView")
-            exitFullscreenView(restoreBrowserControls = false)
-            webView.destroy()
-            this.webView = null
-        }
+        val view = webView ?: return
+        if (view.isAttachedToWindow) return
+        exitFullscreen(restoreBrowserControls = false)
+        view.destroy()
+        webView = null
     }
 
-    override fun onPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean {
-        val isGeolocationPermissionRequest = permissionsRequests[requestCode] ?: return false
-        permissionsRequests.remove(requestCode)
-        webView?.onPermissionsResult(permissions, grantResults, isGeolocationPermissionRequest)
-        return true
-    }
-
-
-    /** Element hiding and scriptlets for a document of this tab, any frame (JavaBridge thread). */
-    fun pageFilters(url: String): String {
-        if (!(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)) return ""
-        return pageFiltersProvider?.invoke(url) ?: ""
-    }
-
-    fun hiddenSelectors(url: String, classes: String, ids: String): String {
-        if (!(tab.adblock ?: AppContext.provideConfig().adBlockEnabled)) return "[]"
-        return hiddenSelectorsProvider?.invoke(url, classes, ids) ?: "[]"
-    }
-
-    override fun onLongPress(x: Int, y: Int) {
-        webView?.let {
-            it.evaluateJavascript(Scripts.LONG_PRESS_SCRIPT) { href ->
-                // evaluateJavascript returns JSON, not a raw URI.
-                val linkUrl = runCatching { JSONTokener(href).nextValue() as? String }.getOrNull()
-                if (webView !== it || viewParent == null) return@evaluateJavascript
-                webViewCallback.onContextMenu(
-                    it.currentOriginalUrl.toString(),
-                    linkUrl, x, y
-                )
-            }
-        }
+    override fun hideFullscreenView() {
+        webView?.hideCustomView()
+        if (fullscreenView != null) exitFullscreen(restoreBrowserControls = true)
     }
 
     override fun setVirtualCursorMode(enabled: Boolean) {
-        viewParent?.cursorEnabled = enabled
-        if (enabled) {
-            viewParent?.cursorDrawerDelegate?.animateAppearing()
-        }
+        container?.cursorEnabled = enabled
+        if (enabled) container?.cursorDrawerDelegate?.animateAppearing()
         webView?.setVirtualCursorMode(enabled)
     }
 
-    private fun enterFullscreenView(view: View) {
-        Log.i(TAG, "enterFullscreenView requested view=" + view.javaClass.name + " hasFullscreen=" + (fullScreenView != null) + " hasWebView=" + (webView != null) + " hasParent=" + (viewParent != null))
-        if (fullScreenView != null) {
-            Log.i(TAG, "enterFullscreenView rejected: fullscreen view already present")
+    override fun onPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean {
+        val location = permissionRequests.remove(requestCode) ?: return false
+        webView?.onPermissionsResult(permissions, grantResults, location)
+        return true
+    }
+
+    /** Pointer long press: asks the page for the link under it, then opens the pointer menu there. */
+    override fun onLongPress(x: Int, y: Int) {
+        val view = webView ?: return
+        view.evaluateJavascript(Scripts.LONG_PRESS_SCRIPT) { json ->
+            if (webView !== view || container == null) return@evaluateJavascript
+            // The answer is JSON, not a raw address.
+            val link = runCatching { JSONTokener(json).nextValue() as? String }.getOrNull()
+            showPointerMenu(view.currentOriginalUrl.toString(), link, x, y)
+        }
+    }
+
+    private fun showPointerMenu(baseUrl: String?, href: String?, x: Int, y: Int) {
+        val cursor = container ?: return
+        window?.onContextMenu(cursor.cursorDrawerDelegate, baseUrl, href, null, null, null, null, x, y)
+    }
+
+    // The page's side, called by WebViewEx and its clients.
+
+    /** Element hiding and scriptlets for a document of this tab, any frame (JavaBridge thread). */
+    fun pageFilters(url: String): String = if (adblockEnabled) pageFiltersProvider?.invoke(url).orEmpty() else ""
+
+    fun hiddenSelectors(url: String, classes: String, ids: String): String =
+        if (adblockEnabled) hiddenSelectorsProvider?.invoke(url, classes, ids) ?: "[]" else "[]"
+
+    internal fun onPageStarted(url: String?) {
+        tab.mediaStarted = false
+        window?.onPageStarted(url)
+    }
+
+    internal fun requestPermissions(permissions: Array<String>, location: Boolean) {
+        val code = window?.requestPermissions(permissions) ?: return
+        permissionRequests[code] = location
+    }
+
+    internal fun isAd(request: WebResourceRequest, page: Uri): Boolean = classified(request, page) { type, context ->
+        window?.isAd(request.url, type, context) ?: false
+    }
+
+    internal fun adRedirect(request: WebResourceRequest, page: Uri): String? = classified(request, page) { type, context ->
+        window?.adRedirect(request.url, type, context)
+    }
+
+    private inline fun <T> classified(request: WebResourceRequest, page: Uri, decide: (String?, Uri) -> T): T = decide(
+        AdblockRequestClassifier.classify(request.url, request.requestHeaders, request.isForMainFrame),
+        AdblockRequestClassifier.pageContext(request.url, page, request.isForMainFrame),
+    )
+
+    internal fun onCreateWindow(dialog: Boolean, userGesture: Boolean): WebViewEx? =
+        window?.onCreateWindow(dialog, userGesture) as? WebViewEx
+
+    internal fun onPopupNavigation(url: Uri): Boolean = tab.popupGuard?.onNavigation(url) ?: false
+
+    internal fun onPopupPageFinished(url: String?) { tab.popupGuard?.onPageFinished(url) }
+
+    internal fun isTabUnderAd(url: Uri): Boolean = window?.isTabUnderAd(url, webView?.currentOriginalUrl) ?: false
+
+    /** The renderer died: the dead view goes, and the tab reloads its address instead of its history. */
+    internal fun onRenderProcessGone(): Boolean {
+        Log.i(TAG, "Renderer gone (fullscreen: ${fullscreenView != null})")
+        exitFullscreen(restoreBrowserControls = false)
+        val dead = webView ?: return true
+        tab.rendererLost = true
+        (dead.parent as? ViewGroup)?.removeView(dead)
+        dead.destroy()
+        webView = null
+        window?.onRenderProcessGone()
+        return true
+    }
+
+    internal fun enterFullscreen(view: View) {
+        if (fullscreenView != null) {
+            Log.i(TAG, "Fullscreen refused: one is already shown")
             (view.parent as? ViewGroup)?.removeView(view)
             return
         }
-        callback?.onPrepareForFullscreen()
+        window?.onPrepareForFullscreen()
         webView?.visibility = View.GONE
         webView?.setVirtualCursorMode(false)
-        viewParent?.cursorEnabled = false
+        container?.cursorEnabled = false
         (view.parent as? ViewGroup)?.removeView(view)
-        viewParent?.addView(
-            view,
-            ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-        )
-        fullScreenView = view
+        container?.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        fullscreenView = view
         view.requestFocus()
     }
 
-    private fun exitFullscreenView(restoreBrowserControls: Boolean) {
-        Log.i(TAG, "exitFullscreenView restoreBrowserControls=" + restoreBrowserControls + " hasFullscreen=" + (fullScreenView != null) + " hasWebView=" + (webView != null))
-        val fullscreenView = fullScreenView
-        fullScreenView = null
-        (fullscreenView?.parent as? ViewGroup)?.removeView(fullscreenView)
+    /**
+     * Puts the page back. With [restoreBrowserControls] the window restores its controls, navigation
+     * state and focus in one step, so no separate visibility change can race a later menu transition.
+     */
+    internal fun exitFullscreen(restoreBrowserControls: Boolean) {
+        val shown = fullscreenView
+        fullscreenView = null
+        (shown?.parent as? ViewGroup)?.removeView(shown)
         webView?.visibility = View.VISIBLE
         webView?.setVirtualCursorMode(true)
-        callback?.onExitFullscreen()
-        viewParent?.cursorEnabled = true
-        if (restoreBrowserControls) {
-            restoreBrowserControlsAfterFullscreen()
-        }
-    }
-
-    private fun restoreBrowserControlsAfterFullscreen() {
-        // The window owner controls chrome visibility, navigation state and focus together.
-        // Never post independent visibility changes that can race a later menu transition.
-        callback?.onRestoreBrowserControlsAfterFullscreen()
-    }
-
-    private val webViewCallback = object : WebViewEx.Callback {
-        override fun getActivity(): Activity? {
-            return callback?.getActivity()
-        }
-
-        override fun onOpenInNewTabRequested(url: String) {
-            callback?.onOpenInNewTabRequested(url, true)
-        }
-
-        override fun onDownloadRequested(url: String) {
-            callback?.onDownloadRequested(url)
-        }
-
-        override fun onShowCustomView(view: View) {
-            Log.i(TAG, "callback.onShowCustomView view=" + view.javaClass.name)
-            enterFullscreenView(view)
-        }
-
-        override fun onHideCustomView() {
-            Log.i(TAG, "callback.onHideCustomView")
-            exitFullscreenView(restoreBrowserControls = true)
-        }
-
-        override fun onProgressChanged(newProgress: Int) {
-            callback?.onProgressChanged(newProgress)
-        }
-
-        override fun onReceivedTitle(title: String) {
-            callback?.onReceivedTitle(title)
-        }
-
-        override fun requestPermissions(array: Array<String>, geo: Boolean) {
-            val requestCode = callback?.requestPermissions(array) ?: return
-            permissionsRequests[requestCode] = geo
-        }
-
-        override fun onShowFileChooser(intent: Intent): Boolean {
-            return callback?.onShowFileChooser(intent) ?: false
-        }
-
-        override fun onReceivedIcon(icon: Bitmap) {
-            callback?.onReceivedIcon(icon)
-        }
-
-        override fun shouldOverrideUrlLoading(url: String): Boolean {
-            return callback?.shouldOverrideUrlLoading(url) ?: false
-        }
-
-        override fun onPageStarted(url: String?) {
-            tab.mediaStarted = false
-            callback?.onPageStarted(url)
-        }
-
-        override fun onPageFinished(url: String?) {
-            callback?.onPageFinished(url)
-        }
-
-        override fun onPageCertificateError(url: String?) {
-            callback?.onPageCertificateError(url)
-        }
-
-        override fun onRenderProcessGone(): Boolean {
-            Log.i(TAG, "onRenderProcessGone hasWebView=" + (webView != null) + " hasFullscreen=" + (fullScreenView != null))
-            exitFullscreenView(restoreBrowserControls = false)
-            val deadWebView = webView ?: return true
-            tab.rendererLost = true
-            (deadWebView.parent as? ViewGroup)?.removeView(deadWebView)
-            deadWebView.destroy()
-            webView = null
-            callback?.onRenderProcessGone()
-            return true
-        }
-
-        override fun isAd(request: WebResourceRequest, baseUri: Uri): Boolean {
-            val type = AdblockRequestClassifier.classify(request.url, request.requestHeaders, request.isForMainFrame)
-            val pageContext = AdblockRequestClassifier.pageContext(request.url, baseUri, request.isForMainFrame)
-            return callback?.isAd(request.url, type, pageContext) ?: false
-        }
-
-        override fun adRedirect(request: WebResourceRequest, baseUri: Uri): String? {
-            val type = AdblockRequestClassifier.classify(request.url, request.requestHeaders, request.isForMainFrame)
-            val pageContext = AdblockRequestClassifier.pageContext(request.url, baseUri, request.isForMainFrame)
-            return callback?.adRedirect(request.url, type, pageContext)
-        }
-
-        override fun isAdBlockingEnabled(): Boolean {
-            return callback?.isAdBlockingEnabled() ?: false
-        }
-
-        override fun isDialogsBlockingEnabled(): Boolean {
-            return callback?.isDialogsBlockingEnabled() ?: false
-        }
-
-        override fun onBlockedAds(count: Int) {
-            callback?.onBlockedAds(count)
-        }
-
-        override fun onBlockedDialog(newTab: Boolean) {
-            callback?.onBlockedDialog(newTab)
-        }
-
-        override fun onCreateWindow(dialog: Boolean, userGesture: Boolean): WebViewEx? {
-            return callback?.onCreateWindow(dialog, userGesture) as? WebViewEx
-        }
-
-        override fun closeWindow(window: WebView) {
-            callback?.closeWindow(window)
-        }
-
-        override fun onDownloadStart(url: String, userAgent: String, contentDisposition: String, mimetype: String?, contentLength: Long) {
-            callback?.onDownloadRequested(url, userAgent, contentDisposition, mimetype, contentLength)
-        }
-
-        override fun onScaleChanged(oldScale: Float, newScale: Float) {
-            callback?.onScaleChanged(oldScale, newScale)
-        }
-
-        override fun onCopyTextToClipboardRequested(url: String) {
-            callback?.onCopyTextToClipboardRequested(url)
-        }
-
-        override fun onShareUrlRequested(url: String) {
-            callback?.onShareUrlRequested(url)
-        }
-
-        override fun onOpenInExternalAppRequested(url: String) {
-            callback?.onOpenInExternalAppRequested(url)
-        }
-
-        override fun onVisited(url: String) {
-            callback?.onVisited(url)
-        }
-
-        override fun onPopupNavigation(url: Uri): Boolean =
-            tab.popupGuard?.onNavigation(url) ?: false
-
-        override fun isTabUnderAd(url: Uri): Boolean =
-            callback?.isTabUnderAd(url, webView?.currentOriginalUrl) ?: false
-
-        override fun onPopupPageFinished(url: String?) {
-            tab.popupGuard?.onPageFinished(url)
-        }
-
-        override fun onContextMenu(baseUrl:String?, href: String?, x: Int, y: Int) {
-            callback?.onContextMenu(
-                viewParent!!.cursorDrawerDelegate,
-                baseUri = baseUrl,
-                linkUri = href,
-                srcUri = null,
-                title = null,
-                altText = null,
-                textContent = null,
-                x = x,
-                y = y
-            )
-        }
+        window?.onExitFullscreen()
+        container?.cursorEnabled = true
+        if (restoreBrowserControls) window?.onRestoreBrowserControlsAfterFullscreen()
     }
 
     companion object {
-        private val TAG = WebViewWebEngine::class.java.simpleName
+        private const val TAG = "WebViewWebEngine"
 
-        /** Installed by the window owner (adblock model); read from the JavaBridge thread. */
-        @Volatile
-        var pageFiltersProvider: ((String) -> String)? = null
-        @Volatile
-        var hiddenSelectorsProvider: ((String, String, String) -> String)? = null
+        /** Installed by the window owner (the ad block model); read from the JavaBridge thread. */
+        @Volatile var pageFiltersProvider: ((String) -> String)? = null
+        @Volatile var hiddenSelectorsProvider: ((String, String, String) -> String)? = null
 
-        /** The WebView backend the app installs in [WebEngineFactory] at start-up. */
+        /** The WebView backend the app installs in WebEngineFactory at start-up. */
         val Backend = object : WebEngineProviderCallback {
             override fun createWebEngine(tab: WebTabState): WebEngine = WebViewWebEngine(tab)
 
