@@ -43,7 +43,7 @@ class PackageAuditTest(unittest.TestCase):
             for name in extras: apk.writestr(name, b'retired')
         def dump(args, **kwargs):
             if args[2] == 'badging': return "package: name='com.reiniertutoriales.vireolumatv'"
-            return 'resource string/based_on_tv_bro_sources'
+            return 'resource string/about_tv_bro_credit'
         with patch.object(audit.subprocess, 'check_output', side_effect=dump):
             return audit.audit(package, Path('aapt2'), root)
 

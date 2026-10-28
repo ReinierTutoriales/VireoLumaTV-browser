@@ -71,7 +71,7 @@ def audit(apk, aapt2, root):
     if checks['package_name'] != 'com.reiniertutoriales.vireolumatv': issues.append('Unexpected applicationId')
     for removed in ('anim/infinite_fadeinout_anim', 'menu/menu_link'):
         if removed in resources: issues.append('Retired compiled resource: ' + removed)
-    checks['upstream_credit_resource_present'] = 'string/based_on_tv_bro_sources' in resources
+    checks['upstream_credit_resource_present'] = 'string/about_tv_bro_credit' in resources
     if not checks['upstream_credit_resource_present']: issues.append('Required upstream credit is missing')
     checks['issues'] = issues
     return {'apk': apk.name, 'sha256': hashlib.sha256(apk.read_bytes()).hexdigest(),
