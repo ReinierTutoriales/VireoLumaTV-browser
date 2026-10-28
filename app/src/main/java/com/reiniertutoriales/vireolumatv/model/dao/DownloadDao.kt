@@ -13,8 +13,8 @@ interface DownloadDao {
     @Query("SELECT * FROM downloads")
     suspend fun getAll(): List<Download>
 
-    /** The next page of 100, newest first. */
-    @Query("SELECT * FROM downloads ORDER BY time DESC LIMIT 100 OFFSET :offset")
+    /** Stable page order even when several downloads share the same clock tick. */
+    @Query("SELECT * FROM downloads ORDER BY time DESC, id DESC LIMIT 100 OFFSET :offset")
     suspend fun allByLimitOffset(offset: Long): List<Download>
 
     @Insert

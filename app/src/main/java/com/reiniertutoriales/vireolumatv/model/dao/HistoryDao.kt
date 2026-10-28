@@ -15,18 +15,18 @@ interface HistoryDao {
     suspend fun count(): Int
 
     /** The [limit] most recent visits. */
-    @Query("SELECT * FROM history ORDER BY time DESC LIMIT :limit")
+    @Query("SELECT * FROM history ORDER BY time DESC, id DESC LIMIT :limit")
     suspend fun last(limit: Int = 1): List<HistoryItem>
 
-    /** The next page of 100, newest first. */
-    @Query("SELECT * FROM history ORDER BY time DESC LIMIT 100 OFFSET :offset")
+    /** Stable page order even when several visits share the same clock tick. */
+    @Query("SELECT * FROM history ORDER BY time DESC, id DESC LIMIT 100 OFFSET :offset")
     suspend fun allByLimitOffset(offset: Long): List<HistoryItem>
 
     /**
      * Up to 100 visits whose title or address matches the LIKE [pattern], newest first. Backslash
      * escapes, so a pattern from HistoryModel.likePattern matches "%" and "_" literally.
      */
-    @Query("SELECT * FROM history WHERE (title LIKE :pattern ESCAPE '\\') OR (url LIKE :pattern ESCAPE '\\') ORDER BY time DESC LIMIT 100")
+    @Query("SELECT * FROM history WHERE (title LIKE :pattern ESCAPE '\\') OR (url LIKE :pattern ESCAPE '\\') ORDER BY time DESC, id DESC LIMIT 100")
     suspend fun search(pattern: String): List<HistoryItem>
 
     @Insert
