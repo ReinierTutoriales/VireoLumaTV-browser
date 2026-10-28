@@ -1,11 +1,11 @@
-VireoLumaTV includes TV Bro sources, DownloadUtils.kt with MPL 2.0 and Apache 2.0 notices, and the adblock-rust engine (MPL 2.0) built by native/adblock-jni.
+VireoLumaTV retains the TV Bro provenance notices while source independence is reviewed. The application uses adblock-rust (MPL 2.0), built by native/adblock-jni.
 
-Application-source base reviewed for this proposal:
-https://github.com/ReinierTutoriales/VireoLumaTV-browser/tree/c339fcfb848593491a683f8aeec6efb50d73dadb
+Application-source base for the component migration:
+https://github.com/ReinierTutoriales/VireoLumaTV-browser/tree/668968a34c2b215182968c06a8b5da763b3cbb7e
 
-Current namespace migration and covered DownloadUtils.kt source:
-https://github.com/ReinierTutoriales/VireoLumaTV-browser/tree/f1146b5506d77c244bffd5f1c3e5c21078f36644
-https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/f1146b5506d77c244bffd5f1c3e5c21078f36644/app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt
+Historical DownloadUtils.kt (releases through v1.2.2), with MPL 2.0 and Apache 2.0 notices:
+https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/43ffce3ec0bb21c7f6cfddc9af6d9208d509e154/app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt
+That implementation was replaced. Current filename handling is utils/FileNames.kt in the application sources.
 
 adblock-rust 0.13.3 sources (native ad blocking engine, MPL 2.0):
 https://github.com/brave/adblock-rust/tree/v0.13.3

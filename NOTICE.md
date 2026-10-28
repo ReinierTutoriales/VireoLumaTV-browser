@@ -9,7 +9,7 @@ Copyright (c) 2019, Fedir Tsapana. All rights reserved.
 VireoLumaTV uses sources from https://github.com/truefedex/tv-bro.
 The original license, conditions, and disclaimer are retained verbatim in [LICENSE.md](LICENSE.md). Modified binaries require a different application name, icon, and application ID, plus an About screen crediting and linking the original sources.
 
-`app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.kt` also retains Copyright (c) 2016 Fedir Tsapana.
+The historical `WebViewEx.kt` carried Copyright (c) 2016 Fedir Tsapana, retained here as a provenance notice. The current WebView implementation is `app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserWebView.kt`.
 
 ## DownloadUtils.kt (releases up to v1.2.2)
 
