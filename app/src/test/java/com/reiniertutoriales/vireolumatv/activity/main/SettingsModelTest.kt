@@ -14,7 +14,7 @@ class SettingsModelTest {
     @Test fun searchHomeFollowsTheSearchEngineSite() {
         val model = SettingsModel()
         model.config.searchEngineURL.value = "https://search.example/find?q=[query]"
-        model.setHomePageProperties(Config.HomePageMode.SEARCH_ENGINE, null, Config.HomePageLinksMode.BOOKMARKS)
+        model.setHomePageProperties(Config.HomePageMode.SEARCH_ENGINE, null)
         assertEquals("https://search.example", model.homePage)
         model.setSearchEngineURL("http://other.example/?s=[query]")
         assertEquals("http://other.example", model.homePage)
@@ -22,11 +22,11 @@ class SettingsModelTest {
 
     @Test fun customAndBuiltInHomePages() {
         val model = SettingsModel()
-        model.setHomePageProperties(Config.HomePageMode.CUSTOM, "https://mine.example/", Config.HomePageLinksMode.BOOKMARKS)
+        model.setHomePageProperties(Config.HomePageMode.CUSTOM, "https://mine.example/")
         assertEquals("https://mine.example/", model.homePage)
         model.setSearchEngineURL("https://search.example/?q=[query]")
         assertEquals("A custom home page is not replaced by the search site", "https://mine.example/", model.homePage)
-        model.setHomePageProperties(Config.HomePageMode.BLANK, null, Config.HomePageLinksMode.BOOKMARKS)
+        model.setHomePageProperties(Config.HomePageMode.BLANK, null)
         assertEquals(Config.HOME_URL_ALIAS, model.homePage)
     }
 

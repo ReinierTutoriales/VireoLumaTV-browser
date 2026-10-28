@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.view.View
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.model.HomePageLink
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import java.io.InputStream
 
@@ -44,7 +43,6 @@ interface WebEngineWindowProviderCallback {
     fun onCopyTextToClipboardRequested(url: String)
     fun onShareUrlRequested(url: String)
     fun onOpenInExternalAppRequested(url: String)
-    fun getHomePageLinks(): List<HomePageLink>
     fun onPrepareForFullscreen()
     fun onExitFullscreen()
     /** Called after the fullscreen view is removed and page input is restored. */

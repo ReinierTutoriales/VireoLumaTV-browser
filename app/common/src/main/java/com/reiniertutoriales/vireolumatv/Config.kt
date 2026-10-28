@@ -14,8 +14,6 @@ class Config(val prefs: SharedPreferences) {
 
     enum class HomePageMode { HOME_PAGE, SEARCH_ENGINE, CUSTOM, BLANK }
 
-    enum class HomePageLinksMode { BOOKMARKS, LATEST_HISTORY, MOST_VISITED }
-
     /** Written synchronously: the private-mode process reads it right after the switch. */
     var incognitoMode by flag(INCOGNITO_MODE_KEY, false, commit = true)
     var incognitoModeHintSuppress by flag("incognito_mode_hint_suppress", false)
@@ -53,10 +51,6 @@ class Config(val prefs: SharedPreferences) {
             return HomePageMode.entries.getOrElse(prefs.getInt(HOME_PAGE_MODE_KEY, 0)) { HomePageMode.HOME_PAGE }
         }
         set(value) = prefs.edit { putInt(HOME_PAGE_MODE_KEY, value.ordinal) }
-
-    var homePageLinksMode: HomePageLinksMode
-        get() = HomePageLinksMode.entries.getOrElse(prefs.getInt(HOME_PAGE_LINKS_MODE_KEY, 0)) { HomePageLinksMode.BOOKMARKS }
-        set(value) = prefs.edit { putInt(HOME_PAGE_LINKS_MODE_KEY, value.ordinal) }
 
     val searchEngineURL = StringPreference(SEARCH_ENGINE_URL_PREF_KEY, DUCKDUCKGO_SEARCH_URL)
 
@@ -130,7 +124,6 @@ class Config(val prefs: SharedPreferences) {
         const val ADBLOCK_ENABLED_PREF_KEY = "adblock_enabled"
         const val ADBLOCK_LIST_URL_KEY = "adblock_list_url"
         private const val HOME_PAGE_MODE_KEY = "home_page_mode"
-        private const val HOME_PAGE_LINKS_MODE_KEY = "home_page_suggestions_mode"
         private const val LEGACY_SEARCH_AS_HOME_KEY = "search_engine_as_home_page"
         private const val DDG_DEFAULT_APPLIED_KEY = "minimal_home_search_migrated"
 

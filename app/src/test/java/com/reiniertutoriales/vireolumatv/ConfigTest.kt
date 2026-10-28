@@ -25,11 +25,10 @@ class ConfigTest {
 
     @Test fun storedValuesOutsideTheirRangeFallBackSafely() {
         val prefs = prefs()
-        prefs.edit().putInt("home_page_mode", 99).putInt("home_page_suggestions_mode", -1)
+        prefs.edit().putInt("home_page_mode", 99)
             .putInt(Config.CURSOR_MAX_SPEED_PERCENT_KEY, 1000).commit()
         val config = Config(prefs)
         assertEquals(Config.HomePageMode.HOME_PAGE, config.homePageMode)
-        assertEquals(Config.HomePageLinksMode.BOOKMARKS, config.homePageLinksMode)
         assertEquals(Config.CURSOR_PHYSICS_PERCENT_MAX, config.cursorMaxSpeedPercent)
         config.cursorAccelerationPercent = 1
         assertEquals(Config.CURSOR_PHYSICS_PERCENT_MIN, config.cursorAccelerationPercent)

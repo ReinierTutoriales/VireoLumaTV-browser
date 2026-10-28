@@ -58,7 +58,6 @@ import com.reiniertutoriales.vireolumatv.activity.IncognitoModeMainActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
-import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoriteEditorDialog
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesDialog
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsDialog
 import com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
@@ -66,7 +65,6 @@ import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabsAdapter.Lis
 import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
-import com.reiniertutoriales.vireolumatv.model.HomePageLink
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.model.PopupGuard
 import com.reiniertutoriales.vireolumatv.model.WebTabState
@@ -194,13 +192,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
 
-        viewModel.homePageLinks.subscribe(this) {
-            Log.i(TAG, "homePageLinks updated")
-            val currentUrl = tabsModel.currentTab.value?.url ?: return@subscribe
-            if (Config.HOME_PAGE_URL == currentUrl) {
-                tabsModel.currentTab.value?.webEngine?.reload()
-            }
-        }
 
         tabsModel.currentTab.subscribe(this) {
             vb.vActionBar.setAddressBoxText(it?.url ?: "")
@@ -1146,13 +1137,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         showMenuOverlay()
     }
 
-    private fun onEditHomePageBookmark(favoriteItem: FavoriteItem) {
-        FavoriteEditorDialog(this, object : FavoriteEditorDialog.Callback {
-            override fun onDone(item: FavoriteItem) {
-                viewModel.onHomePageLinkEdited(item)
-            }
-        }, favoriteItem).show()
-    }
 
     private inner class WebEngineCallback(val tab: WebTabState) : WebEngineWindowProviderCallback {
         override fun getActivity(): Activity {
@@ -1481,9 +1465,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             startExternalIntent(intent)
         }
 
-        override fun getHomePageLinks(): List<HomePageLink> {
-            return viewModel.homePageLinks
-        }
 
         override fun onPrepareForFullscreen() {
             //window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,

@@ -247,7 +247,7 @@ class MainSettingsView @JvmOverloads constructor(
     fun save() {
         settingsModel.setSearchEngineURL(searchEngineUrl.text.toString())
         settingsModel.setHomePageProperties(Config.HomePageMode.entries[homePageMode.selectedItemPosition],
-            customHomePageUrl.text.toString(), settingsModel.homePageLinksMode)
+            customHomePageUrl.text.toString())
         config.userAgentString.value = userAgent.text.toString().trim(' ').ifEmpty { null }
         saveAdBlockListUrl()
     }

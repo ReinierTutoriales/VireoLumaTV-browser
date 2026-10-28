@@ -32,7 +32,7 @@ app/common/src/main/java/com/reiniertutoriales/vireolumatv/Config.kt	REESCRITO	a
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/Download.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/model/Download.kt	67
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/FavoriteItem.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/model/FavoriteItem.kt	68
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/HistoryItem.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/model/HistoryItem.kt	72
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/HomePageLink.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/model/HomePageLink.kt	3
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/HomePageLink.kt	ELIMINADO	app/common/src/main/java/com/phlox/tvwebbrowser/model/HomePageLink.kt
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/HostConfig.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/model/HostConfig.kt	46
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/PopupGuard.kt	PROPIO		
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/WebTabState.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/model/WebTabState.kt	29
@@ -126,7 +126,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/BlockerIndicat
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/ExternalWebNavigation.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/IncognitoSessionTabs.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/MainActivity.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt	32
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/MainActivityViewModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt	42
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/MainActivityViewModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt	82
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt	71
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabsModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt	41
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/SearchEngineConfigDialogFactory.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt
@@ -322,6 +322,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsTabsTe
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SingleLiveTabTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModelTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabRestoreFallbackTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/VisitHistoryTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialogTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsPagesTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabRowsTest.kt	PROPIO		

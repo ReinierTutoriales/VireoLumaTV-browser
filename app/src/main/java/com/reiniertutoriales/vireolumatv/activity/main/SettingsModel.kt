@@ -11,7 +11,6 @@ class SettingsModel : ActiveModel() {
 
     var homePage by config::homePage
     var homePageMode by config::homePageMode
-    var homePageLinksMode by config::homePageLinksMode
 
     /** "Keep screen on", observable so the browser window follows a change at once. */
     val keepScreenOn = object : ObservableValue<Boolean>(config.keepScreenOn) {
@@ -41,9 +40,8 @@ class SettingsModel : ActiveModel() {
         if (homePageMode == Config.HomePageMode.SEARCH_ENGINE) homePage = searchHome(url)
     }
 
-    fun setHomePageProperties(mode: Config.HomePageMode, customHomePageUrl: String?, linksMode: Config.HomePageLinksMode) {
+    fun setHomePageProperties(mode: Config.HomePageMode, customHomePageUrl: String?) {
         homePageMode = mode
-        homePageLinksMode = linksMode
         homePage = when (mode) {
             Config.HomePageMode.SEARCH_ENGINE -> searchHome(config.searchEngineURL.value)
             Config.HomePageMode.CUSTOM -> customHomePageUrl ?: Config.HOME_URL_ALIAS
