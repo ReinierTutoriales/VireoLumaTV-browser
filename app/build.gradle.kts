@@ -164,7 +164,6 @@ dependencies {
 
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.webkit)
-    implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
