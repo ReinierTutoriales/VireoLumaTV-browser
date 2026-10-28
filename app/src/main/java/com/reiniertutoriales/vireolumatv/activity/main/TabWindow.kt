@@ -25,72 +25,66 @@ import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.PagePoint
+import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import kotlinx.coroutines.launch
-import java.io.InputStream
 
 /**
  * The browser window as seen by one [tab]'s page: address and title updates, downloads, pop-ups
  * and dialogs under the site's rules, ads, fullscreen, links to other apps and the pointer menu.
  */
-internal class TabWindow(private val browser: MainActivity, private val tab: WebTabState) : WebEngineWindowProviderCallback {
+internal class TabWindow(private val browser: MainActivity, private val tab: WebTabState) : PageWindow {
     private val vb get() = browser.vb
     private val tabs get() = browser.tabsModel
     private val ui get() = browser.uiHandler
-    private val adblock get() = tab.adblock ?: browser.config.adBlockEnabled
     private val isShownTab get() = tabs.currentTab.value === tab
 
-    override fun getActivity(): Activity = browser
+    override val activity: Activity get() = browser
 
-    override fun onOpenInNewTabRequested(url: String, navigateImmediately: Boolean): WebEngine? {
+    override fun openInNewTab(url: String, load: Boolean): WebEngine? {
         val current = tabs.tabsStates.indexOf(tabs.currentTab.value)
-        return browser.openInNewTab(url, if (current == -1) tabs.tabsStates.size else current + 1, true, navigateImmediately)
+        return browser.openInNewTab(url, if (current == -1) tabs.tabsStates.size else current + 1, true, load)
     }
 
     // Downloads
 
-    /** The link menu's download: the name and type come from the address. */
-    override fun onDownloadRequested(url: String) {
-        val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(url))
-        onDownloadRequested(url, tab.url, url.toUri().lastPathSegment, tab.webEngine.userAgentString, type)
-    }
-
-    override fun onDownloadRequested(
-        url: String, referer: String, originalDownloadFileName: String?, userAgent: String?, mimeType: String?,
-        operationAfterDownload: Download.OperationAfterDownload, base64BlobData: String?, stream: InputStream?, size: Long,
-        contentDisposition: String?,
-    ) {
-        val name = DownloadUtils.guessFileName(url, contentDisposition, mimeType)
-        browser.downloads.request(Download(url, name, null, operationAfterDownload, mimeType, referer, userAgent, base64BlobData, stream, size))
-    }
-
-    /** A download the page itself starts: only a fresh remote press may authorize it, once. */
-    override fun onDownloadRequested(url: String, userAgent: String?, contentDisposition: String, mimetype: String?, contentLength: Long) {
+    /** A download the page itself starts: only a fresh remote press may allow it, once. */
+    override fun onPageDownload(url: String, userAgent: String?, contentDisposition: String, mimeType: String?, length: Long) {
         if (!UserActivation.consume()) {
             Log.i(TAG, "Download without a recent press ignored")
             return
         }
-        onDownloadRequested(url = url, referer = tab.url, originalDownloadFileName = null, userAgent = userAgent,
-            mimeType = mimetype, size = contentLength, contentDisposition = contentDisposition)
+        startDownload(url, DownloadUtils.guessFileName(url, contentDisposition, mimeType), mimeType, userAgent, length)
     }
+
+    override fun download(download: Download) = browser.downloads.request(download)
+
+    /** The link menu's download: the user chose it; the name and type come from the address. */
+    private fun downloadLink(url: String) {
+        val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(url))
+        startDownload(url, DownloadUtils.guessFileName(url, null, type), type, tab.webEngine.userAgentString, 0L)
+    }
+
+    private fun startDownload(url: String, name: String, mimeType: String?, userAgent: String?, length: Long) =
+        download(Download(url, name, null, Download.OperationAfterDownload.NOP, mimeType, tab.url, userAgent, null, null, length))
 
     // Page state
 
-    override fun onProgressChanged(newProgress: Int) = browser.showLoadProgress(newProgress)
+    override fun onProgress(percent: Int) = browser.showLoadProgress(percent)
 
-    override fun onReceivedTitle(title: String) {
+    override fun onTitle(title: String) {
         tab.title = title
         vb.vTabs.onTabTitleUpdated(tab)
         browser.viewModel.onTabTitleUpdated(tab)
     }
 
-    override fun onReceivedIcon(icon: Bitmap) = vb.vTabs.onFavIconUpdated(tab)
+    override fun onIcon(icon: Bitmap) = vb.vTabs.onFavIconUpdated(tab)
 
-    override fun requestPermissions(array: Array<String>): Int = browser.requestPagePermissions(array)
+    override fun requestPermissions(permissions: Array<String>): Int = browser.requestPagePermissions(permissions)
 
-    override fun onShowFileChooser(intent: Intent): Boolean = try {
+    override fun pickFile(intent: Intent): Boolean = try {
         browser.filePickerResult.launch(intent)
         true
     } catch (_: ActivityNotFoundException) {
@@ -104,7 +98,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
         }
     }
 
-    override fun shouldOverrideUrlLoading(url: String): Boolean {
+    override fun interceptNavigation(url: String): Boolean {
         tab.lastLoadingUrl = url
         return when (browser.external.classify(url)) {
             ExternalApps.Navigation.LOAD -> false
@@ -150,14 +144,14 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
         }
     }
 
-    override fun onPageCertificateError(url: String?) = vb.vActionBar.setAddressBoxTextColor(Color.RED)
+    override fun onCertificateError() = vb.vActionBar.setAddressBoxTextColor(Color.RED)
 
-    override fun onRenderProcessGone() {
+    override fun onRendererGone() {
         if (isShownTab) browser.changeTab(tab)
     }
 
-    override fun onScaleChanged(oldScale: Float, newScale: Float) {
-        tab.scale = newScale
+    override fun onScale(scale: Float) {
+        tab.scale = scale
     }
 
     override fun onVisited(url: String) {
@@ -167,14 +161,14 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
 
     // Ads, dialogs and pop-ups
 
-    override fun isAd(url: Uri, requestType: String?, baseUri: Uri): Boolean? = browser.adblockModel.isAd(url, requestType, baseUri)
+    override fun isAd(url: Uri, requestType: String?, page: Uri): Boolean = browser.adblockModel.isAd(url, requestType, page)
 
-    override fun adRedirect(url: Uri, requestType: String?, baseUri: Uri): String? = browser.adblockModel.redirectFor(url, requestType, baseUri)
+    override fun adRedirect(url: Uri, requestType: String?, page: Uri): String? = browser.adblockModel.redirectFor(url, requestType, page)
 
-    override fun isAdBlockingEnabled(): Boolean = adblock
+    override val blocksAds: Boolean get() = tab.adblock ?: browser.config.adBlockEnabled
 
     /** The home page may show dialogs; other pages follow their site's pop-up level. */
-    override fun isDialogsBlockingEnabled(): Boolean = tab.url != Config.HOME_PAGE_URL && blocksNewWindow(dialog = true, userGesture = false)
+    override val blocksDialogs: Boolean get() = tab.url != Config.HOME_PAGE_URL && blocksNewWindow(dialog = true, userGesture = false)
 
     private fun blocksNewWindow(dialog: Boolean, userGesture: Boolean): Boolean = when (tabs.popupBlockingLevel(tab)) {
         HostConfig.POPUP_BLOCK_NONE -> false
@@ -184,20 +178,20 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
     }
 
     override fun isTabUnderAd(url: Uri, page: Uri?): Boolean {
-        if (!adblock || !browser.adblockModel.isTabUnderAd(url, page)) return false
+        if (!blocksAds || !browser.adblockModel.isTabUnderAd(url, page)) return false
         Log.i(TAG, "Blocked tab-under navigation to ${url.host}")
         tab.blockedPopups++
         browser.showBlockedPopup(tab, newTab = true)
         return true
     }
 
-    override fun onBlockedAds(count: Int) {
-        if (!adblock || count <= 0) return
+    override fun onAdsBlocked(count: Int) {
+        if (!blocksAds || count <= 0) return
         tab.blockedAds += count
         if (isShownTab) browser.updateAdblockStatus(tab)
     }
 
-    override fun onBlockedDialog(newTab: Boolean) {
+    override fun onDialogBlocked(newTab: Boolean) {
         tab.blockedPopups++
         browser.runOnUiThread { browser.showBlockedPopup(tab, newTab) }
     }
@@ -207,16 +201,16 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
      * media (on video sites that is a popunder). Otherwise it opens as a tab next to its opener; with
      * ad blocking the opener stays alive until the pop-up's destination is known to be no ad.
      */
-    override fun onCreateWindow(dialog: Boolean, userGesture: Boolean): View? {
+    override fun createWindow(dialog: Boolean, userGesture: Boolean): View? {
         if (blocksNewWindow(dialog, userGesture)) {
-            onBlockedDialog(!dialog)
+            onDialogBlocked(!dialog)
             return null
         }
         val opener = tabs.currentTab.value ?: return null
-        if (adblock && opener.mediaStarted) {
+        if (blocksAds && opener.mediaStarted) {
             // The page gets an inert window (window_open_decoy.js); the player is never replaced.
             Log.i(TAG, "Blocked a new window from a page playing media")
-            onBlockedDialog(!dialog)
+            onDialogBlocked(!dialog)
             return null
         }
         val popup = WebTabState(incognito = browser.config.incognitoMode).apply { this.opener = opener }
@@ -227,7 +221,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
             if (browser.isFinishing || browser.isDestroyed || tabs.currentTab.value !== opener) tabs.onCloseTab(popup)
             else browser.changeTab(popup, loadInitialUrl = false)
         }
-        if (adblock) {
+        if (blocksAds) {
             val openerUrl = runCatching { opener.url.toUri() }.getOrNull()
             val model = browser.adblockModel
             popup.popupGuard = PopupGuard(
@@ -243,21 +237,13 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
         return view
     }
 
-    override fun closeWindow(internalRepresentation: Any) {
-        tabs.tabsStates.firstOrNull { it.webEngine.isSameSession(internalRepresentation) }?.let(browser::closeTab)
+    override fun closeWindow(view: Any) {
+        tabs.tabsStates.firstOrNull { it.webEngine.isSameSession(view) }?.let(browser::closeTab)
     }
-
-    // Other apps
-
-    override fun onCopyTextToClipboardRequested(url: String) = browser.external.copyToClipboard(url)
-
-    override fun onShareUrlRequested(url: String) = browser.external.share(url)
-
-    override fun onOpenInExternalAppRequested(url: String) = browser.external.openInApp(url)
 
     // Fullscreen
 
-    override fun onPrepareForFullscreen() {
+    override fun onEnterFullscreen() {
         val window = browser.window
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         @Suppress("DEPRECATION") // The insets API needs API 30; these flags work on every supported TV.
@@ -267,38 +253,27 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
         browser.isFullscreen = true
     }
 
-    override fun onExitFullscreen() {
+    override fun onExitFullscreen(restoreControls: Boolean) {
         val window = browser.window
         if (!browser.config.keepScreenOn) window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         browser.isFullscreen = false
-    }
-
-    override fun onRestoreBrowserControlsAfterFullscreen() {
-        if (isShownTab && !browser.isFinishing && !browser.isDestroyed) browser.openCapsule()
+        if (restoreControls && isShownTab && !browser.isFinishing && !browser.isDestroyed) browser.openCapsule()
     }
 
     // Pointer menu and link actions
 
-    override fun onContextMenu(
-        cursorDrawer: CursorDrawerDelegate, baseUri: String?, linkUri: String?, srcUri: String?,
-        title: String?, altText: String?, textContent: String?, x: Int, y: Int,
-    ) {
-        ui.post {
-            vb.vCursorMenu.show(tab, this, cursorDrawer, baseUri, linkUri, srcUri, title, altText, textContent, x, y,
-                browser.backNavigationEventsAdapter)
-        }
+    override fun openPointerMenu(cursor: CursorDrawerDelegate, target: PagePoint) {
+        ui.post { vb.vCursorMenu.show(tab, this, cursor, target, browser.backNavigationEventsAdapter) }
     }
 
     /** The link actions menu at the pointer: what applies depends on whether a web link is under it. */
-    override fun suggestActionsForLink(
-        baseUri: String?, linkUri: String?, srcUri: String?, title: String?, altText: String?, textContent: String?, x: Int, y: Int,
-    ) {
-        val url = (linkUri ?: srcUri)?.removeSurrounding("\"")
+    override fun openLinkActions(target: PagePoint) {
+        val url = target.link?.removeSurrounding("\"")
         val web = url != null && (url.startsWith("http://") || url.startsWith("https://"))
         val anchor = View(browser)
-        vb.flWebViewContainer.addView(anchor, FrameLayout.LayoutParams(1, 1).apply { setMargins(x, y, 0, 0) })
+        vb.flWebViewContainer.addView(anchor, FrameLayout.LayoutParams(1, 1).apply { setMargins(target.x, target.y, 0, 0) })
         PopupMenu(browser, anchor, Gravity.BOTTOM).apply {
             inflate(R.menu.menu_link)
             menu.findItem(R.id.miOpenInNewTab).isVisible = web
@@ -309,11 +284,11 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
             setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.miRefreshPage -> tab.webEngine.reload()
-                    R.id.miOpenInNewTab -> url?.let { onOpenInNewTabRequested(it, true) }
-                    R.id.miOpenInExternalApp -> url?.let(::onOpenInExternalAppRequested)
-                    R.id.miDownload -> url?.let { onDownloadRequested(it) }
-                    R.id.miCopyToClipboard -> url?.let(::onCopyTextToClipboardRequested)
-                    R.id.miShare -> url?.let(::onShareUrlRequested)
+                    R.id.miOpenInNewTab -> url?.let { openInNewTab(it, load = true) }
+                    R.id.miOpenInExternalApp -> url?.let(browser.external::openInApp)
+                    R.id.miDownload -> url?.let(::downloadLink)
+                    R.id.miCopyToClipboard -> url?.let(browser.external::copyToClipboard)
+                    R.id.miShare -> url?.let(browser.external::share)
                 }
                 true
             }

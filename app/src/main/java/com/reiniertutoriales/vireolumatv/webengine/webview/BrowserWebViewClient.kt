@@ -39,7 +39,7 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
             // Links, scripts and redirects only: loadUrl() from the address bar never comes here.
             if (engine.isTabUnderAd(request.url)) return true
         }
-        return window?.shouldOverrideUrlLoading(request.url.toString()) == true
+        return window?.interceptNavigation(request.url.toString()) == true
     }
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -53,7 +53,7 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
                 return homePageAsset(view, address) ?: super.shouldInterceptRequest(view, request)
             }
         }
-        if (page == null || window?.isAdBlockingEnabled() != true || !engine.isAd(request, page)) {
+        if (page == null || window?.blocksAds != true || !engine.isAd(request, page)) {
             return super.shouldInterceptRequest(view, request)
         }
         this.view.countBlockedAd()
@@ -125,7 +125,7 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
 
     override fun onScaleChanged(view: WebView?, oldScale: Float, newScale: Float) {
         super.onScaleChanged(view, oldScale, newScale)
-        window?.onScaleChanged(oldScale, newScale)
+        window?.onScale(newScale)
     }
 
     override fun doUpdateVisitedHistory(view: WebView?, url: String, isReload: Boolean) {

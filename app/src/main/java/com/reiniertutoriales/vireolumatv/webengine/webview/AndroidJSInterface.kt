@@ -67,7 +67,7 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         val callback = webEngine.window ?: return
         if (!isInternalCertificateErrorPage()) return
         val error = (webEngine.getView() as? WebViewEx)?.lastSSLError ?: return
-        callback.getActivity().runOnUiThread {
+        callback.activity.runOnUiThread {
             if (!isInternalCertificateErrorPage()) return@runOnUiThread
             val webview = webEngine.getView() as? WebViewEx ?: return@runOnUiThread
             if (webview.lastSSLError !== error) return@runOnUiThread
@@ -177,10 +177,10 @@ class AndroidJSInterface(private val webEngine: WebViewWebEngine) {
         val callback = webEngine.window ?: return
         val finalFileName = DownloadUtils.sanitizeFileName(pending.fileName)
             ?: DownloadUtils.guessFileName(url, null, pending.mimetype)
-        callback.getActivity().runOnUiThread {
+        callback.activity.runOnUiThread {
             if (!isNormalWebPage() || (webEngine.getView() as? WebViewEx)?.currentOriginalUrl != pending.sourceUrl) return@runOnUiThread
-            callback.onDownloadRequested(url, "", finalFileName, "VireoLumaTV",
-                pending.mimetype, Download.OperationAfterDownload.NOP, base64BlobData)
+            callback.download(Download(url, finalFileName, null, Download.OperationAfterDownload.NOP,
+                pending.mimetype, "", "VireoLumaTV", base64BlobData, null, 0L))
         }
     }
 

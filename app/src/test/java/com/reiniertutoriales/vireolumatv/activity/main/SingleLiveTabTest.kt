@@ -67,8 +67,8 @@ class SingleLiveTabTest {
             val second = WebTabState(url = "https://two.test", incognito = privateMode)
             model.tabsStates.add(first)
             model.tabsStates.add(second)
-            val window = Proxy.newProxyInstance(WebEngineWindowProviderCallback::class.java.classLoader,
-                arrayOf(WebEngineWindowProviderCallback::class.java)) { _, _, _ -> null } as WebEngineWindowProviderCallback
+            val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
+                arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
             val parent = FrameLayout(app)
             val allocate: (WebTabState) -> View? = { tab ->
                 assertTrue("Old renderer must be released before allocating another", views.isEmpty())

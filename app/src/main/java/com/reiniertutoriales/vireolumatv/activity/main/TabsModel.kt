@@ -13,7 +13,7 @@ import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import com.reiniertutoriales.vireolumatv.utils.hasInternet
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -132,7 +132,7 @@ class TabsModel : ActiveModel() {
         newTab: WebTabState,
         webViewProvider: (tab: WebTabState) -> View?,
         webViewParent: ViewGroup,
-        webEngineWindowProviderCallback: WebEngineWindowProviderCallback,
+        window: PageWindow,
         loadInitialUrl: Boolean = true,
     ) {
         val previous = currentTab.value
@@ -153,7 +153,7 @@ class TabsModel : ActiveModel() {
             webViewProvider(newTab) ?: return
             needsLoad = !newTab.restoreWebView()
         }
-        newTab.webEngine.onAttachToWindow(webEngineWindowProviderCallback, webViewParent)
+        newTab.webEngine.onAttachToWindow(window, webViewParent)
         if (needsLoad && loadInitialUrl) {
             newTab.webEngine.loadUrl(newTab.url)
             newTab.rendererLost = false

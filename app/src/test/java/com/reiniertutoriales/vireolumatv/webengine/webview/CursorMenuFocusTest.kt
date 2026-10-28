@@ -10,7 +10,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.view.CursorMenuView
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
 import org.junit.Assert.*
 import org.junit.Test
@@ -46,8 +46,8 @@ class CursorMenuFocusTest {
                 else -> null
             }
         } as WebEngine
-        val provider = Proxy.newProxyInstance(WebEngineWindowProviderCallback::class.java.classLoader,
-            arrayOf(WebEngineWindowProviderCallback::class.java)) { _, _, _ -> null } as WebEngineWindowProviderCallback
+        val provider = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
+            arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
         val tab = WebTabState()
         WebTabState::class.java.getDeclaredField("webEngine\$delegate").apply { isAccessible = true }
             .set(tab, lazyOf(engine))
@@ -55,8 +55,8 @@ class CursorMenuFocusTest {
         val previous = config.directNavigationModeHintSuppress
         config.directNavigationModeHintSuppress = true
         try {
-            menu.show(tab, provider, cursor.cursorDrawerDelegate, null, null, null, null, null, null,
-                400, 400, BackNavigationEventsAdapter(onEmulatedBackEvent = {}))
+            menu.show(tab, provider, cursor.cursorDrawerDelegate, com.reiniertutoriales.vireolumatv.webengine.PagePoint(null, null, 400, 400),
+                BackNavigationEventsAdapter(onEmulatedBackEvent = {}))
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             menu.findViewById<View>(R.id.btnDPADMode).requestFocus()
             assertFalse(page.hasFocus())

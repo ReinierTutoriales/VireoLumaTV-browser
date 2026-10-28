@@ -13,7 +13,8 @@ import com.reiniertutoriales.vireolumatv.databinding.ViewCursorMenuBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.dip2px
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.PagePoint
+import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 
 /**
@@ -24,15 +25,13 @@ import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 class CursorMenuView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
 
-    /** What the menu was opened on: the tab, the pointer position and the element under it. */
+    /** What the menu was opened on: the tab and the point of its page under the pointer. */
     private class Target(
         val tab: WebTabState,
-        val windowProvider: WebEngineWindowProviderCallback,
+        val window: PageWindow,
         val cursor: CursorDrawerDelegate,
+        val point: PagePoint,
         val back: BackNavigationEventsAdapter,
-        val baseUri: String?, val linkUri: String?, val srcUri: String?,
-        val title: String?, val altText: String?, val textContent: String?,
-        val x: Int, val y: Int,
     )
 
     private val vb = ViewCursorMenuBinding.inflate(LayoutInflater.from(context), this, true)
@@ -47,7 +46,7 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
         vb.btnContextMenu.setOnClickListener {
             val t = target ?: return@setOnClickListener
             hide()
-            t.windowProvider.suggestActionsForLink(t.baseUri, t.linkUri, t.srcUri, t.title, t.altText, t.textContent, t.x, t.y)
+            t.window.openLinkActions(t.point)
         }
         vb.btnDPADMode.setOnClickListener {
             val t = target ?: return@setOnClickListener
@@ -58,22 +57,17 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
         vb.btnZoomOut.setOnClickListener { target?.tab?.webEngine?.zoomOut() }
     }
 
-    fun show(
-        tab: WebTabState, windowProvider: WebEngineWindowProviderCallback, cursorDrawerDelegate: CursorDrawerDelegate,
-        baseUri: String?, linkUri: String?, srcUri: String?, title: String?, altText: String?, textContent: String?,
-        x: Int, y: Int, backNavigationEventsAdapter: BackNavigationEventsAdapter,
-    ) {
-        val shown = Target(tab, windowProvider, cursorDrawerDelegate, backNavigationEventsAdapter,
-            baseUri, linkUri, srcUri, title, altText, textContent, x, y)
+    fun show(tab: WebTabState, window: PageWindow, cursor: CursorDrawerDelegate, point: PagePoint, back: BackNavigationEventsAdapter) {
+        val shown = Target(tab, window, cursor, point, back)
         target = shown
         panel.animate().cancel()
         isVisible = true
         panel.post {
             if (target !== shown || !isAttachedToWindow) return@post
-            panel.translationX = (x - panel.width / 2f).coerceIn(0f, (width - panel.width).coerceAtLeast(0).toFloat())
-            panel.translationY = (y - panel.height / 2f).coerceIn(0f, (height - panel.height).coerceAtLeast(0).toFloat())
+            panel.translationX = (point.x - panel.width / 2f).coerceIn(0f, (width - panel.width).coerceAtLeast(0).toFloat())
+            panel.translationY = (point.y - panel.height / 2f).coerceIn(0f, (height - panel.height).coerceAtLeast(0).toFloat())
             vb.btnGrabMode.requestFocus()
-            cursorDrawerDelegate.hideCursor()
+            cursor.hideCursor()
         }
         panel.alpha = 0f
         panel.scaleX = OPEN_SCALE

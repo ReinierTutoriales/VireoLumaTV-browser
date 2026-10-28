@@ -42,7 +42,7 @@ open class WebViewEx(context: Context, internal val engine: WebViewWebEngine) : 
     internal val config = AppContext.provideConfig()
     internal val consoleLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     internal val streamLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
-    internal val permissions = PagePermissions({ window?.getActivity() }, engine::requestPermissions)
+    internal val permissions = PagePermissions({ window?.activity }, engine::requestPermissions)
     private val chromeClient = BrowserChromeClient(this)
     private val youtubeAdblock by lazy { YouTubeAdblockController(this) }
     private val adblockPage by lazy { AdblockPageController(this) }
@@ -62,7 +62,7 @@ open class WebViewEx(context: Context, internal val engine: WebViewWebEngine) : 
     private val pendingBlockedAds = AtomicInteger(0)
     private val reportBlockedAds = Runnable {
         val count = pendingBlockedAds.getAndSet(0)
-        if (count > 0) window?.onBlockedAds(count)
+        if (count > 0) window?.onAdsBlocked(count)
     }
 
     init {
@@ -73,7 +73,7 @@ open class WebViewEx(context: Context, internal val engine: WebViewWebEngine) : 
         webViewClient = BrowserWebViewClient(this)
         setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
             // Blob downloads are read by the injected script; everything else goes to the download service.
-            if (!url.startsWith("blob:")) window?.onDownloadRequested(url, userAgent, contentDisposition, mimetype, contentLength)
+            if (!url.startsWith("blob:")) window?.onPageDownload(url, userAgent, contentDisposition, mimetype, contentLength)
         }
         addJavascriptInterface(engine.jsInterface, JS_INTERFACE_NAME)
         // Before the first navigation, so the first page already sees the codec policy.
@@ -153,7 +153,7 @@ open class WebViewEx(context: Context, internal val engine: WebViewWebEngine) : 
 
     /** Replaces the page with the certificate warning, which can offer to trust [error] once. */
     internal fun showCertificateErrorPage(error: SslError) {
-        window?.onPageCertificateError(error.url)
+        window?.onCertificateError()
         lastSSLError = error
         val url = "$INTERNAL_SCHEME$INTERNAL_SCHEME_WARNING_DOMAIN?type=$INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT&url=" +
             URLEncoder.encode(error.url, "UTF-8")

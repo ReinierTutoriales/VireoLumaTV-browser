@@ -17,7 +17,8 @@ import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineProviderCallback
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.PagePoint
+import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
 import org.json.JSONTokener
@@ -30,7 +31,7 @@ import org.json.JSONTokener
 class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.Callback {
     private var webView: WebViewEx? = null
     /** The window the tab is shown in; JavaScript bridge calls use it as well. */
-    internal var window: WebEngineWindowProviderCallback? = null
+    internal var window: PageWindow? = null
     private var container: CursorLayout? = null
     private var fullscreenView: View? = null
     /** Pending Android permission requests: code to "is it the location request". */
@@ -104,10 +105,10 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun fastForward() = media("vireoLumaTVFastForward()")
     private fun media(call: String) { webView?.evaluateJavascript(call, null) }
 
-    override fun onAttachToWindow(callback: WebEngineWindowProviderCallback, parent: ViewGroup) {
+    override fun onAttachToWindow(window: PageWindow, parent: ViewGroup) {
         val view = checkNotNull(webView) { "The WebView must exist before it is attached" }
         val cursor = parent as CursorLayout
-        window = callback
+        this.window = window
         container = cursor
         cursor.removeAllViews()
         cursor.addView(view)
@@ -173,7 +174,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
     private fun showPointerMenu(baseUrl: String?, href: String?, x: Int, y: Int) {
         val cursor = container ?: return
-        window?.onContextMenu(cursor.cursorDrawerDelegate, baseUrl, href, null, null, null, null, x, y)
+        window?.openPointerMenu(cursor.cursorDrawerDelegate, PagePoint(baseUrl, href, x, y))
     }
 
     // The page's side, called by WebViewEx and its clients.
@@ -208,7 +209,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     )
 
     internal fun onCreateWindow(dialog: Boolean, userGesture: Boolean): WebViewEx? =
-        window?.onCreateWindow(dialog, userGesture) as? WebViewEx
+        window?.createWindow(dialog, userGesture) as? WebViewEx
 
     internal fun onPopupNavigation(url: Uri): Boolean = tab.popupGuard?.onNavigation(url) ?: false
 
@@ -225,7 +226,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         (dead.parent as? ViewGroup)?.removeView(dead)
         dead.destroy()
         webView = null
-        window?.onRenderProcessGone()
+        window?.onRendererGone()
         return true
     }
 
@@ -235,7 +236,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
             (view.parent as? ViewGroup)?.removeView(view)
             return
         }
-        window?.onPrepareForFullscreen()
+        window?.onEnterFullscreen()
         webView?.visibility = View.GONE
         webView?.setVirtualCursorMode(false)
         container?.cursorEnabled = false
@@ -255,9 +256,8 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         (shown?.parent as? ViewGroup)?.removeView(shown)
         webView?.visibility = View.VISIBLE
         webView?.setVirtualCursorMode(true)
-        window?.onExitFullscreen()
         container?.cursorEnabled = true
-        if (restoreBrowserControls) window?.onRestoreBrowserControlsAfterFullscreen()
+        window?.onExitFullscreen(restoreBrowserControls)
     }
 
     companion object {

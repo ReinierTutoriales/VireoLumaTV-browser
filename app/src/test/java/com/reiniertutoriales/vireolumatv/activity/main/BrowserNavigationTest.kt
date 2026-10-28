@@ -38,7 +38,7 @@ class BrowserNavigationTest {
         // Keep accepted downloads queued without opening a platform permission dialog or service.
         f.activity.downloads.waitingForPermission = true
         UserActivation.consume()
-        fun download() = callback.onDownloadRequested("https://example.test/file.zip", "test-agent",
+        fun download() = callback.onPageDownload("https://example.test/file.zip", "test-agent",
             "attachment; filename=file.zip", "application/zip", 32L)
         try {
             download()

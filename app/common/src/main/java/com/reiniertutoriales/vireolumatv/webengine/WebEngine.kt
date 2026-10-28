@@ -28,7 +28,7 @@ interface WebEngine {
     @Throws(Exception::class)
     fun getOrCreateView(activityContext: Context): View
     /** Shows the view in [parent], which must already hold no other page. */
-    fun onAttachToWindow(callback: WebEngineWindowProviderCallback, parent: ViewGroup)
+    fun onAttachToWindow(window: PageWindow, parent: ViewGroup)
     /** Takes the view out of the window; [completely] also destroys it. */
     fun onDetachFromWindow(completely: Boolean, destroyTab: Boolean)
     /** Destroys the view if it is not on screen. */

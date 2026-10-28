@@ -7,7 +7,7 @@ import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
+import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
 import kotlinx.coroutines.cancel
 import org.junit.Assert.*
@@ -49,8 +49,8 @@ class TabRestoreFallbackTest {
             val model = TabsModel()
             model.modelScope.cancel() // Persistence is covered by separate Room/atomic-file tests.
             model.tabsStates.add(tab)
-            val window = Proxy.newProxyInstance(WebEngineWindowProviderCallback::class.java.classLoader,
-                arrayOf(WebEngineWindowProviderCallback::class.java)) { _, _, _ -> null } as WebEngineWindowProviderCallback
+            val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
+                arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
             try {
                 model.changeTab(tab, { View(app).also { liveView = it } }, FrameLayout(app), window)
                 assertEquals(1, restores)

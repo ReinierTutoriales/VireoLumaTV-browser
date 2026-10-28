@@ -26,8 +26,8 @@ internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClien
 
     /** Answers a script dialog itself when dialogs are blocked; false lets WebView show it. */
     private fun blockDialog(result: JsResult): Boolean {
-        if (window?.isDialogsBlockingEnabled() != true) return false
-        window?.onBlockedDialog(false)
+        if (window?.blocksDialogs != true) return false
+        window?.onDialogBlocked(false)
         result.cancel()
         return true
     }
@@ -57,11 +57,11 @@ internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClien
         fullscreen = null
     }
 
-    override fun onProgressChanged(view: WebView, newProgress: Int) { window?.onProgressChanged(newProgress) }
+    override fun onProgressChanged(view: WebView, newProgress: Int) { window?.onProgress(newProgress) }
 
-    override fun onReceivedTitle(view: WebView, title: String) { window?.onReceivedTitle(title) }
+    override fun onReceivedTitle(view: WebView, title: String) { window?.onTitle(title) }
 
-    override fun onReceivedIcon(view: WebView?, icon: Bitmap) { window?.onReceivedIcon(icon) }
+    override fun onReceivedIcon(view: WebView?, icon: Bitmap) { window?.onIcon(icon) }
 
     override fun onPermissionRequest(request: PermissionRequest) = this.view.permissions.onRequest(request)
 
@@ -88,7 +88,7 @@ internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClien
 
     override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri>>, fileChooserParams: FileChooserParams): Boolean {
         filePicked = filePathCallback
-        val shown = window?.onShowFileChooser(fileChooserParams.createIntent()) == true
+        val shown = window?.pickFile(fileChooserParams.createIntent()) == true
         if (!shown) filePicked = null
         return shown
     }
