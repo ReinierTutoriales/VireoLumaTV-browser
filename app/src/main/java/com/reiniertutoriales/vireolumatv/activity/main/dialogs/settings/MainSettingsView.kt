@@ -32,7 +32,7 @@ class MainSettingsView @JvmOverloads constructor(
 ) : ScrollView(context, attrs, defStyleAttr) {
     var settingsModel = ActiveModelsRepository.get(SettingsModel::class, activity!!)
     var adblockModel = ActiveModelsRepository.get(AdblockModel::class, activity!!)
-    var config = AppContext.provideConfig()
+    var config = AppContext.config
 
     private val rows = SettingsRows(
         LayoutInflater.from(context).inflate(R.layout.view_settings_main, this, true)

@@ -59,7 +59,7 @@ class VersionSettingsView @JvmOverloads constructor(
     /** Opens [url] in a browser tab of the current mode, closing the settings first. */
     private fun open(url: String) {
         callback?.onNeedToCloseSettings()
-        val target = if (AppContext.provideConfig().incognitoMode)
+        val target = if (AppContext.config.incognitoMode)
             IncognitoModeMainActivity::class.java else MainActivity::class.java
         activity?.startActivity(Intent(activity, target).setData(url.toUri()))
     }

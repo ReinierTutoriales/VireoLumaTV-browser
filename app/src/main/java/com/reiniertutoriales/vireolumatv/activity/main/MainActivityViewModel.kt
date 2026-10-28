@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
  * and the separate WebView data of private mode.
  */
 class MainActivityViewModel : ActiveModel() {
-    private val config = AppContext.provideConfig()
+    private val config = AppContext.config
     private var loaded = false
 
     /** The latest visit; it is written only after [VISIT_SETTLE_MS], so redirects and quick hops leave no row. */

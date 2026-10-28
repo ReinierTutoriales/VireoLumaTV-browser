@@ -33,7 +33,7 @@ import java.time.Duration
 class RemoteInputContractTest {
     private fun withLayout(test: (CursorLayout) -> Unit) {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
-        val config = AppContext.provideConfig()
+        val config = AppContext.config
         val axesWereDisabled = config.disableMotionAxesDpadNavigation
         try {
             config.disableMotionAxesDpadNavigation = false
@@ -154,7 +154,7 @@ class RemoteInputContractTest {
     }
 
     @Test fun turningOffStickNavigationKeepsTheHatAndKeysAsDpad() = withLayout { layout ->
-        AppContext.provideConfig().disableMotionAxesDpadNavigation = true
+        AppContext.config.disableMotionAxesDpadNavigation = true
         val start = layout.pointerX
         // Still consumed: otherwise Android would synthesize D-pad keys from the stick itself.
         assertTrue(motion(layout, InputDevice.SOURCE_JOYSTICK, MotionEvent.AXIS_X to 1f))

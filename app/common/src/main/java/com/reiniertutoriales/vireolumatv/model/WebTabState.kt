@@ -100,7 +100,7 @@ data class WebTabState(
         val name = wvStateFileName?.takeIf { it.startsWith(prefix) } ?: prefix + UUID.randomUUID()
         val bytes = if (state is Bundle) BundleBytes.encode(state) else state.toString().toByteArray(Charsets.UTF_8)
         try {
-            val directory = File(AppContext.get().filesDir, TAB_WVSTATES_DIR)
+            val directory = File(AppContext.context.filesDir, TAB_WVSTATES_DIR)
             if (!directory.isDirectory && !directory.mkdir()) return
             val file = AtomicFile(File(directory, name))
             val output = file.startWrite()
@@ -175,9 +175,9 @@ data class WebTabState(
         return BitmapFactory.decodeFile(file.absolutePath, options)
     }
 
-    private fun stateFile(): File? = wvStateFileName?.let { File(File(AppContext.get().filesDir, TAB_WVSTATES_DIR), it) }
+    private fun stateFile(): File? = wvStateFileName?.let { File(File(AppContext.context.filesDir, TAB_WVSTATES_DIR), it) }
 
-    private fun thumbnailFile(): File? = thumbnailHash?.let { File(File(AppContext.get().cacheDir, TAB_THUMBNAILS_DIR), "$it.png") }
+    private fun thumbnailFile(): File? = thumbnailHash?.let { File(File(AppContext.context.cacheDir, TAB_THUMBNAILS_DIR), "$it.png") }
 
     private fun removeThumbnailFile() {
         thumbnailFile()?.delete()

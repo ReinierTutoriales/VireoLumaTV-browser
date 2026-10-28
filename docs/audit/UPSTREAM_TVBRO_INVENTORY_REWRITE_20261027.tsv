@@ -27,7 +27,7 @@ app/common/build.gradle.kts	MODIFICADO	app/common/build.gradle.kts	11
 app/common/consumer-rules.pro	MODIFICADO	app/common/consumer-rules.pro	33
 app/common/proguard-rules.pro	MODIFICADO	app/common/proguard-rules.pro	4
 app/common/src/main/AndroidManifest.xml	IDENTICO	app/common/src/main/AndroidManifest.xml	0
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/AppContext.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/AppContext.kt	4
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/AppContext.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/AppContext.kt	100
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/Config.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/Config.kt	76
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/Download.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/model/Download.kt	67
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/FavoriteItem.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/model/FavoriteItem.kt	68
@@ -36,7 +36,8 @@ app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/HomePageLink.kt
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/HostConfig.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/model/HostConfig.kt	46
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/PopupGuard.kt	PROPIO		
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/WebTabState.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/model/WebTabState.kt	74
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/singleton/FaviconsPool.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/singleton/FaviconsPool.kt	55
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/singleton/Favicons.kt	PROPIO
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/singleton/FaviconsPool.kt	ELIMINADO	app/common/src/main/java/com/phlox/tvwebbrowser/singleton/FaviconsPool.kt
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapter.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/BackNavigationEventsAdapter.kt	94
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/BoundedReader.kt	PROPIO		
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DPADNavigationEventsAdapter.kt	ELIMINADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/DPADNavigationEventsAdapter.kt	

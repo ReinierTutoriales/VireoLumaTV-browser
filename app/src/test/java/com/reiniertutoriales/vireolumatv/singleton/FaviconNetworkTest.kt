@@ -25,7 +25,7 @@ class FaviconNetworkTest {
         val app = RuntimeEnvironment.getApplication()
         val config = Config(app.getSharedPreferences("favicon-network-test", 0)).apply { incognitoMode = true }
         AppContext.init(app, config)
-        FaviconsPool.clear()
+        Favicons.clear()
         val requests = AtomicInteger()
         val manifests = AtomicInteger()
         val html = buildString {
@@ -44,12 +44,12 @@ class FaviconNetworkTest {
         server.start()
         try {
             val url = "http://127.0.0.1:${server.address.port}/"
-            (1..16).map { async { assertNull(FaviconsPool.get(url)) } }.awaitAll()
-            FaviconsPool.trimMemory()
-            repeat(10) { assertNull(FaviconsPool.get(url)) }
+            (1..16).map { async { assertNull(Favicons.get(url)) } }.awaitAll()
+            Favicons.trimMemory()
+            repeat(10) { assertNull(Favicons.get(url)) }
             assertEquals("One HTML request and at most three distinct icon attempts", 4, requests.get())
             assertEquals("Do not fetch a manifest when HTML supplies usable candidates", 0, manifests.get())
-        } finally { server.stop(0); FaviconsPool.clear() }
+        } finally { server.stop(0); Favicons.clear() }
     }
 
     @Test fun htmlAndManifestCandidateStorageIsBounded() {

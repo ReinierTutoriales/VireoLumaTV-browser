@@ -42,7 +42,7 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
             override fun onKey(event: KeyEvent) = cursorDrawerDelegate.dispatchKeyEvent(event)
             override fun onStick(x: Float, y: Float) = cursorDrawerDelegate.onStick(x, y)
         },
-        stickEnabled = { !AppContext.provideConfig().disableMotionAxesDpadNavigation },
+        stickEnabled = { !AppContext.config.disableMotionAxesDpadNavigation },
         // The OK press that focuses an editor must still deliver its release to the page.
         isTyping = { !cursorDrawerDelegate.isSelectionPressed && (isTextInputActive() || imeVisible()) },
     )

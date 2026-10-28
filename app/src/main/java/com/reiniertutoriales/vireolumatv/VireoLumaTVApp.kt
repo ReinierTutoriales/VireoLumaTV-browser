@@ -11,7 +11,7 @@ import android.util.Log
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
-import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
+import com.reiniertutoriales.vireolumatv.singleton.Favicons
 import com.reiniertutoriales.vireolumatv.utils.IncognitoWebViewData
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.webengine.Engines
@@ -82,17 +82,17 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
 
         val cookieManager = CookieManager()
         CookieHandler.setDefault(cookieManager)
-        FaviconsPool.databaseDelegate = object : FaviconsPool.DatabaseDelegate {
-            override fun findByHostName(host: String): HostConfig? {
+        Favicons.store = object : Favicons.Store {
+            override fun find(host: String): HostConfig? {
                 return AppDatabase.db.hostsDao().findByHostName(host)
             }
 
-            override suspend fun update(hostConfig: HostConfig) {
-                AppDatabase.db.hostsDao().update(hostConfig)
+            override suspend fun update(row: HostConfig) {
+                AppDatabase.db.hostsDao().update(row)
             }
 
-            override suspend fun insert(newHostConfig: HostConfig) {
-                AppDatabase.db.hostsDao().insert(newHostConfig)
+            override suspend fun insert(row: HostConfig) {
+                AppDatabase.db.hostsDao().insert(row)
             }
         }
     }

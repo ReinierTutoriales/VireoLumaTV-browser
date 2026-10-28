@@ -7,7 +7,7 @@ import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
 
 /** The settings screens' view of [Config], plus the choices they offer. */
 class SettingsModel : ActiveModel() {
-    val config = AppContext.provideConfig()
+    val config = AppContext.config
 
     var homePage by config::homePage
     var homePageMode by config::homePageMode

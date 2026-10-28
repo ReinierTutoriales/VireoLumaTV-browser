@@ -39,7 +39,7 @@ open class WebViewEx(context: Context, internal val engine: WebViewWebEngine) : 
     internal val window get() = engine.window
 
 
-    internal val config = AppContext.provideConfig()
+    internal val config = AppContext.config
     internal val consoleLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     internal val streamLogBudget = StreamLogBudget { SystemClock.elapsedRealtime() }
     internal val permissions = PagePermissions({ window?.activity }, engine::requestPermissions)

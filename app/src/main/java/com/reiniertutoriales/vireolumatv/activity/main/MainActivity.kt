@@ -48,7 +48,7 @@ import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
+import com.reiniertutoriales.vireolumatv.singleton.Favicons
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.RemoteInput
@@ -85,7 +85,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     @VisibleForTesting internal lateinit var adblockModel: AdblockModel
     @VisibleForTesting internal lateinit var uiHandler: Handler
     internal lateinit var viewModel: MainActivityViewModel
-    internal val config = AppContext.provideConfig()
+    internal val config = AppContext.config
     @VisibleForTesting internal val downloads by lazy { BrowserDownloads(this, { config.incognitoMode }, ::onDownloadStarted) }
     internal val external by lazy { ExternalApps(this) }
     internal var isFullscreen = false
@@ -252,7 +252,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 it.trimMemory()
             }
         }
-        FaviconsPool.trimMemory()
+        Favicons.trimMemory()
         if (::adblockModel.isInitialized) adblockModel.trimMemory()
         super.onTrimMemory(level)
     }

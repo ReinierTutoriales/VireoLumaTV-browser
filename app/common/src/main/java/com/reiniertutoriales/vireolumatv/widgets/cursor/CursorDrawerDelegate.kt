@@ -138,7 +138,7 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
     }
 
     private fun startMoving() {
-        val config = AppContext.provideConfig()
+        val config = AppContext.config
         speedCap = speedBaseline * config.cursorMaxSpeedPercent / 100f
         accelerationScale = config.cursorAccelerationPercent / 100f
         surface.removeCallbacks(cursorUpdateRunnable)

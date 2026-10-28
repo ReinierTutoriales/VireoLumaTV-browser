@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
+import com.reiniertutoriales.vireolumatv.singleton.Favicons
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -37,7 +37,7 @@ class ViewFaviconLoader(private val view: View, private val image: ImageView) : 
         val request = generation
         job?.cancel()
         job = activity.lifecycleScope.launch {
-            val bitmap = FaviconsPool.get(requestedUrl)
+            val bitmap = Favicons.get(requestedUrl)
             if (request == generation && view.isAttachedToWindow && bitmap != null) {
                 image.setImageBitmap(bitmap)
             }

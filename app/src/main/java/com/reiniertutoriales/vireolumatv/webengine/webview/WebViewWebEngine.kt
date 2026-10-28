@@ -39,7 +39,7 @@ class WebViewWebEngine(val tab: WebTabState) : PageEngine, CursorDrawerDelegate.
     private val permissionRequests = HashMap<Int, Boolean>()
     internal val bridge = PageBridge(this)
 
-    private val adblockEnabled get() = tab.adblock ?: AppContext.provideConfig().adBlockEnabled
+    private val adblockEnabled get() = tab.adblock ?: AppContext.config.adBlockEnabled
 
     override val url: String? get() = webView?.url
 
@@ -287,7 +287,7 @@ class WebViewWebEngine(val tab: WebTabState) : PageEngine, CursorDrawerDelegate.
 
             override val version: String
                 get() {
-                    val webViewPackage = WebViewCompat.getCurrentWebViewPackage(AppContext.get())
+                    val webViewPackage = WebViewCompat.getCurrentWebViewPackage(AppContext.context)
                     return (webViewPackage?.packageName ?: "unknown") + ":" + (webViewPackage?.versionName ?: "unknown")
                 }
         }

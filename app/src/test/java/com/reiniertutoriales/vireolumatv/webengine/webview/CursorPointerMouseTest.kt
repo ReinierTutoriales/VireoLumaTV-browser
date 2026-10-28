@@ -127,7 +127,7 @@ class CursorPointerMouseTest {
     }
 
     @Test fun stickSpeedIsProportionalToItsDeflection() {
-        AppContext.provideConfig().cursorMaxSpeedPercent = 100
+        AppContext.config.cursorMaxSpeedPercent = 100
         val half = stickDistance(0.5f, frames = 10)
         val full = stickDistance(1f, frames = 10)
         assertTrue("The stick must move the pointer: $full", full > 50f)

@@ -28,25 +28,25 @@ class FaviconResourceTest {
             bitmap.recycle()
         }
         var readOnMain = true
-        FaviconsPool.databaseDelegate = object : FaviconsPool.DatabaseDelegate {
-            override fun findByHostName(host: String): HostConfig {
+        Favicons.store = object : Favicons.Store {
+            override fun find(host: String): HostConfig {
                 readOnMain = Looper.myLooper() == Looper.getMainLooper()
                 return HostConfig(host).apply { favicon = file.name }
             }
         }
-        val icon = runBlocking { FaviconsPool.get("https://sample.test") }
+        val icon = runBlocking { Favicons.get("https://sample.test") }
         assertNotNull(icon)
         assertTrue(icon!!.width <= 256 && icon.height <= 256)
         assertFalse(readOnMain)
-        assertSame(icon, runBlocking { FaviconsPool.get("https://SAMPLE.test") })
+        assertSame(icon, runBlocking { Favicons.get("https://SAMPLE.test") })
     }
 
     @Test fun cancellationIsPropagatedInsteadOfStartingNetworkDiscovery() = withCache {
-        FaviconsPool.databaseDelegate = object : FaviconsPool.DatabaseDelegate {
-            override fun findByHostName(host: String): HostConfig? { throw CancellationException("row left screen") }
+        Favicons.store = object : Favicons.Store {
+            override fun find(host: String): HostConfig? { throw CancellationException("row left screen") }
         }
         var cancelled = false
-        try { runBlocking { FaviconsPool.get("https://cancelled.invalid") } }
+        try { runBlocking { Favicons.get("https://cancelled.invalid") } }
         catch (_: CancellationException) { cancelled = true }
         assertTrue(cancelled)
     }
@@ -55,14 +55,14 @@ class FaviconResourceTest {
         val app = RuntimeEnvironment.getApplication()
         val config = Config(app.getSharedPreferences("favicon-resource-test", 0)).apply { incognitoMode = false }
         AppContext.init(app, config)
-        val previous = FaviconsPool.databaseDelegate
-        val directory = File(FaviconsPool.favIconsDir())
+        val previous = Favicons.store
+        val directory = Favicons.directory
         directory.deleteRecursively()
         directory.mkdirs()
-        FaviconsPool.clear()
+        Favicons.clear()
         try { test(directory) } finally {
-            FaviconsPool.databaseDelegate = previous
-            FaviconsPool.clear()
+            Favicons.store = previous
+            Favicons.clear()
             directory.deleteRecursively()
         }
     }

@@ -51,7 +51,7 @@ class CursorMenuFocusTest {
         val tab = WebTabState()
         WebTabState::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
             .set(tab, lazyOf(engine))
-        val config = AppContext.provideConfig()
+        val config = AppContext.config
         val previous = config.directNavigationModeHintSuppress
         config.directNavigationModeHintSuppress = true
         try {

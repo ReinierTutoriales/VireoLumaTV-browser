@@ -34,7 +34,7 @@ class TabsModel : ActiveModel() {
     var loaded = false
         private set
 
-    private val config = AppContext.provideConfig()
+    private val config = AppContext.config
     /** Orders saves and deletions; held only around the IO part. */
     @VisibleForTesting internal val storage = Mutex()
     private var loadedIncognito = config.incognitoMode

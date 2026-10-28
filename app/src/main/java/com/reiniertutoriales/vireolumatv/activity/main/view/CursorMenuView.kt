@@ -51,7 +51,7 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
         vb.btnDPADMode.setOnClickListener {
             val t = target ?: return@setOnClickListener
             hide()
-            if (AppContext.provideConfig().directNavigationModeHintSuppress) enterDirectNavigation(t) else explainDirectNavigation(t)
+            if (AppContext.config.directNavigationModeHintSuppress) enterDirectNavigation(t) else explainDirectNavigation(t)
         }
         vb.btnZoomIn.setOnClickListener { target?.tab?.engine?.zoom(closer = true) }
         vb.btnZoomOut.setOnClickListener { target?.tab?.engine?.zoom(closer = false) }
@@ -121,7 +121,7 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
             .setMessage(R.string.direct_navigation_mode_message)
             .setView(content)
             .setPositiveButton(android.R.string.ok) { _, _ ->
-                if (dontAskAgain.isChecked) AppContext.provideConfig().directNavigationModeHintSuppress = true
+                if (dontAskAgain.isChecked) AppContext.config.directNavigationModeHintSuppress = true
                 enterDirectNavigation(t)
             }
             .setOnDismissListener { t.tab.engine.view?.requestFocus() }

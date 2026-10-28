@@ -128,7 +128,7 @@ class AdblockModel @JvmOverloads constructor(
     // Lists the last attempt did not refresh: saved text was used, or no usable text existed.
     val unavailableLists = ObservableValue<List<String>>(emptyList())
     val clientLoading = ObservableValue(false)
-    val config = AppContext.provideConfig()
+    val config = AppContext.config
     val hasActiveRules: Boolean get() = hasCurrentClient(config.adBlockListURL.value)
 
     private val sourceObserver: (String) -> Unit = { loadAdBlockList(true) }

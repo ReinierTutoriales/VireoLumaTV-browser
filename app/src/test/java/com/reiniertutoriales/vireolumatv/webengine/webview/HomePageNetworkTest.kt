@@ -7,7 +7,7 @@ import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.model.HostConfig
-import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
+import com.reiniertutoriales.vireolumatv.singleton.Favicons
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -23,10 +23,10 @@ class HomePageNetworkTest {
     @Test fun missingHomepageIconDoesNotStartLookupOnInterceptionThread() {
         val app = RuntimeEnvironment.getApplication()
         AppContext.init(app, Config(app.getSharedPreferences("home-network-test", 0)).apply { incognitoMode = false })
-        FaviconsPool.clear()
-        val previous = FaviconsPool.databaseDelegate
-        FaviconsPool.databaseDelegate = object : FaviconsPool.DatabaseDelegate {
-            override fun findByHostName(host: String): HostConfig? =
+        Favicons.clear()
+        val previous = Favicons.store
+        Favicons.store = object : Favicons.Store {
+            override fun find(host: String): HostConfig? =
                 throw AssertionError("The interceptor must never start a favicon lookup")
         }
         val view = WebView(app)
@@ -35,7 +35,7 @@ class HomePageNetworkTest {
             if (method.name == "getUrl") Uri.parse("favicon://missing.example") else null
         } as WebResourceRequest
         try { assertEquals(404, HomePageHelper.shouldInterceptRequest(request)!!.statusCode) }
-        finally { view.destroy(); FaviconsPool.databaseDelegate = previous; FaviconsPool.clear() }
+        finally { view.destroy(); Favicons.store = previous; Favicons.clear() }
     }
 
     @Test fun regularPageRequestsAreNotIntercepted() {
