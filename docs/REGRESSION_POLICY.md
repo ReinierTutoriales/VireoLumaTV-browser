@@ -56,6 +56,12 @@ del joystick» desactivado apaga solo el stick. Pendiente de validación en Andr
 se retiran el ajuste Tema y la paleta clara. «Oscurecer las páginas web» depende solo de su ajuste
 (activado por defecto), ya no del modo noche del sistema. Pendiente de validación en Android TV.
 
+**Sugerencias de dirección (2026-10-27, petición del propietario):** al editar la dirección se muestran hasta
+seis sugerencias locales (favoritos e historial; solo favoritos en incógnito) en lugar de la tira de pestañas.
+Abajo entra en la lista sin cancelar la edición, Arriba vuelve al campo, OK abre la sugerencia y Atrás sigue N04.
+El campo ya no prohíbe las sugerencias del teclado (`textUri`) ni abre el teclado a pantalla completa.
+Nada sale del dispositivo. Pendiente de validación en Android TV con varios teclados.
+
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 

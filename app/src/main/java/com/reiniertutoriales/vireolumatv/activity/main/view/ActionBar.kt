@@ -14,6 +14,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
@@ -41,7 +42,14 @@ class ActionBar @JvmOverloads constructor(
         fun onExtendedAddressBarMode() {}
         fun onUrlInputDone()
         fun onAddressInputCancelled() {}
+        /** Text typed while the address is edited, to look up suggestions. */
+        fun onAddressTyped(text: String) {}
+        /** D-pad Down while editing: move focus to the suggestions; false when there are none. */
+        fun focusSuggestions(): Boolean = false
     }
+
+    // Set while focus moves from the address into its suggestions, so the edit is not cancelled.
+    private var focusingSuggestions = false
 
     /** Page commands and blocker state owned by the activity; the bar only lays them out. */
     val backButton: ImageButton get() = vb.ibBack
@@ -51,7 +59,7 @@ class ActionBar @JvmOverloads constructor(
     val adBlockButton: ImageButton get() = vb.ibAdBlock
 
     private val etUrlFocusChangeListener = OnFocusChangeListener { _, focused ->
-        if (!focused) {
+        if (!focused && !focusingSuggestions) {
             removeCallbacks(selectAddressRunnable)
             if (extendedAddressBarMode) {
                 dismissExtendedAddressBarMode()
@@ -84,8 +92,26 @@ class ActionBar @JvmOverloads constructor(
         callback?.search(text)
     }
 
+    /** Opens [text] as if it had been typed and confirmed, e.g. a picked suggestion. */
+    fun submit(text: String) {
+        if (!extendedAddressBarMode) return
+        vb.etUrl.setText(text)
+        submitAddress()
+    }
+
     private val etUrlKeyListener = OnKeyListener { _, _, event ->
         when (event.keyCode) {
+            KeyEvent.KEYCODE_DPAD_DOWN -> if (extendedAddressBarMode) {
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    focusingSuggestions = true
+                    try {
+                        if (callback?.focusSuggestions() != true) return@OnKeyListener false
+                    } finally {
+                        focusingSuggestions = false
+                    }
+                }
+                true
+            } else false
             KeyEvent.KEYCODE_DPAD_RIGHT -> if (!extendedAddressBarMode) {
                 if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
                     vb.etUrl.focusSearch(View.FOCUS_RIGHT)?.requestFocus()
@@ -119,6 +145,9 @@ class ActionBar @JvmOverloads constructor(
         vb.etUrl.setOnClickListener { startAddressInput() }
 
         vb.etUrl.setOnKeyListener(etUrlKeyListener)
+        vb.etUrl.doAfterTextChanged { text ->
+            if (extendedAddressBarMode) callback?.onAddressTyped(text?.toString().orEmpty())
+        }
         vb.etUrl.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_GO ||
                 actionId == EditorInfo.IME_ACTION_DONE) {

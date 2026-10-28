@@ -31,9 +31,9 @@
         android:iconifiedByDefault="false"
         android:textCursorDrawable="@null"
         android:textColor="@color/default_url_color"
-        android:imeOptions="actionSearch"
+        android:imeOptions="actionSearch|flagNoExtractUi"
         android:hint="@string/url_prompt"
-        android:inputType="textFilter|textNoSuggestions|textUri"
+        android:inputType="textUri"
         android:importantForAutofill="no" />
   </FrameLayout>
 

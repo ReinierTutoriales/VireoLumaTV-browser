@@ -89,6 +89,8 @@ import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
 import com.reiniertutoriales.vireolumatv.widgets.NotificationView
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -110,6 +112,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         const val MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS = 10004
         private const val COMMON_REQUESTS_START_CODE = 10100
         private const val THUMBNAIL_CAPTURE_DELAY_MS = 1500L
+        private const val SUGGESTIONS_DELAY_MS = 150L
         // A popup that has not requested a page by then (about:blank + document.write) is shown.
         private const val POPUP_DECISION_TIMEOUT_MS = 1200L
         // Popup/dialog spam must not stack notifications on a slow TV.
@@ -348,6 +351,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     private fun configureBrowserControls() {
         vb.vActionBar.callback = this
+        vb.vSuggestions.onPick = { vb.vActionBar.submit(it.url) }
         // Focusing a command must never remove another row of reachable controls.
         // Commit the previewed tab before executing a page command, then return to the page.
         fun pageCommand(button: View, action: () -> Unit) {
@@ -378,7 +382,35 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     override fun onUrlInputDone() {
+        closeSuggestions()
         hideMenuOverlay()
+    }
+
+    private var suggestionsLookup: Job? = null
+
+    override fun onAddressTyped(text: String) {
+        suggestionsLookup?.cancel()
+        suggestionsLookup = lifecycleScope.launch {
+            delay(SUGGESTIONS_DELAY_MS) // One lookup when typing pauses, not one per key.
+            showSuggestions(runCatching { AddressSuggestions.load(text, config.incognitoMode) }
+                .onFailure { Log.w(TAG, "Address suggestions failed", it) }
+                .getOrDefault(emptyList()))
+        }
+    }
+
+    override fun focusSuggestions(): Boolean = vb.vSuggestions.hasSuggestions && vb.vSuggestions.focusFirst()
+
+    override fun onAddressInputCancelled() = closeSuggestions()
+
+    /** Suggestions take the tab strip's place while there are any, so the capsule does not grow. */
+    private fun showSuggestions(suggestions: List<AddressSuggestion>) {
+        vb.vSuggestions.show(suggestions)
+        vb.vTabs.isVisible = suggestions.isEmpty()
+    }
+
+    private fun closeSuggestions() {
+        suggestionsLookup?.cancel()
+        showSuggestions(emptyList())
     }
 
     fun navigateBack(goHomeIfNoHistory: Boolean = false) {

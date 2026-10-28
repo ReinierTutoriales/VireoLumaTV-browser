@@ -47,6 +47,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <!-- Shown instead of the tab strip while the address being edited has suggestions. -->
+        <com.reiniertutoriales.vireolumatv.activity.main.view.AddressSuggestionsView
+            android:id="@+id/vSuggestions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/vActionBar"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+
         <com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabsView
             android:id="@+id/vTabs"
             android:layout_width="match_parent"
