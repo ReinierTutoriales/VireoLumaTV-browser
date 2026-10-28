@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Day heading in the history and download lists; not focusable, so D-pad moves row to row. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tvDate"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="16dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="4dp"
+    android:accessibilityHeading="true"
+    android:textColor="@color/ui_focus_border"
+    android:textSize="14sp"
+    android:textStyle="bold"
+    tools:ignore="UnusedAttribute"
+    tools:text="27 oct 2026" />

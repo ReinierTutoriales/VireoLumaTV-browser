@@ -93,7 +93,7 @@ class HistoryAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         if (viewType == VIEW_TYPE_HEADER) {
-            return HeaderHolder(inflater.inflate(R.layout.view_history_header_item, parent, false))
+            return HeaderHolder(inflater.inflate(R.layout.view_list_date_header, parent, false))
         }
         val holder = ItemHolder(inflater.inflate(R.layout.view_history_item, parent, false))
         holder.itemView.setOnClickListener {

@@ -6,8 +6,6 @@
     <color name="day_night_text_color">#B4C2D4</color>
     <color name="day_night_text_color_contrast">#EDF3FA</color>
     <color name="day_night_background_color">#151D2A</color>
-    <color name="day_night_list_header_background_color">#253247</color>
-    <color name="day_night_list_focused_background_color">#21402F</color>
     <color name="button_background">#253247</color>
     <color name="button_background_focused">#21402F</color>
     <color name="button_background_pressed">#2D5A40</color>
@@ -21,4 +19,5 @@
     <color name="ui_control_checked">#314561</color>
     <color name="ui_url_hint">#B4C2D4</color>
     <color name="ui_capsule_surface">#1F2A3A</color>
+    <color name="ui_error">#FF8A80</color>
 </resources>

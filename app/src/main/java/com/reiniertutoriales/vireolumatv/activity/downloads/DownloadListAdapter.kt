@@ -1,13 +1,13 @@
 package com.reiniertutoriales.vireolumatv.activity.downloads
 
-import android.annotation.SuppressLint
-import android.graphics.Color
 import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -86,7 +86,7 @@ class DownloadListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         if (viewType == VIEW_TYPE_HEADER) {
-            return HeaderHolder(inflater.inflate(R.layout.view_history_header_item, parent, false))
+            return HeaderHolder(inflater.inflate(R.layout.view_list_date_header, parent, false))
         }
         val holder = ItemHolder(inflater.inflate(R.layout.view_download_item, parent, false))
         holder.itemView.setOnClickListener {
@@ -118,8 +118,7 @@ class DownloadListAdapter(
         private val tvTime: TextView = view.findViewById(R.id.tvTime)
         private val tvSize: TextView = view.findViewById(R.id.tvSize)
         private val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
-        private val progressBar2: ProgressBar = view.findViewById(R.id.progressBar2)
-        private val defaultTextColor = tvSize.currentTextColor
+        private val sizeColor = tvSize.currentTextColor
 
         fun bind(download: Download, timeFormat: DateFormat) {
             normalizeSize(download)
@@ -129,41 +128,30 @@ class DownloadListAdapter(
             showProgress(download)
         }
 
-        @SuppressLint("SetTextI18n")
         private fun showProgress(download: Download) {
             val context = itemView.context
-            tvSize.setTextColor(defaultTextColor)
+            fun size(bytes: Long) = Formatter.formatShortFileSize(context, bytes)
+            tvSize.setTextColor(sizeColor)
+            progressBar.isVisible = false
             when {
-                download.size == Download.CANCELLED_MARK -> {
-                    tvSize.setText(R.string.cancelled)
-                    showIndeterminate(false)
-                }
+                download.size == Download.CANCELLED_MARK -> tvSize.setText(R.string.cancelled)
                 download.size == Download.BROKEN_MARK -> {
                     tvSize.setText(R.string.error)
-                    tvSize.setTextColor(Color.RED)
-                    showIndeterminate(false)
+                    tvSize.setTextColor(ContextCompat.getColor(context, R.color.ui_error))
                 }
-                download.size == 0L -> {
-                    tvSize.text = Formatter.formatShortFileSize(context, download.bytesReceived)
-                    showIndeterminate(true)
+                download.size <= 0L -> {
+                    tvSize.text = size(download.bytesReceived)
+                    progressBar.isIndeterminate = true
+                    progressBar.isVisible = true
                 }
-                download.size == download.bytesReceived -> {
-                    tvSize.text = Formatter.formatShortFileSize(context, download.size)
-                    showIndeterminate(false)
-                }
+                download.size == download.bytesReceived -> tvSize.text = size(download.size)
                 else -> {
-                    tvSize.text = Formatter.formatShortFileSize(context, download.bytesReceived) + "/\n" +
-                            Formatter.formatShortFileSize(context, download.size)
-                    progressBar.visibility = View.VISIBLE
-                    progressBar2.visibility = View.GONE
+                    tvSize.text = context.getString(R.string.size_progress, size(download.bytesReceived), size(download.size))
+                    progressBar.isIndeterminate = false
                     progressBar.progress = (download.bytesReceived * 100 / download.size).toInt()
+                    progressBar.isVisible = true
                 }
             }
-        }
-
-        private fun showIndeterminate(indeterminate: Boolean) {
-            progressBar.visibility = View.INVISIBLE
-            progressBar2.visibility = if (indeterminate) View.VISIBLE else View.GONE
         }
     }
 

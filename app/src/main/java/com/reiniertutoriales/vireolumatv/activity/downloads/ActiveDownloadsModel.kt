@@ -2,18 +2,19 @@ package com.reiniertutoriales.vireolumatv.activity.downloads
 
 import android.os.Build
 import android.util.Log
+import androidx.core.net.toUri
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.service.downloads.DownloadTask
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
-import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
+import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
 import java.io.File
-import androidx.core.net.toUri
 
-class ActiveDownloadsModel: ActiveModel() {
+/** Downloads running in this process and the screens that follow them; used on the main thread. */
+class ActiveDownloadsModel : ActiveModel() {
     val activeDownloads = ObservableList<DownloadTask>()
-    private val listeners = java.util.ArrayList<Listener>()
+    private val listeners = ArrayList<Listener>()
 
     interface Listener {
         fun onDownloadUpdated(downloadInfo: Download)
@@ -21,60 +22,42 @@ class ActiveDownloadsModel: ActiveModel() {
         fun onAllDownloadsComplete()
     }
 
+    fun registerListener(listener: Listener) {
+        listeners += listener
+    }
+
+    fun unregisterListener(listener: Listener) {
+        listeners -= listener
+    }
+
+    /** Cancels the running task for [download]; its task removes the partial file. */
+    fun cancelDownload(download: Download) {
+        activeDownloads.firstOrNull { it.downloadInfo.matches(download) }?.downloadInfo?.cancelled = true
+    }
+
+    /** Removes a finished download's file and its history row. */
     suspend fun deleteItem(download: Download) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val contentResolver = VireoLumaTVApp.instance.contentResolver
-            val rowsDeleted = try {
-                contentResolver.delete(download.filepath.toUri(), null)
-            } catch (e: Exception) {
-                Log.w(DownloadTask.TAG, "Failed to delete file from MediaStore", e)
-                0
+        try {
+            val removed = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                VireoLumaTVApp.instance.contentResolver.delete(download.filepath.toUri(), null) > 0
+            } else {
+                File(download.filepath).delete()
             }
-            if (rowsDeleted < 1) {
-                Log.e(DownloadTask.TAG, "Failed to delete file from MediaStore")
-            }
-        } else {
-            File(download.filepath).delete()
+            if (!removed) Log.w(DownloadTask.TAG, "Downloaded file was already gone")
+        } catch (error: Exception) {
+            Log.w(DownloadTask.TAG, "Could not delete the downloaded file", error)
         }
         AppDatabase.db.downloadDao().delete(download)
     }
 
-    fun registerListener(listener: Listener) {
-        listeners.add(listener)
-    }
+    fun notifyListenersAboutError(task: DownloadTask, responseCode: Int, responseMessage: String) =
+        listeners.toList().forEach { it.onDownloadError(task.downloadInfo, responseCode, responseMessage) }
 
-    fun unregisterListener(listener: Listener) {
-        listeners.remove(listener)
-    }
-
-    fun cancelDownload(download: Download) {
-        for (i in activeDownloads.indices) {
-            val task = activeDownloads[i]
-            if (task.downloadInfo.matches(download)) {
-                task.downloadInfo.cancelled = true
-                break
-            }
-        }
-    }
-
-    fun notifyListenersAboutError(task: DownloadTask, responseCode: Int, responseMessage: String) {
-        for (i in listeners.indices) {
-            listeners[i].onDownloadError(task.downloadInfo, responseCode, responseMessage)
-        }
-    }
-
-    fun notifyListenersAboutDownloadProgress(task: DownloadTask) {
-        for (i in listeners.indices) {
-            listeners[i].onDownloadUpdated(task.downloadInfo)
-        }
-    }
+    fun notifyListenersAboutDownloadProgress(task: DownloadTask) =
+        listeners.toList().forEach { it.onDownloadUpdated(task.downloadInfo) }
 
     fun onDownloadEnded(task: DownloadTask) {
         activeDownloads.remove(task)
-        if (activeDownloads.isEmpty()) {
-            for (i in listeners.indices) {
-                listeners[i].onAllDownloadsComplete()
-            }
-        }
+        if (activeDownloads.isEmpty()) listeners.toList().forEach { it.onAllDownloadsComplete() }
     }
 }

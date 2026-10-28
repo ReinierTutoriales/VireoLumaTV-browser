@@ -11,7 +11,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
-import android.provider.Settings
 import android.text.format.Formatter
 import android.util.Log
 import android.widget.Toast
@@ -139,7 +138,7 @@ open class DownloadService : Service() {
     private fun onTaskEnded(task: DownloadTask) {
         val info = task.downloadInfo
         if (info.size >= 0 && !info.cancelled &&
-            info.operationAfterDownload == Download.OperationAfterDownload.INSTALL && canInstallPackages()) {
+            info.operationAfterDownload == Download.OperationAfterDownload.INSTALL && ApkInstaller.canInstall(this)) {
             ApkInstaller.launch(this, info)
         }
         model.onDownloadEnded(task)
@@ -147,13 +146,6 @@ open class DownloadService : Service() {
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
-    }
-
-    private fun canInstallPackages(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        packageManager.canRequestPackageInstalls()
-    } else {
-        @Suppress("DEPRECATION")
-        Settings.Secure.getInt(contentResolver, Settings.Secure.INSTALL_NON_MARKET_APPS, 0) == 1
     }
 
     private fun buildNotification(): Notification {
@@ -171,7 +163,7 @@ open class DownloadService : Service() {
     /** "12 MB / 40 MB", or only the received size while some total is unknown. */
     private fun progressText(received: Long, total: Long): String {
         val done = Formatter.formatShortFileSize(this, received)
-        return if (total > 0) "$done / ${Formatter.formatShortFileSize(this, total)}" else done
+        return if (total > 0) getString(R.string.size_progress, done, Formatter.formatShortFileSize(this, total)) else done
     }
 
     class Binder(val service: DownloadService) : android.os.Binder()

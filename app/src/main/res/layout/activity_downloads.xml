@@ -1,25 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- 48 dp / 27 dp keeps rows inside the TV overscan-safe area. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_downloads"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     android:background="@color/day_night_background_color"
+    android:fitsSystemWindows="true"
     tools:context="com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"/>
+        android:clipToPadding="false"
+        android:paddingStart="48dp"
+        android:paddingTop="27dp"
+        android:paddingEnd="48dp"
+        android:paddingBottom="27dp" />
 
     <TextView
-        android:text="@string/nothing"
+        android:id="@+id/tvPlaceholder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/tvPlaceholder"
         android:gravity="center"
+        android:text="@string/nothing"
         android:textColor="@color/day_night_text_color"
-        android:textSize="30sp"/>
-</RelativeLayout>
+        android:textSize="18sp" />
+</FrameLayout>

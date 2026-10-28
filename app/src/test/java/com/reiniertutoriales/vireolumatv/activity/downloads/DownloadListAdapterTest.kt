@@ -95,4 +95,38 @@ class DownloadListAdapterTest {
         assertEquals(0L, a.size)
         assertFalse(adapter.settle().realCount == 0L)
     }
+
+    /** Binds [info] into a real row and returns its size text and progress bar. */
+    private fun bindRow(info: Download): Pair<String, android.widget.ProgressBar> {
+        val adapter = adapter().apply { addItems(listOf(info)) }.settle()
+        val parent = android.widget.FrameLayout(VireoLumaTVApp.instance.apply { setTheme(com.reiniertutoriales.vireolumatv.R.style.AppTheme) })
+        val holder = adapter.onCreateViewHolder(parent, DownloadListAdapter.VIEW_TYPE_DOWNLOAD_ITEM)
+        adapter.onBindViewHolder(holder, 1)
+        val row = holder.itemView
+        return row.findViewById<android.widget.TextView>(com.reiniertutoriales.vireolumatv.R.id.tvSize).text.toString() to
+            row.findViewById(com.reiniertutoriales.vireolumatv.R.id.progressBar)
+    }
+
+    @Test
+    fun unknownTotalShowsAnIndeterminateBarInsteadOfANegativeProgress() {
+        val (_, bar) = bindRow(download(1, day, "a", size = -1L).apply { bytesReceived = 4096 })
+        assertTrue(bar.visibility == android.view.View.VISIBLE)
+        assertTrue(bar.isIndeterminate)
+    }
+
+    @Test
+    fun runningDownloadShowsReceivedOverTotal() {
+        val (text, bar) = bindRow(download(1, day, "a", size = 4000L).apply { bytesReceived = 1000 })
+        assertTrue(text, text.contains(" / "))
+        assertFalse(bar.isIndeterminate)
+        assertEquals(25, bar.progress)
+    }
+
+    @Test
+    fun finishedAndBrokenDownloadsHideTheBar() {
+        val (_, done) = bindRow(download(1, day, "a", size = 10L).apply { bytesReceived = 10 })
+        assertEquals(android.view.View.GONE, done.visibility)
+        val (_, broken) = bindRow(download(2, day, "b", size = Download.BROKEN_MARK))
+        assertEquals(android.view.View.GONE, broken.visibility)
+    }
 }

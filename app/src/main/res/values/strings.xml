@@ -30,6 +30,7 @@
     <string name="edit_user_agent_string">Edit User Agent String</string>
     <string name="nothing">Nothing</string>
     <string name="cancelled">Cancelled</string>
+    <string name="size_progress" translatable="false">%1$s / %2$s</string>
     <string name="download">Download</string>
     <string name="file_not_found">File not found</string>
     <string name="no_app_for_file_type">No applications found to open this file type</string>

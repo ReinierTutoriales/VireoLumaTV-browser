@@ -107,15 +107,15 @@ app/src/main/assets/window_open_decoy.js	PROPIO
 app/src/main/assets/youtube_adblock.js	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/VireoLumaTVApp.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/IncognitoModeMainActivity.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/IncognitoModeMainActivity.kt	11
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/ActiveDownloadsModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt	15
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/ActiveDownloadsModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt	59
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadListAdapter.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListAdapter.kt	97
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadListItemView.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListItemView.kt
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadsActivity.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt	11
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadsHistoryModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsHistoryModel.kt	45
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadsActivity.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt	76
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadsHistoryModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsHistoryModel.kt	71
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/IncognitoDownloadsActivity.kt	PROPIO		
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryActivity.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt	10
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryAdapter.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryAdapter.kt	3
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryItemView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryItemView.kt	7
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryActivity.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryActivity.kt	76
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryAdapter.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryAdapter.kt	95
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryItemView.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryItemView.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryModel.kt	56
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt	94
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/BlockerIndicator.kt	PROPIO		
@@ -128,7 +128,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabsModel.kt	M
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/SearchEngineConfigDialogFactory.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt	8
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/ShortcutDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt	73
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	12
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteItemView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt	38
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteItemView.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesDialog.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesDialog.kt	11
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesListAdapter.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesListAdapter.kt	5
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/MainSettingsView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt	86
@@ -169,13 +169,13 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/IncognitoD
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/AppDatabase.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt	4
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/Shortcut.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/Shortcut.kt	79
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/ShortcutMgr.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt	87
-app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BaseAnimationListener.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/utils/BaseAnimationListener.kt	7
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BaseAnimationListener.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/utils/BaseAnimationListener.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/FileUtils.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/utils/FileUtils.kt	2
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/IncognitoWebViewData.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdater.kt	PROPIO		
-app/src/main/java/com/reiniertutoriales/vireolumatv/utils/StringUtils.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/utils/StringUtils.kt	5
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/StringUtils.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/utils/StringUtils.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ViewFaviconLoader.kt	PROPIO		
-app/src/main/java/com/reiniertutoriales/vireolumatv/utils/VoiceSearchHelper.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/utils/VoiceSearchHelper.kt	3
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/VoiceSearchHelper.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/utils/VoiceSearchHelper.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/AdblockPageController.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/AndroidJSInterface.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt	71
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicy.kt	PROPIO		
@@ -191,8 +191,8 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableContainer.k
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableImageButton.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableImageButton.kt	3
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/NotificationView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/NotificationView.kt	31
 app/src/main/res/anim/infinite_fadeinout_anim.xml	IDENTICO	app/src/main/res/anim/infinite_fadeinout_anim.xml	0
-app/src/main/res/anim/right_menu_in_anim.xml	IDENTICO	app/src/main/res/anim/right_menu_in_anim.xml	0
-app/src/main/res/anim/right_menu_out_anim.xml	IDENTICO	app/src/main/res/anim/right_menu_out_anim.xml	0
+app/src/main/res/anim/right_menu_in_anim.xml	ELIMINADO	app/src/main/res/anim/right_menu_in_anim.xml
+app/src/main/res/anim/right_menu_out_anim.xml	ELIMINADO	app/src/main/res/anim/right_menu_out_anim.xml
 app/src/main/res/color/webtab_horizontal_text_selector.xml	ELIMINADO	app/src/main/res/color/webtab_horizontal_text_selector.xml
 app/src/main/res/drawable-hdpi/ic_launcher.png	PROPIO		
 app/src/main/res/drawable-mdpi/ic_launcher.png	PROPIO		
@@ -206,7 +206,7 @@ app/src/main/res/drawable/button_bg_selector.xml	MODIFICADO	app/src/main/res/dra
 app/src/main/res/drawable/floating_toolbar_bg.xml	PROPIO		
 app/src/main/res/drawable/forward_icon_selector.xml	IDENTICO	app/src/main/res/drawable/forward_icon_selector.xml	0
 app/src/main/res/drawable/gamepad_circle_up_24px.xml	IDENTICO	app/src/main/res/drawable/gamepad_circle_up_24px.xml	0
-app/src/main/res/drawable/gray_badge_bg.xml	IDENTICO	app/src/main/res/drawable/gray_badge_bg.xml	0
+app/src/main/res/drawable/gray_badge_bg.xml	ELIMINADO	app/src/main/res/drawable/gray_badge_bg.xml
 app/src/main/res/drawable/ic_adblock_off.xml	MODIFICADO	app/src/main/res/drawable/ic_adblock_off.xml	96
 app/src/main/res/drawable/ic_adblock_on.xml	MODIFICADO	app/src/main/res/drawable/ic_adblock_on.xml	95
 app/src/main/res/drawable/ic_arrow_back_grey_400_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_arrow_back_grey_400_24dp.xml	0
@@ -216,31 +216,31 @@ app/src/main/res/drawable/ic_arrow_forward_grey_900_24dp.xml	IDENTICO	app/src/ma
 app/src/main/res/drawable/ic_baseline_add_box_24.xml	IDENTICO	app/src/main/res/drawable/ic_baseline_add_box_24.xml	0
 app/src/main/res/drawable/ic_block_popups.xml	IDENTICO	app/src/main/res/drawable/ic_block_popups.xml	0
 app/src/main/res/drawable/ic_circle_plus.xml	IDENTICO	app/src/main/res/drawable/ic_circle_plus.xml	0
-app/src/main/res/drawable/ic_close_grey_900_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_close_grey_900_24dp.xml	0
-app/src/main/res/drawable/ic_close_grey_900_36dp.xml	IDENTICO	app/src/main/res/drawable/ic_close_grey_900_36dp.xml	0
+app/src/main/res/drawable/ic_close_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_close_grey_900_24dp.xml
+app/src/main/res/drawable/ic_close_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_close_grey_900_36dp.xml
 app/src/main/res/drawable/ic_delete_grey_400_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_delete_grey_400_24dp.xml	0
-app/src/main/res/drawable/ic_delete_grey_900_36dp.xml	IDENTICO	app/src/main/res/drawable/ic_delete_grey_900_36dp.xml	0
-app/src/main/res/drawable/ic_file_download_grey_900.xml	IDENTICO	app/src/main/res/drawable/ic_file_download_grey_900.xml	0
-app/src/main/res/drawable/ic_history_grey_900_36dp.xml	IDENTICO	app/src/main/res/drawable/ic_history_grey_900_36dp.xml	0
+app/src/main/res/drawable/ic_delete_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_delete_grey_900_36dp.xml
+app/src/main/res/drawable/ic_file_download_grey_900.xml	ELIMINADO	app/src/main/res/drawable/ic_file_download_grey_900.xml
+app/src/main/res/drawable/ic_history_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_history_grey_900_36dp.xml
 app/src/main/res/drawable/ic_home_grey_900_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_home_grey_900_24dp.xml	0
 app/src/main/res/drawable/ic_incognito.xml	IDENTICO	app/src/main/res/drawable/ic_incognito.xml	0
 app/src/main/res/drawable/ic_menu_24.xml	IDENTICO	app/src/main/res/drawable/ic_menu_24.xml	0
-app/src/main/res/drawable/ic_mic_none_grey_900_36dp.xml	IDENTICO	app/src/main/res/drawable/ic_mic_none_grey_900_36dp.xml	0
-app/src/main/res/drawable/ic_mode_edit_grey_400_18dp.xml	IDENTICO	app/src/main/res/drawable/ic_mode_edit_grey_400_18dp.xml	0
+app/src/main/res/drawable/ic_mic_none_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_mic_none_grey_900_36dp.xml
+app/src/main/res/drawable/ic_mode_edit_grey_400_18dp.xml	ELIMINADO	app/src/main/res/drawable/ic_mode_edit_grey_400_18dp.xml
 app/src/main/res/drawable/ic_not_available.xml	IDENTICO	app/src/main/res/drawable/ic_not_available.xml	0
 app/src/main/res/drawable/ic_refresh_grey_900_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_refresh_grey_900_24dp.xml	0
-app/src/main/res/drawable/ic_settings_grey_900_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_settings_grey_900_24dp.xml	0
-app/src/main/res/drawable/ic_star_border_grey_900_36dp.xml	IDENTICO	app/src/main/res/drawable/ic_star_border_grey_900_36dp.xml	0
+app/src/main/res/drawable/ic_settings_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_settings_grey_900_24dp.xml
+app/src/main/res/drawable/ic_star_border_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_star_border_grey_900_36dp.xml
 app/src/main/res/drawable/ic_zoom_in_gray_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_zoom_in_gray_24dp.xml	0
 app/src/main/res/drawable/ic_zoom_out_gray_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_zoom_out_gray_24dp.xml	0
-app/src/main/res/drawable/list_item_bg_selector.xml	IDENTICO	app/src/main/res/drawable/list_item_bg_selector.xml	0
-app/src/main/res/drawable/settings_row_bg.xml	PROPIO		
-app/src/main/res/drawable/settings_row_bg_selected.xml	PROPIO		
+app/src/main/res/drawable/list_item_bg_selector.xml	ELIMINADO	app/src/main/res/drawable/list_item_bg_selector.xml
+app/src/main/res/drawable/list_row_bg.xml	PROPIO
+app/src/main/res/drawable/list_row_bg_focused.xml	PROPIO
 app/src/main/res/drawable/settings_tab_bg_selector.xml	MODIFICADO	app/src/main/res/drawable/settings_tab_bg_selector.xml	45
 app/src/main/res/drawable/text_link_background_selector.xml	ELIMINADO	app/src/main/res/drawable/text_link_background_selector.xml	
 app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	REESCRITO	app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	89
-app/src/main/res/layout/activity_downloads.xml	MODIFICADO	app/src/main/res/layout/activity_downloads.xml	4
-app/src/main/res/layout/activity_history.xml	MODIFICADO	app/src/main/res/layout/activity_history.xml	3
+app/src/main/res/layout/activity_downloads.xml	REESCRITO	app/src/main/res/layout/activity_downloads.xml	38
+app/src/main/res/layout/activity_history.xml	REESCRITO	app/src/main/res/layout/activity_history.xml	67
 app/src/main/res/layout/activity_main.xml	MODIFICADO	app/src/main/res/layout/activity_main.xml	32
 app/src/main/res/layout/dialog_favorites.xml	IDENTICO	app/src/main/res/layout/dialog_favorites.xml	0
 app/src/main/res/layout/dialog_new_favorite_item.xml	MODIFICADO	app/src/main/res/layout/dialog_new_favorite_item.xml	5
@@ -249,10 +249,11 @@ app/src/main/res/layout/dialog_settings.xml	MODIFICADO	app/src/main/res/layout/d
 app/src/main/res/layout/dialog_shortcut.xml	MODIFICADO	app/src/main/res/layout/dialog_shortcut.xml	5
 app/src/main/res/layout/view_actionbar.xml	MODIFICADO	app/src/main/res/layout/view_actionbar.xml	56
 app/src/main/res/layout/view_cursor_menu.xml	MODIFICADO	app/src/main/res/layout/view_cursor_menu.xml	26
-app/src/main/res/layout/view_download_item.xml	MODIFICADO	app/src/main/res/layout/view_download_item.xml	6
+app/src/main/res/layout/view_download_item.xml	REESCRITO	app/src/main/res/layout/view_download_item.xml	57
 app/src/main/res/layout/view_favorite_item.xml	MODIFICADO	app/src/main/res/layout/view_favorite_item.xml	4
-app/src/main/res/layout/view_history_header_item.xml	IDENTICO	app/src/main/res/layout/view_history_header_item.xml	0
-app/src/main/res/layout/view_history_item.xml	MODIFICADO	app/src/main/res/layout/view_history_item.xml	8
+app/src/main/res/layout/view_history_header_item.xml	ELIMINADO	app/src/main/res/layout/view_history_header_item.xml
+app/src/main/res/layout/view_history_item.xml	REESCRITO	app/src/main/res/layout/view_history_item.xml	56
+app/src/main/res/layout/view_list_date_header.xml	PROPIO
 app/src/main/res/layout/view_horizontal_webtab_item.xml	REESCRITO	app/src/main/res/layout/view_horizontal_webtab_item.xml	65
 app/src/main/res/layout/view_notification.xml	MODIFICADO	app/src/main/res/layout/view_notification.xml	3
 app/src/main/res/layout/view_setting_button.xml	PROPIO		
@@ -266,7 +267,7 @@ app/src/main/res/layout/view_setting_value.xml	PROPIO
 app/src/main/res/layout/view_settings_main.xml	MODIFICADO	app/src/main/res/layout/view_settings_main.xml	10
 app/src/main/res/layout/view_settings_version.xml	ELIMINADO	app/src/main/res/layout/view_settings_version.xml	
 app/src/main/res/layout/view_shortcut.xml	ELIMINADO	app/src/main/res/layout/view_shortcut.xml	
-app/src/main/res/layout/view_speach_recognizer_results.xml	MODIFICADO	app/src/main/res/layout/view_speach_recognizer_results.xml	3
+app/src/main/res/layout/view_speach_recognizer_results.xml	ELIMINADO	app/src/main/res/layout/view_speach_recognizer_results.xml
 app/src/main/res/layout/view_tabs.xml	MODIFICADO	app/src/main/res/layout/view_tabs.xml	26
 app/src/main/res/menu/menu_link.xml	IDENTICO	app/src/main/res/menu/menu_link.xml	0
 app/src/main/res/values-de/strings.xml	MODIFICADO	app/src/main/res/values-de/strings.xml	18
@@ -292,6 +293,7 @@ app/src/main/res/values/themes.xml	MODIFICADO	app/src/main/res/values/themes.xml
 app/src/main/res/xml/provider_paths.xml	IDENTICO	app/src/main/res/xml/provider_paths.xml	0
 app/src/release/AndroidManifest.xml	IDENTICO	app/src/release/AndroidManifest.xml	0
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/history/HistorySearchTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/history/HistorySelectionTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ActiveModelConstructorTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockDecisionCacheTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockPopupAndCosmeticTest.kt	PROPIO		
