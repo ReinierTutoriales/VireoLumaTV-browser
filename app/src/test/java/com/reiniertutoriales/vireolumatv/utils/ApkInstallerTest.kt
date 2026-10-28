@@ -36,9 +36,9 @@ class ApkInstallerTest {
     }
 
     @Test
-    fun fileInsideTheCacheIsSharedThroughTheProviderAuthority() {
+    fun verifiedUpdateDirectoryIsSharedThroughTheProviderAuthority() {
         val app = RuntimeEnvironment.getApplication()
-        val apk = java.io.File(app.cacheDir, "app.apk").apply { writeText("apk") }
+        val apk = java.io.File(app.cacheDir, "updates/app.apk").apply { parentFile!!.mkdirs(); writeText("apk") }
 
         ApkInstaller.launch(app, download(apk.absolutePath))
 
@@ -54,6 +54,29 @@ class ApkInstallerTest {
         ApkInstaller.launch(app, download("/data/not-shared/app.apk"))
 
         assertNull(shadowOf(app).nextStartedActivity)
+    }
+
+    @Test
+    fun unrelatedCacheAndExternalFilesCannotBeSharedWithTheInstaller() {
+        val app = RuntimeEnvironment.getApplication()
+        for (file in listOf(java.io.File(app.cacheDir, "favicons/private.png"),
+            java.io.File(android.os.Environment.getExternalStorageDirectory(), "Documents/private.txt"))) {
+            file.parentFile!!.mkdirs()
+            file.writeText("private")
+            ApkInstaller.launch(app, download(file.absolutePath))
+            assertNull(shadowOf(app).nextStartedActivity)
+        }
+    }
+
+    @Test
+    fun legacyPublicDownloadCanStillBeInstalled() {
+        val app = RuntimeEnvironment.getApplication()
+        val file = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(
+            android.os.Environment.DIRECTORY_DOWNLOADS), "legacy.apk").apply {
+            parentFile!!.mkdirs(); writeText("apk")
+        }
+        ApkInstaller.launch(app, download(file.absolutePath))
+        assertEquals("content", shadowOf(app).nextStartedActivity?.data?.scheme)
     }
 
     @Test
