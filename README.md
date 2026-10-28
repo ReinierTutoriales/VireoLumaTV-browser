@@ -1,6 +1,6 @@
 # VireoLumaTV
 
-Navegador para Android TV desarrollado y mantenido por **ReinierTutoriales**.
+Navegador para Android TV, Google TV y TV boxes compatibles, desarrollado y mantenido por **ReinierTutoriales**.
 Utiliza Android System WebView y funciona con mando o gamepad desde Android 7.0 (API 24).
 
 ## Descargar e instalar
@@ -11,7 +11,7 @@ Elige el APK compatible con tu dispositivo:
 
 | Arquitectura | Dispositivo |
 |---|---|
-| `armeabi-v7a` | Android de 32 bits, incluido el onn de referencia de 32 bits |
+| `armeabi-v7a` | Dispositivos ARM con Android de 32 bits |
 | `arm64-v8a` | Android de 64 bits |
 | `x86_64` | Equipos Intel/AMD o emuladores compatibles |
 

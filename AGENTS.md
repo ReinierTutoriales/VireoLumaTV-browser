@@ -24,8 +24,10 @@ exact head is the integration gate; report local tests and CI separately.
 - Do not invent APIs, behaviors, or engine features not present in the codebase.
 
 ## Target and validation (mandatory)
-- The product is a browser for Android TV in general: any API 24+ TV-class device, D-pad and gamepad input,
-  1–2 GB RAM. No behavior may depend on one model.
+- Target Android TV, Google TV and compatible TV boxes on API 24+, with D-pad and gamepad input.
+  Keep low-memory devices usable without limiting support to one RAM size or manufacturer.
+  Select behavior through Android API levels, WebView feature checks and reported capabilities; never special-case a model.
+  Validate the shipped armv7, arm64 and x86_64 variants and include low-memory and newer-device configurations.
 - Verify in this order, and report only what was run: (1) build and unit tests, (2) Android TV emulator or
   device with D-pad input for focus and navigation changes, (3) a reference low-RAM device for memory and
   rendering claims. Do not ask the owner for a specific device unless the change cannot be checked otherwise.

@@ -1,12 +1,12 @@
 ---
 name: source-migration
-description: Use when replacing inherited TV Bro code, layouts, assets or text in VireoLumaTV and recording whether a module can be considered independently implemented. Tracks provenance and behavior without mistaking Git blame or renamed files for proof of ownership.
+description: Use when replacing existing code, layouts, assets or text in VireoLumaTV and recording whether a module can be considered independently implemented. Tracks provenance and behavior without mistaking Git blame or renamed files for proof of ownership.
 ---
 
 # Source migration
 
 1. Start from the current branch SHA and the affected rows in
-   `docs/audit/UPSTREAM_TVBRO_INVENTORY_REWRITE_20261027.tsv`. Its labels are
+   `docs/audit/SOURCE_INVENTORY.tsv`. Its labels are
    historical: confirm each file still exists and compare actual contents.
 2. Define the observable contract from product requirements, call sites and
    focused tests: inputs, outputs, persisted data, Android API levels, focus
@@ -18,7 +18,7 @@ description: Use when replacing inherited TV Bro code, layouts, assets or text i
 4. Compare old and new behavior with affected unit tests, neighboring suites,
    lint and minified release CI on the exact SHA. List any WebView, remote,
    renderer or memory behavior requiring a physical TV check.
-5. Update the affected inventory rows and `docs/audit/TVBRO_REMOVAL_BACKLOG_20261027.md`
+5. Update the affected inventory rows and `docs/audit/README.md`
    with the measured method and SHA. Separate still present routes from actual
    retained expression; never extrapolate a whole-project percentage from a
    single module.

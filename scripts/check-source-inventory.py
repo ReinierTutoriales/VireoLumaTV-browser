@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
-INVENTORY = ROOT / 'docs/audit/UPSTREAM_TVBRO_INVENTORY_REWRITE_20261027.tsv'
+INVENTORY = ROOT / 'docs/audit/SOURCE_INVENTORY.tsv'
 LABELS = {'PROPIO', 'REESCRITO', 'REGENERADO', 'MODIFICADO', 'IDENTICO', 'IDENTICO_BLOB', 'ELIMINADO'}
 
 

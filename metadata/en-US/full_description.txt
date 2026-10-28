@@ -5,4 +5,3 @@ Use the remote to browse, switch tabs, save pages and manage downloads. The addr
 Pages run in the Android system WebView. Filter lists are fetched from their configured providers. Private mode excludes visits from normal history; downloaded files and saved bookmarks remain on the device.
 
 Source and support: https://github.com/ReinierTutoriales/VireoLumaTV-browser
-Based on the source code of TV Bro by Fedir Tsapana: https://github.com/truefedex/tv-bro
