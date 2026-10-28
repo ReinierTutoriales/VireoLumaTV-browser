@@ -73,8 +73,8 @@ android {
         applicationId = "com.reiniertutoriales.vireolumatv"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 93
-        versionName = "1.2.2"
+        versionCode = 94
+        versionName = "2.0.0"
     }
 
     // Release keys come from the environment (CI secrets); without them the release is unsigned,
