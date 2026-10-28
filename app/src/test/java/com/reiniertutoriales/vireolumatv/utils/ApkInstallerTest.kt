@@ -6,6 +6,7 @@ import com.reiniertutoriales.vireolumatv.model.Download
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -17,6 +18,17 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [28])
 class ApkInstallerTest {
+    @Before fun attachProviderToThisTestsStorage() {
+        val app = RuntimeEnvironment.getApplication()
+        org.robolectric.shadows.ShadowEnvironment.setExternalStoragePublicDirectory(
+            android.os.Environment.getExternalStorageDirectory().toPath())
+        // Android attaches a fresh provider per process. Reset its cached path strategy for the
+        // fresh Robolectric storage roots without changing the production paths or assertions.
+        val info = requireNotNull(app.packageManager.resolveContentProvider(app.packageName + ".provider",
+            android.content.pm.PackageManager.GET_META_DATA))
+        androidx.core.content.FileProvider().attachInfo(app, info)
+    }
+
     private fun download(path: String) = Download().apply { filepath = path; filename = "app.apk" }
 
     @Test
@@ -71,13 +83,12 @@ class ApkInstallerTest {
     @Test
     fun legacyPublicDownloadCanStillBeInstalled() {
         val app = RuntimeEnvironment.getApplication()
-        // Robolectric keeps separate default roots for these two Environment APIs.
-        org.robolectric.shadows.ShadowEnvironment.setExternalStoragePublicDirectory(
-            android.os.Environment.getExternalStorageDirectory().toPath())
         val file = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(
             android.os.Environment.DIRECTORY_DOWNLOADS), "legacy.apk").apply {
             parentFile!!.mkdirs(); writeText("apk")
         }
+        val uri = androidx.core.content.FileProvider.getUriForFile(app, app.packageName + ".provider", file)
+        assertEquals("downloaded_files", uri.pathSegments.first())
         ApkInstaller.launch(app, download(file.absolutePath))
         assertEquals("content", shadowOf(app).nextStartedActivity?.data?.scheme)
     }
