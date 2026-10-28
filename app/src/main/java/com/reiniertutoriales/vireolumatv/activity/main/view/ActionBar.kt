@@ -36,7 +36,7 @@ class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet?
     val refreshButton: ImageButton get() = ui.ibRefresh
     val homeButton: ImageButton get() = ui.ibHome
     val adBlockButton: ImageButton get() = ui.ibAdBlock
-    private val commands get() = listOf(ui.ibBack, ui.ibForward, ui.ibRefresh, ui.ibHome, ui.ibAdBlock, ui.ibMenu)
+    private val commands = listOf(ui.ibBack, ui.ibForward, ui.ibRefresh, ui.ibHome, ui.ibAdBlock, ui.ibMenu)
     private var pageAddress = ""
     private var editing = false
     private var enteringSuggestions = false
@@ -53,7 +53,7 @@ class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet?
             ui.etUrl.setOnFocusChangeListener { _, focused ->
                 if (!focused && editing && !enteringSuggestions) finishEditing(cancelled = true)
             }
-            ui.etUrl.doAfterTextChanged { if (editing) callback?.onAddressTyped(it.toString()) }
+            ui.etUrl.doAfterTextChanged { if (editing) callback?.onAddressTyped(it?.toString().orEmpty()) }
             ui.etUrl.setOnKeyListener { _, code, event -> handleAddressKey(code, event) }
             ui.etUrl.setOnEditorActionListener { _, action, _ ->
                 when (action) {
@@ -115,7 +115,7 @@ class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet?
         val down = event.action == KeyEvent.ACTION_DOWN
         return when (code) {
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                if (!down && !event.isCanceled) {
+                if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) {
                     if (editing) confirmAddress() else beginEditing()
                 }
                 true

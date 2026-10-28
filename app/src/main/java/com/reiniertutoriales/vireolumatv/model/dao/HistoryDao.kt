@@ -11,8 +11,9 @@ interface HistoryDao {
     @Query("SELECT * FROM history")
     suspend fun getAll(): List<HistoryItem>
 
-    @Query("SELECT COUNT(*) FROM history")
-    suspend fun count(): Int
+    /** Trimming needs a threshold decision, not a count of the entire table. */
+    @Query("SELECT EXISTS(SELECT 1 FROM history LIMIT 1 OFFSET :threshold)")
+    suspend fun exceeds(threshold: Int): Boolean
 
     /** The [limit] most recent visits. */
     @Query("SELECT * FROM history ORDER BY time DESC, id DESC LIMIT :limit")

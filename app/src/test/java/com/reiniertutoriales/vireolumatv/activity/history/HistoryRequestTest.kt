@@ -20,7 +20,7 @@ class HistoryRequestTest {
             override suspend fun page(beforeTime: Long?, beforeId: Long) = waiting.await()
             override suspend fun search(pattern: String) = listOf(HistoryItem().apply { title = pattern })
             override suspend fun getAll() = emptyList<HistoryItem>()
-            override suspend fun count() = 0
+            override suspend fun exceeds(threshold: Int) = false
             override suspend fun last(limit: Int) = emptyList<HistoryItem>()
             override suspend fun insert(item: HistoryItem) = 0L
             override suspend fun updateTitle(id: Long, title: String) {}

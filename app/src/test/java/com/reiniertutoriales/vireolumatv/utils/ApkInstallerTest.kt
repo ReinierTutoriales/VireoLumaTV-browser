@@ -6,6 +6,7 @@ import com.reiniertutoriales.vireolumatv.model.Download
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -17,6 +18,17 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [28])
 class ApkInstallerTest {
+    @Before fun attachProviderToThisTestsStorage() {
+        val app = RuntimeEnvironment.getApplication()
+        org.robolectric.shadows.ShadowEnvironment.setExternalStoragePublicDirectory(
+            android.os.Environment.getExternalStorageDirectory().toPath())
+        // Android attaches a fresh provider per process. Reset its cached path strategy for the
+        // fresh Robolectric storage roots without changing the production paths or assertions.
+        val info = requireNotNull(app.packageManager.resolveContentProvider(app.packageName + ".provider",
+            android.content.pm.PackageManager.GET_META_DATA))
+        androidx.core.content.FileProvider().attachInfo(app, info)
+    }
+
     private fun download(path: String) = Download().apply { filepath = path; filename = "app.apk" }
 
     @Test
@@ -71,12 +83,14 @@ class ApkInstallerTest {
     @Test
     fun legacyDownloadInSharedDirectoryCanStillBeInstalled() {
         val app = RuntimeEnvironment.getApplication()
-        // FileProvider maps Download/ under the external storage root; Robolectric's
-        // public-directory shadow uses a different root from the provider shadow.
+        // FileProvider maps Download/ under the external storage root; Robolectric uses a
+        // separate public-directory shadow. Keep this mapping test on the declared shared root.
         val file = java.io.File(android.os.Environment.getExternalStorageDirectory(),
             "Download/legacy.apk").apply {
             parentFile!!.mkdirs(); writeText("apk")
         }
+        val uri = androidx.core.content.FileProvider.getUriForFile(app, app.packageName + ".provider", file)
+        assertEquals("downloaded_files", uri.pathSegments.first())
         ApkInstaller.launch(app, download(file.absolutePath))
         assertEquals("content", shadowOf(app).nextStartedActivity?.data?.scheme)
     }

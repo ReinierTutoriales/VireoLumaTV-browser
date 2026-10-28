@@ -47,7 +47,7 @@ class MainActivityViewModel : ActiveModel() {
     /** Past [HISTORY_TRIM_THRESHOLD] visits, those older than [HISTORY_KEEP_DAYS] days are removed. */
     private suspend fun trimHistory() {
         val history = AppDatabase.db.historyDao()
-        if (history.count() > HISTORY_TRIM_THRESHOLD) {
+        if (history.exceeds(HISTORY_TRIM_THRESHOLD)) {
             history.deleteWhereTimeLessThan(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(HISTORY_KEEP_DAYS))
         }
     }

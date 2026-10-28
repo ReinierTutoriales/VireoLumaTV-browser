@@ -47,5 +47,8 @@ interface TabsDao {
     }
 
     @Transaction
-    suspend fun updatePositions(tabs: List<WebTabState>) = tabs.forEach { updatePosition(it.position, it.id) }
+    suspend fun updatePositions(tabs: List<WebTabState>) {
+        val positions = tabs.map { it.id to it.position }
+        for ((id, position) in positions) updatePosition(position, id)
+    }
 }

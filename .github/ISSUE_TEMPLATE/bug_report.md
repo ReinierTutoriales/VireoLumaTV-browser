@@ -1,37 +1,19 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Browser problem
+about: Report a reproducible VireoLumaTV failure
 title: ''
-labels: bug, enhancement
+labels: bug
 assignees: ''
-
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+App version and build variant:
+Android version, TV model and WebView provider/version:
+Input device (remote, gamepad, keyboard or mouse):
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Steps from opening the app to the failure:
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+Expected result:
+Observed result:
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Environment (please complete the following information):**
- - OS version: [e.g. Android TV 10]
- - Device [e.g. NVidia Shield Pro 2015]
- - VireoLumaTV version [e.g. v1.8.1]
- - URL or domain name where problem can be reproduced [optional, e.g. https://google.com]
-
-**Additional context**
-Add any other context about the problem here.
-
-### VireoLumaTV support
-
-Use this repository for VireoLumaTV issues. Include the app version, device model, and steps to reproduce. Support for this fork is independent of the original TV Bro project.
+Does the problem also happen with page blocking disabled, or in a new tab?
+Include a reproducible page address and relevant logs or screenshots when available.
