@@ -20,8 +20,8 @@ protección de rama ni impiden un merge en GitHub**. No se ha modificado esa
 configuración administrativa.
 
 El repositorio usa WebView del sistema con AndroidX WebKit. La biblioteca
-`androidx.webkit:webkit:1.17.1` coincide con la estable publicada oficialmente
-al consultar el 7 de octubre [O4]. Actualizarla no sustituye el proveedor Blink
+`androidx.webkit:webkit:1.18.0` coincide con la estable publicada oficialmente
+el 21 de octubre de 2026, según consulta del 28 de octubre [O4]. Actualizarla no sustituye el proveedor Blink
 instalado por Android/OEM, ni garantiza soporte de todas sus funciones.
 
 Hay una WebView viva por política de recursos; otras pestañas guardan estado y
