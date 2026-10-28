@@ -74,6 +74,7 @@
   <string name="ssl_idmismatch">Невідповідність імені хоста</string>
   <string name="ssl_date_invalid">Дата сертифіката недійсна</string>
   <string name="ssl_invalid">Виникла загальна помилка</string>
+  <string name="ssl_untrusted">Центр сертифікації не є довіреним</string>
   <string name="back_to_safety">Повернення до безпеки</string>
   <string name="go_im_aware">Вперед. Я знаю про ризик</string>
   <string name="connection_isnt_secure">Підключення не захищено</string>

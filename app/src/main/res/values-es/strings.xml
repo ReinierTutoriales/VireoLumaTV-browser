@@ -86,6 +86,7 @@
     <string name="ssl_idmismatch">El nombre del servidor no coincide</string>
     <string name="ssl_date_invalid">La fecha del certificado no es válida</string>
     <string name="ssl_invalid">Se produjo un error de certificado</string>
+    <string name="ssl_untrusted">La autoridad de certificación no es de confianza</string>
     <string name="back_to_safety">Volver a un lugar seguro</string>
     <string name="go_im_aware">Continuar. Conozco el riesgo</string>
     <string name="connection_isnt_secure">La conexión no es segura</string>

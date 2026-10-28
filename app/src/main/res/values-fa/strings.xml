@@ -79,6 +79,7 @@
   <string name="ssl_idmismatch">"عدم تطابق نام میزبان"</string>
   <string name="ssl_date_invalid">"تاریخ گواهی نامعتبر است"</string>
   <string name="ssl_invalid">"یک خطای عمومی رخ داد"</string>
+  <string name="ssl_untrusted">مرجع صدور گواهی مورد اعتماد نیست</string>
   <string name="back_to_safety">"بازگشت به ایمنی"</string>
   <string name="go_im_aware">"برو.من از خطر آگاه هستم"</string>
   <string name="connection_isnt_secure">"اتصال امن نیست"</string>

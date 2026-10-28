@@ -83,6 +83,7 @@
   <string name="ssl_idmismatch">主机名不匹配</string>
   <string name="ssl_date_invalid">证书日期无效</string>
   <string name="ssl_invalid">发生一般错误</string>
+  <string name="ssl_untrusted">证书颁发机构不受信任</string>
   <string name="back_to_safety">返回到安全连接</string>
   <string name="go_im_aware">我已知晓风险，继续</string>
   <string name="connection_isnt_secure">连接不安全</string>

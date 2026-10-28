@@ -14,7 +14,7 @@
 -keepclassmembers class com.reiniertutoriales.vireolumatv.model.** {
    public *;
 }
--keepclassmembers class com.reiniertutoriales.vireolumatv.webengine.webview.AndroidJSInterface {
+-keepclassmembers class com.reiniertutoriales.vireolumatv.webengine.webview.PageBridge {
    public *;
    private *;
 }

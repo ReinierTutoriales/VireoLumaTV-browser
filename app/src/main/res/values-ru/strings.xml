@@ -81,6 +81,7 @@
   <string name="ssl_idmismatch">Несоответствие имени хоста</string>
   <string name="ssl_date_invalid">Дата сертификата недействительна</string>
   <string name="ssl_invalid">Произошла общая ошибка</string>
+  <string name="ssl_untrusted">Центр сертификации не является доверенным</string>
   <string name="back_to_safety">Вернуться к безопасности</string>
   <string name="go_im_aware">Вперёд. Я осознаю риск</string>
   <string name="connection_isnt_secure">Соединение не защищено</string>

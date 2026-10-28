@@ -85,6 +85,7 @@
   <string name="ssl_idmismatch">Hostname non corrispondente</string>
   <string name="ssl_date_invalid">La data del certificato non è valida</string>
   <string name="ssl_invalid">Si è verificato un errore</string>
+  <string name="ssl_untrusted">L\'autorità di certificazione non è attendibile</string>
   <string name="back_to_safety">Torna in zona sicura</string>
   <string name="go_im_aware">Ok. Sono consapevole del rischio</string>
   <string name="connection_isnt_secure">Connessione non sicura</string>

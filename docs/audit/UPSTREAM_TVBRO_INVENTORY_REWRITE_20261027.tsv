@@ -104,7 +104,7 @@ app/src/main/assets/pages/home/mic.svg	IDENTICO_BLOB	app/src/main/assets/pages/h
 app/src/main/assets/pages/home/more.svg	IDENTICO_BLOB	app/src/main/assets/pages/home/more.svg	0
 app/src/main/assets/pages/home/search.svg	IDENTICO_BLOB	app/src/main/assets/pages/home/search.svg	0
 app/src/main/assets/pages/ic_warning.svg	IDENTICO_BLOB	app/src/main/assets/pages/ic_warning.svg	0
-app/src/main/assets/pages/warning-certificate.html	MODIFICADO	app/src/main/assets/pages/warning-certificate.html	13
+app/src/main/assets/pages/warning-certificate.html	REESCRITO	app/src/main/assets/pages/warning-certificate.html	88
 app/src/main/assets/surrogates/adsbygoogle.js	PROPIO		
 app/src/main/assets/surrogates/analytics.js	PROPIO		
 app/src/main/assets/surrogates/google-ima.js	PROPIO		
@@ -188,13 +188,16 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/utils/StringUtils.kt	ELIMINA
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ViewFaviconLoader.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/VoiceSearchHelper.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/utils/VoiceSearchHelper.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/AdblockPageController.kt	PROPIO		
-app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/AndroidJSInterface.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt	71
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/AndroidJSInterface.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobTransfers.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicy.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserChromeClient.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserWebViewClient.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateTrust.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateWarningPage.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageHelper.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/HomePageHelper.kt	48
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicy.kt	PROPIO		
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridge.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissions.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/Scripts.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/Scripts.kt	69
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnostics.kt	PROPIO		

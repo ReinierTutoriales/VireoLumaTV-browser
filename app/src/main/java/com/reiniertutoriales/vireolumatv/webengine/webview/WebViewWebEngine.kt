@@ -37,7 +37,7 @@ class WebViewWebEngine(val tab: WebTabState) : PageEngine, CursorDrawerDelegate.
     private var fullscreenView: View? = null
     /** Pending Android permission requests: code to "is it the location request". */
     private val permissionRequests = HashMap<Int, Boolean>()
-    internal val jsInterface = AndroidJSInterface(this)
+    internal val bridge = PageBridge(this)
 
     private val adblockEnabled get() = tab.adblock ?: AppContext.provideConfig().adBlockEnabled
 

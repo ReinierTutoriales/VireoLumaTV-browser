@@ -85,6 +85,7 @@
   <string name="ssl_idmismatch">Niedopasowanie nazwy hosta</string>
   <string name="ssl_date_invalid">Data certyfikatu jest nieważna</string>
   <string name="ssl_invalid">Wystąpił błąd ogólny</string>
+  <string name="ssl_untrusted">Urząd certyfikacji nie jest zaufany</string>
   <string name="back_to_safety">Wróć do bezpiecznej strony</string>
   <string name="go_im_aware">Przejdź dalej. Jestem świadomy ryzyka</string>
   <string name="connection_isnt_secure">Połączenie nie jest zabezpieczone</string>

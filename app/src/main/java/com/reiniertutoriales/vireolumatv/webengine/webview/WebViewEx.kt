@@ -75,7 +75,7 @@ open class WebViewEx(context: Context, internal val engine: WebViewWebEngine) : 
             // Blob downloads are read by the injected script; everything else goes to the download service.
             if (!url.startsWith("blob:")) window?.onPageDownload(url, userAgent, contentDisposition, mimetype, contentLength)
         }
-        addJavascriptInterface(engine.jsInterface, JS_INTERFACE_NAME)
+        addJavascriptInterface(engine.bridge, JS_INTERFACE_NAME)
         // Before the first navigation, so the first page already sees the codec policy.
         mediaPolicy.refresh()
     }
@@ -145,11 +145,19 @@ open class WebViewEx(context: Context, internal val engine: WebViewWebEngine) : 
 
     private fun loadBlank() = loadDataWithBaseURL(null, "", "text/html", "UTF-8", null)
 
+    /** The certificate warning is the only internal page, and only for the error being shown. */
     private fun loadInternal(uri: Uri) {
         if (uri.authority != INTERNAL_SCHEME_WARNING_DOMAIN || uri.getQueryParameter("type") != INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT) return
-        val page = context.assets.open(CERTIFICATE_WARNING_ASSET).bufferedReader().use { it.readText() }
-        loadDataWithBaseURL(ASSET_BASE, page, "text/html", "UTF-8", uri.getQueryParameter("url"))
+        val error = lastSSLError ?: return
+        val template = context.assets.open(CERTIFICATE_WARNING_ASSET).bufferedReader().use { it.readText() }
+        loadDataWithBaseURL(ASSET_BASE, CertificateWarningPage.render(context, template, error.url, error.primaryError,
+            error.certificate?.toString().orEmpty()), "text/html", "UTF-8",
+            uri.getQueryParameter("url"))
     }
+
+    /** The error the certificate warning on screen is about; null on any other page. */
+    internal fun shownCertificateError(): SslError? =
+        lastSSLError?.takeIf { BridgePagePolicy.isCertificatePage(currentOriginalUrl, certificateErrorPageUrl, true) }
 
     /** Replaces the page with the certificate warning, which can offer to trust [error] once. */
     internal fun showCertificateErrorPage(error: SslError) {

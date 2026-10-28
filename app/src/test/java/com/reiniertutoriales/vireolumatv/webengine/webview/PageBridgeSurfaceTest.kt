@@ -4,21 +4,17 @@ import android.webkit.JavascriptInterface
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/**
- * Every method here is callable from any page loaded in the WebView. The set must match the
- * methods the packaged scripts actually call.
- */
-class AndroidJSInterfaceSurfaceTest {
+/** Every bridge method is callable by any page; the set must be exactly what the packaged scripts call. */
+class PageBridgeSurfaceTest {
     @Test
     fun bridgeExposesOnlyMethodsThePackagedPagesCall() {
-        val exposed = AndroidJSInterface::class.java.methods
+        val exposed = PageBridge::class.java.methods
             .filter { it.isAnnotationPresent(JavascriptInterface::class.java) }
             .map { it.name }
             .toSet()
         assertEquals(
             setOf(
-                "pageFilters", "hiddenSelectors", "mediaStarted",
-                "currentUrl", "reloadWithSslTrust", "getStringByName", "lastSSLError",
+                "pageFilters", "hiddenSelectors", "mediaStarted", "trustCertificateOnce",
                 "beginBlobDownload", "acceptBlobSize", "cancelBlobDownload", "takeBlobDownloadData",
             ),
             exposed,

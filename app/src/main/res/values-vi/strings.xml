@@ -83,6 +83,7 @@
   <string name="ssl_idmismatch">Tên máy chủ không khớp</string>
   <string name="ssl_date_invalid">Ngày tháng của chứng chỉ không hợp lệ</string>
   <string name="ssl_invalid">Đã xảy ra lỗi</string>
+  <string name="ssl_untrusted">Tổ chức cấp chứng chỉ không đáng tin cậy</string>
   <string name="back_to_safety">Quay lại an toàn</string>
   <string name="go_im_aware">Tiếp tục. Tôi chấp nhận rủi ro</string>
   <string name="connection_isnt_secure">Kết nối không an toàn</string>

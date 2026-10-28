@@ -78,6 +78,7 @@
     <string name="ssl_idmismatch">主機名稱不相符</string>
     <string name="ssl_date_invalid">證書日期無效</string>
     <string name="ssl_invalid">發生一般錯誤</string>
+    <string name="ssl_untrusted">憑證授權單位不受信任</string>
     <string name="back_to_safety">返回安全瀏覽</string>
     <string name="go_im_aware">繼續。我了解風險</string>
     <string name="connection_isnt_secure">連線不安全</string>

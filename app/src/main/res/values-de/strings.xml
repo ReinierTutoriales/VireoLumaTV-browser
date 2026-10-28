@@ -83,6 +83,7 @@
   <string name="ssl_idmismatch">Hostname stimmt nicht überein</string>
   <string name="ssl_date_invalid">Datum des Zertifikats ungültig</string>
   <string name="ssl_invalid">Ein Fehler ist aufgetreten</string>
+  <string name="ssl_untrusted">Die Zertifizierungsstelle ist nicht vertrauenswürdig</string>
   <string name="back_to_safety">Zurück in Sicherheit</string>
   <string name="go_im_aware">Weiter, ich kenne das Risiko! </string>
   <string name="connection_isnt_secure">Unsichere Verbindung</string>

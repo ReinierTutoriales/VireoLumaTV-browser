@@ -78,6 +78,7 @@
   <string name="ssl_idmismatch">"אי התאמה בין שם המארח"</string>
   <string name="ssl_date_invalid">"תאריך התעודה אינו תקין"</string>
   <string name="ssl_invalid">"אירעה שגיאה גנרית"</string>
+  <string name="ssl_untrusted">רשות האישורים אינה מהימנה</string>
   <string name="back_to_safety">"בחזרה למקום מבטחים"</string>
   <string name="go_im_aware">"עבור. אני מודע לסיכון"</string>
   <string name="connection_isnt_secure">"החיבור אינו מאובטח"</string>
