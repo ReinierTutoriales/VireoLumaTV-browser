@@ -19,7 +19,11 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 @RoboConfig(application = VireoLumaTVApp::class, sdk = [28])
 class VisitHistoryTest {
-    @Before fun emptyHistory() = runBlocking { withContext(Dispatchers.IO) { AppDatabase.db.clearAllTables() } }
+    @Before fun emptyHistory() = runBlocking {
+        // Private mode skips history; other tests may leave it on in the shared settings.
+        com.reiniertutoriales.vireolumatv.AppContext.provideConfig().incognitoMode = false
+        withContext(Dispatchers.IO) { AppDatabase.db.clearAllTables() }
+    }
 
     private fun stored(): List<String> = runBlocking { withContext(Dispatchers.IO) { AppDatabase.db.historyDao().getAll().map { "${it.title}|${it.url}" } } }
 

@@ -66,8 +66,12 @@ class MainActivityViewModel : ActiveModel() {
         lastVisit = visit
         pendingVisit = modelScope.launch {
             delay(VISIT_SETTLE_MS)
-            visit.id = AppDatabase.db.historyDao().insert(visit)
+            val history = AppDatabase.db.historyDao()
+            val insertedTitle = visit.title
+            visit.id = history.insert(visit)
             visit.saved = true
+            // A title that arrived while the row was being written is applied now.
+            if (visit.title != insertedTitle) history.updateTitle(visit.id, visit.title)
         }
     }
 
