@@ -429,3 +429,4 @@ scripts/test-webview-controls.cjs	PROPIO
 scripts/test-window-open-decoy.cjs	PROPIO
 scripts/test-youtube-adblock.cjs	PROPIO
 settings.gradle.kts	REESCRITO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/WindowBackgroundTest.kt	PROPIO
