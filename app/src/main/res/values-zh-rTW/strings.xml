@@ -47,8 +47,8 @@
     <string name="zoom_in">放大</string>
     <string name="zoom_out">縮小</string>
     <string name="not_set">未設定</string>
-    <string name="action">操作：</string>
     <string name="current_key">目前按鍵：</string>
+    <string name="key_code_d">按鍵 %d</string>
     <string name="set_key_for_action">設定操作按鍵</string>
     <string name="press_eny_key">點擊任意按鍵…</string>
     <string name="shortcut_key_reserved_for_navigation">此按鍵已保留供瀏覽器導覽使用</string>

@@ -31,9 +31,9 @@
   <string name="nothing">Нічого</string>
   <string name="user_agent_string">Рядок User Agent</string>
   <string name="msg_delete_history">Видалити виділені елементи історії?</string>
-  <string name="action">Дія:</string>
   <string name="clear">Очистити</string>
   <string name="current_key">Кнопка:</string>
+  <string name="key_code_d">Клавіша %d</string>
   <string name="favorites">Вибрані</string>
   <string name="history">Історія</string>
   <string name="navigate_back">Навігація назад</string>

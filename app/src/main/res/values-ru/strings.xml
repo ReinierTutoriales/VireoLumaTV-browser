@@ -31,9 +31,9 @@
   <string name="nothing">Ничего</string>
   <string name="user_agent_string">Строка User Agent</string>
   <string name="msg_delete_history">Удалить выделенные элементы истории?</string>
-  <string name="action">Действие:</string>
   <string name="clear">Очистить</string>
   <string name="current_key">Клавиша:</string>
+  <string name="key_code_d">Клавиша %d</string>
   <string name="favorites">Избранные</string>
   <string name="history">История</string>
   <string name="navigate_back">Перейти назад</string>

@@ -39,8 +39,7 @@ class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(
     }
 
     private fun showKey() {
-        val key = shortcuts.binding(shortcut)?.describe(context) ?: context.getString(R.string.not_set)
-        keyText.text = context.getString(R.string.current_key) + " " + key
+        keyText.text = shortcuts.binding(shortcut)?.describe(context) ?: context.getString(R.string.not_set)
     }
 
     private fun setRecording(on: Boolean) {

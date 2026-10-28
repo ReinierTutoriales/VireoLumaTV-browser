@@ -45,8 +45,8 @@
   <string name="zoom_in">Vergrößern</string>
   <string name="zoom_out">Verkleinern</string>
   <string name="not_set">Nicht konfiguriert</string>
-  <string name="action">Aktion:</string>
   <string name="current_key">Aktuelle Taste:</string>
+  <string name="key_code_d">Taste %d</string>
   <string name="set_key_for_action">Taste konfigurieren</string>
   <string name="press_eny_key">Taste drücken…</string>
   <string name="shortcut_key_reserved_for_navigation">Diese Taste ist für die Browser-Navigation reserviert</string>

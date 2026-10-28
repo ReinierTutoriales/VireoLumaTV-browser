@@ -48,8 +48,8 @@
   <string name="zoom_in">"הגדל"</string>
   <string name="zoom_out">"הקטן"</string>
   <string name="not_set">"לא הוגדר"</string>
-  <string name="action">"פעולה:"</string>
   <string name="current_key">"מקש נוכחי:"</string>
+  <string name="key_code_d">מקש %d</string>
   <string name="set_key_for_action">"הגדר מקש לפעולה:"</string>
   <string name="press_eny_key">"לחץ על כל מקש…"</string>
   <string name="shortcut_key_reserved_for_navigation">מקש זה שמור לניווט בדפדפן</string>

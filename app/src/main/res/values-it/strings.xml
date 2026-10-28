@@ -47,8 +47,8 @@
   <string name="zoom_in">Ingrandisci</string>
   <string name="zoom_out">Riduci</string>
   <string name="not_set">Non impostato</string>
-  <string name="action">Azione:</string>
   <string name="current_key">Tasto impostato:</string>
+  <string name="key_code_d">Tasto %d</string>
   <string name="set_key_for_action">Imposta tasto</string>
   <string name="press_eny_key">Premi tasto…</string>
   <string name="shortcut_key_reserved_for_navigation">Questo tasto è riservato alla navigazione del browser</string>

@@ -48,7 +48,6 @@
     <string name="cursor_grab_mode">Mover la página</string>
     <string name="link_actions">Acciones del enlace</string>
     <string name="not_set">Sin asignar</string>
-    <string name="action">Acción:</string>
     <string name="current_key">Tecla actual:</string>
     <string name="key_code_d">Tecla %d</string>
     <string name="set_key_for_action">Asignar tecla a la acción</string>
@@ -67,7 +66,6 @@
     <string name="version_and_updates">Versión y actualizaciones</string>
     <string name="version_s">Versión: %s</string>
     <string name="build_flavor_s">Variante: %1$s · %2$s</string>
-    <string name="web_engine_version_s">Motor: %s</string>
     <string name="view_license">📃 Licencia</string>
     <string name="privacy_policy">🔒 Política de privacidad</string>
     <string name="update">Actualizar</string>

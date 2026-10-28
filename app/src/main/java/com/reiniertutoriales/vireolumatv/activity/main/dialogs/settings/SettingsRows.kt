@@ -19,6 +19,7 @@ import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.view.isVisible
 import com.reiniertutoriales.vireolumatv.R
 
 /**
@@ -157,7 +158,7 @@ internal class SettingsRows(private val parent: ViewGroup) {
     companion object {
         /** Shows a hidden row with a short fade; already visible rows stay as they are. */
         fun reveal(view: View) {
-            if (view.visibility == View.VISIBLE) return
+            if (view.isVisible) return
             view.visibility = View.VISIBLE
             view.startAnimation(AnimationUtils.loadAnimation(view.context, android.R.anim.fade_in))
         }

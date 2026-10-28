@@ -1,11 +1,13 @@
 package com.reiniertutoriales.vireolumatv.singleton.shortcuts
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.KeyEvent
 import androidx.annotation.StringRes
 import com.reiniertutoriales.vireolumatv.R
 
 /** Browser actions a remote key can be bound to. [prefsKey] names the stored binding; keep it stable. */
+@SuppressLint("InlinedApi") // Key codes are plain ints; a key an older system lacks never arrives.
 enum class Shortcut(@StringRes val titleResId: Int, val prefsKey: String, val defaultKey: Int) {
     NAVIGATE_BACK(R.string.navigate_back, "shortcut_nav_back", 0),
     NAVIGATE_HOME(R.string.navigate_home, "shortcut_nav_home", 0),

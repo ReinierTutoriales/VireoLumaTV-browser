@@ -49,8 +49,8 @@
   <string name="zoom_in">"بزرگ نمایی"</string>
   <string name="zoom_out">"کوچک نمایی"</string>
   <string name="not_set">"تنظیم نشده"</string>
-  <string name="action">"اقدام:"</string>
   <string name="current_key">"کلید فعلی:"</string>
+  <string name="key_code_d">کلید %d</string>
   <string name="set_key_for_action">"کلید را برای اقدام تنظیم کنید"</string>
   <string name="press_eny_key">"هر کلید را فشار دهید…"</string>
   <string name="shortcut_key_reserved_for_navigation">این کلید برای پیمایش مرورگر رزرو شده است</string>
