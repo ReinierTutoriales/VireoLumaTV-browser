@@ -4,11 +4,10 @@
     <string name="download_progress_size" translatable="false">%1$s / %2$s</string>
     <string name="about_engine" translatable="false">WebView: %s</string>
     <string name="about_source">VireoLumaTV by ReinierTutoriales · Source code</string>
-    <string name="about_tv_bro_credit">Based on the source code of TV Bro: %s</string>
     <string name="about_tagline">A web browser made for the TV remote</string>
     <string name="about_version">Version %s</string>
     <string name="about_build">Build: %1$s · %2$s</string>
-    <string name="about_license">License</string>
+    <string name="about_license">License · MIT</string>
     <string name="about_privacy">Privacy policy</string>
     <string name="error">Error</string>
     <string name="action_allow">Allow</string>

@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.reiniertutoriales.vireolumatv.utils.toast
 
-/** About page: identity, the credit the TV Bro license requires, versions, links and updates. */
+/** Application identity, license, versions, links and updates. */
 class AboutPage @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : ScrollView(context, attrs, defStyleAttr) {
@@ -42,10 +42,6 @@ class AboutPage @JvmOverloads constructor(
         rows.info(context.getString(R.string.app_name), sizeSp = 20f)
         rows.info(context.getString(R.string.about_tagline))
         rows.value(context.getString(R.string.about_source), null, R.id.rowProjectSource) { open(SOURCES_URL) }
-        // Modified binaries must state in an About window that they use TV Bro's sources, with the link.
-        rows.value(context.getString(R.string.about_tv_bro_credit, TV_BRO_SOURCES_URL), null, R.id.rowTvBroSource) {
-            open(TV_BRO_SOURCES_URL)
-        }
         rows.info(context.getString(R.string.about_version, BuildConfig.VERSION_NAME))
         rows.info(context.getString(R.string.about_build, BuildConfig.FLAVOR, "WebView"))
         rows.info(context.getString(R.string.about_engine, Engines.version))
@@ -98,7 +94,6 @@ class AboutPage @JvmOverloads constructor(
 
     private companion object {
         const val SOURCES_URL = "https://github.com/ReinierTutoriales/VireoLumaTV-browser"
-        const val TV_BRO_SOURCES_URL = "https://github.com/truefedex/tv-bro"
         const val LICENSE_URL = "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/LICENSE.md"
         const val PRIVACY_URL = "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/PRIVACY.md"
     }

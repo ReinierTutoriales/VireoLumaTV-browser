@@ -89,7 +89,7 @@ app/src/main/assets/licenses/Apache-2.0.txt	PROPIO
 app/src/main/assets/licenses/MPL-2.0.txt	PROPIO
 app/src/main/assets/licenses/NOTICE.md	PROPIO
 app/src/main/assets/licenses/SOURCES.txt	PROPIO
-app/src/main/assets/licenses/TV-Bro-LICENSE.md	PROPIO
+app/src/main/assets/licenses/TV-Bro-LICENSE.md	ELIMINADO
 app/src/main/assets/media_policy.js	PROPIO
 app/src/main/assets/pages/home/favicons/bing.png	ELIMINADO	app/src/main/assets/pages/home/favicons/bing.png	100
 app/src/main/assets/pages/home/favicons/custom.png	ELIMINADO	app/src/main/assets/pages/home/favicons/custom.png	100
@@ -572,3 +572,4 @@ docs/audit/TVBRO_REMOVAL_BACKLOG_20261027.md	PROPIO
 docs/audit/TV_CONTROL_ROW_SPEC_20261027.md	PROPIO
 docs/audit/UPSTREAM_TVBRO_INVENTORY_REWRITE_20261027.tsv	PROPIO
 scripts/check-source-inventory.py	PROPIO
+app/src/main/assets/licenses/APP-LICENSE.txt	PROPIO

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about_source">VireoLumaTV của ReinierTutoriales · Mã nguồn</string>
-    <string name="about_tv_bro_credit">Dựa trên mã nguồn của TV Bro: %s</string>
     <string name="about_tagline">Trình duyệt web dành cho điều khiển TV</string>
     <string name="about_version">Phiên bản %s</string>
     <string name="about_build">Bản dựng: %1$s · %2$s</string>
-    <string name="about_license">Giấy phép</string>
+    <string name="about_license">Giấy phép · MIT</string>
     <string name="about_privacy">Chính sách quyền riêng tư</string>
     <string name="error">Lỗi</string>
     <string name="action_allow">Cho phép</string>
