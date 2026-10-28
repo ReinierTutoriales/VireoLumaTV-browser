@@ -179,7 +179,7 @@ class TabsModel : ActiveModel() {
         val hosts = AppDatabase.db.hostsDao()
         var config = withContext(Dispatchers.IO) { hosts.findByHostName(host) }
         if (config == null && createIfNotFound) {
-            config = HostConfig(host).apply { id = hosts.insert(this) }
+            config = hosts.ensureHost(host)
         }
         // The tab may have moved to another site while the database answered.
         if (hostOf(tab.url) == host) tab.cachedHostConfig = config
@@ -193,7 +193,7 @@ class TabsModel : ActiveModel() {
     suspend fun changePopupBlockingLevel(newLevel: Int, tab: WebTabState) {
         val config = findHostConfig(tab, createIfNotFound = true) ?: return
         config.popupBlockLevel = newLevel
-        AppDatabase.db.hostsDao().update(config)
+        AppDatabase.db.hostsDao().storePopupLevel(config.hostName, newLevel)
     }
 
     private fun hostOf(url: String): String? = runCatching { URL(url).host }.getOrNull()

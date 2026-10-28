@@ -4,21 +4,23 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Update
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 
 @Dao
-interface FavoritesDao {
+abstract class FavoritesDao {
     /** Top-level bookmarks, newest first; rows older versions kept for their home page are left out. */
     @Query("SELECT * FROM favorites WHERE parent=0 AND home_page_bookmark=0 ORDER BY id DESC")
-    suspend fun getAll(): List<FavoriteItem>
+    abstract suspend fun getAll(): List<FavoriteItem>
 
     @Insert
-    suspend fun insert(item: FavoriteItem): Long
+    abstract suspend fun insert(item: FavoriteItem): Long
 
-    @Update
-    suspend fun update(item: FavoriteItem)
+    @Query("UPDATE favorites SET TITLE = :title, URL = :url WHERE ID = :id")
+    protected abstract suspend fun writeAddress(id: Long, title: String?, url: String?)
+
+    /** Editing a visible bookmark cannot overwrite legacy columns through an old row snapshot. */
+    suspend fun update(item: FavoriteItem) = writeAddress(item.id, item.title, item.url)
 
     @Delete
-    suspend fun delete(item: FavoriteItem)
+    abstract suspend fun delete(item: FavoriteItem)
 }

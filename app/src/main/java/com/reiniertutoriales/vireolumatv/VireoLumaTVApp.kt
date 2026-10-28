@@ -88,11 +88,11 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
             }
 
             override suspend fun update(row: HostConfig) {
-                AppDatabase.db.hostsDao().update(row)
+                AppDatabase.db.hostsDao().storeFavicon(row.hostName, row.favicon)
             }
 
             override suspend fun insert(row: HostConfig) {
-                AppDatabase.db.hostsDao().insert(row)
+                AppDatabase.db.hostsDao().storeFavicon(row.hostName, row.favicon)
             }
         }
     }
