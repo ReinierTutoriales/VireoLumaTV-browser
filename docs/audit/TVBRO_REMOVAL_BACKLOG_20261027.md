@@ -99,3 +99,24 @@ Las líneas retenidas en los `REESCRITO` son firmas públicas conservadas para n
 llamadas sueltas (`surface.postInvalidate()`); no hay lógica ni estructura del original. Revisión manual
 por archivo. Archivos nuevos (`RemoteInput.kt`, `SettingsRows.kt`, filas `view_setting_*`) añadidos como
 `PROPIO`. `REESCRITO` no sustituye la comprobación del APK ni la revisión legal del criterio de cierre.
+
+## Contraste puntual del árbol `d572b70`
+
+Tres etiquetas `MODIFICADO` seguían describiendo versiones anteriores. Se compararon
+manualmente las implementaciones actuales con las rutas originales del TSV:
+
+- `BackNavigationEventsAdapter`: estado propio por canal/pulsación y eliminación de
+  eventos duplicados. Coinciden 18 de 92 líneas de contenido normalizadas (20 %),
+  principalmente firmas y llamadas de Android; tiene `BackNavigationEventsAdapterTest`.
+- `FavoritesListAdapter`: sustituyó `BaseAdapter` por `ListAdapter` con diff y acciones
+  para mando. Coinciden 0 de 35 líneas de contenido; tiene `FavoritesListAdapterTest`.
+- `FileUtils`: usa `File.deleteRecursively()` en vez de ejecutar `rm -rf`; coinciden
+  0 de 1 líneas de contenido y existen pruebas de árbol anidado y ruta ausente.
+- `AdblockModel`: sustituye el cliente Brave antiguo y una lista única por el
+  motor `ContentBlockerEngine`/Rust, siete fuentes, cachés y estados de actualización.
+  Coinciden 41 de 449 líneas de contenido (9 %), principalmente firmas y
+  llamadas generales; tiene pruebas de actualización, caché y validación de listas.
+
+Las cuatro rutas pasan a `REESCRITO` en el inventario. La comparación normaliza espacios
+y paquete, excluye imports, comentarios y llaves; no determina derechos de autor.
+Las cifras históricas de este archivo conservan el SHA al que corresponden.

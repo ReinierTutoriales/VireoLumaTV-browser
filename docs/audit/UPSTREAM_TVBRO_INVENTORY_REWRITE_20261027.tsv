@@ -38,7 +38,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/model/PopupGuard.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/WebTabState.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/model/WebTabState.kt	74
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/Favicons.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/FaviconsPool.kt	ELIMINADO	app/common/src/main/java/com/phlox/tvwebbrowser/singleton/FaviconsPool.kt
-app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapter.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/BackNavigationEventsAdapter.kt	94
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapter.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/BackNavigationEventsAdapter.kt	80
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BoundedReader.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/DPADNavigationEventsAdapter.kt	ELIMINADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/DPADNavigationEventsAdapter.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/DownloadUtils.kt	99
@@ -125,7 +125,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryActi
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryAdapter.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryAdapter.kt	95
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryItemView.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryItemView.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryModel.kt	56
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt	94
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt	91
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/AddressInput.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/BlockerIndicator.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserDownloads.kt	PROPIO
@@ -142,7 +142,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/Shortc
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	12
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteItemView.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesDialog.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesDialog.kt	11
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesListAdapter.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesListAdapter.kt	5
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesListAdapter.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesListAdapter.kt	100
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/MainSettingsView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt	86
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/SettingsDialog.kt	68
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsPages.kt	PROPIO
@@ -182,7 +182,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/AppDatabase.kt	REE
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/Shortcut.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/Shortcut.kt	79
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/ShortcutMgr.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/ShortcutMgr.kt	87
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BaseAnimationListener.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/utils/BaseAnimationListener.kt
-app/src/main/java/com/reiniertutoriales/vireolumatv/utils/FileUtils.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/utils/FileUtils.kt	2
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/FileUtils.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/utils/FileUtils.kt	100
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/IncognitoWebViewData.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdater.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/StringUtils.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/utils/StringUtils.kt
