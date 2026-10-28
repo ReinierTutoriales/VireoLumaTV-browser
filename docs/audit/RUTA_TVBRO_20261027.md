@@ -23,6 +23,9 @@ e [inventario por archivo](UPSTREAM_TVBRO_INVENTORY_REWRITE_20261027.tsv).
 | `0a0109c` | Selector de archivos y permisos de instalación por ActivityResult; `ApkInstaller` único; `STOP_FOREGROUND_REMOVE` | Suite; falta validar descargas e instalación en Android TV |
 | `44f630f` | Ajustes principales construidos con filas propias (`SettingsRows`); el botón Actualizar del bloqueador pasa a ser alcanzable con D-pad; interruptores como fila completa. Heredado en la página: 761/856 → 128/631 líneas (`git blame -w -C`; lo restante son llaves, imports y llamadas a API) | 205 tests; `MainSettingsFocusTest` falla en `15638e1`; falta validar foco, IME y desplazamiento en Android TV |
 | `f6be67f`, `2919791` | Puntero y mando propios: rueda y hover de ratón en la página, stick proporcional, modo agarrar operativo, `RemoteInput` sustituye a `DPADNavigationEventsAdapter` (eventos de gamepad consumidos, `isFromSource`, sin reflexión de `BUTTON_DPAD_*`). Heredado en el bloque: 1 253/1 386 → 161/667 líneas | 216 tests; `RemoteInputContractTest` falla 5/7 con la entrada anterior; falta validar en Android TV scroll de WebView, hover, gamepads reales y zona muerta |
+| `b417a3a` | Pestañas Atajos y Acerca de con filas propias; barra de pestañas y `SettingsDialog` propios; crédito a TV Bro como fila visible y enfocable | `SettingsTabsTest`; capturas revisadas |
+| `c53fa2e` | Atajos: borrar persiste, una acción por pulsación (larga no dispara la corta), teclas sin código por scan code, nombres legibles | `ShortcutMgrTest` (8 casos); falta validar repetición real del mando |
+| `0feafef` | Interfaz solo oscura (petición del propietario); ajuste Tema retirado; oscurecer páginas depende solo de su ajuste | `DarkInterfaceTest`; 226 tests; falta validar oscurecimiento en Android TV |
 
 Decisiones fijadas: `DPADNavigationEventsAdapter` fue sustituido por `RemoteInput`;
 `Scripts.kt` queda como propio; el contrato de navegación contempla la cápsula.
