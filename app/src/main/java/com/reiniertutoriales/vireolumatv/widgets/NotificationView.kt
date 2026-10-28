@@ -26,7 +26,7 @@ class NotificationView @JvmOverloads constructor(context: Context, attrs: Attrib
     init {
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
-        background = context.getDrawable(R.drawable.notification_bg)
+        background = context.getDrawable(R.drawable.bg_toast)
         val horizontal = resources.getDimensionPixelSize(R.dimen.notification_padding_horizontal)
         val vertical = resources.getDimensionPixelSize(R.dimen.notification_padding_vertical)
         setPadding(horizontal, vertical, horizontal, vertical)

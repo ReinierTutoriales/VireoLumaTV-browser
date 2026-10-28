@@ -79,14 +79,14 @@ import kotlin.system.exitProcess
  * [IncognitoModeMainActivity] in its own process.
  */
 open class MainActivity : AppCompatActivity(), ActionBar.Callback {
-    @VisibleForTesting internal lateinit var vb: ActivityMainBinding
-    @VisibleForTesting internal lateinit var tabsModel: TabsModel
-    @VisibleForTesting internal lateinit var settingsModel: SettingsModel
-    @VisibleForTesting internal lateinit var adblockModel: AdblockModel
-    @VisibleForTesting internal lateinit var uiHandler: Handler
+    internal lateinit var vb: ActivityMainBinding
+    internal lateinit var tabsModel: TabsModel
+    internal lateinit var settingsModel: SettingsModel
+    internal lateinit var adblockModel: AdblockModel
+    internal lateinit var uiHandler: Handler
     internal lateinit var viewModel: MainActivityViewModel
     internal val config = AppContext.config
-    @VisibleForTesting internal val downloads by lazy { BrowserDownloads(this, { config.incognitoMode }, ::onDownloadStarted) }
+    internal val downloads by lazy { BrowserDownloads(this, { config.incognitoMode }, ::onDownloadStarted) }
     internal val external by lazy { ExternalApps(this) }
     internal var isFullscreen = false
 
@@ -315,12 +315,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    override fun showAppMenu() {
-        val entries = appMenuEntries()
-        AlertDialog.Builder(this)
-            .setItems(entries.map { getString(it.label) }.toTypedArray()) { _, which -> runAppMenuEntry(entries[which]) }
-            .show()
-    }
+    override fun showAppMenu() = AppMenuPanel(this, appMenuEntries(), ::runAppMenuEntry).show()
 
     private fun runAppMenuEntry(entry: AppMenuEntry) = when (entry) {
         AppMenuEntry.HISTORY -> showHistory()
@@ -397,7 +392,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     // Navigation
 
     fun navigate(url: String) {
-        vb.vActionBar.setAddressBoxTextColor(ContextCompat.getColor(this, R.color.default_url_color))
+        vb.vActionBar.setAddressBoxTextColor(ContextCompat.getColor(this, R.color.on_surface))
         val tab = tabsModel.currentTab.value
         if (tab == null) {
             openInNewTab(url, 0, closeCapsuleAfter = true, navigateImmediately = true)
@@ -517,7 +512,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.vActionBar.backButton.isEnabled = tab.engine.canGoBack
         vb.vActionBar.forwardButton.isEnabled = tab.engine.canGoForward
         val blocking = tab.adblock ?: config.adBlockEnabled
-        vb.vActionBar.adBlockButton.setImageResource(if (blocking) R.drawable.ic_adblock_on else R.drawable.ic_adblock_off)
+        vb.vActionBar.adBlockButton.setImageResource(if (blocking) R.drawable.ic_shield_on else R.drawable.ic_shield_off)
         updateAdblockStatus(tab)
     }
 
@@ -629,7 +624,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val now = SystemClock.uptimeMillis()
         if (now - lastBlockedNotice < BLOCKED_NOTICE_INTERVAL_MS) return
         lastBlockedNotice = now
-        NotificationView.showBottomRight(vb.rlRoot, R.drawable.ic_block_popups,
+        NotificationView.showBottomRight(vb.rlRoot, R.drawable.ic_block,
             getString(if (newTab) R.string.new_tab_blocked else R.string.popup_dialog_blocked))
     }
 

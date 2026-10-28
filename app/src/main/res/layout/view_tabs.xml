@@ -1,41 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The tab row: the open tabs, then "new tab". Padding leaves room for the focused chip to grow. -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     tools:parentTag="android.widget.RelativeLayout">
-  <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/rvTabs"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_above="@+id/vSpacer"
-      android:layout_toStartOf="@+id/btnAdd"
-      android:layout_weight="1"
-      />
-  <Button
-      tools:targetApi="26"
-      android:id="@+id/btnAdd"
-      android:defaultFocusHighlightEnabled="false"
-      android:textColor="@color/day_night_text_color_contrast"
-      android:layout_width="@dimen/web_tab_height"
-      android:layout_height="@dimen/web_tab_height"
-      android:layout_above="@+id/vSpacer"
-      android:layout_alignParentEnd="true"
-      android:layout_marginStart="8dp"
-      android:background="@drawable/button_bg_selector"
-      android:fontFamily="sans-serif"
-      android:padding="0dp"
-      android:stateListAnimator="@null"
-      android:text="+"
-      android:textSize="22sp"
-      tools:ignore="HardcodedText"
-      android:gravity="center"
-      android:nextFocusUp="@+id/etUrl"
-      />
-  <View
-      android:id="@+id/vSpacer"
-      android:layout_width="match_parent"
-      android:layout_height="4dp"
-      android:layout_alignParentBottom="true"
-      android:background="@android:color/transparent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvTabs"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="@dimen/control_gap"
+        android:layout_toStartOf="@+id/btnAdd"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingStart="6dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="8dp" />
+
+    <ImageButton
+        android:id="@+id/btnAdd"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/open_a_new_tab_here"
+        android:nextFocusUp="@+id/etUrl"
+        android:src="@drawable/ic_add" />
 </merge>

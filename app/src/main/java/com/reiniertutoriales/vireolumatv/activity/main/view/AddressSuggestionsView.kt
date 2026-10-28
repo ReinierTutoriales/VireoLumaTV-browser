@@ -38,7 +38,7 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
         suggestions.forEachIndexed { index, suggestion ->
             val row = inflater.inflate(R.layout.view_address_suggestion, this, false)
             row.findViewById<ImageView>(R.id.ivKind).setImageResource(
-                if (suggestion.bookmark) R.drawable.ic_suggestion_bookmark else R.drawable.ic_suggestion_history)
+                if (suggestion.bookmark) R.drawable.ic_bookmark else R.drawable.ic_history)
             row.findViewById<TextView>(R.id.tvTitle).text = suggestion.title
             row.findViewById<TextView>(R.id.tvUrl).apply {
                 text = suggestion.url

@@ -210,8 +210,17 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableContainer.k
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableImageButton.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableImageButton.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/NotificationView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/widgets/NotificationView.kt	86
 app/src/main/res/anim/infinite_fadeinout_anim.xml	IDENTICO	app/src/main/res/anim/infinite_fadeinout_anim.xml	0
+app/src/main/res/anim/panel_enter.xml	PROPIO
+app/src/main/res/anim/panel_exit.xml	PROPIO
 app/src/main/res/anim/right_menu_in_anim.xml	ELIMINADO	app/src/main/res/anim/right_menu_in_anim.xml
 app/src/main/res/anim/right_menu_out_anim.xml	ELIMINADO	app/src/main/res/anim/right_menu_out_anim.xml
+app/src/main/res/animator/focus_scale_chip.xml	PROPIO
+app/src/main/res/animator/focus_scale_control.xml	PROPIO
+app/src/main/res/animator/focus_scale_row.xml	PROPIO
+app/src/main/res/color/on_control.xml	PROPIO
+app/src/main/res/color/on_control_variant.xml	PROPIO
+app/src/main/res/color/on_list_item.xml	PROPIO
+app/src/main/res/color/on_list_item_accent.xml	PROPIO
 app/src/main/res/color/webtab_horizontal_text_selector.xml	ELIMINADO	app/src/main/res/color/webtab_horizontal_text_selector.xml
 app/src/main/res/drawable-hdpi/ic_launcher.png	PROPIO
 app/src/main/res/drawable-mdpi/ic_launcher.png	PROPIO
@@ -219,64 +228,101 @@ app/src/main/res/drawable-xhdpi/ic_launcher.png	PROPIO
 app/src/main/res/drawable-xxhdpi/ic_launcher.png	PROPIO
 app/src/main/res/drawable-xxxhdpi/banner.png	PROPIO
 app/src/main/res/drawable-xxxhdpi/ic_launcher.png	PROPIO
-app/src/main/res/drawable/back_icon_selector.xml	IDENTICO	app/src/main/res/drawable/back_icon_selector.xml	0
-app/src/main/res/drawable/browser_address_bg.xml	PROPIO
-app/src/main/res/drawable/button_bg_selector.xml	MODIFICADO	app/src/main/res/drawable/button_bg_selector.xml	59
+app/src/main/res/drawable/back_icon_selector.xml	ELIMINADO	app/src/main/res/drawable/back_icon_selector.xml
+app/src/main/res/drawable/bg_chip.xml	PROPIO
+app/src/main/res/drawable/bg_control.xml	PROPIO
+app/src/main/res/drawable/bg_dialog.xml	PROPIO
+app/src/main/res/drawable/bg_field.xml	PROPIO
+app/src/main/res/drawable/bg_list_item.xml	PROPIO
+app/src/main/res/drawable/bg_panel.xml	PROPIO
+app/src/main/res/drawable/bg_row.xml	PROPIO
+app/src/main/res/drawable/bg_scrim_top.xml	PROPIO
+app/src/main/res/drawable/bg_toast.xml	PROPIO
+app/src/main/res/drawable/browser_address_bg.xml	ELIMINADO
+app/src/main/res/drawable/button_bg_selector.xml	ELIMINADO	app/src/main/res/drawable/button_bg_selector.xml
 app/src/main/res/drawable/cursor_menu_bg.xml	PROPIO
 app/src/main/res/drawable/floating_toolbar_bg.xml	PROPIO
-app/src/main/res/drawable/forward_icon_selector.xml	IDENTICO	app/src/main/res/drawable/forward_icon_selector.xml	0
-app/src/main/res/drawable/gamepad_circle_up_24px.xml	IDENTICO	app/src/main/res/drawable/gamepad_circle_up_24px.xml	0
+app/src/main/res/drawable/forward_icon_selector.xml	ELIMINADO	app/src/main/res/drawable/forward_icon_selector.xml
+app/src/main/res/drawable/gamepad_circle_up_24px.xml	ELIMINADO	app/src/main/res/drawable/gamepad_circle_up_24px.xml
 app/src/main/res/drawable/gray_badge_bg.xml	ELIMINADO	app/src/main/res/drawable/gray_badge_bg.xml
-app/src/main/res/drawable/ic_adblock_off.xml	MODIFICADO	app/src/main/res/drawable/ic_adblock_off.xml	96
-app/src/main/res/drawable/ic_adblock_on.xml	MODIFICADO	app/src/main/res/drawable/ic_adblock_on.xml	95
-app/src/main/res/drawable/ic_arrow_back_grey_400_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_arrow_back_grey_400_24dp.xml	0
-app/src/main/res/drawable/ic_arrow_back_grey_900_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_arrow_back_grey_900_24dp.xml	0
-app/src/main/res/drawable/ic_arrow_forward_grey_400_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_arrow_forward_grey_400_24dp.xml	0
-app/src/main/res/drawable/ic_arrow_forward_grey_900_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_arrow_forward_grey_900_24dp.xml	0
-app/src/main/res/drawable/ic_baseline_add_box_24.xml	IDENTICO	app/src/main/res/drawable/ic_baseline_add_box_24.xml	0
-app/src/main/res/drawable/ic_block_popups.xml	IDENTICO	app/src/main/res/drawable/ic_block_popups.xml	0
-app/src/main/res/drawable/ic_circle_plus.xml	IDENTICO	app/src/main/res/drawable/ic_circle_plus.xml	0
+app/src/main/res/drawable/ic_adblock_off.xml	ELIMINADO	app/src/main/res/drawable/ic_adblock_off.xml
+app/src/main/res/drawable/ic_adblock_on.xml	ELIMINADO	app/src/main/res/drawable/ic_adblock_on.xml
+app/src/main/res/drawable/ic_add.xml	PROPIO
+app/src/main/res/drawable/ic_arrow_back_grey_400_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_arrow_back_grey_400_24dp.xml
+app/src/main/res/drawable/ic_arrow_back_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_arrow_back_grey_900_24dp.xml
+app/src/main/res/drawable/ic_arrow_forward_grey_400_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_arrow_forward_grey_400_24dp.xml
+app/src/main/res/drawable/ic_arrow_forward_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_arrow_forward_grey_900_24dp.xml
+app/src/main/res/drawable/ic_back.xml	PROPIO
+app/src/main/res/drawable/ic_baseline_add_box_24.xml	ELIMINADO	app/src/main/res/drawable/ic_baseline_add_box_24.xml
+app/src/main/res/drawable/ic_block.xml	PROPIO
+app/src/main/res/drawable/ic_block_popups.xml	ELIMINADO	app/src/main/res/drawable/ic_block_popups.xml
+app/src/main/res/drawable/ic_bookmark.xml	PROPIO
+app/src/main/res/drawable/ic_circle_plus.xml	ELIMINADO	app/src/main/res/drawable/ic_circle_plus.xml
 app/src/main/res/drawable/ic_close_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_close_grey_900_24dp.xml
 app/src/main/res/drawable/ic_close_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_close_grey_900_36dp.xml
-app/src/main/res/drawable/ic_delete_grey_400_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_delete_grey_400_24dp.xml	0
+app/src/main/res/drawable/ic_delete.xml	PROPIO
+app/src/main/res/drawable/ic_delete_grey_400_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_delete_grey_400_24dp.xml
 app/src/main/res/drawable/ic_delete_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_delete_grey_900_36dp.xml
+app/src/main/res/drawable/ic_download.xml	PROPIO
+app/src/main/res/drawable/ic_dpad.xml	PROPIO
+app/src/main/res/drawable/ic_exit.xml	PROPIO
 app/src/main/res/drawable/ic_file_download_grey_900.xml	ELIMINADO	app/src/main/res/drawable/ic_file_download_grey_900.xml
+app/src/main/res/drawable/ic_forward.xml	PROPIO
+app/src/main/res/drawable/ic_globe.xml	PROPIO
+app/src/main/res/drawable/ic_history.xml	PROPIO
 app/src/main/res/drawable/ic_history_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_history_grey_900_36dp.xml
-app/src/main/res/drawable/ic_home_grey_900_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_home_grey_900_24dp.xml	0
-app/src/main/res/drawable/ic_incognito.xml	IDENTICO	app/src/main/res/drawable/ic_incognito.xml	0
-app/src/main/res/drawable/ic_menu_24.xml	IDENTICO	app/src/main/res/drawable/ic_menu_24.xml	0
+app/src/main/res/drawable/ic_home.xml	PROPIO
+app/src/main/res/drawable/ic_home_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_home_grey_900_24dp.xml
+app/src/main/res/drawable/ic_incognito.xml	REESCRITO	app/src/main/res/drawable/ic_incognito.xml	100
+app/src/main/res/drawable/ic_link.xml	PROPIO
+app/src/main/res/drawable/ic_menu_24.xml	ELIMINADO	app/src/main/res/drawable/ic_menu_24.xml
 app/src/main/res/drawable/ic_mic_none_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_mic_none_grey_900_36dp.xml
 app/src/main/res/drawable/ic_mode_edit_grey_400_18dp.xml	ELIMINADO	app/src/main/res/drawable/ic_mode_edit_grey_400_18dp.xml
-app/src/main/res/drawable/ic_not_available.xml	IDENTICO	app/src/main/res/drawable/ic_not_available.xml	0
-app/src/main/res/drawable/ic_refresh_grey_900_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_refresh_grey_900_24dp.xml	0
+app/src/main/res/drawable/ic_more.xml	PROPIO
+app/src/main/res/drawable/ic_move.xml	PROPIO
+app/src/main/res/drawable/ic_new_tab.xml	PROPIO
+app/src/main/res/drawable/ic_not_available.xml	ELIMINADO	app/src/main/res/drawable/ic_not_available.xml
+app/src/main/res/drawable/ic_refresh.xml	PROPIO
+app/src/main/res/drawable/ic_refresh_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_refresh_grey_900_24dp.xml
+app/src/main/res/drawable/ic_settings.xml	PROPIO
 app/src/main/res/drawable/ic_settings_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_settings_grey_900_24dp.xml
+app/src/main/res/drawable/ic_shield_off.xml	PROPIO
+app/src/main/res/drawable/ic_shield_on.xml	PROPIO
 app/src/main/res/drawable/ic_star_border_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_star_border_grey_900_36dp.xml
-app/src/main/res/drawable/ic_zoom_in_gray_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_zoom_in_gray_24dp.xml	0
-app/src/main/res/drawable/ic_zoom_out_gray_24dp.xml	IDENTICO	app/src/main/res/drawable/ic_zoom_out_gray_24dp.xml	0
+app/src/main/res/drawable/ic_tab_close.xml	PROPIO
+app/src/main/res/drawable/ic_zoom_in.xml	PROPIO
+app/src/main/res/drawable/ic_zoom_in_gray_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_zoom_in_gray_24dp.xml
+app/src/main/res/drawable/ic_zoom_out.xml	PROPIO
+app/src/main/res/drawable/ic_zoom_out_gray_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_zoom_out_gray_24dp.xml
 app/src/main/res/drawable/list_item_bg_selector.xml	ELIMINADO	app/src/main/res/drawable/list_item_bg_selector.xml
-app/src/main/res/drawable/list_row_bg.xml	PROPIO
-app/src/main/res/drawable/list_row_bg_focused.xml	PROPIO
-app/src/main/res/drawable/notification_bg.xml	PROPIO
-app/src/main/res/drawable/settings_tab_bg_selector.xml	MODIFICADO	app/src/main/res/drawable/settings_tab_bg_selector.xml	45
+app/src/main/res/drawable/list_row_bg.xml	ELIMINADO
+app/src/main/res/drawable/list_row_bg_focused.xml	ELIMINADO
+app/src/main/res/drawable/notification_bg.xml	ELIMINADO
+app/src/main/res/drawable/settings_tab_bg_selector.xml	ELIMINADO	app/src/main/res/drawable/settings_tab_bg_selector.xml
 app/src/main/res/drawable/text_link_background_selector.xml	ELIMINADO	app/src/main/res/drawable/text_link_background_selector.xml
-app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	REESCRITO	app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	89
-app/src/main/res/layout/activity_downloads.xml	REESCRITO	app/src/main/res/layout/activity_downloads.xml	38
+app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	ELIMINADO	app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml
+app/src/main/res/layout/activity_downloads.xml	REESCRITO	app/src/main/res/layout/activity_downloads.xml	46
 app/src/main/res/layout/activity_history.xml	REESCRITO	app/src/main/res/layout/activity_history.xml	67
-app/src/main/res/layout/activity_main.xml	MODIFICADO	app/src/main/res/layout/activity_main.xml	32
-app/src/main/res/layout/dialog_favorites.xml	IDENTICO	app/src/main/res/layout/dialog_favorites.xml	0
-app/src/main/res/layout/dialog_new_favorite_item.xml	MODIFICADO	app/src/main/res/layout/dialog_new_favorite_item.xml	5
+app/src/main/res/layout/activity_main.xml	REESCRITO	app/src/main/res/layout/activity_main.xml	42
+app/src/main/res/layout/dialog_app_menu.xml	PROPIO
+app/src/main/res/layout/dialog_check_item.xml	PROPIO
+app/src/main/res/layout/dialog_choice_item.xml	PROPIO
+app/src/main/res/layout/dialog_favorites.xml	REESCRITO	app/src/main/res/layout/dialog_favorites.xml	58
+app/src/main/res/layout/dialog_list_item.xml	PROPIO
+app/src/main/res/layout/dialog_new_favorite_item.xml	REESCRITO	app/src/main/res/layout/dialog_new_favorite_item.xml	54
 app/src/main/res/layout/dialog_search_engine.xml	ELIMINADO	app/src/main/res/layout/dialog_search_engine.xml
-app/src/main/res/layout/dialog_settings.xml	MODIFICADO	app/src/main/res/layout/dialog_settings.xml	34
-app/src/main/res/layout/dialog_shortcut.xml	MODIFICADO	app/src/main/res/layout/dialog_shortcut.xml	5
-app/src/main/res/layout/view_actionbar.xml	MODIFICADO	app/src/main/res/layout/view_actionbar.xml	56
-app/src/main/res/layout/view_cursor_menu.xml	REESCRITO	app/src/main/res/layout/view_cursor_menu.xml	72
-app/src/main/res/layout/view_download_item.xml	REESCRITO	app/src/main/res/layout/view_download_item.xml	57
-app/src/main/res/layout/view_favorite_item.xml	MODIFICADO	app/src/main/res/layout/view_favorite_item.xml	4
+app/src/main/res/layout/dialog_settings.xml	REESCRITO	app/src/main/res/layout/dialog_settings.xml	68
+app/src/main/res/layout/dialog_shortcut.xml	REESCRITO	app/src/main/res/layout/dialog_shortcut.xml	46
+app/src/main/res/layout/view_actionbar.xml	REESCRITO	app/src/main/res/layout/view_actionbar.xml	81
+app/src/main/res/layout/view_cursor_menu.xml	REESCRITO	app/src/main/res/layout/view_cursor_menu.xml	80
+app/src/main/res/layout/view_download_item.xml	REESCRITO	app/src/main/res/layout/view_download_item.xml	61
+app/src/main/res/layout/view_favorite_item.xml	REESCRITO	app/src/main/res/layout/view_favorite_item.xml	68
 app/src/main/res/layout/view_history_header_item.xml	ELIMINADO	app/src/main/res/layout/view_history_header_item.xml
-app/src/main/res/layout/view_history_item.xml	REESCRITO	app/src/main/res/layout/view_history_item.xml	56
+app/src/main/res/layout/view_history_item.xml	REESCRITO	app/src/main/res/layout/view_history_item.xml	61
 app/src/main/res/layout/view_list_date_header.xml	PROPIO
-app/src/main/res/layout/view_horizontal_webtab_item.xml	REESCRITO	app/src/main/res/layout/view_horizontal_webtab_item.xml	65
-app/src/main/res/layout/view_notification.xml	REESCRITO	app/src/main/res/layout/view_notification.xml	74
+app/src/main/res/layout/view_horizontal_webtab_item.xml	REESCRITO	app/src/main/res/layout/view_horizontal_webtab_item.xml	64
+app/src/main/res/layout/view_menu_entry.xml	PROPIO
+app/src/main/res/layout/view_notification.xml	REESCRITO	app/src/main/res/layout/view_notification.xml	84
 app/src/main/res/layout/view_setting_button.xml	PROPIO
 app/src/main/res/layout/view_setting_choice.xml	PROPIO
 app/src/main/res/layout/view_setting_field.xml	PROPIO
@@ -285,11 +331,11 @@ app/src/main/res/layout/view_setting_slider.xml	PROPIO
 app/src/main/res/layout/view_setting_status.xml	PROPIO
 app/src/main/res/layout/view_setting_toggle.xml	PROPIO
 app/src/main/res/layout/view_setting_value.xml	PROPIO
-app/src/main/res/layout/view_settings_main.xml	MODIFICADO	app/src/main/res/layout/view_settings_main.xml	10
+app/src/main/res/layout/view_settings_main.xml	REESCRITO	app/src/main/res/layout/view_settings_main.xml	64
 app/src/main/res/layout/view_settings_version.xml	ELIMINADO	app/src/main/res/layout/view_settings_version.xml
 app/src/main/res/layout/view_shortcut.xml	ELIMINADO	app/src/main/res/layout/view_shortcut.xml
 app/src/main/res/layout/view_speach_recognizer_results.xml	ELIMINADO	app/src/main/res/layout/view_speach_recognizer_results.xml
-app/src/main/res/layout/view_tabs.xml	MODIFICADO	app/src/main/res/layout/view_tabs.xml	26
+app/src/main/res/layout/view_tabs.xml	REESCRITO	app/src/main/res/layout/view_tabs.xml	64
 app/src/main/res/menu/menu_link.xml	IDENTICO	app/src/main/res/menu/menu_link.xml	0
 app/src/main/res/values-de/strings.xml	MODIFICADO	app/src/main/res/values-de/strings.xml	18
 app/src/main/res/values-es/strings.xml	PROPIO
@@ -301,16 +347,17 @@ app/src/main/res/values-pl/strings.xml	MODIFICADO	app/src/main/res/values-pl/str
 app/src/main/res/values-ru/strings.xml	MODIFICADO	app/src/main/res/values-ru/strings.xml	17
 app/src/main/res/values-uk/strings.xml	MODIFICADO	app/src/main/res/values-uk/strings.xml	17
 app/src/main/res/values-vi/strings.xml	MODIFICADO	app/src/main/res/values-vi/strings.xml	17
-app/src/main/res/values-w600dp/dimens.xml	MODIFICADO	app/src/main/res/values-w600dp/dimens.xml	40
-app/src/main/res/values-w820dp/dimens.xml	MODIFICADO	app/src/main/res/values-w820dp/dimens.xml	50
+app/src/main/res/values-w600dp/dimens.xml	ELIMINADO	app/src/main/res/values-w600dp/dimens.xml
+app/src/main/res/values-w820dp/dimens.xml	ELIMINADO	app/src/main/res/values-w820dp/dimens.xml
 app/src/main/res/values-zh-rTW/strings.xml	MODIFICADO	app/src/main/res/values-zh-rTW/strings.xml	16
 app/src/main/res/values-zh/strings.xml	MODIFICADO	app/src/main/res/values-zh/strings.xml	17
-app/src/main/res/values/colors.xml	MODIFICADO	app/src/main/res/values/colors.xml	92
+app/src/main/res/values/colors.xml	REESCRITO	app/src/main/res/values/colors.xml	100
 app/src/main/res/values/dimens.xml	REESCRITO	app/src/main/res/values/dimens.xml	100
 app/src/main/res/values/ids.xml	PROPIO
+app/src/main/res/values/integers.xml	PROPIO
 app/src/main/res/values/strings.xml	MODIFICADO	app/src/main/res/values/strings.xml	18
-app/src/main/res/values/styles.xml	MODIFICADO	app/src/main/res/values/styles.xml	80
-app/src/main/res/values/themes.xml	MODIFICADO	app/src/main/res/values/themes.xml	24
+app/src/main/res/values/styles.xml	REESCRITO	app/src/main/res/values/styles.xml	100
+app/src/main/res/values/themes.xml	REESCRITO	app/src/main/res/values/themes.xml	86
 app/src/main/res/xml/provider_paths.xml	IDENTICO	app/src/main/res/xml/provider_paths.xml	0
 app/src/release/AndroidManifest.xml	IDENTICO	app/src/release/AndroidManifest.xml	0
 app/src/test/java/com/reiniertutoriales/vireolumatv/ConfigTest.kt	PROPIO
@@ -320,6 +367,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ActiveModelCon
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockDecisionCacheTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockPopupAndCosmeticTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AddressInputTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AppMenuPanelTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AtomicTabSaveTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BlockerIndicatorTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrandResourcesTest.kt	PROPIO

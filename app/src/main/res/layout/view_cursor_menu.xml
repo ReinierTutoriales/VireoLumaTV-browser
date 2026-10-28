@@ -4,58 +4,54 @@
   below, zoom out to the left and zoom in to the right. Each arm leads back to the centre.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cursorMenuPanel"
-    android:layout_width="168dp"
-    android:layout_height="168dp"
+    android:layout_width="176dp"
+    android:layout_height="176dp"
     android:background="@drawable/cursor_menu_bg"
-    android:padding="4dp">
+    android:padding="8dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <ImageButton
         android:id="@+id/btnGrabMode"
-        style="@style/BrowserControl"
+        style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="center"
         android:contentDescription="@string/cursor_grab_mode"
         android:nextFocusUp="@id/btnContextMenu"
         android:nextFocusDown="@id/btnDPADMode"
         android:nextFocusLeft="@id/btnZoomOut"
         android:nextFocusRight="@id/btnZoomIn"
-        android:src="@drawable/ic_circle_plus"
-        app:tint="@color/day_night_icon_color" />
+        android:src="@drawable/ic_move" />
 
     <ImageButton
         android:id="@+id/btnContextMenu"
-        style="@style/BrowserControl"
+        style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="top|center_horizontal"
         android:contentDescription="@string/link_actions"
         android:nextFocusDown="@id/btnGrabMode"
-        android:src="@drawable/ic_menu_24"
-        app:tint="@color/day_night_icon_color" />
+        android:src="@drawable/ic_link" />
 
     <ImageButton
         android:id="@+id/btnDPADMode"
-        style="@style/BrowserControl"
+        style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="bottom|center_horizontal"
         android:contentDescription="@string/direct_navigation_mode_title"
         android:nextFocusUp="@id/btnGrabMode"
-        android:src="@drawable/gamepad_circle_up_24px"
-        app:tint="@color/day_night_icon_color" />
+        android:src="@drawable/ic_dpad" />
 
     <ImageButton
         android:id="@+id/btnZoomOut"
-        style="@style/BrowserControl"
+        style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="start|center_vertical"
         android:contentDescription="@string/zoom_out"
         android:nextFocusRight="@id/btnGrabMode"
-        android:src="@drawable/ic_zoom_out_gray_24dp"
-        app:tint="@color/day_night_icon_color" />
+        android:src="@drawable/ic_zoom_out" />
 
     <ImageButton
         android:id="@+id/btnZoomIn"
-        style="@style/BrowserControl"
+        style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="end|center_vertical"
         android:contentDescription="@string/zoom_in"
         android:nextFocusLeft="@id/btnGrabMode"
-        android:src="@drawable/ic_zoom_in_gray_24dp"
-        app:tint="@color/day_night_icon_color" />
+        android:src="@drawable/ic_zoom_in" />
 </FrameLayout>

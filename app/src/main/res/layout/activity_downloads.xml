@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 48 dp / 27 dp keeps rows inside the TV overscan-safe area. -->
+<!-- The list stays inside the TV overscan-safe area; rows scroll under the margins. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/day_night_background_color"
+    android:background="@color/background"
     android:fitsSystemWindows="true"
     tools:context="com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity">
 
@@ -13,10 +13,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingStart="48dp"
-        android:paddingTop="27dp"
-        android:paddingEnd="48dp"
-        android:paddingBottom="27dp" />
+        android:paddingStart="@dimen/safe_horizontal"
+        android:paddingTop="@dimen/safe_vertical"
+        android:paddingEnd="@dimen/safe_horizontal"
+        android:paddingBottom="@dimen/safe_vertical" />
 
     <TextView
         android:id="@+id/tvPlaceholder"
@@ -24,6 +24,6 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:text="@string/nothing"
-        android:textColor="@color/day_night_text_color"
-        android:textSize="18sp" />
+        android:textAppearance="@style/TextAppearance.Vireo.Title"
+        android:textColor="@color/on_surface_variant" />
 </FrameLayout>

@@ -1,112 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- One focus row: the address, the page commands, the blocker shield (long press: details) and the menu. -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:parentTag="android.widget.LinearLayout"
-    tools:orientation="horizontal">
+    tools:orientation="horizontal"
+    tools:parentTag="android.widget.LinearLayout">
 
-  <!-- One focus row: address field, page commands, blocker state, application menu. -->
-  <FrameLayout
-      android:layout_width="0dp"
-      android:layout_weight="1"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="8dp"
-      android:id="@+id/flUrl">
-    <EditText
-        android:layout_width="match_parent"
+    <FrameLayout
+        android:id="@+id/flUrl"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:background="@drawable/browser_address_bg"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp"
-        android:gravity="center_vertical"
-        android:fontFamily="sans-serif"
-        android:textSize="20sp"
-        android:textColorHint="@color/ui_url_hint"
-        android:singleLine="true"
-        android:id="@+id/etUrl"
-        android:nextFocusRight="@id/ibBack"
-        android:nextFocusDown="@id/vTabs"
-        android:iconifiedByDefault="false"
-        android:textCursorDrawable="@null"
-        android:textColor="@color/default_url_color"
-        android:imeOptions="actionSearch|flagNoExtractUi"
-        android:hint="@string/url_prompt"
-        android:inputType="textUri"
-        android:importantForAutofill="no" />
-  </FrameLayout>
+        android:layout_marginEnd="16dp"
+        android:layout_weight="1">
 
-  <ImageButton
-      style="@style/BrowserControl"
-      android:layout_width="48dp"
-      android:layout_height="48dp"
-      android:layout_marginEnd="4dp"
-      android:id="@+id/ibBack"
-      android:contentDescription="@string/navigate_back"
-      android:src="@drawable/back_icon_selector"
-      android:nextFocusLeft="@id/etUrl"
-      android:nextFocusRight="@id/ibForward"
-      android:nextFocusDown="@id/vTabs" />
+        <EditText
+            android:id="@+id/etUrl"
+            style="@style/Widget.Vireo.Field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:hint="@string/url_prompt"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:importantForAutofill="no"
+            android:inputType="textUri"
+            android:nextFocusRight="@id/ibBack"
+            android:nextFocusDown="@id/vTabs" />
+    </FrameLayout>
 
-  <ImageButton
-      style="@style/BrowserControl"
-      android:layout_width="48dp"
-      android:layout_height="48dp"
-      android:layout_marginEnd="4dp"
-      android:id="@+id/ibForward"
-      android:contentDescription="@string/navigate_forward"
-      android:src="@drawable/forward_icon_selector"
-      android:nextFocusLeft="@id/ibBack"
-      android:nextFocusRight="@id/ibRefresh"
-      android:nextFocusDown="@id/vTabs" />
+    <ImageButton
+        android:id="@+id/ibBack"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_marginEnd="@dimen/control_gap"
+        android:contentDescription="@string/navigate_back"
+        android:src="@drawable/ic_back"
+        android:nextFocusLeft="@id/etUrl"
+        android:nextFocusRight="@id/ibForward"
+        android:nextFocusDown="@id/vTabs" />
 
-  <ImageButton
-      style="@style/BrowserControl"
-      android:layout_width="48dp"
-      android:layout_height="48dp"
-      android:layout_marginEnd="4dp"
-      android:id="@+id/ibRefresh"
-      android:contentDescription="@string/refresh_page"
-      android:src="@drawable/ic_refresh_grey_900_24dp"
-      android:nextFocusLeft="@id/ibForward"
-      android:nextFocusRight="@id/ibHome"
-      android:nextFocusDown="@id/vTabs" />
+    <ImageButton
+        android:id="@+id/ibForward"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_marginEnd="@dimen/control_gap"
+        android:contentDescription="@string/navigate_forward"
+        android:src="@drawable/ic_forward"
+        android:nextFocusLeft="@id/ibBack"
+        android:nextFocusRight="@id/ibRefresh"
+        android:nextFocusDown="@id/vTabs" />
 
-  <ImageButton
-      style="@style/BrowserControl"
-      android:layout_width="48dp"
-      android:layout_height="48dp"
-      android:layout_marginEnd="4dp"
-      android:id="@+id/ibHome"
-      android:contentDescription="@string/navigate_home"
-      android:src="@drawable/ic_home_grey_900_24dp"
-      android:nextFocusLeft="@id/ibRefresh"
-      android:nextFocusRight="@id/ibAdBlock"
-      android:nextFocusDown="@id/vTabs" />
+    <ImageButton
+        android:id="@+id/ibRefresh"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_marginEnd="@dimen/control_gap"
+        android:contentDescription="@string/refresh_page"
+        android:src="@drawable/ic_refresh"
+        android:nextFocusLeft="@id/ibForward"
+        android:nextFocusRight="@id/ibHome"
+        android:nextFocusDown="@id/vTabs" />
 
-  <!-- Click toggles blocking; long press opens the blocker details. -->
-  <ImageButton
-      style="@style/BrowserControl"
-      android:layout_width="48dp"
-      android:layout_height="48dp"
-      android:layout_marginEnd="4dp"
-      android:id="@+id/ibAdBlock"
-      android:contentDescription="@string/toggle_ads_blocking"
-      android:src="@drawable/ic_adblock_on"
-      android:nextFocusLeft="@id/ibHome"
-      android:nextFocusRight="@id/ibMenu"
-      android:nextFocusDown="@id/vTabs" />
+    <ImageButton
+        android:id="@+id/ibHome"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_marginEnd="@dimen/control_gap"
+        android:contentDescription="@string/navigate_home"
+        android:src="@drawable/ic_home"
+        android:nextFocusLeft="@id/ibRefresh"
+        android:nextFocusRight="@id/ibAdBlock"
+        android:nextFocusDown="@id/vTabs" />
 
-  <ImageButton
-      style="@style/BrowserControl"
-      android:layout_width="48dp"
-      android:layout_height="48dp"
-      android:id="@+id/ibMenu"
-      android:contentDescription="@string/app_menu"
-      android:src="@drawable/ic_menu_24"
-      android:nextFocusLeft="@id/ibAdBlock"
-      android:nextFocusDown="@id/vTabs"
-      android:focusable="true"
-      android:focusableInTouchMode="true" />
+    <ImageButton
+        android:id="@+id/ibAdBlock"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_marginEnd="@dimen/control_gap"
+        android:contentDescription="@string/toggle_ads_blocking"
+        android:src="@drawable/ic_shield_on"
+        android:nextFocusLeft="@id/ibHome"
+        android:nextFocusRight="@id/ibMenu"
+        android:nextFocusDown="@id/vTabs" />
+
+    <ImageButton
+        android:id="@+id/ibMenu"
+        style="@style/Widget.Vireo.IconButton"
+        android:contentDescription="@string/app_menu"
+        android:src="@drawable/ic_more"
+        android:nextFocusLeft="@id/ibAdBlock"
+        android:nextFocusDown="@id/vTabs" />
 </merge>

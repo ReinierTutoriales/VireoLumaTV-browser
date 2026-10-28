@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.net.Uri
 import android.util.Log
 import android.view.Gravity
@@ -144,7 +143,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
         }
     }
 
-    override fun onCertificateError() = vb.vActionBar.setAddressBoxTextColor(Color.RED)
+    override fun onCertificateError() = vb.vActionBar.setAddressBoxTextColor(browser.getColor(R.color.error))
 
     override fun onRendererGone() {
         if (isShownTab) browser.changeTab(tab)

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A labelled slider: Left/Right change it, the value is shown at the end. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -9,7 +10,9 @@
         android:id="@+id/settingTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp" />
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textAppearance="@style/TextAppearance.Vireo.Secondary" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,15 +23,18 @@
         <SeekBar
             android:id="@+id/settingControl"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_height="@dimen/control_size"
+            android:layout_weight="1"
+            android:background="@drawable/bg_row"
+            android:progressTint="@color/brand"
+            android:thumbTint="@color/on_surface" />
 
         <TextView
             android:id="@+id/settingValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="end"
-            android:minWidth="72dp"
-            android:textSize="14sp" />
+            android:minWidth="80dp"
+            android:textAppearance="@style/TextAppearance.Vireo.Label" />
     </LinearLayout>
 </LinearLayout>

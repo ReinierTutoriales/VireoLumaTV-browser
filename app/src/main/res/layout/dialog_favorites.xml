@@ -1,43 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Actions on top (add the current page, edit mode), then the bookmarks or an empty-state hint. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipToPadding="false"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipChildren="false"
     android:minWidth="560dp"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:accessibilityHeading="true"
+        android:text="@string/favorites"
+        android:textAppearance="@style/TextAppearance.Vireo.Title" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:clipChildren="false"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnAdd"
-            android:layout_width="0dp"
+            style="@style/Widget.Vireo.Button"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/control_gap"
             android:text="@string/add" />
 
         <Button
             android:id="@+id/btnEdit"
-            android:layout_width="0dp"
+            style="@style/Widget.Vireo.Button"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/edit" />
     </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_weight="1">
+        android:layout_marginTop="16dp"
+        android:layout_weight="1"
+        android:clipChildren="false">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/listView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
             android:visibility="gone" />
 
         <TextView
@@ -48,13 +63,15 @@
             android:gravity="center"
             android:padding="24dp"
             android:text="@string/no_bookmarks_yet"
-            android:textSize="18sp"
+            android:textAppearance="@style/TextAppearance.Vireo.Body"
+            android:textColor="@color/on_surface_variant"
             android:visibility="gone" />
 
         <ProgressBar
             android:id="@+id/pbLoading"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/brand" />
     </FrameLayout>
 </LinearLayout>

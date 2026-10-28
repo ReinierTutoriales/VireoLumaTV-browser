@@ -88,7 +88,7 @@ class BrowserUiSnapshotTest {
                 Color.rgb(100, 116, 139))
             bitmap.recycle()
             val address = vb.root.findViewById<TextView>(R.id.etUrl)
-            assertEquals("System font scaling is honored", 20f * fontScale, address.textSize, 0.1f)
+            assertEquals("System font scaling is honored", 18f * fontScale, address.textSize, 0.1f)
             assertTrue("Enlarged URL text fits vertically: line=${address.layout.getLineBottom(0)}, height=${address.height}, padding=${address.compoundPaddingTop + address.compoundPaddingBottom}", address.layout.getLineBottom(0) <=
                 address.height - address.compoundPaddingTop - address.compoundPaddingBottom)
             verifyGeometry(vb, fontScale)
@@ -103,7 +103,7 @@ class BrowserUiSnapshotTest {
         }
     }
     private fun verifyGeometry(vb: ActivityMainBinding, fontScale: Float) {
-        // One capsule row: every command is a 48dp control in a single focus chain.
+        // One row of round 48dp commands in a single focus chain.
         val capsuleIds = listOf(R.id.ibBack, R.id.ibForward, R.id.ibRefresh,
             R.id.ibHome, R.id.ibAdBlock, R.id.ibMenu)
         for (width in listOf(720, 960, 1280)) {
@@ -115,72 +115,69 @@ class BrowserUiSnapshotTest {
                 val view = vb.root.findViewById<View>(id)
                 assertEquals("Uniform control width at $width", 48, view.width)
                 assertEquals("Uniform control height at $width", 48, view.height)
-                assertTrue("Controls must not overlap at $width", view.left >= previousRight)
+                // A focused control grows 1.1x: neighbours must keep a gap for it.
+                assertTrue("Controls keep room to grow at $width", view.left >= previousRight + 4)
                 previousRight = view.right
-                val parent = view.parent as View
-                assertTrue(view.top >= parent.paddingTop)
-                assertTrue(view.bottom <= parent.height - parent.paddingBottom)
-                assertTrue(view.right <= parent.width - parent.paddingRight)
             }
-            // Measure in root coordinates: the capsule sits inside the tab-strip surface.
+            // Everything focusable stays inside the 48 dp / 27 dp overscan-safe area.
             val surface = vb.rlActionBar
-            val capsuleLeft = surface.left + vb.vActionBar.left
-            val capsuleRight = surface.left + vb.vActionBar.right
-            assertTrue("Capsule must fit within TV overscan at $width", capsuleLeft >= 16 &&
-                capsuleRight <= width - 16)
-            assertTrue("Capsule must stay on screen at $width",
-                surface.top >= 0 && surface.bottom <= vb.root.height)
+            val rowLeft = surface.left + vb.vActionBar.left
+            val rowRight = surface.left + vb.vActionBar.right
+            assertTrue("Controls inside the safe area at $width", rowLeft >= 48 && rowRight <= width - 48)
+            assertTrue("Controls start below the safe top at $width", surface.top + vb.vActionBar.top >= 27)
             val address = vb.root.findViewById<View>(R.id.etUrl)
             assertTrue("Address remains usable at $width", address.width >= 240)
             if (fontScale == 1f) assertEquals("Default address height", 48, address.height)
             else assertTrue("Accessible text may expand the field", address.height >= 48)
-            // Compact tabs: 40dp tall, 196dp wide (TV grid four-card width), and "+" as tall as a tab.
+            // Tab chips: 40dp tall, 188dp wide so four fit inside the safe area; "+" is a 48dp control.
             val tabs = vb.vTabs.findViewById<RecyclerView>(R.id.rvTabs)
             val tab = tabs.getChildAt(0)
             assertEquals("Tab height at $width", 40, tab.height)
-            assertEquals("Tab width at $width", 196, tab.width)
-            assertEquals("Add-tab button height at $width", 40, vb.vTabs.findViewById<View>(R.id.btnAdd).height)
+            assertEquals("Tab width at $width", 188, tab.width)
+            assertEquals("Add-tab button height at $width", 48, vb.vTabs.findViewById<View>(R.id.btnAdd).height)
             if (width >= 960) assertTrue("Four tabs fit beside the add button at $width: ${tabs.width}",
-                tabs.width >= 4 * (196 + 4))
+                tabs.width - tabs.paddingLeft - tabs.paddingRight >= 4 * (188 + 8))
         }
     }
 
     private fun verifyStates(activity: AppCompatActivity, name: String) {
-        val labels = listOf("Normal", "Foco", "Pulsado", "Activo", "Inactivo")
+        val labels = listOf("Normal", "Foco", "Pulsado", "Abierta", "Inactivo")
         val enabled = android.R.attr.state_enabled
         val focused = android.R.attr.state_focused
         val pressed = android.R.attr.state_pressed
-        val checked = android.R.attr.state_checked
+        val selected = android.R.attr.state_selected
         val states = listOf(intArrayOf(enabled), intArrayOf(enabled, focused),
-            intArrayOf(enabled, pressed), intArrayOf(enabled, checked), intArrayOf(-enabled))
+            intArrayOf(enabled, focused, pressed), intArrayOf(enabled, selected), intArrayOf(-enabled))
         val sample = Bitmap.createBitmap(600, 104, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(sample)
-        canvas.drawColor(ContextCompat.getColor(activity, R.color.top_bar_background))
+        canvas.drawColor(ContextCompat.getColor(activity, R.color.background))
         val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = ContextCompat.getColor(activity, R.color.day_night_text_color_contrast)
+            color = ContextCompat.getColor(activity, R.color.on_surface)
             textSize = 16f
         }
         val centers = mutableSetOf<Int>()
         for ((index, state) in states.withIndex()) {
-            val drawable = AppCompatResources.getDrawable(activity, R.drawable.button_bg_selector)!!.mutate()
+            val drawable = AppCompatResources.getDrawable(activity, R.drawable.bg_chip)!!.mutate()
             drawable.state = state
             drawable.setBounds(12 + index * 120, 12, 108 + index * 120, 60)
             drawable.draw(canvas)
             centers.add(sample.getPixel(60 + index * 120, 36))
             canvas.drawText(labels[index], 12f + index * 120, 88f, labelPaint)
         }
-        assertEquals("Normal/focus/pressed/checked/disabled must remain visually distinct", 5, centers.size)
-        val text = ContextCompat.getColor(activity, R.color.day_night_text_color_contrast)
-        val icon = ContextCompat.getColor(activity, R.color.day_night_icon_color)
-        for (background in listOf(R.color.button_background, R.color.button_background_focused,
-            R.color.button_background_pressed, R.color.ui_control_checked)) {
-            val surface = ContextCompat.getColor(activity, background)
-            assertTrue("Text contrast", ColorUtils.calculateContrast(text, surface) >= 4.5)
-            assertTrue("Icon contrast", ColorUtils.calculateContrast(icon, surface) >= 4.5)
+        assertEquals("Normal/focus/pressed/open/disabled must remain visually distinct", 5, centers.size)
+        fun color(id: Int) = ContextCompat.getColor(activity, id)
+        // Text and icons on every surface they are drawn on, including the inverted focus.
+        for ((content, surface) in listOf(R.color.on_surface to R.color.surface_variant,
+            R.color.on_surface to R.color.brand_container, R.color.on_surface to R.color.surface,
+            R.color.inverse_on_surface to R.color.inverse_surface, R.color.on_surface to R.color.background)) {
+            assertTrue("Contrast ${activity.resources.getResourceEntryName(content)} on " +
+                activity.resources.getResourceEntryName(surface),
+                ColorUtils.calculateContrast(color(content), color(surface)) >= 4.5)
         }
-        assertTrue("Focus outline contrast", ColorUtils.calculateContrast(
-            ContextCompat.getColor(activity, R.color.ui_focus_border),
-            ContextCompat.getColor(activity, R.color.button_background_focused)) >= 3.0)
+        assertTrue("Secondary text contrast", ColorUtils.calculateContrast(
+            color(R.color.on_surface_variant), color(R.color.surface)) >= 4.5)
+        assertTrue("Focus is visible against the controls' surroundings", ColorUtils.calculateContrast(
+            color(R.color.inverse_surface), color(R.color.surface_variant)) >= 3.0)
         File("build/reports/ui/browser-states-$name.png").outputStream().use {
             assertTrue(sample.compress(Bitmap.CompressFormat.PNG, 100, it))
         }

@@ -137,7 +137,7 @@ class DownloadListAdapter(
                 download.size == Download.CANCELLED_MARK -> tvSize.setText(R.string.cancelled)
                 download.size == Download.BROKEN_MARK -> {
                     tvSize.setText(R.string.error)
-                    tvSize.setTextColor(ContextCompat.getColor(context, R.color.ui_error))
+                    tvSize.setTextColor(ContextCompat.getColor(context, R.color.error))
                 }
                 download.size <= 0L -> {
                     tvSize.text = size(download.bytesReceived)

@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A short message over the page; it never takes focus, so the remote keeps working. -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:parentTag="android.widget.LinearLayout">
 
     <ImageView
         android:id="@+id/ivIcon"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:importantForAccessibility="no"
-        tools:src="@drawable/ic_block_popups" />
+        app:tint="@color/brand"
+        tools:src="@drawable/ic_block" />
 
     <TextView
         android:id="@+id/tvMessage"
@@ -19,7 +21,6 @@
         android:ellipsize="end"
         android:maxWidth="360dp"
         android:maxLines="2"
-        android:textColor="@color/day_night_text_color_contrast"
-        android:textSize="16sp"
+        android:textAppearance="@style/TextAppearance.Vireo.Body"
         tools:text="Pop-up blocked" />
 </merge>

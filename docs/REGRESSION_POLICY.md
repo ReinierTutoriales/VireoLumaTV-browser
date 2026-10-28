@@ -62,6 +62,15 @@ Abajo entra en la lista sin cancelar la edición, Arriba vuelve al campo, OK abr
 El campo ya no prohíbe las sugerencias del teclado (`textUri`) ni abre el teclado a pantalla completa.
 Nada sale del dispositivo. Pendiente de validación en Android TV con varios teclados.
 
+**Rediseño TV (2026-10-28, petición del propietario):** interfaz nativa de Android TV con vistas
+AppCompat, sin dependencias nuevas. El foco invierte el control (superficie clara, contenido oscuro) y lo
+escala 1,1 (botones), 1,05 (pestañas y botones de texto) o 1,025 (filas), según el sistema de foco de TV.
+Los controles del navegador son una capa superior sobre un degradado, dentro de los márgenes seguros de
+48/27 dp; las pestañas son píldoras de 188 dp (caben cuatro y «+»). El menú de aplicación es un panel
+lateral a la derecha con icono por entrada; Atrás lo cierra sin elegir. La vista previa de otra pestaña
+ocupa la pantalla detrás de los controles, sin recortar. Las mismas acciones y el mismo orden de foco
+(N01–N06) se conservan. Pendiente de validación en Android TV.
+
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 

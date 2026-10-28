@@ -1,23 +1,18 @@
-<?xml version='1.0' encoding='utf-8'?>
-<!-- The interface is dark only: less glare on a large screen watched in a dim room. -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark-only palette, tuned for a large screen in a dim room. The focused control inverts
+     (light surface, dark content), which reads from across the room without a border. -->
 <resources>
-    <color name="default_url_color">#EDF3FA</color>
-    <color name="top_bar_background">#151D2A</color>
-    <color name="day_night_text_color">#B4C2D4</color>
-    <color name="day_night_text_color_contrast">#EDF3FA</color>
-    <color name="day_night_background_color">#151D2A</color>
-    <color name="button_background">#253247</color>
-    <color name="button_background_focused">#21402F</color>
-    <color name="button_background_pressed">#2D5A40</color>
-    <color name="button_background_disabled">#1B2534</color>
-    <color name="day_night_icon_color">#EDF3FA</color>
-    <color name="progressbar_tint">#6FD08C</color>
-    <color name="settings_tab_color">#253247</color>
-    <color name="settings_tab_color_activated">#314561</color>
-    <color name="settings_tab_activated_underline_color">#6FD08C</color>
-    <color name="ui_focus_border">#6FD08C</color>
-    <color name="ui_control_checked">#314561</color>
-    <color name="ui_url_hint">#B4C2D4</color>
-    <color name="ui_capsule_surface">#1F2A3A</color>
-    <color name="ui_error">#FF8A80</color>
+    <color name="background">#0E1014</color>
+    <color name="surface">#171A1F</color>
+    <color name="surface_variant">#252A31</color>
+    <color name="surface_high">#30363F</color>
+    <color name="on_surface">#E8EAED</color>
+    <color name="on_surface_variant">#A9B0B9</color>
+    <color name="inverse_surface">#F1F3F5</color>
+    <color name="inverse_on_surface">#14171B</color>
+    <color name="brand">#7BD88F</color>
+    <color name="brand_container">#1E3826</color>
+    <color name="error">#FF8A80</color>
+    <color name="scrim_strong">#F20B0D10</color>
+    <color name="scrim_clear">#000B0D10</color>
 </resources>

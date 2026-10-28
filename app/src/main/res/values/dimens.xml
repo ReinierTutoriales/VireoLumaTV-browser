@@ -1,11 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sizes on the 960 x 540 dp TV canvas. -->
 <resources>
-    <dimen name="web_tab_width">196dp</dimen>
-    <dimen name="web_tab_height">40dp</dimen>
+    <!-- Overscan-safe margins: nothing focusable or textual closer to the edge. -->
+    <dimen name="safe_horizontal">48dp</dimen>
+    <dimen name="safe_vertical">27dp</dimen>
 
+    <dimen name="control_size">48dp</dimen>
+    <dimen name="control_icon_padding">12dp</dimen>
+    <dimen name="control_gap">8dp</dimen>
+    <dimen name="row_height">56dp</dimen>
+    <dimen name="corner_small">12dp</dimen>
+    <dimen name="corner_large">20dp</dimen>
 
-    <!-- Bottom-end messages: inside the 48/27 dp overscan-safe area. -->
-    <dimen name="notification_margin_end">48dp</dimen>
-    <dimen name="notification_margin_bottom">27dp</dimen>
+    <!-- Four tabs and the new-tab control fit between the safe margins (960 - 2 x 48 dp). -->
+    <dimen name="tab_width">188dp</dimen>
+    <dimen name="tab_height">40dp</dimen>
+
+    <!-- Side panel: a third of the canvas. -->
+    <dimen name="side_panel_width">320dp</dimen>
+
+    <dimen name="notification_margin_end">@dimen/safe_horizontal</dimen>
+    <dimen name="notification_margin_bottom">@dimen/safe_vertical</dimen>
     <dimen name="notification_padding_horizontal">16dp</dimen>
     <dimen name="notification_padding_vertical">10dp</dimen>
 </resources>

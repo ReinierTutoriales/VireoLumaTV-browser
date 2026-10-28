@@ -1,54 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Status text, then its action as a full-width row so D-pad Down always reaches it. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
+    android:layout_marginTop="16dp"
     android:orientation="vertical">
 
     <TextView
         android:id="@+id/settingValue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
         android:ellipsize="end"
         android:maxLines="6"
-        android:minLines="3" />
+        android:minLines="3"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textAppearance="@style/TextAppearance.Vireo.Secondary" />
 
     <LinearLayout
         android:id="@+id/settingControl"
+        style="@style/Widget.Vireo.Row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:background="@drawable/list_row_bg"
         android:clickable="true"
-        android:focusable="true"
         android:gravity="center_vertical"
-        android:minHeight="48dp"
-        android:orientation="horizontal"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp">
+        android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/settingIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:importantForAccessibility="no" />
+            android:duplicateParentState="true"
+            android:importantForAccessibility="no"
+            app:tint="@color/on_control" />
 
         <TextView
             android:id="@+id/settingTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="16dp"
             android:layout_weight="1"
+            android:duplicateParentState="true"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textSize="16sp" />
+            android:textAppearance="@style/TextAppearance.Vireo.Body" />
 
         <ProgressBar
             android:id="@+id/settingProgress"
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:indeterminateTint="@color/brand"
             android:visibility="invisible" />
     </LinearLayout>
 </LinearLayout>

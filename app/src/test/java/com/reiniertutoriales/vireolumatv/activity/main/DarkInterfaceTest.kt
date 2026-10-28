@@ -28,8 +28,8 @@ class DarkInterfaceTest {
             assertTrue(activity.theme.resolveAttribute(androidx.appcompat.R.attr.isLightTheme, light, true))
             // Algorithmic page darkening only applies when the app theme is not light.
             assertFalse("App theme must be dark", light.data != 0)
-            val background = ContextCompat.getColor(activity, R.color.day_night_background_color)
-            val text = ContextCompat.getColor(activity, R.color.day_night_text_color_contrast)
+            val background = ContextCompat.getColor(activity, R.color.background)
+            val text = ContextCompat.getColor(activity, R.color.on_surface)
             assertTrue("Dark background", ColorUtils.calculateLuminance(background) < 0.05)
             assertTrue("Readable text: ${ColorUtils.calculateContrast(text, background)}",
                 ColorUtils.calculateContrast(text, background) >= 7.0)

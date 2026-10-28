@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Secondary text of a row; follows the row into its focused, inverted state. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:alpha="0.72" android:color="@color/inverse_on_surface" />
+    <item android:color="@color/on_surface_variant" />
+</selector>

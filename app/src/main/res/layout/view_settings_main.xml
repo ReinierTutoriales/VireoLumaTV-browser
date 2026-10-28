@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Rows are added by MainSettingsView, top to bottom in D-pad order. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipToPadding="false"
     android:id="@+id/settingsList"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
     android:orientation="vertical"
-    android:paddingStart="22dp"
-    android:paddingTop="8dp"
-    android:paddingEnd="22dp"
-    android:paddingBottom="48dp" />
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="@dimen/safe_vertical" />

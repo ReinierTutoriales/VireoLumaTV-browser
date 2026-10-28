@@ -133,7 +133,7 @@ class MainSettingsView @JvmOverloads constructor(
         details = rows.group(config.adBlockEnabled) {
             adBlockListUrl = field(null, R.string.url, id = R.id.etAdBlockerListUrl)
             adBlockStatus = status(R.id.tvAdBlockerListInfo, R.id.btnAdBlockerUpdate,
-                R.drawable.ic_refresh_grey_900_24dp, R.string.update_ad_blocker_list) {
+                R.drawable.ic_refresh, R.string.update_ad_blocker_list) {
                 if (!adblockModel.clientLoading.value) {
                     saveAdBlockListUrl()
                     adblockModel.loadAdBlockList(true)

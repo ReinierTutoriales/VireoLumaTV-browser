@@ -6,10 +6,12 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="2dp"
     android:layout_marginBottom="2dp"
-    android:background="@drawable/list_row_bg"
+    android:background="@drawable/bg_row"
+    android:stateListAnimator="@animator/focus_scale_row"
+    android:defaultFocusHighlightEnabled="false"
     android:focusable="true"
     android:gravity="center_vertical"
-    android:minHeight="56dp"
+    android:minHeight="@dimen/row_height"
     android:orientation="horizontal"
     android:paddingStart="16dp"
     android:paddingTop="8dp"
@@ -21,21 +23,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:buttonTint="@color/ui_focus_border"
+        android:buttonTint="@color/brand"
         android:clickable="false"
         android:focusable="false"
         android:visibility="gone" />
 
     <TextView
         android:id="@+id/tvTime"
+        android:duplicateParentState="true"
         android:layout_width="56dp"
         android:layout_height="wrap_content"
         android:maxLines="1"
-        android:textColor="@color/day_night_text_color"
+        android:textColor="@color/on_control_variant"
         android:textSize="14sp"
         tools:text="21:40" />
 
     <LinearLayout
+        android:duplicateParentState="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -43,21 +47,23 @@
 
         <TextView
             android:id="@+id/tvTitle"
+            android:duplicateParentState="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/day_night_text_color_contrast"
+            android:textColor="@color/on_control"
             android:textSize="18sp"
             tools:text="Example page" />
 
         <TextView
             android:id="@+id/tvURL"
+            android:duplicateParentState="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="middle"
             android:maxLines="1"
-            android:textColor="@color/day_night_text_color"
+            android:textColor="@color/on_control_variant"
             android:textSize="14sp"
             tools:text="https://example.com/" />
     </LinearLayout>
