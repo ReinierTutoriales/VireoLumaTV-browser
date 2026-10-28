@@ -127,7 +127,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/ExternalWebNav
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/IncognitoSessionTabs.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/MainActivity.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt	32
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/MainActivityViewModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt	42
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt	9
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt	71
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabsModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt	41
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/SearchEngineConfigDialogFactory.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/ShortcutDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt	73
@@ -318,6 +318,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/PreviewResourc
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/RendererRecoveryTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsTabsTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SingleLiveTabTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModelTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabRestoreFallbackTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialogTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsPagesTest.kt	PROPIO		
