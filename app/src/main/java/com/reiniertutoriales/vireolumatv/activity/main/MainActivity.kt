@@ -447,8 +447,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     private fun loadState() = lifecycleScope.launch(Dispatchers.Main) {
         Log.d(TAG, "loadState")
-        WebEngineFactory.initialize(this@MainActivity, vb.flWebViewContainer)
-
         vb.progressBarGeneric.visibility = View.VISIBLE
         vb.progressBarGeneric.requestFocus()
         viewModel.loadState().join()
@@ -1344,7 +1342,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             return shouldBlockNewWindow(dialog = true, userGesture = false)
         }
 
-        override fun shouldBlockNewWindow(dialog: Boolean, userGesture: Boolean): Boolean {
+        private fun shouldBlockNewWindow(dialog: Boolean, userGesture: Boolean): Boolean {
             val currentBlockPopupsLevelValue = tabsModel.popupBlockingLevel(tab)
             return when (currentBlockPopupsLevelValue) {
                 HostConfig.POPUP_BLOCK_NONE -> false

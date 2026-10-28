@@ -24,9 +24,7 @@ class RendererRecoveryTest {
             arrayOf(WebEngineProviderCallback::class.java)) { _, method, _ ->
             if (method.name == "createWebEngine") engine else null
         } as WebEngineProviderCallback
-        val field = WebEngineFactory::class.java.getDeclaredField("initializedProvider").apply { isAccessible = true }
-        val previous = field.get(null)
-        field.set(null, WebEngineProvider("test", callback))
+        val restore = WebEngineFactory.replaceForTest(callback)
         try {
             val tab = WebTabState(url = "https://latest.test").apply { savedState = Bundle() }
             assertTrue(tab.restoreWebView())
@@ -38,6 +36,6 @@ class RendererRecoveryTest {
             tab.rendererLost = false
             assertTrue(tab.restoreWebView())
             assertEquals(2, restores)
-        } finally { field.set(null, previous) }
+        } finally { restore() }
     }
 }

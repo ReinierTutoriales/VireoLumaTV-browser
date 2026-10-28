@@ -1,55 +1,40 @@
 package com.reiniertutoriales.vireolumatv.webengine
 
 import android.content.Context
-import androidx.annotation.UiThread
+import androidx.annotation.VisibleForTesting
 import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
 
+/** What the browser needs from its engine module: tabs' engines, the shared cache and a version. */
 interface WebEngineProviderCallback {
-    suspend fun initialize(context: Context, webViewContainer: CursorLayout)
     fun createWebEngine(tab: WebTabState): WebEngine
     suspend fun clearCache(ctx: Context)
     fun getWebEngineVersionString(): String
 }
 
-data class WebEngineProvider(
-    val name: String,
-    val callback: WebEngineProviderCallback
-)
-
-
-
+/**
+ * Creates each tab's [WebEngine]. The browser runs on Android WebView only; the app installs that
+ * backend at start-up, and tests may replace it.
+ */
 object WebEngineFactory {
-    const val TAG = "WebEngineFactory"
-    private val engineProviders = mutableListOf<WebEngineProvider>()
-    private lateinit var initializedProvider: WebEngineProvider
+    @Volatile private var backend: WebEngineProviderCallback? = null
 
-    fun registerProvider(provider: WebEngineProvider) {
-        engineProviders.add(provider)
+    fun install(backend: WebEngineProviderCallback) {
+        this.backend = backend
     }
 
-    fun getProviders(): List<WebEngineProvider> {
-        return engineProviders
+    /** Makes [replacement] the backend; the returned call puts the previous one back. */
+    @VisibleForTesting
+    fun replaceForTest(replacement: WebEngineProviderCallback): () -> Unit {
+        val previous = backend
+        backend = replacement
+        return { backend = previous }
     }
 
-    @UiThread
-    suspend fun initialize(context: Context, webViewContainer: CursorLayout) {
-        val webEngineProvider = engineProviders.firstOrNull()
-            ?: throw IllegalArgumentException("No WebEngineProvider registered")
-        webEngineProvider.callback.initialize(context, webViewContainer)
-        initializedProvider = webEngineProvider
-    }
+    private fun backend() = checkNotNull(backend) { "No web engine installed" }
 
-    fun createWebEngine(tab: WebTabState): WebEngine {
-        return initializedProvider.callback.createWebEngine(tab)
-    }
+    fun createWebEngine(tab: WebTabState): WebEngine = backend().createWebEngine(tab)
 
-    suspend fun clearCache(ctx: Context) {
-        initializedProvider.callback.clearCache(ctx)
-    }
+    suspend fun clearCache(ctx: Context) = backend().clearCache(ctx)
 
-
-    fun getWebEngineVersionString(): String {
-        return initializedProvider.callback.getWebEngineVersionString()
-    }
+    fun getWebEngineVersionString(): String = backend().getWebEngineVersionString()
 }

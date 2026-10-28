@@ -58,9 +58,7 @@ class SingleLiveTabTest {
                 }
             }
         } as WebEngineProviderCallback
-        val field = WebEngineFactory::class.java.getDeclaredField("initializedProvider").apply { isAccessible = true }
-        val previous = field.get(null)
-        field.set(null, WebEngineProvider("test", providerCallback))
+        val restore = WebEngineFactory.replaceForTest(providerCallback)
         val model = TabsModel()
         // Persistence has separate Room/atomic-file tests; keep this test focused on renderer lifetime.
         model.modelScope.cancel()
@@ -100,7 +98,7 @@ class SingleLiveTabTest {
             assertEquals(1, views.size)
         } finally {
             model.clear()
-            field.set(null, previous)
+            restore()
         }
     }
 }

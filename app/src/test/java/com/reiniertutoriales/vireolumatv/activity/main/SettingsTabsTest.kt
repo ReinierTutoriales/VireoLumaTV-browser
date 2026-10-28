@@ -13,7 +13,6 @@ import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.Shortcut
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.VersionSettingsView
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcut
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineProvider
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineProviderCallback
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -67,10 +66,8 @@ class SettingsTabsTest {
             arrayOf(WebEngineProviderCallback::class.java)) { _, method, _ ->
             if (method.name == "getWebEngineVersionString") "test-engine 1.0" else null
         } as WebEngineProviderCallback
-        val field = WebEngineFactory::class.java.getDeclaredField("initializedProvider").apply { isAccessible = true }
-        val previous = field.get(null)
-        field.set(null, WebEngineProvider("test", callback))
-        try { test() } finally { field.set(null, previous) }
+        val restore = WebEngineFactory.replaceForTest(callback)
+        try { test() } finally { restore() }
     }
 
     @Test fun aboutPageCreditsTvBroAndReachesEveryLink() = withEngine { withPage({ VersionSettingsView(it) }) { list ->

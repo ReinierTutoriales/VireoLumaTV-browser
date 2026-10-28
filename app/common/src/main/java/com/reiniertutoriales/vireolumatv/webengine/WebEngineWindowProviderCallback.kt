@@ -9,6 +9,7 @@ import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import java.io.InputStream
 
+/** What a tab's engine asks of the browser window: navigation, downloads, ads, dialogs and fullscreen. */
 interface WebEngineWindowProviderCallback {
     fun getActivity(): Activity
     fun onOpenInNewTabRequested(url: String, navigateImmediately: Boolean): WebEngine?
@@ -32,7 +33,6 @@ interface WebEngineWindowProviderCallback {
     fun adRedirect(url: Uri, requestType: String?, baseUri: Uri): String? = null
     fun isAdBlockingEnabled(): Boolean
     fun isDialogsBlockingEnabled(): Boolean
-    fun shouldBlockNewWindow(dialog: Boolean, userGesture: Boolean): Boolean
     /** Page-initiated navigation of this tab to a popunder network; true cancels it. */
     fun isTabUnderAd(url: Uri, page: Uri?): Boolean = false
     fun onBlockedAds(count: Int)

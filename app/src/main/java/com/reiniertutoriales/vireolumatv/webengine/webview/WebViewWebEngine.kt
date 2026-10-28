@@ -18,8 +18,6 @@ import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
-import com.reiniertutoriales.vireolumatv.webengine.WebEngineProvider
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineProviderCallback
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
@@ -34,8 +32,6 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     private var fullScreenView: View? = null
     private val permissionsRequests = HashMap<Int, Boolean>()//request code, isGeolocationPermissionRequest
     private val jsInterface = AndroidJSInterface(this)
-
-    override fun getWebEngineName(): String = "WebView"
 
     override fun isSameSession(internalRepresentation: Any): Boolean {
         return internalRepresentation == webView
@@ -76,28 +72,12 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         webView?.goForward()
     }
 
-    override fun canZoomIn(): Boolean {
-        return webView?.canZoomIn() ?: false
-    }
-
     override fun zoomIn() {
         webView?.zoomIn()
     }
 
-    override fun canZoomOut(): Boolean {
-        return webView?.canZoomOut() ?: false
-    }
-
     override fun zoomOut() {
         webView?.zoomOut()
-    }
-
-    override fun zoomBy(zoomBy: Float) {
-        webView?.zoomBy(zoomBy)
-    }
-
-    override fun evaluateJavascript(script: String) {
-        webView?.evaluateJavascript(script, null)
     }
 
     override fun setNetworkAvailable(connected: Boolean) {
@@ -255,20 +235,12 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         }
     }
 
-    override fun isVirtualCursorMode(): Boolean {
-        return viewParent?.cursorEnabled ?: true
-    }
-
     override fun setVirtualCursorMode(enabled: Boolean) {
         viewParent?.cursorEnabled = enabled
         if (enabled) {
             viewParent?.cursorDrawerDelegate?.animateAppearing()
         }
         webView?.setVirtualCursorMode(enabled)
-    }
-
-    override fun getCursorDrawerDelegate(): CursorDrawerDelegate? {
-        return viewParent?.cursorDrawerDelegate
     }
 
     private fun enterFullscreenView(view: View) {
@@ -485,33 +457,24 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         @Volatile
         var hiddenSelectorsProvider: ((String, String, String) -> String)? = null
 
-        init {
-            WebEngineFactory.registerProvider(WebEngineProvider("WebView", object : WebEngineProviderCallback {
-                override suspend fun initialize(context: Context, webViewContainer: CursorLayout) {
+        /** The WebView backend the app installs in [WebEngineFactory] at start-up. */
+        val Backend = object : WebEngineProviderCallback {
+            override fun createWebEngine(tab: WebTabState): WebEngine = WebViewWebEngine(tab)
 
+            // The disk cache belongs to the shared WebView profile, so a short-lived WebView clears it.
+            override suspend fun clearCache(ctx: Context) {
+                val webView = WebView(ctx)
+                try {
+                    webView.clearCache(true)
+                } finally {
+                    webView.destroy()
                 }
+            }
 
-                override fun createWebEngine(tab: WebTabState): WebEngine {
-                    return WebViewWebEngine(tab)
-                }
-
-                override suspend fun clearCache(ctx: Context) {
-                    //the disk cache is cleared by the shared BrowserContext, so destroying this temporary
-                    //WebView right away does not cancel it
-                    val webView = WebView(ctx)
-                    try {
-                        webView.clearCache(true)
-                    } finally {
-                        webView.destroy()
-                    }
-                }
-
-
-                override fun getWebEngineVersionString(): String {
-                    val webViewPackage = WebViewCompat.getCurrentWebViewPackage(AppContext.get())
-                    return (webViewPackage?.packageName ?: "unknown") + ":" + (webViewPackage?.versionName ?: "unknown")
-                }
-            }))
+            override fun getWebEngineVersionString(): String {
+                val webViewPackage = WebViewCompat.getCurrentWebViewPackage(AppContext.get())
+                return (webViewPackage?.packageName ?: "unknown") + ":" + (webViewPackage?.versionName ?: "unknown")
+            }
         }
     }
 }

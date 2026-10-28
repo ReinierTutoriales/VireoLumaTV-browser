@@ -47,8 +47,7 @@ class VersionSettingsView @JvmOverloads constructor(
             open(TV_BRO_SOURCES_URL)
         }
         rows.info(context.getString(R.string.version_s, BuildConfig.VERSION_NAME))
-        rows.info(context.getString(R.string.build_flavor_s, BuildConfig.FLAVOR,
-            WebEngineFactory.getProviders().joinToString("/") { it.name }))
+        rows.info(context.getString(R.string.build_flavor_s, BuildConfig.FLAVOR, "WebView"))
         rows.info(context.getString(R.string.web_engine_version_s, WebEngineFactory.getWebEngineVersionString()))
         rows.value(context.getString(R.string.view_license), null, R.id.rowLicense) { open(LICENSE_URL) }
         rows.value(context.getString(R.string.privacy_policy), null, R.id.rowPrivacyPolicy) { open(PRIVACY_URL) }
