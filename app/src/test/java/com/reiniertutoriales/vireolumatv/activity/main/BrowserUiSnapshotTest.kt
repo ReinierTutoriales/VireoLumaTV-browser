@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.Config as BrowserConfig
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
@@ -133,6 +134,14 @@ class BrowserUiSnapshotTest {
             assertTrue("Address remains usable at $width", address.width >= 240)
             if (fontScale == 1f) assertEquals("Default address height", 48, address.height)
             else assertTrue("Accessible text may expand the field", address.height >= 48)
+            // Compact tabs: 40dp tall, 196dp wide (TV grid four-card width), and "+" as tall as a tab.
+            val tabs = vb.vTabs.findViewById<RecyclerView>(R.id.rvTabs)
+            val tab = tabs.getChildAt(0)
+            assertEquals("Tab height at $width", 40, tab.height)
+            assertEquals("Tab width at $width", 196, tab.width)
+            assertEquals("Add-tab button height at $width", 40, vb.vTabs.findViewById<View>(R.id.btnAdd).height)
+            if (width >= 960) assertTrue("Four tabs fit beside the add button at $width: ${tabs.width}",
+                tabs.width >= 4 * (196 + 4))
         }
     }
 

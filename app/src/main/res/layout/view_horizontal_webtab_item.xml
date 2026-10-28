@@ -1,42 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Compact tab: 196dp is the TV grid's four-card width, so four tabs and "+" fit the capsule. -->
 <com.reiniertutoriales.vireolumatv.widgets.CheckableContainer xmlns:android="http://schemas.android.com/apk/res/android"
-    tools:targetApi="26"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="@dimen/web_tab_width"
-    android:layout_height="48dp"
+    android:layout_height="@dimen/web_tab_height"
+    android:layout_marginEnd="4dp"
+    android:background="@drawable/webtab_horizontal_bkg_selector"
     android:defaultFocusHighlightEnabled="false"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:nextFocusUp="@+id/etUrl"
-    android:nextFocusDown="@+id/ibCloseTab"
-    android:paddingStart="@dimen/web_tab_padding"
-    android:paddingEnd="@dimen/web_tab_padding"
-    android:paddingTop="0dp"
-    android:paddingBottom="0dp"
-    android:background="@drawable/webtab_horizontal_bkg_selector">
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp"
+    tools:targetApi="26">
+
     <ImageView
         android:id="@+id/ivFavicon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_centerVertical="true"
         android:contentDescription="@null"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        tools:src="@drawable/ic_launcher"
         android:scaleType="fitCenter"
-        android:layout_margin="8dp"
-        android:layout_centerVertical="true" />
+        tools:src="@drawable/ic_launcher" />
+
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginStart="8dp"
         android:layout_toEndOf="@+id/ivFavicon"
         android:duplicateParentState="true"
-        android:textColor="@color/webtab_horizontal_text_selector"
-        tools:text="@string/app_name"
-        android:textSize="18sp"
-        android:fontFamily="sans-serif"
-        android:gravity="center_vertical"
-        android:layout_marginStart="3dp"
-        android:lines="1"
         android:ellipsize="end"
-        android:paddingStart="0dp"
-        android:paddingEnd="10dp"/>
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:textColor="@color/webtab_horizontal_text_selector"
+        android:textSize="14sp"
+        tools:text="@string/app_name" />
 </com.reiniertutoriales.vireolumatv.widgets.CheckableContainer>
