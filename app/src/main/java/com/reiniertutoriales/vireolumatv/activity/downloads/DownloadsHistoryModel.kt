@@ -12,12 +12,17 @@ class DownloadsHistoryModel : ActiveModel() {
     val allItems = ArrayList<Download>()
     val lastLoadedItems = ObservableValue<List<Download>>(emptyList())
     private var loading = false
+    private var beforeTime: Long? = null
+    private var beforeId = 0L
+    private var exhausted = false
 
     fun loadNextItems() = modelScope.launch(Dispatchers.Main) {
-        if (loading) return@launch
+        if (loading || exhausted) return@launch
         loading = true
         try {
-            val page = AppDatabase.db.downloadDao().allByLimitOffset(allItems.size.toLong())
+            val page = AppDatabase.db.downloadDao().page(beforeTime, beforeId)
+            page.lastOrNull()?.let { beforeTime = it.time; beforeId = it.id }
+            exhausted = page.size < 100
             allItems += page
             lastLoadedItems.value = page
         } finally {

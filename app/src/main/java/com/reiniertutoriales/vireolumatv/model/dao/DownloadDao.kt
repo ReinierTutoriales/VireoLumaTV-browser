@@ -13,9 +13,9 @@ interface DownloadDao {
     @Query("SELECT * FROM downloads")
     suspend fun getAll(): List<Download>
 
-    /** Stable page order even when several downloads share the same clock tick. */
-    @Query("SELECT * FROM downloads ORDER BY time DESC, id DESC LIMIT 100 OFFSET :offset")
-    suspend fun allByLimitOffset(offset: Long): List<Download>
+    /** Continue strictly after a row, even if earlier rows were inserted or removed. */
+    @Query("SELECT * FROM downloads WHERE :beforeTime IS NULL OR time < :beforeTime OR (time = :beforeTime AND id < :beforeId) ORDER BY time DESC, id DESC LIMIT 100")
+    suspend fun page(beforeTime: Long? = null, beforeId: Long = 0): List<Download>
 
     @Insert
     fun insert(download: Download): Long

@@ -27,10 +27,13 @@ class StablePaginationTest {
                 title = "Visit $n"
                 url = "https://example.test/$n"
             }) }
-            assertEquals(ids.reversed().take(100), dao.allByLimitOffset(0).map { it.id })
-            assertEquals(ids.reversed().drop(100), dao.allByLimitOffset(100).map { it.id })
-            assertEquals(ids.last(), dao.last().single().id)
-            assertEquals(ids.reversed().take(100), dao.search("%example.test%").map { it.id })
+            assertEquals(ids.reversed().take(100), dao.page().map { it.id })
+            val boundary = dao.page().last()
+            dao.delete(dao.page().first())
+            dao.insert(HistoryItem().apply { time = 2_000L; title = "New"; url = "https://new.test" })
+            assertEquals(ids.reversed().drop(100), dao.page(boundary.time, boundary.id).map { it.id })
+            assertEquals(ids.reversed().drop(1).take(100), dao.search("%example.test%").map { it.id })
+            assertEquals("New", dao.last().single().title)
         } finally {
             db.close()
         }
@@ -48,8 +51,13 @@ class StablePaginationTest {
                     url = "https://example.test/$n"
                 }) }
             }
-            assertEquals(ids.reversed().take(100), dao.allByLimitOffset(0).map { it.id })
-            assertEquals(ids.reversed().drop(100), dao.allByLimitOffset(100).map { it.id })
+            assertEquals(ids.reversed().take(100), dao.page().map { it.id })
+            val boundary = dao.page().last()
+            dao.delete(dao.page().first())
+            withContext(Dispatchers.IO) {
+                dao.insert(Download().apply { time = 2_000L; filename = "new"; filepath = "/tmp/new"; url = "https://new.test" })
+            }
+            assertEquals(ids.reversed().drop(100), dao.page(boundary.time, boundary.id).map { it.id })
         } finally {
             db.close()
         }

@@ -18,9 +18,9 @@ interface HistoryDao {
     @Query("SELECT * FROM history ORDER BY time DESC, id DESC LIMIT :limit")
     suspend fun last(limit: Int = 1): List<HistoryItem>
 
-    /** Stable page order even when several visits share the same clock tick. */
-    @Query("SELECT * FROM history ORDER BY time DESC, id DESC LIMIT 100 OFFSET :offset")
-    suspend fun allByLimitOffset(offset: Long): List<HistoryItem>
+    /** Continue strictly after a row, even if earlier rows were inserted or removed. */
+    @Query("SELECT * FROM history WHERE :beforeTime IS NULL OR time < :beforeTime OR (time = :beforeTime AND id < :beforeId) ORDER BY time DESC, id DESC LIMIT 100")
+    suspend fun page(beforeTime: Long? = null, beforeId: Long = 0): List<HistoryItem>
 
     /**
      * Up to 100 visits whose title or address matches the LIKE [pattern], newest first. Backslash

@@ -1,39 +1,48 @@
 package com.reiniertutoriales.vireolumatv.activity.history
 
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
+import com.reiniertutoriales.vireolumatv.model.dao.HistoryDao
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
-import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
-import kotlinx.coroutines.Dispatchers
+import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-class HistoryModel: ActiveModel() {
-    val lastLoadedItems = ObservableValue<List<HistoryItem>>(ArrayList())
-    private var loading = false
+/** History pages use the last delivered row, not the number of rows still visible. */
+class HistoryModel(private val history: () -> HistoryDao = { AppDatabase.db.historyDao() }) : ActiveModel() {
+    val lastLoadedItems = ObservableValue<List<HistoryItem>>(emptyList())
     var searchQuery = ""
+    private var request: Job? = null
+    private var beforeTime: Long? = null
+    private var beforeId = 0L
+    private var exhausted = false
 
-
-    fun loadItems(offset: Long = 0) = modelScope.launch(Dispatchers.Main) {
-        if (loading) {
-            return@launch
+    fun loadItems(offset: Long = 0): Job {
+        if (offset != 0L && (request?.isActive == true || exhausted)) return request ?: Job().apply { complete() }
+        if (offset == 0L) {
+            request?.cancel()
+            beforeTime = null
+            beforeId = 0
+            exhausted = false
         }
-        loading = true
-        try {
-            lastLoadedItems.value = if ("" == searchQuery) {
-                AppDatabase.db.historyDao().allByLimitOffset(offset)
-            } else {
-                val pattern = likePattern(searchQuery)
-                AppDatabase.db.historyDao().search(pattern)
-            }
-        } finally {
-            // An exception must not leave the model stuck in "loading" and every later load ignored.
-            loading = false
-        }
+        val query = searchQuery
+        return modelScope.launch {
+            val dao = history()
+            val rows = if (query.isEmpty()) dao.page(beforeTime, beforeId) else dao.search(likePattern(query))
+            rows.lastOrNull()?.let { beforeTime = it.time; beforeId = it.id }
+            exhausted = query.isNotEmpty() || rows.size < 100
+            lastLoadedItems.value = rows
+        }.also { request = it }
     }
 
     companion object {
-        /** Contains-match for LIKE. The DAO declares ESCAPE '\\', so typed % _ and \\ match literally. */
-        internal fun likePattern(query: String): String =
-            "%" + query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+        internal fun likePattern(query: String): String = buildString {
+            append('%')
+            query.forEach { char ->
+                if (char == '%' || char == '_' || char == '\\') append('\\')
+                append(char)
+            }
+            append('%')
+        }
     }
 }
