@@ -1,62 +1,53 @@
 package com.reiniertutoriales.vireolumatv.model
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import java.io.InputStream
 
 /**
- * Created by PDT on 23.01.2017.
+ * One download. The stored columns are the "downloads" table of schema 19; the other fields only
+ * live while the download runs or while a list shows it. [size] is the byte total once known, or
+ * [BROKEN_MARK] / [CANCELLED_MARK] after a failure or cancellation.
  */
-
-@Entity(tableName = "downloads", indices = arrayOf(Index(value = ["time"], name = "downloads_time_idx"),
-        Index(value = ["filename"], name = "downloads_filename_idx")))
+@Entity(
+    tableName = "downloads",
+    indices = [Index(value = ["time"], name = "downloads_time_idx"), Index(value = ["filename"], name = "downloads_filename_idx")],
+)
 class Download() {
-    @PrimaryKey(autoGenerate = true)
-    var id: Long = 0
+    @PrimaryKey(autoGenerate = true) var id: Long = 0
     var time: Long = 0
     var filename: String = ""
+    /** A file path before Android 11, a MediaStore URI from Android 11. */
     var filepath: String = ""
     var url: String = ""
+    @Volatile var size: Long = 0
+    @Volatile @ColumnInfo(name = "bytes_received") var bytesReceived: Long = 0
 
-    @Volatile
-    var size: Long = 0
-    @Volatile @ColumnInfo(name = "bytes_received")
-    var bytesReceived: Long = 0
-    @Ignore
-    var operationAfterDownload = OperationAfterDownload.NOP
+    @Ignore var operationAfterDownload = OperationAfterDownload.NOP
+    @Ignore @Volatile var cancelled = false
+    /** Private downloads are never stored, so they all keep id 0. */
+    @Ignore var incognito = false
+    /** A day heading row in the download list, not a download. */
+    @Ignore var isDateHeader = false
+    @Ignore var mimeType: String? = null
+    @Ignore var referer: String? = null
+    @Ignore var userAgentString: String? = null
+    /** A page blob handed over as a base64 data URL; released once written. */
+    @Ignore var base64BlobData: String? = null
+    /** Content the page already opened; closed once written. */
+    @Ignore var stream: InputStream? = null
 
-    //non-db fields
-    @Ignore
-    @Volatile
-    var cancelled: Boolean = false
-    @Ignore
-    var incognito: Boolean = false
-    @Ignore
-    var isDateHeader = false//user for displaying date headers inside list view
-    @Ignore
-    var mimeType: String? = null
-    @Ignore
-    var referer: String? = null
-    @Ignore
-    var userAgentString: String? = null
-    @Ignore
-    var base64BlobData: String? = null
-    @Ignore
-    var stream: InputStream? = null
-
-    // Persisted history rows may be separate objects. Runtime-only private downloads all have id=0.
-    fun matches(other: Download?): Boolean = other != null &&
-        (this === other || (id != 0L && id == other.id))
-
-    enum class OperationAfterDownload {
-        NOP, INSTALL
-    }
-
-    constructor(url: String, filename: String, filepath: String?, operationAfterDownload: OperationAfterDownload,
-                mimeType: String?, referer: String?, userAgentString: String?, base64BlobData: String?,
-                stream: InputStream?, size: Long = 0L) : this() {
+    constructor(
+        url: String, filename: String, filepath: String?, operationAfterDownload: OperationAfterDownload,
+        mimeType: String?, referer: String?, userAgentString: String?, base64BlobData: String?,
+        stream: InputStream?, size: Long = 0L,
+    ) : this() {
         this.url = url
         this.filename = filename
-        this.filepath = filepath ?: ""
+        this.filepath = filepath.orEmpty()
         this.operationAfterDownload = operationAfterDownload
         this.mimeType = mimeType
         this.referer = referer
@@ -66,15 +57,18 @@ class Download() {
         this.size = size
     }
 
-    companion object {
-        val BROKEN_MARK: Long = -2
-        val CANCELLED_MARK: Long = -3
+    /** The same download: the same object, or the same stored row (a history copy of a running one). */
+    fun matches(other: Download?): Boolean = other != null && (this === other || (id != 0L && id == other.id))
 
-        fun createDateHeaderInfo(time: Long): Download {
-            val download = Download()
-            download.time = time
-            download.isDateHeader = true
-            return download
+    enum class OperationAfterDownload { NOP, INSTALL }
+
+    companion object {
+        const val BROKEN_MARK = -2L
+        const val CANCELLED_MARK = -3L
+
+        fun createDateHeaderInfo(time: Long) = Download().apply {
+            this.time = time
+            isDateHeader = true
         }
     }
 }

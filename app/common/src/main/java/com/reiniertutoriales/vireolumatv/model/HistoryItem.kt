@@ -5,36 +5,35 @@ import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-/**
- * Created by fedex on 28.12.16.
- */
-
-@Entity(tableName = "history", indices = arrayOf(Index(value = ["time"], name = "history_time_idx"),
-        Index(value = ["title"], name = "history_title_idx"), Index(value = ["url"], name = "history_url_idx")))
+/** One visited page, the "history" table of schema 19. */
+@Entity(
+    tableName = "history",
+    indices = [
+        Index(value = ["time"], name = "history_time_idx"),
+        Index(value = ["title"], name = "history_title_idx"),
+        Index(value = ["url"], name = "history_url_idx"),
+    ],
+)
 class HistoryItem {
-    @PrimaryKey(autoGenerate = true)
-    var id: Long = 0
+    @PrimaryKey(autoGenerate = true) var id: Long = 0
     var time: Long = 0
     var title: String = ""
     var url: String = ""
     var favicon: String? = null
-    @Deprecated("Not used anymore")
+    /** A column of schema 19 that is no longer written; private visits are never stored. */
     var incognito: Boolean? = null
 
-    @Ignore
-    var isDateHeader = false//used for displaying date headers inside list view
-    @Ignore
-    var selected = false
-    @Ignore
-    var saved = false
+    /** A day heading row in the history list, not a visit. */
+    @Ignore var isDateHeader = false
+    /** Ticked in the history list's selection mode. */
+    @Ignore var selected = false
+    /** Already written to the database. */
+    @Ignore var saved = false
 
     companion object {
-
-        fun createDateHeaderInfo(time: Long): HistoryItem {
-            val hi = HistoryItem()
-            hi.time = time
-            hi.isDateHeader = true
-            return hi
+        fun createDateHeaderInfo(time: Long) = HistoryItem().apply {
+            this.time = time
+            isDateHeader = true
         }
     }
 }

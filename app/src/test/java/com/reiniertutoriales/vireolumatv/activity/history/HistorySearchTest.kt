@@ -25,7 +25,7 @@ class HistorySearchTest {
 
             suspend fun find(query: String): List<String> {
                 val pattern = HistoryModel.likePattern(query)
-                return dao.search(pattern, pattern).map { it.title }
+                return dao.search(pattern).map { it.title }
             }
 
             // Contains-match, case-insensitive for ASCII (LIKE).

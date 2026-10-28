@@ -43,7 +43,7 @@ object AddressSuggestions {
         if (query.isEmpty()) return emptyList()
         val bookmarks = AppDatabase.db.favoritesDao().getAll()
         val history = if (incognito) emptyList() else
-            HistoryModel.likePattern(query).let { AppDatabase.db.historyDao().search(it, it) }
+            AppDatabase.db.historyDao().search(HistoryModel.likePattern(query))
         return rank(query, bookmarks, history)
     }
 

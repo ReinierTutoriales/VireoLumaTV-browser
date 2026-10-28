@@ -1,15 +1,17 @@
 package com.reiniertutoriales.vireolumatv.model.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 
 @Dao
 interface FavoritesDao {
-    @Query("SELECT * FROM favorites WHERE parent=0 AND home_page_bookmark=:homePageBookmarks ORDER BY id DESC")
-    suspend fun getAll(homePageBookmarks: Boolean = false): List<FavoriteItem>
-
-    @Query("SELECT * FROM favorites WHERE parent=0 AND home_page_bookmark=1 ORDER BY i_order ASC")
-    suspend fun getHomePageBookmarks(): List<FavoriteItem>
+    /** Top-level bookmarks, newest first; rows older versions kept for their home page are left out. */
+    @Query("SELECT * FROM favorites WHERE parent=0 AND home_page_bookmark=0 ORDER BY id DESC")
+    suspend fun getAll(): List<FavoriteItem>
 
     @Insert
     suspend fun insert(item: FavoriteItem): Long
@@ -19,13 +21,4 @@ interface FavoritesDao {
 
     @Delete
     suspend fun delete(item: FavoriteItem)
-
-    @Query("DELETE FROM favorites WHERE id=:id")
-    suspend fun delete(id: Long)
-
-    @Query("SELECT * FROM favorites WHERE id=:id")
-    suspend fun getById(id: Long): FavoriteItem?
-
-    @Query("UPDATE favorites SET useful=1 WHERE id=:favoriteId")
-    suspend fun markAsUseful(favoriteId: Long)
 }

@@ -23,7 +23,7 @@ class HistoryModel: ActiveModel() {
                 AppDatabase.db.historyDao().allByLimitOffset(offset)
             } else {
                 val pattern = likePattern(searchQuery)
-                AppDatabase.db.historyDao().search(pattern, pattern)
+                AppDatabase.db.historyDao().search(pattern)
             }
         } finally {
             // An exception must not leave the model stuck in "loading" and every later load ignored.
