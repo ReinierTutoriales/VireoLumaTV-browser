@@ -6,14 +6,14 @@
     tools:parentTag="android.widget.LinearLayout">
 
     <FrameLayout
-        android:id="@+id/flUrl"
+        android:id="@+id/address_box"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_weight="1">
 
         <EditText
-            android:id="@+id/etUrl"
+            android:id="@+id/address_field"
             style="@style/Widget.Vireo.Field"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -22,65 +22,65 @@
             android:imeOptions="actionSearch|flagNoExtractUi"
             android:importantForAutofill="no"
             android:inputType="textUri"
-            android:nextFocusRight="@id/ibBack"
-            android:nextFocusDown="@id/vTabs" />
+            android:nextFocusRight="@id/back_button"
+            android:nextFocusDown="@id/tab_strip" />
     </FrameLayout>
 
     <ImageButton
-        android:id="@+id/ibBack"
+        android:id="@+id/back_button"
         style="@style/Widget.Vireo.IconButton"
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/nav_back"
         android:src="@drawable/ic_back"
-        android:nextFocusLeft="@id/etUrl"
-        android:nextFocusRight="@id/ibForward"
-        android:nextFocusDown="@id/vTabs" />
+        android:nextFocusLeft="@id/address_field"
+        android:nextFocusRight="@id/forward_button"
+        android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
-        android:id="@+id/ibForward"
+        android:id="@+id/forward_button"
         style="@style/Widget.Vireo.IconButton"
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/nav_forward"
         android:src="@drawable/ic_forward"
-        android:nextFocusLeft="@id/ibBack"
-        android:nextFocusRight="@id/ibRefresh"
-        android:nextFocusDown="@id/vTabs" />
+        android:nextFocusLeft="@id/back_button"
+        android:nextFocusRight="@id/reload_button"
+        android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
-        android:id="@+id/ibRefresh"
+        android:id="@+id/reload_button"
         style="@style/Widget.Vireo.IconButton"
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/nav_reload"
         android:src="@drawable/ic_refresh"
-        android:nextFocusLeft="@id/ibForward"
-        android:nextFocusRight="@id/ibHome"
-        android:nextFocusDown="@id/vTabs" />
+        android:nextFocusLeft="@id/forward_button"
+        android:nextFocusRight="@id/home_button"
+        android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
-        android:id="@+id/ibHome"
+        android:id="@+id/home_button"
         style="@style/Widget.Vireo.IconButton"
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/nav_home"
         android:src="@drawable/ic_home"
-        android:nextFocusLeft="@id/ibRefresh"
-        android:nextFocusRight="@id/ibAdBlock"
-        android:nextFocusDown="@id/vTabs" />
+        android:nextFocusLeft="@id/reload_button"
+        android:nextFocusRight="@id/blocker_button"
+        android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
-        android:id="@+id/ibAdBlock"
+        android:id="@+id/blocker_button"
         style="@style/Widget.Vireo.IconButton"
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/blocker_toggle"
         android:src="@drawable/ic_shield_on"
-        android:nextFocusLeft="@id/ibHome"
-        android:nextFocusRight="@id/ibMenu"
-        android:nextFocusDown="@id/vTabs" />
+        android:nextFocusLeft="@id/home_button"
+        android:nextFocusRight="@id/menu_button"
+        android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
-        android:id="@+id/ibMenu"
+        android:id="@+id/menu_button"
         style="@style/Widget.Vireo.IconButton"
         android:contentDescription="@string/nav_menu"
         android:src="@drawable/ic_more"
-        android:nextFocusLeft="@id/ibAdBlock"
-        android:nextFocusDown="@id/vTabs" />
+        android:nextFocusLeft="@id/blocker_button"
+        android:nextFocusDown="@id/tab_strip" />
 </merge>

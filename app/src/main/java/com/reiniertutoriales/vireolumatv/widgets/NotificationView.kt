@@ -10,7 +10,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.annotation.DrawableRes
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.databinding.ViewNotificationBinding
+import com.reiniertutoriales.vireolumatv.databinding.ToastBarBinding
 import java.lang.ref.WeakReference
 
 /**
@@ -20,7 +20,7 @@ import java.lang.ref.WeakReference
 class NotificationView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     LinearLayout(context, attrs) {
 
-    private val vb = ViewNotificationBinding.inflate(LayoutInflater.from(context), this)
+    private val vb = ToastBarBinding.inflate(LayoutInflater.from(context), this)
     private val leave = Runnable { fadeOut() }
 
     init {
@@ -35,8 +35,8 @@ class NotificationView @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     private fun show(@DrawableRes icon: Int, message: String) {
-        vb.ivIcon.setImageResource(icon)
-        vb.tvMessage.text = message
+        vb.iconImage.setImageResource(icon)
+        vb.messageText.text = message
         alpha = 0f
         animate().alpha(1f).setDuration(FADE_MS).withEndAction { postDelayed(leave, VISIBLE_MS) }.start()
     }

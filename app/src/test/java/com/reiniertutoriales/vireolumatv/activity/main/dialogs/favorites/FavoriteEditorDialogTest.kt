@@ -26,8 +26,8 @@ class FavoriteEditorDialogTest {
     @Test fun emptyUrlIsNotSavedAndTheUserIsTold() {
         var saved: FavoriteItem? = null
         val dialog = dialog { saved = it }
-        dialog.findViewById<EditText>(R.id.etUrl)!!.setText("   ")
-        dialog.findViewById<Button>(R.id.btnDone)!!.performClick()
+        dialog.findViewById<EditText>(R.id.address_field)!!.setText("   ")
+        dialog.findViewById<Button>(R.id.done_button)!!.performClick()
 
         assertNull(saved)
         assertEquals(dialog.context.getString(R.string.error), ShadowToast.getTextOfLatestToast())
@@ -36,8 +36,8 @@ class FavoriteEditorDialogTest {
     @Test fun urlWithoutSchemeIsSavedWithHttps() {
         var saved: FavoriteItem? = null
         val dialog = dialog { saved = it }
-        dialog.findViewById<EditText>(R.id.etUrl)!!.setText("  example.test/page  ")
-        dialog.findViewById<Button>(R.id.btnDone)!!.performClick()
+        dialog.findViewById<EditText>(R.id.address_field)!!.setText("  example.test/page  ")
+        dialog.findViewById<Button>(R.id.done_button)!!.performClick()
 
         assertEquals("https://example.test/page", saved?.url)
     }

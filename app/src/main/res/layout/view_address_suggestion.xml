@@ -20,7 +20,7 @@
         app:tint="@color/on_control_variant" />
 
     <TextView
-        android:id="@+id/tvTitle"
+        android:id="@+id/title_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -32,7 +32,7 @@
 
     <!-- Takes the rest of the row; no weight, so the row is measured once. -->
     <TextView
-        android:id="@+id/tvUrl"
+        android:id="@+id/address_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"

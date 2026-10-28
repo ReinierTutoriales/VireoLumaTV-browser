@@ -103,8 +103,8 @@ class DownloadListAdapterTest {
         val holder = adapter.onCreateViewHolder(parent, DownloadListAdapter.VIEW_TYPE_DOWNLOAD_ITEM)
         adapter.onBindViewHolder(holder, 1)
         val row = holder.itemView
-        return row.findViewById<android.widget.TextView>(com.reiniertutoriales.vireolumatv.R.id.tvSize).text.toString() to
-            row.findViewById(com.reiniertutoriales.vireolumatv.R.id.progressBar)
+        return row.findViewById<android.widget.TextView>(com.reiniertutoriales.vireolumatv.R.id.size_text).text.toString() to
+            row.findViewById(com.reiniertutoriales.vireolumatv.R.id.load_progress)
     }
 
     @Test

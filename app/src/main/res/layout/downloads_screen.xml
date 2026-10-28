@@ -9,7 +9,7 @@
     tools:context="com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/listView"
+        android:id="@+id/item_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -19,7 +19,7 @@
         android:paddingBottom="@dimen/safe_vertical" />
 
     <TextView
-        android:id="@+id/tvPlaceholder"
+        android:id="@+id/empty_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"

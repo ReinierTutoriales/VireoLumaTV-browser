@@ -32,7 +32,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvTitle"
+                android:id="@+id/title_text"
                 android:duplicateParentState="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
                 tools:text="video.mp4" />
 
             <TextView
-                android:id="@+id/tvURL"
+                android:id="@+id/address_text"
                 android:duplicateParentState="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,7 +63,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvTime"
+                android:id="@+id/time_text"
                 android:duplicateParentState="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -73,7 +73,7 @@
                 tools:text="21:40" />
 
             <TextView
-                android:id="@+id/tvSize"
+                android:id="@+id/size_text"
                 android:duplicateParentState="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -86,7 +86,7 @@
 
     <!-- Shown while the download runs; indeterminate while the total size is unknown. -->
     <ProgressBar
-        android:id="@+id/progressBar"
+        android:id="@+id/load_progress"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="4dp"

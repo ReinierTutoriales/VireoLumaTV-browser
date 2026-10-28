@@ -5,11 +5,11 @@
     tools:parentTag="android.widget.RelativeLayout">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvTabs"
+        android:id="@+id/tab_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginEnd="@dimen/control_gap"
-        android:layout_toStartOf="@+id/btnAdd"
+        android:layout_toStartOf="@+id/add_button"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:paddingStart="6dp"
@@ -18,11 +18,11 @@
         android:paddingBottom="8dp" />
 
     <ImageButton
-        android:id="@+id/btnAdd"
+        android:id="@+id/add_button"
         style="@style/Widget.Vireo.IconButton"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:contentDescription="@string/tabs_new"
-        android:nextFocusUp="@+id/etUrl"
+        android:nextFocusUp="@+id/address_field"
         android:src="@drawable/ic_add" />
 </merge>

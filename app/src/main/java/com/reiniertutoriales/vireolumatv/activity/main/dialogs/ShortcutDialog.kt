@@ -25,12 +25,12 @@ class ShortcutDialog(context: Context, private val shortcut: Shortcut) : AppComp
 
     init {
         setCancelable(true)
-        setContentView(R.layout.dialog_shortcut)
-        checkNotNull(findViewById<TextView>(R.id.tvActionTitle)).setText(shortcut.titleResId)
-        keyText = checkNotNull(findViewById(R.id.tvActionKey))
-        recordButton = checkNotNull(findViewById(R.id.btnSetKey))
+        setContentView(R.layout.dialog_shortcut_key)
+        checkNotNull(findViewById<TextView>(R.id.action_name)).setText(shortcut.titleResId)
+        keyText = checkNotNull(findViewById(R.id.key_name))
+        recordButton = checkNotNull(findViewById(R.id.assign_key_button))
         recordButton.setOnClickListener { setRecording(!recording) }
-        checkNotNull(findViewById<Button>(R.id.btnClearKey)).setOnClickListener {
+        checkNotNull(findViewById<Button>(R.id.clear_key_button)).setOnClickListener {
             setRecording(false)
             shortcuts.set(shortcut, null)
             showKey()

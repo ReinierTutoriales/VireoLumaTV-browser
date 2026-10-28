@@ -9,7 +9,7 @@
     android:padding="24dp">
 
     <TextView
-        android:id="@+id/tvDialogTitle"
+        android:id="@+id/dialog_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
@@ -19,13 +19,13 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:labelFor="@+id/etTitle"
+        android:labelFor="@+id/title_field"
         android:paddingStart="4dp"
         android:text="@string/field_title"
         android:textAppearance="@style/TextAppearance.Vireo.Secondary" />
 
     <EditText
-        android:id="@id/etTitle"
+        android:id="@id/title_field"
         style="@style/Widget.Vireo.Field"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,13 +37,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:labelFor="@+id/etUrl"
+        android:labelFor="@+id/address_field"
         android:paddingStart="4dp"
         android:text="@string/field_address"
         android:textAppearance="@style/TextAppearance.Vireo.Secondary" />
 
     <EditText
-        android:id="@id/etUrl"
+        android:id="@id/address_field"
         style="@style/Widget.Vireo.Field"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btnCancel"
+            android:id="@+id/cancel_button"
             style="@style/Widget.Vireo.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -68,7 +68,7 @@
             android:text="@string/action_cancel" />
 
         <Button
-            android:id="@+id/btnDone"
+            android:id="@+id/done_button"
             style="@style/Widget.Vireo.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

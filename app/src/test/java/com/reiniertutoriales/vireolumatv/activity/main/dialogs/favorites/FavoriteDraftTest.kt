@@ -28,9 +28,9 @@ class FavoriteDraftTest {
             var saved: FavoriteItem? = null
             val dialog = FavoriteEditorDialog(owner.get(), original) { item -> saved = item }
             dialog.show()
-            dialog.findViewById<EditText>(R.id.etTitle)!!.setText("After")
-            dialog.findViewById<EditText>(R.id.etUrl)!!.setText("  after.test  ")
-            dialog.findViewById<android.view.View>(R.id.btnDone)!!.performClick()
+            dialog.findViewById<EditText>(R.id.title_field)!!.setText("After")
+            dialog.findViewById<EditText>(R.id.address_field)!!.setText("  after.test  ")
+            dialog.findViewById<android.view.View>(R.id.done_button)!!.performClick()
             val edit = requireNotNull(saved)
             assertNotSame(original, edit)
             assertEquals("Before", original.title)
@@ -58,12 +58,12 @@ class FavoriteDraftTest {
             var calls = 0
             val dialog = FavoriteEditorDialog(owner.get(), original) { item -> calls++ }
             dialog.show()
-            dialog.findViewById<EditText>(R.id.etTitle)!!.setText("After")
-            dialog.findViewById<EditText>(R.id.etUrl)!!.setText("  ")
-            dialog.findViewById<android.view.View>(R.id.btnDone)!!.performClick()
+            dialog.findViewById<EditText>(R.id.title_field)!!.setText("After")
+            dialog.findViewById<EditText>(R.id.address_field)!!.setText("  ")
+            dialog.findViewById<android.view.View>(R.id.done_button)!!.performClick()
             assertTrue(dialog.isShowing)
             assertEquals(0, calls)
-            dialog.findViewById<android.view.View>(R.id.btnCancel)!!.performClick()
+            dialog.findViewById<android.view.View>(R.id.cancel_button)!!.performClick()
             assertEquals("Before", original.title)
             assertEquals("https://before.test", original.url)
             assertEquals(0, calls)

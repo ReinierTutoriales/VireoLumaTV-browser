@@ -273,7 +273,7 @@ app/src/main/res/drawable/ic_history.xml	PROPIO
 app/src/main/res/drawable/ic_history_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_history_grey_900_36dp.xml
 app/src/main/res/drawable/ic_home.xml	PROPIO
 app/src/main/res/drawable/ic_home_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_home_grey_900_24dp.xml
-app/src/main/res/drawable/ic_incognito.xml	REESCRITO	app/src/main/res/drawable/ic_incognito.xml	100
+app/src/main/res/drawable/ic_incognito.xml	ELIMINADO	app/src/main/res/drawable/ic_incognito.xml
 app/src/main/res/drawable/ic_link.xml	PROPIO
 app/src/main/res/drawable/ic_menu_24.xml	ELIMINADO	app/src/main/res/drawable/ic_menu_24.xml
 app/src/main/res/drawable/ic_mic_none_grey_900_36dp.xml	ELIMINADO	app/src/main/res/drawable/ic_mic_none_grey_900_36dp.xml
@@ -282,6 +282,7 @@ app/src/main/res/drawable/ic_more.xml	PROPIO
 app/src/main/res/drawable/ic_move.xml	PROPIO
 app/src/main/res/drawable/ic_new_tab.xml	PROPIO
 app/src/main/res/drawable/ic_not_available.xml	ELIMINADO	app/src/main/res/drawable/ic_not_available.xml
+app/src/main/res/drawable/ic_private.xml	PROPIO
 app/src/main/res/drawable/ic_refresh.xml	PROPIO
 app/src/main/res/drawable/ic_refresh_grey_900_24dp.xml	ELIMINADO	app/src/main/res/drawable/ic_refresh_grey_900_24dp.xml
 app/src/main/res/drawable/ic_settings.xml	PROPIO
@@ -301,9 +302,12 @@ app/src/main/res/drawable/notification_bg.xml	ELIMINADO
 app/src/main/res/drawable/settings_tab_bg_selector.xml	ELIMINADO	app/src/main/res/drawable/settings_tab_bg_selector.xml
 app/src/main/res/drawable/text_link_background_selector.xml	ELIMINADO	app/src/main/res/drawable/text_link_background_selector.xml
 app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	ELIMINADO	app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml
-app/src/main/res/layout/activity_downloads.xml	REESCRITO	app/src/main/res/layout/activity_downloads.xml	46
-app/src/main/res/layout/activity_history.xml	REESCRITO	app/src/main/res/layout/activity_history.xml	67
-app/src/main/res/layout/activity_main.xml	REESCRITO	app/src/main/res/layout/activity_main.xml	42
+app/src/main/res/layout/activity_downloads.xml	ELIMINADO	app/src/main/res/layout/activity_downloads.xml
+app/src/main/res/layout/activity_history.xml	ELIMINADO	app/src/main/res/layout/activity_history.xml
+app/src/main/res/layout/activity_main.xml	ELIMINADO	app/src/main/res/layout/activity_main.xml
+app/src/main/res/layout/browser_controls.xml	PROPIO
+app/src/main/res/layout/browser_window.xml	PROPIO
+app/src/main/res/layout/day_header.xml	PROPIO
 app/src/main/res/layout/dialog_app_menu.xml	PROPIO
 app/src/main/res/layout/dialog_check_item.xml	PROPIO
 app/src/main/res/layout/dialog_choice_item.xml	PROPIO
@@ -312,19 +316,31 @@ app/src/main/res/layout/dialog_favorites.xml	ELIMINADO	app/src/main/res/layout/d
 app/src/main/res/layout/dialog_list_item.xml	PROPIO
 app/src/main/res/layout/dialog_new_favorite_item.xml	ELIMINADO	app/src/main/res/layout/dialog_new_favorite_item.xml
 app/src/main/res/layout/dialog_search_engine.xml	ELIMINADO	app/src/main/res/layout/dialog_search_engine.xml
-app/src/main/res/layout/dialog_settings.xml	REESCRITO	app/src/main/res/layout/dialog_settings.xml	68
-app/src/main/res/layout/dialog_shortcut.xml	REESCRITO	app/src/main/res/layout/dialog_shortcut.xml	46
+app/src/main/res/layout/dialog_settings.xml	ELIMINADO	app/src/main/res/layout/dialog_settings.xml
+app/src/main/res/layout/dialog_shortcut.xml	ELIMINADO	app/src/main/res/layout/dialog_shortcut.xml
+app/src/main/res/layout/dialog_shortcut_key.xml	PROPIO
+app/src/main/res/layout/download_row.xml	PROPIO
+app/src/main/res/layout/downloads_screen.xml	PROPIO
+app/src/main/res/layout/favorite_row.xml	PROPIO
+app/src/main/res/layout/history_row.xml	PROPIO
+app/src/main/res/layout/history_screen.xml	PROPIO
 app/src/main/res/layout/panel_favorites.xml	PROPIO
-app/src/main/res/layout/view_actionbar.xml	REESCRITO	app/src/main/res/layout/view_actionbar.xml	81
-app/src/main/res/layout/view_cursor_menu.xml	REESCRITO	app/src/main/res/layout/view_cursor_menu.xml	80
-app/src/main/res/layout/view_download_item.xml	REESCRITO	app/src/main/res/layout/view_download_item.xml	61
-app/src/main/res/layout/view_favorite_item.xml	REESCRITO	app/src/main/res/layout/view_favorite_item.xml	68
+app/src/main/res/layout/pointer_menu.xml	PROPIO
+app/src/main/res/layout/settings_general.xml	PROPIO
+app/src/main/res/layout/settings_screen.xml	PROPIO
+app/src/main/res/layout/tab_chip.xml	PROPIO
+app/src/main/res/layout/tab_strip.xml	PROPIO
+app/src/main/res/layout/toast_bar.xml	PROPIO
+app/src/main/res/layout/view_actionbar.xml	ELIMINADO	app/src/main/res/layout/view_actionbar.xml
+app/src/main/res/layout/view_cursor_menu.xml	ELIMINADO	app/src/main/res/layout/view_cursor_menu.xml
+app/src/main/res/layout/view_download_item.xml	ELIMINADO	app/src/main/res/layout/view_download_item.xml
+app/src/main/res/layout/view_favorite_item.xml	ELIMINADO	app/src/main/res/layout/view_favorite_item.xml
 app/src/main/res/layout/view_history_header_item.xml	ELIMINADO	app/src/main/res/layout/view_history_header_item.xml
-app/src/main/res/layout/view_history_item.xml	REESCRITO	app/src/main/res/layout/view_history_item.xml	61
-app/src/main/res/layout/view_list_date_header.xml	PROPIO
-app/src/main/res/layout/view_horizontal_webtab_item.xml	REESCRITO	app/src/main/res/layout/view_horizontal_webtab_item.xml	64
+app/src/main/res/layout/view_history_item.xml	ELIMINADO	app/src/main/res/layout/view_history_item.xml
+app/src/main/res/layout/view_list_date_header.xml	ELIMINADO
+app/src/main/res/layout/view_horizontal_webtab_item.xml	ELIMINADO	app/src/main/res/layout/view_horizontal_webtab_item.xml
 app/src/main/res/layout/view_menu_entry.xml	PROPIO
-app/src/main/res/layout/view_notification.xml	REESCRITO	app/src/main/res/layout/view_notification.xml	84
+app/src/main/res/layout/view_notification.xml	ELIMINADO	app/src/main/res/layout/view_notification.xml
 app/src/main/res/layout/view_setting_button.xml	PROPIO
 app/src/main/res/layout/view_setting_choice.xml	PROPIO
 app/src/main/res/layout/view_setting_field.xml	PROPIO
@@ -333,11 +349,11 @@ app/src/main/res/layout/view_setting_slider.xml	PROPIO
 app/src/main/res/layout/view_setting_status.xml	PROPIO
 app/src/main/res/layout/view_setting_toggle.xml	PROPIO
 app/src/main/res/layout/view_setting_value.xml	PROPIO
-app/src/main/res/layout/view_settings_main.xml	REESCRITO	app/src/main/res/layout/view_settings_main.xml	64
+app/src/main/res/layout/view_settings_main.xml	ELIMINADO	app/src/main/res/layout/view_settings_main.xml
 app/src/main/res/layout/view_settings_version.xml	ELIMINADO	app/src/main/res/layout/view_settings_version.xml
 app/src/main/res/layout/view_shortcut.xml	ELIMINADO	app/src/main/res/layout/view_shortcut.xml
 app/src/main/res/layout/view_speach_recognizer_results.xml	ELIMINADO	app/src/main/res/layout/view_speach_recognizer_results.xml
-app/src/main/res/layout/view_tabs.xml	REESCRITO	app/src/main/res/layout/view_tabs.xml	64
+app/src/main/res/layout/view_tabs.xml	ELIMINADO	app/src/main/res/layout/view_tabs.xml
 app/src/main/res/menu/menu_link.xml	ELIMINADO	app/src/main/res/menu/menu_link.xml	0
 app/src/main/res/values-de/strings.xml	REESCRITO	app/src/main/res/values-de/strings.xml	95
 app/src/main/res/values-es/strings.xml	PROPIO
@@ -360,7 +376,8 @@ app/src/main/res/values/integers.xml	PROPIO
 app/src/main/res/values/strings.xml	REESCRITO	app/src/main/res/values/strings.xml	97
 app/src/main/res/values/styles.xml	REESCRITO	app/src/main/res/values/styles.xml	100
 app/src/main/res/values/themes.xml	REESCRITO	app/src/main/res/values/themes.xml	86
-app/src/main/res/xml/provider_paths.xml	REESCRITO	app/src/main/res/xml/provider_paths.xml	0
+app/src/main/res/xml/file_provider_paths.xml	PROPIO
+app/src/main/res/xml/provider_paths.xml	ELIMINADO	app/src/main/res/xml/provider_paths.xml
 app/src/release/AndroidManifest.xml	ELIMINADO	app/src/release/AndroidManifest.xml	0
 app/src/test/java/com/reiniertutoriales/vireolumatv/ConfigTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/history/HistorySearchTest.kt	PROPIO

@@ -73,7 +73,7 @@ class TabsAdapter(private val onLongPress: (WebTabState) -> Unit) : RecyclerView
     override fun getItemCount() = shown.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        Row(LayoutInflater.from(parent.context).inflate(R.layout.view_horizontal_webtab_item, parent, false))
+        Row(LayoutInflater.from(parent.context).inflate(R.layout.tab_chip, parent, false))
 
     override fun onBindViewHolder(holder: Row, position: Int) = holder.bind(shown[position], position == selected)
 
@@ -83,8 +83,8 @@ class TabsAdapter(private val onLongPress: (WebTabState) -> Unit) : RecyclerView
     }
 
     inner class Row(view: View) : RecyclerView.ViewHolder(view) {
-        private val title: TextView = view.findViewById(R.id.tvTitle)
-        private val favicon = ViewFaviconLoader(view, view.findViewById<ImageView>(R.id.ivFavicon))
+        private val title: TextView = view.findViewById(R.id.title_text)
+        private val favicon = ViewFaviconLoader(view, view.findViewById<ImageView>(R.id.site_icon))
 
         /** The tab this row shows, or null once recycled. */
         val tab: WebTabState? get() = itemView.tag as? WebTabState

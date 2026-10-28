@@ -18,7 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.databinding.ActivityDownloadsBinding
+import com.reiniertutoriales.vireolumatv.databinding.DownloadsScreenBinding
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
@@ -33,7 +33,7 @@ import com.reiniertutoriales.vireolumatv.utils.toast
  * the download runs.
  */
 open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listener {
-    private lateinit var vb: ActivityDownloadsBinding
+    private lateinit var vb: DownloadsScreenBinding
     private lateinit var active: ActiveDownloadsModel
     private lateinit var history: DownloadsHistoryModel
     private val adapter = DownloadListAdapter(::open, ::showOptions)
@@ -41,15 +41,15 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        vb = ActivityDownloadsBinding.inflate(layoutInflater)
+        vb = DownloadsScreenBinding.inflate(layoutInflater)
         setContentView(vb.root)
         active = ActiveModelsRepository.get(ActiveDownloadsModel::class, this)
         history = ActiveModelsRepository.get(DownloadsHistoryModel::class, this)
 
-        vb.listView.layoutManager = LinearLayoutManager(this)
-        vb.listView.adapter = adapter
+        vb.itemList.layoutManager = LinearLayoutManager(this)
+        vb.itemList.adapter = adapter
         if (privateSession) return
-        vb.listView.addOnScrollListener(nextPageLoader)
+        vb.itemList.addOnScrollListener(nextPageLoader)
         history.lastLoadedItems.subscribe(this, false) { show(it) }
         if (history.allItems.isEmpty()) history.loadNextItems() else show(history.allItems)
     }
@@ -77,14 +77,14 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
 
     private fun show(items: List<Download>) {
         if (items.isEmpty()) return
-        vb.tvPlaceholder.isVisible = false
+        vb.emptyText.isVisible = false
         adapter.addItems(items)
-        vb.listView.requestFocus()
+        vb.itemList.requestFocus()
     }
 
     private fun showLive(download: Download) {
         if (!download.incognito) return
-        vb.tvPlaceholder.isVisible = false
+        vb.emptyText.isVisible = false
         adapter.addLiveItem(download)
     }
 

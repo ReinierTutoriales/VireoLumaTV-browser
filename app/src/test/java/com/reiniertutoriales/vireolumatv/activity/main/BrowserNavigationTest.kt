@@ -14,7 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.cancel
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
+import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
@@ -68,7 +68,7 @@ class BrowserNavigationTest {
             setup()
         }
         val activity = Robolectric.buildActivity(MainActivity::class.java).get()
-        val vb = ActivityMainBinding.inflate(host.get().layoutInflater)
+        val vb = BrowserWindowBinding.inflate(host.get().layoutInflater)
         val tabs = ActiveModelsRepository.get(TabsModel::class, host.get())
         val page = View(host.get()).apply { isFocusableInTouchMode = true }
         var virtualCursor = true
@@ -107,10 +107,10 @@ class BrowserNavigationTest {
             activity.tabsModel = tabs
             activity.settingsModel = ActiveModelsRepository.get(SettingsModel::class, host.get())
             activity.uiHandler = Handler(Looper.getMainLooper())
-            vb.flWebViewContainer.addView(page)
-            vb.rlActionBar.visibility = View.INVISIBLE
-            vb.ivMiniatures.visibility = View.INVISIBLE
-            vb.progressBarGeneric.visibility = View.GONE
+            vb.pageContainer.addView(page)
+            vb.controlsOverlay.visibility = View.INVISIBLE
+            vb.tabPreview.visibility = View.INVISIBLE
+            vb.startupSpinner.visibility = View.GONE
             host.get().setContentView(vb.root)
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(1280, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY))
@@ -133,43 +133,43 @@ class BrowserNavigationTest {
     }
 
     @Test fun backOpensCapsuleAndDownReachesTabsAndTabsDownReturnsToPage() = Fixture().use { f ->
-        val bar = f.vb.vActionBar
+        val bar = f.vb.controlsRow
         f.activity.handleBackNavigation()
-        assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
         assertTrue(bar.backButton.hasFocus())
         bar.refreshButton.requestFocus()
-        assertEquals("Focusing a command must not hide the capsule", View.VISIBLE, f.vb.rlActionBar.visibility)
-        assertSame("Down from a command must reach the tab strip", f.vb.vTabs, bar.refreshButton.focusSearch(View.FOCUS_DOWN))
+        assertEquals("Focusing a command must not hide the capsule", View.VISIBLE, f.vb.controlsOverlay.visibility)
+        assertSame("Down from a command must reach the tab strip", f.vb.tabStrip, bar.refreshButton.focusSearch(View.FOCUS_DOWN))
         assertSame("Up from the tab strip must return to the address field",
-            bar.findViewById<View>(R.id.etUrl), f.vb.vTabs.focusSearch(View.FOCUS_UP))
-        assertTrue("Tab strip must accept focus", f.vb.vTabs.requestFocus())
-        assertTrue("Focus must be inside the tab strip before Down", f.vb.vTabs.hasFocus() || f.vb.vTabs.findFocus() != null)
+            bar.findViewById<View>(R.id.address_field), f.vb.tabStrip.focusSearch(View.FOCUS_UP))
+        assertTrue("Tab strip must accept focus", f.vb.tabStrip.requestFocus())
+        assertTrue("Focus must be inside the tab strip before Down", f.vb.tabStrip.hasFocus() || f.vb.tabStrip.findFocus() != null)
         assertTrue("Down from the tab strip must leave it for the page", downLeavesTabStrip(
-            overlayVisible = true, tabsFocused = f.vb.vTabs.hasFocus(),
+            overlayVisible = true, tabsFocused = f.vb.tabStrip.hasFocus(),
             keyCode = KeyEvent.KEYCODE_DPAD_DOWN, action = KeyEvent.ACTION_DOWN, repeatCount = 0))
         f.activity.closeCapsule()
-        assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
+        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
         assertTrue(f.page.hasFocus())
     }
 
     @Test fun controlsRefreshBackAfterHistoryChangedWithoutPageLoad() = Fixture().use { f ->
         // pushState (YouTube and other SPAs) changes history without onPageStarted/onPageFinished.
-        f.vb.vActionBar.backButton.isEnabled = false
-        f.vb.vActionBar.forwardButton.isEnabled = false
+        f.vb.controlsRow.backButton.isEnabled = false
+        f.vb.controlsRow.forwardButton.isEnabled = false
         f.activity.handleBackNavigation()
-        assertTrue(f.vb.vActionBar.backButton.isEnabled)
-        assertTrue(f.vb.vActionBar.forwardButton.isEnabled)
-        assertTrue("Back must be reachable as the first bottom-bar command", f.vb.vActionBar.backButton.hasFocus())
+        assertTrue(f.vb.controlsRow.backButton.isEnabled)
+        assertTrue(f.vb.controlsRow.forwardButton.isEnabled)
+        assertTrue("Back must be reachable as the first bottom-bar command", f.vb.controlsRow.backButton.hasFocus())
     }
 
     @Test fun tabsLeadToSearchAndExitingAddressDoesNotFocusCloseApp() = Fixture().use { f ->
-        val bar = f.vb.vActionBar
-        val address = bar.findViewById<EditText>(R.id.etUrl)
-        val menu = bar.findViewById<View>(R.id.ibMenu)
-        assertEquals(R.id.flUrl, bar.getChildAt(0).id)
-        assertEquals(R.id.ibMenu, bar.getChildAt(bar.childCount - 1).id)
+        val bar = f.vb.controlsRow
+        val address = bar.findViewById<EditText>(R.id.address_field)
+        val menu = bar.findViewById<View>(R.id.menu_button)
+        assertEquals(R.id.address_box, bar.getChildAt(0).id)
+        assertEquals(R.id.menu_button, bar.getChildAt(bar.childCount - 1).id)
         f.activity.handleBackNavigation()
-        val tab = f.vb.vTabs.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvTabs)
+        val tab = f.vb.tabStrip.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.tab_list)
             .getChildAt(0)
         assertNotNull("The real tab must be attached for this focus test", tab)
         assertSame(f.tab, tab.tag)
@@ -186,7 +186,7 @@ class BrowserNavigationTest {
         assertFalse(menu.hasFocus())
         assertFalse(bar.isEditingAddress)
 
-        val add = f.vb.vTabs.findViewById<View>(R.id.btnAdd)
+        val add = f.vb.tabStrip.findViewById<View>(R.id.add_button)
         assertTrue(add.requestFocus())
         val addUpTarget = add.focusSearch(View.FOCUS_UP)
         assertSame("Up from Add tab must target Search", address, addUpTarget)
@@ -205,42 +205,42 @@ class BrowserNavigationTest {
         var clicks = 0
         f.page.setOnClickListener { clicks++ }
         f.activity.openCapsule()
-        assertEquals(View.VISIBLE, f.vb.flWebViewContainer.visibility)
-        assertEquals(View.INVISIBLE, f.vb.ivMiniatures.visibility)
-        assertTrue(f.vb.flWebViewContainer.cursorSuppressed)
+        assertEquals(View.VISIBLE, f.vb.pageContainer.visibility)
+        assertEquals(View.INVISIBLE, f.vb.tabPreview.visibility)
+        assertTrue(f.vb.pageContainer.cursorSuppressed)
         assertEquals("Opening controls must not allocate an active-page screenshot", 0, f.thumbnailRenders)
-        assertEquals(ImageView.ScaleType.CENTER_INSIDE, f.vb.ivMiniatures.scaleType)
+        assertEquals(ImageView.ScaleType.CENTER_INSIDE, f.vb.tabPreview.scaleType)
         // A page click also exits native address editing without leaving its keyboard/draft behind.
-        f.vb.vActionBar.callback = f.activity
-        f.vb.vActionBar.setAddressBoxText(f.tab.url)
-        val address = f.vb.vActionBar.findViewById<EditText>(R.id.etUrl)
+        f.vb.controlsRow.callback = f.activity
+        f.vb.controlsRow.setAddressBoxText(f.tab.url)
+        val address = f.vb.controlsRow.findViewById<EditText>(R.id.address_field)
         address.requestFocus()
         address.performClick()
         address.setText("unfinished address draft")
-        assertTrue(f.vb.vActionBar.isEditingAddress)
+        assertTrue(f.vb.controlsRow.isEditingAddress)
         val now = android.os.SystemClock.uptimeMillis()
         for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
             val event = MotionEvent.obtain(now, now, action, 640f, 360f, 0)
-            f.vb.flWebViewContainer.dispatchTouchEvent(event)
+            f.vb.pageContainer.dispatchTouchEvent(event)
             event.recycle()
         }
         org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
         assertEquals("The click that resumes the page must reach its search field", 1, clicks)
-        assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
-        assertFalse(f.vb.flWebViewContainer.cursorSuppressed)
-        assertNull(f.vb.flWebViewContainer.onPageTouch)
-        assertFalse(f.vb.vActionBar.isEditingAddress)
+        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
+        assertFalse(f.vb.pageContainer.cursorSuppressed)
+        assertNull(f.vb.pageContainer.onPageTouch)
+        assertFalse(f.vb.controlsRow.isEditingAddress)
         assertEquals(f.tab.url, address.text.toString())
         assertTrue(f.page.hasFocus())
     }
 
     @Test fun pageCommandsRunOnceAndRestorePageFocus() = Fixture().use { f ->
         f.activity.handleBackNavigation()
-        f.vb.vActionBar.backButton.performClick()
+        f.vb.controlsRow.backButton.performClick()
         assertEquals(1, f.wentBack)
         assertTrue(f.page.hasFocus())
         f.activity.handleBackNavigation()
-        f.vb.vActionBar.refreshButton.performClick()
+        f.vb.controlsRow.refreshButton.performClick()
         assertEquals(1, f.refreshed)
         assertTrue(f.page.hasFocus())
     }
@@ -248,15 +248,15 @@ class BrowserNavigationTest {
     @Test fun blockerShieldTogglesTheSelectedTabAndReportsPause() = Fixture().use { f ->
         f.activity.adblockModel = AdblockModel(autoLoad = false)
         f.tab.adblock = true
-        f.vb.vTabs.current = 0
+        f.vb.tabStrip.current = 0
         f.activity.handleBackNavigation()
-        val shield = f.vb.vActionBar.adBlockButton
+        val shield = f.vb.controlsRow.adBlockButton
         val unavailable = f.host.get().getString(R.string.blocker_state_none)
         assertEquals(f.host.get().getString(R.string.blocker_summary, unavailable, 0),
             shield.contentDescription)
         // The shield is one focus stop: Right reaches the menu, Down reaches the tab strip.
-        assertSame(f.vb.vActionBar.findViewById<View>(R.id.ibMenu), shield.focusSearch(View.FOCUS_RIGHT))
-        assertSame(f.vb.vTabs, shield.focusSearch(View.FOCUS_DOWN))
+        assertSame(f.vb.controlsRow.findViewById<View>(R.id.menu_button), shield.focusSearch(View.FOCUS_RIGHT))
+        assertSame(f.vb.tabStrip, shield.focusSearch(View.FOCUS_DOWN))
         assertTrue(shield.requestFocus())
         shield.performClick()
         assertEquals(false, f.tab.adblock)
@@ -275,52 +275,52 @@ class BrowserNavigationTest {
         val callback = TabWindow(f.activity, f.tab)
         val engine = WebViewWebEngine(f.tab).apply { window = callback }
         WebViewWebEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
-            .set(engine, f.vb.flWebViewContainer)
+            .set(engine, f.vb.pageContainer)
         val video = View(f.host.get()).apply { isFocusableInTouchMode = true }
         engine.enterFullscreen(video)
-        assertFalse(f.vb.flWebViewContainer.cursorEnabled)
+        assertFalse(f.vb.pageContainer.cursorEnabled)
         assertTrue(video.hasFocus())
         f.hideFullscreen = { engine.closeFullscreen() }
         f.virtualCursor = false
         f.activity.handleBackNavigation()
         assertEquals(1, f.exitedFullscreen)
         assertNull(video.parent)
-        assertTrue(f.vb.flWebViewContainer.cursorEnabled)
-        assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
-        assertTrue(f.vb.vActionBar.backButton.hasFocus())
+        assertTrue(f.vb.pageContainer.cursorEnabled)
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        assertTrue(f.vb.controlsRow.backButton.hasFocus())
         f.activity.handleBackNavigation()
         assertEquals("Back must close the existing menu, not reopen bars in an unknown state",
-            View.INVISIBLE, f.vb.rlActionBar.visibility)
+            View.INVISIBLE, f.vb.controlsOverlay.visibility)
         assertTrue(f.page.hasFocus())
     }
 
     @Test fun cancelSearchRestoresButtonsAndKeyboardSearchLoadsConfiguredEngine() = Fixture().use { f ->
         f.activity.handleBackNavigation()
-        val address = f.vb.vActionBar.findViewById<EditText>(R.id.etUrl)
+        val address = f.vb.controlsRow.findViewById<EditText>(R.id.address_field)
         address.requestFocus()
         address.performClick()
-        assertTrue(f.vb.vActionBar.isEditingAddress)
+        assertTrue(f.vb.controlsRow.isEditingAddress)
         f.activity.handleBackNavigation()
-        assertFalse(f.vb.vActionBar.isEditingAddress)
-        assertEquals(View.VISIBLE, f.vb.vActionBar.findViewById<View>(R.id.ibMenu).visibility)
+        assertFalse(f.vb.controlsRow.isEditingAddress)
+        assertEquals(View.VISIBLE, f.vb.controlsRow.findViewById<View>(R.id.menu_button).visibility)
         address.requestFocus()
         address.performClick()
         address.setText("android tv navegador")
         address.onEditorAction(EditorInfo.IME_ACTION_SEARCH)
         assertNotNull("TV keyboard Search must load a result", f.loadedUrl)
         assertTrue(f.loadedUrl!!.contains("android+tv+navegador"))
-        assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
+        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
         assertTrue(f.page.hasFocus())
     }
 
     @Test fun pageUpdatesCannotOverwriteTypingAndPhysicalEnterSubmitsOnce() = Fixture().use { f ->
         f.activity.handleBackNavigation()
-        val address = f.vb.vActionBar.findViewById<EditText>(R.id.etUrl)
-        f.vb.vActionBar.setAddressBoxText("https://before.test")
+        val address = f.vb.controlsRow.findViewById<EditText>(R.id.address_field)
+        f.vb.controlsRow.setAddressBoxText("https://before.test")
         address.requestFocus()
         address.performClick()
         address.setText("my search")
-        f.vb.vActionBar.setAddressBoxText("https://redirected.test")
+        f.vb.controlsRow.setAddressBoxText("https://redirected.test")
         assertEquals("my search", address.text.toString())
         f.activity.handleBackNavigation()
         assertEquals("https://redirected.test", address.text.toString())
@@ -339,11 +339,11 @@ class BrowserNavigationTest {
         }
         assertTrue(f.page.hasFocus())
         f.activity.handleBackNavigation()
-        assertEquals(View.VISIBLE, f.vb.rlActionBar.visibility)
-        assertTrue(f.vb.vActionBar.backButton.hasFocus())
-        f.vb.rlActionBar.animate().cancel()
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        assertTrue(f.vb.controlsRow.backButton.hasFocus())
+        f.vb.controlsOverlay.animate().cancel()
         f.activity.handleBackNavigation()
-        assertEquals(View.INVISIBLE, f.vb.rlActionBar.visibility)
+        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
         assertTrue(f.page.hasFocus())
     }
 }

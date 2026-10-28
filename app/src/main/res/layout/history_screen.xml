@@ -21,26 +21,26 @@
         android:padding="4dp">
 
         <Button
-            android:id="@+id/btnDeleteSelected"
+            android:id="@+id/delete_selected_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             style="@style/Widget.Vireo.Button"
-            android:nextFocusDown="@+id/listView"
+            android:nextFocusDown="@+id/item_list"
             android:text="@string/action_delete"
             android:visibility="gone" />
 
         <Button
-            android:id="@+id/btnClear"
+            android:id="@+id/clear_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/Widget.Vireo.Button"
-            android:nextFocusDown="@+id/listView"
+            android:nextFocusDown="@+id/item_list"
             android:text="@string/action_clear" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/listView"
+        android:id="@+id/item_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"

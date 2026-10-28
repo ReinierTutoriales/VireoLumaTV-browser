@@ -10,7 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.databinding.ActivityHistoryBinding
+import com.reiniertutoriales.vireolumatv.databinding.HistoryScreenBinding
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
  * press starts selecting rows; "Delete" then removes the selection and Back leaves selection mode.
  */
 class HistoryActivity : AppCompatActivity() {
-    private lateinit var vb: ActivityHistoryBinding
+    private lateinit var vb: HistoryScreenBinding
     private lateinit var model: HistoryModel
     private var consumedPage: List<HistoryItem>? = null
     private val adapter = HistoryAdapter(::onItemClick, ::onItemLongClick)
@@ -36,22 +36,22 @@ class HistoryActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        vb = ActivityHistoryBinding.inflate(layoutInflater)
+        vb = HistoryScreenBinding.inflate(layoutInflater)
         setContentView(vb.root)
         model = ActiveModelsRepository.get(HistoryModel::class, this)
         onBackPressedDispatcher.addCallback(this, leaveSelection)
 
-        vb.listView.layoutManager = LinearLayoutManager(this)
-        vb.listView.adapter = adapter
-        vb.listView.addOnScrollListener(nextPageLoader)
-        vb.btnClear.setOnClickListener { confirmDelete(all = true) }
-        vb.btnDeleteSelected.setOnClickListener { confirmDelete(all = false) }
+        vb.itemList.layoutManager = LinearLayoutManager(this)
+        vb.itemList.adapter = adapter
+        vb.itemList.addOnScrollListener(nextPageLoader)
+        vb.clearButton.setOnClickListener { confirmDelete(all = true) }
+        vb.deleteSelectedButton.setOnClickListener { confirmDelete(all = false) }
 
         model.lastLoadedItems.subscribe(this) {
             if (it.isEmpty() || it === consumedPage) return@subscribe
             consumedPage = it
             adapter.addItems(it)
-            vb.listView.requestFocus()
+            vb.itemList.requestFocus()
         }
         model.loadItems()
     }
@@ -86,7 +86,7 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun updateCommands() {
         leaveSelection.isEnabled = adapter.isMultiselectMode
-        vb.btnDeleteSelected.isVisible = adapter.selectedItems.isNotEmpty()
+        vb.deleteSelectedButton.isVisible = adapter.selectedItems.isNotEmpty()
     }
 
     private fun confirmDelete(all: Boolean) {
@@ -107,7 +107,7 @@ class HistoryActivity : AppCompatActivity() {
                     }
                     adapter.isMultiselectMode = false
                     updateCommands()
-                    vb.btnClear.requestFocus()
+                    vb.clearButton.requestFocus()
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)

@@ -93,9 +93,9 @@ class HistoryAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         if (viewType == VIEW_TYPE_HEADER) {
-            return HeaderHolder(inflater.inflate(R.layout.view_list_date_header, parent, false))
+            return HeaderHolder(inflater.inflate(R.layout.day_header, parent, false))
         }
-        val holder = ItemHolder(inflater.inflate(R.layout.view_history_item, parent, false))
+        val holder = ItemHolder(inflater.inflate(R.layout.history_row, parent, false))
         holder.itemView.setOnClickListener {
             val position = holder.bindingAdapterPosition
             if (position != RecyclerView.NO_POSITION) onItemClick(getItem(position))
@@ -110,27 +110,27 @@ class HistoryAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = getItem(position)
         when (holder) {
-            is HeaderHolder -> holder.tvDate.text = dateFormat.format(Date(item.time))
+            is HeaderHolder -> holder.dayText.text = dateFormat.format(Date(item.time))
             is ItemHolder -> holder.bind(item, isMultiselectMode, timeFormat)
         }
     }
 
     private class HeaderHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvDate: TextView = view.findViewById(R.id.tvDate)
+        val dayText: TextView = view.findViewById(R.id.day_text)
     }
 
     private class ItemHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val tvTitle: TextView = view.findViewById(R.id.tvTitle)
-        private val tvUrl: TextView = view.findViewById(R.id.tvURL)
-        private val tvTime: TextView = view.findViewById(R.id.tvTime)
-        private val cbSelection: CheckBox = view.findViewById(R.id.cbSelection)
+        private val titleText: TextView = view.findViewById(R.id.title_text)
+        private val addressText: TextView = view.findViewById(R.id.address_text)
+        private val timeText: TextView = view.findViewById(R.id.time_text)
+        private val selectBox: CheckBox = view.findViewById(R.id.select_box)
 
         fun bind(item: HistoryItem, multiselect: Boolean, timeFormat: SimpleDateFormat) {
-            tvTitle.text = item.title
-            tvUrl.text = item.url
-            tvTime.text = timeFormat.format(Date(item.time))
-            cbSelection.visibility = if (multiselect) View.VISIBLE else View.GONE
-            cbSelection.isChecked = item.selected
+            titleText.text = item.title
+            addressText.text = item.url
+            timeText.text = timeFormat.format(Date(item.time))
+            selectBox.visibility = if (multiselect) View.VISIBLE else View.GONE
+            selectBox.isChecked = item.selected
         }
     }
 

@@ -39,8 +39,8 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
             val row = inflater.inflate(R.layout.view_address_suggestion, this, false)
             row.findViewById<ImageView>(R.id.ivKind).setImageResource(
                 if (suggestion.bookmark) R.drawable.ic_bookmark else R.drawable.ic_history)
-            row.findViewById<TextView>(R.id.tvTitle).text = suggestion.title
-            row.findViewById<TextView>(R.id.tvUrl).apply {
+            row.findViewById<TextView>(R.id.title_text).text = suggestion.title
+            row.findViewById<TextView>(R.id.address_text).apply {
                 text = suggestion.url
                 isVisible = suggestion.url != suggestion.title
             }

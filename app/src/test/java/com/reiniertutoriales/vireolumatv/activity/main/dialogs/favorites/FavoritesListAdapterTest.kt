@@ -69,18 +69,18 @@ class FavoritesListAdapterTest {
         val page = bookmark(1, "Ejemplo", "https://example.test")
         val untitled = bookmark(2, " ", "https://untitled.test")
         withList(listOf(page, untitled)) { list, _ ->
-            assertEquals("Ejemplo", list.row(0).findViewById<TextView>(R.id.tvTitle).text.toString())
+            assertEquals("Ejemplo", list.row(0).findViewById<TextView>(R.id.title_text).text.toString())
             assertEquals("A blank title falls back to the address", "https://untitled.test",
-                list.row(1).findViewById<TextView>(R.id.tvTitle).text.toString())
-            assertEquals(View.GONE, list.row(0).findViewById<View>(R.id.ibDelete).visibility)
-            list.row(0).findViewById<View>(R.id.llContent).performClick()
+                list.row(1).findViewById<TextView>(R.id.title_text).text.toString())
+            assertEquals(View.GONE, list.row(0).findViewById<View>(R.id.delete_button).visibility)
+            list.row(0).findViewById<View>(R.id.row_body).performClick()
             assertEquals(listOf(page), opened)
             assertTrue(edited.isEmpty())
         }
     }
 
     @Test fun aFolderIsNotOpenedAsAPage() = withList(listOf(bookmark(3, "Carpeta", null))) { list, _ ->
-        list.row(0).findViewById<View>(R.id.llContent).performClick()
+        list.row(0).findViewById<View>(R.id.row_body).performClick()
         assertTrue(opened.isEmpty())
     }
 
@@ -89,8 +89,8 @@ class FavoritesListAdapterTest {
         withList(listOf(page)) { list, adapter ->
             adapter.editMode = true
             relayout(list)
-            val content = list.row(0).findViewById<View>(R.id.llContent)
-            val delete = list.row(0).findViewById<View>(R.id.ibDelete)
+            val content = list.row(0).findViewById<View>(R.id.row_body)
+            val delete = list.row(0).findViewById<View>(R.id.delete_button)
             assertEquals(View.VISIBLE, delete.visibility)
             assertSame("Delete must be reachable with D-pad Right", delete,
                 FocusFinder.getInstance().findNextFocus(list, content, View.FOCUS_RIGHT))

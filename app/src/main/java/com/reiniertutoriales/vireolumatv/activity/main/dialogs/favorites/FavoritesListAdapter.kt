@@ -39,16 +39,16 @@ class FavoritesListAdapter(
     override fun getItemId(position: Int): Long = getItem(position).id
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        Row(LayoutInflater.from(parent.context).inflate(R.layout.view_favorite_item, parent, false))
+        Row(LayoutInflater.from(parent.context).inflate(R.layout.favorite_row, parent, false))
 
     override fun onBindViewHolder(holder: Row, position: Int) = holder.bind(getItem(position))
 
     inner class Row(view: View) : RecyclerView.ViewHolder(view) {
-        private val content: View = view.findViewById(R.id.llContent)
-        private val title: TextView = view.findViewById(R.id.tvTitle)
-        private val url: TextView = view.findViewById(R.id.tvUrl)
-        private val delete: ImageButton = view.findViewById(R.id.ibDelete)
-        private val icon = ViewFaviconLoader(view, view.findViewById<ImageView>(R.id.ivIcon))
+        private val content: View = view.findViewById(R.id.row_body)
+        private val title: TextView = view.findViewById(R.id.title_text)
+        private val url: TextView = view.findViewById(R.id.address_text)
+        private val delete: ImageButton = view.findViewById(R.id.delete_button)
+        private val icon = ViewFaviconLoader(view, view.findViewById<ImageView>(R.id.icon_image))
 
         fun bind(item: FavoriteItem) {
             title.text = item.title?.takeIf { it.isNotBlank() } ?: item.url

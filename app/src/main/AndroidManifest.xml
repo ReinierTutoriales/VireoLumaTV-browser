@@ -147,7 +147,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
+                android:resource="@xml/file_provider_paths" />
         </provider>
 
         <!-- No WebView usage metrics are sent to Google. -->

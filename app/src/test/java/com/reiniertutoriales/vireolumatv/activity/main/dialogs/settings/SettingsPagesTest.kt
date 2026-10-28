@@ -26,8 +26,8 @@ class SettingsPagesTest {
         try {
             val activity = controller.get()
             val tabs = RadioGroup(activity)
-            val main = RadioButton(activity).apply { id = R.id.btnMainTab }
-            val version = RadioButton(activity).apply { id = R.id.btnVersionTab }
+            val main = RadioButton(activity).apply { id = R.id.general_page_tab }
+            val version = RadioButton(activity).apply { id = R.id.about_page_tab }
             tabs.addView(main)
             tabs.addView(version)
             tabs.check(main.id)

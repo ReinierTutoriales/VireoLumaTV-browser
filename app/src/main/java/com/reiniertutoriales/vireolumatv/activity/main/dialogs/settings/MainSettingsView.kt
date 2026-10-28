@@ -35,7 +35,7 @@ class MainSettingsView @JvmOverloads constructor(
     var config = AppContext.config
 
     private val rows = SettingsRows(
-        LayoutInflater.from(context).inflate(R.layout.view_settings_main, this, true)
+        LayoutInflater.from(context).inflate(R.layout.settings_general, this, true)
             .findViewById<LinearLayout>(R.id.settingsList))
     private lateinit var searchEngineUrl: EditText
     private lateinit var homePageMode: Spinner

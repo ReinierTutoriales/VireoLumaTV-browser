@@ -44,7 +44,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.Favorit
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsDialog
 import com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
 import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabsAdapter
-import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
+import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.model.WebTabState
@@ -79,7 +79,7 @@ import kotlin.system.exitProcess
  * [IncognitoModeMainActivity] in its own process.
  */
 open class MainActivity : AppCompatActivity(), ActionBar.Callback {
-    internal lateinit var vb: ActivityMainBinding
+    internal lateinit var vb: BrowserWindowBinding
     internal lateinit var tabsModel: TabsModel
     internal lateinit var settingsModel: SettingsModel
     internal lateinit var adblockModel: AdblockModel
@@ -121,12 +121,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         WebViewWebEngine.hiddenSelectorsProvider = { url, classes, ids -> filters.hiddenSelectors(url, classes, ids) }
         tabsModel = ActiveModelsRepository.get(TabsModel::class, this)
         uiHandler = Handler(Looper.getMainLooper())
-        vb = ActivityMainBinding.inflate(layoutInflater)
+        vb = BrowserWindowBinding.inflate(layoutInflater)
         setContentView(vb.root)
-        vb.ivMiniatures.visibility = View.INVISIBLE
-        vb.rlActionBar.visibility = View.INVISIBLE
-        vb.progressBar.visibility = View.GONE
-        vb.vTabs.listener = tabStrip
+        vb.tabPreview.visibility = View.INVISIBLE
+        vb.controlsOverlay.visibility = View.INVISIBLE
+        vb.loadProgress.visibility = View.GONE
+        vb.tabStrip.listener = tabStrip
         configureBrowserControls()
         observeModels()
         onBackPressedDispatcher.addCallback(onBackPressedCallback)
@@ -140,22 +140,22 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
         tabsModel.currentTab.subscribe(this) { tab ->
-            vb.vActionBar.setAddressBoxText(tab?.url.orEmpty())
+            vb.controlsRow.setAddressBoxText(tab?.url.orEmpty())
             tab?.let(::onWebViewUpdated)
         }
         adblockModel.clientLoading.subscribe(lifecycle) { tabsModel.currentTab.value?.let(::updateAdblockStatus) }
         adblockModel.updateResult.subscribe(lifecycle) { tabsModel.currentTab.value?.let(::updateAdblockStatus) }
-        tabsModel.tabsStates.subscribe(this, false) { if (it.isEmpty()) vb.flWebViewContainer.removeAllViews() }
+        tabsModel.tabsStates.subscribe(this, false) { if (it.isEmpty()) vb.pageContainer.removeAllViews() }
     }
 
     /** Reads the stored state, then shows the tab the intent asks for, or the selected one, or a new home tab. */
     private fun loadState() = lifecycleScope.launch {
-        vb.progressBarGeneric.visibility = View.VISIBLE
-        vb.progressBarGeneric.requestFocus()
+        vb.startupSpinner.visibility = View.VISIBLE
+        vb.startupSpinner.requestFocus()
         viewModel.loadState().join()
         tabsModel.loadState().join()
         if (!isActive) return@launch
-        vb.progressBarGeneric.visibility = View.GONE
+        vb.startupSpinner.visibility = View.GONE
         when {
             ExternalWebNavigation.isAllowed(intent.data) -> handleIntent(intent)
             tabsModel.tabsStates.isEmpty() -> openInNewTab(settingsModel.homePage, 0, closeCapsuleAfter = true, navigateImmediately = true)
@@ -236,8 +236,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         previewGeneration++
         // Uninitialized when onCreate() restarted the window in the other mode.
         if (::vb.isInitialized) {
-            vb.flWebViewContainer.onPageTouch = null
-            vb.flWebViewContainer.cursorSuppressed = false
+            vb.pageContainer.onPageTouch = null
+            vb.pageContainer.cursorSuppressed = false
         }
         if (::uiHandler.isInitialized) uiHandler.removeCallbacks(showFocusedPreview)
         focusedPreviewTab = null
@@ -292,7 +292,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     @VisibleForTesting
     internal fun configureBrowserControls() {
-        val bar = vb.vActionBar
+        val bar = vb.controlsRow
         bar.callback = this
         vb.vSuggestions.onPick = { bar.submit(it.url) }
         // A command runs on the tab shown, after the capsule hands focus back to the page.
@@ -377,7 +377,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     /** Suggestions take the tab strip's place while there are any, so the capsule does not grow. */
     private fun showSuggestions(suggestions: List<AddressSuggestion>) {
         vb.vSuggestions.show(suggestions)
-        vb.vTabs.isVisible = suggestions.isEmpty()
+        vb.tabStrip.isVisible = suggestions.isEmpty()
     }
 
     private fun closeSuggestions() {
@@ -388,7 +388,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     // Navigation
 
     fun navigate(url: String) {
-        vb.vActionBar.setAddressBoxTextColor(ContextCompat.getColor(this, R.color.on_surface))
+        vb.controlsRow.setAddressBoxTextColor(ContextCompat.getColor(this, R.color.on_surface))
         val tab = tabsModel.currentTab.value
         if (tab == null) {
             openInNewTab(url, 0, closeCapsuleAfter = true, navigateImmediately = true)
@@ -404,7 +404,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         when {
             engine?.canGoBack == true -> engine.back()
             goHomeIfNoHistory -> navigate(settingsModel.homePage)
-            vb.rlActionBar.isVisible -> closeCapsule()
+            vb.controlsOverlay.isVisible -> closeCapsule()
             else -> openCapsule()
         }
     }
@@ -419,7 +419,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         /** Focus moved to another tab: show its address and, a moment later, its preview. */
         override fun onTitleChanged(index: Int) {
             val tab = tabAt(index)
-            vb.vActionBar.setAddressBoxText(tab?.url.orEmpty())
+            vb.controlsRow.setAddressBoxText(tab?.url.orEmpty())
             previewGeneration++
             uiHandler.removeCallbacks(showFocusedPreview)
             focusedPreviewTab = tab
@@ -445,7 +445,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private fun tabAt(index: Int) = tabsModel.tabsStates.getOrNull(index)
 
     /** The tab the strip shows as selected, which differs from the shown one while another is previewed. */
-    internal fun tabAtStripSelection() = tabAt(vb.vTabs.current)
+    internal fun tabAtStripSelection() = tabAt(vb.tabStrip.current)
 
     internal fun openInNewTab(url: String?, index: Int = 0, closeCapsuleAfter: Boolean = true, navigateImmediately: Boolean): PageEngine? {
         if (url == null) return null
@@ -454,7 +454,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         changeTab(tab, loadInitialUrl = false)
         if (tab.engine.view == null) return null
         if (navigateImmediately) navigate(url)
-        if (closeCapsuleAfter && vb.rlActionBar.isVisible) closeCapsule()
+        if (closeCapsuleAfter && vb.controlsOverlay.isVisible) closeCapsule()
         return tab.engine
     }
 
@@ -472,7 +472,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     internal fun changeTab(newTab: WebTabState, loadInitialUrl: Boolean = true) =
-        tabsModel.changeTab(newTab, ::createWebView, vb.flWebViewContainer, TabWindow(this, newTab), loadInitialUrl)
+        tabsModel.changeTab(newTab, ::createWebView, vb.pageContainer, TabWindow(this, newTab), loadInitialUrl)
 
     /** The tab's WebView, or null after telling the user that this device has no usable WebView. */
     internal fun createWebView(tab: WebTabState): View? {
@@ -505,10 +505,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     /** The capsule follows the shown tab: Back and Forward availability and the blocker shield. */
     internal fun onWebViewUpdated(tab: WebTabState) {
-        vb.vActionBar.backButton.isEnabled = tab.engine.canGoBack
-        vb.vActionBar.forwardButton.isEnabled = tab.engine.canGoForward
+        vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
+        vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
         val blocking = tab.adblock ?: config.adBlockEnabled
-        vb.vActionBar.adBlockButton.setImageResource(if (blocking) R.drawable.ic_shield_on else R.drawable.ic_shield_off)
+        vb.controlsRow.adBlockButton.setImageResource(if (blocking) R.drawable.ic_shield_on else R.drawable.ic_shield_off)
         updateAdblockStatus(tab)
     }
 
@@ -516,7 +516,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private fun commitStripSelection() {
         val tab = tabAtStripSelection()
         when {
-            tab == null -> openInNewTab(settingsModel.homePage, if (vb.vTabs.current < 0) 0 else tabsModel.tabsStates.size,
+            tab == null -> openInNewTab(settingsModel.homePage, if (vb.tabStrip.current < 0) 0 else tabsModel.tabsStates.size,
                 closeCapsuleAfter = true, navigateImmediately = true)
             !tab.selected -> changeTab(tab)
         }
@@ -545,8 +545,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     internal fun updateAdblockStatus(tab: WebTabState) {
         val state = getString(blockerStatusLabel(tab))
-        vb.vActionBar.adBlockButton.contentDescription = getString(R.string.blocker_summary, state, tab.blockedAds)
-        vb.vActionBar.adBlockButton.isActivated =
+        vb.controlsRow.adBlockButton.contentDescription = getString(R.string.blocker_summary, state, tab.blockedAds)
+        vb.controlsRow.adBlockButton.isActivated =
             (tab.adblock ?: config.adBlockEnabled) && ::adblockModel.isInitialized && adblockModel.hasActiveRules
     }
 
@@ -620,7 +620,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val now = SystemClock.uptimeMillis()
         if (now - lastBlockedNotice < BLOCKED_NOTICE_INTERVAL_MS) return
         lastBlockedNotice = now
-        NotificationView.showBottomRight(vb.rlRoot, R.drawable.ic_block,
+        NotificationView.showBottomRight(vb.browserRoot, R.drawable.ic_block,
             getString(if (newTab) R.string.popups_window_blocked else R.string.popups_dialog_blocked))
     }
 
@@ -628,14 +628,14 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     private val hideProgress = Runnable {
         val fade = AnimationUtils.loadAnimation(this, android.R.anim.fade_out)
-        fade.onAnimationEnd { vb.progressBar.visibility = View.GONE }
-        vb.progressBar.startAnimation(fade)
+        fade.onAnimationEnd { vb.loadProgress.visibility = View.GONE }
+        vb.loadProgress.startAnimation(fade)
     }
 
     /** The thin bar shows loading; it fades a second after completion, or after 5 s without news. */
     internal fun showLoadProgress(progress: Int) {
-        vb.progressBar.visibility = View.VISIBLE
-        vb.progressBar.setProgress(progress, true)
+        vb.loadProgress.visibility = View.VISIBLE
+        vb.loadProgress.setProgress(progress, true)
         uiHandler.removeCallbacks(hideProgress)
         uiHandler.postDelayed(hideProgress, if (progress == 100) PROGRESS_DONE_MS else PROGRESS_STALL_MS)
     }
@@ -656,7 +656,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     /** Leaving private mode erases its pages, cookies, storage, cache and tabs before the switch. */
     private fun toggleIncognitoMode(andSwitchProcess: Boolean) = lifecycleScope.launch {
         val entering = !config.incognitoMode
-        vb.progressBarGeneric.visibility = View.VISIBLE
+        vb.startupSpinner.visibility = View.VISIBLE
         if (!entering) {
             withContext(Dispatchers.IO) {
                 WebStorage.getInstance().deleteAllData()
@@ -668,7 +668,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             tabsModel.currentTab.value = null
             viewModel.clearIncognitoData().join()
         }
-        vb.progressBarGeneric.visibility = View.GONE
+        vb.startupSpinner.visibility = View.GONE
         config.incognitoMode = entering
         if (andSwitchProcess) switchProcess(entering)
     }
@@ -720,12 +720,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 val code = if (event.keyCode != 0) event.keyCode else event.scanCode
                 if (code !in BackNavigationEventsAdapter.BACK_KEYS &&
                     ShortcutMgr.getInstance().handle(event, this@MainActivity, tabsModel.currentTab.value)) return true
-                if (downLeavesTabStrip(overlayVisible, vb.vTabs.hasFocus(), event.keyCode, event.action, event.repeatCount)) {
+                if (downLeavesTabStrip(overlayVisible, vb.tabStrip.hasFocus(), event.keyCode, event.action, event.repeatCount)) {
                     closeCapsule()
                     return true
                 }
                 if (browserOwnsPointer() && event.keyCode in RemoteInput.NAVIGATION_KEYS &&
-                    vb.flWebViewContainer.dispatchKeyEvent(event)) return true
+                    vb.pageContainer.dispatchKeyEvent(event)) return true
                 return views.dispatchKeyEvent(event)
             }
 
@@ -737,7 +737,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
                 if (backNavigationEventsAdapter.dispatchGenericMotionEvent(event)) return true
                 if (browserOwnsPointer() && RemoteInput.isNavigationSource(event) &&
-                    vb.flWebViewContainer.dispatchGenericMotionEvent(event)) return true
+                    vb.pageContainer.dispatchGenericMotionEvent(event)) return true
                 return views.dispatchGenericMotionEvent(event)
             }
         }
@@ -746,9 +746,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     /** The page owns the screen: no capsule, pointer menu, text field or keyboard in front of it. */
     private fun browserOwnsPointer(): Boolean {
         if (!::vb.isInitialized || !window.decorView.hasWindowFocus()) return false
-        val page = vb.flWebViewContainer
+        val page = vb.pageContainer
         return page.isShown && page.cursorEnabled && !page.cursorSuppressed && !page.isTextInputActive() &&
-            !vb.vCursorMenu.isVisible && !vb.rlActionBar.isVisible && !keyboardVisible()
+            !vb.pointerMenu.isVisible && !vb.controlsOverlay.isVisible && !keyboardVisible()
     }
 
     private fun keyboardVisible() =
@@ -765,11 +765,11 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     /** Back closes the innermost thing open: pointer menu, fullscreen, typing, capsule, grab mode; else opens the capsule. */
     @VisibleForTesting
     internal fun handleBackNavigation() {
-        val pointer = vb.flWebViewContainer.cursorDrawerDelegate
+        val pointer = vb.pageContainer.cursorDrawerDelegate
         when {
-            vb.vCursorMenu.isVisible -> vb.vCursorMenu.close()
+            vb.pointerMenu.isVisible -> vb.pointerMenu.close()
             isFullscreen -> tabsModel.currentTab.value?.engine?.closeFullscreen()
-            vb.vActionBar.isEditingAddress -> vb.vActionBar.cancelAddressInput()
+            vb.controlsRow.isEditingAddress -> vb.controlsRow.cancelAddressInput()
             overlayVisible -> closeCapsule()
             pointer.canHandleBackNavigation() -> pointer.handleBackNavigation()
             else -> {
@@ -801,29 +801,29 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         if (overlayVisible) return
         overlayVisible = true
         previewGeneration++
-        vb.rlActionBar.animate().cancel()
-        vb.ivMiniatures.animate().cancel()
-        vb.ivMiniatures.visibility = View.INVISIBLE
-        vb.ivMiniatures.setImageResource(0)
-        vb.flWebViewContainer.cursorSuppressed = true
+        vb.controlsOverlay.animate().cancel()
+        vb.tabPreview.animate().cancel()
+        vb.tabPreview.visibility = View.INVISIBLE
+        vb.tabPreview.setImageResource(0)
+        vb.pageContainer.cursorSuppressed = true
         // The first press on the page closes the capsule and reaches the page.
-        vb.flWebViewContainer.onPageTouch = {
-            if (vb.vActionBar.isEditingAddress) vb.vActionBar.cancelAddressInput()
+        vb.pageContainer.onPageTouch = {
+            if (vb.controlsRow.isEditingAddress) vb.controlsRow.cancelAddressInput()
             closeCapsule()
         }
         val previewed = tabAtStripSelection()
-        vb.flWebViewContainer.visibility =
+        vb.pageContainer.visibility =
             if (previewed != null && previewed === tabsModel.currentTab.value) View.VISIBLE else View.INVISIBLE
         lifecycleScope.launch { displayThumbnail(previewed) }
-        vb.vActionBar.dismissExtendedAddressBarMode()
-        vb.rlActionBar.visibility = View.VISIBLE
+        vb.controlsRow.dismissExtendedAddressBarMode()
+        vb.controlsOverlay.visibility = View.VISIBLE
         // History can change without a page load (pushState on single-page sites): refresh Back first.
         tabsModel.currentTab.value?.let(::onWebViewUpdated)
         // Focus is part of opening, not of the animation's end.
-        if (!vb.vActionBar.backButton.requestFocus()) vb.vActionBar.homeButton.requestFocus()
-        vb.rlActionBar.translationY = -vb.rlActionBar.height.toFloat()
-        vb.rlActionBar.alpha = 0f
-        vb.rlActionBar.animate().translationY(0f).alpha(1f).setDuration(OVERLAY_OPEN_MS)
+        if (!vb.controlsRow.backButton.requestFocus()) vb.controlsRow.homeButton.requestFocus()
+        vb.controlsOverlay.translationY = -vb.controlsOverlay.height.toFloat()
+        vb.controlsOverlay.alpha = 0f
+        vb.controlsOverlay.animate().translationY(0f).alpha(1f).setDuration(OVERLAY_OPEN_MS)
             .setInterpolator(DecelerateInterpolator()).start()
     }
 
@@ -834,22 +834,22 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             // The live WebView at full resolution, never a stretched small picture.
             previewGeneration++
             showPicture(null, placeholder = false)
-            vb.flWebViewContainer.visibility = View.VISIBLE
+            vb.pageContainer.visibility = View.VISIBLE
             return
         }
-        vb.flWebViewContainer.visibility = View.INVISIBLE
+        vb.pageContainer.visibility = View.INVISIBLE
         if (tab == null) return showPicture(null, placeholder = true)
         val request = ++previewGeneration
-        vb.ivMiniatures.setImageResource(0) // Never leave the previous site's picture up while loading.
+        vb.tabPreview.setImageResource(0) // Never leave the previous site's picture up while loading.
         val picture = tab.thumbnail ?: withContext(Dispatchers.IO) { tab.loadThumbnail() }
         if (request != previewGeneration || !overlayVisible || tab.closed || tabAtStripSelection() !== tab) return
         showPicture(picture, placeholder = picture == null)
     }
 
     private fun showPicture(picture: Bitmap?, placeholder: Boolean) {
-        vb.llMiniaturePlaceholder.visibility = if (placeholder) View.VISIBLE else View.INVISIBLE
-        vb.ivMiniatures.visibility = if (picture == null) View.INVISIBLE else View.VISIBLE
-        vb.ivMiniatures.setImageBitmap(picture)
+        vb.previewPlaceholder.visibility = if (placeholder) View.VISIBLE else View.INVISIBLE
+        vb.tabPreview.visibility = if (picture == null) View.INVISIBLE else View.VISIBLE
+        vb.tabPreview.setImageBitmap(picture)
     }
 
     /** Closes the capsule at once (it stops owning focus even if an animation was cut) and returns to the page. */
@@ -857,22 +857,22 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     internal fun closeCapsule() {
         val wasVisible = overlayVisible
         overlayVisible = false
-        vb.flWebViewContainer.onPageTouch = null
-        vb.flWebViewContainer.cursorSuppressed = false
+        vb.pageContainer.onPageTouch = null
+        vb.pageContainer.cursorSuppressed = false
         previewGeneration++
         uiHandler.removeCallbacks(showFocusedPreview)
         focusedPreviewTab = null
-        vb.vActionBar.dismissExtendedAddressBarMode()
-        vb.rlActionBar.animate().cancel()
-        vb.ivMiniatures.animate().cancel()
-        vb.rlActionBar.visibility = View.INVISIBLE
-        vb.rlActionBar.translationY = 0f
-        vb.rlActionBar.alpha = 1f
-        vb.ivMiniatures.translationY = 0f
+        vb.controlsRow.dismissExtendedAddressBarMode()
+        vb.controlsOverlay.animate().cancel()
+        vb.tabPreview.animate().cancel()
+        vb.controlsOverlay.visibility = View.INVISIBLE
+        vb.controlsOverlay.translationY = 0f
+        vb.controlsOverlay.alpha = 1f
+        vb.tabPreview.translationY = 0f
         showPicture(null, placeholder = false)
         if (wasVisible) commitStripSelection()
-        if (!vb.vCursorMenu.isVisible) {
-            vb.flWebViewContainer.visibility = View.VISIBLE
+        if (!vb.pointerMenu.isVisible) {
+            vb.pageContainer.visibility = View.VISIBLE
             tabsModel.currentTab.value?.engine?.view?.requestFocus()
         }
     }

@@ -9,7 +9,7 @@
     android:paddingBottom="4dp">
 
     <LinearLayout
-        android:id="@+id/llContent"
+        android:id="@+id/row_body"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -25,7 +25,7 @@
         android:paddingEnd="12dp">
 
         <ImageView
-            android:id="@+id/ivIcon"
+            android:id="@+id/icon_image"
             android:duplicateParentState="true"
             android:layout_width="32dp"
             android:layout_height="32dp"
@@ -41,7 +41,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvTitle"
+                android:id="@+id/title_text"
                 android:duplicateParentState="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
                 android:textSize="18sp" />
 
             <TextView
-                android:id="@+id/tvUrl"
+                android:id="@+id/address_text"
                 android:duplicateParentState="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,7 +63,7 @@
     </LinearLayout>
 
     <ImageButton
-        android:id="@+id/ibDelete"
+        android:id="@+id/delete_button"
         style="@style/Widget.Vireo.IconButton"
         android:layout_marginStart="8dp"
         android:contentDescription="@string/action_delete"

@@ -12,7 +12,7 @@
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:gravity="center_vertical"
-    android:nextFocusUp="@+id/etUrl"
+    android:nextFocusUp="@+id/address_field"
     android:orientation="horizontal"
     android:paddingStart="12dp"
     android:paddingEnd="14dp"
@@ -20,7 +20,7 @@
     tools:targetApi="26">
 
     <ImageView
-        android:id="@+id/ivFavicon"
+        android:id="@+id/site_icon"
         android:duplicateParentState="true"
         android:layout_width="20dp"
         android:layout_height="20dp"
@@ -29,7 +29,7 @@
         tools:src="@drawable/ic_launcher" />
 
     <TextView
-        android:id="@+id/tvTitle"
+        android:id="@+id/title_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"

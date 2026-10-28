@@ -19,11 +19,11 @@ class FavoriteEditorDialog(context: Context, item: FavoriteItem, private val onS
 
     init {
         setContentView(R.layout.dialog_favorite_editor)
-        findViewById<TextView>(R.id.tvDialogTitle)?.setText(if (draft.id == 0L) R.string.favorites_new else R.string.action_edit)
-        val title = checkNotNull(findViewById<EditText>(R.id.etTitle)).apply { setText(draft.title) }
-        val address = checkNotNull(findViewById<EditText>(R.id.etUrl)).apply { setText(draft.url) }
-        findViewById<Button>(R.id.btnCancel)?.setOnClickListener { dismiss() }
-        findViewById<Button>(R.id.btnDone)?.setOnClickListener {
+        findViewById<TextView>(R.id.dialog_title)?.setText(if (draft.id == 0L) R.string.favorites_new else R.string.action_edit)
+        val title = checkNotNull(findViewById<EditText>(R.id.title_field)).apply { setText(draft.title) }
+        val address = checkNotNull(findViewById<EditText>(R.id.address_field)).apply { setText(draft.url) }
+        findViewById<Button>(R.id.cancel_button)?.setOnClickListener { dismiss() }
+        findViewById<Button>(R.id.done_button)?.setOnClickListener {
             val url = address.text.toString().trim()
             if (url.isEmpty()) { // An empty address is not a bookmark: keep the dialog open.
                 context.toast(R.string.error)

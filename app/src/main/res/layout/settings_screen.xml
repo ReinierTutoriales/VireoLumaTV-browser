@@ -13,10 +13,10 @@
     android:paddingEnd="@dimen/safe_horizontal">
 
     <RadioGroup
-        android:id="@+id/sbTabs"
+        android:id="@+id/page_tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:checkedButton="@id/btnMainTab"
+        android:checkedButton="@id/general_page_tab"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:orientation="horizontal"
@@ -24,23 +24,23 @@
         android:paddingBottom="4dp">
 
         <RadioButton
-            android:id="@+id/btnMainTab"
+            android:id="@+id/general_page_tab"
             style="@style/Widget.Vireo.Tab"
             android:text="@string/settings_tab_general" />
 
         <RadioButton
-            android:id="@+id/btnShortcutsTab"
+            android:id="@+id/shortcuts_page_tab"
             style="@style/Widget.Vireo.Tab"
             android:text="@string/settings_tab_shortcuts" />
 
         <RadioButton
-            android:id="@+id/btnVersionTab"
+            android:id="@+id/about_page_tab"
             style="@style/Widget.Vireo.Tab"
             android:text="@string/settings_tab_about" />
     </RadioGroup>
 
     <FrameLayout
-        android:id="@+id/flTabsContent"
+        android:id="@+id/page_content"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"

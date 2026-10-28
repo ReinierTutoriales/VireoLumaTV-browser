@@ -55,7 +55,7 @@ class AddressSuggestionsFocusTest {
             val viewRoot = activity.window.decorView.parent
             viewRoot.javaClass.getDeclaredMethod("ensureTouchMode", Boolean::class.javaPrimitiveType)
                 .apply { isAccessible = true }.invoke(viewRoot, false)
-            val address = bar.findViewById<EditText>(R.id.etUrl)
+            val address = bar.findViewById<EditText>(R.id.address_field)
             // The keyboard may offer its own words, and must not cover the page in full screen.
             assertEquals(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI, address.inputType)
             assertTrue(address.imeOptions and EditorInfo.IME_FLAG_NO_EXTRACT_UI != 0)

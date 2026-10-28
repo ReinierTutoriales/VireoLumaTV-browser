@@ -17,7 +17,7 @@ internal enum class AppMenuEntry(@StringRes val label: Int, @DrawableRes val ico
     HISTORY(R.string.menu_history, R.drawable.ic_history),
     FAVORITES(R.string.menu_favorites, R.drawable.ic_bookmark),
     DOWNLOADS(R.string.menu_downloads, R.drawable.ic_download),
-    INCOGNITO(R.string.menu_private, R.drawable.ic_incognito),
+    INCOGNITO(R.string.menu_private, R.drawable.ic_private),
     SETTINGS(R.string.menu_settings, R.drawable.ic_settings),
     CLOSE_TAB(R.string.menu_close_tab, R.drawable.ic_tab_close),
     CLOSE_APPLICATION(R.string.menu_quit, R.drawable.ic_exit),
@@ -37,7 +37,7 @@ internal class AppMenuPanel(context: Context, entries: List<AppMenuEntry>, onPic
         val inflater = LayoutInflater.from(context)
         val rows = entries.map { entry ->
             val row = inflater.inflate(R.layout.view_menu_entry, list, false)
-            row.findViewById<ImageView>(R.id.ivIcon).setImageResource(entry.icon)
+            row.findViewById<ImageView>(R.id.icon_image).setImageResource(entry.icon)
             row.findViewById<TextView>(R.id.tvLabel).setText(entry.label)
             row.setOnClickListener {
                 dismiss()

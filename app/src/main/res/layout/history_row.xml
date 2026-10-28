@@ -19,7 +19,7 @@
     android:paddingBottom="8dp">
 
     <CheckBox
-        android:id="@+id/cbSelection"
+        android:id="@+id/select_box"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -29,7 +29,7 @@
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/tvTime"
+        android:id="@+id/time_text"
         android:duplicateParentState="true"
         android:layout_width="56dp"
         android:layout_height="wrap_content"
@@ -46,7 +46,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tvTitle"
+            android:id="@+id/title_text"
             android:duplicateParentState="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -57,7 +57,7 @@
             tools:text="Example page" />
 
         <TextView
-            android:id="@+id/tvURL"
+            android:id="@+id/address_text"
             android:duplicateParentState="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

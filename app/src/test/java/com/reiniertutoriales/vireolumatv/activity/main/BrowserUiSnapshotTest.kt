@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.Config as BrowserConfig
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
+import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import kotlinx.coroutines.cancel
@@ -61,23 +61,23 @@ class BrowserUiSnapshotTest {
         tabs.tabsStates.add(WebTabState(url = BrowserConfig.HOME_PAGE_URL,
             title = "Documentación: título largo para comprobar el recorte de las pestañas", position = 1))
         tabs.currentTab.value = tabs.tabsStates[0]
-        val vb = ActivityMainBinding.inflate(activity.layoutInflater)
+        val vb = BrowserWindowBinding.inflate(activity.layoutInflater)
         try {
             assertTrue("Blocker shield needs a readable initial description",
-                !vb.vActionBar.adBlockButton.contentDescription.isNullOrBlank())
-            vb.flWebViewContainer.setBackgroundColor(Color.rgb(100, 116, 139))
-            vb.ivMiniatures.visibility = View.GONE
-            vb.vCursorMenu.visibility = View.INVISIBLE
-            vb.progressBar.visibility = View.GONE
-            vb.progressBarGeneric.visibility = View.GONE
-            vb.vActionBar.setAddressBoxText("https://example.test/documentacion/una-direccion-larga")
-            vb.vActionBar.forwardButton.isEnabled = false
+                !vb.controlsRow.adBlockButton.contentDescription.isNullOrBlank())
+            vb.pageContainer.setBackgroundColor(Color.rgb(100, 116, 139))
+            vb.tabPreview.visibility = View.GONE
+            vb.pointerMenu.visibility = View.INVISIBLE
+            vb.loadProgress.visibility = View.GONE
+            vb.startupSpinner.visibility = View.GONE
+            vb.controlsRow.setAddressBoxText("https://example.test/documentacion/una-direccion-larga")
+            vb.controlsRow.forwardButton.isEnabled = false
             activity.setContentView(vb.root)
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, 960, 540)
-            vb.vActionBar.backButton.isFocusableInTouchMode = true
-            assertTrue(vb.vActionBar.backButton.requestFocus())
+            vb.controlsRow.backButton.isFocusableInTouchMode = true
+            assertTrue(vb.controlsRow.backButton.requestFocus())
             vb.root.refreshDrawableState()
             val bitmap = Bitmap.createBitmap(960, 540, Bitmap.Config.ARGB_8888)
             vb.root.draw(Canvas(bitmap))
@@ -87,7 +87,7 @@ class BrowserUiSnapshotTest {
             assertTrue("Native drawing must include browser controls", bitmap.getPixel(40, 40) !=
                 Color.rgb(100, 116, 139))
             bitmap.recycle()
-            val address = vb.root.findViewById<TextView>(R.id.etUrl)
+            val address = vb.root.findViewById<TextView>(R.id.address_field)
             assertEquals("System font scaling is honored", 18f * fontScale, address.textSize, 0.1f)
             assertTrue("Enlarged URL text fits vertically: line=${address.layout.getLineBottom(0)}, height=${address.height}, padding=${address.compoundPaddingTop + address.compoundPaddingBottom}", address.layout.getLineBottom(0) <=
                 address.height - address.compoundPaddingTop - address.compoundPaddingBottom)
@@ -102,10 +102,10 @@ class BrowserUiSnapshotTest {
             RuntimeEnvironment.setFontScale(previousScale)
         }
     }
-    private fun verifyGeometry(vb: ActivityMainBinding, fontScale: Float) {
+    private fun verifyGeometry(vb: BrowserWindowBinding, fontScale: Float) {
         // One row of round 48dp commands in a single focus chain.
-        val capsuleIds = listOf(R.id.ibBack, R.id.ibForward, R.id.ibRefresh,
-            R.id.ibHome, R.id.ibAdBlock, R.id.ibMenu)
+        val capsuleIds = listOf(R.id.back_button, R.id.forward_button, R.id.reload_button,
+            R.id.home_button, R.id.blocker_button, R.id.menu_button)
         for (width in listOf(720, 960, 1280)) {
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(width * 9 / 16, View.MeasureSpec.EXACTLY))
@@ -120,21 +120,21 @@ class BrowserUiSnapshotTest {
                 previousRight = view.right
             }
             // Everything focusable stays inside the 48 dp / 27 dp overscan-safe area.
-            val surface = vb.rlActionBar
-            val rowLeft = surface.left + vb.vActionBar.left
-            val rowRight = surface.left + vb.vActionBar.right
+            val surface = vb.controlsOverlay
+            val rowLeft = surface.left + vb.controlsRow.left
+            val rowRight = surface.left + vb.controlsRow.right
             assertTrue("Controls inside the safe area at $width", rowLeft >= 48 && rowRight <= width - 48)
-            assertTrue("Controls start below the safe top at $width", surface.top + vb.vActionBar.top >= 27)
-            val address = vb.root.findViewById<View>(R.id.etUrl)
+            assertTrue("Controls start below the safe top at $width", surface.top + vb.controlsRow.top >= 27)
+            val address = vb.root.findViewById<View>(R.id.address_field)
             assertTrue("Address remains usable at $width", address.width >= 240)
             if (fontScale == 1f) assertEquals("Default address height", 48, address.height)
             else assertTrue("Accessible text may expand the field", address.height >= 48)
             // Tab chips: 40dp tall, 188dp wide so four fit inside the safe area; "+" is a 48dp control.
-            val tabs = vb.vTabs.findViewById<RecyclerView>(R.id.rvTabs)
+            val tabs = vb.tabStrip.findViewById<RecyclerView>(R.id.tab_list)
             val tab = tabs.getChildAt(0)
             assertEquals("Tab height at $width", 40, tab.height)
             assertEquals("Tab width at $width", 188, tab.width)
-            assertEquals("Add-tab button height at $width", 48, vb.vTabs.findViewById<View>(R.id.btnAdd).height)
+            assertEquals("Add-tab button height at $width", 48, vb.tabStrip.findViewById<View>(R.id.add_button).height)
             if (width >= 960) assertTrue("Four tabs fit beside the add button at $width: ${tabs.width}",
                 tabs.width - tabs.paddingLeft - tabs.paddingRight >= 4 * (188 + 8))
         }

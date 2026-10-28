@@ -41,14 +41,14 @@ class FavoritesDialog(
 
     init {
         setContentView(ui.root)
-        ui.listView.layoutManager = LinearLayoutManager(context)
-        ui.listView.adapter = rows
-        ui.btnAdd.setOnClickListener {
+        ui.itemList.layoutManager = LinearLayoutManager(context)
+        ui.itemList.adapter = rows
+        ui.addButton.setOnClickListener {
             edit(FavoriteItem().apply { title = currentPageTitle; url = currentPageUrl })
         }
-        ui.btnEdit.setOnClickListener {
+        ui.editButton.setOnClickListener {
             rows.editMode = !rows.editMode
-            ui.btnEdit.setText(if (rows.editMode) R.string.action_done else R.string.action_edit)
+            ui.editButton.setText(if (rows.editMode) R.string.action_done else R.string.action_edit)
         }
         refresh {}
     }
@@ -93,14 +93,14 @@ class FavoritesDialog(
     }
 
     private fun renderBusy() {
-        ui.pbLoading.isVisible = busy
-        ui.btnAdd.isEnabled = !busy
-        ui.btnEdit.isEnabled = !busy
+        ui.loadingSpinner.isVisible = busy
+        ui.addButton.isEnabled = !busy
+        ui.editButton.isEnabled = !busy
     }
 
     private fun renderRows() {
-        ui.listView.isVisible = rows.itemCount > 0
-        ui.tvPlaceholder.isVisible = !busy && rows.itemCount == 0
+        ui.itemList.isVisible = rows.itemCount > 0
+        ui.emptyText.isVisible = !busy && rows.itemCount == 0
     }
 
     override fun dismiss() {

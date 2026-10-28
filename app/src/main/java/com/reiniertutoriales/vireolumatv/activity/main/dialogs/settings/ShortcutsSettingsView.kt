@@ -17,7 +17,7 @@ class ShortcutsSettingsView @JvmOverloads constructor(
 ) : ScrollView(context, attrs, defStyleAttr) {
 
     init {
-        val rows = SettingsRows(LayoutInflater.from(context).inflate(R.layout.view_settings_main, this, true)
+        val rows = SettingsRows(LayoutInflater.from(context).inflate(R.layout.settings_general, this, true)
             .findViewById<LinearLayout>(R.id.settingsList))
         val shortcuts = ShortcutMgr.getInstance()
         Shortcut.entries.forEach { entry ->

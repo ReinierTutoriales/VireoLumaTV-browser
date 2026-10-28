@@ -9,7 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.databinding.ViewCursorMenuBinding
+import com.reiniertutoriales.vireolumatv.databinding.PointerMenuBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.dip2px
@@ -34,27 +34,27 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
         val back: BackNavigationEventsAdapter,
     )
 
-    private val vb = ViewCursorMenuBinding.inflate(LayoutInflater.from(context), this, true)
+    private val vb = PointerMenuBinding.inflate(LayoutInflater.from(context), this, true)
     private val panel get() = vb.root
     private var target: Target? = null
 
     init {
-        vb.btnGrabMode.setOnClickListener {
+        vb.movePageButton.setOnClickListener {
             target?.cursor?.goToGrabMode()
             close(grow = true)
         }
-        vb.btnContextMenu.setOnClickListener {
+        vb.linkOptionsButton.setOnClickListener {
             val t = target ?: return@setOnClickListener
             hide()
             t.window.openLinkActions(t.point)
         }
-        vb.btnDPADMode.setOnClickListener {
+        vb.dpadModeButton.setOnClickListener {
             val t = target ?: return@setOnClickListener
             hide()
             if (AppContext.config.directNavigationModeHintSuppress) enterDirectNavigation(t) else explainDirectNavigation(t)
         }
-        vb.btnZoomIn.setOnClickListener { target?.tab?.engine?.zoom(closer = true) }
-        vb.btnZoomOut.setOnClickListener { target?.tab?.engine?.zoom(closer = false) }
+        vb.zoomInButton.setOnClickListener { target?.tab?.engine?.zoom(closer = true) }
+        vb.zoomOutButton.setOnClickListener { target?.tab?.engine?.zoom(closer = false) }
     }
 
     fun show(tab: WebTabState, window: PageWindow, cursor: CursorDrawerDelegate, point: PagePoint, back: BackNavigationEventsAdapter) {
@@ -66,7 +66,7 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
             if (target !== shown || !isAttachedToWindow) return@post
             panel.translationX = (point.x - panel.width / 2f).coerceIn(0f, (width - panel.width).coerceAtLeast(0).toFloat())
             panel.translationY = (point.y - panel.height / 2f).coerceIn(0f, (height - panel.height).coerceAtLeast(0).toFloat())
-            vb.btnGrabMode.requestFocus()
+            vb.movePageButton.requestFocus()
             cursor.hideCursor()
         }
         panel.alpha = 0f

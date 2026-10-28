@@ -58,9 +58,9 @@ class CursorMenuFocusTest {
             menu.show(tab, provider, cursor.cursorDrawerDelegate, com.reiniertutoriales.vireolumatv.webengine.PagePoint(null, null, 400, 400),
                 BackNavigationEventsAdapter(onEmulatedBackEvent = {}))
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
-            menu.findViewById<View>(R.id.btnDPADMode).requestFocus()
+            menu.findViewById<View>(R.id.dpad_mode_button).requestFocus()
             assertFalse(page.hasFocus())
-            menu.findViewById<View>(R.id.btnDPADMode).performClick()
+            menu.findViewById<View>(R.id.dpad_mode_button).performClick()
             assertEquals(View.GONE, menu.visibility)
             assertTrue("The closed cursor menu must return focus to the page", page.hasFocus())
             assertTrue(directMode)
@@ -81,13 +81,13 @@ class CursorMenuFocusTest {
             View.FOCUS_LEFT -> menu.findViewById<View>(view).nextFocusLeftId
             else -> menu.findViewById<View>(view).nextFocusRightId
         }
-        assertEquals(R.id.btnContextMenu, id(R.id.btnGrabMode, View.FOCUS_UP))
-        assertEquals(R.id.btnDPADMode, id(R.id.btnGrabMode, View.FOCUS_DOWN))
-        assertEquals(R.id.btnZoomOut, id(R.id.btnGrabMode, View.FOCUS_LEFT))
-        assertEquals(R.id.btnZoomIn, id(R.id.btnGrabMode, View.FOCUS_RIGHT))
-        assertEquals(R.id.btnGrabMode, id(R.id.btnContextMenu, View.FOCUS_DOWN))
-        assertEquals(R.id.btnGrabMode, id(R.id.btnDPADMode, View.FOCUS_UP))
-        assertEquals(R.id.btnGrabMode, id(R.id.btnZoomOut, View.FOCUS_RIGHT))
-        assertEquals(R.id.btnGrabMode, id(R.id.btnZoomIn, View.FOCUS_LEFT))
+        assertEquals(R.id.link_options_button, id(R.id.move_page_button, View.FOCUS_UP))
+        assertEquals(R.id.dpad_mode_button, id(R.id.move_page_button, View.FOCUS_DOWN))
+        assertEquals(R.id.zoom_out_button, id(R.id.move_page_button, View.FOCUS_LEFT))
+        assertEquals(R.id.zoom_in_button, id(R.id.move_page_button, View.FOCUS_RIGHT))
+        assertEquals(R.id.move_page_button, id(R.id.link_options_button, View.FOCUS_DOWN))
+        assertEquals(R.id.move_page_button, id(R.id.dpad_mode_button, View.FOCUS_UP))
+        assertEquals(R.id.move_page_button, id(R.id.zoom_out_button, View.FOCUS_RIGHT))
+        assertEquals(R.id.move_page_button, id(R.id.zoom_in_button, View.FOCUS_LEFT))
     }
 }

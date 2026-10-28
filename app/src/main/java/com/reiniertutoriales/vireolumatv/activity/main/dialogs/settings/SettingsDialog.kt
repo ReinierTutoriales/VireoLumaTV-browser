@@ -12,13 +12,13 @@ class SettingsDialog(context: Context, val model: SettingsModel) : AppCompatDial
     private var general: MainSettingsView? = null
 
     init {
-        setContentView(R.layout.dialog_settings)
-        SettingsPages(checkNotNull(findViewById(R.id.sbTabs)), checkNotNull(findViewById(R.id.flTabsContent)),
-            setOf(R.id.btnMainTab, R.id.btnShortcutsTab, R.id.btnVersionTab)) { page ->
+        setContentView(R.layout.settings_screen)
+        SettingsPages(checkNotNull(findViewById(R.id.page_tabs)), checkNotNull(findViewById(R.id.page_content)),
+            setOf(R.id.general_page_tab, R.id.shortcuts_page_tab, R.id.about_page_tab)) { page ->
             when (page) {
-                R.id.btnMainTab -> MainSettingsView(context).also { general = it }
-                R.id.btnShortcutsTab -> ShortcutsSettingsView(context)
-                R.id.btnVersionTab -> VersionSettingsView(context).apply {
+                R.id.general_page_tab -> MainSettingsView(context).also { general = it }
+                R.id.shortcuts_page_tab -> ShortcutsSettingsView(context)
+                R.id.about_page_tab -> VersionSettingsView(context).apply {
                     callback = object : VersionSettingsView.Callback {
                         override fun onNeedToCloseSettings() = dismiss()
                     }

@@ -86,9 +86,9 @@ class DownloadListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         if (viewType == VIEW_TYPE_HEADER) {
-            return HeaderHolder(inflater.inflate(R.layout.view_list_date_header, parent, false))
+            return HeaderHolder(inflater.inflate(R.layout.day_header, parent, false))
         }
-        val holder = ItemHolder(inflater.inflate(R.layout.view_download_item, parent, false))
+        val holder = ItemHolder(inflater.inflate(R.layout.download_row, parent, false))
         holder.itemView.setOnClickListener {
             val position = holder.bindingAdapterPosition
             if (position != RecyclerView.NO_POSITION) onItemClick(getItem(position))
@@ -103,50 +103,50 @@ class DownloadListAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val download = getItem(position)
         when (holder) {
-            is HeaderHolder -> holder.tvDate.text = dateFormat.format(Date(download.time))
+            is HeaderHolder -> holder.dayText.text = dateFormat.format(Date(download.time))
             is ItemHolder -> holder.bind(download, timeFormat)
         }
     }
 
     private class HeaderHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvDate: TextView = view.findViewById(R.id.tvDate)
+        val dayText: TextView = view.findViewById(R.id.day_text)
     }
 
     private class ItemHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val tvTitle: TextView = view.findViewById(R.id.tvTitle)
-        private val tvUrl: TextView = view.findViewById(R.id.tvURL)
-        private val tvTime: TextView = view.findViewById(R.id.tvTime)
-        private val tvSize: TextView = view.findViewById(R.id.tvSize)
-        private val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
-        private val sizeColor = tvSize.currentTextColor
+        private val titleText: TextView = view.findViewById(R.id.title_text)
+        private val addressText: TextView = view.findViewById(R.id.address_text)
+        private val timeText: TextView = view.findViewById(R.id.time_text)
+        private val sizeText: TextView = view.findViewById(R.id.size_text)
+        private val progressBar: ProgressBar = view.findViewById(R.id.load_progress)
+        private val sizeColor = sizeText.currentTextColor
 
         fun bind(download: Download, timeFormat: DateFormat) {
             normalizeSize(download)
-            tvTitle.text = download.filename
-            tvUrl.text = download.url
-            tvTime.text = timeFormat.format(Date(download.time))
+            titleText.text = download.filename
+            addressText.text = download.url
+            timeText.text = timeFormat.format(Date(download.time))
             showProgress(download)
         }
 
         private fun showProgress(download: Download) {
             val context = itemView.context
             fun size(bytes: Long) = Formatter.formatShortFileSize(context, bytes)
-            tvSize.setTextColor(sizeColor)
+            sizeText.setTextColor(sizeColor)
             progressBar.isVisible = false
             when {
-                download.size == Download.CANCELLED_MARK -> tvSize.setText(R.string.download_cancelled)
+                download.size == Download.CANCELLED_MARK -> sizeText.setText(R.string.download_cancelled)
                 download.size == Download.BROKEN_MARK -> {
-                    tvSize.setText(R.string.error)
-                    tvSize.setTextColor(ContextCompat.getColor(context, R.color.error))
+                    sizeText.setText(R.string.error)
+                    sizeText.setTextColor(ContextCompat.getColor(context, R.color.error))
                 }
                 download.size <= 0L -> {
-                    tvSize.text = size(download.bytesReceived)
+                    sizeText.text = size(download.bytesReceived)
                     progressBar.isIndeterminate = true
                     progressBar.isVisible = true
                 }
-                download.size == download.bytesReceived -> tvSize.text = size(download.size)
+                download.size == download.bytesReceived -> sizeText.text = size(download.size)
                 else -> {
-                    tvSize.text = context.getString(R.string.download_progress_size, size(download.bytesReceived), size(download.size))
+                    sizeText.text = context.getString(R.string.download_progress_size, size(download.bytesReceived), size(download.size))
                     progressBar.isIndeterminate = false
                     progressBar.progress = (download.bytesReceived * 100 / download.size).toInt()
                     progressBar.isVisible = true

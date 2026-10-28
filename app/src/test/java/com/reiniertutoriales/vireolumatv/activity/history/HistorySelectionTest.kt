@@ -27,7 +27,7 @@ class HistorySelectionTest {
             AppDatabase.db.historyDao().insert(HistoryItem().apply { time = 1; title = "A"; url = "https://a.test" })
         }
         val activity = Robolectric.buildActivity(HistoryActivity::class.java).setup().get()
-        val list = activity.findViewById<RecyclerView>(R.id.listView)
+        val list = activity.findViewById<RecyclerView>(R.id.item_list)
         val deadline = System.currentTimeMillis() + 5_000
         while (list.childCount < 3 && System.currentTimeMillis() < deadline) {
             Thread.sleep(20)
@@ -37,7 +37,7 @@ class HistorySelectionTest {
             list.layout(0, 0, 1920, 1080)
         }
         assertEquals("One date header and two rows", 3, list.childCount)
-        val delete = activity.findViewById<View>(R.id.btnDeleteSelected)
+        val delete = activity.findViewById<View>(R.id.delete_selected_button)
         assertFalse(delete.isShown)
 
         list.getChildAt(1).performLongClick()

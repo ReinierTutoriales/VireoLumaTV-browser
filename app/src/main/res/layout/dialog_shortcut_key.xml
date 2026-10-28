@@ -9,7 +9,7 @@
     android:padding="24dp">
 
     <TextView
-        android:id="@+id/tvActionTitle"
+        android:id="@+id/action_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="end"
@@ -30,7 +30,7 @@
             android:textAppearance="@style/TextAppearance.Vireo.Secondary" />
 
         <TextView
-            android:id="@+id/tvActionKey"
+            android:id="@+id/key_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -45,7 +45,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btnSetKey"
+            android:id="@+id/assign_key_button"
             style="@style/Widget.Vireo.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -55,7 +55,7 @@
             android:text="@string/shortcut_assign" />
 
         <Button
-            android:id="@+id/btnClearKey"
+            android:id="@+id/clear_key_button"
             style="@style/Widget.Vireo.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

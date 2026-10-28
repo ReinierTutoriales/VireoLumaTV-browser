@@ -7,7 +7,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/rlRoot"
+    android:id="@+id/browser_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
@@ -16,12 +16,12 @@
     tools:deviceIds="tv">
 
     <com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
-        android:id="@+id/flWebViewContainer"
+        android:id="@+id/page_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
     <ImageView
-        android:id="@+id/ivMiniatures"
+        android:id="@+id/tab_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/background"
@@ -30,7 +30,7 @@
         android:visibility="invisible" />
 
     <LinearLayout
-        android:id="@+id/llMiniaturePlaceholder"
+        android:id="@+id/preview_placeholder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/background"
@@ -54,7 +54,7 @@
     </LinearLayout>
 
     <ProgressBar
-        android:id="@+id/progressBar"
+        android:id="@+id/load_progress"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="3dp"
@@ -63,7 +63,7 @@
         android:visibility="gone" />
 
     <RelativeLayout
-        android:id="@+id/rlActionBar"
+        android:id="@+id/controls_overlay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_scrim_top"
@@ -75,7 +75,7 @@
         android:paddingBottom="48dp">
 
         <com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
-            android:id="@+id/vActionBar"
+            android:id="@+id/controls_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
@@ -89,7 +89,7 @@
             android:clipToPadding="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/vActionBar"
+            android:layout_below="@id/controls_row"
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_panel"
             android:clipChildren="false"
@@ -97,19 +97,19 @@
             android:visibility="gone" />
 
         <com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabsView
-            android:id="@+id/vTabs"
+            android:id="@+id/tab_strip"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_below="@id/vActionBar"
+            android:layout_below="@id/controls_row"
             android:layout_marginTop="16dp"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:focusable="true"
-            android:nextFocusUp="@+id/etUrl" />
+            android:nextFocusUp="@+id/address_field" />
     </RelativeLayout>
 
     <com.reiniertutoriales.vireolumatv.activity.main.view.CursorMenuView
-        android:id="@+id/vCursorMenu"
+        android:id="@+id/pointer_menu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipChildren="false"
@@ -117,7 +117,7 @@
         android:visibility="invisible" />
 
     <ProgressBar
-        android:id="@+id/progressBarGeneric"
+        android:id="@+id/startup_spinner"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

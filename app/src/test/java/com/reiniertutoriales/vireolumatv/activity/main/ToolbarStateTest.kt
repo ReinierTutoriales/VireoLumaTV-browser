@@ -33,7 +33,7 @@ class ToolbarStateTest {
                 override fun onUrlInputDone() { actions += "commit" }
                 override fun onAddressInputCancelled() { cancellations++ }
             }
-            val input = bar.findViewById<EditText>(R.id.etUrl)
+            val input = bar.findViewById<EditText>(R.id.address_field)
             bar.setAddressBoxText("https://before.test")
             input.performClick()
             input.setText("unfinished search")
@@ -52,7 +52,7 @@ class ToolbarStateTest {
             assertEquals(1, cancellations)
             assertFalse(bar.isEditingAddress)
             // The old infinite XML animation is no longer part of the download indicator.
-            assertNull(bar.findViewById<View>(R.id.ibMenu).animation)
+            assertNull(bar.findViewById<View>(R.id.menu_button).animation)
         } finally { owner.pause().stop().destroy() }
     }
 }

@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel
 import com.reiniertutoriales.vireolumatv.activity.main.TabsModel
-import com.reiniertutoriales.vireolumatv.databinding.ViewTabsBinding
+import com.reiniertutoriales.vireolumatv.databinding.TabStripBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
@@ -23,7 +23,7 @@ import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
 class TabsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     RelativeLayout(context, attrs) {
 
-    private val vb = ViewTabsBinding.inflate(LayoutInflater.from(context), this)
+    private val vb = TabStripBinding.inflate(LayoutInflater.from(context), this)
     private val adapter = TabsAdapter(::showTabOptions)
     private lateinit var tabsModel: TabsModel
     private lateinit var settingsModel: SettingsModel
@@ -36,8 +36,8 @@ class TabsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             tabsModel = ActiveModelsRepository.get(TabsModel::class, context)
             settingsModel = ActiveModelsRepository.get(SettingsModel::class, context)
             adapter.tabsModel = tabsModel
-            vb.rvTabs.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-            vb.btnAdd.setOnClickListener { listener?.onAddNewTabSelected() }
+            vb.tabList.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+            vb.addButton.setOnClickListener { listener?.onAddNewTabSelected() }
         }
     }
 
@@ -46,7 +46,7 @@ class TabsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         if (isInEditMode) return
         tabsModel.tabsStates.subscribe(listObserver)
         tabsModel.currentTab.subscribe(currentObserver)
-        vb.rvTabs.adapter = adapter
+        vb.tabList.adapter = adapter
     }
 
     override fun onDetachedFromWindow() {
@@ -89,18 +89,18 @@ class TabsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     private fun focusCurrentTab(): Boolean {
         val tab = tabsModel.tabsStates.getOrNull(current)
-        for (i in 0 until vb.rvTabs.childCount) {
-            val row = vb.rvTabs.getChildAt(i)
+        for (i in 0 until vb.tabList.childCount) {
+            val row = vb.tabList.getChildAt(i)
             if (row.tag === tab && row.requestFocus()) return true
         }
-        return vb.btnAdd.requestFocus()
+        return vb.addButton.requestFocus()
     }
 
     private fun revealCurrent() {
         if (current !in 0 until adapter.itemCount) return
-        val layout = vb.rvTabs.layoutManager as LinearLayoutManager
+        val layout = vb.tabList.layoutManager as LinearLayoutManager
         if (current < layout.findFirstCompletelyVisibleItemPosition() ||
-            current > layout.findLastCompletelyVisibleItemPosition()) vb.rvTabs.scrollToPosition(current)
+            current > layout.findLastCompletelyVisibleItemPosition()) vb.tabList.scrollToPosition(current)
     }
 
     private val listObserver: (ObservableList<WebTabState>) -> Unit = {

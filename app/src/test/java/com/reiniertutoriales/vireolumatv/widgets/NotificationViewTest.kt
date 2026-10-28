@@ -24,7 +24,7 @@ class NotificationViewTest {
         NotificationView.showBottomRight(root, R.drawable.ic_block, "first")
         val second = NotificationView.showBottomRight(root, R.drawable.ic_block, "second")
         assertEquals(1, root.childCount)
-        assertEquals("second", second.findViewById<TextView>(R.id.tvMessage).text.toString())
+        assertEquals("second", second.findViewById<TextView>(R.id.message_text).text.toString())
         assertFalse(second.isFocusable)
         ShadowLooper.idleMainLooper(NotificationView.VISIBLE_MS + 1000, java.util.concurrent.TimeUnit.MILLISECONDS)
         assertEquals("The message leaves on its own", 0, root.childCount)

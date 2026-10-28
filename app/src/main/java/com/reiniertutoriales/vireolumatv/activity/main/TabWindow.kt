@@ -75,11 +75,11 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
 
     override fun onTitle(title: String) {
         tab.title = title
-        vb.vTabs.onTabTitleUpdated(tab)
+        vb.tabStrip.onTabTitleUpdated(tab)
         browser.viewModel.onTabTitleUpdated(tab)
     }
 
-    override fun onIcon(icon: Bitmap) = vb.vTabs.onFavIconUpdated(tab)
+    override fun onIcon(icon: Bitmap) = vb.tabStrip.onFavIconUpdated(tab)
 
     override fun requestPermissions(permissions: Array<String>): Int = browser.requestPagePermissions(permissions)
 
@@ -130,7 +130,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
 
     private fun updateAddress(reported: String?) {
         (tab.engine.url ?: reported)?.let { tab.url = it }
-        if (browser.tabAtStripSelection() === tab) vb.vActionBar.setAddressBoxText(tab.url)
+        if (browser.tabAtStripSelection() === tab) vb.controlsRow.setAddressBoxText(tab.url)
     }
 
     private val capturePreview = Runnable {
@@ -139,11 +139,11 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
         browser.lifecycleScope.launch {
             val preview = tab.engine.preview(tab.thumbnail) ?: return@launch
             tab.updateThumbnail(browser, preview)
-            if (vb.rlActionBar.isVisible && isShownTab) browser.displayThumbnail(tab)
+            if (vb.controlsOverlay.isVisible && isShownTab) browser.displayThumbnail(tab)
         }
     }
 
-    override fun onCertificateError() = vb.vActionBar.setAddressBoxTextColor(browser.getColor(R.color.error))
+    override fun onCertificateError() = vb.controlsRow.setAddressBoxTextColor(browser.getColor(R.color.error))
 
     override fun onRendererGone() {
         if (isShownTab) browser.changeTab(tab)
@@ -231,7 +231,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
             ui.postDelayed({ popup.popupGuard?.expire() }, POPUP_DECISION_TIMEOUT_MS)
         } else {
             // Let Chromium finish handing the window over before the opener's WebView may go.
-            vb.flWebViewContainer.post(show)
+            vb.pageContainer.post(show)
         }
         return view
     }
@@ -264,14 +264,14 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
     // Pointer menu and link actions
 
     override fun openPointerMenu(cursor: CursorDrawerDelegate, target: PagePoint) {
-        ui.post { vb.vCursorMenu.show(tab, this, cursor, target, browser.backNavigationEventsAdapter) }
+        ui.post { vb.pointerMenu.show(tab, this, cursor, target, browser.backNavigationEventsAdapter) }
     }
 
     /** The link actions menu at the pointer: what applies depends on whether a web link is under it. */
     override fun openLinkActions(target: PagePoint) {
         val url = target.link?.removeSurrounding("\"")
         val anchor = View(browser)
-        vb.flWebViewContainer.addView(anchor, FrameLayout.LayoutParams(1, 1).apply { setMargins(target.x, target.y, 0, 0) })
+        vb.pageContainer.addView(anchor, FrameLayout.LayoutParams(1, 1).apply { setMargins(target.x, target.y, 0, 0) })
         PopupMenu(browser, anchor, Gravity.BOTTOM).apply {
             val actions = LinkAction.available(url)
             actions.forEachIndexed { index, action -> menu.add(0, index, index, action.label) }
@@ -286,7 +286,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
                 }
                 true
             }
-            setOnDismissListener { vb.flWebViewContainer.removeView(anchor) }
+            setOnDismissListener { vb.pageContainer.removeView(anchor) }
             show()
         }
     }

@@ -14,7 +14,7 @@ import androidx.core.widget.doAfterTextChanged
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
-import com.reiniertutoriales.vireolumatv.databinding.ViewActionbarBinding
+import com.reiniertutoriales.vireolumatv.databinding.BrowserControlsBinding
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 
 /** One TV command row. Focusing the address does not start editing or open the keyboard. */
@@ -30,32 +30,32 @@ class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet?
     }
 
     var callback: Callback? = null
-    private val ui = ViewActionbarBinding.inflate(LayoutInflater.from(context), this)
-    val backButton: ImageButton get() = ui.ibBack
-    val forwardButton: ImageButton get() = ui.ibForward
-    val refreshButton: ImageButton get() = ui.ibRefresh
-    val homeButton: ImageButton get() = ui.ibHome
-    val adBlockButton: ImageButton get() = ui.ibAdBlock
-    private val commands = listOf(ui.ibBack, ui.ibForward, ui.ibRefresh, ui.ibHome, ui.ibAdBlock, ui.ibMenu)
+    private val ui = BrowserControlsBinding.inflate(LayoutInflater.from(context), this)
+    val backButton: ImageButton get() = ui.backButton
+    val forwardButton: ImageButton get() = ui.forwardButton
+    val refreshButton: ImageButton get() = ui.reloadButton
+    val homeButton: ImageButton get() = ui.homeButton
+    val adBlockButton: ImageButton get() = ui.blockerButton
+    private val commands = listOf(ui.backButton, ui.forwardButton, ui.reloadButton, ui.homeButton, ui.blockerButton, ui.menuButton)
     private var pageAddress = ""
     private var editing = false
     private var enteringSuggestions = false
     val isEditingAddress get() = editing
     private val keyboard get() = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    private val selectText = Runnable { if (editing && ui.etUrl.hasFocus()) ui.etUrl.selectAll() }
+    private val selectText = Runnable { if (editing && ui.addressField.hasFocus()) ui.addressField.selectAll() }
 
     init {
         orientation = HORIZONTAL
         if (!isInEditMode) {
-            ui.ibMenu.setOnClickListener { callback?.showAppMenu() }
+            ui.menuButton.setOnClickListener { callback?.showAppMenu() }
             renderEditing(false)
-            ui.etUrl.setOnClickListener { beginEditing() }
-            ui.etUrl.setOnFocusChangeListener { _, focused ->
+            ui.addressField.setOnClickListener { beginEditing() }
+            ui.addressField.setOnFocusChangeListener { _, focused ->
                 if (!focused && editing && !enteringSuggestions) finishEditing(cancelled = true)
             }
-            ui.etUrl.doAfterTextChanged { if (editing) callback?.onAddressTyped(it?.toString().orEmpty()) }
-            ui.etUrl.setOnKeyListener { _, code, event -> handleAddressKey(code, event) }
-            ui.etUrl.setOnEditorActionListener { _, action, _ ->
+            ui.addressField.doAfterTextChanged { if (editing) callback?.onAddressTyped(it?.toString().orEmpty()) }
+            ui.addressField.setOnKeyListener { _, code, event -> handleAddressKey(code, event) }
+            ui.addressField.setOnEditorActionListener { _, action, _ ->
                 when (action) {
                     EditorInfo.IME_ACTION_SEARCH, EditorInfo.IME_ACTION_GO, EditorInfo.IME_ACTION_DONE -> {
                         confirmAddress()
@@ -67,8 +67,8 @@ class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet?
             val owner = context as AppCompatActivity
             ActiveModelsRepository.get(ActiveDownloadsModel::class, context).activeDownloads.subscribe(owner) {
                 val count = it.size
-                ui.ibMenu.setImageResource(if (count == 0) R.drawable.ic_more else R.drawable.ic_menu_downloads)
-                ui.ibMenu.contentDescription = if (count == 0) context.getString(R.string.nav_menu)
+                ui.menuButton.setImageResource(if (count == 0) R.drawable.ic_more else R.drawable.ic_menu_downloads)
+                ui.menuButton.contentDescription = if (count == 0) context.getString(R.string.nav_menu)
                     else context.getString(R.string.nav_menu_downloads, count)
             }
         }
@@ -76,37 +76,37 @@ class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet?
 
     private fun renderEditing(value: Boolean) {
         editing = value
-        ui.etUrl.isCursorVisible = value
-        ui.etUrl.showSoftInputOnFocus = value
+        ui.addressField.isCursorVisible = value
+        ui.addressField.showSoftInputOnFocus = value
         commands.forEach { it.visibility = if (value) GONE else VISIBLE }
     }
 
     private fun beginEditing() {
         if (editing) return
-        ui.etUrl.requestFocus()
+        ui.addressField.requestFocus()
         renderEditing(true)
         callback?.onExtendedAddressBarMode()
-        keyboard.showSoftInput(ui.etUrl, InputMethodManager.SHOW_IMPLICIT)
+        keyboard.showSoftInput(ui.addressField, InputMethodManager.SHOW_IMPLICIT)
         removeCallbacks(selectText)
         postDelayed(selectText, 500)
     }
 
     private fun finishEditing(cancelled: Boolean) {
         removeCallbacks(selectText)
-        keyboard.hideSoftInputFromWindow(ui.etUrl.windowToken, 0)
+        keyboard.hideSoftInputFromWindow(ui.addressField.windowToken, 0)
         renderEditing(false)
         if (cancelled) {
-            ui.etUrl.setText(pageAddress)
+            ui.addressField.setText(pageAddress)
             callback?.onAddressInputCancelled()
         }
     }
 
     private fun confirmAddress() {
         if (!editing) return
-        val destination = ui.etUrl.text.toString().trim()
+        val destination = ui.addressField.text.toString().trim()
         if (destination.isEmpty()) return
         finishEditing(cancelled = false)
-        ui.etUrl.clearFocus()
+        ui.addressField.clearFocus()
         callback?.onUrlInputDone()
         callback?.search(destination)
     }
@@ -138,17 +138,17 @@ class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet?
 
     fun submit(text: String) {
         if (editing) {
-            ui.etUrl.setText(text)
+            ui.addressField.setText(text)
             confirmAddress()
         }
     }
 
     fun setAddressBoxText(text: String) {
         pageAddress = text.takeUnless { it == Config.HOME_PAGE_URL }.orEmpty()
-        if (!editing) ui.etUrl.setText(pageAddress)
+        if (!editing) ui.addressField.setText(pageAddress)
     }
 
-    fun setAddressBoxTextColor(color: Int) = ui.etUrl.setTextColor(color)
+    fun setAddressBoxTextColor(color: Int) = ui.addressField.setTextColor(color)
 
     fun dismissExtendedAddressBarMode() {
         if (editing) finishEditing(cancelled = false)
@@ -156,7 +156,7 @@ class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet?
 
     fun cancelAddressInput() {
         if (editing) finishEditing(cancelled = true)
-        ui.etUrl.clearFocus()
+        ui.addressField.clearFocus()
         catchFocus()
     }
 

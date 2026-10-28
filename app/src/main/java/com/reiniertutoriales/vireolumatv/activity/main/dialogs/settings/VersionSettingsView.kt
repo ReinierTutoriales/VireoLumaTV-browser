@@ -37,7 +37,7 @@ class VersionSettingsView @JvmOverloads constructor(
     private var updateButton: Button? = null
 
     init {
-        val rows = SettingsRows(LayoutInflater.from(context).inflate(R.layout.view_settings_main, this, true)
+        val rows = SettingsRows(LayoutInflater.from(context).inflate(R.layout.settings_general, this, true)
             .findViewById<LinearLayout>(R.id.settingsList))
         rows.info(context.getString(R.string.app_name), sizeSp = 20f)
         rows.info(context.getString(R.string.about_tagline))
