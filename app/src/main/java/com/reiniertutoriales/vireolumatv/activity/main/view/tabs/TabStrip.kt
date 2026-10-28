@@ -44,16 +44,16 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         if (isInEditMode) return
-        tabStore.openTabs.subscribe(listObserver)
-        tabStore.currentTab.subscribe(currentObserver)
+        tabStore.openTabs.observe(listObserver)
+        tabStore.currentTab.observe(currentObserver)
         vb.tabList.adapter = adapter
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         if (isInEditMode) return
-        tabStore.openTabs.unsubscribe(listObserver)
-        tabStore.currentTab.unsubscribe(currentObserver)
+        tabStore.openTabs.forget(listObserver)
+        tabStore.currentTab.forget(currentObserver)
     }
 
     override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {

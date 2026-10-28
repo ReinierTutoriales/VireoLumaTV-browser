@@ -47,8 +47,8 @@ class HistoryActivity : AppCompatActivity() {
         vb.clearButton.setOnClickListener { confirmDelete(all = true) }
         vb.deleteSelectedButton.setOnClickListener { confirmDelete(all = false) }
 
-        model.loadedPage.subscribe(this) {
-            if (it.isEmpty() || it === consumedPage) return@subscribe
+        model.loadedPage.observe(this) {
+            if (it.isEmpty() || it === consumedPage) return@observe
             consumedPage = it
             adapter.addItems(it)
             vb.itemList.requestFocus()

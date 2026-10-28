@@ -41,7 +41,7 @@ class TabStore : ScreenModel() {
 
     init {
         // A tab's stored position is its place in the list; reordering stores the new places.
-        openTabs.subscribe({ tabs ->
+        openTabs.observe({ tabs ->
             var moved = false
             tabs.forEachIndexed { index, tab ->
                 if (tab.position != index) {
@@ -53,7 +53,7 @@ class TabStore : ScreenModel() {
                 val snapshot = tabs.toList()
                 workScope.launch { AppDatabase.db.tabDao().updatePositions(snapshot) }
             }
-        }, notifyOnSubscribe = false)
+        }, sendCurrent = false)
     }
 
     /** Loads the current mode's tabs once, and again after a switch between normal and private mode. */

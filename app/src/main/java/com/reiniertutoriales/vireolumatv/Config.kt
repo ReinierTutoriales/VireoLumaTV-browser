@@ -75,13 +75,13 @@ class Config(val prefs: SharedPreferences) {
         }
     }
 
-    /** A text setting that notifies its observers when it changes. */
+    /** A text setting that notifies its watchers when it changes. */
     inner class StringPreference(private val key: String, default: String) : LiveValue<String>(default) {
         override var value: String = prefs.getString(key, default) ?: default
             set(value) {
                 prefs.edit { putString(key, value) }
                 field = value
-                notifyObservers()
+                sendAll()
             }
     }
 
@@ -91,7 +91,7 @@ class Config(val prefs: SharedPreferences) {
             set(value) {
                 prefs.edit { if (value == null) remove(key) else putString(key, value) }
                 field = value
-                notifyObservers()
+                sendAll()
             }
     }
 

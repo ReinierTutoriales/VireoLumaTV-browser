@@ -65,7 +65,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                 }
             }
             val owner = context as AppCompatActivity
-            ScreenModels.get(RunningDownloads::class, context).runningDownloads.subscribe(owner) {
+            ScreenModels.get(RunningDownloads::class, context).runningDownloads.observe(owner) {
                 val count = it.size
                 ui.menuButton.setImageResource(if (count == 0) R.drawable.ic_more else R.drawable.ic_menu_downloads)
                 ui.menuButton.contentDescription = if (count == 0) context.getString(R.string.nav_menu)

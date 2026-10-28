@@ -193,15 +193,15 @@ class GeneralPage @JvmOverloads constructor(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        adBlocker.listLoading.subscribe(loadingObserver)
-        adBlocker.updateResult.subscribe(resultObserver)
-        config.blockListUrl.subscribe(sourceObserver)
+        adBlocker.listLoading.observe(loadingObserver)
+        adBlocker.updateResult.observe(resultObserver)
+        config.blockListUrl.observe(sourceObserver)
     }
 
     override fun onDetachedFromWindow() {
-        adBlocker.listLoading.unsubscribe(loadingObserver)
-        adBlocker.updateResult.unsubscribe(resultObserver)
-        config.blockListUrl.unsubscribe(sourceObserver)
+        adBlocker.listLoading.forget(loadingObserver)
+        adBlocker.updateResult.forget(resultObserver)
+        config.blockListUrl.forget(sourceObserver)
         super.onDetachedFromWindow()
     }
 

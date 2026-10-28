@@ -3,15 +3,15 @@ package com.reiniertutoriales.vireolumatv.utils.observable
 import java.util.function.Predicate
 import java.util.function.UnaryOperator
 
-typealias ListChangeObserver<T> = (LiveList<T>) -> Unit
+typealias ListWatcher<T> = (LiveList<T>) -> Unit
 
-/** A list that tells its observers after every mutating call, once per call. */
-class LiveList<T> : ArrayList<T>(), Watchable<ListChangeObserver<T>> {
-    override val observers = ArrayList<ListChangeObserver<T>>()
+/** A list that tells its watchers after every mutating call, once per call. */
+class LiveList<T> : ArrayList<T>(), Watchable<ListWatcher<T>> {
+    override val watchers = ArrayList<ListWatcher<T>>()
 
-    override fun notifyObserver(observer: ListChangeObserver<T>) = observer(this)
+    override fun sendTo(watcher: ListWatcher<T>) = watcher(this)
 
-    private inline fun <R> changing(change: () -> R): R = change().also { notifyObservers() }
+    private inline fun <R> changing(change: () -> R): R = change().also { sendAll() }
 
     override fun add(element: T) = changing { super.add(element) }
     override fun add(index: Int, element: T) = changing { super.add(index, element) }

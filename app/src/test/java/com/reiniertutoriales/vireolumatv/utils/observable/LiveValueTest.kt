@@ -8,8 +8,8 @@ class ObservableValueTest {
     fun subscribeReceivesCurrentValueUnlessDisabled() {
         val value = LiveValue(1)
         val seen = mutableListOf<Int>()
-        value.subscribe({ seen += it })
-        value.subscribe({ seen += it * 10 }, notifyOnSubscribe = false)
+        value.observe({ seen += it })
+        value.observe({ seen += it * 10 }, sendCurrent = false)
         assertEquals(listOf(1), seen)
     }
 
@@ -17,8 +17,8 @@ class ObservableValueTest {
     fun settingValueNotifiesEverySubscriberOnce() {
         val value = LiveValue("a")
         val seen = mutableListOf<String>()
-        value.subscribe({ seen += "first:$it" }, notifyOnSubscribe = false)
-        value.subscribe({ seen += "second:$it" }, notifyOnSubscribe = false)
+        value.observe({ seen += "first:$it" }, sendCurrent = false)
+        value.observe({ seen += "second:$it" }, sendCurrent = false)
         value.value = "b"
         assertEquals(listOf("second:b", "first:b"), seen)
     }
@@ -26,23 +26,23 @@ class ObservableValueTest {
     @Test
     fun sameObserverIsRegisteredOnce() {
         val value = LiveValue(0)
-        val observer: ValueObserver<Int> = {}
-        value.subscribe(observer, notifyOnSubscribe = false)
-        value.subscribe(observer, notifyOnSubscribe = false)
-        assertEquals(1, value.observers.size)
+        val observer: ValueWatcher<Int> = {}
+        value.observe(observer, sendCurrent = false)
+        value.observe(observer, sendCurrent = false)
+        assertEquals(1, value.watchers.size)
     }
 
     @Test
     fun observerRemovingItselfDoesNotSkipOthers() {
         val value = LiveValue(0)
         val seen = mutableListOf<String>()
-        lateinit var selfRemoving: ValueObserver<Int>
+        lateinit var selfRemoving: ValueWatcher<Int>
         selfRemoving = {
             seen += "self:$it"
-            value.unsubscribe(selfRemoving)
+            value.forget(selfRemoving)
         }
-        value.subscribe(selfRemoving, notifyOnSubscribe = false)
-        value.subscribe({ seen += "other:$it" }, notifyOnSubscribe = false)
+        value.observe(selfRemoving, sendCurrent = false)
+        value.observe({ seen += "other:$it" }, sendCurrent = false)
         value.value = 5
         value.value = 6
         assertEquals(listOf("other:5", "self:5", "other:6"), seen)
@@ -54,7 +54,7 @@ class ObservableListTest {
     fun mutationsNotifyOncePerOperation() {
         val list = LiveList<Int>()
         var notifications = 0
-        list.subscribe({ notifications++ }, notifyOnSubscribe = false)
+        list.observe({ notifications++ }, sendCurrent = false)
 
         list.add(1)
         list.addAll(listOf(2, 3))
@@ -84,10 +84,10 @@ class ObservableListTest {
     fun listObserverMayUnsubscribeWhileNotified() {
         val list = LiveList<Int>()
         val seen = mutableListOf<String>()
-        lateinit var once: ListChangeObserver<Int>
-        once = { seen += "once"; list.unsubscribe(once) }
-        list.subscribe(once, notifyOnSubscribe = false)
-        list.subscribe({ seen += "always" }, notifyOnSubscribe = false)
+        lateinit var once: ListWatcher<Int>
+        once = { seen += "once"; list.forget(once) }
+        list.observe(once, sendCurrent = false)
+        list.observe({ seen += "always" }, sendCurrent = false)
         list.add(1)
         list.add(2)
         assertEquals(listOf("once", "always", "always"), seen)

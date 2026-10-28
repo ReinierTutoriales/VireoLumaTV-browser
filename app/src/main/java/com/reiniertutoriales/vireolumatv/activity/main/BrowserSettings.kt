@@ -18,7 +18,7 @@ class BrowserSettings : ScreenModel() {
             get() = config.keepScreenOn
             set(value) {
                 config.keepScreenOn = value
-                notifyObservers()
+                sendAll()
             }
     }
 

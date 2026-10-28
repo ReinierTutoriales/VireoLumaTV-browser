@@ -30,7 +30,7 @@ class MainSettingsLifecycleTest {
         val activity = controller.get()
         val root = FrameLayout(activity)
         activity.setContentView(root)
-        val sourceObservers = model.config.blockListUrl.observers.size
+        val sourceObservers = model.config.blockListUrl.watchers.size
         val originalUserAgent = model.config.userAgentOverride.value
         val customUserAgent = "CustomBrowser/1.0 (Android TV)"
         try {
@@ -54,18 +54,18 @@ class MainSettingsLifecycleTest {
                 assertEquals(View.GONE, settings.findViewById<View>(R.id.llUAString).visibility)
                 spinner.onItemSelectedListener!!.onItemSelected(spinner, TextView(activity), customPosition, 0)
                 assertEquals("EditedBrowser/2.0", editor.text.toString())
-                assertEquals(1, model.listLoading.observers.size)
-                assertEquals(1, model.updateResult.observers.size)
-                assertEquals(sourceObservers + 1, model.config.blockListUrl.observers.size)
+                assertEquals(1, model.listLoading.watchers.size)
+                assertEquals(1, model.updateResult.watchers.size)
+                assertEquals(sourceObservers + 1, model.config.blockListUrl.watchers.size)
                 model.listLoading.value = true
                 val button = settings.findViewById<View>(R.id.btnAdBlockerUpdate)
                 assertEquals(View.VISIBLE, button.visibility)
                 assertTrue(button.isEnabled)
                 assertTrue(settings.findViewById<android.widget.TextView>(R.id.tvAdBlockerListInfo).maxLines >= 3)
                 root.removeView(settings)
-                assertTrue(model.listLoading.observers.isEmpty())
-                assertTrue(model.updateResult.observers.isEmpty())
-                assertEquals(sourceObservers, model.config.blockListUrl.observers.size)
+                assertTrue(model.listLoading.watchers.isEmpty())
+                assertTrue(model.updateResult.watchers.isEmpty())
+                assertEquals(sourceObservers, model.config.blockListUrl.watchers.size)
                 model.listLoading.value = false
             }
         } finally {

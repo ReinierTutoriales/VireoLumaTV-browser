@@ -134,18 +134,18 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     private fun observeModels() {
-        config.userAgentOverride.subscribe(lifecycle, false) { agent -> tabStore.openTabs.forEach { it.engine.userAgent = agent } }
-        browserSettings.keepScreenOn.subscribe(lifecycle) { on ->
+        config.userAgentOverride.observe(lifecycle, false) { agent -> tabStore.openTabs.forEach { it.engine.userAgent = agent } }
+        browserSettings.keepScreenOn.observe(lifecycle) { on ->
             if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
-        tabStore.currentTab.subscribe(this) { tab ->
+        tabStore.currentTab.observe(this) { tab ->
             vb.controlsRow.showAddress(tab?.url.orEmpty())
             tab?.let(::onPageViewChanged)
         }
-        adBlocker.listLoading.subscribe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
-        adBlocker.updateResult.subscribe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
-        tabStore.openTabs.subscribe(this, false) { if (it.isEmpty()) vb.pageContainer.removeAllViews() }
+        adBlocker.listLoading.observe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
+        adBlocker.updateResult.observe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
+        tabStore.openTabs.observe(this, false) { if (it.isEmpty()) vb.pageContainer.removeAllViews() }
     }
 
     /** Reads the stored state, then shows the tab the intent asks for, or the selected one, or a new home tab. */

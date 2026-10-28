@@ -33,7 +33,7 @@ class SettingsModelTest {
     @Test fun keepScreenOnIsStoredAndAnnounced() {
         val model = BrowserSettings()
         val seen = mutableListOf<Boolean>()
-        model.keepScreenOn.subscribe({ seen += it }, notifyOnSubscribe = false)
+        model.keepScreenOn.observe({ seen += it }, sendCurrent = false)
         model.keepScreenOn.value = true
         assertTrue(model.config.keepScreenOn)
         model.keepScreenOn.value = false

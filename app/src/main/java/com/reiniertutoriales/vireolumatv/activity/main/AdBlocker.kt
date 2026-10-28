@@ -135,7 +135,7 @@ class AdBlocker @JvmOverloads constructor(
 
     init {
         if (autoLoad) {
-            config.blockListUrl.subscribe(sourceObserver, notifyOnSubscribe = false)
+            config.blockListUrl.observe(sourceObserver, sendCurrent = false)
             loadBlockList(false)
         }
     }
@@ -542,7 +542,7 @@ class AdBlocker @JvmOverloads constructor(
     }
 
     override fun onClear() {
-        config.blockListUrl.unsubscribe(sourceObserver)
+        config.blockListUrl.forget(sourceObserver)
         synchronized(installLock) {
             cleared = true
             installedClient?.blocker?.release()

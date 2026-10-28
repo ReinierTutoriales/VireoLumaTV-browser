@@ -50,7 +50,7 @@ open class DownloadsActivity : AppCompatActivity(), RunningDownloads.Listener {
         vb.itemList.adapter = adapter
         if (privateSession) return
         vb.itemList.addOnScrollListener(nextPageLoader)
-        history.loadedPage.subscribe(this, false) { show(it) }
+        history.loadedPage.observe(this, false) { show(it) }
         if (history.allItems.isEmpty()) history.loadNextItems() else show(history.allItems)
     }
 
