@@ -430,3 +430,5 @@ scripts/test-window-open-decoy.cjs	PROPIO
 scripts/test-youtube-adblock.cjs	PROPIO
 settings.gradle.kts	REESCRITO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/WindowBackgroundTest.kt	PROPIO
+docs/audit/PLATFORM_REVIEW_20261028.md	PROPIO
+scripts/measure-tv.py	PROPIO
