@@ -39,6 +39,7 @@ class PrivateSessionNoticeTest {
             assertFalse(settings.incognitoModeHintSuppress)
             (fragments.single().requireDialog() as AlertDialog)
                 .getButton(DialogInterface.BUTTON_NEUTRAL).performClick()
+            org.robolectric.shadows.ShadowLooper.idleMainLooper()
             assertTrue(settings.incognitoModeHintSuppress)
         } finally { restored.pause().stop().destroy() }
     }

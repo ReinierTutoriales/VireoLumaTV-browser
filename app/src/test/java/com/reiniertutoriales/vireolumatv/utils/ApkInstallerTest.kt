@@ -71,6 +71,9 @@ class ApkInstallerTest {
     @Test
     fun legacyPublicDownloadCanStillBeInstalled() {
         val app = RuntimeEnvironment.getApplication()
+        // Robolectric keeps separate default roots for these two Environment APIs.
+        org.robolectric.shadows.ShadowEnvironment.setExternalStoragePublicDirectory(
+            android.os.Environment.getExternalStorageDirectory().toPath())
         val file = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(
             android.os.Environment.DIRECTORY_DOWNLOADS), "legacy.apk").apply {
             parentFile!!.mkdirs(); writeText("apk")
