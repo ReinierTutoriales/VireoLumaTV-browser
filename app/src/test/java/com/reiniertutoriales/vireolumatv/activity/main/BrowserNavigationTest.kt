@@ -52,11 +52,16 @@ class BrowserNavigationTest {
             assertEquals("A recent remote press reaches the real download queue", 1, pending.size)
             download()
             assertEquals("A consumed activation cannot authorize another request", 1, pending.size)
+            UserActivation.onKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+            download()
+            assertEquals("Releasing the same key cannot grant another download", 1, pending.size)
             UserActivation.onKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BUTTON_A))
             org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofSeconds(3))
             download()
             assertEquals("An expired gesture is rejected by the callback", 1, pending.size)
         } finally {
+            UserActivation.onKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+            UserActivation.onKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BUTTON_A))
             UserActivation.consume()
         }
     }
