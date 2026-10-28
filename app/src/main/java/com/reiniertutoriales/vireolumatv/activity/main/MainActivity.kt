@@ -1,18 +1,14 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.ConnectivityManager
@@ -22,7 +18,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
-import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import android.view.Gravity
@@ -43,6 +38,7 @@ import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -67,7 +63,6 @@ import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.model.PopupGuard
 import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.service.downloads.DownloadService
 import com.reiniertutoriales.vireolumatv.singleton.FaviconsPool
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.ShortcutMgr
 import com.reiniertutoriales.vireolumatv.utils.RemoteInput
@@ -101,8 +96,6 @@ import com.reiniertutoriales.vireolumatv.utils.hasInternet
 open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     companion object {
         private val TAG = MainActivity::class.java.simpleName
-        const val MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS = 10003
-        const val MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS = 10004
         private const val COMMON_REQUESTS_START_CODE = 10100
         private const val THUMBNAIL_CAPTURE_DELAY_MS = 1500L
         private const val SUGGESTIONS_DELAY_MS = 150L
@@ -132,9 +125,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
     private var lastCommonRequestsCode = COMMON_REQUESTS_START_CODE
-    private var downloadService: DownloadService? = null
-    private val pendingDownloads = ArrayDeque<Download>()
-    private var downloadPermissionRequestPending = false
+    @VisibleForTesting internal val downloads by lazy {
+        BrowserDownloads(this, { config.incognitoMode }) { fileName -> onDownloadStarted(fileName) }
+    }
     var openUrlInExternalAppDialog: AlertDialog? = null
     private var linkActionsMenu: PopupMenu? = null
     private var lastBlockedNotificationTime = 0L
@@ -642,50 +635,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             .show()
     }
 
-    private fun onDownloadRequested(url: String, referer: String, originalDownloadFileName: String, userAgent: String?, mimeType: String? = null,
+    private fun onDownloadRequested(url: String, referer: String, fileName: String, userAgent: String?, mimeType: String? = null,
                                     operationAfterDownload: Download.OperationAfterDownload = Download.OperationAfterDownload.NOP,
                                     base64BlobData: String? = null, stream: InputStream?, size: Long = 0L) {
-        if (Looper.myLooper() != Looper.getMainLooper()) {
-            // blob downloads arrive from the WebView JavaBridge thread; the queue, the permission
-            // requests and the UI below must only be touched on the main thread
-            runOnUiThread {
-                onDownloadRequested(url, referer, originalDownloadFileName, userAgent, mimeType,
-                    operationAfterDownload, base64BlobData, stream, size)
-            }
-            return
-        }
-        pendingDownloads.addLast(Download(url, originalDownloadFileName, null, operationAfterDownload,
-            mimeType, referer, userAgent, base64BlobData, stream, size).apply {
-            incognito = config.incognitoMode
-        })
-        if (downloadPermissionRequestPending) return
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R &&
-            checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            downloadPermissionRequestPending = true
-            requestPermissions(
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS
-            )
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            downloadPermissionRequestPending = true
-            requestPermissions(
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS
-            )
-        } else {
-            startDownloads()
-        }
-    }
-
-    private fun startDownloads() {
-        val service = downloadService ?: return
-        while (pendingDownloads.isNotEmpty()) {
-            val download = pendingDownloads.removeFirst()
-            service.startDownload(download)
-            onDownloadStarted(download.filename)
-        }
+        downloads.request(Download(url, fileName, null, operationAfterDownload, mimeType, referer, userAgent, base64BlobData, stream, size))
     }
 
     override fun onTrimMemory(level: Int) {
@@ -705,23 +658,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
         if (tabsModel.currentTab.value?.webEngine?.onPermissionsResult(requestCode, permissions, grantResults) == true) return
-        if (requestCode == MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS) {
-            // POST_NOTIFICATIONS only controls download progress notifications, it is not required to download.
-            downloadPermissionRequestPending = false
-            startDownloads()
-            return
-        }
-        if (requestCode == MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS) {
-            // Handled before the empty-result check: an interrupted request (empty arrays) must also release
-            // the pending flag, otherwise every later download would stay queued forever.
-            downloadPermissionRequestPending = false
-            if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
-                startDownloads()
-            } else {
-                pendingDownloads.clear()
-            }
-            return
-        }
+        if (downloads.onPermissionsResult(requestCode, grantResults)) return
         if (grantResults.isEmpty()) return
         when (requestCode) {
             else -> {
@@ -732,17 +669,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     override fun onStart() {
         super.onStart()
-        downloadServiceBound = bindService(DownloadService.intent(this, config.incognitoMode), downloadServiceConnection, Context.BIND_AUTO_CREATE)
+        downloads.bind()
     }
 
     override fun onStop() {
         super.onStop()
-        // unbindService throws if the bind above did not succeed.
-        if (downloadServiceBound) {
-            unbindService(downloadServiceConnection)
-            downloadServiceBound = false
-        }
-        downloadService = null
+        downloads.unbind()
     }
 
     override fun onResume() {
@@ -1593,28 +1525,5 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 openUrlInExternalAppDialog = null
             }
             .show()
-    }
-
-    private var downloadServiceBound = false
-    private val downloadServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val binder = service as? DownloadService.Binder
-            if (binder == null) {
-                Log.e(TAG, "Download service connection failed")
-                //probably service still in another process due to incognito mode process switch
-                //so we will try to reconnect in a few seconds
-                uiHandler.postDelayed({
-                    bindService(DownloadService.intent(this@MainActivity, config.incognitoMode),
-                        this, Context.BIND_AUTO_CREATE)
-                }, 1000)
-                return
-            }
-            downloadService = binder.service
-            startDownloads()
-        }
-
-        override fun onServiceDisconnected(p0: ComponentName?) {
-            downloadService = null
-        }
     }
 }

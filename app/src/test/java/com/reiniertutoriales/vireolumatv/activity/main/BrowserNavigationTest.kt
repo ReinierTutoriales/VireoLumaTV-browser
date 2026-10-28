@@ -37,10 +37,9 @@ class BrowserNavigationTest {
         val callback = Class.forName("com.reiniertutoriales.vireolumatv.activity.main.MainActivity\$WebEngineCallback")
             .getDeclaredConstructor(MainActivity::class.java, WebTabState::class.java)
             .apply { isAccessible = true }.newInstance(f.activity, f.tab) as WebEngineWindowProviderCallback
-        val pending = MainActivity::class.java.getDeclaredField("pendingDownloads")
-            .apply { isAccessible = true }.get(f.activity) as Collection<*>
+        val pending = f.activity.downloads.pending
         // Keep accepted downloads queued without opening a platform permission dialog or service.
-        f.set("downloadPermissionRequestPending", true)
+        f.activity.downloads.waitingForPermission = true
         UserActivation.consume()
         fun download() = callback.onDownloadRequested("https://example.test/file.zip", "test-agent",
             "attachment; filename=file.zip", "application/zip", 32L)
