@@ -9,7 +9,6 @@ import androidx.fragment.app.FragmentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.MainSettingsView
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import org.junit.Assert.*
 import org.junit.Test
@@ -24,14 +23,7 @@ class MainSettingsLifecycleTest {
     @Test fun reopeningSettingsReleasesObserversAndKeepsRefreshInTheFocusPath() {
         // Use a model with networking disabled: this test exercises the actual settings hierarchy.
         val model = AdblockModel(autoLoad = false)
-        val mapField = ActiveModelsRepository::class.java.getDeclaredField("holdersMap").apply { isAccessible = true }
-        @Suppress("UNCHECKED_CAST")
-        val holders = mapField.get(ActiveModelsRepository) as MutableMap<String, Any>
-        val key = AdblockModel::class.qualifiedName!!
-        val previous = holders[key]
-        val holderClass = Class.forName("com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository\$StateModelHolder")
-        holders[key] = holderClass.getDeclaredConstructor(ActiveModel::class.java)
-            .apply { isAccessible = true }.newInstance(model)
+        val restore = ActiveModelsRepository.replaceForTest(AdblockModel::class, model)
         val controller = Robolectric.buildActivity(FragmentActivity::class.java)
         controller.get().setTheme(R.style.AppTheme)
         controller.setup()
@@ -79,7 +71,7 @@ class MainSettingsLifecycleTest {
         } finally {
             model.config.userAgentString.value = originalUserAgent
             controller.pause().stop().destroy()
-            if (previous == null) holders.remove(key) else holders[key] = previous
+            restore()
             model.clear()
         }
     }

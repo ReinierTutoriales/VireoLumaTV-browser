@@ -9,7 +9,6 @@ import androidx.fragment.app.FragmentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.MainSettingsView
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -27,14 +26,7 @@ import org.robolectric.annotation.GraphicsMode
 class MainSettingsFocusTest {
     @Test fun downAndUpVisitEveryControlOnceAndRowsToggleTheirSetting() {
         val model = AdblockModel(autoLoad = false)
-        val mapField = ActiveModelsRepository::class.java.getDeclaredField("holdersMap").apply { isAccessible = true }
-        @Suppress("UNCHECKED_CAST")
-        val holders = mapField.get(ActiveModelsRepository) as MutableMap<String, Any>
-        val key = AdblockModel::class.qualifiedName!!
-        val previous = holders[key]
-        val holderClass = Class.forName("com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository\$StateModelHolder")
-        holders[key] = holderClass.getDeclaredConstructor(ActiveModel::class.java)
-            .apply { isAccessible = true }.newInstance(model)
+        val restore = ActiveModelsRepository.replaceForTest(AdblockModel::class, model)
         val previousAdBlock = model.config.adBlockEnabled
         val controller = Robolectric.buildActivity(FragmentActivity::class.java)
         controller.get().setTheme(R.style.AppTheme)
@@ -79,7 +71,7 @@ class MainSettingsFocusTest {
         } finally {
             model.config.adBlockEnabled = previousAdBlock
             controller.pause().stop().destroy()
-            if (previous == null) holders.remove(key) else holders[key] = previous
+            restore()
             model.clear()
         }
     }

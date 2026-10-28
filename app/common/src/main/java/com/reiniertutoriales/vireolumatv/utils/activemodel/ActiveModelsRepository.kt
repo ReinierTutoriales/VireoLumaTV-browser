@@ -4,89 +4,67 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import androidx.annotation.MainThread
+import androidx.annotation.VisibleForTesting
 import kotlin.reflect.KClass
 
+/**
+ * One instance per model class, shared by its users. Activities are released automatically when
+ * destroyed; any other user (a service, a view) must call [markAsNeedless] when it is done.
+ */
+@MainThread
 object ActiveModelsRepository {
-  private val holdersMap = HashMap<String, StateModelHolder>()
-
-  private class StateModelHolder(val activeModel: ActiveModel) {
-    val users = ArrayList<Any>()
-  }
-
-  private val activityLifecycleCallbacks = object: Application.ActivityLifecycleCallbacks {
-    override fun onActivityCreated(p0: Activity, p1: Bundle?) {
+    private class Entry(val model: ActiveModel) {
+        val users = ArrayList<Any>()
     }
 
-    override fun onActivityStarted(p0: Activity) {
+    private val entries = HashMap<KClass<out ActiveModel>, Entry>()
+
+    fun init(app: Application) = app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
+        // A rotating Activity is released too, so its old views are not kept; only its models stay
+        // until the new Activity asks for them again.
+        override fun onActivityDestroyed(activity: Activity) =
+            markAsNeedlessAllModelsUsedBy(activity, retainUnused = activity.isChangingConfigurations)
+
+        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+        override fun onActivityStarted(activity: Activity) {}
+        override fun onActivityResumed(activity: Activity) {}
+        override fun onActivityPaused(activity: Activity) {}
+        override fun onActivityStopped(activity: Activity) {}
+        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+    })
+
+    /** The shared [clazz] model, created on first use; [user] is recorded as holding it. */
+    @Suppress("UNCHECKED_CAST")
+    fun <T : ActiveModel> get(clazz: KClass<T>, user: Any): T {
+        val entry = entries.getOrPut(clazz) { Entry(clazz.java.getDeclaredConstructor().newInstance()) }
+        if (user !in entry.users) entry.users += user
+        return entry.model as T
     }
 
-    override fun onActivityResumed(p0: Activity) {
-    }
-
-    override fun onActivityPaused(p0: Activity) {
-    }
-
-    override fun onActivityStopped(p0: Activity) {
-    }
-
-    override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {
-    }
-
-    override fun onActivityDestroyed(activity: Activity) {
-      // Release the destroyed Activity even during rotation. Retain only its models until
-      // the replacement Activity attaches; retaining the old user leaks the whole view tree.
-      markAsNeedlessAllModelsUsedBy(activity, retainUnused = activity.isChangingConfigurations)
-    }
-  }
-
-  fun init(app: Application){
-    app.registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
-  }
-
-  /**
-   * Get active model from repository. If your user is not Activity then make sure that you manually marked as needless
-   * (@see com.reiniertutoriales.vireolumatv.utils.statemodel.ActiveModelsRepository#markAsNeedless())
-   * all your "active models" when they are not needed (on your component onDestroy(), clear(), finalize() or similar)
-   */
-  @Suppress("UNCHECKED_CAST")
-  @MainThread
-  fun <T: ActiveModel>get(clazz: KClass<T>, user: Any): T {
-    val className = clazz.qualifiedName ?: throw IllegalStateException("clazz should have name!")
-    var modelHolder: StateModelHolder? = holdersMap[className]
-    if (modelHolder == null) {
-      modelHolder = StateModelHolder(clazz.java.getDeclaredConstructor().newInstance() as ActiveModel)
-      holdersMap[className] = modelHolder
-    }
-    if (!modelHolder.users.contains(user)) {
-      modelHolder.users.add(user)
-    }
-    return modelHolder.activeModel as T
-  }
-
-  @MainThread
-  fun markAsNeedless(activeModelUsed: ActiveModel, byUser: Any) {
-    val key = activeModelUsed::class.qualifiedName
-    holdersMap[key]?.let {
-      if (it.users.remove(byUser)) {
-        if (it.users.isEmpty()) {
-          holdersMap.remove(key)
-          it.activeModel.clear()
+    fun markAsNeedless(model: ActiveModel, byUser: Any) {
+        val entry = entries[model::class] ?: return
+        if (entry.users.remove(byUser) && entry.users.isEmpty()) {
+            entries.remove(model::class)
+            entry.model.clear()
         }
-      }
     }
-  }
 
-  @MainThread
-  fun markAsNeedlessAllModelsUsedBy(user: Any, retainUnused: Boolean = false) {
-    val iterator = holdersMap.iterator()
-    while (iterator.hasNext()) {
-      val kv = iterator.next()
-      if (kv.value.users.remove(user)) {
-        if (kv.value.users.isEmpty() && !retainUnused) {
-          iterator.remove()
-          kv.value.activeModel.clear()
+    /** Releases every model [user] holds; with [retainUnused] a model left without users is kept. */
+    fun markAsNeedlessAllModelsUsedBy(user: Any, retainUnused: Boolean = false) {
+        val iterator = entries.values.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            if (entry.users.remove(user) && entry.users.isEmpty() && !retainUnused) {
+                iterator.remove()
+                entry.model.clear()
+            }
         }
-      }
     }
-  }
+
+    /** Makes [model] the shared [clazz] instance; the returned call puts the previous one back. */
+    @VisibleForTesting
+    fun <T : ActiveModel> replaceForTest(clazz: KClass<T>, model: T): () -> Unit {
+        val previous = entries.put(clazz, Entry(model))
+        return { if (previous == null) entries.remove(clazz) else entries[clazz] = previous }
+    }
 }

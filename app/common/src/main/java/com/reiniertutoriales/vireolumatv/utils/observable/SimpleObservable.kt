@@ -6,90 +6,71 @@ import androidx.lifecycle.LifecycleOwner
 import kotlin.reflect.KProperty
 
 /**
- * Just simple and more convenient replacement of java.util.Observable/Observer
- * to implement observer pattern
+ * Something observers can follow. An observer is registered at most once; notifying works on a
+ * copy of the list, so an observer may unsubscribe itself or others while being notified.
  */
-
 interface Subscribable<O> {
     val observers: ArrayList<O>
+
+    /** Calls [observer] once with the current state. */
+    fun notifyObserver(observer: O)
+
+    fun notifyObservers() = observers.toList().forEach(::notifyObserver)
+
     fun subscribe(observer: O, notifyOnSubscribe: Boolean = true) {
-        if (!observers.contains(observer)) {
-            observers.add(observer)
-            if (notifyOnSubscribe) {
-                notifyObserver(observer)
-            }
-        }
+        if (observer in observers) return
+        observers += observer
+        if (notifyOnSubscribe) notifyObserver(observer)
     }
 
-    fun subscribe(lifecycleOwner: LifecycleOwner, observer: O) {
-        subscribe(lifecycleOwner.lifecycle, true, observer)
+    fun unsubscribe(observer: O) {
+        observers -= observer
     }
 
-    fun subscribe(lifecycleOwner: LifecycleOwner, notifyOnSubscribe: Boolean = true, observer: O) {
+    fun subscribe(lifecycleOwner: LifecycleOwner, observer: O) = subscribe(lifecycleOwner.lifecycle, true, observer)
+
+    fun subscribe(lifecycleOwner: LifecycleOwner, notifyOnSubscribe: Boolean = true, observer: O) =
         subscribe(lifecycleOwner.lifecycle, notifyOnSubscribe, observer)
-    }
 
-    fun subscribe(lifecycle: Lifecycle, observer: O) {
-        subscribe(lifecycle, true, observer)
-    }
+    fun subscribe(lifecycle: Lifecycle, observer: O) = subscribe(lifecycle, true, observer)
 
+    /** Follows only while [lifecycle] is resumed, and stops for good when it is destroyed. */
     fun subscribe(lifecycle: Lifecycle, notifyOnSubscribe: Boolean = true, observer: O) {
         lifecycle.addObserver(object : LifecycleEventObserver {
             override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-                when (source.lifecycle.currentState) {
-                    Lifecycle.State.INITIALIZED, Lifecycle.State.CREATED -> {
-                        unsubscribe(observer)
-                    }
-                    Lifecycle.State.RESUMED -> {
-                        subscribe(observer, notifyOnSubscribe)
-                    }
-                    Lifecycle.State.STARTED -> {
-                        unsubscribe(observer)
-                    }
-                    Lifecycle.State.DESTROYED -> {
+                when (event) {
+                    Lifecycle.Event.ON_RESUME -> subscribe(observer, notifyOnSubscribe)
+                    Lifecycle.Event.ON_PAUSE -> unsubscribe(observer)
+                    Lifecycle.Event.ON_DESTROY -> {
                         lifecycle.removeObserver(this)
                         unsubscribe(observer)
                     }
+                    else -> {}
                 }
             }
         })
     }
-
-    fun unsubscribe(observer: O) {
-        observers.remove(observer)
-    }
-
-    fun notifyObservers() {
-        for (observer in observers) {
-            notifyObserver(observer)
-        }
-    }
-
-    fun notifyObserver(observer: O)
 }
 
 typealias ValueObserver<T> = (value: T) -> Unit
 
+/** A value that tells its observers, newest first, whenever it is set. Also usable as a delegate. */
 open class ObservableValue<T>(default: T) : Subscribable<ValueObserver<T>> {
+    override val observers = ArrayList<ValueObserver<T>>()
+
     open var value: T = default
         set(value) {
             field = value
             notifyObservers()
         }
 
-    override val observers = ArrayList<ValueObserver<T>>()
+    override fun notifyObserver(observer: ValueObserver<T>) = observer(value)
 
-    override fun notifyObservers() {
-        //observers can be removed during iteration
-        for (i in observers.size - 1 downTo 0) {
-            observers[i](value)
-        }
+    override fun notifyObservers() = observers.toList().asReversed().forEach(::notifyObserver)
+
+    operator fun getValue(thisRef: Any, prop: KProperty<*>): T = value
+
+    operator fun setValue(thisRef: Any, prop: KProperty<*>, value: T) {
+        this.value = value
     }
-
-    override fun notifyObserver(observer: ValueObserver<T>) {
-        observer(value)
-    }
-
-    operator fun getValue(thisRef: Any, prop: KProperty<*>): T = this.value
-    operator fun setValue(thisRef: Any, prop: KProperty<*>, value: T) {this.value = value}
 }

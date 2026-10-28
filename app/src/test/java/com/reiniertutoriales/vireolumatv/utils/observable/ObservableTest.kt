@@ -79,4 +79,17 @@ class ObservableListTest {
         list.replaceAll(listOf(7))
         assertEquals(listOf(7), list.toList())
     }
+
+    @Test
+    fun listObserverMayUnsubscribeWhileNotified() {
+        val list = ObservableList<Int>()
+        val seen = mutableListOf<String>()
+        lateinit var once: ListChangeObserver<Int>
+        once = { seen += "once"; list.unsubscribe(once) }
+        list.subscribe(once, notifyOnSubscribe = false)
+        list.subscribe({ seen += "always" }, notifyOnSubscribe = false)
+        list.add(1)
+        list.add(2)
+        assertEquals(listOf("once", "always", "always"), seen)
+    }
 }

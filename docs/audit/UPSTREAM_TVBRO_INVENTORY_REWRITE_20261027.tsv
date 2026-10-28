@@ -50,10 +50,10 @@ app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Dates.kt	PROPIO
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Connectivity.kt	PROPIO
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/BundleBytes.kt	PROPIO
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Utils.kt	ELIMINADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/Utils.kt
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveModel.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModel.kt	5
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveModelsRepository.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModelsRepository.kt	9
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/observable/ObservableList.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/observable/ObservableList.kt	1
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/observable/SimpleObservable.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/observable/SimpleObservable.kt	1
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveModel.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModel.kt	56
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveModelsRepository.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModelsRepository.kt	84
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/observable/ObservableList.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/observable/ObservableList.kt	88
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/observable/SimpleObservable.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/observable/SimpleObservable.kt	54
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/webengine/WebEngine.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngine.kt	7
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/webengine/WebEngineFactory.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineFactory.kt	31
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/webengine/WebEngineWindowProviderCallback.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/webengine/WebEngineWindowProviderCallback.kt	20
