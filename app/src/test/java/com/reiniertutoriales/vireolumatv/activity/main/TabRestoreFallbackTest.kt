@@ -6,7 +6,6 @@ import android.widget.FrameLayout
 import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
@@ -20,6 +19,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.io.File
 import java.lang.reflect.Proxy
+import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
@@ -68,7 +68,7 @@ class TabRestoreFallbackTest {
         val engine = Proxy.newProxyInstance(WebEngine::class.java.classLoader,
             arrayOf(WebEngine::class.java)) { _, method, args ->
             when (method.name) {
-                "stateFromBytes" -> Utils.bytesToBundle(args!![0] as ByteArray)
+                "stateFromBytes" -> BundleBytes.decode(args!![0] as ByteArray)
                 "restoreState" -> false
                 else -> null
             }
@@ -76,7 +76,7 @@ class TabRestoreFallbackTest {
         val tab = tabWithEngine(engine).apply { wvStateFileName = "tab-rejected-state-test" }
         val file = File(app.filesDir, "${WebTabState.TAB_WVSTATES_DIR}/${tab.wvStateFileName}")
         file.parentFile!!.mkdirs()
-        file.writeBytes(requireNotNull(Utils.bundleToBytes(Bundle())))
+        file.writeBytes(requireNotNull(BundleBytes.encode(Bundle())))
         try {
             assertFalse(tab.restoreWebView())
             assertEquals("https://saved.test/page", tab.url)

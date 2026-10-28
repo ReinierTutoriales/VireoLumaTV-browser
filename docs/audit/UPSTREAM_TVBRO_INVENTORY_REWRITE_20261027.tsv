@@ -45,7 +45,11 @@ app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Extensions.kt	M
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/FaviconExtractor.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/FaviconExtractor.kt	41
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/NavigationReservedShortcutKeyCodes.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/NavigationReservedShortcutKeyCodes.kt	3
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/RemoteInput.kt	PROPIO		
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Utils.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/Utils.kt	2
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Toasts.kt	PROPIO
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Dates.kt	PROPIO
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Connectivity.kt	PROPIO
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/BundleBytes.kt	PROPIO
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Utils.kt	ELIMINADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/Utils.kt
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveModel.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModel.kt	5
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveModelsRepository.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/activemodel/ActiveModelsRepository.kt	9
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/observable/ObservableList.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/observable/ObservableList.kt	1
@@ -337,6 +341,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/FaviconNetworkTest
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/FaviconResourceTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/IncognitoFaviconTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/ShortcutMgrTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BundleBytesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapterTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BoundedReaderTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtilsDataUrlTest.kt	PROPIO		

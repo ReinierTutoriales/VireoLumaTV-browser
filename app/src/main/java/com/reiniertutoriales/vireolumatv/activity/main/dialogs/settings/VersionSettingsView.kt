@@ -17,12 +17,12 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.IncognitoModeMainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.activity
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.reiniertutoriales.vireolumatv.utils.toast
 
 /** About page: identity, the credit the TV Bro license requires, versions, links and updates. */
 class VersionSettingsView @JvmOverloads constructor(
@@ -76,9 +76,9 @@ class VersionSettingsView @JvmOverloads constructor(
 
     private fun checkForUpdates() = whileUpdating {
         runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() } }
-            .onFailure { Utils.showToast(context, R.string.update_check_failed) }
+            .onFailure { context.toast(R.string.update_check_failed) }
             .onSuccess { release ->
-                if (release == null) Utils.showToast(context, R.string.up_to_date) else confirmUpdate(release)
+                if (release == null) context.toast(R.string.up_to_date) else confirmUpdate(release)
             }
     }
 
@@ -94,7 +94,7 @@ class VersionSettingsView @JvmOverloads constructor(
     private fun downloadAndInstall(release: ReleaseUpdater.Release) = whileUpdating {
         runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.download(context, release) } }
             .onSuccess { ReleaseUpdater.install(context, it) }
-            .onFailure { Utils.showToast(context, R.string.update_check_failed) }
+            .onFailure { context.toast(R.string.update_check_failed) }
     }
 
     private companion object {

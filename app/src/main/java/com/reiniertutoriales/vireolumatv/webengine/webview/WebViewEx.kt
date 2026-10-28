@@ -37,6 +37,7 @@ import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
+import java.net.URLConnection
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -53,7 +54,6 @@ import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.adblock.AdblockSurrogates
 import com.reiniertutoriales.vireolumatv.utils.RemoteInput
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import java.net.URLEncoder
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
@@ -460,7 +460,12 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                             relativePath = "index.html"
                         }
                         val assetsPath = "pages/home/$relativePath"
-                        val response = Utils.getWebResourceResponseFromAssets(view.context, assetsPath)
+                        val response = try {
+                            WebResourceResponse(URLConnection.guessContentTypeFromName(assetsPath) ?: "application/octet-stream",
+                                "UTF-8", view.context.assets.open(assetsPath))
+                        } catch (_: java.io.IOException) {
+                            null
+                        }
                         if (response != null) {
                             return response
                         } else {

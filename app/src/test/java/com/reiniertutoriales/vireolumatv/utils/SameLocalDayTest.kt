@@ -15,7 +15,7 @@ import java.util.TimeZone
 /** Day headers depend on this: a row starts a new section when its local day changes. */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
-class UtilsSameDateTest {
+class SameLocalDayTest {
     private lateinit var previous: TimeZone
 
     @Before
@@ -32,22 +32,22 @@ class UtilsSameDateTest {
 
     @Test
     fun sameLocalDayIsSameDateRegardlessOfTime() {
-        assertTrue(Utils.isSameDate(at(2026, 5, 10, 0, 1), at(2026, 5, 10, 23, 59)))
+        assertTrue(sameLocalDay(at(2026, 5, 10, 0, 1), at(2026, 5, 10, 23, 59)))
     }
 
     @Test
     fun midnightStartsANewDay() {
-        assertFalse(Utils.isSameDate(at(2026, 5, 10, 23, 59), at(2026, 5, 11, 0, 0)))
+        assertFalse(sameLocalDay(at(2026, 5, 10, 23, 59), at(2026, 5, 11, 0, 0)))
     }
 
     @Test
     fun sameDayNumberInAnotherYearIsNotTheSameDate() {
         // Feb 1 is day 32 of both years: comparing day-of-year alone would wrongly match them.
-        assertFalse(Utils.isSameDate(at(2024, 2, 1, 12), at(2025, 2, 1, 12)))
+        assertFalse(sameLocalDay(at(2024, 2, 1, 12), at(2025, 2, 1, 12)))
     }
 
     @Test
     fun missingDateSentinelNeverMatches() {
-        assertFalse(Utils.isSameDate(at(2026, 5, 10, 12, 0), -1L))
+        assertFalse(sameLocalDay(at(2026, 5, 10, 12, 0), -1L))
     }
 }

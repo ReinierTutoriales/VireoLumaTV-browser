@@ -14,11 +14,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.reiniertutoriales.vireolumatv.utils.sameLocalDay
 
 /**
  * Download rows with a date header before each day. A progress update changes one row in place
@@ -71,7 +71,7 @@ class DownloadListAdapter(
         val rows = ArrayList<Download>(items.size + 8)
         var lastHeaderTime = -1L
         for (download in items) {
-            if (!Utils.isSameDate(download.time, lastHeaderTime)) {
+            if (!sameLocalDay(download.time, lastHeaderTime)) {
                 lastHeaderTime = download.time
                 rows.add(Download.createDateHeaderInfo(download.time))
             }
@@ -167,7 +167,7 @@ class DownloadListAdapter(
         internal val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Download>() {
             override fun areItemsTheSame(oldItem: Download, newItem: Download): Boolean =
                 if (oldItem.isDateHeader || newItem.isDateHeader) {
-                    oldItem.isDateHeader && newItem.isDateHeader && Utils.isSameDate(oldItem.time, newItem.time)
+                    oldItem.isDateHeader && newItem.isDateHeader && sameLocalDay(oldItem.time, newItem.time)
                 } else {
                     oldItem.matches(newItem)
                 }

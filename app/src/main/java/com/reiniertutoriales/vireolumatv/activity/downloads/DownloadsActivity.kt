@@ -21,10 +21,10 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.databinding.ActivityDownloadsBinding
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import kotlinx.coroutines.launch
 import java.io.File
+import com.reiniertutoriales.vireolumatv.utils.toast
 
 /**
  * Download list. The normal screen pages through stored downloads and follows running ones; the
@@ -105,7 +105,7 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
         } else {
             val file = File(download.filepath)
             if (!file.exists()) {
-                Utils.showToast(this, R.string.file_not_found)
+                toast(R.string.file_not_found)
                 return
             }
             FileProvider.getUriForFile(this, "$packageName.provider", file)
@@ -175,7 +175,7 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
         try {
             startActivity(intent)
         } catch (_: ActivityNotFoundException) {
-            Utils.showToast(this, getString(missing))
+            toast(missing)
         }
     }
 

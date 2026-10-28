@@ -78,7 +78,6 @@ import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import com.reiniertutoriales.vireolumatv.utils.NavigationReservedShortcutKeyCodes
 import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
@@ -103,6 +102,8 @@ import java.net.URLEncoder
 import java.util.Locale
 import kotlin.system.exitProcess
 import androidx.core.net.toUri
+import com.reiniertutoriales.vireolumatv.utils.toast
+import com.reiniertutoriales.vireolumatv.utils.hasInternet
 
 
 open class MainActivity : AppCompatActivity(), ActionBar.Callback {
@@ -244,7 +245,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private fun postNetworkState() {
         uiHandler.post {
             if (isDestroyed) return@post
-            val connected = Utils.isNetworkConnected(this)
+            val connected = hasInternet()
             tabsModel.currentTab.value?.webEngine?.setNetworkAvailable(connected)
             // A TV often starts the app before Wi-Fi: fetch filter lists as soon as it connects.
             if (connected) adblockModel.updateIfDue(networkRestored = true)
@@ -860,7 +861,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                 query = URLEncoder.encode(input, "utf-8")
             } catch (e1: UnsupportedEncodingException) {
                 Log.w(TAG, "Search query encoding failed", e1)
-                Utils.showToast(this, R.string.error)
+                toast(R.string.error)
                 return
             }
 
@@ -1142,7 +1143,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     private fun onDownloadStarted(fileName: String) {
-        Utils.showToast(this, getString(R.string.download_started,
+        toast(getString(R.string.download_started,
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separator + fileName))
         showMenuOverlay()
     }
@@ -1228,7 +1229,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
                     intent.type = "*/*"
                     filePickerResult.launch(intent)
                 } catch (e: ActivityNotFoundException) {
-                    Utils.showToast(applicationContext, getString(R.string.err_cant_open_file_chooser))
+                    applicationContext.toast(getString(R.string.err_cant_open_file_chooser))
                     return false
                 }
             }

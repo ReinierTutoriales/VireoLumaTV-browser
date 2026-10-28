@@ -10,7 +10,6 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.reiniertutoriales.vireolumatv.AppContext
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,6 +18,8 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.charset.Charset
+import com.reiniertutoriales.vireolumatv.utils.BundleBytes
+import com.reiniertutoriales.vireolumatv.utils.md5Name
 
 
 /**
@@ -95,8 +96,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
                 thumbnailHash = json.getString("thumbnail")
             }
             if (json.has("wv_state")) {
-                val state = Utils.convertJsonToBundle(json.getJSONObject("wv_state"))
-                if (state != null && !state.isEmpty) {
+                val state = BundleBytes.fromLegacyJson(json.getJSONObject("wv_state"))
+                if (!state.isEmpty) {
                     savedState = state
                 }
             }
@@ -116,8 +117,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
                 val tabsThumbsDir = File(context.cacheDir.absolutePath + File.separator + TAB_THUMBNAILS_DIR)
                 if (tabsThumbsDir.exists() || tabsThumbsDir.mkdir()) {
                     try {
-                        val hash = Utils.MD5_Hash(url.toByteArray(Charset.defaultCharset()))
-                            ?.let { (if (incognito) "private-preview-" else "preview-") + thumbnailToken + "-" + it }
+                        val hash = md5Name(url.toByteArray(Charset.defaultCharset()))
+                            .let { (if (incognito) "private-preview-" else "preview-") + thumbnailToken + "-" + it }
                         if (hash != null) {
                             if (thumbnailHash != null && thumbnailHash != hash &&
                                 (thumbnailHash.startsWith("preview-") || thumbnailHash.startsWith("private-preview-"))) {
@@ -211,7 +212,7 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
         if (stateFileName?.startsWith(prefix) != true) stateFileName = null
         val stateBytes = when (state) {
             is Bundle -> {
-                Utils.bundleToBytes(state) ?: return
+                BundleBytes.encode(state)
             }
             else -> {
                 state.toString().toByteArray(Charsets.UTF_8)
@@ -255,13 +256,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     suspend fun updateThumbnail(context: Context, thumbnail: Bitmap) {
         this.thumbnail = thumbnail
         val url = url
-        var hash = Utils.MD5_Hash(url.toByteArray(Charset.defaultCharset()))
-        if (hash != null) {
-            hash += hashCode()//to make thumbnails from different tabs unique even with same url
-            if (hash != thumbnailHash) {
-                saveThumbnail(context)
-            }
-        }
+        val hash = md5Name(url.toByteArray(Charset.defaultCharset())) + hashCode()
+        if (hash != thumbnailHash) saveThumbnail(context)
     }
 
     /** Decode a bounded preview without retaining it on a background tab. Call on IO. */

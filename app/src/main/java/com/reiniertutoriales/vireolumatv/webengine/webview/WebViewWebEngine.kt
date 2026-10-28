@@ -17,7 +17,6 @@ import androidx.webkit.WebViewCompat
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.webengine.WebEngine
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineProvider
@@ -25,6 +24,7 @@ import com.reiniertutoriales.vireolumatv.webengine.WebEngineProviderCallback
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
+import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 
 
 class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.Callback {
@@ -62,7 +62,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun stateFromBytes(bytes: ByteArray): Any? =
-        Utils.bytesToBundle(bytes)
+        BundleBytes.decode(bytes)
 
     override fun loadUrl(url: String) {
         webView?.loadUrl(url)

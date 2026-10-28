@@ -8,7 +8,6 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
@@ -21,6 +20,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.net.URL
+import com.reiniertutoriales.vireolumatv.utils.hasInternet
 
 class TabsModel : ActiveModel() {
     companion object {
@@ -169,7 +169,7 @@ class TabsModel : ActiveModel() {
             newTab.webEngine.loadUrl(newTab.url)
             newTab.rendererLost = false
         }
-        newTab.webEngine.setNetworkAvailable(Utils.isNetworkConnected(VireoLumaTVApp.instance))
+        newTab.webEngine.setNetworkAvailable(VireoLumaTVApp.instance.hasInternet())
     }
 
     // Only the visible tab owns a WebView. Captured history survives destruction and is restored

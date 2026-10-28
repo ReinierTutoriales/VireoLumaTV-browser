@@ -11,11 +11,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
-import com.reiniertutoriales.vireolumatv.utils.Utils
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.reiniertutoriales.vireolumatv.utils.sameLocalDay
 
 /**
  * History rows with a date header before each day. Only the rows that changed are rebound:
@@ -78,7 +78,7 @@ class HistoryAdapter(
         val rows = ArrayList<HistoryItem>(items.size + 8)
         var lastHeaderTime = -1L
         for (item in items) {
-            if (!Utils.isSameDate(item.time, lastHeaderTime)) {
+            if (!sameLocalDay(item.time, lastHeaderTime)) {
                 lastHeaderTime = item.time
                 rows.add(HistoryItem.createDateHeaderInfo(item.time))
             }
@@ -141,7 +141,7 @@ class HistoryAdapter(
         internal val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HistoryItem>() {
             override fun areItemsTheSame(oldItem: HistoryItem, newItem: HistoryItem): Boolean =
                 if (oldItem.isDateHeader || newItem.isDateHeader) {
-                    oldItem.isDateHeader && newItem.isDateHeader && Utils.isSameDate(oldItem.time, newItem.time)
+                    oldItem.isDateHeader && newItem.isDateHeader && sameLocalDay(oldItem.time, newItem.time)
                 } else {
                     oldItem.id == newItem.id
                 }

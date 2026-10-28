@@ -6,7 +6,7 @@ import android.widget.Button
 import android.widget.EditText
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
-import com.reiniertutoriales.vireolumatv.utils.Utils
+import com.reiniertutoriales.vireolumatv.utils.toast
 
 /** Edits a bookmark's title and address; an address without "scheme://" gets https://. */
 class FavoriteEditorDialog(context: Context, private val callback: Callback, private val item: FavoriteItem) :
@@ -26,7 +26,7 @@ class FavoriteEditorDialog(context: Context, private val callback: Callback, pri
         findViewById<Button>(R.id.btnDone).setOnClickListener {
             val url = address.text.toString().trim()
             if (url.isEmpty()) { // An empty address is not a bookmark: keep the dialog open.
-                Utils.showToast(context, R.string.error)
+                context.toast(R.string.error)
                 return@setOnClickListener
             }
             item.title = title.text.toString()
