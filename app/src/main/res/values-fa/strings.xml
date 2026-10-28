@@ -177,4 +177,6 @@
   <string name="adblock_status_saved">از حافظهٔ پنهان</string>
   <string name="adblock_status_unavailable">بدون قانون</string>
   <string name="adblock_status_action_s">تغییر وضعیت مسدودسازی. %1$s. %2$d مورد در این صفحه مسدود شد.</string>
+  <string name="username">نام کاربری</string>
+  <string name="password">کلمه عبور</string>
 </resources>

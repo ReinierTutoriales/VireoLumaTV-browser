@@ -1,29 +1,17 @@
-# Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in the default proguard-android-optimize.txt file.
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Release shrinking rules beyond the defaults of proguard-android-optimize.txt.
 
-# Add any project specific keep options here:
-
--keep class com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine { *; }
-
--keepclassmembers class com.reiniertutoriales.vireolumatv.model.** {
-   public *;
-}
+# Pages call the JavaScript bridge by method name.
 -keepclassmembers class com.reiniertutoriales.vireolumatv.webengine.webview.PageBridge {
-   public *;
-   private *;
+    @android.webkit.JavascriptInterface public <methods>;
 }
 
+# ActiveModelsRepository creates each model through its no-argument constructor.
+-keepclassmembers class * extends com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel {
+    <init>();
+}
+
+# Debug and verbose logging is dropped from release builds.
 -assumenosideeffects class android.util.Log {
     public static int v(...);
     public static int d(...);
 }
-
-#-keepclasseswithmembers class com.reiniertutoriales.vireolumatv.model.** {
-#    <fields>;
-#}

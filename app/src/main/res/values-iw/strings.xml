@@ -176,4 +176,6 @@
   <string name="adblock_status_saved">מהמטמון</string>
   <string name="adblock_status_unavailable">אין כללים</string>
   <string name="adblock_status_action_s">החלפת מצב חסימה. %1$s. נחסמו %2$d פריטים בדף הזה.</string>
+  <string name="username">שם משתמש</string>
+  <string name="password">סיסמה</string>
 </resources>

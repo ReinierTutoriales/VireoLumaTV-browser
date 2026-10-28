@@ -11,12 +11,14 @@ The original license, conditions, and disclaimer are retained verbatim in [LICEN
 
 `app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.kt` also retains Copyright (c) 2016 Fedir Tsapana.
 
-## DownloadUtils.kt
+## DownloadUtils.kt (releases up to v1.2.2)
 
-`app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt` carries an MPL 2.0 notice and incorporates work with Copyright (C) 2006 The Android Open Source Project under Apache 2.0. Both original notices remain in that file. See [MPL 2.0](licenses/MPL-2.0.txt) and [Apache 2.0](licenses/Apache-2.0.txt).
+In releases up to and including v1.2.2, `app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt` carries an MPL 2.0 notice and incorporates work with Copyright (C) 2006 The Android Open Source Project under Apache 2.0, with both original notices in that file. See [MPL 2.0](licenses/MPL-2.0.txt) and [Apache 2.0](licenses/Apache-2.0.txt).
 
-Source and modifications: https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/43ffce3ec0bb21c7f6cfddc9af6d9208d509e154/app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt
+Source of that version: https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/43ffce3ec0bb21c7f6cfddc9af6d9208d509e154/app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt
 For each published binary, provide the corresponding source tag or immutable commit, rather than relying solely on this moving branch link.
+
+The commit that adds this paragraph replaces the file with a new implementation that does not contain that code; its behavior is fixed by `DownloadUtilsGuessFileNameTest`.
 
 ## adblock-rust 0.13.3 and the JNI bridge
 

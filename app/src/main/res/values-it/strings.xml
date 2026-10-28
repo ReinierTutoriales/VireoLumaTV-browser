@@ -173,4 +173,6 @@
   <string name="adblock_status_saved">Dalla cache</string>
   <string name="adblock_status_unavailable">Nessuna regola</string>
   <string name="adblock_status_action_s">Attiva o disattiva il blocco. %1$s. %2$d elementi bloccati in questa pagina.</string>
+  <string name="username">Nome utente</string>
+  <string name="password">Parola d&amp;#39;ordine</string>
 </resources>

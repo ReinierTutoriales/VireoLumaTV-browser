@@ -177,4 +177,6 @@
     <string name="up_to_date">Ya tienes la última versión</string>
     <string name="update_check_failed">No se pudo comprobar ni instalar la actualización</string>
     <string name="last_update">Última actualización</string>
+    <string name="username">Usuario</string>
+    <string name="password">Contraseña</string>
 </resources>

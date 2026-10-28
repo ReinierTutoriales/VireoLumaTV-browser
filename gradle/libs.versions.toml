@@ -7,7 +7,6 @@ android-targetSdk = "37"
 android-ndk = "30.0.16248370"
 agp = "9.4.1"
 kotlin = "2.4.21"
-kotlin-stdlib = "2.4.21"
 ksp = "2.3.12"
 
 appcompat = "1.8.0"
@@ -21,8 +20,7 @@ junit = "4.13.2"
 robolectric = "4.17"
 
 [libraries]
-# build logic (buildSrc)
-android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+# Kotlin compiler for AGP's built-in Kotlin
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 
 # AndroidX
@@ -32,7 +30,6 @@ androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview"
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
 
 # Kotlin
-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin-stdlib" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines-android" }
 
 # Room
@@ -40,13 +37,10 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 
-# Third-party
-
 # Test
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

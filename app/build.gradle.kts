@@ -1,9 +1,9 @@
 import java.io.File
-import org.gradle.process.ExecOperations
 import javax.inject.Inject
+import org.gradle.process.ExecOperations
 
 plugins {
-    id("vireolumatv.android.application")
+    alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
 }
 
@@ -62,30 +62,27 @@ abstract class BuildRustAdblock : DefaultTask() {
 
 android {
     namespace = "com.reiniertutoriales.vireolumatv"
+    compileSdk {
+        version = release(libs.versions.android.compileSdk.get().toInt()) {
+            minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+        }
+    }
+    ndkVersion = libs.versions.android.ndk.get()
 
     defaultConfig {
         applicationId = "com.reiniertutoriales.vireolumatv"
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 93
         versionName = "1.2.2"
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += mapOf(
-                    "room.incremental" to "true",
-                    //used when AppDatabase @Database annotation exportSchema = true. Useful for migrations
-                    "room.schemaLocation" to "$projectDir/schemas"
-                )
-            }
-        }
     }
 
-    ndkVersion = libs.versions.android.ndk.get()
-
+    // Release keys come from the environment (CI secrets); without them the release is unsigned,
+    // or signed with the debug key when CI asks for an installable test build.
     signingConfigs {
         create("release") {
-            val keystorePath = System.getenv("KEYSTORE_PATH")
-            if (keystorePath != null) {
-                storeFile = file(keystorePath)
+            System.getenv("KEYSTORE_PATH")?.let { path ->
+                storeFile = file(path)
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
                 keyPassword = System.getenv("KEY_PASSWORD")
@@ -94,19 +91,14 @@ android {
     }
 
     buildTypes {
-        getByName("debug") {
-            isDebuggable = true
-        }
-        getByName("release") {
-            isDebuggable = false
+        release {
             isMinifyEnabled = true
-            // Resources are only referenced through R (no getIdentifier), so shrinking is safe.
+            // Resources are reached only through R, never by name, so unused ones can go.
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            val signReleaseWithDebugKey = System.getenv("CI_SIGN_RELEASE_WITH_DEBUG_KEY") == "true"
             signingConfig = when {
                 System.getenv("KEYSTORE_PATH") != null -> signingConfigs.getByName("release")
-                signReleaseWithDebugKey -> signingConfigs.getByName("debug")
+                System.getenv("CI_SIGN_RELEASE_WITH_DEBUG_KEY") == "true" -> signingConfigs.getByName("debug")
                 else -> null
             }
         }
@@ -114,7 +106,7 @@ android {
 
     splits {
         abi {
-            // One APK per ABI: a 32-bit TV installs ~4 MB instead of the universal ~10.7 MB.
+            // One APK per ABI: a 32-bit TV installs about 4 MB instead of a universal 10.7 MB.
             isEnable = true
             reset()
             include(*rustAbis.toTypedArray())
@@ -122,20 +114,19 @@ android {
         }
     }
 
-    flavorDimensions += listOf("appstore")
+    // Builds that update themselves from this repository's releases, and store builds that must not.
+    flavorDimensions += "distribution"
     productFlavors {
         create("generic") {
-            dimension = "appstore"
-            //updates come from this repository's GitHub releases, which publish the generic APKs
+            dimension = "distribution"
             buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "true")
         }
         create("google") {
-            dimension = "appstore"
-            //now auto-update violates Google Play policies
+            dimension = "distribution"
             buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "false")
         }
         create("foss") {
-            dimension = "appstore"
+            dimension = "distribution"
             applicationIdSuffix = ".foss"
             buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "false")
         }
@@ -146,38 +137,29 @@ android {
         buildConfig = true
     }
 
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-        }
-    }
+    testOptions.unitTests.isIncludeAndroidResources = true
 }
 
-// KSP runs Room's processor; the schema location must be passed here, not via javaCompileOptions.
+// Room's processor: the exported schemas in schemas/ are how schema changes are caught.
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
     arg("room.incremental", "true")
 }
 
 dependencies {
-    implementation(project(":app:common"))
-
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.recyclerview)
-    implementation(libs.kotlin.stdlib)
-    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
-    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
-
+    ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
 }
+
 val rustCrate = rootProject.layout.projectDirectory.dir("native/adblock-jni")
 fun BuildRustAdblock.configureCrate() {
     crateDir.set(rustCrate)

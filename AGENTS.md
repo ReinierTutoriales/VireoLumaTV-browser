@@ -7,7 +7,7 @@ Simple WebView-only Android TV browser optimized for remote control and low-memo
 - Kotlin / Android (WebView)
 - Gradle Kotlin DSL
 - Native adblock-rust (Brave) integrated for arm64/armv7/x86_64
-- Modules: `:app`, `:app:common`
+- Module: `:app` (the `:app:common` split for GeckoView was removed on 2026-10-28)
 
 ## Verification commands
 Use the Gradle wrapper. For a functional change, run the affected unit tests first;

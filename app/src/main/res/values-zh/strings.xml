@@ -173,4 +173,6 @@
   <string name="adblock_status_saved">已缓存</string>
   <string name="adblock_status_unavailable">无规则</string>
   <string name="adblock_status_action_s">切换拦截状态。%1$s。本页已拦截 %2$d 项。</string>
+  <string name="username">用户名</string>
+  <string name="password">密码</string>
 </resources>

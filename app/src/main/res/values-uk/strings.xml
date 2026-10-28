@@ -173,4 +173,6 @@
   <string name="adblock_status_saved">Із кешу</string>
   <string name="adblock_status_unavailable">Немає правил</string>
   <string name="adblock_status_action_s">Перемкнути блокування. %1$s. На цій сторінці заблоковано: %2$d.</string>
+  <string name="username">Ім\'я користувача</string>
+  <string name="password">Пароль</string>
 </resources>

@@ -183,4 +183,6 @@
     <string name="up_to_date">You have the latest version</string>
     <string name="update_check_failed">Could not check or install the update</string>
     <string name="last_update">Last update</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
 </resources>

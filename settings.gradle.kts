@@ -5,12 +5,14 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 plugins {
+    // Downloads the JDK the toolchain asks for when the machine has none.
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
@@ -19,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "VireoLumaTV-browser"
 include(":app")
-include(":app:common")
