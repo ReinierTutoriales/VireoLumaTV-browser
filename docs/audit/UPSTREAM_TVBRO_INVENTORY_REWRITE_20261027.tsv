@@ -193,7 +193,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewWeb
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockController.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableContainer.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableContainer.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableImageButton.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableImageButton.kt
-app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/NotificationView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/NotificationView.kt	31
+app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/NotificationView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/widgets/NotificationView.kt	86
 app/src/main/res/anim/infinite_fadeinout_anim.xml	IDENTICO	app/src/main/res/anim/infinite_fadeinout_anim.xml	0
 app/src/main/res/anim/right_menu_in_anim.xml	ELIMINADO	app/src/main/res/anim/right_menu_in_anim.xml
 app/src/main/res/anim/right_menu_out_anim.xml	ELIMINADO	app/src/main/res/anim/right_menu_out_anim.xml
@@ -240,6 +240,7 @@ app/src/main/res/drawable/ic_zoom_out_gray_24dp.xml	IDENTICO	app/src/main/res/dr
 app/src/main/res/drawable/list_item_bg_selector.xml	ELIMINADO	app/src/main/res/drawable/list_item_bg_selector.xml
 app/src/main/res/drawable/list_row_bg.xml	PROPIO
 app/src/main/res/drawable/list_row_bg_focused.xml	PROPIO
+app/src/main/res/drawable/notification_bg.xml	PROPIO
 app/src/main/res/drawable/settings_tab_bg_selector.xml	MODIFICADO	app/src/main/res/drawable/settings_tab_bg_selector.xml	45
 app/src/main/res/drawable/text_link_background_selector.xml	ELIMINADO	app/src/main/res/drawable/text_link_background_selector.xml	
 app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	REESCRITO	app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	89
@@ -259,7 +260,7 @@ app/src/main/res/layout/view_history_header_item.xml	ELIMINADO	app/src/main/res/
 app/src/main/res/layout/view_history_item.xml	REESCRITO	app/src/main/res/layout/view_history_item.xml	56
 app/src/main/res/layout/view_list_date_header.xml	PROPIO
 app/src/main/res/layout/view_horizontal_webtab_item.xml	REESCRITO	app/src/main/res/layout/view_horizontal_webtab_item.xml	65
-app/src/main/res/layout/view_notification.xml	MODIFICADO	app/src/main/res/layout/view_notification.xml	3
+app/src/main/res/layout/view_notification.xml	REESCRITO	app/src/main/res/layout/view_notification.xml	74
 app/src/main/res/layout/view_setting_button.xml	PROPIO		
 app/src/main/res/layout/view_setting_choice.xml	PROPIO		
 app/src/main/res/layout/view_setting_field.xml	PROPIO		
@@ -289,7 +290,7 @@ app/src/main/res/values-w820dp/dimens.xml	MODIFICADO	app/src/main/res/values-w82
 app/src/main/res/values-zh-rTW/strings.xml	MODIFICADO	app/src/main/res/values-zh-rTW/strings.xml	16
 app/src/main/res/values-zh/strings.xml	MODIFICADO	app/src/main/res/values-zh/strings.xml	17
 app/src/main/res/values/colors.xml	MODIFICADO	app/src/main/res/values/colors.xml	92
-app/src/main/res/values/dimens.xml	MODIFICADO	app/src/main/res/values/dimens.xml	21
+app/src/main/res/values/dimens.xml	REESCRITO	app/src/main/res/values/dimens.xml	100
 app/src/main/res/values/ids.xml	PROPIO		
 app/src/main/res/values/strings.xml	MODIFICADO	app/src/main/res/values/strings.xml	18
 app/src/main/res/values/styles.xml	MODIFICADO	app/src/main/res/values/styles.xml	80
@@ -367,6 +368,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActiva
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/VirtualCursorPointerTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewUserAgentTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockControllerTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/widgets/NotificationViewTest.kt	PROPIO
 art/vireolumatv-banner.png	PROPIO		
 art/vireolumatv-icon-master.png	PROPIO		
 build.gradle.kts	MODIFICADO	build.gradle.kts	14
