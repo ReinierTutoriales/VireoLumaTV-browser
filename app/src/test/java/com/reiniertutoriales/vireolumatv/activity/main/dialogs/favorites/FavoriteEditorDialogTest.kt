@@ -20,17 +20,14 @@ import org.robolectric.shadows.ShadowToast
 class FavoriteEditorDialogTest {
     private fun dialog(saved: (FavoriteItem) -> Unit): FavoriteEditorDialog {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
-        val callback = object : FavoriteEditorDialog.Callback {
-            override fun onDone(item: FavoriteItem) = saved(item)
-        }
-        return FavoriteEditorDialog(activity, callback, FavoriteItem()).also { it.show() }
+        return FavoriteEditorDialog(activity, FavoriteItem(), saved).also { it.show() }
     }
 
     @Test fun emptyUrlIsNotSavedAndTheUserIsTold() {
         var saved: FavoriteItem? = null
         val dialog = dialog { saved = it }
-        dialog.findViewById<EditText>(R.id.etUrl).setText("   ")
-        dialog.findViewById<Button>(R.id.btnDone).performClick()
+        dialog.findViewById<EditText>(R.id.etUrl)!!.setText("   ")
+        dialog.findViewById<Button>(R.id.btnDone)!!.performClick()
 
         assertNull(saved)
         assertEquals(dialog.context.getString(R.string.error), ShadowToast.getTextOfLatestToast())
@@ -39,8 +36,8 @@ class FavoriteEditorDialogTest {
     @Test fun urlWithoutSchemeIsSavedWithHttps() {
         var saved: FavoriteItem? = null
         val dialog = dialog { saved = it }
-        dialog.findViewById<EditText>(R.id.etUrl).setText("  example.test/page  ")
-        dialog.findViewById<Button>(R.id.btnDone).performClick()
+        dialog.findViewById<EditText>(R.id.etUrl)!!.setText("  example.test/page  ")
+        dialog.findViewById<Button>(R.id.btnDone)!!.performClick()
 
         assertEquals("https://example.test/page", saved?.url)
     }

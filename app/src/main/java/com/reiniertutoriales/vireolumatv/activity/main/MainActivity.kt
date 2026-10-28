@@ -337,11 +337,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     fun showFavorites() {
         val shown = tabsModel.currentTab.value
-        FavoritesDialog(this, lifecycleScope, object : FavoritesDialog.Callback {
-            override fun onFavoriteChoosen(item: FavoriteItem?) {
-                item?.url?.let(::navigate)
-            }
-        }, shown?.title.orEmpty(), shown?.url.orEmpty()).show()
+        FavoritesDialog(this, lifecycleScope, shown?.title, shown?.url) { item -> item.url?.let(::navigate) }.show()
         closeCapsule()
     }
 
@@ -495,11 +491,11 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.error)
             .setCancelable(false)
-            .setMessage(R.string.err_webview_can_not_link)
-            .setNegativeButton(R.string.exit) { _, _ -> finish() }
+            .setMessage(R.string.error_no_webview)
+            .setNegativeButton(R.string.action_exit) { _, _ -> finish() }
         val store = Intent(Intent.ACTION_VIEW, "market://details?id=$WEBVIEW_PACKAGE".toUri())
         if (packageManager.queryIntentActivities(store, 0).isNotEmpty()) {
-            dialog.setPositiveButton(R.string.find_in_apps_store) { _, _ ->
+            dialog.setPositiveButton(R.string.action_open_store) { _, _ ->
                 runCatching { startActivity(store) }.onFailure { Log.w(TAG, "Opening the app store failed", it) }
                 finish()
             }
@@ -537,19 +533,19 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             if (initialized) adblockModel.updateResult.value else AdblockModel.UpdateResult.IDLE,
         )
         return when (indicator) {
-            BlockerIndicator.PAUSED -> R.string.adblock_status_paused
-            BlockerIndicator.LOADING -> R.string.adblock_status_loading
-            BlockerIndicator.REFRESHING -> R.string.adblock_status_refreshing
-            BlockerIndicator.ACTIVE -> R.string.adblock_status_active
-            BlockerIndicator.PARTIAL -> R.string.adblock_status_partial
-            BlockerIndicator.SAVED -> R.string.adblock_status_saved
-            BlockerIndicator.UNAVAILABLE -> R.string.adblock_status_unavailable
+            BlockerIndicator.PAUSED -> R.string.blocker_state_paused
+            BlockerIndicator.LOADING -> R.string.blocker_state_loading
+            BlockerIndicator.REFRESHING -> R.string.blocker_state_updating
+            BlockerIndicator.ACTIVE -> R.string.blocker_state_active
+            BlockerIndicator.PARTIAL -> R.string.blocker_state_partial
+            BlockerIndicator.SAVED -> R.string.blocker_state_saved
+            BlockerIndicator.UNAVAILABLE -> R.string.blocker_state_none
         }
     }
 
     internal fun updateAdblockStatus(tab: WebTabState) {
         val state = getString(blockerStatusLabel(tab))
-        vb.vActionBar.adBlockButton.contentDescription = getString(R.string.adblock_status_action_s, state, tab.blockedAds)
+        vb.vActionBar.adBlockButton.contentDescription = getString(R.string.blocker_summary, state, tab.blockedAds)
         vb.vActionBar.adBlockButton.isActivated =
             (tab.adblock ?: config.adBlockEnabled) && ::adblockModel.isInitialized && adblockModel.hasActiveRules
     }
@@ -559,10 +555,10 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val state = getString(blockerStatusLabel(tab))
         // A dialog message would hide the list, so the status is the title.
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.adblock_status_action_s, state, tab.blockedAds))
+            .setTitle(getString(R.string.blocker_summary, state, tab.blockedAds))
             .setItems(arrayOf(
-                getString(R.string.toggle_ads_blocking),
-                getString(R.string.block_popups_s, tab.blockedPopups.toString()),
+                getString(R.string.blocker_toggle),
+                getString(R.string.popups_title, tab.blockedPopups.toString()),
             )) { _, which ->
                 when (which) {
                     0 -> {
@@ -600,8 +596,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val level = site?.popupBlockLevel ?: HostConfig.DEFAULT_BLOCK_POPUPS_VALUE
         val host = site?.hostName ?: runCatching { URL(tab.url).host }.getOrDefault("")
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.block_popups_s, host))
-            .setSingleChoiceItems(R.array.popup_blocking_level, level) { dialog, choice ->
+            .setTitle(getString(R.string.popups_title, host))
+            .setSingleChoiceItems(R.array.popups_levels, level) { dialog, choice ->
                 lifecycleScope.launch {
                     tabsModel.changePopupBlockingLevel(choice, tab)
                     dialog.dismiss()
@@ -625,7 +621,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         if (now - lastBlockedNotice < BLOCKED_NOTICE_INTERVAL_MS) return
         lastBlockedNotice = now
         NotificationView.showBottomRight(vb.rlRoot, R.drawable.ic_block,
-            getString(if (newTab) R.string.new_tab_blocked else R.string.popup_dialog_blocked))
+            getString(if (newTab) R.string.popups_window_blocked else R.string.popups_dialog_blocked))
     }
 
     // Loading progress and downloads

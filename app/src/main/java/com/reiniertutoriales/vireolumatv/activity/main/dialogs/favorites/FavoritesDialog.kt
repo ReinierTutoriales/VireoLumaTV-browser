@@ -1,12 +1,13 @@
 package com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites
 
-import android.app.Dialog
 import android.content.Context
+import android.view.Gravity
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDialog
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.databinding.DialogFavoritesBinding
+import com.reiniertutoriales.vireolumatv.databinding.PanelFavoritesBinding
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.toast
@@ -18,27 +19,27 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-/** Writes a detached bookmark, then submits a fresh database snapshot to the row diff. */
+/**
+ * Favorites as a side panel at the end edge: add the page shown, open a favorite with [onOpen], or
+ * in edit mode edit or delete one. Each write is followed by a fresh database snapshot for the rows.
+ */
 class FavoritesDialog(
     context: Context,
     scope: CoroutineScope,
-    private val callback: Callback,
     private val currentPageTitle: String?,
     private val currentPageUrl: String?,
-) : Dialog(context) {
-    interface Callback { fun onFavoriteChoosen(item: FavoriteItem?) }
-
-    private val ui = DialogFavoritesBinding.inflate(layoutInflater)
+    private val onOpen: (FavoriteItem) -> Unit,
+) : AppCompatDialog(context, R.style.SidePanel) {
+    private val ui = PanelFavoritesBinding.inflate(layoutInflater)
     private val operations = CoroutineScope(scope.coroutineContext + SupervisorJob(scope.coroutineContext[Job]))
     private var busy = false
     private val rows = FavoritesListAdapter(
-        onOpen = { callback.onFavoriteChoosen(it); dismiss() },
+        onOpen = { dismiss(); onOpen(it) },
         onEdit = ::edit,
         onDelete = { item -> refresh { AppDatabase.db.favoritesDao().delete(item) } },
     )
 
     init {
-        setTitle(R.string.bookmarks)
         setContentView(ui.root)
         ui.listView.layoutManager = LinearLayoutManager(context)
         ui.listView.adapter = rows
@@ -47,24 +48,27 @@ class FavoritesDialog(
         }
         ui.btnEdit.setOnClickListener {
             rows.editMode = !rows.editMode
-            ui.btnEdit.setText(if (rows.editMode) R.string.done else R.string.edit)
+            ui.btnEdit.setText(if (rows.editMode) R.string.action_done else R.string.action_edit)
         }
         refresh {}
     }
 
     override fun onStart() {
         super.onStart()
-        window?.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        window?.apply {
+            setGravity(Gravity.END)
+            setLayout(context.resources.getDimensionPixelSize(R.dimen.side_panel_wide), ViewGroup.LayoutParams.MATCH_PARENT)
+        }
     }
 
     private fun edit(item: FavoriteItem) {
         if (busy) return
-        FavoriteEditorDialog(context, object : FavoriteEditorDialog.Callback {
-            override fun onDone(item: FavoriteItem) = refresh {
-                val bookmarks = AppDatabase.db.favoritesDao()
-                if (item.id == 0L) bookmarks.insert(item) else bookmarks.update(item)
+        FavoriteEditorDialog(context, item) { edited ->
+            refresh {
+                val favorites = AppDatabase.db.favoritesDao()
+                if (edited.id == 0L) favorites.insert(edited) else favorites.update(edited)
             }
-        }, item).show()
+        }.show()
     }
 
     private fun refresh(write: suspend () -> Unit) {

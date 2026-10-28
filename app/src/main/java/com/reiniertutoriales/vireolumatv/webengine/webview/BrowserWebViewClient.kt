@@ -135,11 +135,11 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
     override fun onReceivedHttpAuthRequest(view: WebView?, handler: HttpAuthHandler?, host: String?, realm: String?) {
         val context = this.view.context
         val user = EditText(context).apply {
-            setHint(R.string.username)
+            setHint(R.string.http_auth_user)
             isSingleLine = true
         }
         val password = EditText(context).apply {
-            setHint(R.string.password)
+            setHint(R.string.http_auth_password)
             isSingleLine = true
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
         }

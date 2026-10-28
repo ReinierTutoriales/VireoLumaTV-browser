@@ -93,8 +93,8 @@ class HistoryActivity : AppCompatActivity() {
         val selection = adapter.selectedItems
         if (adapter.realCount == 0L || (!all && selection.isEmpty())) return
         AlertDialog.Builder(this)
-            .setTitle(R.string.delete)
-            .setMessage(if (all) R.string.msg_delete_history_all else R.string.msg_delete_history)
+            .setTitle(R.string.action_delete)
+            .setMessage(if (all) R.string.history_delete_all else R.string.history_delete_selected)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 lifecycleScope.launch {
                     val history = AppDatabase.db.historyDao()

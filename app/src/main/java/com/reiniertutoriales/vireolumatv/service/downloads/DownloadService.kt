@@ -117,13 +117,13 @@ open class DownloadService : Service() {
     /** Before Android 11 the file goes straight into the public Downloads folder, under a free name. */
     private fun reserveLegacyFile(download: Download): Boolean {
         if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-            Toast.makeText(this, R.string.storage_not_mounted, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.download_storage_unavailable, Toast.LENGTH_SHORT).show()
             return false
         }
         @Suppress("DEPRECATION") // The public folder is the documented location before scoped storage.
         val folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         if (!folder.isDirectory && !folder.mkdirs()) {
-            Toast.makeText(this, R.string.can_not_create_downloads, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.download_folder_error, Toast.LENGTH_SHORT).show()
             return false
         }
         // The name becomes part of a path: it must never leave the Downloads folder.
@@ -163,7 +163,7 @@ open class DownloadService : Service() {
     /** "12 MB / 40 MB", or only the received size while some total is unknown. */
     private fun progressText(received: Long, total: Long): String {
         val done = Formatter.formatShortFileSize(this, received)
-        return if (total > 0) getString(R.string.size_progress, done, Formatter.formatShortFileSize(this, total)) else done
+        return if (total > 0) getString(R.string.download_progress_size, done, Formatter.formatShortFileSize(this, total)) else done
     }
 
     class Binder(val service: DownloadService) : android.os.Binder()

@@ -1,176 +1,178 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">VireoLumaTV</string>
-  <string name="error">Lỗi</string>
-  <string name="ok">OK</string>
-  <string name="url_prompt">Nhập văn bản hoặc URL</string>
-  <string name="web_perm_request_confirmation">Cho phép trang này truy cập:\n\n%s</string>
-  <string name="allow">Cho phép</string>
-  <string name="deny">Từ chối</string>
-  <string name="location">Vị trí</string>
-  <string name="open_in_new_tab">Mở trong trang mới</string>
-  <string name="download_started">Đã xếp hàng tải xuống. Nơi lưu:\n%s</string>
-  <string name="err_cant_open_file_chooser">Không thể mở Trình chọn tệp</string>
-  <string name="bookmarks">Dấu trang</string>
-  <string name="add">Thêm</string>
-  <string name="edit">Sửa</string>
-  <string name="new_bookmark">Dấu trang mới</string>
-  <string name="title">Tiêu đề</string>
-  <string name="choose_default_search_engine">Chọn công cụ tìm kiếm mặc định</string>
-  <string name="search_engine_url_with_query_placeholder_query">URL tìm kiếm: đặt [query] tại vị trí của nội dung cần tìm</string>
-  <string name="user_agent_string">Chuỗi User Agent</string>
-  <string name="choose_user_agent_string">Chọn chuỗi User Agent</string>
-  <string name="edit_user_agent_string">Chỉnh sửa chuỗi User Agent</string>
-  <string name="nothing">Không có tải xuống</string>
-  <string name="cancelled">Đã hủy</string>
-  <string name="download">Tải xuống</string>
-  <string name="file_not_found">Không tìm thấy tệp</string>
-  <string name="no_app_for_file_type">Không tìm thấy ứng dụng nào để mở loại tệp này</string>
-  <string name="delete">Xoá</string>
-  <string name="cancel">Huỷ bỏ</string>
-  <string name="msg_delete_history">Xóa các lịch sử đã chọn?</string>
-  <string name="msg_delete_history_all">Xóa toàn bộ lịch sử?</string>
-  <string name="open_folder">Mở thư mục chứa</string>
-  <string name="no_file_explorer_msg">Không có trình quản lý tệp. Hãy mở màn hình Tải xuống của Android.</string>
-  <string name="shortcuts">Phím tắt</string>
-  <string name="favorites">Yêu thích</string>
-  <string name="history">Lịch sử</string>
-  <string name="settings">Cài đặt</string>
-  <string name="shortcut">Phím tắt</string>
-  <string name="navigate_back">Phím quay lại</string>
-  <string name="navigate_home">Trở về trang chủ</string>
-  <string name="refresh_page">Làm mới trang</string>
-  <string name="zoom_in">Phóng to</string>
-  <string name="zoom_out">Thu nhỏ</string>
-  <string name="not_set">Không được thiết lập</string>
-  <string name="current_key">Phím hiện tại:</string>
-  <string name="key_code_d">Phím %d</string>
-  <string name="set_key_for_action">Đặt phím cho hành động</string>
-  <string name="press_eny_key">Nhấn phím bất kỳ…</string>
-  <string name="shortcut_key_reserved_for_navigation">Chọn phím khác; phím này dùng để điều hướng</string>
-  <string name="clear">Xoá</string>
-  <string name="install">Cài đặt</string>
-  <string name="turn_on_unknown_sources">Cho phép cài đặt từ nguồn không xác định trong cài đặt Android</string>
-  <string name="turn_on_unknown_sources_for_app">Vui lòng cho phép VireoLumaTV cài đặt ứng dụng từ \"Nguồn không xác định\" trong cài đặt hệ thống</string>
-  <string name="storage_not_mounted">Bộ nhớ không được gắn kết</string>
-  <string name="can_not_create_downloads">Không thể tạo thư mục tải xuống</string>
-  <string name="new_version_dialog_title">Có phiên bản mới</string>
-  <string name="downloads">Tải xuống</string>
-  <string name="downloads_notifications_description">Thông báo về trạng thái tải xuống</string>
-  <string name="main">Cài đặt chính</string>
-  <string name="version_and_updates">Phiên bản và cập nhật</string>
-  <string name="version_s">Phiên bản: %s</string>
-  <string name="build_flavor_s">Biến thể bản dựng: %1$s · %2$s</string>
-  <string name="view_license">📃 Giấy phép</string>
-  <string name="privacy_policy">🔒 Chính sách quyền riêng tư</string>
-  <string name="update">Cập nhật</string>
-  <string name="new_version_available_s">Có phiên bản mới: %s</string>
-  <string name="web_browser_optimized_for_tvs">Trình duyệt web được tối ưu hóa cho TV</string>
-  <string name="warning">Cảnh báo</string>
-  <string name="err_webview_can_not_link">Android WebView không khả dụng. Hãy bật, cài đặt hoặc cập nhật nhà cung cấp WebView của hệ thống.</string>
-  <string name="open_a_new_tab_here">Mở tab mới tại đây</string>
-  <string name="tabs">Các tab</string>
-  <array name="tabs_options">
-    <item>Mở tab mới</item>
-    <item>Đóng tab hiện tại</item>
-    <item>Đóng tất cả</item>
-    <item>Chuyển sang trái</item>
-    <item>Chuyển sang phải</item>
-  </array>
-  <string name="ssl_expired">Chứng chỉ đã hết hạn</string>
-  <string name="ssl_idmismatch">Tên máy chủ không khớp</string>
-  <string name="ssl_date_invalid">Ngày tháng của chứng chỉ không hợp lệ</string>
-  <string name="ssl_invalid">Đã xảy ra lỗi</string>
-  <string name="ssl_untrusted">Tổ chức cấp chứng chỉ không đáng tin cậy</string>
-  <string name="back_to_safety">Quay lại an toàn</string>
-  <string name="go_im_aware">Tiếp tục. Tôi chấp nhận rủi ro</string>
-  <string name="connection_isnt_secure">Kết nối không an toàn</string>
-  <string name="hostname">Tên máy chủ:</string>
-  <string name="err_desk">Mô tả lỗi:</string>
-  <string name="details">Chi tiết:</string>
-  <string name="exit">Thoát</string>
-  <string name="find_in_apps_store">Tìm trong kho ứng dụng</string>
-  <string name="app_menu">Menu</string>
-  <string name="close_application">Đóng ứng dụng</string>
-  <string name="close_tab">Đóng tab</string>
-  <string name="navigate_forward">Điều hướng về trước</string>
-  <string name="toggle_ads_blocking">Chuyển đổi tính năng chặn quảng cáo</string>
-  <string name="never">không bao giờ</string>
-  <string name="update_ad_blocker_list">Làm mới danh sách trình chặn quảng cáo</string>
-  <string name="need_restart">Cần khởi động lại ứng dụng</string>
-  <string name="toggle_keep_screen_on">Luôn bật màn hình</string>
-  <string name="navigate_with_joystick_axes">Điều hướng bằng trục joystick</string>
-  <string name="cursor_max_speed">Tốc độ tối đa của con trỏ ảo</string>
-  <string name="cursor_acceleration">Gia tốc con trỏ ảo</string>
-  <string name="cursor_physics_percent">%d%% so với mặc định</string>
-  <string name="direct_navigation_mode_title">Chế độ điều hướng trực tiếp</string>
-  <string name="direct_navigation_mode_message">Chế độ này ẩn con trỏ. Trang nhận trực tiếp các phím; khả năng chọn mục phụ thuộc vào hỗ trợ bàn phím của trang.\n\nĐể khôi phục con trỏ, nhấn Quay lại trên điều khiển hoặc giữ B trên tay cầm.</string>
-  <string name="incognito_mode">Chế độ ẩn danh</string>
-  <string name="incognito_mode_hint">Lượt truy cập trong phiên này không được thêm vào lịch sử thông thường. Chế độ riêng tư không ẩn kết nối khỏi trang web, quản trị viên mạng hoặc nhà cung cấp internet.\n\nTệp đã tải và dấu trang đã lưu vẫn còn trên thiết bị.</string>
-  <string name="don_t_show_again">Không hiển thị lại</string>
-  <string name="clear_web_cache">Xóa bộ nhớ cache của web</string>
-  <string name="no_bookmarks_yet">Chưa có dấu trang nào</string>
-  <string name="done">Xong</string>
-  <string name="block_popups_s">Chặn cửa sổ bật lên (%s)</string>
-  <string name="popup_dialog_blocked">Hộp thoại bật lên bị chặn</string>
-  <string name="new_tab_blocked">Tab mới bị chặn</string>
-  <string name="copy_to_clipboard">Sao chép vào clipboard</string>
-  <string name="copied_to_clipboard">Đã chép vào clipboard</string>
-  <string name="share_url">Chia sẻ URL</string>
-  <string name="open_in_external_application">Mở trong ứng dụng bên ngoài</string>
-  <string name="external_app_open_error">Không thể tìm thấy ứng dụng phù hợp</string>
-  <string-array name="popup_blocking_level">
-    <item>không chặn</item>
-    <item>Chặn hộp thoại</item>
-    <item>Cũng chặn các tab mới (khởi tạo tập lệnh)</item>
-    <item>Chặn mọi cửa sổ mới (chặn tối đa)</item>
-  </string-array>
-  <string name="home_page">Trang chủ</string>
-  <string name="custom_home_page_url">URL trang chủ tùy chỉnh</string>
-  <string-array name="home_page_modes">
-        <item>Trang đầu VireoLumaTV</item>
-        <item>Nhà cung cấp tìm kiếm</item>
-        <item>Địa chỉ riêng</item>
+    <string name="about_source">VireoLumaTV của ReinierTutoriales · Mã nguồn</string>
+    <string name="about_tv_bro_credit">Dựa trên mã nguồn của TV Bro: %s</string>
+    <string name="about_tagline">Trình duyệt web dành cho điều khiển TV</string>
+    <string name="about_version">Phiên bản %s</string>
+    <string name="about_build">Bản dựng: %1$s · %2$s</string>
+    <string name="about_license">Giấy phép</string>
+    <string name="about_privacy">Chính sách quyền riêng tư</string>
+    <string name="error">Lỗi</string>
+    <string name="action_allow">Cho phép</string>
+    <string name="action_deny">Không cho phép</string>
+    <string name="action_edit">Chỉnh sửa</string>
+    <string name="action_done">Xong</string>
+    <string name="action_delete">Xóa</string>
+    <string name="action_cancel">Hủy</string>
+    <string name="action_clear">Xóa hết</string>
+    <string name="action_update">Cập nhật</string>
+    <string name="action_exit">Thoát</string>
+    <string name="action_open_store">Tìm trong cửa hàng</string>
+    <string name="action_dont_show_again">Không hiện lại</string>
+    <string name="action_open">Mở</string>
+    <string name="address_hint">Tìm kiếm hoặc nhập địa chỉ web</string>
+    <string name="nav_back">Quay lại</string>
+    <string name="nav_forward">Tiến</string>
+    <string name="nav_reload">Tải lại</string>
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_menu">Menu</string>
+    <string name="blocker_toggle">Chặn quảng cáo</string>
+    <string name="tabs_new">Thẻ mới</string>
+    <string name="tabs_title">Thẻ</string>
+    <string name="menu_history">Lịch sử</string>
+    <string name="menu_favorites">Yêu thích</string>
+    <string name="menu_downloads">Tệp tải xuống</string>
+    <string name="menu_private">Chế độ ẩn danh</string>
+    <string name="menu_settings">Cài đặt</string>
+    <string name="menu_close_tab">Đóng thẻ</string>
+    <string name="menu_quit">Thoát VireoLumaTV</string>
+    <string name="pointer_move_page">Di chuyển trang</string>
+    <string name="pointer_link_options">Tùy chọn liên kết</string>
+    <string name="pointer_zoom_in">Phóng to</string>
+    <string name="pointer_zoom_out">Thu nhỏ</string>
+    <string name="dpad_mode_title">Chế độ phím điều hướng</string>
+    <string name="dpad_mode_message">Con trỏ được ẩn và các phím mũi tên di chuyển giữa liên kết và nút điều khiển trên trang, với các trang web hỗ trợ.\n\nĐể thoát, nhấn Quay lại trên điều khiển hoặc giữ nút B trên tay cầm chơi game.</string>
+    <string name="link_open_in_new_tab">Mở trong thẻ mới</string>
+    <string name="link_open_in_app">Mở bằng ứng dụng khác</string>
+    <string name="link_download">Tải xuống</string>
+    <string name="link_copy">Sao chép địa chỉ</string>
+    <string name="link_copied">Đã sao chép địa chỉ</string>
+    <string name="link_share">Chia sẻ</string>
+    <string name="permission_request">Trang này muốn dùng:\n\n%s</string>
+    <string name="permission_location">Vị trí của bạn</string>
+    <string name="error_no_file_picker">Không có ứng dụng nào trên thiết bị có thể chọn tệp</string>
+    <string name="external_open_title">Mở bằng ứng dụng khác?</string>
+    <string name="external_open_message">Trang này muốn mở một địa chỉ do ứng dụng khác xử lý:</string>
+    <string name="external_no_app">Không có ứng dụng nào trên thiết bị mở được địa chỉ này</string>
+    <string name="error_no_app">Không có ứng dụng nào mở được</string>
+    <string name="http_auth_title">Đăng nhập vào trang này</string>
+    <string name="http_auth_user">Tên người dùng</string>
+    <string name="http_auth_password">Mật khẩu</string>
+    <string name="error_no_webview">Thiết bị này không có WebView dùng được. Hãy cài đặt hoặc cập nhật Android System WebView.</string>
+    <string name="cert_title">Kết nối này không riêng tư</string>
+    <string name="cert_site">Trang web</string>
+    <string name="cert_problem">Vấn đề</string>
+    <string name="cert_details">Chứng chỉ</string>
+    <string name="cert_go_back">Quay lại</string>
+    <string name="cert_proceed">Vẫn tiếp tục (không an toàn)</string>
+    <string name="cert_expired">Chứng chỉ đã hết hạn</string>
+    <string name="cert_wrong_site">Chứng chỉ thuộc về một trang web khác</string>
+    <string name="cert_bad_date">Chứng chỉ không hợp lệ vào ngày này</string>
+    <string name="cert_invalid">Chứng chỉ không hợp lệ</string>
+    <string name="cert_untrusted">Chứng chỉ không do tổ chức đáng tin cậy cấp</string>
+    <string name="blocker_state_paused">Tạm dừng</string>
+    <string name="blocker_state_loading">Đang tải quy tắc</string>
+    <string name="blocker_state_updating">Đang cập nhật quy tắc</string>
+    <string name="blocker_state_active">Đang chặn</string>
+    <string name="blocker_state_partial">Một phần quy tắc</string>
+    <string name="blocker_state_saved">Quy tắc đã lưu</string>
+    <string name="blocker_state_none">Không có quy tắc</string>
+    <string name="blocker_summary">Chặn quảng cáo: %1$s. Đã chặn %2$d trên trang này.</string>
+    <string name="popups_title">Cửa sổ bật lên: %s</string>
+    <string name="popups_dialog_blocked">Đã chặn một hộp thoại của trang này</string>
+    <string name="popups_window_blocked">Đã chặn một cửa sổ bật lên</string>
+    <string name="blocker_never">chưa bao giờ</string>
+    <string name="blocker_last_update">Cập nhật lần cuối</string>
+    <string name="blocker_update_lists">Cập nhật danh sách bộ lọc</string>
+    <string name="blocker_updating">Đang cập nhật danh sách bộ lọc…</string>
+    <string name="blocker_updated">Danh sách bộ lọc đã được cập nhật</string>
+    <string name="blocker_partial">Một số danh sách đã được cập nhật; các danh sách khác giữ quy tắc đã lưu.</string>
+    <string name="blocker_using_saved">Đang dùng quy tắc đã lưu; không tải xuống danh sách nào.</string>
+    <string name="blocker_not_refreshed">Chưa cập nhật: %1$s</string>
+    <string name="blocker_update_failed">Không tải được danh sách bộ lọc. Hãy kiểm tra kết nối hoặc địa chỉ danh sách.</string>
+    <string name="favorites_add">Thêm trang này</string>
+    <string name="favorites_empty">Chưa có mục yêu thích</string>
+    <string name="favorites_new">Mục yêu thích mới</string>
+    <string name="field_title">Tiêu đề</string>
+    <string name="field_address">Địa chỉ</string>
+    <string name="history_delete_selected">Xóa các trang đã chọn khỏi lịch sử?</string>
+    <string name="history_delete_all">Xóa toàn bộ lịch sử?</string>
+    <string name="download_started">Đã thêm tệp tải xuống. Sẽ lưu vào:\n%s</string>
+    <string name="nav_menu_downloads">Menu. %1$d tệp đang tải xuống</string>
+    <string name="downloads_empty">Chưa có tệp tải xuống</string>
+    <string name="download_cancelled">Đã hủy</string>
+    <string name="download_file_missing">Tệp không còn nữa</string>
+    <string name="download_no_app">Không có ứng dụng nào mở được loại tệp này</string>
+    <string name="download_open_folder">Hiển thị trong thư mục</string>
+    <string name="download_no_file_manager">Chưa cài trình quản lý tệp</string>
+    <string name="download_install">Cài đặt</string>
+    <string name="install_allow_unknown_sources">Bật \"Nguồn không xác định\" trong cài đặt hệ thống để cài ứng dụng.</string>
+    <string name="install_allow_this_app">Cho phép VireoLumaTV cài ứng dụng trong cài đặt hệ thống.</string>
+    <string name="download_storage_unavailable">Bộ nhớ không khả dụng</string>
+    <string name="download_folder_error">Không tạo được thư mục Tải xuống</string>
+    <string name="downloads_channel_description">Tiến trình tải xuống</string>
+    <string name="update_available_title">Có bản cập nhật</string>
+    <string name="update_available_message">Đã có phiên bản %s.</string>
+    <string name="update_none">VireoLumaTV đã là bản mới nhất</string>
+    <string name="update_failed">Không kiểm tra hoặc cài đặt được bản cập nhật</string>
+    <string name="settings_tab_general">Chung</string>
+    <string name="settings_tab_shortcuts">Phím tắt</string>
+    <string name="settings_tab_about">Giới thiệu</string>
+    <string name="settings_search_engine">Công cụ tìm kiếm</string>
+    <string name="settings_search_engine_address">Địa chỉ tìm kiếm ([query] được thay bằng nội dung bạn tìm)</string>
+    <string name="settings_home_page">Trang chủ</string>
+    <string name="settings_home_page_address">Địa chỉ trang chủ</string>
+    <string name="settings_user_agent_choice">Nhận dạng trình duyệt là</string>
+    <string name="settings_user_agent">Tác nhân người dùng</string>
+    <string name="settings_user_agent_custom">Tác nhân người dùng tùy chỉnh</string>
+    <string name="settings_keep_screen_on">Giữ màn hình luôn bật</string>
+    <string name="settings_stick_moves_pointer">Di chuyển con trỏ bằng cần analog</string>
+    <string name="settings_pointer_speed">Tốc độ tối đa của con trỏ</string>
+    <string name="settings_pointer_acceleration">Gia tốc con trỏ</string>
+    <string name="settings_percent_of_default">%d%% so với mặc định</string>
+    <string name="settings_darken_pages">Làm tối trang web (sau khi khởi động lại)</string>
+    <string name="settings_autoplay">Cho phép trang tự phát video và âm thanh</string>
+    <string name="settings_video_quality">Chất lượng video cao nhất</string>
+    <string name="settings_debugging">Gỡ lỗi trang web (sau khi khởi động lại)</string>
+    <string name="settings_debugging_warning">Gỡ lỗi cho phép bất kỳ ai có quyền gỡ lỗi trên thiết bị này đọc nội dung trang, cookie và dữ liệu phiên. Chỉ bật trên thiết bị tin cậy và khi đang khắc phục sự cố.</string>
+    <string name="settings_restart_needed">Khởi động lại VireoLumaTV để áp dụng</string>
+    <string name="settings_clear_cache">Xóa dữ liệu web đã lưu</string>
+    <string name="warning_title">Cảnh báo</string>
+    <string name="private_explained">Duyệt web riêng tư không giữ lịch sử, cookie, dữ liệu trang web hay nội dung biểu mẫu sau khi bạn thoát.\n\nTệp tải xuống và mục yêu thích vẫn được giữ. Các trang web bạn truy cập, mạng và nhà cung cấp internet vẫn có thể thấy hoạt động của bạn.</string>
+    <string name="shortcut_unassigned">Chưa gán</string>
+    <string name="shortcut_current_key">Phím:</string>
+    <string name="shortcut_key_code">Phím %d</string>
+    <string name="shortcut_assign">Gán phím</string>
+    <string name="shortcut_waiting">Nhấn một phím trên điều khiển…</string>
+    <string name="shortcut_reserved">Phím này dùng để di chuyển trong trình duyệt và không thể gán</string>
+    <string name="shortcut_long_press">Giữ</string>
+    <string name="media_play_pause">Phát / tạm dừng</string>
+    <string name="media_stop">Dừng phát</string>
+    <string name="media_rewind">Lùi 10 giây</string>
+    <string name="media_fast_forward">Tiến 10 giây</string>
+    <string-array name="tabs_actions">
+        <item>Thẻ mới</item>
+        <item>Đóng</item>
+        <item>Đóng tất cả</item>
+        <item>Chuyển sang trái</item>
+        <item>Chuyển sang phải</item>
+    </string-array>
+    <string-array name="popups_levels">
+        <item>Cho phép tất cả</item>
+        <item>Chặn hộp thoại</item>
+        <item>Chặn hộp thoại và cửa sổ do script mở</item>
+        <item>Chặn mọi cửa sổ mới</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>Trang khởi động VireoLumaTV</item>
+        <item>Công cụ tìm kiếm</item>
+        <item>Địa chỉ tùy chỉnh</item>
         <item>Trang trống</item>
     </string-array>
-
-  <string name="yes">CÓ</string>
-  <string name="no">KHÔNG</string>
-  <string name="site_asks_to_open_unknown_url">Trang web yêu cầu mở URL không xác định</string>
-  <string name="site_asks_to_open_unknown_url_message">Địa chỉ này cần ứng dụng khác. Cho phép Android mở địa chỉ?</string>
-  <string name="err_no_app_to_handle_url">Android không có ứng dụng cho địa chỉ này</string>
-  <string name="http_auth_title">Yêu cầu xác thực</string>
-  <string name="play_pause">Phát/Tạm dừng</string>
-  <string name="media_stop">Dừng phương tiện</string>
-  <string name="media_rewind">Tua lại phương tiện</string>
-  <string name="media_fast_forward">Tua nhanh phương tiện</string>
-  <string name="long_press">Nhấn giữ</string>
-  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Làm tối nội dung trang (cần khởi động lại)</string>
-  <string name="allow_autoplay_media">Cho phép tự động phát phương tiện</string>
-  <string name="web_engine_debug">Gỡ lỗi công cụ web (cần khởi động lại)</string>
-  <string name="web_engine_debug_warning_message">Công cụ gỡ lỗi thiết bị có thể xem trang đang mở và dữ liệu phiên, kể cả cookie. Chỉ bật kiểm tra khi chẩn đoán sự cố trên thiết bị đáng tin cậy.</string>
-    <string name="vireo_project_credit">VireoLumaTV của ReinierTutoriales · Mã nguồn</string>
-    <string name="based_on_tv_bro_sources">Dựa trên mã nguồn của TV Bro: %s</string>
-    <string name="cursor_grab_mode">Di chuyển trang</string>
-    <string name="link_actions">Thao tác liên kết</string>
-    <string name="adblock_updating">Đang cập nhật danh sách bộ lọc…</string>
-    <string name="adblock_updated">Đã cập nhật danh sách bộ lọc</string>
-    <string name="adblock_partial_update">Một số danh sách đã được cập nhật; giữ lại các quy tắc đã lưu.</string>
-    <string name="adblock_using_saved">Đang dùng quy tắc đã lưu. Không tải được danh sách mới.</string>
-    <string name="adblock_lists_not_refreshed">Chưa cập nhật: %1$s</string>
-    <string name="adblock_update_error">Không thể tải danh sách bộ lọc. Kiểm tra kết nối hoặc URL danh sách.</string>
-    <string name="video_max_quality">Chất lượng video tối đa</string>
-    <string name="up_to_date">Bạn đang dùng phiên bản mới nhất</string>
-    <string name="update_check_failed">Không thể kiểm tra hoặc cài đặt bản cập nhật</string>
-    <string name="last_update">Cập nhật mới nhất</string>
-  <string name="adblock_status_paused">Tạm dừng</string>
-  <string name="adblock_status_loading">Đang tải</string>
-  <string name="adblock_status_refreshing">Đang cập nhật</string>
-  <string name="adblock_status_active">Đang chặn</string>
-  <string name="adblock_status_partial">Một phần</string>
-  <string name="adblock_status_saved">Từ bộ nhớ đệm</string>
-  <string name="adblock_status_unavailable">Không có quy tắc</string>
-  <string name="adblock_status_action_s">Bật hoặc tắt chặn. %1$s. Đã chặn %2$d mục trên trang này.</string>
-  <string name="username">Tên tài khoản</string>
-  <string name="password">Mật khẩu</string>
+    <string-array name="settings_video_qualities">
+        <item>Tự động</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </string-array>
 </resources>

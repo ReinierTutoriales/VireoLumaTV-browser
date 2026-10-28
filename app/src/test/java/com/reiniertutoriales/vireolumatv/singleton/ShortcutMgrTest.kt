@@ -82,7 +82,7 @@ class ShortcutMgrTest {
     @Test fun bindingsReadAsWords() {
         val context = RuntimeEnvironment.getApplication()
         val text = KeyBinding(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.META_CTRL_ON, longPress = true).describe(context)
-        assertTrue(text, text.startsWith("Long press CTRL+"))
+        assertTrue(text, text.startsWith(context.getString(com.reiniertutoriales.vireolumatv.R.string.shortcut_long_press) + " CTRL+"))
         assertTrue("No raw constant names: $text", "KEYCODE_" !in text)
     }
 }

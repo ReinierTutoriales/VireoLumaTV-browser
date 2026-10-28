@@ -9,11 +9,19 @@
     android:padding="24dp">
 
     <TextView
+        android:id="@+id/tvDialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:accessibilityHeading="true"
+        android:textAppearance="@style/TextAppearance.Vireo.Title" />
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:labelFor="@+id/etTitle"
         android:paddingStart="4dp"
-        android:text="@string/title"
+        android:text="@string/field_title"
         android:textAppearance="@style/TextAppearance.Vireo.Secondary" />
 
     <EditText
@@ -31,7 +39,7 @@
         android:layout_marginTop="16dp"
         android:labelFor="@+id/etUrl"
         android:paddingStart="4dp"
-        android:text="@string/url"
+        android:text="@string/field_address"
         android:textAppearance="@style/TextAppearance.Vireo.Secondary" />
 
     <EditText
@@ -57,13 +65,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/control_gap"
-            android:text="@string/cancel" />
+            android:text="@string/action_cancel" />
 
         <Button
             android:id="@+id/btnDone"
             style="@style/Widget.Vireo.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/done" />
+            android:text="@string/action_done" />
     </LinearLayout>
 </LinearLayout>

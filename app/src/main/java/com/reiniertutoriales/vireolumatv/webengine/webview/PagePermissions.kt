@@ -41,14 +41,14 @@ internal class PagePermissions(
         request?.deny()
         request = newRequest
         dialog = AlertDialog.Builder(activity)
-            .setMessage(activity.getString(R.string.web_perm_request_confirmation, newRequest.resources.joinToString("\n")))
+            .setMessage(activity.getString(R.string.permission_request, newRequest.resources.joinToString("\n")))
             .setCancelable(false)
-            .setNegativeButton(R.string.deny) { _, _ ->
+            .setNegativeButton(R.string.action_deny) { _, _ ->
                 request?.deny()
                 request = null
                 dialog = null
             }
-            .setPositiveButton(R.string.allow) { _, _ ->
+            .setPositiveButton(R.string.action_allow) { _, _ ->
                 dialog = null
                 val approved = request ?: return@setPositiveButton
                 approve(activity, approved)
@@ -90,13 +90,13 @@ internal class PagePermissions(
         locationOrigin = origin
         locationCallback = callback
         dialog = AlertDialog.Builder(activity)
-            .setMessage(activity.getString(R.string.web_perm_request_confirmation, activity.getString(R.string.location)))
+            .setMessage(activity.getString(R.string.permission_request, activity.getString(R.string.permission_location)))
             .setCancelable(false)
-            .setNegativeButton(R.string.deny) { _, _ ->
+            .setNegativeButton(R.string.action_deny) { _, _ ->
                 answerLocation(false)
                 dialog = null
             }
-            .setPositiveButton(R.string.allow) { _, _ ->
+            .setPositiveButton(R.string.action_allow) { _, _ ->
                 dialog = null
                 if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     answerLocation(true)

@@ -3,12 +3,12 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import com.reiniertutoriales.vireolumatv.R
 
 internal enum class LinkAction(val label: Int) {
-    RELOAD(R.string.refresh_page),
-    OPEN_TAB(R.string.open_in_new_tab),
-    OPEN_APP(R.string.open_in_external_application),
-    COPY(R.string.copy_to_clipboard),
-    DOWNLOAD(R.string.download),
-    SHARE(R.string.share_url);
+    RELOAD(R.string.nav_reload),
+    OPEN_TAB(R.string.link_open_in_new_tab),
+    OPEN_APP(R.string.link_open_in_app),
+    COPY(R.string.link_copy),
+    DOWNLOAD(R.string.link_download),
+    SHARE(R.string.link_share);
 
     companion object {
         fun available(url: String?): List<LinkAction> {

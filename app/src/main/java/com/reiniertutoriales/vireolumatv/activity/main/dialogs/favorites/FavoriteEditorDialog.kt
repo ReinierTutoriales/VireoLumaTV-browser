@@ -1,44 +1,42 @@
 package com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites
 
-import android.app.Dialog
 import android.content.Context
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatDialog
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 import com.reiniertutoriales.vireolumatv.utils.toast
 
-/** Edits a bookmark's title and address; an address without "scheme://" gets https://. */
-class FavoriteEditorDialog(context: Context, private val callback: Callback, item: FavoriteItem) :
-    Dialog(context) {
-
-    interface Callback {
-        fun onDone(item: FavoriteItem)
-    }
-
+/**
+ * Edits a copy of a favorite and hands it to [onSave]; the original is untouched until saved. An
+ * address is required, and one without "scheme://" gets https://.
+ */
+class FavoriteEditorDialog(context: Context, item: FavoriteItem, private val onSave: (FavoriteItem) -> Unit) :
+    AppCompatDialog(context, R.style.ThemeOverlay_Vireo_Dialog) {
     private val draft = item.copyForEdit()
 
     init {
-        setCancelable(true)
-        setTitle(if (draft.id == 0L) R.string.new_bookmark else R.string.edit)
-        setContentView(R.layout.dialog_new_favorite_item)
-        val title = findViewById<EditText>(R.id.etTitle).apply { setText(draft.title) }
-        val address = findViewById<EditText>(R.id.etUrl).apply { setText(draft.url) }
-        findViewById<Button>(R.id.btnCancel).setOnClickListener { dismiss() }
-        findViewById<Button>(R.id.btnDone).setOnClickListener {
+        setContentView(R.layout.dialog_favorite_editor)
+        findViewById<TextView>(R.id.tvDialogTitle)?.setText(if (draft.id == 0L) R.string.favorites_new else R.string.action_edit)
+        val title = checkNotNull(findViewById<EditText>(R.id.etTitle)).apply { setText(draft.title) }
+        val address = checkNotNull(findViewById<EditText>(R.id.etUrl)).apply { setText(draft.url) }
+        findViewById<Button>(R.id.btnCancel)?.setOnClickListener { dismiss() }
+        findViewById<Button>(R.id.btnDone)?.setOnClickListener {
             val url = address.text.toString().trim()
             if (url.isEmpty()) { // An empty address is not a bookmark: keep the dialog open.
                 context.toast(R.string.error)
                 return@setOnClickListener
             }
             draft.title = title.text.toString()
-            draft.url = if (SCHEME.matches(url)) url else "https://$url"
-            callback.onDone(draft)
+            draft.url = if (WITH_SCHEME.matches(url)) url else "https://$url"
             dismiss()
+            onSave(draft)
         }
     }
 
     private companion object {
-        val SCHEME = Regex("^[A-Za-z]+://.*$")
+        val WITH_SCHEME = Regex("^[A-Za-z]+://.*$")
     }
 }

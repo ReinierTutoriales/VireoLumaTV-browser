@@ -1,187 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">VireoLumaTV</string>
-    <string name="app_name_short" translatable="false">VireoLumaTV</string>
-    <string name="vireo_project_credit">VireoLumaTV by ReinierTutoriales · Source code</string>
-    <string name="based_on_tv_bro_sources">Based on the source code of TV Bro: %s</string>
+    <string name="app_name" translatable="false">VireoLumaTV</string>
+    <string name="download_progress_size" translatable="false">%1$s / %2$s</string>
+    <string name="about_engine" translatable="false">WebView: %s</string>
+    <string name="about_source">VireoLumaTV by ReinierTutoriales · Source code</string>
+    <string name="about_tv_bro_credit">Based on the source code of TV Bro: %s</string>
+    <string name="about_tagline">A web browser made for the TV remote</string>
+    <string name="about_version">Version %s</string>
+    <string name="about_build">Build: %1$s · %2$s</string>
+    <string name="about_license">License</string>
+    <string name="about_privacy">Privacy policy</string>
     <string name="error">Error</string>
-    <string name="ok">OK</string>
-    <string name="url_prompt">Search or enter an address</string>
-    <string name="web_perm_request_confirmation">Allow this page to access:\n\n%s</string>
-    <string name="allow">Allow</string>
-    <string name="deny">Deny</string>
-    <string name="location">Location</string>
-    <string name="open_in_new_tab">Open another tab</string>
-    <string name="download_started">Download queued. Destination:\n%s</string>
-    <string name="err_cant_open_file_chooser">File selection is unavailable</string>
-    <string name="bookmarks">Bookmarks</string>
-    <string name="add">Add</string>
-    <string name="edit">Edit</string>
-    <string name="no_bookmarks_yet">Your saved pages will appear here</string>
-    <string name="new_bookmark">New bookmark</string>
-    <string name="done">Done</string>
-    <string name="title">Title</string>
-    <string name="url" translatable="false">URL</string>
-    <string name="choose_default_search_engine">Default search provider</string>
-    <string name="search_engine_url_with_query_placeholder_query">Search URL: place [query] where the search text belongs</string>
-    <string name="user_agent_string">Browser identification</string>
-    <string name="choose_user_agent_string">Identify this browser as</string>
-    <string name="edit_user_agent_string">Custom browser identification</string>
-    <string name="nothing">Nothing</string>
-    <string name="cancelled">Cancelled</string>
-    <string name="size_progress" translatable="false">%1$s / %2$s</string>
-    <string name="download">Download</string>
-    <string name="file_not_found">File not found</string>
-    <string name="no_app_for_file_type">Install an app that can open this file</string>
-    <string name="delete">Delete</string>
-    <string name="cancel">Cancel</string>
-    <string name="msg_delete_history">Remove the selected visits?</string>
-    <string name="msg_delete_history_all">Remove every saved visit?</string>
-    <string name="open_folder">Show download folder</string>
-    <string name="no_file_explorer_msg">No file manager is available. Use the system Downloads screen.</string>
-    <string name="shortcuts">Shortcuts</string>
-    <string name="favorites">Favorites</string>
-    <string name="history">History</string>
-    <string name="settings">Settings</string>
-    <string name="shortcut">Shortcut</string>
-    <string name="navigate_back">Previous page</string>
-    <string name="navigate_home">Go to start page</string>
-    <string name="refresh_page">Reload page</string>
-    <string name="zoom_in">Zoom in</string>
-    <string name="zoom_out">Zoom out</string>
-    <string name="cursor_grab_mode">Scroll with the pointer</string>
-    <string name="link_actions">Link actions</string>
-    <string name="not_set">Unassigned</string>
-    <string name="current_key">Assigned button:</string>
-    <string name="key_code_d">Key %d</string>
-    <string name="web_engine_version_s" translatable="false">WebView: %s</string>
-    <string name="set_key_for_action">Choose a remote button</string>
-    <string name="press_eny_key">Press the button to assign</string>
-    <string name="shortcut_key_reserved_for_navigation">Choose another button; this one controls navigation</string>
-    <string name="clear">Clear</string>
-    <string name="install">Install</string>
-    <string name="turn_on_unknown_sources">Allow installation from unknown sources in Android settings</string>
-    <string name="turn_on_unknown_sources_for_app">In Android settings, allow this browser to install downloaded apps</string>
-    <string name="storage_not_mounted">Storage not mounted</string>
-    <string name="can_not_create_downloads">The download folder could not be created</string>
-    <string name="new_version_dialog_title">Update ready</string>
-    <string name="downloads">Downloads</string>
-    <string name="downloads_notifications_description">Transfer progress and completed files</string>
-    <string name="main">Main</string>
-    <string name="version_and_updates">About and updates</string>
-    <string name="version_s">Version: %s</string>
-    <string name="build_flavor_s">Variant: %1$s · %2$s</string>
-    <string name="view_license">Licenses</string>
-    <string name="privacy_policy">Privacy</string>
-    <string name="update">Update</string>
-    <string name="new_version_available_s">Available update: %s</string>
-    <string name="web_browser_optimized_for_tvs">Browse with your TV remote</string>
-    <string name="warning">Warning</string>
-    <string name="err_webview_can_not_link">Android WebView is unavailable. Enable, install or update the system WebView provider.</string>
-    <string name="open_a_new_tab_here">Add a tab at this position</string>
-    <string name="tabs">Tabs</string>
-    <array name="tabs_options">
-        <item>Open new Tab</item>
-        <item>Close current</item>
+    <string name="action_allow">Allow</string>
+    <string name="action_deny">Don\'t allow</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_done">Done</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_update">Update</string>
+    <string name="action_exit">Exit</string>
+    <string name="action_open_store">Find it in the store</string>
+    <string name="action_dont_show_again">Don\'t show again</string>
+    <string name="action_open">Open</string>
+    <string name="address_hint">Search or type a web address</string>
+    <string name="nav_back">Back</string>
+    <string name="nav_forward">Forward</string>
+    <string name="nav_reload">Reload</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_menu">Menu</string>
+    <string name="blocker_toggle">Ad blocking</string>
+    <string name="tabs_new">New tab</string>
+    <string name="tabs_title">Tab</string>
+    <string name="menu_history">History</string>
+    <string name="menu_favorites">Favorites</string>
+    <string name="menu_downloads">Downloads</string>
+    <string name="menu_private">Incognito mode</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_close_tab">Close tab</string>
+    <string name="menu_quit">Exit VireoLumaTV</string>
+    <string name="pointer_move_page">Move the page</string>
+    <string name="pointer_link_options">Link options</string>
+    <string name="pointer_zoom_in">Zoom in</string>
+    <string name="pointer_zoom_out">Zoom out</string>
+    <string name="dpad_mode_title">D-pad mode</string>
+    <string name="dpad_mode_message">The pointer hides and the arrows move between the page\'s links and controls, on sites that support it.\n\nTo leave this mode, press Back on the remote or hold B on a game controller.</string>
+    <string name="link_open_in_new_tab">Open in a new tab</string>
+    <string name="link_open_in_app">Open in another app</string>
+    <string name="link_download">Download</string>
+    <string name="link_copy">Copy address</string>
+    <string name="link_copied">Address copied</string>
+    <string name="link_share">Share</string>
+    <string name="permission_request">This page wants to use:\n\n%s</string>
+    <string name="permission_location">Your location</string>
+    <string name="error_no_file_picker">No app on this device can pick files</string>
+    <string name="external_open_title">Open in another app?</string>
+    <string name="external_open_message">This page wants to open an address handled by another app:</string>
+    <string name="external_no_app">No app on this device can open this address</string>
+    <string name="error_no_app">No app can open this</string>
+    <string name="http_auth_title">Sign in to this site</string>
+    <string name="http_auth_user">User name</string>
+    <string name="http_auth_password">Password</string>
+    <string name="error_no_webview">This device has no usable WebView. Install or update Android System WebView.</string>
+    <string name="cert_title">This connection is not private</string>
+    <string name="cert_site">Site</string>
+    <string name="cert_problem">Problem</string>
+    <string name="cert_details">Certificate</string>
+    <string name="cert_go_back">Go back</string>
+    <string name="cert_proceed">Continue anyway (unsafe)</string>
+    <string name="cert_expired">The certificate has expired</string>
+    <string name="cert_wrong_site">The certificate belongs to a different site</string>
+    <string name="cert_bad_date">The certificate is not valid on this date</string>
+    <string name="cert_invalid">The certificate is not valid</string>
+    <string name="cert_untrusted">The certificate was not issued by a trusted authority</string>
+    <string name="blocker_state_paused">Paused</string>
+    <string name="blocker_state_loading">Loading rules</string>
+    <string name="blocker_state_updating">Updating rules</string>
+    <string name="blocker_state_active">Blocking</string>
+    <string name="blocker_state_partial">Some rules</string>
+    <string name="blocker_state_saved">Saved rules</string>
+    <string name="blocker_state_none">No rules</string>
+    <string name="blocker_summary">Ad blocking: %1$s. %2$d blocked on this page.</string>
+    <string name="popups_title">Pop-ups: %s</string>
+    <string name="popups_dialog_blocked">A dialog from this page was blocked</string>
+    <string name="popups_window_blocked">A pop-up window was blocked</string>
+    <string name="blocker_never">never</string>
+    <string name="blocker_last_update">Last updated</string>
+    <string name="blocker_update_lists">Update filter lists</string>
+    <string name="blocker_updating">Updating filter lists…</string>
+    <string name="blocker_updated">Filter lists are up to date</string>
+    <string name="blocker_partial">Some lists were updated; the others keep their saved rules.</string>
+    <string name="blocker_using_saved">Using saved rules; no list was downloaded.</string>
+    <string name="blocker_not_refreshed">Not updated: %1$s</string>
+    <string name="blocker_update_failed">Could not load the filter lists. Check the connection or the list address.</string>
+    <string name="favorites_add">Add this page</string>
+    <string name="favorites_empty">No favorites yet</string>
+    <string name="favorites_new">New favorite</string>
+    <string name="field_title">Title</string>
+    <string name="field_address">Address</string>
+    <string name="history_delete_selected">Delete the selected pages from history?</string>
+    <string name="history_delete_all">Delete all history?</string>
+    <string name="download_started">Download added. It will be saved to:\n%s</string>
+    <string name="nav_menu_downloads">Menu. %1$d downloads in progress</string>
+    <string name="downloads_empty">No downloads yet</string>
+    <string name="download_cancelled">Cancelled</string>
+    <string name="download_file_missing">The file is no longer there</string>
+    <string name="download_no_app">No app can open this type of file</string>
+    <string name="download_open_folder">Show in folder</string>
+    <string name="download_no_file_manager">No file manager is installed</string>
+    <string name="download_install">Install</string>
+    <string name="install_allow_unknown_sources">Turn on \"Unknown sources\" in the system settings to install apps.</string>
+    <string name="install_allow_this_app">Allow VireoLumaTV to install apps in the system settings.</string>
+    <string name="download_storage_unavailable">Storage is not available</string>
+    <string name="download_folder_error">Could not create the Downloads folder</string>
+    <string name="downloads_channel_description">Progress of your downloads</string>
+    <string name="update_available_title">Update available</string>
+    <string name="update_available_message">Version %s is available.</string>
+    <string name="update_none">VireoLumaTV is up to date</string>
+    <string name="update_failed">Could not check for or install the update</string>
+    <string name="settings_tab_general">General</string>
+    <string name="settings_tab_shortcuts">Shortcuts</string>
+    <string name="settings_tab_about">About</string>
+    <string name="settings_search_engine">Search engine</string>
+    <string name="settings_search_engine_address">Search address ([query] is replaced by your search)</string>
+    <string name="settings_home_page">Home page</string>
+    <string name="settings_home_page_address">Home page address</string>
+    <string name="settings_user_agent_choice">Identify the browser as</string>
+    <string name="settings_user_agent">User agent</string>
+    <string name="settings_user_agent_custom">Custom user agent</string>
+    <string name="settings_keep_screen_on">Keep the screen on</string>
+    <string name="settings_stick_moves_pointer">Move the pointer with the stick</string>
+    <string name="settings_pointer_speed">Pointer top speed</string>
+    <string name="settings_pointer_acceleration">Pointer acceleration</string>
+    <string name="settings_percent_of_default">%d%% of default</string>
+    <string name="settings_darken_pages">Darken web pages (after restart)</string>
+    <string name="settings_autoplay">Let pages play video and sound by themselves</string>
+    <string name="settings_video_quality">Highest video quality</string>
+    <string name="settings_debugging">Web page debugging (after restart)</string>
+    <string name="settings_debugging_warning">Debugging lets anyone with debug access to this device read page content, cookies and session data. Turn it on only on a trusted device, while troubleshooting.</string>
+    <string name="settings_restart_needed">Restart VireoLumaTV to apply this</string>
+    <string name="settings_clear_cache">Clear cached web data</string>
+    <string name="warning_title">Warning</string>
+    <string name="private_explained">Private browsing doesn\'t keep your history, cookies, site data or form entries after you leave it.\n\nDownloads and favorites are kept. The sites you visit, your network and your internet provider can still see your activity.</string>
+    <string name="shortcut_unassigned">Not assigned</string>
+    <string name="shortcut_current_key">Key:</string>
+    <string name="shortcut_key_code">Key %d</string>
+    <string name="shortcut_assign">Assign a key</string>
+    <string name="shortcut_waiting">Press a key on the remote…</string>
+    <string name="shortcut_reserved">This key moves around the browser and cannot be assigned</string>
+    <string name="shortcut_long_press">Hold</string>
+    <string name="media_play_pause">Play / pause</string>
+    <string name="media_stop">Stop playback</string>
+    <string name="media_rewind">Back 10 seconds</string>
+    <string name="media_fast_forward">Forward 10 seconds</string>
+    <string-array name="tabs_actions">
+        <item>New tab</item>
+        <item>Close</item>
         <item>Close all</item>
         <item>Move left</item>
         <item>Move right</item>
-    </array>
-    <string name="ssl_expired">Certificate validity has ended</string>
-    <string name="ssl_idmismatch">The certificate does not match this server</string>
-    <string name="ssl_date_invalid">Certificate dates are not valid</string>
-    <string name="ssl_invalid">The certificate could not be verified</string>
-    <string name="ssl_untrusted">The certificate issuer is not trusted</string>
-    <string name="back_to_safety">Cancel and go back</string>
-    <string name="go_im_aware">Continue despite the certificate error</string>
-    <string name="connection_isnt_secure">Certificate verification failed</string>
-    <string name="hostname">Server:</string>
-    <string name="err_desk">Certificate problem:</string>
-    <string name="details">Technical details:</string>
-    <string name="exit">Exit</string>
-    <string name="find_in_apps_store">Look for an app in the store</string>
-    <string name="app_menu">Menu</string>
-    <string name="close_application">Leave browser</string>
-    <string name="close_tab">Close this tab</string>
-    <string name="navigate_forward">Next page</string>
-    <string name="toggle_ads_blocking">Switch page blocking on or off</string>
-    <string name="adblock_status_paused">Paused</string>
-    <string name="adblock_status_loading">Loading</string>
-    <string name="adblock_status_refreshing">Updating</string>
-    <string name="adblock_status_active">Blocking</string>
-    <string name="adblock_status_partial">Partial</string>
-    <string name="adblock_status_saved">Cached</string>
-    <string name="adblock_status_unavailable">No rules</string>
-    <string name="adblock_status_action_s">Toggle blocking. %1$s. %2$d blocked on this page.</string>
-    <string name="never">never</string>
-    <string name="update_ad_blocker_list">Refresh filter sources</string>
-    <string name="toggle_keep_screen_on">Keep screen on</string>
-    <string name="navigate_with_joystick_axes">Use the gamepad stick as a pointer</string>
-    <string name="cursor_max_speed">Pointer speed limit</string>
-    <string name="cursor_acceleration">Pointer acceleration</string>
-    <string name="cursor_physics_percent">%d%% of default</string>
-    <string name="direct_navigation_mode_title">Send remote keys to the page</string>
-    <string name="direct_navigation_mode_message">The pointer is hidden in this mode. The page receives remote and gamepad keys directly; its own keyboard support determines what can be selected.\n\nReturn to the pointer with Back on the remote, or hold B on the gamepad.</string>
-    <string name="need_restart">Restart the browser to apply</string>
-    <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Darken page content (restart required)</string>
-    <string name="allow_autoplay_media">Let sites start media without a click</string>
-    <string name="web_engine_debug">Inspect WebView (restart required)</string>
-    <string name="web_engine_debug_warning_message">Device debugging tools can inspect open pages and session data, including cookies. Enable inspection only while diagnosing a problem on a trusted device.</string>
-    <string name="incognito_mode">Incognito mode</string>
-    <string name="incognito_mode_hint">Visits in this session are excluded from normal browsing history. Private mode does not hide your connection from websites, your network administrator or your internet provider.\n\nDownloaded files and saved bookmarks remain on the device.</string>
-    <string name="don_t_show_again">Hide this notice next time</string>
-    <string name="clear_web_cache">Remove cached web content</string>
-    <string name="block_popups_s">Window policy: %s</string>
-    <string name="popup_dialog_blocked">Page dialog prevented</string>
-    <string name="new_tab_blocked">Page window prevented</string>
-    <array name="popup_blocking_level">
-        <item>Not block</item>
+    </string-array>
+    <string-array name="popups_levels">
+        <item>Allow all</item>
         <item>Block dialogs</item>
-        <item>Also block new tabs (script-initiated)</item>
-        <item>Block any new windows (maximal blocking)</item>
-    </array>
-    <string name="copy_to_clipboard">Copy to clipboard</string>
-    <string name="copied_to_clipboard">Copied to clipboard</string>
-    <string name="share_url">Share URL</string>
-    <string name="open_in_external_application">Open with another app</string>
-    <string name="external_app_open_error">No compatible app is installed</string>
-    <string name="home_page">Home page</string>
-    <string name="custom_home_page_url">Start page address</string>
-    <array name="home_page_modes">
-        <item>VireoLumaTV start</item>
-        <item>Search provider</item>
+        <item>Block dialogs and windows opened by scripts</item>
+        <item>Block every new window</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>VireoLumaTV start page</item>
+        <item>Search engine</item>
         <item>Custom address</item>
-        <item>Empty page</item>
-    </array>
-
-
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="site_asks_to_open_unknown_url">Open a link outside the browser?</string>
-    <string name="site_asks_to_open_unknown_url_message">This address needs another app. Allow Android to open it?</string>
-    <string name="err_no_app_to_handle_url">Android has no app for this address</string>
-    <string name="http_auth_title">Sign in to this server</string>
-    <string name="play_pause">Play/Pause</string>
-    <string name="media_stop">Stop playback</string>
-    <string name="media_rewind">Seek back 10 seconds</string>
-    <string name="media_fast_forward">Seek forward 10 seconds</string>
-    <string name="long_press">Long press</string>
-    <string name="adblock_updating">Updating filter lists…</string>
-    <string name="adblock_updated">Filter lists updated</string>
-    <string name="adblock_partial_update">Some lists updated; saved rules retained.</string>
-    <string name="adblock_using_saved">Using saved rules. No new list was downloaded.</string>
-    <string name="adblock_lists_not_refreshed">Not refreshed: %1$s</string>
-    <string name="adblock_update_error">Could not load filter lists. Check the connection or list URL.</string>
-    <string name="video_max_quality">Maximum video quality</string>
-    <array name="video_max_qualities">
+        <item>Blank page</item>
+    </string-array>
+    <string-array name="settings_video_qualities">
         <item>Automatic</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>
-    </array>
-    <string name="up_to_date">You have the latest version</string>
-    <string name="update_check_failed">Could not check or install the update</string>
-    <string name="last_update">Last update</string>
-    <string name="username">Username</string>
-    <string name="password">Password</string>
-    <string name="app_menu_downloads">Menu. %1$d active downloads</string>
+    </string-array>
 </resources>

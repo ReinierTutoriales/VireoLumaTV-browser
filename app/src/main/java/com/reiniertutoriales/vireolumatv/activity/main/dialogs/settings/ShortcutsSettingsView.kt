@@ -32,5 +32,5 @@ class ShortcutsSettingsView @JvmOverloads constructor(
     }
 
     private fun keyText(shortcuts: ShortcutMgr, shortcut: Shortcut): String =
-        shortcuts.binding(shortcut)?.describe(context) ?: context.getString(R.string.not_set)
+        shortcuts.binding(shortcut)?.describe(context) ?: context.getString(R.string.shortcut_unassigned)
 }

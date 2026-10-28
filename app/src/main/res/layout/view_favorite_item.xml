@@ -66,7 +66,7 @@
         android:id="@+id/ibDelete"
         style="@style/Widget.Vireo.IconButton"
         android:layout_marginStart="8dp"
-        android:contentDescription="@string/delete"
+        android:contentDescription="@string/action_delete"
         android:src="@drawable/ic_delete"
         android:visibility="gone" />
 </LinearLayout>

@@ -14,13 +14,13 @@ import com.reiniertutoriales.vireolumatv.R
 
 /** Actions offered by the application menu, in display order. */
 internal enum class AppMenuEntry(@StringRes val label: Int, @DrawableRes val icon: Int) {
-    HISTORY(R.string.history, R.drawable.ic_history),
-    FAVORITES(R.string.favorites, R.drawable.ic_bookmark),
-    DOWNLOADS(R.string.downloads, R.drawable.ic_download),
-    INCOGNITO(R.string.incognito_mode, R.drawable.ic_incognito),
-    SETTINGS(R.string.settings, R.drawable.ic_settings),
-    CLOSE_TAB(R.string.close_tab, R.drawable.ic_tab_close),
-    CLOSE_APPLICATION(R.string.close_application, R.drawable.ic_exit),
+    HISTORY(R.string.menu_history, R.drawable.ic_history),
+    FAVORITES(R.string.menu_favorites, R.drawable.ic_bookmark),
+    DOWNLOADS(R.string.menu_downloads, R.drawable.ic_download),
+    INCOGNITO(R.string.menu_private, R.drawable.ic_incognito),
+    SETTINGS(R.string.menu_settings, R.drawable.ic_settings),
+    CLOSE_TAB(R.string.menu_close_tab, R.drawable.ic_tab_close),
+    CLOSE_APPLICATION(R.string.menu_quit, R.drawable.ic_exit),
 }
 
 internal fun appMenuEntries(): List<AppMenuEntry> = AppMenuEntry.entries.toList()

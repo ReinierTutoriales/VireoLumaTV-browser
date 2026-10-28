@@ -26,17 +26,17 @@
         <RadioButton
             android:id="@+id/btnMainTab"
             style="@style/Widget.Vireo.Tab"
-            android:text="@string/main" />
+            android:text="@string/settings_tab_general" />
 
         <RadioButton
             android:id="@+id/btnShortcutsTab"
             style="@style/Widget.Vireo.Tab"
-            android:text="@string/shortcuts" />
+            android:text="@string/settings_tab_shortcuts" />
 
         <RadioButton
             android:id="@+id/btnVersionTab"
             style="@style/Widget.Vireo.Tab"
-            android:text="@string/version_and_updates" />
+            android:text="@string/settings_tab_about" />
     </RadioGroup>
 
     <FrameLayout

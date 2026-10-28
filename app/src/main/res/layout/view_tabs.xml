@@ -22,7 +22,7 @@
         style="@style/Widget.Vireo.IconButton"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:contentDescription="@string/open_a_new_tab_here"
+        android:contentDescription="@string/tabs_new"
         android:nextFocusUp="@+id/etUrl"
         android:src="@drawable/ic_add" />
 </merge>

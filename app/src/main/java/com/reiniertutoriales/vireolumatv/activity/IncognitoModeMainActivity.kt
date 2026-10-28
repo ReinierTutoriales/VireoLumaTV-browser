@@ -30,9 +30,9 @@ class IncognitoModeMainActivity : MainActivity() {
 /** FragmentManager restores the notice across recreation instead of opening a second dialog. */
 class PrivateSessionNotice : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = AlertDialog.Builder(requireContext())
-        .setTitle(R.string.incognito_mode)
-        .setMessage(R.string.incognito_mode_hint)
+        .setTitle(R.string.menu_private)
+        .setMessage(R.string.private_explained)
         .setPositiveButton(android.R.string.ok, null)
-        .setNeutralButton(R.string.don_t_show_again) { _, _ -> AppContext.config.incognitoModeHintSuppress = true }
+        .setNeutralButton(R.string.action_dont_show_again) { _, _ -> AppContext.config.incognitoModeHintSuppress = true }
         .create()
 }

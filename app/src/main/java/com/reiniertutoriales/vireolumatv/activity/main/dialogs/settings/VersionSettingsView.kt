@@ -39,20 +39,20 @@ class VersionSettingsView @JvmOverloads constructor(
     init {
         val rows = SettingsRows(LayoutInflater.from(context).inflate(R.layout.view_settings_main, this, true)
             .findViewById<LinearLayout>(R.id.settingsList))
-        rows.info(context.getString(R.string.app_name_short), sizeSp = 20f)
-        rows.info(context.getString(R.string.web_browser_optimized_for_tvs))
-        rows.value(context.getString(R.string.vireo_project_credit), null, R.id.rowProjectSource) { open(SOURCES_URL) }
+        rows.info(context.getString(R.string.app_name), sizeSp = 20f)
+        rows.info(context.getString(R.string.about_tagline))
+        rows.value(context.getString(R.string.about_source), null, R.id.rowProjectSource) { open(SOURCES_URL) }
         // Modified binaries must state in an About window that they use TV Bro's sources, with the link.
-        rows.value(context.getString(R.string.based_on_tv_bro_sources, TV_BRO_SOURCES_URL), null, R.id.rowTvBroSource) {
+        rows.value(context.getString(R.string.about_tv_bro_credit, TV_BRO_SOURCES_URL), null, R.id.rowTvBroSource) {
             open(TV_BRO_SOURCES_URL)
         }
-        rows.info(context.getString(R.string.version_s, BuildConfig.VERSION_NAME))
-        rows.info(context.getString(R.string.build_flavor_s, BuildConfig.FLAVOR, "WebView"))
-        rows.info(context.getString(R.string.web_engine_version_s, Engines.version))
-        rows.value(context.getString(R.string.view_license), null, R.id.rowLicense) { open(LICENSE_URL) }
-        rows.value(context.getString(R.string.privacy_policy), null, R.id.rowPrivacyPolicy) { open(PRIVACY_URL) }
+        rows.info(context.getString(R.string.about_version, BuildConfig.VERSION_NAME))
+        rows.info(context.getString(R.string.about_build, BuildConfig.FLAVOR, "WebView"))
+        rows.info(context.getString(R.string.about_engine, Engines.version))
+        rows.value(context.getString(R.string.about_license), null, R.id.rowLicense) { open(LICENSE_URL) }
+        rows.value(context.getString(R.string.about_privacy), null, R.id.rowPrivacyPolicy) { open(PRIVACY_URL) }
         if (BuildConfig.BUILT_IN_AUTO_UPDATE) {
-            updateButton = rows.button(R.string.update, R.id.btnCheckUpdate) { checkForUpdates() }
+            updateButton = rows.button(R.string.action_update, R.id.btnCheckUpdate) { checkForUpdates() }
         }
     }
 
@@ -75,17 +75,17 @@ class VersionSettingsView @JvmOverloads constructor(
 
     private fun checkForUpdates() = whileUpdating {
         runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() } }
-            .onFailure { context.toast(R.string.update_check_failed) }
+            .onFailure { context.toast(R.string.update_failed) }
             .onSuccess { release ->
-                if (release == null) context.toast(R.string.up_to_date) else confirmUpdate(release)
+                if (release == null) context.toast(R.string.update_none) else confirmUpdate(release)
             }
     }
 
     private fun confirmUpdate(release: ReleaseUpdater.Release) {
         AlertDialog.Builder(context)
-            .setTitle(R.string.new_version_dialog_title)
-            .setMessage(context.getString(R.string.new_version_available_s, release.version))
-            .setPositiveButton(R.string.update) { _, _ -> downloadAndInstall(release) }
+            .setTitle(R.string.update_available_title)
+            .setMessage(context.getString(R.string.update_available_message, release.version))
+            .setPositiveButton(R.string.action_update) { _, _ -> downloadAndInstall(release) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
@@ -93,7 +93,7 @@ class VersionSettingsView @JvmOverloads constructor(
     private fun downloadAndInstall(release: ReleaseUpdater.Release) = whileUpdating {
         runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.download(context, release) } }
             .onSuccess { ReleaseUpdater.install(context, it) }
-            .onFailure { context.toast(R.string.update_check_failed) }
+            .onFailure { context.toast(R.string.update_failed) }
     }
 
     private companion object {

@@ -18,6 +18,7 @@
 
     <!-- Side panel: a third of the canvas. -->
     <dimen name="side_panel_width">320dp</dimen>
+    <dimen name="side_panel_wide">420dp</dimen>
 
     <dimen name="notification_margin_end">@dimen/safe_horizontal</dimen>
     <dimen name="notification_margin_bottom">@dimen/safe_vertical</dimen>

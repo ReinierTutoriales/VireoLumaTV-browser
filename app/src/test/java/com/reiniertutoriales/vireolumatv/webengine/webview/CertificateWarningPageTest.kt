@@ -20,12 +20,12 @@ class CertificateWarningPageTest {
     }
 
     @Test fun everyErrorHasItsOwnOrAGenericDescription() {
-        assertEquals(R.string.ssl_expired, CertificateWarningPage.describe(SslError.SSL_EXPIRED))
-        assertEquals(R.string.ssl_idmismatch, CertificateWarningPage.describe(SslError.SSL_IDMISMATCH))
-        assertEquals(R.string.ssl_date_invalid, CertificateWarningPage.describe(SslError.SSL_NOTYETVALID))
-        assertEquals(R.string.ssl_date_invalid, CertificateWarningPage.describe(SslError.SSL_DATE_INVALID))
-        assertEquals(R.string.ssl_untrusted, CertificateWarningPage.describe(SslError.SSL_UNTRUSTED))
-        assertEquals(R.string.ssl_invalid, CertificateWarningPage.describe(SslError.SSL_INVALID))
+        assertEquals(R.string.cert_expired, CertificateWarningPage.describe(SslError.SSL_EXPIRED))
+        assertEquals(R.string.cert_wrong_site, CertificateWarningPage.describe(SslError.SSL_IDMISMATCH))
+        assertEquals(R.string.cert_bad_date, CertificateWarningPage.describe(SslError.SSL_NOTYETVALID))
+        assertEquals(R.string.cert_bad_date, CertificateWarningPage.describe(SslError.SSL_DATE_INVALID))
+        assertEquals(R.string.cert_untrusted, CertificateWarningPage.describe(SslError.SSL_UNTRUSTED))
+        assertEquals(R.string.cert_invalid, CertificateWarningPage.describe(SslError.SSL_INVALID))
     }
 
     @Test fun thePackagedTemplateIsFilledCompletely() {
@@ -35,7 +35,7 @@ class CertificateWarningPageTest {
             "Issued by: <Evil CA>")
         assertFalse("Every placeholder is filled", page.contains("{{"))
         assertTrue(page.contains(">bad.example<"))
-        assertTrue(page.contains(context.getString(R.string.ssl_untrusted)))
+        assertTrue(page.contains(context.getString(R.string.cert_untrusted)))
         assertTrue("Certificate details are escaped", page.contains("&lt;Evil CA&gt;") && !page.contains("<Evil CA>"))
         assertTrue("Proceeding is the only bridge call", page.contains("VireoLumaTVApp.trustCertificateOnce()"))
     }

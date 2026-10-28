@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Actions on top (add the current page, edit mode), then the bookmarks or an empty-state hint. -->
+<!-- Side panel: actions on top (add the page shown, edit mode), then the favorites or an empty-state hint. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:clipToPadding="false"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
-    android:minWidth="560dp"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:paddingStart="24dp"
+    android:paddingTop="@dimen/safe_vertical"
+    android:paddingEnd="@dimen/safe_horizontal"
+    android:paddingBottom="@dimen/safe_vertical">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:accessibilityHeading="true"
-        android:text="@string/favorites"
+        android:paddingStart="16dp"
+        android:text="@string/menu_favorites"
         android:textAppearance="@style/TextAppearance.Vireo.Title" />
 
     <LinearLayout
@@ -29,14 +32,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/control_gap"
-            android:text="@string/add" />
+            android:text="@string/favorites_add" />
 
         <Button
             android:id="@+id/btnEdit"
             style="@style/Widget.Vireo.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/edit" />
+            android:text="@string/action_edit" />
     </LinearLayout>
 
     <FrameLayout
@@ -62,7 +65,7 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:padding="24dp"
-            android:text="@string/no_bookmarks_yet"
+            android:text="@string/favorites_empty"
             android:textAppearance="@style/TextAppearance.Vireo.Body"
             android:textColor="@color/on_surface_variant"
             android:visibility="gone" />

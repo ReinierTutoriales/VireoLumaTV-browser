@@ -16,7 +16,7 @@
         android:id="@+id/btnGrabMode"
         style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="center"
-        android:contentDescription="@string/cursor_grab_mode"
+        android:contentDescription="@string/pointer_move_page"
         android:nextFocusUp="@id/btnContextMenu"
         android:nextFocusDown="@id/btnDPADMode"
         android:nextFocusLeft="@id/btnZoomOut"
@@ -27,7 +27,7 @@
         android:id="@+id/btnContextMenu"
         style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="top|center_horizontal"
-        android:contentDescription="@string/link_actions"
+        android:contentDescription="@string/pointer_link_options"
         android:nextFocusDown="@id/btnGrabMode"
         android:src="@drawable/ic_link" />
 
@@ -35,7 +35,7 @@
         android:id="@+id/btnDPADMode"
         style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="bottom|center_horizontal"
-        android:contentDescription="@string/direct_navigation_mode_title"
+        android:contentDescription="@string/dpad_mode_title"
         android:nextFocusUp="@id/btnGrabMode"
         android:src="@drawable/ic_dpad" />
 
@@ -43,7 +43,7 @@
         android:id="@+id/btnZoomOut"
         style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="start|center_vertical"
-        android:contentDescription="@string/zoom_out"
+        android:contentDescription="@string/pointer_zoom_out"
         android:nextFocusRight="@id/btnGrabMode"
         android:src="@drawable/ic_zoom_out" />
 
@@ -51,7 +51,7 @@
         android:id="@+id/btnZoomIn"
         style="@style/Widget.Vireo.IconButton"
         android:layout_gravity="end|center_vertical"
-        android:contentDescription="@string/zoom_in"
+        android:contentDescription="@string/pointer_zoom_in"
         android:nextFocusLeft="@id/btnGrabMode"
         android:src="@drawable/ic_zoom_in" />
 </FrameLayout>

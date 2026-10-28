@@ -26,13 +26,11 @@ class FavoriteDraftTest {
                 destUrl = "destination"; description = "description"; validUntil = 123L; useful = true
             }
             var saved: FavoriteItem? = null
-            val dialog = FavoriteEditorDialog(owner.get(), object : FavoriteEditorDialog.Callback {
-                override fun onDone(item: FavoriteItem) { saved = item }
-            }, original)
+            val dialog = FavoriteEditorDialog(owner.get(), original) { item -> saved = item }
             dialog.show()
-            dialog.findViewById<EditText>(R.id.etTitle).setText("After")
-            dialog.findViewById<EditText>(R.id.etUrl).setText("  after.test  ")
-            dialog.findViewById<android.view.View>(R.id.btnDone).performClick()
+            dialog.findViewById<EditText>(R.id.etTitle)!!.setText("After")
+            dialog.findViewById<EditText>(R.id.etUrl)!!.setText("  after.test  ")
+            dialog.findViewById<android.view.View>(R.id.btnDone)!!.performClick()
             val edit = requireNotNull(saved)
             assertNotSame(original, edit)
             assertEquals("Before", original.title)
@@ -58,16 +56,14 @@ class FavoriteDraftTest {
         try {
             val original = FavoriteItem().apply { title = "Before"; url = "https://before.test" }
             var calls = 0
-            val dialog = FavoriteEditorDialog(owner.get(), object : FavoriteEditorDialog.Callback {
-                override fun onDone(item: FavoriteItem) { calls++ }
-            }, original)
+            val dialog = FavoriteEditorDialog(owner.get(), original) { item -> calls++ }
             dialog.show()
-            dialog.findViewById<EditText>(R.id.etTitle).setText("After")
-            dialog.findViewById<EditText>(R.id.etUrl).setText("  ")
-            dialog.findViewById<android.view.View>(R.id.btnDone).performClick()
+            dialog.findViewById<EditText>(R.id.etTitle)!!.setText("After")
+            dialog.findViewById<EditText>(R.id.etUrl)!!.setText("  ")
+            dialog.findViewById<android.view.View>(R.id.btnDone)!!.performClick()
             assertTrue(dialog.isShowing)
             assertEquals(0, calls)
-            dialog.findViewById<android.view.View>(R.id.btnCancel).performClick()
+            dialog.findViewById<android.view.View>(R.id.btnCancel)!!.performClick()
             assertEquals("Before", original.title)
             assertEquals("https://before.test", original.url)
             assertEquals(0, calls)

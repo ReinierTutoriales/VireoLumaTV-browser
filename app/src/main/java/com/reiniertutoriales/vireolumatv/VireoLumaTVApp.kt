@@ -99,8 +99,8 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
 
     private fun initNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.downloads)
-            val descriptionText = getString(R.string.downloads_notifications_description)
+            val name = getString(R.string.menu_downloads)
+            val descriptionText = getString(R.string.downloads_channel_description)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID_DOWNLOADS, name, importance)
             channel.description = descriptionText

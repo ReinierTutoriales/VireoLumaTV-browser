@@ -282,7 +282,7 @@ class AdblockModel @JvmOverloads constructor(
                 else -> UpdateResult.ERROR
             }
             if (downloadAttempted && !hasCurrentClient()) {
-                Toast.makeText(VireoLumaTVApp.instance, R.string.adblock_update_error, Toast.LENGTH_SHORT).show()
+                Toast.makeText(VireoLumaTVApp.instance, R.string.blocker_update_failed, Toast.LENGTH_SHORT).show()
             }
         } finally {
             // Compiled or restored but not installed (list URL changed, model cleared, cancelled

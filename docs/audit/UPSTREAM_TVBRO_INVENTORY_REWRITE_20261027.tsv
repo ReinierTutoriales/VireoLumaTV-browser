@@ -138,13 +138,13 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModel.
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabWindow.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabsModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt	77
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/SearchEngineConfigDialogFactory.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/ShortcutDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt	73
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	12
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/ShortcutDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt	79
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	90
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteItemView.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesDialog.kt	11
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesDialog.kt	98
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesListAdapter.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoritesListAdapter.kt	100
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/MainSettingsView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/MainSettingsView.kt	86
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/SettingsDialog.kt	68
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/SettingsDialog.kt	72
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsPages.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsRows.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsTextField.kt	PROPIO
@@ -307,12 +307,14 @@ app/src/main/res/layout/activity_main.xml	REESCRITO	app/src/main/res/layout/acti
 app/src/main/res/layout/dialog_app_menu.xml	PROPIO
 app/src/main/res/layout/dialog_check_item.xml	PROPIO
 app/src/main/res/layout/dialog_choice_item.xml	PROPIO
-app/src/main/res/layout/dialog_favorites.xml	REESCRITO	app/src/main/res/layout/dialog_favorites.xml	58
+app/src/main/res/layout/dialog_favorite_editor.xml	PROPIO
+app/src/main/res/layout/dialog_favorites.xml	ELIMINADO	app/src/main/res/layout/dialog_favorites.xml
 app/src/main/res/layout/dialog_list_item.xml	PROPIO
-app/src/main/res/layout/dialog_new_favorite_item.xml	REESCRITO	app/src/main/res/layout/dialog_new_favorite_item.xml	54
+app/src/main/res/layout/dialog_new_favorite_item.xml	ELIMINADO	app/src/main/res/layout/dialog_new_favorite_item.xml
 app/src/main/res/layout/dialog_search_engine.xml	ELIMINADO	app/src/main/res/layout/dialog_search_engine.xml
 app/src/main/res/layout/dialog_settings.xml	REESCRITO	app/src/main/res/layout/dialog_settings.xml	68
 app/src/main/res/layout/dialog_shortcut.xml	REESCRITO	app/src/main/res/layout/dialog_shortcut.xml	46
+app/src/main/res/layout/panel_favorites.xml	PROPIO
 app/src/main/res/layout/view_actionbar.xml	REESCRITO	app/src/main/res/layout/view_actionbar.xml	81
 app/src/main/res/layout/view_cursor_menu.xml	REESCRITO	app/src/main/res/layout/view_cursor_menu.xml	80
 app/src/main/res/layout/view_download_item.xml	REESCRITO	app/src/main/res/layout/view_download_item.xml	61
@@ -337,25 +339,25 @@ app/src/main/res/layout/view_shortcut.xml	ELIMINADO	app/src/main/res/layout/view
 app/src/main/res/layout/view_speach_recognizer_results.xml	ELIMINADO	app/src/main/res/layout/view_speach_recognizer_results.xml
 app/src/main/res/layout/view_tabs.xml	REESCRITO	app/src/main/res/layout/view_tabs.xml	64
 app/src/main/res/menu/menu_link.xml	ELIMINADO	app/src/main/res/menu/menu_link.xml	0
-app/src/main/res/values-de/strings.xml	MODIFICADO	app/src/main/res/values-de/strings.xml	18
+app/src/main/res/values-de/strings.xml	REESCRITO	app/src/main/res/values-de/strings.xml	95
 app/src/main/res/values-es/strings.xml	PROPIO
-app/src/main/res/values-fa/strings.xml	MODIFICADO	app/src/main/res/values-fa/strings.xml	16
-app/src/main/res/values-it/strings.xml	MODIFICADO	app/src/main/res/values-it/strings.xml	16
-app/src/main/res/values-iw/strings.xml	MODIFICADO	app/src/main/res/values-iw/strings.xml	17
+app/src/main/res/values-fa/strings.xml	REESCRITO	app/src/main/res/values-fa/strings.xml	98
+app/src/main/res/values-it/strings.xml	REESCRITO	app/src/main/res/values-it/strings.xml	95
+app/src/main/res/values-iw/strings.xml	REESCRITO	app/src/main/res/values-iw/strings.xml	97
 app/src/main/res/values-night/colors.xml	ELIMINADO	app/src/main/res/values-night/colors.xml
-app/src/main/res/values-pl/strings.xml	MODIFICADO	app/src/main/res/values-pl/strings.xml	17
-app/src/main/res/values-ru/strings.xml	MODIFICADO	app/src/main/res/values-ru/strings.xml	17
-app/src/main/res/values-uk/strings.xml	MODIFICADO	app/src/main/res/values-uk/strings.xml	17
-app/src/main/res/values-vi/strings.xml	MODIFICADO	app/src/main/res/values-vi/strings.xml	17
+app/src/main/res/values-pl/strings.xml	REESCRITO	app/src/main/res/values-pl/strings.xml	95
+app/src/main/res/values-ru/strings.xml	REESCRITO	app/src/main/res/values-ru/strings.xml	94
+app/src/main/res/values-uk/strings.xml	REESCRITO	app/src/main/res/values-uk/strings.xml	96
+app/src/main/res/values-vi/strings.xml	REESCRITO	app/src/main/res/values-vi/strings.xml	94
 app/src/main/res/values-w600dp/dimens.xml	ELIMINADO	app/src/main/res/values-w600dp/dimens.xml
 app/src/main/res/values-w820dp/dimens.xml	ELIMINADO	app/src/main/res/values-w820dp/dimens.xml
-app/src/main/res/values-zh-rTW/strings.xml	MODIFICADO	app/src/main/res/values-zh-rTW/strings.xml	16
-app/src/main/res/values-zh/strings.xml	MODIFICADO	app/src/main/res/values-zh/strings.xml	17
+app/src/main/res/values-zh-rTW/strings.xml	REESCRITO	app/src/main/res/values-zh-rTW/strings.xml	97
+app/src/main/res/values-zh/strings.xml	REESCRITO	app/src/main/res/values-zh/strings.xml	95
 app/src/main/res/values/colors.xml	REESCRITO	app/src/main/res/values/colors.xml	100
 app/src/main/res/values/dimens.xml	REESCRITO	app/src/main/res/values/dimens.xml	100
 app/src/main/res/values/ids.xml	PROPIO
 app/src/main/res/values/integers.xml	PROPIO
-app/src/main/res/values/strings.xml	MODIFICADO	app/src/main/res/values/strings.xml	18
+app/src/main/res/values/strings.xml	REESCRITO	app/src/main/res/values/strings.xml	97
 app/src/main/res/values/styles.xml	REESCRITO	app/src/main/res/values/styles.xml	100
 app/src/main/res/values/themes.xml	REESCRITO	app/src/main/res/values/themes.xml	86
 app/src/main/res/xml/provider_paths.xml	REESCRITO	app/src/main/res/xml/provider_paths.xml	0

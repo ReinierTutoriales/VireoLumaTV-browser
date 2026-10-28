@@ -1,176 +1,178 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">VireoLumaTV</string>
-  <string name="add">Додати</string>
-  <string name="allow">Дозволити</string>
-  <string name="bookmarks">Закладки</string>
-  <string name="deny">Заборонити</string>
-  <string name="download_started">Завантаження в черзі. Місце збереження:\n%s</string>
-  <string name="edit">Редагувати</string>
-  <string name="err_cant_open_file_chooser">Не можу запустити інтерфейс вибора файлу</string>
-  <string name="error">Помилка</string>
-  <string name="location">Локація</string>
-  <string name="new_bookmark">Нова закладка</string>
-  <string name="ok">ОК</string>
-  <string name="open_in_new_tab">Відкрити у новій вкладці</string>
-  <string name="title">Назва</string>
-  <string name="url_prompt">Введіть шуканий запит або URL</string>
-  <string name="web_perm_request_confirmation">Дозволити цій сторінці доступ до:\n\n%s</string>
-  <string name="search_engine_url_with_query_placeholder_query">Адреса пошуку: вставте [query] на місці пошукового тексту</string>
-  <string name="choose_default_search_engine">Виберіть пошукову систему за-замовчанням</string>
-  <string name="cancel">Відміна</string>
-  <string name="cancelled">Відмінено</string>
-  <string name="choose_user_agent_string">Обрати рядок User Agent</string>
-  <string name="delete">Видалити</string>
-  <string name="download">Завантажити</string>
-  <string name="edit_user_agent_string">Редагувати рядок User Agent</string>
-  <string name="file_not_found">Файл не знайдено</string>
-  <string name="no_app_for_file_type">Установіть застосунок для цього типу файлу</string>
-  <string name="nothing">Нічого</string>
-  <string name="user_agent_string">Рядок User Agent</string>
-  <string name="msg_delete_history">Видалити виділені елементи історії?</string>
-  <string name="clear">Очистити</string>
-  <string name="current_key">Кнопка:</string>
-  <string name="key_code_d">Клавіша %d</string>
-  <string name="favorites">Вибрані</string>
-  <string name="history">Історія</string>
-  <string name="navigate_back">Навігація назад</string>
-  <string name="navigate_home">Навігація \"додому\"</string>
-  <string name="no_file_explorer_msg">Файловий менеджер недоступний. Відкрийте системний екран завантажень.</string>
-  <string name="not_set">Не задано</string>
-  <string name="open_folder">Відкрити папку</string>
-  <string name="press_eny_key">Натисніть будь-яку клавішу…</string>
-  <string name="shortcut_key_reserved_for_navigation">Ця клавіша зарезервована для навігації в браузері</string>
-  <string name="refresh_page">Оновити сторінку</string>
-  <string name="set_key_for_action">Встановити клавішу для дії</string>
-  <string name="settings">Налаштунки</string>
-  <string name="shortcut">\"Швидка\" клавіша</string>
-  <string name="shortcuts">\"Швидкі\" клавіші</string>
-  <string name="install">Встановити</string>
-  <string name="turn_on_unknown_sources">Дозвольте встановлення з невідомих джерел у налаштуваннях Android</string>
-  <string name="turn_on_unknown_sources_for_app">Будь-ласка, дозвольте VireoLumaTV встановлювати додатки з невідомих джерел у системних налаштунках</string>
-  <string name="storage_not_mounted">Сховище файлів не знайдено</string>
-  <string name="can_not_create_downloads">Папку завантажень не вдалося створити</string>
-  <string name="msg_delete_history_all">Видалити усю історію?</string>
-  <string name="new_version_dialog_title">Доступна нова версія</string>
-  <string name="downloads_notifications_description">Сповіщення про завантаження</string>
-  <string name="downloads">Завантаження</string>
-  <string name="main">Головні</string>
-  <string name="update">Оновити</string>
-  <string name="version_and_updates">Версія</string>
-  <string name="version_s">Версія: %s</string>
-  <string name="build_flavor_s">Варіант збірки: %1$s · %2$s</string>
-  <string name="view_license">📃 Ліцензія</string>
-  <string name="privacy_policy">🔒 Політика конфіденційності</string>
-  <string name="warning">Увага</string>
-  <string name="web_browser_optimized_for_tvs">Веб-браузер, оптимізований для телевізорів</string>
-  <string name="new_version_available_s">Доступна нова версія: %s</string>
-  <string name="err_webview_can_not_link">Android WebView недоступний. Увімкніть, установіть або оновіть системний компонент WebView.</string>
-  <string name="open_a_new_tab_here">Відкрити нову вкладку тут</string>
-  <string name="tabs">Вкладки</string>
-  <string name="ssl_expired">Термін дії сертифікату минув</string>
-  <string name="ssl_idmismatch">Невідповідність імені хоста</string>
-  <string name="ssl_date_invalid">Дата сертифіката недійсна</string>
-  <string name="ssl_invalid">Виникла загальна помилка</string>
-  <string name="ssl_untrusted">Центр сертифікації не є довіреним</string>
-  <string name="back_to_safety">Повернення до безпеки</string>
-  <string name="go_im_aware">Вперед. Я знаю про ризик</string>
-  <string name="connection_isnt_secure">Підключення не захищено</string>
-  <string name="hostname">Ім\'я хоста:</string>
-  <string name="err_desk">Опис помилки:</string>
-  <string name="details">Деталі:</string>
-  <string name="exit">Вихід</string>
-  <string name="find_in_apps_store">Знайти у магазині додатків</string>
-  <string name="app_menu">Меню</string>
-  <string name="close_application">Закрити додаток</string>
-  <string name="close_tab">Закрити вкладку</string>
-  <string name="navigate_forward">Навігація вперед</string>
-  <string name="zoom_in">Збільшити</string>
-  <string name="zoom_out">Зменшити</string>
-  <string name="toggle_ads_blocking">Увімкнути / вимкнути блокування реклами</string>
-  <string name="never">ніколи</string>
-  <string name="update_ad_blocker_list">Оновити список блокувальника реклами</string>
-  <string name="need_restart">Потрібен перезапуск програми</string>
-  <string name="toggle_keep_screen_on">Підтримувати екран увімкненим</string>
-  <string name="navigate_with_joystick_axes">Навігація осями джойстика</string>
-  <string name="cursor_max_speed">Максимальна швидкість віртуального курсора</string>
-  <string name="cursor_acceleration">Прискорення віртуального курсора</string>
-  <string name="cursor_physics_percent">%d%% від типових значень</string>
-  <string name="direct_navigation_mode_title">Режим прямої навігації</string>
-  <string name="direct_navigation_mode_message">У цьому режимі вказівник прихований. Сторінка отримує натискання безпосередньо; вибір елементів залежить від підтримки клавіатури на сайті.\n\nЩоб повернути вказівник, натисніть «Назад» на пульті або утримуйте B на геймпаді.</string>
-  <string name="incognito_mode">Режим анонімного перегляду</string>
-  <string name="incognito_mode_hint">Відвідування цього сеансу не додаються до звичайної історії. Приватний режим не приховує з’єднання від сайтів, адміністратора мережі чи інтернет-провайдера.\n\nЗавантажені файли та збережені закладки залишаються на пристрої.</string>
-  <string name="don_t_show_again">Не показувати знову</string>
-  <string name="clear_web_cache">Очистити веб-кеш</string>
-  <string-array name="tabs_options">
-    <item>Відкрити нову вкладку</item>
-    <item>Закрити поточну</item>
-    <item>Закрити всі</item>
-    <item>Пересунути вліво</item>
-    <item>Пересунути вправо</item>
-  </string-array>
-  <string name="no_bookmarks_yet">Закладок ще немає</string>
-  <string name="done">Готово</string>
-  <string name="block_popups_s">Блокування спливаючих вікон (%s)</string>
-  <string name="popup_dialog_blocked">Спливаюче діалогове вікно заблоковано</string>
-  <string name="new_tab_blocked">Нова вкладка заблокована</string>
-  <string name="copy_to_clipboard">Копіювати в буфер обміну</string>
-  <string name="copied_to_clipboard">Скопійовано в буфер обміну</string>
-  <string name="share_url">Поділитися URL</string>
-  <string name="open_in_external_application">Відкрити у зовнішній програмі</string>
-  <string name="external_app_open_error">Не можу знайти відповідне застосування</string>
-  <string-array name="popup_blocking_level">
-    <item>Не блокувати</item>
-    <item>Блок діалогів</item>
-    <item>Також блокувати нові вкладки (ініційовані сценарієм)</item>
-    <item>Блокувати будь-які нові вікна (максимальне блокування)</item>
-  </string-array>
-  <string name="home_page">Домашня сторінка</string>
-  <string name="custom_home_page_url">Користувацька URL-адреса домашньої сторінки</string>
-  <string-array name="home_page_modes">
-        <item>Старт VireoLumaTV</item>
-        <item>Пошукова служба</item>
+    <string name="about_source">VireoLumaTV від ReinierTutoriales · Вихідний код</string>
+    <string name="about_tv_bro_credit">Заснований на вихідному коді TV Bro: %s</string>
+    <string name="about_tagline">Веб-браузер для керування пультом ТБ</string>
+    <string name="about_version">Версія %s</string>
+    <string name="about_build">Збірка: %1$s · %2$s</string>
+    <string name="about_license">Ліцензія</string>
+    <string name="about_privacy">Політика конфіденційності</string>
+    <string name="error">Помилка</string>
+    <string name="action_allow">Дозволити</string>
+    <string name="action_deny">Заборонити</string>
+    <string name="action_edit">Змінити</string>
+    <string name="action_done">Готово</string>
+    <string name="action_delete">Видалити</string>
+    <string name="action_cancel">Скасувати</string>
+    <string name="action_clear">Очистити</string>
+    <string name="action_update">Оновити</string>
+    <string name="action_exit">Вийти</string>
+    <string name="action_open_store">Знайти в магазині</string>
+    <string name="action_dont_show_again">Більше не показувати</string>
+    <string name="action_open">Відкрити</string>
+    <string name="address_hint">Пошук або вебадреса</string>
+    <string name="nav_back">Назад</string>
+    <string name="nav_forward">Уперед</string>
+    <string name="nav_reload">Оновити</string>
+    <string name="nav_home">Головна</string>
+    <string name="nav_menu">Меню</string>
+    <string name="blocker_toggle">Блокування реклами</string>
+    <string name="tabs_new">Нова вкладка</string>
+    <string name="tabs_title">Вкладка</string>
+    <string name="menu_history">Історія</string>
+    <string name="menu_favorites">Вибране</string>
+    <string name="menu_downloads">Завантаження</string>
+    <string name="menu_private">Режим інкогніто</string>
+    <string name="menu_settings">Налаштування</string>
+    <string name="menu_close_tab">Закрити вкладку</string>
+    <string name="menu_quit">Вийти з VireoLumaTV</string>
+    <string name="pointer_move_page">Рухати сторінку</string>
+    <string name="pointer_link_options">Дії з посиланням</string>
+    <string name="pointer_zoom_in">Збільшити</string>
+    <string name="pointer_zoom_out">Зменшити</string>
+    <string name="dpad_mode_title">Режим хрестовини</string>
+    <string name="dpad_mode_message">Вказівник зникає, а стрілки переходять між посиланнями й елементами сторінки, якщо сайт це підтримує.\n\nЩоб вийти, натисніть «Назад» на пульті або утримуйте B на геймпаді.</string>
+    <string name="link_open_in_new_tab">Відкрити в новій вкладці</string>
+    <string name="link_open_in_app">Відкрити в іншому застосунку</string>
+    <string name="link_download">Завантажити</string>
+    <string name="link_copy">Копіювати адресу</string>
+    <string name="link_copied">Адресу скопійовано</string>
+    <string name="link_share">Поділитися</string>
+    <string name="permission_request">Ця сторінка хоче використовувати:\n\n%s</string>
+    <string name="permission_location">Ваше місцезнаходження</string>
+    <string name="error_no_file_picker">На пристрої немає застосунку для вибору файлів</string>
+    <string name="external_open_title">Відкрити в іншому застосунку?</string>
+    <string name="external_open_message">Ця сторінка хоче відкрити адресу, яку обробляє інший застосунок:</string>
+    <string name="external_no_app">На пристрої немає застосунку, який відкриє цю адресу</string>
+    <string name="error_no_app">Немає застосунку, щоб це відкрити</string>
+    <string name="http_auth_title">Вхід на цей сайт</string>
+    <string name="http_auth_user">Ім\'я користувача</string>
+    <string name="http_auth_password">Пароль</string>
+    <string name="error_no_webview">На пристрої немає робочого WebView. Установіть або оновіть Android System WebView.</string>
+    <string name="cert_title">Це з\'єднання не захищене</string>
+    <string name="cert_site">Сайт</string>
+    <string name="cert_problem">Проблема</string>
+    <string name="cert_details">Сертифікат</string>
+    <string name="cert_go_back">Повернутися</string>
+    <string name="cert_proceed">Усе одно продовжити (небезпечно)</string>
+    <string name="cert_expired">Термін дії сертифіката минув</string>
+    <string name="cert_wrong_site">Сертифікат видано іншому сайту</string>
+    <string name="cert_bad_date">Сертифікат недійсний на цю дату</string>
+    <string name="cert_invalid">Сертифікат недійсний</string>
+    <string name="cert_untrusted">Сертифікат видано ненадійним центром</string>
+    <string name="blocker_state_paused">Призупинено</string>
+    <string name="blocker_state_loading">Завантаження правил</string>
+    <string name="blocker_state_updating">Оновлення правил</string>
+    <string name="blocker_state_active">Блокує</string>
+    <string name="blocker_state_partial">Частина правил</string>
+    <string name="blocker_state_saved">Збережені правила</string>
+    <string name="blocker_state_none">Немає правил</string>
+    <string name="blocker_summary">Блокування реклами: %1$s. Заблоковано на сторінці: %2$d.</string>
+    <string name="popups_title">Спливаючі вікна: %s</string>
+    <string name="popups_dialog_blocked">Діалог цієї сторінки заблоковано</string>
+    <string name="popups_window_blocked">Спливаюче вікно заблоковано</string>
+    <string name="blocker_never">ніколи</string>
+    <string name="blocker_last_update">Останнє оновлення</string>
+    <string name="blocker_update_lists">Оновити списки фільтрів</string>
+    <string name="blocker_updating">Оновлення списків фільтрів…</string>
+    <string name="blocker_updated">Списки фільтрів оновлено</string>
+    <string name="blocker_partial">Частину списків оновлено; решта використовує збережені правила.</string>
+    <string name="blocker_using_saved">Використовуються збережені правила; жоден список не завантажено.</string>
+    <string name="blocker_not_refreshed">Не оновлено: %1$s</string>
+    <string name="blocker_update_failed">Не вдалося завантажити списки фільтрів. Перевірте з\'єднання або адресу списку.</string>
+    <string name="favorites_add">Додати цю сторінку</string>
+    <string name="favorites_empty">У вибраному поки нічого немає</string>
+    <string name="favorites_new">Нова закладка</string>
+    <string name="field_title">Назва</string>
+    <string name="field_address">Адреса</string>
+    <string name="history_delete_selected">Видалити вибрані сторінки з історії?</string>
+    <string name="history_delete_all">Видалити всю історію?</string>
+    <string name="download_started">Завантаження додано. Буде збережено в:\n%s</string>
+    <string name="nav_menu_downloads">Меню. Триває завантажень: %1$d</string>
+    <string name="downloads_empty">Завантажень поки немає</string>
+    <string name="download_cancelled">Скасовано</string>
+    <string name="download_file_missing">Файлу більше немає</string>
+    <string name="download_no_app">Немає застосунку для цього типу файлів</string>
+    <string name="download_open_folder">Показати в теці</string>
+    <string name="download_no_file_manager">Файловий менеджер не встановлено</string>
+    <string name="download_install">Установити</string>
+    <string name="install_allow_unknown_sources">Увімкніть «Невідомі джерела» в налаштуваннях системи, щоб установлювати застосунки.</string>
+    <string name="install_allow_this_app">Дозвольте VireoLumaTV установлювати застосунки в налаштуваннях системи.</string>
+    <string name="download_storage_unavailable">Сховище недоступне</string>
+    <string name="download_folder_error">Не вдалося створити теку завантажень</string>
+    <string name="downloads_channel_description">Перебіг завантажень</string>
+    <string name="update_available_title">Доступне оновлення</string>
+    <string name="update_available_message">Доступна версія %s.</string>
+    <string name="update_none">У вас остання версія VireoLumaTV</string>
+    <string name="update_failed">Не вдалося перевірити або встановити оновлення</string>
+    <string name="settings_tab_general">Загальні</string>
+    <string name="settings_tab_shortcuts">Комбінації клавіш</string>
+    <string name="settings_tab_about">Про застосунок</string>
+    <string name="settings_search_engine">Пошукова система</string>
+    <string name="settings_search_engine_address">Адреса пошуку ([query] замінюється запитом)</string>
+    <string name="settings_home_page">Домашня сторінка</string>
+    <string name="settings_home_page_address">Адреса домашньої сторінки</string>
+    <string name="settings_user_agent_choice">Представляти браузер як</string>
+    <string name="settings_user_agent">User agent</string>
+    <string name="settings_user_agent_custom">Власний user agent</string>
+    <string name="settings_keep_screen_on">Не вимикати екран</string>
+    <string name="settings_stick_moves_pointer">Рухати вказівник стиком</string>
+    <string name="settings_pointer_speed">Максимальна швидкість вказівника</string>
+    <string name="settings_pointer_acceleration">Прискорення вказівника</string>
+    <string name="settings_percent_of_default">%d%% від стандартного</string>
+    <string name="settings_darken_pages">Затемнювати вебсторінки (після перезапуску)</string>
+    <string name="settings_autoplay">Дозволити сторінкам самим відтворювати відео та звук</string>
+    <string name="settings_video_quality">Максимальна якість відео</string>
+    <string name="settings_debugging">Налагодження вебсторінок (після перезапуску)</string>
+    <string name="settings_debugging_warning">Налагодження дозволяє будь-кому з доступом налагодження до пристрою читати вміст сторінок, cookie та дані сеансів. Вмикайте його лише на довіреному пристрої й лише для пошуку проблем.</string>
+    <string name="settings_restart_needed">Перезапустіть VireoLumaTV, щоб застосувати</string>
+    <string name="settings_clear_cache">Очистити кеш вебданих</string>
+    <string name="warning_title">Увага</string>
+    <string name="private_explained">Приватний режим не зберігає історію, cookie, дані сайтів і введене у форми після виходу з нього.\n\nЗавантаження та вибране зберігаються. Відвідані сайти, ваша мережа й інтернет-провайдер усе одно бачать вашу активність.</string>
+    <string name="shortcut_unassigned">Не призначено</string>
+    <string name="shortcut_current_key">Клавіша:</string>
+    <string name="shortcut_key_code">Клавіша %d</string>
+    <string name="shortcut_assign">Призначити клавішу</string>
+    <string name="shortcut_waiting">Натисніть клавішу на пульті…</string>
+    <string name="shortcut_reserved">Ця клавіша потрібна для переміщення браузером і не може бути призначена</string>
+    <string name="shortcut_long_press">Утримання</string>
+    <string name="media_play_pause">Відтворення / пауза</string>
+    <string name="media_stop">Зупинити відтворення</string>
+    <string name="media_rewind">Назад на 10 секунд</string>
+    <string name="media_fast_forward">Уперед на 10 секунд</string>
+    <string-array name="tabs_actions">
+        <item>Нова вкладка</item>
+        <item>Закрити</item>
+        <item>Закрити всі</item>
+        <item>Посунути ліворуч</item>
+        <item>Посунути праворуч</item>
+    </string-array>
+    <string-array name="popups_levels">
+        <item>Дозволяти все</item>
+        <item>Блокувати діалоги</item>
+        <item>Блокувати діалоги й вікна, відкриті скриптами</item>
+        <item>Блокувати всі нові вікна</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>Стартова сторінка VireoLumaTV</item>
+        <item>Пошукова система</item>
         <item>Власна адреса</item>
         <item>Порожня сторінка</item>
     </string-array>
-
-  <string name="yes">Так</string>
-  <string name="no">Немає</string>
-  <string name="site_asks_to_open_unknown_url">Сайт просить відкрити невідому URL-адресу</string>
-  <string name="site_asks_to_open_unknown_url_message">Ця адреса потребує іншого застосунку. Дозволити Android відкрити її?</string>
-  <string name="err_no_app_to_handle_url">Android не має застосунку для цієї адреси</string>
-  <string name="http_auth_title">Потрібна автентифікація</string>
-  <string name="play_pause">Відтворення/Пауза</string>
-  <string name="media_stop">Зупинити медіа</string>
-  <string name="media_rewind">Перемотка назад</string>
-  <string name="media_fast_forward">Перемотка вперед</string>
-  <string name="long_press">Довге натискання</string>
-  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Затемнювати вміст сторінок (потрібен перезапуск)</string>
-  <string name="allow_autoplay_media">Дозволити автовідтворення медіа</string>
-  <string name="web_engine_debug">Налагодження вебрушія (потрібен перезапуск)</string>
-  <string name="web_engine_debug_warning_message">Засоби налагодження пристрою можуть переглядати відкриті сторінки й дані сеансу, зокрема cookie. Увімкніть перевірку лише для діагностики на довіреному пристрої.</string>
-    <string name="vireo_project_credit">VireoLumaTV від ReinierTutoriales · Вихідний код</string>
-    <string name="based_on_tv_bro_sources">Основано на вихідному коді TV Bro: %s</string>
-    <string name="cursor_grab_mode">Перемістити сторінку</string>
-    <string name="link_actions">Дії з посиланням</string>
-    <string name="adblock_updating">Оновлення списків фільтрів…</string>
-    <string name="adblock_updated">Списки фільтрів оновлено</string>
-    <string name="adblock_partial_update">Деякі списки оновлено; збережені правила збережено.</string>
-    <string name="adblock_using_saved">Використовуються збережені правила. Новий список не завантажено.</string>
-    <string name="adblock_lists_not_refreshed">Не оновлено: %1$s</string>
-    <string name="adblock_update_error">Не вдалося завантажити списки фільтрів. Перевірте з\'єднання або URL списку.</string>
-    <string name="video_max_quality">Максимальна якість відео</string>
-    <string name="up_to_date">У вас остання версія</string>
-    <string name="update_check_failed">Не вдалося перевірити або встановити оновлення</string>
-    <string name="last_update">Останнє оновлення</string>
-  <string name="adblock_status_paused">Призупинено</string>
-  <string name="adblock_status_loading">Завантаження</string>
-  <string name="adblock_status_refreshing">Оновлення</string>
-  <string name="adblock_status_active">Блокує</string>
-  <string name="adblock_status_partial">Частково</string>
-  <string name="adblock_status_saved">Із кешу</string>
-  <string name="adblock_status_unavailable">Немає правил</string>
-  <string name="adblock_status_action_s">Перемкнути блокування. %1$s. На цій сторінці заблоковано: %2$d.</string>
-  <string name="username">Ім\'я користувача</string>
-  <string name="password">Пароль</string>
+    <string-array name="settings_video_qualities">
+        <item>Автоматично</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </string-array>
 </resources>

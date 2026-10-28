@@ -105,7 +105,7 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
         } else {
             val file = File(download.filepath)
             if (!file.exists()) {
-                toast(R.string.file_not_found)
+                toast(R.string.download_file_missing)
                 return
             }
             FileProvider.getUriForFile(this, "$packageName.provider", file)
@@ -113,7 +113,7 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
         val view = Intent(Intent.ACTION_VIEW)
             .setDataAndType(uri, contentResolver.getType(uri))
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        start(view, R.string.no_app_for_file_type)
+        start(view, R.string.download_no_app)
     }
 
     private fun showOptions(anchor: View, download: Download): Boolean {
@@ -121,13 +121,13 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
         val running = download.size != Download.BROKEN_MARK && download.size != Download.CANCELLED_MARK &&
             !isFinished(download)
         if (running) {
-            menu.menu.add(0, CANCEL, 0, R.string.cancel)
+            menu.menu.add(0, CANCEL, 0, R.string.action_cancel)
         } else {
             if (isFinished(download) && download.filename.endsWith(".apk", ignoreCase = true)) {
-                menu.menu.add(0, INSTALL, 0, R.string.install)
+                menu.menu.add(0, INSTALL, 0, R.string.download_install)
             }
-            menu.menu.add(0, OPEN_FOLDER, 1, R.string.open_folder)
-            menu.menu.add(0, DELETE, 2, R.string.delete)
+            menu.menu.add(0, OPEN_FOLDER, 1, R.string.download_open_folder)
+            menu.menu.add(0, DELETE, 2, R.string.action_delete)
         }
         menu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -152,8 +152,8 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
         }
         AlertDialog.Builder(this)
             .setTitle(R.string.app_name)
-            .setMessage(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) R.string.turn_on_unknown_sources_for_app
-                else R.string.turn_on_unknown_sources)
+            .setMessage(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) R.string.install_allow_this_app
+                else R.string.install_allow_unknown_sources)
             .setPositiveButton(android.R.string.ok) { _, _ -> start(ApkInstaller.permissionSettings(this), R.string.error) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -167,7 +167,7 @@ open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listene
         try {
             startActivity(browse)
         } catch (_: ActivityNotFoundException) {
-            start(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS), R.string.no_file_explorer_msg)
+            start(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS), R.string.download_no_file_manager)
         }
     }
 

@@ -1,11 +1,11 @@
 package com.reiniertutoriales.vireolumatv.activity.main.dialogs
 
-import android.app.Dialog
 import android.content.Context
 import android.view.KeyEvent
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDialog
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.KeyBinding
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcut
@@ -17,7 +17,7 @@ import com.reiniertutoriales.vireolumatv.utils.RemoteInput
  * Edits the key of one [Shortcut]. While recording, the next key press is stored: released before
  * the long-press timeout as a short binding, held past it as a long-press binding.
  */
-class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(context) {
+class ShortcutDialog(context: Context, private val shortcut: Shortcut) : AppCompatDialog(context, R.style.ThemeOverlay_Vireo_Dialog) {
     private val shortcuts = ShortcutMgr.getInstance()
     private val keyText: TextView
     private val recordButton: Button
@@ -26,12 +26,11 @@ class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(
     init {
         setCancelable(true)
         setContentView(R.layout.dialog_shortcut)
-        setTitle(R.string.shortcut)
-        findViewById<TextView>(R.id.tvActionTitle).setText(shortcut.titleResId)
-        keyText = findViewById(R.id.tvActionKey)
-        recordButton = findViewById(R.id.btnSetKey)
+        checkNotNull(findViewById<TextView>(R.id.tvActionTitle)).setText(shortcut.titleResId)
+        keyText = checkNotNull(findViewById(R.id.tvActionKey))
+        recordButton = checkNotNull(findViewById(R.id.btnSetKey))
         recordButton.setOnClickListener { setRecording(!recording) }
-        findViewById<Button>(R.id.btnClearKey).setOnClickListener {
+        checkNotNull(findViewById<Button>(R.id.btnClearKey)).setOnClickListener {
             setRecording(false)
             shortcuts.set(shortcut, null)
             showKey()
@@ -40,12 +39,12 @@ class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(
     }
 
     private fun showKey() {
-        keyText.text = shortcuts.binding(shortcut)?.describe(context) ?: context.getString(R.string.not_set)
+        keyText.text = shortcuts.binding(shortcut)?.describe(context) ?: context.getString(R.string.shortcut_unassigned)
     }
 
     private fun setRecording(on: Boolean) {
         recording = on
-        recordButton.setText(if (on) R.string.press_eny_key else R.string.set_key_for_action)
+        recordButton.setText(if (on) R.string.shortcut_waiting else R.string.shortcut_assign)
     }
 
     /** Stores the press as the new key unless the browser needs that key for navigation. */
@@ -53,7 +52,7 @@ class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(
         setRecording(false)
         val code = KeyBinding.codeOf(event)
         if (code in RemoteInput.NAVIGATION_KEYS || code in BackNavigationEventsAdapter.BACK_KEYS) {
-            Toast.makeText(context, R.string.shortcut_key_reserved_for_navigation, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.shortcut_reserved, Toast.LENGTH_SHORT).show()
             return
         }
         shortcuts.set(shortcut, KeyBinding(code, event.modifiers, longPress))

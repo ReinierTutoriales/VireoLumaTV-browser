@@ -134,7 +134,7 @@ class DownloadListAdapter(
             tvSize.setTextColor(sizeColor)
             progressBar.isVisible = false
             when {
-                download.size == Download.CANCELLED_MARK -> tvSize.setText(R.string.cancelled)
+                download.size == Download.CANCELLED_MARK -> tvSize.setText(R.string.download_cancelled)
                 download.size == Download.BROKEN_MARK -> {
                     tvSize.setText(R.string.error)
                     tvSize.setTextColor(ContextCompat.getColor(context, R.color.error))
@@ -146,7 +146,7 @@ class DownloadListAdapter(
                 }
                 download.size == download.bytesReceived -> tvSize.text = size(download.size)
                 else -> {
-                    tvSize.text = context.getString(R.string.size_progress, size(download.bytesReceived), size(download.size))
+                    tvSize.text = context.getString(R.string.download_progress_size, size(download.bytesReceived), size(download.size))
                     progressBar.isIndeterminate = false
                     progressBar.progress = (download.bytesReceived * 100 / download.size).toInt()
                     progressBar.isVisible = true

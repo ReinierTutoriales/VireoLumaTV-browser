@@ -110,15 +110,15 @@ class CursorMenuView @JvmOverloads constructor(context: Context, attrs: Attribut
 
     /** Explains D-pad mode once, with an option to stop explaining it. */
     private fun explainDirectNavigation(t: Target) {
-        val dontAskAgain = CheckBox(context).apply { setText(R.string.don_t_show_again) }
+        val dontAskAgain = CheckBox(context).apply { setText(R.string.action_dont_show_again) }
         val padding = 24.dip2px(context).toInt()
         val content = FrameLayout(context).apply {
             setPadding(padding, padding, padding, padding)
             addView(dontAskAgain)
         }
         AlertDialog.Builder(context)
-            .setTitle(R.string.direct_navigation_mode_title)
-            .setMessage(R.string.direct_navigation_mode_message)
+            .setTitle(R.string.dpad_mode_title)
+            .setMessage(R.string.dpad_mode_message)
             .setView(content)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 if (dontAskAgain.isChecked) AppContext.config.directNavigationModeHintSuppress = true

@@ -68,8 +68,8 @@ class TabsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     /** Options for [tab]; each acts on that tab, wherever it has moved meanwhile. */
     fun showTabOptions(tab: WebTabState) {
         AlertDialog.Builder(context)
-            .setTitle(R.string.tabs)
-            .setItems(R.array.tabs_options) { _, option ->
+            .setTitle(R.string.tabs_title)
+            .setItems(R.array.tabs_actions) { _, option ->
                 val tabs = tabsModel.tabsStates
                 val index = tabs.indexOf(tab)
                 if (index < 0) return@setItems
@@ -117,7 +117,7 @@ class TabsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     }
 
     private companion object {
-        // Positions in R.array.tabs_options.
+        // Positions in R.array.tabs_actions.
         const val OPEN_NEW = 0
         const val CLOSE = 1
         const val CLOSE_ALL = 2

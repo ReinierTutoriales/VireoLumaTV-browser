@@ -68,8 +68,8 @@ class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet?
             ActiveModelsRepository.get(ActiveDownloadsModel::class, context).activeDownloads.subscribe(owner) {
                 val count = it.size
                 ui.ibMenu.setImageResource(if (count == 0) R.drawable.ic_more else R.drawable.ic_menu_downloads)
-                ui.ibMenu.contentDescription = if (count == 0) context.getString(R.string.app_menu)
-                    else context.getString(R.string.app_menu_downloads, count)
+                ui.ibMenu.contentDescription = if (count == 0) context.getString(R.string.nav_menu)
+                    else context.getString(R.string.nav_menu_downloads, count)
             }
         }
     }

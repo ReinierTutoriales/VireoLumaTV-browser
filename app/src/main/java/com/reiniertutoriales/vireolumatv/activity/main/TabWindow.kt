@@ -92,7 +92,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
             browser.filePickerResult.launch(intent.setType("*/*"))
             true
         } catch (_: ActivityNotFoundException) {
-            browser.applicationContext.toast(browser.getString(R.string.err_cant_open_file_chooser))
+            browser.applicationContext.toast(browser.getString(R.string.error_no_file_picker))
             false
         }
     }

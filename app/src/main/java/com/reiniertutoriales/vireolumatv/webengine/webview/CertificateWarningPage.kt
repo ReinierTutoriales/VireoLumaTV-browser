@@ -21,15 +21,15 @@ internal object CertificateWarningPage {
         val values = mapOf(
             "lang" to locale.toLanguageTag(),
             "dir" to if (TextUtils.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL) "rtl" else "ltr",
-            "title" to context.getString(R.string.connection_isnt_secure),
-            "hostLabel" to context.getString(R.string.hostname),
+            "title" to context.getString(R.string.cert_title),
+            "hostLabel" to context.getString(R.string.cert_site),
             "host" to runCatching { url.toUri().host }.getOrNull().orEmpty(),
-            "errorLabel" to context.getString(R.string.err_desk),
+            "errorLabel" to context.getString(R.string.cert_problem),
             "error" to context.getString(describe(primaryError)),
-            "detailsLabel" to context.getString(R.string.details),
+            "detailsLabel" to context.getString(R.string.cert_details),
             "details" to details,
-            "back" to context.getString(R.string.back_to_safety),
-            "proceed" to context.getString(R.string.go_im_aware),
+            "back" to context.getString(R.string.cert_go_back),
+            "proceed" to context.getString(R.string.cert_proceed),
         )
         return fill(template, values)
     }
@@ -39,10 +39,10 @@ internal object CertificateWarningPage {
         PLACEHOLDER.replace(template) { TextUtils.htmlEncode(values[it.groupValues[1]].orEmpty()) }
 
     fun describe(primaryError: Int): Int = when (primaryError) {
-        SslError.SSL_EXPIRED -> R.string.ssl_expired
-        SslError.SSL_IDMISMATCH -> R.string.ssl_idmismatch
-        SslError.SSL_NOTYETVALID, SslError.SSL_DATE_INVALID -> R.string.ssl_date_invalid
-        SslError.SSL_UNTRUSTED -> R.string.ssl_untrusted
-        else -> R.string.ssl_invalid
+        SslError.SSL_EXPIRED -> R.string.cert_expired
+        SslError.SSL_IDMISMATCH -> R.string.cert_wrong_site
+        SslError.SSL_NOTYETVALID, SslError.SSL_DATE_INVALID -> R.string.cert_bad_date
+        SslError.SSL_UNTRUSTED -> R.string.cert_untrusted
+        else -> R.string.cert_invalid
     }
 }

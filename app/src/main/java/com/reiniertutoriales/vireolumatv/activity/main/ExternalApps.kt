@@ -54,7 +54,7 @@ internal class ExternalApps(private val activity: Activity) {
     private fun externalIntent(url: String): Intent? {
         val intent = ExternalWebNavigation.parseIntentUrl(url)
         if (intent == null || intent.resolveActivity(activity.packageManager)?.packageName == activity.packageName) {
-            toast(R.string.external_app_open_error)
+            toast(R.string.error_no_app)
             return null
         }
         return intent
@@ -64,10 +64,10 @@ internal class ExternalApps(private val activity: Activity) {
     private fun askToOpen(url: String, intent: Intent) {
         if (confirmation != null) return
         confirmation = AlertDialog.Builder(activity)
-            .setTitle(R.string.site_asks_to_open_unknown_url)
-            .setMessage(activity.getString(R.string.site_asks_to_open_unknown_url_message) + "\n\n" + url)
-            .setPositiveButton(R.string.yes) { _, _ -> start(intent) }
-            .setNegativeButton(R.string.no, null)
+            .setTitle(R.string.external_open_title)
+            .setMessage(activity.getString(R.string.external_open_message) + "\n\n" + url)
+            .setPositiveButton(R.string.action_open) { _, _ -> start(intent) }
+            .setNegativeButton(R.string.action_cancel, null)
             .setOnDismissListener { confirmation = null }
             .show()
     }
@@ -75,19 +75,19 @@ internal class ExternalApps(private val activity: Activity) {
     fun share(url: String) {
         val share = Intent(Intent.ACTION_SEND)
             .setType("text/plain")
-            .putExtra(Intent.EXTRA_SUBJECT, activity.getString(R.string.share_url))
+            .putExtra(Intent.EXTRA_SUBJECT, activity.getString(R.string.link_share))
             .putExtra(Intent.EXTRA_TEXT, url)
         try {
             activity.startActivity(share)
         } catch (error: Exception) {
             Log.w(TAG, "Sharing failed", error)
-            toast(R.string.external_app_open_error)
+            toast(R.string.error_no_app)
         }
     }
 
     fun copyToClipboard(url: String) {
         activity.getSystemService<ClipboardManager>()?.setPrimaryClip(ClipData.newPlainText("URL", url))
-        toast(R.string.copied_to_clipboard)
+        toast(R.string.link_copied)
     }
 
     private fun start(intent: Intent) {
@@ -95,10 +95,10 @@ internal class ExternalApps(private val activity: Activity) {
             activity.startActivity(intent)
         } catch (error: ActivityNotFoundException) {
             Log.w(TAG, "No app for $intent", error)
-            toast(R.string.err_no_app_to_handle_url)
+            toast(R.string.external_no_app)
         } catch (error: Exception) {
             Log.w(TAG, "Opening another app failed", error)
-            toast(R.string.external_app_open_error)
+            toast(R.string.error_no_app)
         }
     }
 
