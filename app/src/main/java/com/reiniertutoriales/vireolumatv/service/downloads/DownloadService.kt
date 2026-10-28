@@ -5,7 +5,12 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.*
+import android.os.Build
+import android.os.Environment
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
+import android.os.SystemClock
 import android.provider.Settings
 import android.text.format.Formatter
 import android.util.Log
@@ -15,41 +20,45 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
 import com.reiniertutoriales.vireolumatv.model.Download
+import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
 import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
-import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
 import java.io.File
-import java.util.*
 import java.util.concurrent.Executors
 
 /**
- * Created by PDT on 23.01.2017.
+ * Runs downloads on two worker threads while the browser is bound to it, as a dataSync foreground
+ * service with one ongoing notification for all of them. Results reach [ActiveDownloadsModel] on the
+ * main thread; progress is passed on at most every [PROGRESS_INTERVAL_MS].
  */
-
 open class DownloadService : Service() {
     private lateinit var model: ActiveDownloadsModel
+    private lateinit var notifications: NotificationManager
     private val executor = Executors.newFixedThreadPool(2)
-    private val handler = Handler(Looper.getMainLooper())
-    private var notificationBuilder: NotificationCompat.Builder? = null
-    private lateinit var notificationManager: NotificationManager
+    private val main = Handler(Looper.getMainLooper())
+    private val notification by lazy {
+        NotificationCompat.Builder(this, VireoLumaTVApp.CHANNEL_ID_DOWNLOADS)
+            .setSmallIcon(R.drawable.ic_launcher)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+    }
 
-    internal var downloadTasksListener: DownloadTask.Callback = object : DownloadTask.Callback {
-        val MIN_NOTIFY_TIMEOUT = 100
-        private var lastNotifyTime = System.currentTimeMillis()
+    internal val downloadTasksListener = object : DownloadTask.Callback {
+        @Volatile private var lastProgress = 0L
+
         override fun onProgress(task: DownloadTask) {
-            val now = System.currentTimeMillis()
-            if (now - lastNotifyTime > MIN_NOTIFY_TIMEOUT) {
-                lastNotifyTime = now
-                handler.post {
-                    model.notifyListenersAboutDownloadProgress(task)
-                    notificationManager.notify(DOWNLOAD_NOTIFICATION_ID, updateNotification())
-                }
+            val now = SystemClock.elapsedRealtime()
+            if (now - lastProgress < PROGRESS_INTERVAL_MS) return
+            lastProgress = now
+            main.post {
+                model.notifyListenersAboutDownloadProgress(task)
+                if (model.activeDownloads.isNotEmpty()) notifications.notify(DOWNLOAD_NOTIFICATION_ID, buildNotification())
             }
         }
 
         override fun onError(task: DownloadTask, responseCode: Int, responseMessage: String) {
             DownloadHistory.update(task.downloadInfo)
-            handler.post {
+            main.post {
                 model.notifyListenersAboutError(task, responseCode, responseMessage)
                 onTaskEnded(task)
             }
@@ -57,7 +66,7 @@ open class DownloadService : Service() {
 
         override fun onDone(task: DownloadTask) {
             DownloadHistory.update(task.downloadInfo)
-            handler.post {
+            main.post {
                 model.notifyListenersAboutDownloadProgress(task)
                 onTaskEnded(task)
             }
@@ -67,77 +76,71 @@ open class DownloadService : Service() {
     override fun onCreate() {
         super.onCreate()
         model = ActiveModelsRepository.get(ActiveDownloadsModel::class, this)
-        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notifications = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
     override fun onDestroy() {
-        model.activeDownloads.forEach { it.downloadInfo.cancelled = true }
+        cancelAll()
         executor.shutdown()
         ActiveModelsRepository.markAsNeedless(model, this)
         super.onDestroy()
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return START_NOT_STICKY
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int) = START_NOT_STICKY
+
+    override fun onBind(intent: Intent): IBinder = Binder(this)
+
+    /**
+     * Android 15+ ends a dataSync service after six hours in the background and requires stopSelf()
+     * within seconds. The downloads are cancelled so their partial files are removed, not orphaned.
+     */
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        Log.w(TAG, "Foreground time limit reached; cancelling ${model.activeDownloads.size} downloads")
+        cancelAll()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
-    private fun updateNotification(): Notification {
-        var title = ""
-        var downloaded = 0L
-        var total = 0L
-        var hasUnknownSizedFiles = false
-        for (download in model.activeDownloads) {
-            title += download.downloadInfo.filename + ","
-            downloaded += download.downloadInfo.bytesReceived
-            if (download.downloadInfo.size > 0) {
-                total += download.downloadInfo.size
-            } else {
-                hasUnknownSizedFiles = true
-            }
+    fun startDownload(download: Download) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !reserveLegacyFile(download)) return
+        download.time = System.currentTimeMillis()
+        val task = when {
+            download.base64BlobData != null -> BlobDownloadTask(download, download.base64BlobData!!, downloadTasksListener)
+            download.stream != null -> StreamDownloadTask(download, download.stream!!, downloadTasksListener)
+            else -> FileDownloadTask(download, download.userAgentString, downloadTasksListener)
         }
-        title = title.trim(',')
-        val description = if (hasUnknownSizedFiles) {
-            Formatter.formatShortFileSize(this, downloaded)
-        } else {
-            Formatter.formatShortFileSize(this, downloaded) + " of " +
-                    Formatter.formatShortFileSize(this, total)
-        }
-        if (notificationBuilder == null) {
-            notificationBuilder = NotificationCompat.Builder(this, VireoLumaTVApp.CHANNEL_ID_DOWNLOADS)
-                    .setOngoing(true)
-                    .setOnlyAlertOnce(true)
-                    .setSmallIcon(R.drawable.ic_launcher)
-        }
-        notificationBuilder!!.setContentTitle(title)
-                .setContentText(description)
-                .setSmallIcon(R.drawable.ic_launcher)
-        if (hasUnknownSizedFiles || total == 0L) {
-            notificationBuilder!!.setProgress(0, 0, true)
-        } else {
-            notificationBuilder!!.setProgress(100, (downloaded * 100 / total).toInt(), false)
-        }
-        return notificationBuilder!!.build()
+        model.activeDownloads.add(task)
+        executor.execute(task)
+        startService(Intent(this, javaClass))
+        startForeground(DOWNLOAD_NOTIFICATION_ID, buildNotification())
     }
 
-    override fun onBind(intent: Intent): IBinder {
-        return Binder(this)
+    /** Before Android 11 the file goes straight into the public Downloads folder, under a free name. */
+    private fun reserveLegacyFile(download: Download): Boolean {
+        if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
+            Toast.makeText(this, R.string.storage_not_mounted, Toast.LENGTH_SHORT).show()
+            return false
+        }
+        @Suppress("DEPRECATION") // The public folder is the documented location before scoped storage.
+        val folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        if (!folder.isDirectory && !folder.mkdirs()) {
+            Toast.makeText(this, R.string.can_not_create_downloads, Toast.LENGTH_SHORT).show()
+            return false
+        }
+        // The name becomes part of a path: it must never leave the Downloads folder.
+        val file = freeFile(folder, DownloadUtils.sanitizeFileName(download.filename) ?: "downloadfile")
+        download.filename = file.name
+        download.filepath = file.absolutePath
+        return true
     }
+
+    private fun cancelAll() = model.activeDownloads.forEach { it.downloadInfo.cancelled = true }
 
     private fun onTaskEnded(task: DownloadTask) {
-        when (if (task.downloadInfo.size >= 0 && !task.downloadInfo.cancelled)
-            task.downloadInfo.operationAfterDownload else Download.OperationAfterDownload.NOP) {
-            Download.OperationAfterDownload.INSTALL -> {
-                val canInstallFromOtherSources = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    packageManager.canRequestPackageInstalls()
-                } else {
-                    Settings.Secure.getInt(this.contentResolver, Settings.Secure.INSTALL_NON_MARKET_APPS) == 1
-                }
-                if (canInstallFromOtherSources) {
-                    ApkInstaller.launch(this, task.downloadInfo)
-                }
-            }
-            Download.OperationAfterDownload.NOP -> {
-            }
+        val info = task.downloadInfo
+        if (info.size >= 0 && !info.cancelled &&
+            info.operationAfterDownload == Download.OperationAfterDownload.INSTALL && canInstallPackages()) {
+            ApkInstaller.launch(this, info)
         }
         model.onDownloadEnded(task)
         if (model.activeDownloads.isEmpty()) {
@@ -146,68 +149,50 @@ open class DownloadService : Service() {
         }
     }
 
+    private fun canInstallPackages(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        packageManager.canRequestPackageInstalls()
+    } else {
+        @Suppress("DEPRECATION")
+        Settings.Secure.getInt(contentResolver, Settings.Secure.INSTALL_NON_MARKET_APPS, 0) == 1
+    }
 
-    fun startDownload(download: Download) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            //file name becomes part of a filesystem path here: never allow it to leave the downloads dir
-            download.filename = DownloadUtils.sanitizeFileName(download.filename) ?: "downloadfile"
-            val extPos = download.filename.lastIndexOf(".")
-            val hasExt = extPos != -1
-            var ext: String? = null
-            var prefix: String? = null
-            if (hasExt) {
-                ext = download.filename.substring(extPos + 1)
-                prefix = download.filename.substring(0, extPos)
-            }
-            var fileName = download.filename
-            var i = 0
-            while (File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + File.separator + fileName).exists()) {
-                i++
-                if (hasExt) {
-                    fileName = prefix + "_(" + i + ")." + ext
-                } else {
-                    fileName = download.filename + "_(" + i + ")"
-                }
-            }
-            download.filename = fileName
+    private fun buildNotification(): Notification {
+        val infos = model.activeDownloads.map { it.downloadInfo }
+        val received = infos.sumOf { it.bytesReceived }
+        val sizeKnown = infos.isNotEmpty() && infos.all { it.size > 0 }
+        val total = if (sizeKnown) infos.sumOf { it.size } else 0L
+        return notification
+            .setContentTitle(infos.joinToString(", ") { it.filename })
+            .setContentText(progressText(received, total))
+            .setProgress(100, if (total > 0) (received * 100 / total).toInt() else 0, total == 0L)
+            .build()
+    }
 
-            if (Environment.MEDIA_MOUNTED != Environment.getExternalStorageState()) {
-                Toast.makeText(this, R.string.storage_not_mounted, Toast.LENGTH_SHORT).show()
-                return
-            }
-            val downloadsDir =
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            if (!downloadsDir.exists() && !downloadsDir.mkdirs()) {
-                Toast.makeText(this, R.string.can_not_create_downloads, Toast.LENGTH_SHORT)
-                    .show()
-                return
-            }
-            download.filepath = downloadsDir.toString() + File.separator + fileName
-        }
-
-        download.time = Date().time
-        Log.d(TAG, "Start to downloading url: ${download.url}")
-        val downloadTask = if (download.base64BlobData != null) {
-            BlobDownloadTask(download, download.base64BlobData!!, downloadTasksListener)
-        } else if (download.stream != null) {
-            StreamDownloadTask(download, download.stream!!, downloadTasksListener)
-        } else {
-            FileDownloadTask(download, download.userAgentString, downloadTasksListener)
-        }
-        model.activeDownloads.add(downloadTask)
-        executor.execute(downloadTask)
-
-        startService(Intent(this, javaClass))
-        startForeground(DOWNLOAD_NOTIFICATION_ID, updateNotification())
+    /** "12 MB / 40 MB", or only the received size while some total is unknown. */
+    private fun progressText(received: Long, total: Long): String {
+        val done = Formatter.formatShortFileSize(this, received)
+        return if (total > 0) "$done / ${Formatter.formatShortFileSize(this, total)}" else done
     }
 
     class Binder(val service: DownloadService) : android.os.Binder()
 
     companion object {
-        val TAG: String = DownloadService::class.java.simpleName
+        const val TAG = "DownloadService"
         const val DOWNLOAD_NOTIFICATION_ID = 101101
+        private const val PROGRESS_INTERVAL_MS = 100L
 
         fun intent(context: Context, incognito: Boolean): Intent = Intent(context,
             if (incognito) IncognitoDownloadService::class.java else DownloadService::class.java)
+
+        /** [name] in [folder], or "name_(n).ext" with the first free n; a leading dot is not an extension. */
+        internal fun freeFile(folder: File, name: String): File {
+            val dot = name.lastIndexOf('.').takeIf { it > 0 }
+            val stem = if (dot == null) name else name.substring(0, dot)
+            val extension = if (dot == null) "" else name.substring(dot)
+            var file = File(folder, name)
+            var n = 0
+            while (file.exists()) file = File(folder, "${stem}_(${++n})$extension")
+            return file
+        }
     }
 }

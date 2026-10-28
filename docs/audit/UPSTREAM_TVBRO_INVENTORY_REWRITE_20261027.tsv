@@ -108,8 +108,8 @@ app/src/main/assets/youtube_adblock.js	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/VireoLumaTVApp.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/IncognitoModeMainActivity.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/IncognitoModeMainActivity.kt	11
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/ActiveDownloadsModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/ActiveDownloadsModel.kt	15
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadListAdapter.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListAdapter.kt	8
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadListItemView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListItemView.kt	7
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadListAdapter.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListAdapter.kt	97
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadListItemView.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadListItemView.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadsActivity.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsActivity.kt	11
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadsHistoryModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/downloads/DownloadsHistoryModel.kt	45
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/IncognitoDownloadsActivity.kt	PROPIO		
@@ -163,8 +163,8 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/model/util/Converters.kt	MOD
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/BlobPayloadInputStream.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadHistory.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRetryPolicy.kt	PROPIO		
-app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadService.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt	14
-app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadTask.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt	33
+app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadService.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadService.kt	75
+app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadTask.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/service/downloads/DownloadTask.kt	85
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/IncognitoDownloadService.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/AppDatabase.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/singleton/AppDatabase.kt	4
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/Shortcut.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/singleton/shortcuts/Shortcut.kt	79
@@ -328,6 +328,8 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/adblock/SubListCacheTest.kt	
 app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadBackoffCancellationTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadResourceTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRetryPolicyTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadServiceTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadTransferTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/IncognitoDownloadTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/FaviconNetworkTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/FaviconResourceTest.kt	PROPIO		
