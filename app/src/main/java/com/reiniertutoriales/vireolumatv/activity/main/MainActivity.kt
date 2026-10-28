@@ -25,7 +25,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import android.util.Patterns
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -92,10 +91,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
-import java.io.UnsupportedEncodingException
 import java.net.URL
-import java.net.URLEncoder
-import java.util.Locale
 import kotlin.system.exitProcess
 import androidx.core.net.toUri
 import com.reiniertutoriales.vireolumatv.utils.toast
@@ -834,28 +830,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
-    override fun search(text: String) {
-        var input = text
-        val trimmedLowercased = input.trim { it <= ' ' }.lowercase(Locale.ROOT)
-        if (Patterns.WEB_URL.matcher(input).matches() || trimmedLowercased.startsWith("http://") || trimmedLowercased.startsWith("https://")) {
-            if (!input.lowercase(Locale.ROOT).contains("://")) {
-                input = "https://$input"
-            }
-            navigate(input)
-        } else {
-            var query: String? = null
-            try {
-                query = URLEncoder.encode(input, "utf-8")
-            } catch (e1: UnsupportedEncodingException) {
-                Log.w(TAG, "Search query encoding failed", e1)
-                toast(R.string.error)
-                return
-            }
-
-            val searchUrl = config.searchEngineURL.value.replace("[query]", query!!)
-            navigate(searchUrl)
-        }
-    }
+    override fun search(text: String) = navigate(AddressInput.resolve(text, config.searchEngineURL.value))
 
     fun toggleIncognitoMode() {
         toggleIncognitoMode(true)

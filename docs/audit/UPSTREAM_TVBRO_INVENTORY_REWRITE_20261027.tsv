@@ -122,6 +122,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryAdap
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryItemView.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryItemView.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/history/HistoryModel.kt	56
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/AdblockModel.kt	94
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/AddressInput.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/BlockerIndicator.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/ExternalWebNavigation.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/IncognitoSessionTabs.kt	PROPIO		
@@ -308,6 +309,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/history/HistorySele
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ActiveModelConstructorTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockDecisionCacheTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AdblockPopupAndCosmeticTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AddressInputTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/AtomicTabSaveTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BlockerIndicatorTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrandResourcesTest.kt	PROPIO		
