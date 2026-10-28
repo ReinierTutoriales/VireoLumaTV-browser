@@ -49,4 +49,20 @@ class ConfigTest {
         Config(prefs).userAgentOverride.value = null
         assertFalse(prefs.contains("user_agent"))
     }
+
+    @Test fun inheritedUserAgentIsRemovedBeforeSettingsOrPagesAreOpened() {
+        val prefs = prefs()
+        prefs.edit().putString("user_agent", "Mozilla/5.0 TV Bro/1.0 Android").commit()
+        assertNull(Config(prefs).userAgentOverride.value)
+        assertFalse(prefs.contains("user_agent"))
+        assertNull(Config(prefs).userAgentOverride.value)
+    }
+
+    @Test fun startupKeepsAnExplicitCustomUserAgent() {
+        val prefs = prefs()
+        val custom = "CustomBrowser/2.0 Android TV"
+        prefs.edit().putString("user_agent", custom).commit()
+        assertEquals(custom, Config(prefs).userAgentOverride.value)
+        assertEquals(custom, prefs.getString("user_agent", null))
+    }
 }

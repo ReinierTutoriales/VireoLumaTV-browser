@@ -95,9 +95,6 @@ class GeneralPage @JvmOverloads constructor(
     }
 
     private fun addUserAgent() {
-        if (config.userAgentOverride.value?.contains("TV Bro/1.0 ") == true) {
-            config.userAgentOverride.value = null // Legacy value: the default user agent applies now.
-        }
         val presets = browserSettings.uaStrings
         val custom = browserSettings.userAgentStringTitles.lastIndex
         val saved = config.userAgentOverride.value
