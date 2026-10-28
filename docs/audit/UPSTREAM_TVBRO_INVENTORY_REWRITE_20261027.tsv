@@ -91,19 +91,19 @@ app/src/main/assets/licenses/NOTICE.md	PROPIO
 app/src/main/assets/licenses/SOURCES.txt	PROPIO
 app/src/main/assets/licenses/TV-Bro-LICENSE.md	PROPIO
 app/src/main/assets/media_policy.js	PROPIO
-app/src/main/assets/pages/home/favicons/bing.png	IDENTICO_BLOB	app/src/main/assets/pages/home/favicons/bing.png	0
-app/src/main/assets/pages/home/favicons/custom.png	IDENTICO_BLOB	app/src/main/assets/pages/home/favicons/custom.png	0
-app/src/main/assets/pages/home/favicons/ddg.png	IDENTICO_BLOB	app/src/main/assets/pages/home/favicons/ddg.png	0
-app/src/main/assets/pages/home/favicons/google.png	IDENTICO_BLOB	app/src/main/assets/pages/home/favicons/google.png	0
-app/src/main/assets/pages/home/favicons/startpage.png	IDENTICO_BLOB	app/src/main/assets/pages/home/favicons/startpage.png	0
-app/src/main/assets/pages/home/favicons/yahoo.png	IDENTICO_BLOB	app/src/main/assets/pages/home/favicons/yahoo.png	0
-app/src/main/assets/pages/home/favicons/yandex.png	IDENTICO_BLOB	app/src/main/assets/pages/home/favicons/yandex.png	0
-app/src/main/assets/pages/home/ic_not_available.svg	IDENTICO_BLOB	app/src/main/assets/pages/home/ic_not_available.svg	0
+app/src/main/assets/pages/home/favicons/bing.png	ELIMINADO	app/src/main/assets/pages/home/favicons/bing.png	100
+app/src/main/assets/pages/home/favicons/custom.png	ELIMINADO	app/src/main/assets/pages/home/favicons/custom.png	100
+app/src/main/assets/pages/home/favicons/ddg.png	ELIMINADO	app/src/main/assets/pages/home/favicons/ddg.png	100
+app/src/main/assets/pages/home/favicons/google.png	ELIMINADO	app/src/main/assets/pages/home/favicons/google.png	100
+app/src/main/assets/pages/home/favicons/startpage.png	ELIMINADO	app/src/main/assets/pages/home/favicons/startpage.png	100
+app/src/main/assets/pages/home/favicons/yahoo.png	ELIMINADO	app/src/main/assets/pages/home/favicons/yahoo.png	100
+app/src/main/assets/pages/home/favicons/yandex.png	ELIMINADO	app/src/main/assets/pages/home/favicons/yandex.png	100
+app/src/main/assets/pages/home/ic_not_available.svg	ELIMINADO	app/src/main/assets/pages/home/ic_not_available.svg	100
 app/src/main/assets/pages/home/index.html	MODIFICADO	app/src/main/assets/pages/home/index.html	98
 app/src/main/assets/pages/home/logo.png	PROPIO
-app/src/main/assets/pages/home/mic.svg	IDENTICO_BLOB	app/src/main/assets/pages/home/mic.svg	0
-app/src/main/assets/pages/home/more.svg	IDENTICO_BLOB	app/src/main/assets/pages/home/more.svg	0
-app/src/main/assets/pages/home/search.svg	IDENTICO_BLOB	app/src/main/assets/pages/home/search.svg	0
+app/src/main/assets/pages/home/mic.svg	ELIMINADO	app/src/main/assets/pages/home/mic.svg	100
+app/src/main/assets/pages/home/more.svg	ELIMINADO	app/src/main/assets/pages/home/more.svg	100
+app/src/main/assets/pages/home/search.svg	ELIMINADO	app/src/main/assets/pages/home/search.svg	100
 app/src/main/assets/pages/ic_warning.svg	IDENTICO_BLOB	app/src/main/assets/pages/ic_warning.svg	0
 app/src/main/assets/pages/warning-certificate.html	REESCRITO	app/src/main/assets/pages/warning-certificate.html	88
 app/src/main/assets/surrogates/adsbygoogle.js	PROPIO

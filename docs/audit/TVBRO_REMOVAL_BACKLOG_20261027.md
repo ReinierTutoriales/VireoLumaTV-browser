@@ -128,3 +128,11 @@ camino. `Scripts` (2/10 líneas coincidentes) cambió el JavaScript de pulsació
 larga para resolver enlaces y descartar elementos desconectados. Ambas pasan
 a `REESCRITO` por implementación distinta; esto no equivale a validación de
 WebView real ni a revisión legal.
+
+## Recursos de inicio sin consumidores
+
+`index.html` usa SVG en línea y solo carga imágenes `data:`. Ningún archivo,
+prueba ni script referencia las siete imágenes `pages/home/favicons/*` ni
+`ic_not_available.svg`, `mic.svg`, `more.svg` y `search.svg`. Se eliminaron
+esos once assets y se marcaron `ELIMINADO` en el inventario. Se conserva
+`pages/ic_warning.svg`: la página de aviso de certificado la utiliza.
