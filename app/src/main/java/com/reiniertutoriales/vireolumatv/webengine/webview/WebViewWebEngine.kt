@@ -299,10 +299,6 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
             callback?.onDownloadRequested(url)
         }
 
-        override fun onThumbnailError() {
-            //nop for now
-        }
-
         override fun onShowCustomView(view: View) {
             Log.i(TAG, "callback.onShowCustomView view=" + view.javaClass.name)
             enterFullscreenView(view)

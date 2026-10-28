@@ -183,12 +183,16 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/utils/VoiceSearchHelper.kt	E
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/AdblockPageController.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/AndroidJSInterface.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/AndroidJSInterface.kt	71
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicy.kt	PROPIO		
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserChromeClient.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserWebViewClient.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateTrust.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageHelper.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/HomePageHelper.kt	48
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicy.kt	PROPIO		
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissions.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/Scripts.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/Scripts.kt	69
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnostics.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActivation.kt	PROPIO		
-app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt	27
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt	62
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewWebEngine.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt	32
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockController.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableContainer.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableContainer.kt
@@ -365,6 +369,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorMenu
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorPointerMouseTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageNetworkTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicyTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissionsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/RemoteInputContractTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnosticsTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActivationTrackerTest.kt	PROPIO		
