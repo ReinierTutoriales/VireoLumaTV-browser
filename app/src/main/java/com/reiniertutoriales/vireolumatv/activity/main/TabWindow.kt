@@ -270,24 +270,19 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
     /** The link actions menu at the pointer: what applies depends on whether a web link is under it. */
     override fun openLinkActions(target: PagePoint) {
         val url = target.link?.removeSurrounding("\"")
-        val web = url != null && (url.startsWith("http://") || url.startsWith("https://"))
         val anchor = View(browser)
         vb.flWebViewContainer.addView(anchor, FrameLayout.LayoutParams(1, 1).apply { setMargins(target.x, target.y, 0, 0) })
         PopupMenu(browser, anchor, Gravity.BOTTOM).apply {
-            inflate(R.menu.menu_link)
-            menu.findItem(R.id.miOpenInNewTab).isVisible = web
-            menu.findItem(R.id.miOpenInExternalApp).isVisible = web
-            menu.findItem(R.id.miDownload).isVisible = web
-            menu.findItem(R.id.miCopyToClipboard).isVisible = url != null
-            menu.findItem(R.id.miShare).isVisible = url != null
+            val actions = LinkAction.available(url)
+            actions.forEachIndexed { index, action -> menu.add(0, index, index, action.label) }
             setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.miRefreshPage -> tab.engine.reload()
-                    R.id.miOpenInNewTab -> url?.let { openInNewTab(it, load = true) }
-                    R.id.miOpenInExternalApp -> url?.let(browser.external::openInApp)
-                    R.id.miDownload -> url?.let(::downloadLink)
-                    R.id.miCopyToClipboard -> url?.let(browser.external::copyToClipboard)
-                    R.id.miShare -> url?.let(browser.external::share)
+                when (actions[item.itemId]) {
+                    LinkAction.RELOAD -> tab.engine.reload()
+                    LinkAction.OPEN_TAB -> url?.let { openInNewTab(it, load = true) }
+                    LinkAction.OPEN_APP -> url?.let(browser.external::openInApp)
+                    LinkAction.DOWNLOAD -> url?.let(::downloadLink)
+                    LinkAction.COPY -> url?.let(browser.external::copyToClipboard)
+                    LinkAction.SHARE -> url?.let(browser.external::share)
                 }
                 true
             }
