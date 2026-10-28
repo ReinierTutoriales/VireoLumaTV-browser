@@ -4,9 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.Animation
-import java.util.Calendar
 
 /** The Activity hosting this view, or null when it is not inside one. */
 val View.activity: Activity?
@@ -18,15 +16,6 @@ val View.activity: Activity?
         }
         return null
     }
-
-fun Calendar.sameDay(other: Calendar): Boolean {
-    return get(Calendar.YEAR) == other.get(Calendar.YEAR) &&
-            get(Calendar.MONTH) == other.get(Calendar.MONTH) &&
-            get(Calendar.DAY_OF_MONTH) == other.get(Calendar.DAY_OF_MONTH)
-}
-
-val ViewGroup.childs: List<View>
-    get() = List(childCount) { getChildAt(it) }
 
 fun Int.dip2px(context: Context): Float = this * context.resources.displayMetrics.density
 
