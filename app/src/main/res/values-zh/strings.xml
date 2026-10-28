@@ -4,22 +4,20 @@
   <string name="error">错误</string>
   <string name="ok">OK</string>
   <string name="url_prompt">输入搜索查询文字或网址</string>
-  <string name="web_perm_request_confirmation">该网页想要使用以下资源:\n\n%s</string>
+  <string name="web_perm_request_confirmation">允许此页面访问以下资源？\n\n%s</string>
   <string name="allow">允许</string>
   <string name="deny">拒绝</string>
   <string name="location">位置信息</string>
   <string name="open_in_new_tab">在新标签页中打开</string>
-  <string name="download_started">开始下载…\n文件将存储在:\n%s</string>
+  <string name="download_started">下载已排队。保存位置：\n%s</string>
   <string name="err_cant_open_file_chooser">无法打开文件选择器</string>
   <string name="bookmarks">书签</string>
   <string name="add">添加</string>
   <string name="edit">编辑</string>
   <string name="new_bookmark">新书签</string>
   <string name="title">标题</string>
-  <string name="engine">搜索引擎</string>
   <string name="choose_default_search_engine">选择默认搜索引擎</string>
-  <string name="save">保存</string>
-  <string name="search_engine_url_with_query_placeholder_query">带有查询占位符 [query] 的搜索引擎网址</string>
+  <string name="search_engine_url_with_query_placeholder_query">搜索网址：用 [query] 标记搜索文字的位置</string>
   <string name="user_agent_string">用户代理字符串</string>
   <string name="choose_user_agent_string">选择用户代理字符串</string>
   <string name="edit_user_agent_string">编辑用户代理字符串</string>
@@ -33,7 +31,7 @@
   <string name="msg_delete_history">删除选定的历史项目？</string>
   <string name="msg_delete_history_all">删除所有历史记录项？</string>
   <string name="open_folder">打开包含文件夹</string>
-  <string name="no_file_explorer_msg">您的设备上似乎没有安装任何合适的文件浏览器应用程序</string>
+  <string name="no_file_explorer_msg">没有可用的文件管理器。请打开 Android 的下载界面。</string>
   <string name="shortcuts">快捷键</string>
   <string name="favorites">收藏夹</string>
   <string name="history">历史</string>
@@ -69,7 +67,7 @@
   <string name="new_version_available_s">新版本可用: %s</string>
   <string name="web_browser_optimized_for_tvs">针对电视进行了优化的网络浏览器</string>
   <string name="warning">警告</string>
-  <string name="err_webview_can_not_link">无法链接到 WebView 组件。尝试先安装 Android 系统 WebView 组件。</string>
+  <string name="err_webview_can_not_link">Android WebView 不可用。请启用、安装或更新系统的 WebView 提供程序。</string>
   <string name="open_a_new_tab_here">在这里打开一个新标签</string>
   <string name="tabs">标签页</string>
   <array name="tabs_options">
@@ -106,9 +104,9 @@
   <string name="cursor_acceleration">虚拟光标加速度</string>
   <string name="cursor_physics_percent">默认值的 %d%%</string>
   <string name="direct_navigation_mode_title">直接导航模式</string>
-  <string name="direct_navigation_mode_message">直接导航会隐藏屏幕光标，并将遥控器或游戏手柄的按键直接传给网页，从而支持电视或键盘焦点模式的网站高亮链接和控件。\n\n退出此模式：在电视遥控器上按“返回”，或在游戏手柄上长按 B 键。\n\n此模式在 WebView 引擎下效果最佳：WebView 支持用方向键在页面内移动焦点。</string>
+  <string name="direct_navigation_mode_message">此模式会隐藏指针，并将遥控器和手柄按键直接交给页面。可选择的元素取决于网站的键盘支持。\n\n按遥控器的返回键，或长按手柄 B 键，即可恢复指针。</string>
   <string name="incognito_mode">隐身模式</string>
-  <string name="incognito_mode_hint">现在您可以浏览隐私内容，其他使用此设备的人将看不到您的活动。 VireoLumaTV 不会保存您的浏览历史记录、cookie 和网站数据以及在表格中输入的信息。\n\n但是，下载和书签将被保存。 您访问的网站、您的组织或互联网服务提供商可能仍然可以看到您的活动。</string>
+  <string name="incognito_mode_hint">本次会话的访问记录不会加入普通浏览历史。隐私模式不会向网站、网络管理员或互联网服务商隐藏连接。\n\n已下载的文件和已保存的书签仍会保留在设备上。</string>
   <string name="don_t_show_again">不再显示</string>
   <string name="clear_web_cache">清除网络缓存</string>
   <string name="no_bookmarks_yet">还没有书签</string>
@@ -130,16 +128,16 @@
   <string name="home_page">主页</string>
   <string name="custom_home_page_url">自定义主页 URL</string>
   <string-array name="home_page_modes">
-    <item>VireoLumaTV 主页</item>
-    <item>搜索引擎</item>
-    <item>自定义</item>
-    <item>空白页</item>
-  </string-array>
+        <item>VireoLumaTV 起始页</item>
+        <item>搜索服务</item>
+        <item>指定网址</item>
+        <item>空白页面</item>
+    </string-array>
 
   <string name="yes">是</string>
   <string name="no">否</string>
   <string name="site_asks_to_open_unknown_url">此站点想要打开一个未知的 URL</string>
-  <string name="site_asks_to_open_unknown_url_message">您想允许此站点使用外部应用打开此 URL 吗?</string>
+  <string name="site_asks_to_open_unknown_url_message">此地址需要其他应用。是否允许 Android 打开？</string>
   <string name="err_no_app_to_handle_url">找不到合适的应用来处理此 URL</string>
   <string name="http_auth_title">需要身份验证</string>
   <string name="play_pause">播放/暂停</string>
@@ -147,10 +145,10 @@
   <string name="media_rewind">快退</string>
   <string name="media_fast_forward">快进</string>
   <string name="long_press">长按</string>
-  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">网页算法变暗（深色主题，仅 WebView，需要重启）</string>
+  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">调暗网页内容（需重启）</string>
   <string name="allow_autoplay_media">允许媒体自动播放</string>
   <string name="web_engine_debug">Web 引擎调试（需要重启）</string>
-  <string name="web_engine_debug_warning_message">启用 Web 引擎调试可能会将页面内容、Cookie 和敏感会话数据暴露给任何具有设备调试访问权限的人。仅在受信任设备上用于故障排查时启用。</string>
+  <string name="web_engine_debug_warning_message">设备调试工具可以查看已打开的页面和会话数据，包括 Cookie。仅在可信设备上诊断问题期间启用检查。</string>
     <string name="vireo_project_credit">VireoLumaTV，作者 ReinierTutoriales · 源代码</string>
     <string name="based_on_tv_bro_sources">基于 TV Bro 源代码：%s</string>
     <string name="cursor_grab_mode">移动页面</string>

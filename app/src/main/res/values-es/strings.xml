@@ -3,12 +3,12 @@
     <string name="error">Error</string>
     <string name="ok">Aceptar</string>
     <string name="url_prompt">Escribe una búsqueda o una URL</string>
-    <string name="web_perm_request_confirmation">Esta página quiere usar los siguientes recursos:\n\n%s</string>
+    <string name="web_perm_request_confirmation">¿Permitir que esta página acceda a:\n\n%s?</string>
     <string name="allow">Permitir</string>
     <string name="deny">Denegar</string>
     <string name="location">Ubicación</string>
     <string name="open_in_new_tab">Abrir en pestaña nueva</string>
-    <string name="download_started">Descarga iniciada…\nEl archivo se guardará en:\n%s</string>
+    <string name="download_started">Descarga en cola. Destino:\n%s</string>
     <string name="err_cant_open_file_chooser">No se puede abrir el selector de archivos</string>
     <string name="bookmarks">Marcadores</string>
     <string name="add">Añadir</string>
@@ -17,10 +17,8 @@
     <string name="new_bookmark">Nuevo marcador</string>
     <string name="done">Hecho</string>
     <string name="title">Título</string>
-    <string name="engine">Buscador</string>
     <string name="choose_default_search_engine">Elige el buscador predeterminado</string>
-    <string name="save">Guardar</string>
-    <string name="search_engine_url_with_query_placeholder_query">URL del buscador con el marcador [query]</string>
+    <string name="search_engine_url_with_query_placeholder_query">URL de búsqueda: coloca [query] donde debe ir el texto buscado</string>
     <string name="user_agent_string">Agente de usuario</string>
     <string name="choose_user_agent_string">Elige el agente de usuario</string>
     <string name="edit_user_agent_string">Editar agente de usuario</string>
@@ -34,7 +32,7 @@
     <string name="msg_delete_history">¿Eliminar las entradas del historial seleccionadas?</string>
     <string name="msg_delete_history_all">¿Eliminar todo el historial?</string>
     <string name="open_folder">Abrir carpeta</string>
-    <string name="no_file_explorer_msg">No hay ningún explorador de archivos adecuado instalado en el dispositivo</string>
+    <string name="no_file_explorer_msg">No hay un gestor de archivos disponible. Usa la pantalla Descargas del sistema.</string>
     <string name="shortcuts">Atajos</string>
     <string name="favorites">Favoritos</string>
     <string name="history">Historial</string>
@@ -72,7 +70,7 @@
     <string name="new_version_available_s">Nueva versión disponible: %s</string>
     <string name="web_browser_optimized_for_tvs">Navegador web optimizado para TV</string>
     <string name="warning">Advertencia</string>
-    <string name="err_webview_can_not_link">No se puede usar el componente WebView. Instala o actualiza Android System WebView.</string>
+    <string name="err_webview_can_not_link">Android WebView no está disponible. Activa, instala o actualiza el proveedor WebView del sistema.</string>
     <string name="open_a_new_tab_here">Abre una pestaña nueva aquí</string>
     <string name="tabs">Pestañas</string>
     <array name="tabs_options">
@@ -116,14 +114,14 @@
     <string name="cursor_acceleration">Aceleración del cursor</string>
     <string name="cursor_physics_percent">%d%% del valor predeterminado</string>
     <string name="direct_navigation_mode_title">Modo de navegación directa</string>
-    <string name="direct_navigation_mode_message">La navegación directa oculta el cursor y envía las teclas del mando o del control de juegos directamente a la página, para que las webs compatibles con TV o teclado resalten enlaces y controles.\n\nPara salir de este modo: pulsa Atrás en el mando de la TV, o mantén pulsado el botón B en un control de juegos.\n\nEste modo funciona mejor con el motor WebView: WebView permite mover el foco por la página con la cruceta.</string>
+    <string name="direct_navigation_mode_message">En este modo se oculta el puntero. La página recibe directamente las teclas del mando; su compatibilidad con teclado determina qué puedes seleccionar.\n\nPara recuperar el puntero, pulsa Atrás en el mando o mantén B en el control de juegos.</string>
     <string name="need_restart">Hay que reiniciar la aplicación</string>
-    <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Oscurecer las páginas web (requiere reiniciar)</string>
+    <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Oscurecer el contenido web (requiere reiniciar)</string>
     <string name="allow_autoplay_media">Permitir reproducción automática</string>
     <string name="web_engine_debug">Depuración del motor web (requiere reiniciar)</string>
-    <string name="web_engine_debug_warning_message">Activar la depuración del motor web puede exponer el contenido de las páginas, las cookies y datos de sesión sensibles a cualquiera con acceso de depuración al dispositivo. Actívala solo en dispositivos de confianza para diagnosticar problemas.</string>
+    <string name="web_engine_debug_warning_message">Las herramientas de depuración del dispositivo pueden inspeccionar las páginas abiertas y los datos de sesión, incluidas las cookies. Activa esta función solo mientras diagnosticas un problema en un dispositivo de confianza.</string>
     <string name="incognito_mode">Modo incógnito</string>
-    <string name="incognito_mode_hint">Ahora puedes navegar en privado y las demás personas que usen este dispositivo no verán tu actividad. VireoLumaTV no guardará tu historial, cookies ni datos de sitios, ni la información que escribas en formularios.\n\nSin embargo, las descargas y los marcadores sí se guardan. Tu actividad aún puede ser visible para las webs que visites, tu organización o tu proveedor de internet.</string>
+    <string name="incognito_mode_hint">Las visitas de esta sesión no se añaden al historial normal. El modo privado no oculta tu conexión a las webs, al administrador de la red ni al proveedor de internet.\n\nLos archivos descargados y los marcadores guardados permanecen en el dispositivo.</string>
     <string name="don_t_show_again">No volver a mostrar</string>
     <string name="clear_web_cache">Borrar caché web</string>
     <string name="block_popups_s">Bloqueo de ventanas emergentes (%s)</string>
@@ -145,13 +143,13 @@
     <array name="home_page_modes">
         <item>Inicio de VireoLumaTV</item>
         <item>Buscador</item>
-        <item>Personalizada</item>
-        <item>En blanco</item>
+        <item>Dirección personalizada</item>
+        <item>Página vacía</item>
     </array>
     <string name="yes">Sí</string>
     <string name="no">No</string>
     <string name="site_asks_to_open_unknown_url">El sitio quiere abrir una URL desconocida</string>
-    <string name="site_asks_to_open_unknown_url_message">¿Quieres abrir esta URL en una aplicación externa?</string>
+    <string name="site_asks_to_open_unknown_url_message">Esta dirección necesita otra aplicación. ¿Permitir que Android la abra?</string>
     <string name="err_no_app_to_handle_url">No se encontró una aplicación para abrir esta URL</string>
     <string name="http_auth_title">Se requiere autenticación</string>
     <string name="play_pause">Reproducir/Pausar</string>

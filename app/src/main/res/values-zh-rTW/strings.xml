@@ -4,12 +4,12 @@
     <string name="error">錯誤</string>
     <string name="ok">OK</string>
     <string name="url_prompt">輸入關鍵字或網址</string>
-    <string name="web_perm_request_confirmation">此網頁想要使用下列資源：\n\n%s</string>
+    <string name="web_perm_request_confirmation">允許此頁面存取以下資源？\n\n%s</string>
     <string name="allow">允許</string>
     <string name="deny">拒絕</string>
     <string name="location">位置</string>
     <string name="open_in_new_tab">在新分頁開啟</string>
-    <string name="download_started">已開始下載…\n檔案將儲存到：\n%s</string>
+    <string name="download_started">下載已排入佇列。儲存位置：\n%s</string>
     <string name="err_cant_open_file_chooser">無法開啟檔案選擇器</string>
     <string name="bookmarks">書籤</string>
     <string name="add">新增</string>
@@ -18,10 +18,8 @@
     <string name="new_bookmark">新書籤</string>
     <string name="done">完成</string>
     <string name="title">標題</string>
-    <string name="engine">搜尋引擎</string>
     <string name="choose_default_search_engine">選擇預設搜尋引擎</string>
-    <string name="save">儲存</string>
-    <string name="search_engine_url_with_query_placeholder_query">帶有查詢預留位置的搜尋引擎網址 [query]</string>
+    <string name="search_engine_url_with_query_placeholder_query">搜尋網址：以 [query] 標示搜尋文字的位置</string>
     <string name="user_agent_string">使用者代理字串</string>
     <string name="choose_user_agent_string">選擇使用者代理字串</string>
     <string name="edit_user_agent_string">編輯使用者代理字串</string>
@@ -35,7 +33,7 @@
     <string name="msg_delete_history">要刪除所選的歷史紀錄項目嗎？</string>
     <string name="msg_delete_history_all">要刪除所有歷史紀錄項目嗎？</string>
     <string name="open_folder">開啟儲存資料夾</string>
-    <string name="no_file_explorer_msg">您的裝置似乎沒有安裝任何可用的檔案瀏覽器應用程式</string>
+    <string name="no_file_explorer_msg">沒有可用的檔案管理員。請開啟 Android 的下載畫面。</string>
     <string name="shortcuts">快捷鍵</string>
     <string name="favorites">我的最愛</string>
     <string name="history">歷史紀錄</string>
@@ -71,7 +69,7 @@
     <string name="new_version_available_s">有可用的新版本：%s</string>
     <string name="web_browser_optimized_for_tvs">針對電視強化的網頁瀏覽器</string>
     <string name="warning">警告</string>
-    <string name="err_webview_can_not_link">無法連結至 WebView 套件。請先嘗試安裝 Android System WebView 套件。</string>
+    <string name="err_webview_can_not_link">Android WebView 無法使用。請啟用、安裝或更新系統的 WebView 提供者。</string>
     <string name="open_a_new_tab_here">在此開啟新分頁</string>
     <string name="tabs">分頁</string>
     <string name="ssl_expired">證書已過期</string>
@@ -101,10 +99,10 @@
     <string name="cursor_acceleration">虛擬游標加速度</string>
     <string name="cursor_physics_percent">預設值的 %d%%</string>
     <string name="direct_navigation_mode_title">直接導覽模式</string>
-    <string name="direct_navigation_mode_message">直接導覽會隱藏螢幕游標，並將遙控器或遊戲手把的按鍵直接傳給網頁，讓支援電視或鍵盤焦點的網站能突顯連結與控制項。\n\n若要離開此模式：在電視遙控器上按「返回」，或在遊戲手把上長按 B 鍵。\n\n此模式以 WebView 引擎效果最佳：WebView 支援用方向鍵在頁面內移動焦點。</string>
+    <string name="direct_navigation_mode_message">此模式會隱藏指標，並將遙控器和手把按鍵直接交給頁面。可選取的元素取決於網站的鍵盤支援。\n\n按遙控器的返回鍵，或長按手把 B 鍵，即可恢復指標。</string>
     <string name="need_restart">需要重新啟動應用程式</string>
     <string name="incognito_mode">無痕模式</string>
-    <string name="incognito_mode_hint">您現在可以私密瀏覽，其他使用此裝置的人無法看到您的活動。VireoLumaTV 不會儲存您的歷史紀錄、Cookies、網站資料，以及輸入表單的資訊。\n\n然而，下載和書籤仍會被儲存。您的活動仍可能會被您造訪的網站、您的組織，或是網路服務供應商看到。</string>
+    <string name="incognito_mode_hint">本次工作階段的造訪紀錄不會加入一般瀏覽紀錄。隱私模式不會向網站、網路管理員或網際網路服務商隱藏連線。\n\n已下載的檔案與已儲存的書籤仍會留在裝置上。</string>
     <string name="don_t_show_again">不再顯示</string>
     <string name="clear_web_cache">清除網路快取</string>
     <string name="block_popups_s">阻擋彈出式視窗 (%s)</string>
@@ -121,13 +119,13 @@
     <string name="yes">是</string>
     <string name="no">否</string>
     <string name="site_asks_to_open_unknown_url">網站要求開啟未知網址</string>
-    <string name="site_asks_to_open_unknown_url_message">您要在外部應用程式開啟此網址嗎？</string>
+    <string name="site_asks_to_open_unknown_url_message">此位址需要其他應用程式。是否允許 Android 開啟？</string>
     <string name="err_no_app_to_handle_url">找不到能夠處理此網址的合適應用程式</string>
     <string-array name="home_page_modes">
-        <item>VireoLumaTV 首頁</item>
-        <item>搜尋引擎</item>
-        <item>自訂</item>
-        <item>空白</item>
+        <item>VireoLumaTV 起始頁</item>
+        <item>搜尋服務</item>
+        <item>指定網址</item>
+        <item>空白頁面</item>
     </string-array>
     <string-array name="popup_blocking_level">
         <item>不阻擋</item>
@@ -148,10 +146,10 @@
     <string name="media_rewind">倒轉媒體</string>
     <string name="media_fast_forward">快轉媒體</string>
     <string name="long_press">長按</string>
-  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">網頁演算法變暗（深色主題，僅 WebView，需要重新啟動）</string>
+  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">調暗網頁內容（需重新啟動）</string>
   <string name="allow_autoplay_media">允許媒體自動播放</string>
   <string name="web_engine_debug">Web 引擎偵錯（需要重新啟動）</string>
-  <string name="web_engine_debug_warning_message">啟用 Web 引擎偵錯可能會將頁面內容、Cookie 與敏感的工作階段資料暴露給任何具有裝置偵錯存取權的人。僅在受信任裝置上為疑難排解時啟用。</string>
+  <string name="web_engine_debug_warning_message">裝置偵錯工具可以檢視已開啟的頁面和工作階段資料，包括 Cookie。僅在可信任裝置上診斷問題期間啟用檢查。</string>
     <string name="up_to_date">目前已是最新版本</string>
     <string name="update_check_failed">無法檢查或安裝更新</string>
     <string name="username">使用者名稱</string>

@@ -5,7 +5,7 @@
   <string name="allow">Разрешить</string>
   <string name="bookmarks">Закладки</string>
   <string name="deny">Запретить</string>
-  <string name="download_started">Загрузка начата…\nФайл будет сохранён по пути:\n%s</string>
+  <string name="download_started">Загрузка поставлена в очередь. Путь:\n%s</string>
   <string name="edit">Редактировать</string>
   <string name="err_cant_open_file_chooser">Не могу запустить интерфейс выбора файла</string>
   <string name="error">Ошибка</string>
@@ -15,11 +15,9 @@
   <string name="open_in_new_tab">Открыть в новой вкладке</string>
   <string name="title">Название</string>
   <string name="url_prompt">Введите искомый запрос или URL</string>
-  <string name="web_perm_request_confirmation">Эта страница запрашивает следующие ресурсы:\n\n%s</string>
+  <string name="web_perm_request_confirmation">Разрешить этой странице доступ к:\n\n%s</string>
   <string name="choose_default_search_engine">Выберите поисковый движок по-умолчанию</string>
-  <string name="engine">Поисковый движок</string>
-  <string name="save">Сохранить</string>
-  <string name="search_engine_url_with_query_placeholder_query">URL поискового движка (используйте параметр [query])</string>
+  <string name="search_engine_url_with_query_placeholder_query">Адрес поиска: укажите [query] на месте поискового текста</string>
   <string name="cancel">Отмена</string>
   <string name="cancelled">Отменено</string>
   <string name="choose_user_agent_string">Выбрать строку User Agent</string>
@@ -27,7 +25,7 @@
   <string name="download">Скачать</string>
   <string name="edit_user_agent_string">Редактировать строку User Agent</string>
   <string name="file_not_found">Файл не найден</string>
-  <string name="no_app_for_file_type">Не найдено приложений для открытия такого типа файлов</string>
+  <string name="no_app_for_file_type">Установите приложение для этого типа файла</string>
   <string name="nothing">Ничего</string>
   <string name="user_agent_string">Строка User Agent</string>
   <string name="msg_delete_history">Удалить выделенные элементы истории?</string>
@@ -38,18 +36,18 @@
   <string name="history">История</string>
   <string name="navigate_back">Перейти назад</string>
   <string name="navigate_home">Навигация \"домой\"</string>
-  <string name="no_file_explorer_msg">Похоже, на вашем устройстве нет подходящего файлового менеджера</string>
+  <string name="no_file_explorer_msg">Файловый менеджер недоступен. Откройте системный экран загрузок.</string>
   <string name="not_set">Не задано</string>
   <string name="open_folder">Открыть содержащую папку</string>
   <string name="press_eny_key">Нажмите любую клавишу…</string>
-  <string name="shortcut_key_reserved_for_navigation">Эта клавиша зарезервирована для навигации в браузере</string>
+  <string name="shortcut_key_reserved_for_navigation">Выберите другую кнопку; эта управляет навигацией</string>
   <string name="refresh_page">Обновить страницу</string>
   <string name="set_key_for_action">Установить клавишу для действия</string>
   <string name="settings">Настройки</string>
   <string name="shortcut">\"Быстрая\" клавиша</string>
   <string name="shortcuts">\"Быстрые\" клавиши</string>
   <string name="install">Установить</string>
-  <string name="turn_on_unknown_sources">Пожалуйста, активируйте системную настройку \"Установка из неизвестных источников\"</string>
+  <string name="turn_on_unknown_sources">Разрешите установку из неизвестных источников в настройках Android</string>
   <string name="turn_on_unknown_sources_for_app">Пожалуйста, позвольте VireoLumaTV устанавливать приложения из неизвестных источников в настройках системы</string>
   <string name="storage_not_mounted">Хранилище файлов не найдено</string>
   <string name="can_not_create_downloads">Не могу создать директорию для скачанных файлов</string>
@@ -67,7 +65,7 @@
   <string name="warning">Предупреждение</string>
   <string name="web_browser_optimized_for_tvs">Веб-браузер, оптимизированный для телевизоров</string>
   <string name="new_version_available_s">Доступна новая версия: %s</string>
-  <string name="err_webview_can_not_link">Не могу найти WebView компонент. Попробуйте сперва установить Android System WebView</string>
+  <string name="err_webview_can_not_link">Android WebView недоступен. Включите, установите или обновите системный компонент WebView.</string>
   <string name="open_a_new_tab_here">Открыть новую вкладку тут</string>
   <string name="tabs">Вкладки</string>
   <array name="tabs_options">
@@ -106,9 +104,9 @@
   <string name="cursor_acceleration">Ускорение виртуального курсора</string>
   <string name="cursor_physics_percent">%d%% от значений по умолчанию</string>
   <string name="direct_navigation_mode_title">Режим прямой навигации</string>
-  <string name="direct_navigation_mode_message">Прямая навигация скрывает курсор на экране и передаёт нажатия с пульта или геймпада прямо на веб-страницу, чтобы сайты с поддержкой ТВ или клавиатурного фокуса могли выделять ссылки и элементы управления.\n\nЧтобы выйти из этого режима: нажмите «Назад» на пульте ТВ или удерживайте кнопку B на геймпаде.\n\nЭтот режим лучше всего работает с движком WebView: WebView поддерживает перемещение фокуса по странице с помощью D-pad.</string>
+  <string name="direct_navigation_mode_message">В этом режиме указатель скрыт. Страница получает нажатия напрямую; выбор элементов зависит от поддержки клавиатуры на сайте.\n\nЧтобы вернуть указатель, нажмите «Назад» на пульте или удерживайте B на геймпаде.</string>
   <string name="incognito_mode">Режим инкогнито</string>
-  <string name="incognito_mode_hint">Теперь вы можете просматривать сайты конфиденциально, и другие люди, использующие это устройство, не увидят вашу активность. VireoLumaTV не сохраняет вашу историю посещений, файлы cookie и данные сайта, информацию, введенную в формах.\n\nОднако загрузки и закладки будут сохранены. Ваша активность может по-прежнему быть видна веб-сайтам, которые вы посещаете, вашей организации или интернет-провайдеру.</string>
+  <string name="incognito_mode_hint">Посещения этого сеанса не попадают в обычную историю. Приватный режим не скрывает соединение от сайтов, администратора сети или интернет-провайдера.\n\nЗагруженные файлы и сохранённые закладки остаются на устройстве.</string>
   <string name="don_t_show_again">Больше не показывать</string>
   <string name="clear_web_cache">Очистить веб-кеш</string>
   <string name="no_bookmarks_yet">Закладок пока нет</string>
@@ -130,27 +128,27 @@
   <string name="home_page">Домашняя страница</string>
   <string name="custom_home_page_url">Пользовательский URL домашней страницы</string>
   <string-array name="home_page_modes">
-    <item>Домашняя VireoLumaTV</item>
-    <item>Поисковый движок</item>
-    <item>Пользовательская</item>
-    <item>Пустая</item>
-  </string-array>
+        <item>Старт VireoLumaTV</item>
+        <item>Поисковая служба</item>
+        <item>Свой адрес</item>
+        <item>Пустая страница</item>
+    </string-array>
 
   <string name="yes">Да</string>
   <string name="no">Нет</string>
   <string name="site_asks_to_open_unknown_url">Сайт просит открыть неизвестный URL</string>
-  <string name="site_asks_to_open_unknown_url_message">Вы хотите открыть этот URL-адрес во внешнем приложении?</string>
-  <string name="err_no_app_to_handle_url">Не удаётся найти подходящее приложение для обработки этого URL-адреса</string>
+  <string name="site_asks_to_open_unknown_url_message">Для этого адреса нужно другое приложение. Разрешить Android открыть его?</string>
+  <string name="err_no_app_to_handle_url">В Android нет приложения для этого адреса</string>
   <string name="http_auth_title">Требуется аутентификация</string>
   <string name="play_pause">Воспроизведение/Пауза</string>
   <string name="media_stop">Остановить воспроизведение</string>
   <string name="media_rewind">Перемотка назад</string>
   <string name="media_fast_forward">Перемотка вперёд</string>
   <string name="long_press">Долгое нажатие</string>
-  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Алгоритмическое затемнение веб-страниц (тёмная тема, только WebView, требуется перезапуск)</string>
+  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Затемнять содержимое страниц (нужен перезапуск)</string>
   <string name="allow_autoplay_media">Разрешить автовоспроизведение медиа</string>
   <string name="web_engine_debug">Отладка веб-движка (требуется перезапуск)</string>
-  <string name="web_engine_debug_warning_message">Включение отладки веб-движка может раскрыть содержимое страниц, cookie и чувствительные данные сессии любому, у кого есть доступ к отладке устройства. Включайте только на доверенных устройствах для устранения неполадок.</string>
+  <string name="web_engine_debug_warning_message">Средства отладки устройства могут просматривать открытые страницы и данные сеанса, включая cookie. Включайте проверку только для диагностики на доверенном устройстве.</string>
     <string name="vireo_project_credit">VireoLumaTV от ReinierTutoriales · Исходный код</string>
     <string name="based_on_tv_bro_sources">Основано на исходном коде TV Bro: %s</string>
     <string name="cursor_grab_mode">Переместить страницу</string>

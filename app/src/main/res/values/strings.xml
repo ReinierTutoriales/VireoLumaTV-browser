@@ -5,81 +5,79 @@
     <string name="based_on_tv_bro_sources">Based on the source code of TV Bro: %s</string>
     <string name="error">Error</string>
     <string name="ok">OK</string>
-    <string name="url_prompt">Input query text or URL</string>
-    <string name="web_perm_request_confirmation">This web page wants to use following resources:\n\n%s</string>
+    <string name="url_prompt">Search or enter an address</string>
+    <string name="web_perm_request_confirmation">Allow this page to access:\n\n%s</string>
     <string name="allow">Allow</string>
     <string name="deny">Deny</string>
     <string name="location">Location</string>
-    <string name="open_in_new_tab">Open in new tab</string>
-    <string name="download_started">Download started…\nFile will be stored at:\n%s</string>
-    <string name="err_cant_open_file_chooser">Cannot Open File Chooser</string>
+    <string name="open_in_new_tab">Open another tab</string>
+    <string name="download_started">Download queued. Destination:\n%s</string>
+    <string name="err_cant_open_file_chooser">File selection is unavailable</string>
     <string name="bookmarks">Bookmarks</string>
     <string name="add">Add</string>
     <string name="edit">Edit</string>
-    <string name="no_bookmarks_yet">No bookmarks yet</string>
+    <string name="no_bookmarks_yet">Your saved pages will appear here</string>
     <string name="new_bookmark">New bookmark</string>
     <string name="done">Done</string>
     <string name="title">Title</string>
     <string name="url" translatable="false">URL</string>
-    <string name="engine">Search Engine</string>
-    <string name="choose_default_search_engine">Choose default search engine</string>
-    <string name="save">Save</string>
-    <string name="search_engine_url_with_query_placeholder_query">Search engine URL with query placeholder [query]</string>
-    <string name="user_agent_string">User Agent String</string>
-    <string name="choose_user_agent_string">Choose User Agent String</string>
-    <string name="edit_user_agent_string">Edit User Agent String</string>
+    <string name="choose_default_search_engine">Default search provider</string>
+    <string name="search_engine_url_with_query_placeholder_query">Search URL: place [query] where the search text belongs</string>
+    <string name="user_agent_string">Browser identification</string>
+    <string name="choose_user_agent_string">Identify this browser as</string>
+    <string name="edit_user_agent_string">Custom browser identification</string>
     <string name="nothing">Nothing</string>
     <string name="cancelled">Cancelled</string>
     <string name="size_progress" translatable="false">%1$s / %2$s</string>
     <string name="download">Download</string>
     <string name="file_not_found">File not found</string>
-    <string name="no_app_for_file_type">No applications found to open this file type</string>
+    <string name="no_app_for_file_type">Install an app that can open this file</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
-    <string name="msg_delete_history">Delete selected history items?</string>
-    <string name="msg_delete_history_all">Delete all history items?</string>
-    <string name="open_folder">Open containing folder</string>
-    <string name="no_file_explorer_msg">Seem there is no any suitable file explorer app installed on your device</string>
+    <string name="msg_delete_history">Remove the selected visits?</string>
+    <string name="msg_delete_history_all">Remove every saved visit?</string>
+    <string name="open_folder">Show download folder</string>
+    <string name="no_file_explorer_msg">No file manager is available. Use the system Downloads screen.</string>
     <string name="shortcuts">Shortcuts</string>
     <string name="favorites">Favorites</string>
     <string name="history">History</string>
     <string name="settings">Settings</string>
     <string name="shortcut">Shortcut</string>
-    <string name="navigate_back">Navigate back</string>
-    <string name="navigate_home">Navigate home</string>
-    <string name="refresh_page">Refresh page</string>
+    <string name="navigate_back">Previous page</string>
+    <string name="navigate_home">Go to start page</string>
+    <string name="refresh_page">Reload page</string>
     <string name="zoom_in">Zoom in</string>
     <string name="zoom_out">Zoom out</string>
-    <string name="cursor_grab_mode">Move the page</string>
+    <string name="cursor_grab_mode">Scroll with the pointer</string>
     <string name="link_actions">Link actions</string>
-    <string name="not_set">Not set</string>
-    <string name="current_key">Current key:</string>
+    <string name="not_set">Unassigned</string>
+    <string name="current_key">Assigned button:</string>
     <string name="key_code_d">Key %d</string>
     <string name="web_engine_version_s" translatable="false">WebView: %s</string>
-    <string name="set_key_for_action">Set key for action</string>
-    <string name="press_eny_key">Press any key…</string>
-    <string name="shortcut_key_reserved_for_navigation">This key is reserved for browser navigation</string>
+    <string name="set_key_for_action">Choose a remote button</string>
+    <string name="press_eny_key">Press the button to assign</string>
+    <string name="shortcut_key_reserved_for_navigation">Choose another button; this one controls navigation</string>
     <string name="clear">Clear</string>
     <string name="install">Install</string>
-    <string name="turn_on_unknown_sources">Please turn on \"Unknown sources\" system setting</string>
-    <string name="turn_on_unknown_sources_for_app">Please allow VireoLumaTV to install apps from \"Unknown sources\" in system settings</string>
+    <string name="turn_on_unknown_sources">Allow installation from unknown sources in Android settings</string>
+    <string name="turn_on_unknown_sources_for_app">In Android settings, allow this browser to install downloaded apps</string>
     <string name="storage_not_mounted">Storage not mounted</string>
-    <string name="can_not_create_downloads">Can not create downloads dir</string>
-    <string name="new_version_dialog_title">New version available</string>
+    <string name="can_not_create_downloads">The download folder could not be created</string>
+    <string name="new_version_dialog_title">Update ready</string>
     <string name="downloads">Downloads</string>
-    <string name="downloads_notifications_description">Notifications regarding downloads statuses</string>
+    <string name="downloads_notifications_description">Transfer progress and completed files</string>
     <string name="main">Main</string>
-    <string name="version_and_updates"><![CDATA[Version & updates]]></string>
+    <string name="version_and_updates">About and updates</string>
     <string name="version_s">Version: %s</string>
-    <string name="build_flavor_s">Build flavor: %1$s · %2$s</string>
-    <string name="view_license">📃 License</string>
-    <string name="privacy_policy">🔒 Privacy policy</string>
+    <string name="build_flavor_s">Variant: %1$s · %2$s</string>
+    <string name="view_license">Licenses</string>
+    <string name="privacy_policy">Privacy</string>
     <string name="update">Update</string>
-    <string name="new_version_available_s">New version available: %s</string>
-    <string name="web_browser_optimized_for_tvs">Web browser optimized for TVs</string>
+    <string name="new_version_available_s">Available update: %s</string>
+    <string name="web_browser_optimized_for_tvs">Browse with your TV remote</string>
     <string name="warning">Warning</string>
-    <string name="err_webview_can_not_link">Can not link to WebView component. Try to install Android System WebView component first.</string>
-    <string name="open_a_new_tab_here">Open a new tab here</string>
+    <string name="err_webview_can_not_link">Android WebView is unavailable. Enable, install or update the system WebView provider.</string>
+    <string name="open_a_new_tab_here">Add a tab at this position</string>
     <string name="tabs">Tabs</string>
     <array name="tabs_options">
         <item>Open new Tab</item>
@@ -88,24 +86,24 @@
         <item>Move left</item>
         <item>Move right</item>
     </array>
-    <string name="ssl_expired">The certificate has expired</string>
-    <string name="ssl_idmismatch">Hostname mismatch</string>
-    <string name="ssl_date_invalid">The date of the certificate is invalid</string>
-    <string name="ssl_invalid">A generic error occurred</string>
-    <string name="ssl_untrusted">The certificate authority is not trusted</string>
-    <string name="back_to_safety">Back to safety</string>
-    <string name="go_im_aware">Go. I am aware of the risk</string>
-    <string name="connection_isnt_secure">Connection is not secure</string>
-    <string name="hostname">Hostname:</string>
-    <string name="err_desk">Error description:</string>
-    <string name="details">Details:</string>
+    <string name="ssl_expired">Certificate validity has ended</string>
+    <string name="ssl_idmismatch">The certificate does not match this server</string>
+    <string name="ssl_date_invalid">Certificate dates are not valid</string>
+    <string name="ssl_invalid">The certificate could not be verified</string>
+    <string name="ssl_untrusted">The certificate issuer is not trusted</string>
+    <string name="back_to_safety">Cancel and go back</string>
+    <string name="go_im_aware">Continue despite the certificate error</string>
+    <string name="connection_isnt_secure">Certificate verification failed</string>
+    <string name="hostname">Server:</string>
+    <string name="err_desk">Certificate problem:</string>
+    <string name="details">Technical details:</string>
     <string name="exit">Exit</string>
-    <string name="find_in_apps_store">Find in applications store</string>
+    <string name="find_in_apps_store">Look for an app in the store</string>
     <string name="app_menu">Menu</string>
-    <string name="close_application">Close application</string>
-    <string name="close_tab">Close tab</string>
-    <string name="navigate_forward">Navigate forward</string>
-    <string name="toggle_ads_blocking">Toggle ads blocking</string>
+    <string name="close_application">Leave browser</string>
+    <string name="close_tab">Close this tab</string>
+    <string name="navigate_forward">Next page</string>
+    <string name="toggle_ads_blocking">Switch page blocking on or off</string>
     <string name="adblock_status_paused">Paused</string>
     <string name="adblock_status_loading">Loading</string>
     <string name="adblock_status_refreshing">Updating</string>
@@ -115,26 +113,26 @@
     <string name="adblock_status_unavailable">No rules</string>
     <string name="adblock_status_action_s">Toggle blocking. %1$s. %2$d blocked on this page.</string>
     <string name="never">never</string>
-    <string name="update_ad_blocker_list">Update ad-blocker list</string>
+    <string name="update_ad_blocker_list">Refresh filter sources</string>
     <string name="toggle_keep_screen_on">Keep screen on</string>
-    <string name="navigate_with_joystick_axes">Navigate with joystick axes</string>
-    <string name="cursor_max_speed">Virtual cursor max speed</string>
-    <string name="cursor_acceleration">Virtual cursor acceleration</string>
+    <string name="navigate_with_joystick_axes">Use the gamepad stick as a pointer</string>
+    <string name="cursor_max_speed">Pointer speed limit</string>
+    <string name="cursor_acceleration">Pointer acceleration</string>
     <string name="cursor_physics_percent">%d%% of default</string>
-    <string name="direct_navigation_mode_title">Direct navigation mode</string>
-    <string name="direct_navigation_mode_message">Direct navigation hides the on-screen cursor and sends keys from your remote or game controller straight to the web page, so sites that support TV or keyboard focus can highlight links and controls.\n\nTo exit this mode: press Back on your TV remote, or press and hold the B button on a game controller.\n\nThis mode works best with the WebView engine: WebView supports moving focus through the page with the D-pad.</string>
-    <string name="need_restart">Need application restart</string>
-    <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Darken web pages (needs restart)</string>
-    <string name="allow_autoplay_media">Allow autoplay for media</string>
-    <string name="web_engine_debug">Web engine debugging (need restart)</string>
-    <string name="web_engine_debug_warning_message">Enabling web engine debugging can expose page content, cookies, and sensitive session data to anyone with device debugging access. Enable only on trusted devices for troubleshooting.</string>
+    <string name="direct_navigation_mode_title">Send remote keys to the page</string>
+    <string name="direct_navigation_mode_message">The pointer is hidden in this mode. The page receives remote and gamepad keys directly; its own keyboard support determines what can be selected.\n\nReturn to the pointer with Back on the remote, or hold B on the gamepad.</string>
+    <string name="need_restart">Restart the browser to apply</string>
+    <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Darken page content (restart required)</string>
+    <string name="allow_autoplay_media">Let sites start media without a click</string>
+    <string name="web_engine_debug">Inspect WebView (restart required)</string>
+    <string name="web_engine_debug_warning_message">Device debugging tools can inspect open pages and session data, including cookies. Enable inspection only while diagnosing a problem on a trusted device.</string>
     <string name="incognito_mode">Incognito mode</string>
-    <string name="incognito_mode_hint">Now you can browse privately, and other people who use this device won’t see your activity. VireoLumaTV won’t save your browsing history, cookies and site data, information entered in forms.\n\nHowever, downloads and bookmarks will be saved. Your activity might still be visible to websites you visit, your organization or internet service provider.</string>
-    <string name="don_t_show_again">Don\'t show again</string>
-    <string name="clear_web_cache">Clear web cache</string>
-    <string name="block_popups_s">Popups blocking (%s)</string>
-    <string name="popup_dialog_blocked">Popup dialog blocked</string>
-    <string name="new_tab_blocked">New tab blocked</string>
+    <string name="incognito_mode_hint">Visits in this session are excluded from normal browsing history. Private mode does not hide your connection from websites, your network administrator or your internet provider.\n\nDownloaded files and saved bookmarks remain on the device.</string>
+    <string name="don_t_show_again">Hide this notice next time</string>
+    <string name="clear_web_cache">Remove cached web content</string>
+    <string name="block_popups_s">Window policy: %s</string>
+    <string name="popup_dialog_blocked">Page dialog prevented</string>
+    <string name="new_tab_blocked">Page window prevented</string>
     <array name="popup_blocking_level">
         <item>Not block</item>
         <item>Block dialogs</item>
@@ -144,28 +142,28 @@
     <string name="copy_to_clipboard">Copy to clipboard</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="share_url">Share URL</string>
-    <string name="open_in_external_application">Open in external application</string>
-    <string name="external_app_open_error">Can not find suitable application</string>
+    <string name="open_in_external_application">Open with another app</string>
+    <string name="external_app_open_error">No compatible app is installed</string>
     <string name="home_page">Home page</string>
-    <string name="custom_home_page_url">Custom home page URL</string>
+    <string name="custom_home_page_url">Start page address</string>
     <array name="home_page_modes">
-        <item>VireoLumaTV Home</item>
-        <item>Search engine</item>
-        <item>Custom</item>
-        <item>Blank</item>
+        <item>VireoLumaTV start</item>
+        <item>Search provider</item>
+        <item>Custom address</item>
+        <item>Empty page</item>
     </array>
 
 
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="site_asks_to_open_unknown_url">Site asks to open unknown URL</string>
-    <string name="site_asks_to_open_unknown_url_message">Do you want to open this URL in external app?</string>
-    <string name="err_no_app_to_handle_url">Can not find suitable application to handle this URL</string>
-    <string name="http_auth_title">Authentication required</string>
+    <string name="site_asks_to_open_unknown_url">Open a link outside the browser?</string>
+    <string name="site_asks_to_open_unknown_url_message">This address needs another app. Allow Android to open it?</string>
+    <string name="err_no_app_to_handle_url">Android has no app for this address</string>
+    <string name="http_auth_title">Sign in to this server</string>
     <string name="play_pause">Play/Pause</string>
-    <string name="media_stop">Stop Media</string>
-    <string name="media_rewind">Rewind Media</string>
-    <string name="media_fast_forward">Fast Forward Media</string>
+    <string name="media_stop">Stop playback</string>
+    <string name="media_rewind">Seek back 10 seconds</string>
+    <string name="media_fast_forward">Seek forward 10 seconds</string>
     <string name="long_press">Long press</string>
     <string name="adblock_updating">Updating filter lists…</string>
     <string name="adblock_updated">Filter lists updated</string>

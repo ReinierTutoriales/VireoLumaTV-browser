@@ -4,12 +4,12 @@
   <string name="error">Errore</string>
   <string name="ok">OK</string>
   <string name="url_prompt">Inserisci testo da cercare o URL</string>
-  <string name="web_perm_request_confirmation">Questa pagina web richiede queste risorse:\n\n%s</string>
+  <string name="web_perm_request_confirmation">Consentire a questa pagina di accedere a:\n\n%s</string>
   <string name="allow">Consenti</string>
   <string name="deny">Nega</string>
   <string name="location">Posizione</string>
   <string name="open_in_new_tab">Apri in nuova scheda</string>
-  <string name="download_started">Download iniziato…\nIl file sarà salvato in:\n%s</string>
+  <string name="download_started">Download in coda. Destinazione:\n%s</string>
   <string name="err_cant_open_file_chooser">Impossibile aprire Seleziona file</string>
   <string name="bookmarks">Segnalibri</string>
   <string name="add">Aggiungi</string>
@@ -18,10 +18,8 @@
   <string name="no_bookmarks_yet">Nessun segnalibro</string>
   <string name="title">Titolo</string>
   <string name="done">Fatto</string>
-  <string name="engine">Motore di ricerca</string>
   <string name="choose_default_search_engine">Imposta il motore di ricerca predefinito</string>
-  <string name="save">Salva</string>
-  <string name="search_engine_url_with_query_placeholder_query">URL del motore di ricerca con segnaposto [testo]</string>
+  <string name="search_engine_url_with_query_placeholder_query">URL di ricerca: inserisci [query] al posto del testo da cercare</string>
   <string name="user_agent_string">Stringa User Agent</string>
   <string name="choose_user_agent_string">Imposta stringa User Agent</string>
   <string name="edit_user_agent_string">Digita stringa User Agent</string>
@@ -29,13 +27,13 @@
   <string name="cancelled">Annullato</string>
   <string name="download">In download</string>
   <string name="file_not_found">File non trovato</string>
-  <string name="no_app_for_file_type">Nessuna app disponibile per aprire questo tipo di file</string>
+  <string name="no_app_for_file_type">Installa un’app compatibile con questo file</string>
   <string name="delete">Elimina</string>
   <string name="cancel">Annulla</string>
-  <string name="msg_delete_history">Eliminare gli elementi selezionati dalla cronologia?</string>
+  <string name="msg_delete_history">Rimuovere le visite selezionate?</string>
   <string name="msg_delete_history_all">Eliminare tutta la cronologia?</string>
   <string name="open_folder">Apri cartella di destinazione</string>
-  <string name="no_file_explorer_msg">Non trovo alcun gestore file installato sul dispositivo</string>
+  <string name="no_file_explorer_msg">Nessun gestore di file disponibile. Usa la schermata Download di Android.</string>
   <string name="shortcuts">Scorciatoie</string>
   <string name="favorites">Preferiti</string>
   <string name="history">Cronologia</string>
@@ -51,7 +49,7 @@
   <string name="key_code_d">Tasto %d</string>
   <string name="set_key_for_action">Imposta tasto</string>
   <string name="press_eny_key">Premi tasto…</string>
-  <string name="shortcut_key_reserved_for_navigation">Questo tasto è riservato alla navigazione del browser</string>
+  <string name="shortcut_key_reserved_for_navigation">Scegli un altro tasto: questo controlla la navigazione</string>
   <string name="clear">Pulisci</string>
   <string name="install">Installa</string>
   <string name="turn_on_unknown_sources">Attiva \"Fonti sconosciute\"</string>
@@ -71,7 +69,7 @@
   <string name="new_version_available_s">Nuova versione disponibile: %s</string>
   <string name="web_browser_optimized_for_tvs">Web browser ottimizzato per le TV</string>
   <string name="warning">Attenzione!</string>
-  <string name="err_webview_can_not_link">Impossibile collegarsi a WebView. Installare Android System WebView.</string>
+  <string name="err_webview_can_not_link">Android WebView non è disponibile. Attiva, installa o aggiorna il provider WebView del sistema.</string>
   <string name="open_a_new_tab_here">Apri una nuova scheda qui</string>
   <string name="tabs">Schede</string>
   <array name="tabs_options">
@@ -107,10 +105,10 @@
   <string name="cursor_acceleration">Accelerazione del cursore virtuale</string>
   <string name="cursor_physics_percent">%d%% del valore predefinito</string>
   <string name="direct_navigation_mode_title">Modalità navigazione diretta</string>
-  <string name="direct_navigation_mode_message">La navigazione diretta nasconde il cursore sullo schermo e invia i tasti del telecomando o del controller di gioco direttamente alla pagina web, così i siti che supportano il focus TV o da tastiera possono evidenziare link e controlli.\n\nPer uscire da questa modalità: premi Indietro sul telecomando del TV oppure tieni premuto il pulsante B su un controller di gioco.\n\nQuesta modalità funziona meglio con il motore WebView: WebView consente di spostare il focus nella pagina con il D-pad.</string>
+  <string name="direct_navigation_mode_message">In questa modalità il puntatore è nascosto. La pagina riceve direttamente i tasti; gli elementi selezionabili dipendono dal supporto per la tastiera del sito.\n\nPer ripristinare il puntatore premi Indietro sul telecomando o tieni premuto B sul gamepad.</string>
   <string name="need_restart">È necessario riavviare l\'app</string>
   <string name="incognito_mode">Modalità Incognito</string>
-  <string name="incognito_mode_hint">Ora puoi navigare in privato e altri utilizzatori di questo dispositivo non vedranno la tua attività. VireoLumaTV non salverà la cronologia di navigazione, i cookie e i dati del sito, le informazioni inserite nei moduli.\n\nTuttavia, i download e i segnalibri verranno salvati. La tua attività potrebbe essere comunque visibile ai siti Web che visiti, alla tua organizzazione o al provider di servizi Internet.</string>
+  <string name="incognito_mode_hint">Le visite di questa sessione non entrano nella cronologia normale. La modalità privata non nasconde la connessione ai siti, a chi gestisce la rete o al fornitore internet.\n\nI file scaricati e i preferiti salvati restano sul dispositivo.</string>
   <string name="don_t_show_again">Non mostrare più</string>
   <string name="clear_web_cache">Pulisci la cache</string>
   <string name="block_popups_s">Blocco popup (%s)</string>
@@ -130,27 +128,27 @@
   <string name="home_page">Pagina iniziale</string>
   <string name="custom_home_page_url">URL personalizzato della home page</string>
   <string-array name="home_page_modes">
-    <item>TV fratello casa</item>
-    <item>Motore di ricerca</item>
-    <item>Costume</item>
-    <item>Vuoto</item>
-  </string-array>
+        <item>Inizio VireoLumaTV</item>
+        <item>Servizio di ricerca</item>
+        <item>Indirizzo personale</item>
+        <item>Pagina vuota</item>
+    </string-array>
 
   <string name="yes">SÌ</string>
   <string name="no">NO</string>
   <string name="site_asks_to_open_unknown_url">Il sito chiede di aprire un URL sconosciuto</string>
-  <string name="site_asks_to_open_unknown_url_message">Vuoi aprire questo URL in un&amp;#39;app esterna?</string>
-  <string name="err_no_app_to_handle_url">Impossibile trovare un&amp;#39;applicazione adatta per gestire questo URL</string>
+  <string name="site_asks_to_open_unknown_url_message">Questo indirizzo richiede un’altra app. Consentire ad Android di aprirlo?</string>
+  <string name="err_no_app_to_handle_url">Android non ha un’app per questo indirizzo</string>
   <string name="http_auth_title">Autenticazione richiesta</string>
   <string name="play_pause">Riproduci/Pausa</string>
   <string name="media_stop">Arresta riproduzione multimediale</string>
   <string name="media_rewind">Riavvolgi</string>
   <string name="media_fast_forward">Avanza veloce</string>
   <string name="long_press">Pressione prolungata</string>
-  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Oscuramento algoritmico per le pagine web (tema scuro, solo WebView, riavvio necessario)</string>
-  <string name="allow_autoplay_media">Consenti riproduzione automatica dei contenuti multimediali</string>
+  <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Scurisci i contenuti web (riavvio richiesto)</string>
+  <string name="allow_autoplay_media">Avvio dei contenuti senza un clic</string>
   <string name="web_engine_debug">Debug del motore web (riavvio necessario)</string>
-  <string name="web_engine_debug_warning_message">L\'attivazione del debug del motore web puo esporre contenuti delle pagine, cookie e dati di sessione sensibili a chiunque abbia accesso al debug del dispositivo. Abilita solo su dispositivi attendibili per la risoluzione dei problemi.</string>
+  <string name="web_engine_debug_warning_message">Gli strumenti di debug del dispositivo possono esaminare le pagine aperte e i dati della sessione, inclusi i cookie. Attiva questa funzione solo per diagnosticare problemi su un dispositivo fidato.</string>
     <string name="vireo_project_credit">VireoLumaTV di ReinierTutoriales · Codice sorgente</string>
     <string name="based_on_tv_bro_sources">Basato sul codice sorgente di TV Bro: %s</string>
     <string name="cursor_grab_mode">Sposta la pagina</string>
