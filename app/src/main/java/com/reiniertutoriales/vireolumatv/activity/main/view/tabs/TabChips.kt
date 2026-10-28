@@ -28,10 +28,10 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
     }
 
     var listener: Listener? = null
-    var tabsModel: TabStore? = null
+    var tabStore: TabStore? = null
         set(value) {
             field = value
-            onTabListChanged()
+            onTabsChanged()
         }
 
     private val shown = ArrayList<BrowserTab>()
@@ -50,10 +50,10 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
         }
 
     /** Re-reads the model's tabs; the selected tab keeps its selection when tabs move. */
-    fun onTabListChanged() {
+    fun onTabsChanged() {
         val selectedTab = shown.getOrNull(selected)
         val previous = selected
-        val next = tabsModel?.tabsStates?.toList().orEmpty()
+        val next = tabStore?.openTabs?.toList().orEmpty()
         val diff = DiffUtil.calculateDiff(Diff(shown, next))
         shown.clear()
         shown.addAll(next)

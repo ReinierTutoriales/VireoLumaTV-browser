@@ -18,7 +18,7 @@ class HistorySearchTest {
     @Test fun searchFindsSubstringsAndMatchesWildcardCharactersLiterally() = runBlocking {
         val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java).build()
         try {
-            val dao = db.historyDao()
+            val dao = db.visitDao()
             dao.insert(HistoryItem().apply { time = 1; title = "YouTube - cat videos"; url = "https://www.youtube.com/watch?v=1" })
             dao.insert(HistoryItem().apply { time = 2; title = "100% pure"; url = "https://shop.test/a_b" })
             dao.insert(HistoryItem().apply { time = 3; title = "Other"; url = "https://other.test" })

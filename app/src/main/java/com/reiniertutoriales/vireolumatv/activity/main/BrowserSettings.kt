@@ -36,14 +36,14 @@ class BrowserSettings : ScreenModel() {
     val uaStrings: List<String> = userAgentPresets.map { it.second }
 
     fun setSearchEngineURL(url: String) {
-        config.searchEngineURL.value = url
+        config.searchAddress.value = url
         if (homePageMode == Config.HomePageMode.SEARCH_ENGINE) homePage = searchHome(url)
     }
 
     fun setHomePageProperties(mode: Config.HomePageMode, customHomePageUrl: String?) {
         homePageMode = mode
         homePage = when (mode) {
-            Config.HomePageMode.SEARCH_ENGINE -> searchHome(config.searchEngineURL.value)
+            Config.HomePageMode.SEARCH_ENGINE -> searchHome(config.searchAddress.value)
             Config.HomePageMode.CUSTOM -> customHomePageUrl ?: Config.HOME_URL_ALIAS
             Config.HomePageMode.HOME_PAGE, Config.HomePageMode.BLANK -> Config.HOME_URL_ALIAS
         }

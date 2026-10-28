@@ -25,8 +25,8 @@ class DownloadResourceTest {
         val first = Download().apply { incognito = true }
         val second = Download().apply { incognito = true }
         val model = RunningDownloads()
-        model.activeDownloads.add(StreamTransfer(first, "one".byteInputStream(), callback))
-        model.activeDownloads.add(StreamTransfer(second, "two".byteInputStream(), callback))
+        model.runningDownloads.add(StreamTransfer(first, "one".byteInputStream(), callback))
+        model.runningDownloads.add(StreamTransfer(second, "two".byteInputStream(), callback))
         model.cancelDownload(second)
         assertFalse(first.cancelled)
         assertTrue(second.cancelled)
@@ -36,7 +36,7 @@ class DownloadResourceTest {
         val live = Download().apply { id = 42 }
         val historyRow = Download().apply { id = 42 }
         val model = RunningDownloads()
-        model.activeDownloads.add(StreamTransfer(live, "data".byteInputStream(), callback))
+        model.runningDownloads.add(StreamTransfer(live, "data".byteInputStream(), callback))
         model.cancelDownload(historyRow)
         assertTrue(live.cancelled)
         assertFalse(Download().matches(Download()))
@@ -52,7 +52,7 @@ class DownloadResourceTest {
             base64BlobData = "data:text/plain;base64,aGVsbG8="
         }
         BlobTransfer(download, download.base64BlobData!!, callback).run()
-        assertEquals(Download.CANCELLED_MARK, download.size)
+        assertEquals(Download.SIZE_CANCELLED, download.size)
         assertFalse(path.exists())
         assertNull(download.base64BlobData)
     }

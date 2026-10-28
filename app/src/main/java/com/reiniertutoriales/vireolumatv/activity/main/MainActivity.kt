@@ -80,19 +80,19 @@ import kotlin.system.exitProcess
  */
 open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal lateinit var vb: BrowserWindowBinding
-    internal lateinit var tabsModel: TabStore
-    internal lateinit var settingsModel: BrowserSettings
-    internal lateinit var adblockModel: AdBlocker
-    internal lateinit var uiHandler: Handler
-    internal lateinit var viewModel: VisitLog
+    internal lateinit var tabStore: TabStore
+    internal lateinit var browserSettings: BrowserSettings
+    internal lateinit var adBlocker: AdBlocker
+    internal lateinit var mainThread: Handler
+    internal lateinit var visitLog: VisitLog
     internal val config = AppContext.config
-    internal val downloads by lazy { BrowserDownloads(this, { config.incognitoMode }, ::onDownloadStarted) }
+    internal val downloads by lazy { BrowserDownloads(this, { config.privateBrowsing }, ::onDownloadStarted) }
     internal val external by lazy { ExternalApps(this) }
     internal var isFullscreen = false
 
     /** Delivered to the current instance even after the window was recreated. */
     internal val filePickerResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        tabsModel.currentTab.value?.engine?.onFilePicked(result.resultCode, result.data)
+        tabStore.currentTab.value?.engine?.onFilePicked(result.resultCode, result.data)
     }
     private val historyResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
@@ -105,22 +105,22 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val incognito = config.incognitoMode
+        val incognito = config.privateBrowsing
         // Private mode has its own activity class and process; the wrong one restarts as the right one.
         if (incognito xor (this is PrivateBrowserActivity)) {
-            switchProcess(incognito, intent)
+            openPrivateWindow(incognito, intent)
             finish()
             return
         }
-        viewModel = ScreenModels.get(VisitLog::class, this)
-        if (incognito) viewModel.prepareSwitchToIncognito()
-        settingsModel = ScreenModels.get(BrowserSettings::class, this)
-        adblockModel = ScreenModels.get(AdBlocker::class, this)
-        val filters = adblockModel
+        visitLog = ScreenModels.get(VisitLog::class, this)
+        if (incognito) visitLog.preparePrivateWindow()
+        browserSettings = ScreenModels.get(BrowserSettings::class, this)
+        adBlocker = ScreenModels.get(AdBlocker::class, this)
+        val filters = adBlocker
         WebViewPageEngine.pageFiltersProvider = { url -> filters.pageFilters(url) }
         WebViewPageEngine.hiddenSelectorsProvider = { url, classes, ids -> filters.hiddenSelectors(url, classes, ids) }
-        tabsModel = ScreenModels.get(TabStore::class, this)
-        uiHandler = Handler(Looper.getMainLooper())
+        tabStore = ScreenModels.get(TabStore::class, this)
+        mainThread = Handler(Looper.getMainLooper())
         vb = BrowserWindowBinding.inflate(layoutInflater)
         setContentView(vb.root)
         vb.tabPreview.visibility = View.INVISIBLE
@@ -134,43 +134,43 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     private fun observeModels() {
-        config.userAgentString.subscribe(lifecycle, false) { agent -> tabsModel.tabsStates.forEach { it.engine.userAgent = agent } }
-        settingsModel.keepScreenOn.subscribe(lifecycle) { on ->
+        config.userAgentOverride.subscribe(lifecycle, false) { agent -> tabStore.openTabs.forEach { it.engine.userAgent = agent } }
+        browserSettings.keepScreenOn.subscribe(lifecycle) { on ->
             if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
-        tabsModel.currentTab.subscribe(this) { tab ->
-            vb.controlsRow.setAddressBoxText(tab?.url.orEmpty())
-            tab?.let(::onWebViewUpdated)
+        tabStore.currentTab.subscribe(this) { tab ->
+            vb.controlsRow.showAddress(tab?.url.orEmpty())
+            tab?.let(::onPageViewChanged)
         }
-        adblockModel.clientLoading.subscribe(lifecycle) { tabsModel.currentTab.value?.let(::updateAdblockStatus) }
-        adblockModel.updateResult.subscribe(lifecycle) { tabsModel.currentTab.value?.let(::updateAdblockStatus) }
-        tabsModel.tabsStates.subscribe(this, false) { if (it.isEmpty()) vb.pageContainer.removeAllViews() }
+        adBlocker.listLoading.subscribe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
+        adBlocker.updateResult.subscribe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
+        tabStore.openTabs.subscribe(this, false) { if (it.isEmpty()) vb.pageContainer.removeAllViews() }
     }
 
     /** Reads the stored state, then shows the tab the intent asks for, or the selected one, or a new home tab. */
     private fun loadState() = lifecycleScope.launch {
         vb.startupSpinner.visibility = View.VISIBLE
         vb.startupSpinner.requestFocus()
-        viewModel.loadState().join()
-        tabsModel.loadState().join()
+        visitLog.loadState().join()
+        tabStore.loadState().join()
         if (!isActive) return@launch
         vb.startupSpinner.visibility = View.GONE
         when {
             ExternalWebNavigation.isAllowed(intent.data) -> handleIntent(intent)
-            tabsModel.tabsStates.isEmpty() -> openInNewTab(settingsModel.homePage, 0, closeCapsuleAfter = true, navigateImmediately = true)
+            tabStore.openTabs.isEmpty() -> openInNewTab(browserSettings.homePage, 0, closeCapsuleAfter = true, navigateImmediately = true)
             // No selected tab only happens after an error; the first one is shown then.
-            else -> changeTab(tabsModel.tabsStates.firstOrNull { it.selected } ?: tabsModel.tabsStates[0])
+            else -> changeTab(tabStore.openTabs.firstOrNull { it.selected } ?: tabStore.openTabs[0])
         }
-        val shown = tabsModel.currentTab.value
-        if (shown == null || shown.url == settingsModel.homePage) openCapsule()
+        val shown = tabStore.currentTab.value
+        if (shown == null || shown.url == browserSettings.homePage) openCapsule()
     }
 
     @SuppressLint("MissingSuperCall")
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (::tabsModel.isInitialized && tabsModel.loaded && intent.data != null) handleIntent(intent)
+        if (::tabStore.isInitialized && tabStore.loaded && intent.data != null) handleIntent(intent)
     }
 
     /** An address from another app opens in a new tab, or in the current one when the intent asks for it. */
@@ -180,11 +180,11 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             Log.w(TAG, "Rejected external navigation with scheme ${uri?.scheme}")
             return
         }
-        if (intent.getBooleanExtra(EXTRA_OPEN_IN_SAME_TAB, false) && tabsModel.tabsStates.isNotEmpty()) {
-            if (tabsModel.currentTab.value == null) changeTab(tabsModel.tabsStates[0])
+        if (intent.getBooleanExtra(EXTRA_OPEN_IN_SAME_TAB, false) && tabStore.openTabs.isNotEmpty()) {
+            if (tabStore.currentTab.value == null) changeTab(tabStore.openTabs[0])
             navigate(uri.toString())
         } else {
-            openInNewTab(uri.toString(), tabsModel.tabsStates.size, closeCapsuleAfter = true, navigateImmediately = true)
+            openInNewTab(uri.toString(), tabStore.openTabs.size, closeCapsuleAfter = true, navigateImmediately = true)
         }
     }
 
@@ -209,9 +209,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
                 Log.w(TAG, "No network callback", error)
             }
         }
-        tabsModel.currentTab.value?.engine?.resume()
+        tabStore.currentTab.value?.engine?.resume()
         // A TV app stays alive for days: the start-up check alone would never refresh the filter lists.
-        adblockModel.updateIfDue()
+        adBlocker.updateIfDue()
     }
 
     override fun onPause() {
@@ -223,10 +223,10 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
                 Log.w(TAG, "Network callback was not registered", error)
             }
         }
-        tabsModel.currentTab.value?.let { tab ->
+        tabStore.currentTab.value?.let { tab ->
             tab.engine.pause()
             tab.onPause()
-            tabsModel.saveTabBeforeExit(tab)
+            tabStore.saveTabBeforeExit(tab)
         }
         super.onPause()
     }
@@ -239,28 +239,28 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             vb.pageContainer.onPageTouch = null
             vb.pageContainer.cursorSuppressed = false
         }
-        if (::uiHandler.isInitialized) uiHandler.removeCallbacks(showFocusedPreview)
+        if (::mainThread.isInitialized) mainThread.removeCallbacks(showFocusedPreview)
         focusedPreviewTab = null
-        if (::tabsModel.isInitialized) tabsModel.onDetachActivity()
+        if (::tabStore.isInitialized) tabStore.onDetachActivity()
         super.onDestroy()
     }
 
     override fun onTrimMemory(level: Int) {
-        if (::tabsModel.isInitialized) {
-            tabsModel.tabsStates.filterNot { it.selected }.forEach {
+        if (::tabStore.isInitialized) {
+            tabStore.openTabs.filterNot { it.selected }.forEach {
                 it.thumbnail = null
                 it.trimMemory()
             }
         }
         Favicons.trimMemory()
-        if (::adblockModel.isInitialized) adblockModel.trimMemory()
+        if (::adBlocker.isInitialized) adBlocker.trimMemory()
         super.onTrimMemory(level)
     }
 
     @Deprecated("Page permission requests use the numeric codes WebView hands out")
     @Suppress("DEPRECATION")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (tabsModel.currentTab.value?.engine?.onPermissionsResult(requestCode, permissions, grantResults) == true) return
+        if (tabStore.currentTab.value?.engine?.onPermissionsResult(requestCode, permissions, grantResults) == true) return
         if (downloads.onPermissionsResult(requestCode, grantResults)) return
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
@@ -279,12 +279,12 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     private fun postNetworkState() {
-        uiHandler.post {
+        mainThread.post {
             if (isDestroyed) return@post
             val connected = hasInternet()
-            tabsModel.currentTab.value?.engine?.setOnline(connected)
+            tabStore.currentTab.value?.engine?.setOnline(connected)
             // A TV often starts before Wi-Fi: fetch the filter lists as soon as it connects.
-            if (connected) adblockModel.updateIfDue(networkRestored = true)
+            if (connected) adBlocker.updateIfDue(networkRestored = true)
         }
     }
 
@@ -300,13 +300,13 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             closeCapsule()
             action()
         }
-        pageCommand(bar.homeButton) { navigate(settingsModel.homePage) }
+        pageCommand(bar.homeButton) { navigate(browserSettings.homePage) }
         pageCommand(bar.backButton) { navigateBack() }
-        pageCommand(bar.forwardButton) { tabsModel.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } }
+        pageCommand(bar.forwardButton) { tabStore.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } }
         pageCommand(bar.refreshButton) { refresh() }
         bar.adBlockButton.setOnClickListener {
             commitStripSelection()
-            toggleAdBlockForTab()
+            toggleBlockerForTab()
         }
         bar.adBlockButton.setOnLongClickListener {
             commitStripSelection()
@@ -321,14 +321,14 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         AppMenuEntry.HISTORY -> showHistory()
         AppMenuEntry.FAVORITES -> showFavorites()
         AppMenuEntry.DOWNLOADS -> showDownloads()
-        AppMenuEntry.INCOGNITO -> toggleIncognitoMode()
+        AppMenuEntry.INCOGNITO -> togglePrivateMode()
         AppMenuEntry.SETTINGS -> showSettings()
-        AppMenuEntry.CLOSE_TAB -> closeTab(tabsModel.currentTab.value)
+        AppMenuEntry.CLOSE_TAB -> closeTab(tabStore.currentTab.value)
         AppMenuEntry.CLOSE_APPLICATION -> closeWindow()
     }
 
     fun showDownloads() = startActivity(Intent(this,
-        if (config.incognitoMode) IncognitoDownloadsActivity::class.java else DownloadsActivity::class.java))
+        if (config.privateBrowsing) IncognitoDownloadsActivity::class.java else DownloadsActivity::class.java))
 
     fun showHistory() {
         historyResult.launch(Intent(this, HistoryActivity::class.java))
@@ -336,24 +336,24 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     fun showFavorites() {
-        val shown = tabsModel.currentTab.value
+        val shown = tabStore.currentTab.value
         FavoritesPanel(this, lifecycleScope, shown?.title, shown?.url) { item -> item.url?.let(::navigate) }.show()
         closeCapsule()
     }
 
-    fun showSettings() = SettingsScreen(this, settingsModel).show()
+    fun showSettings() = SettingsScreen(this, browserSettings).show()
 
     /** Leaves private mode first (erasing its data) when it is on. */
     fun closeWindow() {
         lifecycleScope.launch {
-            if (config.incognitoMode) toggleIncognitoMode(andSwitchProcess = false).join()
+            if (config.privateBrowsing) togglePrivateMode(andSwitchProcess = false).join()
             finish()
         }
     }
 
     // Address field
 
-    override fun search(text: String) = navigate(AddressInput.resolve(text, config.searchEngineURL.value))
+    override fun search(text: String) = navigate(AddressInput.resolve(text, config.searchAddress.value))
 
     override fun onUrlInputDone() {
         closeSuggestions()
@@ -364,7 +364,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         suggestionsLookup?.cancel()
         suggestionsLookup = lifecycleScope.launch {
             delay(SUGGESTIONS_DELAY_MS) // One lookup when typing pauses, not one per key.
-            showSuggestions(runCatching { AddressSuggestions.load(text, config.incognitoMode) }
+            showSuggestions(runCatching { AddressSuggestions.load(text, config.privateBrowsing) }
                 .onFailure { Log.w(TAG, "Address suggestions failed", it) }
                 .getOrDefault(emptyList()))
         }
@@ -388,8 +388,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     // Navigation
 
     fun navigate(url: String) {
-        vb.controlsRow.setAddressBoxTextColor(ContextCompat.getColor(this, R.color.on_surface))
-        val tab = tabsModel.currentTab.value
+        vb.controlsRow.tintAddress(ContextCompat.getColor(this, R.color.on_surface))
+        val tab = tabStore.currentTab.value
         if (tab == null) {
             openInNewTab(url, 0, closeCapsuleAfter = true, navigateImmediately = true)
             return
@@ -400,17 +400,17 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     /** The page's history first; without it the capsule opens or closes, or [goHomeIfNoHistory] goes home. */
     fun navigateBack(goHomeIfNoHistory: Boolean = false) {
-        val engine = tabsModel.currentTab.value?.engine
+        val engine = tabStore.currentTab.value?.engine
         when {
             engine?.canGoBack == true -> engine.back()
-            goHomeIfNoHistory -> navigate(settingsModel.homePage)
+            goHomeIfNoHistory -> navigate(browserSettings.homePage)
             vb.controlsOverlay.isVisible -> closeCapsule()
             else -> openCapsule()
         }
     }
 
     fun refresh() {
-        tabsModel.currentTab.value?.engine?.reload()
+        tabStore.currentTab.value?.engine?.reload()
     }
 
     // Tabs
@@ -419,11 +419,11 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         /** Focus moved to another tab: show its address and, a moment later, its preview. */
         override fun onTitleChanged(index: Int) {
             val tab = tabAt(index)
-            vb.controlsRow.setAddressBoxText(tab?.url.orEmpty())
+            vb.controlsRow.showAddress(tab?.url.orEmpty())
             previewGeneration++
-            uiHandler.removeCallbacks(showFocusedPreview)
+            mainThread.removeCallbacks(showFocusedPreview)
             focusedPreviewTab = tab
-            uiHandler.postDelayed(showFocusedPreview, PREVIEW_FOCUS_DELAY_MS)
+            mainThread.postDelayed(showFocusedPreview, PREVIEW_FOCUS_DELAY_MS)
         }
 
         override fun onTitleSelected(index: Int) {
@@ -432,7 +432,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         }
 
         override fun onAddNewTabSelected() {
-            openInNewTab(settingsModel.homePage, tabsModel.tabsStates.size, navigateImmediately = true)
+            openInNewTab(browserSettings.homePage, tabStore.openTabs.size, navigateImmediately = true)
         }
 
         override fun closeTab(tabState: BrowserTab?) = this@MainActivity.closeTab(tabState)
@@ -442,15 +442,15 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         }
     }
 
-    private fun tabAt(index: Int) = tabsModel.tabsStates.getOrNull(index)
+    private fun tabAt(index: Int) = tabStore.openTabs.getOrNull(index)
 
     /** The tab the strip shows as selected, which differs from the shown one while another is previewed. */
     internal fun tabAtStripSelection() = tabAt(vb.tabStrip.current)
 
     internal fun openInNewTab(url: String?, index: Int = 0, closeCapsuleAfter: Boolean = true, navigateImmediately: Boolean): PageEngine? {
         if (url == null) return null
-        val tab = BrowserTab(url = url, incognito = config.incognitoMode)
-        tabsModel.tabsStates.add(index, tab)
+        val tab = BrowserTab(url = url, incognito = config.privateBrowsing)
+        tabStore.openTabs.add(index, tab)
         changeTab(tab, loadInitialUrl = false)
         if (tab.engine.view == null) return null
         if (navigateImmediately) navigate(url)
@@ -461,18 +461,18 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     /** Closes [tab] and shows a neighbour; the last tab is replaced by a new home tab. */
     internal fun closeTab(tab: BrowserTab?) {
         if (tab == null) return
-        val tabs = tabsModel.tabsStates
+        val tabs = tabStore.openTabs
         val position = tabs.indexOf(tab)
-        if (tabsModel.currentTab.value === tab) tabsModel.currentTab.value = null
+        if (tabStore.currentTab.value === tab) tabStore.currentTab.value = null
         val neighbour = tabs.getOrNull(position - 1)?.takeIf { position > 0 } ?: tabs.getOrNull(position + 1)
         if (neighbour != null) changeTab(neighbour)
-        else openInNewTab(settingsModel.homePage, 0, closeCapsuleAfter = true, navigateImmediately = true)
-        tabsModel.onCloseTab(tab)
+        else openInNewTab(browserSettings.homePage, 0, closeCapsuleAfter = true, navigateImmediately = true)
+        tabStore.onCloseTab(tab)
         closeCapsule()
     }
 
     internal fun changeTab(newTab: BrowserTab, loadInitialUrl: Boolean = true) =
-        tabsModel.changeTab(newTab, ::createWebView, vb.pageContainer, TabWindow(this, newTab), loadInitialUrl)
+        tabStore.changeTab(newTab, ::createWebView, vb.pageContainer, TabWindow(this, newTab), loadInitialUrl)
 
     /** The tab's WebView, or null after telling the user that this device has no usable WebView. */
     internal fun createWebView(tab: BrowserTab): View? {
@@ -483,7 +483,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             showNoWebViewDialog()
             return null
         }
-        config.userAgentString.value?.let { tab.engine.userAgent = it }
+        config.userAgentOverride.value?.let { tab.engine.userAgent = it }
         return view
     }
 
@@ -504,7 +504,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     /** The capsule follows the shown tab: Back and Forward availability and the blocker shield. */
-    internal fun onWebViewUpdated(tab: BrowserTab) {
+    internal fun onPageViewChanged(tab: BrowserTab) {
         vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
         vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
         val blocking = tab.adblock ?: config.adBlockEnabled
@@ -516,7 +516,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     private fun commitStripSelection() {
         val tab = tabAtStripSelection()
         when {
-            tab == null -> openInNewTab(settingsModel.homePage, if (vb.tabStrip.current < 0) 0 else tabsModel.tabsStates.size,
+            tab == null -> openInNewTab(browserSettings.homePage, if (vb.tabStrip.current < 0) 0 else tabStore.openTabs.size,
                 closeCapsuleAfter = true, navigateImmediately = true)
             !tab.selected -> changeTab(tab)
         }
@@ -525,12 +525,12 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     // Ad blocking and pop-ups
 
     private fun blockerStatusLabel(tab: BrowserTab): Int {
-        val initialized = ::adblockModel.isInitialized
+        val initialized = ::adBlocker.isInitialized
         val indicator = blockerIndicator(
             tab.adblock ?: config.adBlockEnabled,
-            initialized && adblockModel.hasActiveRules,
-            initialized && adblockModel.clientLoading.value,
-            if (initialized) adblockModel.updateResult.value else AdBlocker.UpdateResult.IDLE,
+            initialized && adBlocker.hasActiveRules,
+            initialized && adBlocker.listLoading.value,
+            if (initialized) adBlocker.updateResult.value else AdBlocker.UpdateResult.IDLE,
         )
         return when (indicator) {
             BlockerIndicator.PAUSED -> R.string.blocker_state_paused
@@ -547,11 +547,11 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val state = getString(blockerStatusLabel(tab))
         vb.controlsRow.adBlockButton.contentDescription = getString(R.string.blocker_summary, state, tab.blockedAds)
         vb.controlsRow.adBlockButton.isActivated =
-            (tab.adblock ?: config.adBlockEnabled) && ::adblockModel.isInitialized && adblockModel.hasActiveRules
+            (tab.adblock ?: config.adBlockEnabled) && ::adBlocker.isInitialized && adBlocker.hasActiveRules
     }
 
     private fun showBlockerDetails() {
-        val tab = tabsModel.currentTab.value ?: return
+        val tab = tabStore.currentTab.value ?: return
         val state = getString(blockerStatusLabel(tab))
         // A dialog message would hide the list, so the status is the title.
         AlertDialog.Builder(this)
@@ -563,9 +563,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
                 when (which) {
                     0 -> {
                         commitStripSelection()
-                        toggleAdBlockForTab()
+                        toggleBlockerForTab()
                     }
-                    1 -> lifecycleScope.launch { showPopupBlockOptions() }
+                    1 -> lifecycleScope.launch { choosePopupPolicy() }
                 }
             }
             .show()
@@ -573,33 +573,33 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     /** Applies a change of the ad blocking setting to the shown tab. */
     fun refreshAdblockSettings() {
-        tabsModel.currentTab.value?.let { tab ->
+        tabStore.currentTab.value?.let { tab ->
             tab.engine.setAdBlocking(tab.adblock ?: config.adBlockEnabled)
-            onWebViewUpdated(tab)
+            onPageViewChanged(tab)
         }
     }
 
     /** Flips ad blocking for the shown tab only and reloads it; the lists load if this needs them. */
-    private fun toggleAdBlockForTab() {
-        val tab = tabsModel.currentTab.value ?: return
+    private fun toggleBlockerForTab() {
+        val tab = tabStore.currentTab.value ?: return
         val blocking = !(tab.adblock ?: config.adBlockEnabled)
         tab.adblock = blocking
         tab.engine.setAdBlocking(blocking)
-        onWebViewUpdated(tab)
-        if (blocking && !adblockModel.hasActiveRules && !adblockModel.clientLoading.value) adblockModel.loadAdBlockList(true)
+        onPageViewChanged(tab)
+        if (blocking && !adBlocker.hasActiveRules && !adBlocker.listLoading.value) adBlocker.loadBlockList(true)
         refresh()
     }
 
-    private suspend fun showPopupBlockOptions() {
-        val tab = tabsModel.currentTab.value ?: return
-        val site = tabsModel.findHostConfig(tab, false)
-        val level = site?.popupBlockLevel ?: SiteSettings.DEFAULT_BLOCK_POPUPS_VALUE
+    private suspend fun choosePopupPolicy() {
+        val tab = tabStore.currentTab.value ?: return
+        val site = tabStore.siteSettingsFor(tab, false)
+        val level = site?.popupBlockLevel ?: SiteSettings.DEFAULT_POPUP_POLICY
         val host = site?.hostName ?: runCatching { URL(tab.url).host }.getOrDefault("")
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.popups_title, host))
             .setSingleChoiceItems(R.array.popups_levels, level) { dialog, choice ->
                 lifecycleScope.launch {
-                    tabsModel.changePopupBlockingLevel(choice, tab)
+                    tabStore.setPopupPolicy(choice, tab)
                     dialog.dismiss()
                 }
             }
@@ -609,14 +609,14 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal fun onPopupAdBlocked(popup: BrowserTab, opener: BrowserTab) {
         if (popup.closed) return
         Log.i(TAG, "Blocked a pop-up ad window")
-        if (tabsModel.currentTab.value === popup) closeTab(popup) else tabsModel.onCloseTab(popup)
+        if (tabStore.currentTab.value === popup) closeTab(popup) else tabStore.onCloseTab(popup)
         opener.blockedPopups++
         showBlockedPopup(opener, newTab = true)
     }
 
     /** Tells the user about a blocked pop-up or dialog, at most once per [BLOCKED_NOTICE_INTERVAL_MS]. */
     internal fun showBlockedPopup(tab: BrowserTab, newTab: Boolean) {
-        if (isDestroyed || tabsModel.currentTab.value !== tab) return
+        if (isDestroyed || tabStore.currentTab.value !== tab) return
         val now = SystemClock.uptimeMillis()
         if (now - lastBlockedNotice < BLOCKED_NOTICE_INTERVAL_MS) return
         lastBlockedNotice = now
@@ -636,8 +636,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal fun showLoadProgress(progress: Int) {
         vb.loadProgress.visibility = View.VISIBLE
         vb.loadProgress.setProgress(progress, true)
-        uiHandler.removeCallbacks(hideProgress)
-        uiHandler.postDelayed(hideProgress, if (progress == 100) PROGRESS_DONE_MS else PROGRESS_STALL_MS)
+        mainThread.removeCallbacks(hideProgress)
+        mainThread.postDelayed(hideProgress, if (progress == 100) PROGRESS_DONE_MS else PROGRESS_STALL_MS)
     }
 
     private fun onDownloadStarted(fileName: String) {
@@ -649,13 +649,13 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     // Private mode
 
-    fun toggleIncognitoMode() {
-        toggleIncognitoMode(andSwitchProcess = true)
+    fun togglePrivateMode() {
+        togglePrivateMode(andSwitchProcess = true)
     }
 
     /** Leaving private mode erases its pages, cookies, storage, cache and tabs before the switch. */
-    private fun toggleIncognitoMode(andSwitchProcess: Boolean) = lifecycleScope.launch {
-        val entering = !config.incognitoMode
+    private fun togglePrivateMode(andSwitchProcess: Boolean) = lifecycleScope.launch {
+        val entering = !config.privateBrowsing
         vb.startupSpinner.visibility = View.VISIBLE
         if (!entering) {
             withContext(Dispatchers.IO) {
@@ -664,17 +664,17 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
                 CookieManager.getInstance().flush()
             }
             Engines.clearCache(this@MainActivity)
-            tabsModel.onCloseAllTabs().join()
-            tabsModel.currentTab.value = null
-            viewModel.clearIncognitoData().join()
+            tabStore.onCloseOthers().join()
+            tabStore.currentTab.value = null
+            visitLog.clearPrivateData().join()
         }
         vb.startupSpinner.visibility = View.GONE
-        config.incognitoMode = entering
-        if (andSwitchProcess) switchProcess(entering)
+        config.privateBrowsing = entering
+        if (andSwitchProcess) openPrivateWindow(entering)
     }
 
     /** Restarts as the other mode's activity in a new task; this process ends so the modes never share data. */
-    private fun switchProcess(incognito: Boolean, intentToCopy: Intent? = null) {
+    private fun openPrivateWindow(incognito: Boolean, intentToCopy: Intent? = null) {
         val target = Intent(this, if (incognito) PrivateBrowserActivity::class.java else MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         intentToCopy?.let { source ->
@@ -689,7 +689,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     fun toggleMenu() {
         when {
-            isFullscreen -> tabsModel.currentTab.value?.engine?.closeFullscreen()
+            isFullscreen -> tabStore.currentTab.value?.engine?.closeFullscreen()
             overlayVisible -> closeCapsule()
             else -> openCapsule()
         }
@@ -697,13 +697,13 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-            backNavigationEventsAdapter.dispatchSystemBackNavigationEvent()
+            backPresses.sendSystemBack()
         }
     }
 
     /** Back from the system, the remote, a gamepad's B or Escape: one event per press, whatever the channel. */
-    internal val backNavigationEventsAdapter = BackPresses(
-        onEmulatedBackEvent = { if (!hideSoftwareKeyboardIfVisible()) handleBackNavigation() },
+    internal val backPresses = BackPresses(
+        onBackKey = { if (!hideKeyboard()) consumeBack() },
     )
 
     /**
@@ -716,10 +716,10 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         window.callback = object : Window.Callback by views {
             override fun dispatchKeyEvent(event: KeyEvent): Boolean {
                 UserActivation.onKeyEvent(event)
-                if (backNavigationEventsAdapter.dispatchKeyEvent(event)) return true
+                if (backPresses.dispatchKeyEvent(event)) return true
                 val code = if (event.keyCode != 0) event.keyCode else event.scanCode
                 if (code !in BackPresses.BACK_KEYS &&
-                    Shortcuts.getInstance().handle(event, this@MainActivity, tabsModel.currentTab.value)) return true
+                    Shortcuts.getInstance().handle(event, this@MainActivity, tabStore.currentTab.value)) return true
                 if (downLeavesTabStrip(overlayVisible, vb.tabStrip.hasFocus(), event.keyCode, event.action, event.repeatCount)) {
                     closeCapsule()
                     return true
@@ -735,7 +735,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             }
 
             override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
-                if (backNavigationEventsAdapter.dispatchGenericMotionEvent(event)) return true
+                if (backPresses.dispatchGenericMotionEvent(event)) return true
                 if (browserOwnsPointer() && RemoteInput.isNavigationSource(event) &&
                     vb.pageContainer.dispatchGenericMotionEvent(event)) return true
                 return views.dispatchGenericMotionEvent(event)
@@ -747,7 +747,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     private fun browserOwnsPointer(): Boolean {
         if (!::vb.isInitialized || !window.decorView.hasWindowFocus()) return false
         val page = vb.pageContainer
-        return page.isShown && page.cursorEnabled && !page.cursorSuppressed && !page.isTextInputActive() &&
+        return page.isShown && page.pointerEnabled && !page.cursorSuppressed && !page.isTextInputActive() &&
             !vb.pointerMenu.isVisible && !vb.controlsOverlay.isVisible && !keyboardVisible()
     }
 
@@ -755,7 +755,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         ViewCompat.getRootWindowInsets(window.decorView)?.isVisible(WindowInsetsCompat.Type.ime()) == true
 
     /** Back while typing only closes the keyboard, as everywhere on Android. */
-    private fun hideSoftwareKeyboardIfVisible(): Boolean {
+    private fun hideKeyboard(): Boolean {
         if (!keyboardVisible()) return false
         val target = currentFocus ?: window.decorView
         getSystemService<InputMethodManager>()?.hideSoftInputFromWindow(target.windowToken, 0)
@@ -764,17 +764,17 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     /** Back closes the innermost thing open: pointer menu, fullscreen, typing, capsule, grab mode; else opens the capsule. */
     @VisibleForTesting
-    internal fun handleBackNavigation() {
-        val pointer = vb.pageContainer.cursorDrawerDelegate
+    internal fun consumeBack() {
+        val pointer = vb.pageContainer.pointerController
         when {
             vb.pointerMenu.isVisible -> vb.pointerMenu.close()
-            isFullscreen -> tabsModel.currentTab.value?.engine?.closeFullscreen()
+            isFullscreen -> tabStore.currentTab.value?.engine?.closeFullscreen()
             vb.controlsRow.isEditingAddress -> vb.controlsRow.cancelAddressInput()
             overlayVisible -> closeCapsule()
-            pointer.canHandleBackNavigation() -> pointer.handleBackNavigation()
+            pointer.canGoBackInPage() -> pointer.consumeBack()
             else -> {
-                tabsModel.currentTab.value?.engine?.setPointerMode(true)
-                backNavigationEventsAdapter.gameControllersLongPressBForBackNavigation = false
+                tabStore.currentTab.value?.engine?.setPointerMode(true)
+                backPresses.holdBGoesBack = false
                 openCapsule()
             }
         }
@@ -786,7 +786,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     /** Bumped whenever the preview may change, so a slow picture load never shows a stale tab. */
     private var previewGeneration = 0
     private var focusedPreviewTab: BrowserTab? = null
-    private val showFocusedPreview = Runnable { lifecycleScope.launch { displayThumbnail(focusedPreviewTab) } }
+    private val showFocusedPreview = Runnable { lifecycleScope.launch { showPreview(focusedPreviewTab) } }
 
     /**
      * Opens the capsule over the page with focus on Back (Home when Back is unavailable). The shown
@@ -795,7 +795,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     @VisibleForTesting
     internal fun openCapsule() {
         if (isFullscreen) {
-            tabsModel.currentTab.value?.engine?.closeFullscreen()
+            tabStore.currentTab.value?.engine?.closeFullscreen()
             return
         }
         if (overlayVisible) return
@@ -813,12 +813,12 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         }
         val previewed = tabAtStripSelection()
         vb.pageContainer.visibility =
-            if (previewed != null && previewed === tabsModel.currentTab.value) View.VISIBLE else View.INVISIBLE
-        lifecycleScope.launch { displayThumbnail(previewed) }
-        vb.controlsRow.dismissExtendedAddressBarMode()
+            if (previewed != null && previewed === tabStore.currentTab.value) View.VISIBLE else View.INVISIBLE
+        lifecycleScope.launch { showPreview(previewed) }
+        vb.controlsRow.closeAddressEditing()
         vb.controlsOverlay.visibility = View.VISIBLE
         // History can change without a page load (pushState on single-page sites): refresh Back first.
-        tabsModel.currentTab.value?.let(::onWebViewUpdated)
+        tabStore.currentTab.value?.let(::onPageViewChanged)
         // Focus is part of opening, not of the animation's end.
         if (!vb.controlsRow.backButton.requestFocus()) vb.controlsRow.homeButton.requestFocus()
         vb.controlsOverlay.translationY = -vb.controlsOverlay.height.toFloat()
@@ -828,9 +828,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     /** Shows [tab] behind the capsule: the live page for the shown tab, its stored picture for another. */
-    internal suspend fun displayThumbnail(tab: BrowserTab?) {
+    internal suspend fun showPreview(tab: BrowserTab?) {
         if (!overlayVisible || tabAtStripSelection() !== tab) return
-        if (tab != null && tab === tabsModel.currentTab.value) {
+        if (tab != null && tab === tabStore.currentTab.value) {
             // The live WebView at full resolution, never a stretched small picture.
             previewGeneration++
             showPicture(null, placeholder = false)
@@ -841,7 +841,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (tab == null) return showPicture(null, placeholder = true)
         val request = ++previewGeneration
         vb.tabPreview.setImageResource(0) // Never leave the previous site's picture up while loading.
-        val picture = tab.thumbnail ?: withContext(Dispatchers.IO) { tab.loadThumbnail() }
+        val picture = tab.thumbnail ?: withContext(Dispatchers.IO) { tab.loadPreview() }
         if (request != previewGeneration || !overlayVisible || tab.closed || tabAtStripSelection() !== tab) return
         showPicture(picture, placeholder = picture == null)
     }
@@ -860,9 +860,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.pageContainer.onPageTouch = null
         vb.pageContainer.cursorSuppressed = false
         previewGeneration++
-        uiHandler.removeCallbacks(showFocusedPreview)
+        mainThread.removeCallbacks(showFocusedPreview)
         focusedPreviewTab = null
-        vb.controlsRow.dismissExtendedAddressBarMode()
+        vb.controlsRow.closeAddressEditing()
         vb.controlsOverlay.animate().cancel()
         vb.tabPreview.animate().cancel()
         vb.controlsOverlay.visibility = View.INVISIBLE
@@ -873,7 +873,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (wasVisible) commitStripSelection()
         if (!vb.pointerMenu.isVisible) {
             vb.pageContainer.visibility = View.VISIBLE
-            tabsModel.currentTab.value?.engine?.view?.requestFocus()
+            tabStore.currentTab.value?.engine?.view?.requestFocus()
         }
     }
 

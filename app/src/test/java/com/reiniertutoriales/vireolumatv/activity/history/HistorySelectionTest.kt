@@ -23,8 +23,8 @@ class HistorySelectionTest {
     @Test fun longPressSelectsAndBackLeavesSelectionBeforeClosing() {
         runBlocking(Dispatchers.IO) {
             AppDatabase.db.clearAllTables()
-            AppDatabase.db.historyDao().insert(HistoryItem().apply { time = 2; title = "B"; url = "https://b.test" })
-            AppDatabase.db.historyDao().insert(HistoryItem().apply { time = 1; title = "A"; url = "https://a.test" })
+            AppDatabase.db.visitDao().insert(HistoryItem().apply { time = 2; title = "B"; url = "https://b.test" })
+            AppDatabase.db.visitDao().insert(HistoryItem().apply { time = 1; title = "A"; url = "https://a.test" })
         }
         val activity = Robolectric.buildActivity(HistoryActivity::class.java).setup().get()
         val list = activity.findViewById<RecyclerView>(R.id.item_list)

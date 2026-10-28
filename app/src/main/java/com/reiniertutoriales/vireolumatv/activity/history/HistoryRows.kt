@@ -21,7 +21,7 @@ import com.reiniertutoriales.vireolumatv.utils.sameLocalDay
  * History rows with a date header before each day. Only the rows that changed are rebound:
  * the list is diffed off the main thread and applied with [submitList].
  *
- * [realCount] counts visible stored entries; the model owns the next-page boundary.
+ * [rowCount] counts visible stored entries; the model owns the next-page boundary.
  */
 class HistoryRows(
     private val onItemClick: (HistoryItem) -> Unit,
@@ -33,11 +33,11 @@ class HistoryRows(
     private val dateFormat: DateFormat = DateFormat.getDateInstance()
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
-    val realCount: Long get() = realItems.size.toLong()
+    val rowCount: Long get() = realItems.size.toLong()
 
     val selectedItems: List<HistoryItem> get() = realItems.filter { it.selected }
 
-    var isMultiselectMode = false
+    var selectionMode = false
         set(value) {
             if (field == value) return
             field = value
@@ -80,7 +80,7 @@ class HistoryRows(
         for (item in items) {
             if (!sameLocalDay(item.time, lastHeaderTime)) {
                 lastHeaderTime = item.time
-                rows.add(HistoryItem.createDateHeaderInfo(item.time))
+                rows.add(HistoryItem.dayHeader(item.time))
             }
             rows.add(item)
         }
@@ -88,11 +88,11 @@ class HistoryRows(
     }
 
     override fun getItemViewType(position: Int): Int =
-        if (getItem(position).isDateHeader) VIEW_TYPE_HEADER else VIEW_TYPE_HISTORY_ITEM
+        if (getItem(position).isDayHeader) ROW_DAY else ROW_VISIT
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        if (viewType == VIEW_TYPE_HEADER) {
+        if (viewType == ROW_DAY) {
             return HeaderHolder(inflater.inflate(R.layout.day_header, parent, false))
         }
         val holder = ItemHolder(inflater.inflate(R.layout.history_row, parent, false))
@@ -111,7 +111,7 @@ class HistoryRows(
         val item = getItem(position)
         when (holder) {
             is HeaderHolder -> holder.dayText.text = dateFormat.format(Date(item.time))
-            is ItemHolder -> holder.bind(item, isMultiselectMode, timeFormat)
+            is ItemHolder -> holder.bind(item, selectionMode, timeFormat)
         }
     }
 
@@ -135,13 +135,13 @@ class HistoryRows(
     }
 
     companion object {
-        const val VIEW_TYPE_HISTORY_ITEM = 0
-        const val VIEW_TYPE_HEADER = 1
+        const val ROW_VISIT = 0
+        const val ROW_DAY = 1
 
         internal val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HistoryItem>() {
             override fun areItemsTheSame(oldItem: HistoryItem, newItem: HistoryItem): Boolean =
-                if (oldItem.isDateHeader || newItem.isDateHeader) {
-                    oldItem.isDateHeader && newItem.isDateHeader && sameLocalDay(oldItem.time, newItem.time)
+                if (oldItem.isDayHeader || newItem.isDayHeader) {
+                    oldItem.isDayHeader && newItem.isDayHeader && sameLocalDay(oldItem.time, newItem.time)
                 } else {
                     oldItem.id == newItem.id
                 }

@@ -24,7 +24,7 @@ import com.reiniertutoriales.vireolumatv.utils.sameLocalDay
  * Download rows with a date header before each day. A progress update changes one row in place
  * and rebinds only that row; the list is diffed off the main thread for insertions and removals.
  *
- * [realCount] counts downloads on screen, which is the offset for the next page.
+ * [rowCount] counts downloads on screen, which is the offset for the next page.
  */
 class DownloadRows(
     private val onItemClick: (Download) -> Unit,
@@ -36,7 +36,7 @@ class DownloadRows(
     private val dateFormat: DateFormat = DateFormat.getDateInstance()
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
-    val realCount: Long get() = realItems.size.toLong()
+    val rowCount: Long get() = realItems.size.toLong()
 
     fun addItems(items: List<Download>) {
         if (items.isEmpty()) return
@@ -73,7 +73,7 @@ class DownloadRows(
         for (download in items) {
             if (!sameLocalDay(download.time, lastHeaderTime)) {
                 lastHeaderTime = download.time
-                rows.add(Download.createDateHeaderInfo(download.time))
+                rows.add(Download.dayHeader(download.time))
             }
             rows.add(download)
         }
@@ -81,11 +81,11 @@ class DownloadRows(
     }
 
     override fun getItemViewType(position: Int): Int =
-        if (getItem(position).isDateHeader) VIEW_TYPE_HEADER else VIEW_TYPE_DOWNLOAD_ITEM
+        if (getItem(position).isDayHeader) ROW_DAY else ROW_DOWNLOAD
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        if (viewType == VIEW_TYPE_HEADER) {
+        if (viewType == ROW_DAY) {
             return HeaderHolder(inflater.inflate(R.layout.day_header, parent, false))
         }
         val holder = ItemHolder(inflater.inflate(R.layout.download_row, parent, false))
@@ -134,8 +134,8 @@ class DownloadRows(
             sizeText.setTextColor(sizeColor)
             progressBar.isVisible = false
             when {
-                download.size == Download.CANCELLED_MARK -> sizeText.setText(R.string.download_cancelled)
-                download.size == Download.BROKEN_MARK -> {
+                download.size == Download.SIZE_CANCELLED -> sizeText.setText(R.string.download_cancelled)
+                download.size == Download.SIZE_FAILED -> {
                     sizeText.setText(R.string.error)
                     sizeText.setTextColor(ContextCompat.getColor(context, R.color.error))
                 }
@@ -156,8 +156,8 @@ class DownloadRows(
     }
 
     companion object {
-        const val VIEW_TYPE_DOWNLOAD_ITEM = 0
-        const val VIEW_TYPE_HEADER = 1
+        const val ROW_DOWNLOAD = 0
+        const val ROW_DAY = 1
 
         /** A wrong size from the server is ignored for future updates, as before. */
         private fun normalizeSize(download: Download) {
@@ -166,8 +166,8 @@ class DownloadRows(
 
         internal val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Download>() {
             override fun areItemsTheSame(oldItem: Download, newItem: Download): Boolean =
-                if (oldItem.isDateHeader || newItem.isDateHeader) {
-                    oldItem.isDateHeader && newItem.isDateHeader && sameLocalDay(oldItem.time, newItem.time)
+                if (oldItem.isDayHeader || newItem.isDayHeader) {
+                    oldItem.isDayHeader && newItem.isDayHeader && sameLocalDay(oldItem.time, newItem.time)
                 } else {
                     oldItem.matches(newItem)
                 }

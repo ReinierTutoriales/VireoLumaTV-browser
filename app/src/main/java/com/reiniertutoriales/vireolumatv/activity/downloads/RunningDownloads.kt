@@ -13,13 +13,13 @@ import java.io.File
 
 /** Downloads running in this process and the screens that follow them; used on the main thread. */
 class RunningDownloads : ScreenModel() {
-    val activeDownloads = LiveList<Transfer>()
+    val runningDownloads = LiveList<Transfer>()
     private val listeners = ArrayList<Listener>()
 
     interface Listener {
-        fun onDownloadUpdated(downloadInfo: Download)
-        fun onDownloadError(downloadInfo: Download, responseCode: Int, responseMessage: String)
-        fun onAllDownloadsComplete()
+        fun onDownloadUpdated(job: Download)
+        fun onDownloadError(job: Download, responseCode: Int, responseMessage: String)
+        fun onIdle()
     }
 
     fun registerListener(listener: Listener) {
@@ -32,7 +32,7 @@ class RunningDownloads : ScreenModel() {
 
     /** Cancels the running task for [download]; its task removes the partial file. */
     fun cancelDownload(download: Download) {
-        activeDownloads.firstOrNull { it.downloadInfo.matches(download) }?.downloadInfo?.cancelled = true
+        runningDownloads.firstOrNull { it.job.matches(download) }?.job?.cancelled = true
     }
 
     /** Removes a finished download's file and its history row. */
@@ -50,14 +50,14 @@ class RunningDownloads : ScreenModel() {
         AppDatabase.db.downloadDao().delete(download)
     }
 
-    fun notifyListenersAboutError(task: Transfer, responseCode: Int, responseMessage: String) =
-        listeners.toList().forEach { it.onDownloadError(task.downloadInfo, responseCode, responseMessage) }
+    fun reportError(task: Transfer, responseCode: Int, responseMessage: String) =
+        listeners.toList().forEach { it.onDownloadError(task.job, responseCode, responseMessage) }
 
-    fun notifyListenersAboutDownloadProgress(task: Transfer) =
-        listeners.toList().forEach { it.onDownloadUpdated(task.downloadInfo) }
+    fun reportProgress(task: Transfer) =
+        listeners.toList().forEach { it.onDownloadUpdated(task.job) }
 
     fun onDownloadEnded(task: Transfer) {
-        activeDownloads.remove(task)
-        if (activeDownloads.isEmpty()) listeners.toList().forEach { it.onAllDownloadsComplete() }
+        runningDownloads.remove(task)
+        if (runningDownloads.isEmpty()) listeners.toList().forEach { it.onIdle() }
     }
 }

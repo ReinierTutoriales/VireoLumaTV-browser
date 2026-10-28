@@ -26,26 +26,26 @@ class IncognitoSessionTabsTest {
         val normal = BrowserTab(url = "https://same.test")
         val privateTab = BrowserTab(url = normal.url, incognito = true)
         val bitmap = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888)
-        normal.updateThumbnail(app, bitmap)
-        privateTab.updateThumbnail(app, bitmap)
+        normal.refreshPreview(app, bitmap)
+        privateTab.refreshPreview(app, bitmap)
         assertNotNull(normal.thumbnailHash)
         assertNotEquals(normal.thumbnailHash, privateTab.thumbnailHash)
         assertTrue(privateTab.thumbnailHash!!.startsWith("private-"))
         val state = Bundle().apply { putString("url", normal.url) }
         normal.savedState = state
-        normal.saveWebViewStateToFile()
+        normal.saveHistoryFile()
         privateTab.savedState = state
         privateTab.wvStateFileName = normal.wvStateFileName
-        privateTab.saveWebViewStateToFile()
+        privateTab.saveHistoryFile()
         assertNotNull(normal.wvStateFileName)
         val duplicate = BrowserTab(url = normal.url).apply { savedState = state }
-        duplicate.saveWebViewStateToFile()
+        duplicate.saveHistoryFile()
         assertNotEquals(normal.wvStateFileName, duplicate.wvStateFileName)
         assertNotEquals(normal.wvStateFileName, privateTab.wvStateFileName)
         assertTrue(privateTab.wvStateFileName!!.startsWith("private-"))
         privateTab.removeFiles()
-        assertTrue(File(app.filesDir, "${BrowserTab.TAB_WVSTATES_DIR}/${normal.wvStateFileName}").exists())
-        assertTrue(File(app.cacheDir, "${BrowserTab.TAB_THUMBNAILS_DIR}/${normal.thumbnailHash}.png").exists())
+        assertTrue(File(app.filesDir, "${BrowserTab.HISTORY_DIR}/${normal.wvStateFileName}").exists())
+        assertTrue(File(app.cacheDir, "${BrowserTab.PREVIEW_DIR}/${normal.thumbnailHash}.png").exists())
     }
 
     @Test fun clearsOldPrivateTabsProtectsSharedFilesAndPreservesCurrentSession() = runBlocking {
@@ -53,12 +53,12 @@ class IncognitoSessionTabsTest {
         AppContext.init(app, Config(app.getSharedPreferences("tabs-test", 0)))
         val db = Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java).allowMainThreadQueries().build()
         try {
-            val dao = db.tabsDao()
+            val dao = db.tabDao()
             dao.insert(BrowserTab(url = "https://normal.test", thumbnailHash = "shared", wvStateFileName = "shared-state"))
             dao.insert(BrowserTab(url = "https://private.test", incognito = true, thumbnailHash = "shared", wvStateFileName = "shared-state"))
             dao.insert(BrowserTab(url = "https://old.test", incognito = true, thumbnailHash = "private", wvStateFileName = "private-state"))
-            val thumbs = File(app.cacheDir, BrowserTab.TAB_THUMBNAILS_DIR).apply { mkdirs() }
-            val states = File(app.filesDir, BrowserTab.TAB_WVSTATES_DIR).apply { mkdirs() }
+            val thumbs = File(app.cacheDir, BrowserTab.PREVIEW_DIR).apply { mkdirs() }
+            val states = File(app.filesDir, BrowserTab.HISTORY_DIR).apply { mkdirs() }
             File(thumbs, "shared.png").writeText("normal")
             File(thumbs, "private.png").writeText("private")
             File(states, "shared-state").writeText("normal")

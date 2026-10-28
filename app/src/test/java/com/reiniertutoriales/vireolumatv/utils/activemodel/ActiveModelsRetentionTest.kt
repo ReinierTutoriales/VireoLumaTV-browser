@@ -13,11 +13,11 @@ class ActiveModelsRetentionTest {
         val oldUser = Any()
         val replacement = Any()
         val model = ScreenModels.get(TestModel::class, oldUser)
-        ScreenModels.markAsNeedlessAllModelsUsedBy(oldUser, retainUnused = true)
+        ScreenModels.releaseModelsOf(oldUser, retainUnused = true)
         assertSame(model, ScreenModels.get(TestModel::class, replacement))
         assertFalse(model.released)
         // If the old user was still retained, releasing the replacement would not clear the model.
-        ScreenModels.markAsNeedlessAllModelsUsedBy(replacement)
+        ScreenModels.releaseModelsOf(replacement)
         assertTrue(model.released)
     }
 }

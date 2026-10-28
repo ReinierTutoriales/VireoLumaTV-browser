@@ -66,14 +66,14 @@ class AdblockUpdateTest {
         }
         val model = AdBlocker(engine, autoLoad = false)
         val source = "http://127.0.0.1:${server.address.port}/"
-        model.config.adBlockListURL.value = source
-        model.config.adBlockListLastUpdate = 0
-        model.config.adBlockListNextRetry = 0
+        model.config.blockListUrl.value = source
+        model.config.blockListUpdatedAt = 0
+        model.config.blockListRetryAt = 0
         val cache = AdblockCache.fileFor(VireoLumaTVApp.instance.filesDir, engine, source)
         cache.writeText("old-ads.test")
         fun blocks(host: String) = model.isAd(Uri.parse("https://$host/banner"), "image", Uri.parse("https://page.test"))
         try {
-            val job = model.loadAdBlockList(true)
+            val job = model.loadBlockList(true)
             shadowOf(Looper.getMainLooper()).idle()
             assertTrue("Download must start", entered.await(5, TimeUnit.SECONDS))
             assertTrue("Cached blocker must be installed before the response arrives", blocks("old-ads.test"))
@@ -84,17 +84,17 @@ class AdblockUpdateTest {
             assertEquals(1, compiles)
             assertEquals(1, restores)
             assertTrue("A downloaded list is not reported as unavailable", model.unavailableLists.value.isEmpty())
-            val successTime = model.config.adBlockListLastUpdate
+            val successTime = model.config.blockListUpdatedAt
             failedDownload.set(true)
-            finish(model.loadAdBlockList(true))
+            finish(model.loadBlockList(true))
             assertTrue(blocks("new-ads.test"))
             assertEquals("Failed downloads should not recompile cached rules", 1, compiles)
             assertEquals("An existing native client should not be deserialized again", 1, restores)
-            assertFalse(model.clientLoading.value)
-            assertEquals(successTime, model.config.adBlockListLastUpdate)
+            assertFalse(model.listLoading.value)
+            assertEquals(successTime, model.config.blockListUpdatedAt)
             assertEquals(AdBlocker.UpdateResult.CACHED, model.updateResult.value)
             assertEquals(listOf("Custom"), model.unavailableLists.value)
-            assertTrue(model.config.adBlockListNextRetry > System.currentTimeMillis())
+            assertTrue(model.config.blockListRetryAt > System.currentTimeMillis())
         } finally {
             release.countDown()
             model.clear()

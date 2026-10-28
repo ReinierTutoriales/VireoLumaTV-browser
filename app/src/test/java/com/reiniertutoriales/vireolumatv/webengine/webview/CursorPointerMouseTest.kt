@@ -46,8 +46,8 @@ class CursorPointerMouseTest {
         surface.layout(0, 0, 960, 540)
         val delegate = PointerController(controller.get(), surface).apply { init() }
         delegate.cursorPosition.set(480f, 270f)
-        delegate.animateAppearing()
-        val update = PointerController::class.java.getDeclaredField("cursorUpdateRunnable")
+        delegate.fadeIn()
+        val update = PointerController::class.java.getDeclaredField("pointerTick")
             .apply { isAccessible = true }.get(delegate) as Runnable
         val frame = {
             ShadowSystemClock.advanceBy(Duration.ofMillis(16))
@@ -99,7 +99,7 @@ class CursorPointerMouseTest {
     }
 
     @Test fun grabModeDragsThePageWithThePointer() = withCursor { delegate, surface, frame ->
-        delegate.goToGrabMode()
+        delegate.startDragging()
         key(delegate, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN)
         repeat(10) { frame() }
         key(delegate, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN)
@@ -107,7 +107,7 @@ class CursorPointerMouseTest {
         assertTrue("Moving in grab mode must drag the page", wheel.isNotEmpty())
         // Pointer moves down, content follows it down: the page scrolls up.
         wheel.forEach { assertTrue(it.getAxisValue(MotionEvent.AXIS_VSCROLL) > 0f) }
-        assertTrue(delegate.canHandleBackNavigation())
+        assertTrue(delegate.canGoBackInPage())
     }
 
     /** Distance after [frames] frames with the stick held at [deflection] to the right. */
@@ -127,7 +127,7 @@ class CursorPointerMouseTest {
     }
 
     @Test fun stickSpeedIsProportionalToItsDeflection() {
-        AppContext.config.cursorMaxSpeedPercent = 100
+        AppContext.config.pointerSpeedPercent = 100
         val half = stickDistance(0.5f, frames = 10)
         val full = stickDistance(1f, frames = 10)
         assertTrue("The stick must move the pointer: $full", full > 50f)

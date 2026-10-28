@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class FaviconNetworkTest {
     @Test fun repeatedAndConcurrentMissingIconsHaveAFixedRequestBudget() = runBlocking {
         val app = RuntimeEnvironment.getApplication()
-        val config = Config(app.getSharedPreferences("favicon-network-test", 0)).apply { incognitoMode = true }
+        val config = Config(app.getSharedPreferences("favicon-network-test", 0)).apply { privateBrowsing = true }
         AppContext.init(app, config)
         Favicons.clear()
         val requests = AtomicInteger()
@@ -55,8 +55,8 @@ class FaviconNetworkTest {
     @Test fun htmlAndManifestCandidateStorageIsBounded() {
         val extractor = IconFinder()
         val html = "<head>" + (1..1000).joinToString("") { "<link rel=\"icon\" href=\"/$it.png\">" } + "</head>"
-        assertEquals(32, extractor.extractFavIconsFromHTML(URL("https://test.example"), html.reader().buffered()).first.size)
+        assertEquals(32, extractor.iconsFromDocument(URL("https://test.example"), html.reader().buffered()).first.size)
         val manifest = "{\"icons\":[" + (1..1000).joinToString(",") { "{\"src\":\"/$it.png\"}" } + "]}"
-        assertEquals(32, extractor.extractFavIconsFromWebManifest(URL("https://test.example/manifest.json"), manifest.reader()).size)
+        assertEquals(32, extractor.iconsFromManifest(URL("https://test.example/manifest.json"), manifest.reader()).size)
     }
 }

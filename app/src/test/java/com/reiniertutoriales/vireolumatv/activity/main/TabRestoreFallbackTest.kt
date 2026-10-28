@@ -47,8 +47,8 @@ class TabRestoreFallbackTest {
             } as PageEngine
             val tab = tabWithEngine(engine, privateMode).apply { savedState = Bundle() }
             val model = TabStore()
-            model.modelScope.cancel() // Persistence is covered by separate Room/atomic-file tests.
-            model.tabsStates.add(tab)
+            model.workScope.cancel() // Persistence is covered by separate Room/atomic-file tests.
+            model.openTabs.add(tab)
             val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
                 arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
             try {
@@ -74,11 +74,11 @@ class TabRestoreFallbackTest {
             }
         } as PageEngine
         val tab = tabWithEngine(engine).apply { wvStateFileName = "tab-rejected-state-test" }
-        val file = File(app.filesDir, "${BrowserTab.TAB_WVSTATES_DIR}/${tab.wvStateFileName}")
+        val file = File(app.filesDir, "${BrowserTab.HISTORY_DIR}/${tab.wvStateFileName}")
         file.parentFile!!.mkdirs()
         file.writeBytes(requireNotNull(BundleBytes.encode(Bundle())))
         try {
-            assertFalse(tab.restoreWebView())
+            assertFalse(tab.restorePage())
             assertEquals("https://saved.test/page", tab.url)
             assertTrue("Restoration failure must not delete persisted user data", file.exists())
         } finally { file.delete() }
@@ -87,7 +87,7 @@ class TabRestoreFallbackTest {
     @Test fun invalidMemoryStateFallsBackInsteadOfThrowing() {
         val engine = WebViewPageEngine(BrowserTab())
         val tab = tabWithEngine(engine).apply { savedState = "invalid legacy payload" }
-        assertFalse(tab.restoreWebView())
+        assertFalse(tab.restorePage())
         assertEquals("https://saved.test/page", tab.url)
     }
 
@@ -104,11 +104,11 @@ class TabRestoreFallbackTest {
             tab.savedState = requireNotNull(engine.saveHistory())
             engine.detach(destroyView = true)
             engine.createView(app)
-            assertTrue(tab.restoreWebView())
+            assertTrue(tab.restorePage())
             assertEquals("https://saved.test/second", engine.url)
             assertTrue(engine.canGoBack)
             tab.savedState = Bundle()
-            assertFalse(tab.restoreWebView())
+            assertFalse(tab.restorePage())
             assertNull(tab.savedState)
         } finally { engine.detach(destroyView = true) }
     }

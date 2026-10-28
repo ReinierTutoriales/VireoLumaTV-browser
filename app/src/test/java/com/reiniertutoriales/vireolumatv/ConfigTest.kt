@@ -26,27 +26,27 @@ class ConfigTest {
     @Test fun storedValuesOutsideTheirRangeFallBackSafely() {
         val prefs = prefs()
         prefs.edit().putInt("home_page_mode", 99)
-            .putInt(Config.CURSOR_MAX_SPEED_PERCENT_KEY, 1000).commit()
+            .putInt(Config.POINTER_SPEED_KEY, 1000).commit()
         val config = Config(prefs)
         assertEquals(Config.HomePageMode.HOME_PAGE, config.homePageMode)
-        assertEquals(Config.CURSOR_PHYSICS_PERCENT_MAX, config.cursorMaxSpeedPercent)
-        config.cursorAccelerationPercent = 1
-        assertEquals(Config.CURSOR_PHYSICS_PERCENT_MIN, config.cursorAccelerationPercent)
+        assertEquals(Config.POINTER_PERCENT_MAX, config.pointerSpeedPercent)
+        config.pointerAccelPercent = 1
+        assertEquals(Config.POINTER_PERCENT_MIN, config.pointerAccelPercent)
     }
 
     @Test fun settingsKeepTheirStoredKeys() {
         val prefs = prefs()
         Config(prefs).apply {
-            incognitoMode = true
+            privateBrowsing = true
             keepScreenOn = true
-            userAgentString.value = "UA"
-            adBlockListNextRetry = 5L
+            userAgentOverride.value = "UA"
+            blockListRetryAt = 5L
         }
         assertTrue(prefs.getBoolean("incognito_mode", false))
         assertTrue(prefs.getBoolean("keep_screen_on", false))
         assertEquals("UA", prefs.getString("user_agent", null))
         assertEquals(5L, prefs.getLong("adblock_list_next_retry", 0))
-        Config(prefs).userAgentString.value = null
+        Config(prefs).userAgentOverride.value = null
         assertFalse(prefs.contains("user_agent"))
     }
 }

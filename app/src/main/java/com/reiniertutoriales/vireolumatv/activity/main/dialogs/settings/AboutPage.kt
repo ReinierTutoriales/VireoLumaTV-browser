@@ -30,7 +30,7 @@ class AboutPage @JvmOverloads constructor(
 ) : ScrollView(context, attrs, defStyleAttr) {
 
     interface Callback {
-        fun onNeedToCloseSettings()
+        fun onSettingsDone()
     }
 
     var callback: Callback? = null
@@ -58,8 +58,8 @@ class AboutPage @JvmOverloads constructor(
 
     /** Opens [url] in a browser tab of the current mode, closing the settings first. */
     private fun open(url: String) {
-        callback?.onNeedToCloseSettings()
-        val target = if (AppContext.config.incognitoMode)
+        callback?.onSettingsDone()
+        val target = if (AppContext.config.privateBrowsing)
             PrivateBrowserActivity::class.java else MainActivity::class.java
         activity?.startActivity(Intent(activity, target).setData(url.toUri()))
     }

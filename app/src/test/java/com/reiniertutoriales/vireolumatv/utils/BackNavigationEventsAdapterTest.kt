@@ -46,7 +46,7 @@ class BackNavigationEventsAdapterTest {
     @Test fun controllerShortPressIsIgnoredAndLongPressFiresOnlyOnce() {
         var navigations = 0
         val adapter = BackPresses({ navigations++ },
-            gameControllersLongPressBForBackNavigation = true)
+            holdBGoesBack = true)
         val time = SystemClock.uptimeMillis() + 1000
         adapter.dispatchKeyEvent(key(time, KeyEvent.ACTION_DOWN, source = InputDevice.SOURCE_GAMEPAD))
         adapter.dispatchKeyEvent(key(time + 100, KeyEvent.ACTION_UP, source = InputDevice.SOURCE_GAMEPAD))
@@ -81,7 +81,7 @@ class BackNavigationEventsAdapterTest {
         val adapter = BackPresses({ navigations++ })
         val time = SystemClock.uptimeMillis()
         adapter.dispatchKeyEvent(key(time, KeyEvent.ACTION_DOWN))
-        assertFalse(adapter.dispatchSystemBackNavigationEvent())
+        assertFalse(adapter.sendSystemBack())
         adapter.dispatchKeyEvent(key(time + 10, KeyEvent.ACTION_UP))
         assertEquals(1, navigations)
     }
@@ -89,7 +89,7 @@ class BackNavigationEventsAdapterTest {
     @Test fun motionLongPressAndCancellationNeverFireOnRelease() {
         var navigations = 0
         val adapter = BackPresses({ navigations++ }, 500,
-            gameControllersLongPressBForBackNavigation = true)
+            holdBGoesBack = true)
         val time = SystemClock.uptimeMillis() + 1000
         val events = listOf(
             motion(time, MotionEvent.BUTTON_SECONDARY, InputDevice.SOURCE_GAMEPAD),

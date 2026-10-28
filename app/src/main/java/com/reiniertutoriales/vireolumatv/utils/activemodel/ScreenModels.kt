@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 
 /**
  * One instance per model class, shared by its users. Activities are released automatically when
- * destroyed; any other user (a service, a view) must call [markAsNeedless] when it is done.
+ * destroyed; any other user (a service, a view) must call [discard] when it is done.
  */
 @MainThread
 object ScreenModels {
@@ -23,7 +23,7 @@ object ScreenModels {
         // A rotating Activity is released too, so its old views are not kept; only its models stay
         // until the new Activity asks for them again.
         override fun onActivityDestroyed(activity: Activity) =
-            markAsNeedlessAllModelsUsedBy(activity, retainUnused = activity.isChangingConfigurations)
+            releaseModelsOf(activity, retainUnused = activity.isChangingConfigurations)
 
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
         override fun onActivityStarted(activity: Activity) {}
@@ -41,7 +41,7 @@ object ScreenModels {
         return entry.model as T
     }
 
-    fun markAsNeedless(model: ScreenModel, byUser: Any) {
+    fun discard(model: ScreenModel, byUser: Any) {
         val entry = entries[model::class] ?: return
         if (entry.users.remove(byUser) && entry.users.isEmpty()) {
             entries.remove(model::class)
@@ -50,7 +50,7 @@ object ScreenModels {
     }
 
     /** Releases every model [user] holds; with [retainUnused] a model left without users is kept. */
-    fun markAsNeedlessAllModelsUsedBy(user: Any, retainUnused: Boolean = false) {
+    fun releaseModelsOf(user: Any, retainUnused: Boolean = false) {
         val iterator = entries.values.iterator()
         while (iterator.hasNext()) {
             val entry = iterator.next()

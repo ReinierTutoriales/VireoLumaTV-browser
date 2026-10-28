@@ -34,10 +34,10 @@ class ToolbarStateTest {
                 override fun onAddressInputCancelled() { cancellations++ }
             }
             val input = bar.findViewById<EditText>(R.id.address_field)
-            bar.setAddressBoxText("https://before.test")
+            bar.showAddress("https://before.test")
             input.performClick()
             input.setText("unfinished search")
-            bar.setAddressBoxText("https://redirect.test")
+            bar.showAddress("https://redirect.test")
             assertEquals("unfinished search", input.text.toString())
             assertEquals(View.GONE, bar.backButton.visibility)
             bar.cancelAddressInput()

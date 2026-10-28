@@ -32,8 +32,8 @@ class IncognitoDownloadTest {
 
     private val callback = object : Transfer.Callback {
         override fun onProgress(task: Transfer) {}
-        override fun onError(task: Transfer, responseCode: Int, responseMessage: String) { DownloadHistory.update(task.downloadInfo) }
-        override fun onDone(task: Transfer) { DownloadHistory.update(task.downloadInfo) }
+        override fun onError(task: Transfer, responseCode: Int, responseMessage: String) { DownloadHistory.update(task.job) }
+        override fun onDone(task: Transfer) { DownloadHistory.update(task.job) }
     }
 
     @Test fun privateStreamAndBlobDownloadsWriteFilesButLeaveNoHistory() = runBlocking {
@@ -52,13 +52,13 @@ class IncognitoDownloadTest {
         val broken = download(true)
         val input = object : InputStream() { override fun read(): Int = throw IOException("test failure") }
         StreamTransfer(broken, input, callback).run()
-        assertEquals(Download.BROKEN_MARK, broken.size)
+        assertEquals(Download.SIZE_FAILED, broken.size)
         val cancelled = download(true).apply { this.cancelled = true }
         StreamTransfer(cancelled, "hello".byteInputStream(), callback).run()
-        assertEquals(Download.CANCELLED_MARK, cancelled.size)
+        assertEquals(Download.SIZE_CANCELLED, cancelled.size)
         val badUrl = download(true).apply { url = "not a URL" }
         FileTransfer(badUrl, null, callback).run()
-        assertEquals(Download.BROKEN_MARK, badUrl.size)
+        assertEquals(Download.SIZE_FAILED, badUrl.size)
         assertTrue(AppDatabase.db.downloadDao().getAll().isEmpty())
     }
 

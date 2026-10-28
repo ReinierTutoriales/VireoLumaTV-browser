@@ -30,17 +30,17 @@ class MainSettingsLifecycleTest {
         val activity = controller.get()
         val root = FrameLayout(activity)
         activity.setContentView(root)
-        val sourceObservers = model.config.adBlockListURL.observers.size
-        val originalUserAgent = model.config.userAgentString.value
+        val sourceObservers = model.config.blockListUrl.observers.size
+        val originalUserAgent = model.config.userAgentOverride.value
         val customUserAgent = "CustomBrowser/1.0 (Android TV)"
         try {
             repeat(3) {
-                model.config.userAgentString.value = customUserAgent
+                model.config.userAgentOverride.value = customUserAgent
                 val settings = GeneralPage(activity)
                 root.addView(settings)
                 val spinner = settings.findViewById<Spinner>(R.id.spTitles)
                 val editor = settings.findViewById<EditText>(R.id.etUAString)
-                val customPosition = settings.settingsModel.userAgentStringTitles.lastIndex
+                val customPosition = settings.browserSettings.userAgentStringTitles.lastIndex
                 // Exercise the real listener, including the callback dispatched when opening settings.
                 spinner.onItemSelectedListener!!.onItemSelected(spinner, TextView(activity), customPosition, 0)
                 assertEquals(customUserAgent, editor.text.toString())
@@ -48,28 +48,28 @@ class MainSettingsLifecycleTest {
                 spinner.onItemSelectedListener!!.onItemSelected(spinner, TextView(activity), customPosition, 0)
                 assertEquals("EditedBrowser/2.0", editor.text.toString())
                 settings.save()
-                assertEquals("EditedBrowser/2.0", model.config.userAgentString.value)
+                assertEquals("EditedBrowser/2.0", model.config.userAgentOverride.value)
                 spinner.onItemSelectedListener!!.onItemSelected(spinner, TextView(activity), 1, 0)
-                assertEquals(settings.settingsModel.uaStrings[1], editor.text.toString())
+                assertEquals(settings.browserSettings.uaStrings[1], editor.text.toString())
                 assertEquals(View.GONE, settings.findViewById<View>(R.id.llUAString).visibility)
                 spinner.onItemSelectedListener!!.onItemSelected(spinner, TextView(activity), customPosition, 0)
                 assertEquals("EditedBrowser/2.0", editor.text.toString())
-                assertEquals(1, model.clientLoading.observers.size)
+                assertEquals(1, model.listLoading.observers.size)
                 assertEquals(1, model.updateResult.observers.size)
-                assertEquals(sourceObservers + 1, model.config.adBlockListURL.observers.size)
-                model.clientLoading.value = true
+                assertEquals(sourceObservers + 1, model.config.blockListUrl.observers.size)
+                model.listLoading.value = true
                 val button = settings.findViewById<View>(R.id.btnAdBlockerUpdate)
                 assertEquals(View.VISIBLE, button.visibility)
                 assertTrue(button.isEnabled)
                 assertTrue(settings.findViewById<android.widget.TextView>(R.id.tvAdBlockerListInfo).maxLines >= 3)
                 root.removeView(settings)
-                assertTrue(model.clientLoading.observers.isEmpty())
+                assertTrue(model.listLoading.observers.isEmpty())
                 assertTrue(model.updateResult.observers.isEmpty())
-                assertEquals(sourceObservers, model.config.adBlockListURL.observers.size)
-                model.clientLoading.value = false
+                assertEquals(sourceObservers, model.config.blockListUrl.observers.size)
+                model.listLoading.value = false
             }
         } finally {
-            model.config.userAgentString.value = originalUserAgent
+            model.config.userAgentOverride.value = originalUserAgent
             controller.pause().stop().destroy()
             restore()
             model.clear()

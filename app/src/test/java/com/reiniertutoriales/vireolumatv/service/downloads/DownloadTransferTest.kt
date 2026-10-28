@@ -28,9 +28,9 @@ class DownloadTransferTest {
         var fileAtEnd: Boolean? = null
         override fun onProgress(task: Transfer) {}
         override fun onError(task: Transfer, responseCode: Int, responseMessage: String) {
-            errors++; errorCode = responseCode; fileAtEnd = File(task.downloadInfo.filepath).exists()
+            errors++; errorCode = responseCode; fileAtEnd = File(task.job.filepath).exists()
         }
-        override fun onDone(task: Transfer) { done++; fileAtEnd = File(task.downloadInfo.filepath).exists() }
+        override fun onDone(task: Transfer) { done++; fileAtEnd = File(task.job.filepath).exists() }
     }
 
     private fun download(name: String, path: String) = Download().apply {
@@ -69,7 +69,7 @@ class DownloadTransferTest {
         FileTransfer(info, "test", recorder).run()
         assertEquals(1, recorder.errors)
         assertEquals(302, recorder.errorCode)
-        assertEquals(Download.BROKEN_MARK, info.size)
+        assertEquals(Download.SIZE_FAILED, info.size)
         assertEquals(false, recorder.fileAtEnd)
     }
 
@@ -97,7 +97,7 @@ class DownloadTransferTest {
         }
         StreamTransfer(info, input, recorder).run()
         assertEquals(1, recorder.done)
-        assertEquals(Download.CANCELLED_MARK, info.size)
+        assertEquals(Download.SIZE_CANCELLED, info.size)
         assertEquals(0L, info.bytesReceived)
         assertEquals("The partial file must be gone when the task reports", false, recorder.fileAtEnd)
         assertNull(info.stream)

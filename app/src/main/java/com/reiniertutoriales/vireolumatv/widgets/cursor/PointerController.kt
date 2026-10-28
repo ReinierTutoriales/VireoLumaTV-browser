@@ -56,13 +56,13 @@ class PointerController(val context: Context, val surface: View) {
 
     // Finger gesture for OK, long press and drag (grab mode).
     private var pressed = false
-    private var grabMode = false
+    private var dragScroll = false
     private var touchDownTime = 0L
     private var hovering = false
 
     private val wheelUnitX: Float
     private val wheelUnitY: Float
-    private val mainHandler = Handler(Looper.getMainLooper())
+    private val mainThread = Handler(Looper.getMainLooper())
     private val redrawOnHide = Runnable { surface.invalidate() }
 
     init {
@@ -88,10 +88,10 @@ class PointerController(val context: Context, val surface: View) {
         scheduleHide()
     }
 
-    fun canHandleBackNavigation(): Boolean = grabMode
+    fun canGoBackInPage(): Boolean = dragScroll
 
-    fun handleBackNavigation() {
-        if (grabMode) exitGrabMode()
+    fun consumeBack() {
+        if (dragScroll) stopDragging()
     }
 
     fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -139,18 +139,18 @@ class PointerController(val context: Context, val surface: View) {
 
     private fun startMoving() {
         val config = AppContext.config
-        speedCap = speedBaseline * config.cursorMaxSpeedPercent / 100f
-        accelerationScale = config.cursorAccelerationPercent / 100f
-        surface.removeCallbacks(cursorUpdateRunnable)
-        surface.post(cursorUpdateRunnable)
+        speedCap = speedBaseline * config.pointerSpeedPercent / 100f
+        accelerationScale = config.pointerAccelPercent / 100f
+        surface.removeCallbacks(pointerTick)
+        surface.post(pointerTick)
     }
 
     private fun onSelection(event: KeyEvent) {
         // OK, Enter and gamepad A may all arrive for one click; key tracking makes it one tap.
         if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 &&
             !surface.keyDispatcherState.isTracking(event)) {
-            if (grabMode) {
-                exitGrabMode()
+            if (dragScroll) {
+                stopDragging()
                 return
             }
             surface.keyDispatcherState.startTracking(event, this)
@@ -158,13 +158,13 @@ class PointerController(val context: Context, val surface: View) {
                 pressed = true
                 touch(MotionEvent.ACTION_DOWN)
                 surface.postInvalidate()
-                surface.postDelayed(longPressRunnable, LONG_PRESS_MS)
+                surface.postDelayed(holdTimeout, LONG_PRESS_MS)
             }
         } else if (event.action == KeyEvent.ACTION_UP) {
             surface.keyDispatcherState.handleUpEvent(event)
-            surface.removeCallbacks(longPressRunnable)
+            surface.removeCallbacks(holdTimeout)
             when {
-                grabMode -> Unit
+                dragScroll -> Unit
                 hidden -> { // The first OK after the pointer faded only shows it again.
                     lastMove = SystemClock.uptimeMillis()
                     scheduleHide()
@@ -178,21 +178,21 @@ class PointerController(val context: Context, val surface: View) {
         }
     }
 
-    private val longPressRunnable = Runnable {
+    private val holdTimeout = Runnable {
         // End the finger before reporting, so WebView never sees a second DOWN while one is active.
         if (pressed) {
             touch(MotionEvent.ACTION_CANCEL)
             pressed = false
         }
         surface.keyDispatcherState.reset(this)
-        grabMode = false
+        dragScroll = false
         callback?.onLongPress(cursorPosition.x.toInt(), cursorPosition.y.toInt())
     }
 
     /** One display frame of movement; reschedules itself until the pointer is at rest. */
-    private val cursorUpdateRunnable = object : Runnable {
+    private val pointerTick = object : Runnable {
         override fun run() {
-            mainHandler.removeCallbacks(redrawOnHide)
+            mainThread.removeCallbacks(redrawOnHide)
             val now = SystemClock.uptimeMillis()
             // Bounded so a long GC or renderer stall does not turn into a jump.
             val elapsed = (now - lastMove).coerceIn(1L, MAX_FRAME_MS)
@@ -218,10 +218,10 @@ class PointerController(val context: Context, val surface: View) {
             cursorPosition.x = (oldX + speedX * frames).coerceIn(0f, surface.width - 1f)
             cursorPosition.y = (oldY + speedY * frames).coerceIn(0f, surface.height - 1f)
             val moved = oldX != cursorPosition.x || oldY != cursorPosition.y
-            if (moved) surface.removeCallbacks(longPressRunnable)
+            if (moved) surface.removeCallbacks(holdTimeout)
             when {
                 pressed -> if (moved) touch(MotionEvent.ACTION_MOVE) // Drag the held finger.
-                grabMode -> if (moved) dragPage(cursorPosition.x - oldX, cursorPosition.y - oldY)
+                dragScroll -> if (moved) dragPage(cursorPosition.x - oldX, cursorPosition.y - oldY)
                 else -> {
                     if (moved) hover()
                     scrollAtEdge(frames)
@@ -305,36 +305,36 @@ class PointerController(val context: Context, val surface: View) {
     }
 
     fun dispatchDraw(canvas: Canvas) {
-        if (!grabMode && hidden) return
+        if (!dragScroll && hidden) return
         val x = cursorPosition.x
         val y = cursorPosition.y
         val r = if (pressed) pressedRadius else radius * appearScale
         paint.style = Paint.Style.FILL
-        paint.color = if (grabMode) GRAB_FILL else FILL
+        paint.color = if (dragScroll) GRAB_FILL else FILL
         canvas.drawCircle(x, y, r, paint)
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = strokeWidth
         paint.color = Color.GRAY
         canvas.drawCircle(x, y, r, paint)
-        if (grabMode) { // A cross marks that moving now drags the page.
+        if (dragScroll) { // A cross marks that moving now drags the page.
             canvas.drawLine(x - r / 2, y, x + r / 2, y, paint)
             canvas.drawLine(x, y - r / 2, x, y + r / 2, paint)
         }
     }
 
-    fun goToGrabMode() {
-        grabMode = true
+    fun startDragging() {
+        dragScroll = true
         surface.postInvalidate()
     }
 
-    fun exitGrabMode() {
+    fun stopDragging() {
         touch(MotionEvent.ACTION_UP)
         pressed = false
-        grabMode = false
+        dragScroll = false
         surface.postInvalidate()
     }
 
-    fun animateAppearing() {
+    fun fadeIn() {
         lastMove = SystemClock.uptimeMillis()
         scheduleHide()
         ValueAnimator.ofFloat(2f, 1f).apply {
@@ -349,13 +349,13 @@ class PointerController(val context: Context, val surface: View) {
 
     /** Stop held keys and gestures when a menu, dialog or another tab takes the input. */
     fun resetInput() {
-        surface.removeCallbacks(cursorUpdateRunnable)
-        surface.removeCallbacks(longPressRunnable)
-        mainHandler.removeCallbacks(redrawOnHide)
+        surface.removeCallbacks(pointerTick)
+        surface.removeCallbacks(holdTimeout)
+        mainThread.removeCallbacks(redrawOnHide)
         if (pressed) touch(MotionEvent.ACTION_CANCEL)
         endHover()
         pressed = false
-        grabMode = false
+        dragScroll = false
         keyDirX = 0
         keyDirY = 0
         stickX = 0f
@@ -372,8 +372,8 @@ class PointerController(val context: Context, val surface: View) {
     }
 
     private fun scheduleHide() {
-        mainHandler.removeCallbacks(redrawOnHide)
-        mainHandler.postDelayed(redrawOnHide, HIDE_AFTER_MS)
+        mainThread.removeCallbacks(redrawOnHide)
+        mainThread.postDelayed(redrawOnHide, HIDE_AFTER_MS)
     }
 
     private companion object {

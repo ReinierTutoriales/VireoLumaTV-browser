@@ -21,7 +21,7 @@ import java.util.EnumMap
  */
 class Shortcuts internal constructor(private val prefs: SharedPreferences) {
     private val bindings = EnumMap<RemoteShortcut, KeyBinding>(RemoteShortcut::class.java)
-    private val uiHandler = Handler(Looper.getMainLooper())
+    private val mainThread = Handler(Looper.getMainLooper())
 
     // The press being followed: its key code and modifiers, and whether its long press already fired.
     private var pressedCode: Int? = null
@@ -89,7 +89,7 @@ class Shortcuts internal constructor(private val prefs: SharedPreferences) {
     /** Key events from the activity window; a fired shortcut runs on the next UI turn. */
     fun handle(event: KeyEvent, mainActivity: MainActivity, tab: BrowserTab?): Boolean {
         val result = onKeyEvent(event)
-        result.fire?.let { shortcut -> uiHandler.post { process(shortcut, mainActivity, tab) } }
+        result.fire?.let { shortcut -> mainThread.post { process(shortcut, mainActivity, tab) } }
         return result.consumed
     }
 
@@ -108,14 +108,14 @@ class Shortcuts internal constructor(private val prefs: SharedPreferences) {
     }
 
     companion object {
-        const val PREFS_SHORTCUTS = "shortcuts"
+        const val SHORTCUTS_FILE = "shortcuts"
         private const val MODIFIERS = "_mod"
         private const val LONG_PRESS = "_lp"
 
         @Volatile private var instance: Shortcuts? = null
 
         fun getInstance(): Shortcuts = instance ?: synchronized(this) {
-            instance ?: Shortcuts(VireoLumaTVApp.instance.getSharedPreferences(PREFS_SHORTCUTS, Context.MODE_PRIVATE))
+            instance ?: Shortcuts(VireoLumaTVApp.instance.getSharedPreferences(SHORTCUTS_FILE, Context.MODE_PRIVATE))
                 .also { instance = it }
         }
     }

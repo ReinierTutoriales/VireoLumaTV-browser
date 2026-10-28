@@ -19,7 +19,7 @@ class AtomicTabSaveTest {
         val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java)
             .allowMainThreadQueries().build()
         try {
-            val dao = db.tabsDao()
+            val dao = db.tabDao()
             dao.save(BrowserTab(url = "https://one.test", selected = true))
             dao.save(BrowserTab(url = "https://private.test", selected = true, incognito = true))
             val next = BrowserTab(url = "https://two.test", selected = true)
@@ -48,7 +48,7 @@ class AtomicTabSaveTest {
         val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java)
             .allowMainThreadQueries().build()
         try {
-            val dao = db.tabsDao()
+            val dao = db.tabDao()
             val original = dao.save(BrowserTab(url = "https://original.test", selected = true))
             db.openHelper.writableDatabase.execSQL("CREATE TRIGGER reject_insert BEFORE INSERT ON tabs BEGIN SELECT RAISE(ABORT, 'test failure'); END")
             var failed = false

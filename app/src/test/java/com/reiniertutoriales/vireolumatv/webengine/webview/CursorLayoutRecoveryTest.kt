@@ -42,7 +42,7 @@ class CursorLayoutRecoveryTest {
                 assertTrue("Text editor must receive UP for $code", layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code)))
             }
             assertEquals(listOf(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_DPAD_LEFT), keys)
-            assertTrue("Editing must preserve the cursor mode for after submission", layout.cursorEnabled)
+            assertTrue("Editing must preserve the cursor mode for after submission", layout.pointerEnabled)
         } finally { controller.pause().stop().destroy() }
     }
 
@@ -77,14 +77,14 @@ class CursorLayoutRecoveryTest {
                 View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
             layout.layout(0, 0, 800, 600)
             editor.requestFocus()
-            layout.cursorDrawerDelegate.animateAppearing()
+            layout.pointerController.fadeIn()
             assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER)))
             assertTrue(layout.isTextInputActive())
             assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER)))
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             assertEquals(listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP), touches)
             assertEquals(1, clicks)
-            assertFalse(layout.cursorDrawerDelegate.isSelectionPressed)
+            assertFalse(layout.pointerController.isSelectionPressed)
             assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)))
             assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER)))
             assertEquals(listOf(KeyEvent.KEYCODE_ENTER), keys)
@@ -114,18 +114,18 @@ class CursorLayoutRecoveryTest {
             resize(800)
             target.requestFocus()
             layout.setWillNotDraw(true)
-            assertTrue(layout.cursorEnabled)
-            layout.cursorEnabled = false
+            assertTrue(layout.pointerEnabled)
+            layout.pointerEnabled = false
             resize(1000)
-            assertEquals(500f, layout.cursorDrawerDelegate.cursorPosition.x, 0f)
-            layout.cursorEnabled = true
-            layout.cursorDrawerDelegate.animateAppearing()
+            assertEquals(500f, layout.pointerController.cursorPosition.x, 0f)
+            layout.pointerEnabled = true
+            layout.pointerController.fadeIn()
             assertTrue(key(KeyEvent.ACTION_DOWN))
             // Dialog steals the window before the remote releases OK. This must cancel, never click.
             layout.onWindowFocusChanged(false)
             assertEquals(listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_CANCEL), touches)
             layout.onWindowFocusChanged(true)
-            layout.cursorDrawerDelegate.animateAppearing()
+            layout.pointerController.fadeIn()
             assertTrue(key(KeyEvent.ACTION_DOWN))
             assertTrue(key(KeyEvent.ACTION_UP))
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()

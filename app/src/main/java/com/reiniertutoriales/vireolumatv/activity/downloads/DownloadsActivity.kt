@@ -50,14 +50,14 @@ open class DownloadsActivity : AppCompatActivity(), RunningDownloads.Listener {
         vb.itemList.adapter = adapter
         if (privateSession) return
         vb.itemList.addOnScrollListener(nextPageLoader)
-        history.lastLoadedItems.subscribe(this, false) { show(it) }
+        history.loadedPage.subscribe(this, false) { show(it) }
         if (history.allItems.isEmpty()) history.loadNextItems() else show(history.allItems)
     }
 
     override fun onResume() {
         super.onResume()
         active.registerListener(this)
-        if (privateSession) active.activeDownloads.forEach { showLive(it.downloadInfo) }
+        if (privateSession) active.runningDownloads.forEach { showLive(it.job) }
     }
 
     override fun onPause() {
@@ -65,15 +65,15 @@ open class DownloadsActivity : AppCompatActivity(), RunningDownloads.Listener {
         super.onPause()
     }
 
-    override fun onDownloadUpdated(downloadInfo: Download) {
-        if (privateSession) showLive(downloadInfo)
-        adapter.updateDownload(downloadInfo)
+    override fun onDownloadUpdated(job: Download) {
+        if (privateSession) showLive(job)
+        adapter.updateDownload(job)
     }
 
-    override fun onDownloadError(downloadInfo: Download, responseCode: Int, responseMessage: String) =
-        onDownloadUpdated(downloadInfo)
+    override fun onDownloadError(job: Download, responseCode: Int, responseMessage: String) =
+        onDownloadUpdated(job)
 
-    override fun onAllDownloadsComplete() {}
+    override fun onIdle() {}
 
     private fun show(items: List<Download>) {
         if (items.isEmpty()) return
@@ -118,7 +118,7 @@ open class DownloadsActivity : AppCompatActivity(), RunningDownloads.Listener {
 
     private fun showOptions(anchor: View, download: Download): Boolean {
         val menu = PopupMenu(this, anchor, Gravity.BOTTOM)
-        val running = download.size != Download.BROKEN_MARK && download.size != Download.CANCELLED_MARK &&
+        val running = download.size != Download.SIZE_FAILED && download.size != Download.SIZE_CANCELLED &&
             !isFinished(download)
         if (running) {
             menu.menu.add(0, CANCEL, 0, R.string.action_cancel)

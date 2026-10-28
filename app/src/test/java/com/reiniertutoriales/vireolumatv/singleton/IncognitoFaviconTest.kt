@@ -27,7 +27,7 @@ class IncognitoFaviconTest {
     private fun verify(privateMode: Boolean, recordFails: Boolean = false) = runBlocking {
         val app = RuntimeEnvironment.getApplication()
         val config = Config(app.getSharedPreferences("favicon-test", 0))
-        config.incognitoMode = privateMode
+        config.privateBrowsing = privateMode
         AppContext.init(app, config)
         Favicons.clear()
         val directory = Favicons.directory

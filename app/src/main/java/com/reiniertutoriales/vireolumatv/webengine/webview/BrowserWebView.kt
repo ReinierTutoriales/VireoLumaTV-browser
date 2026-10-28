@@ -48,7 +48,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     private val adblockPage by lazy { AdblockPageController(this) }
     private val mediaPolicy by lazy { MediaPolicyController(this, config) }
     private var pointerMode = true
-    private var genericInjects: String? = null
+    private var pageScript: String? = null
 
     /** The address the browser asked for, before redirects; the base for ad and home page rules. */
     @Volatile var currentOriginalUrl: Uri? = null
@@ -97,9 +97,9 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         setSupportMultipleWindows(true)
         setNeedInitialFocus(false)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) safeBrowsingEnabled = true
-        if (config.webEngineDebug) setWebContentsDebuggingEnabled(true)
+        if (config.pageDebugging) setWebContentsDebuggingEnabled(true)
         // The interface is always dark, so the setting alone decides whether pages are darkened.
-        val darken = config.webviewUseAlgorithmicDarkeningWithDarkUiMode
+        val darken = config.darkenPages
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
                 WebSettingsCompat.setAlgorithmicDarkeningAllowed(this, darken)
@@ -118,7 +118,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         if (url != certificateErrorPageUrl) certificateErrorPageUrl = null
         when {
             url == Config.HOME_URL_ALIAS -> loadHome()
-            url.startsWith(INTERNAL_SCHEME) -> loadInternal(url.toUri())
+            url.startsWith(APP_SCHEME) -> loadInternal(url.toUri())
             else -> {
                 currentOriginalUrl = url.toUri()
                 super.loadUrl(url)
@@ -147,7 +147,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
 
     /** The certificate warning is the only internal page, and only for the error being shown. */
     private fun loadInternal(uri: Uri) {
-        if (uri.authority != INTERNAL_SCHEME_WARNING_DOMAIN || uri.getQueryParameter("type") != INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT) return
+        if (uri.authority != WARNING_HOST || uri.getQueryParameter("type") != WARNING_CERT_PATH) return
         val error = lastSSLError ?: return
         val template = context.assets.open(CERTIFICATE_WARNING_ASSET).bufferedReader().use { it.readText() }
         loadDataWithBaseURL(ASSET_BASE, CertificateWarningPage.render(context, template, error.url, error.primaryError,
@@ -163,7 +163,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     internal fun showCertificateErrorPage(error: SslError) {
         window?.onCertificateError()
         lastSSLError = error
-        val url = "$INTERNAL_SCHEME$INTERNAL_SCHEME_WARNING_DOMAIN?type=$INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT&url=" +
+        val url = "$APP_SCHEME$WARNING_HOST?type=$WARNING_CERT_PATH&url=" +
             URLEncoder.encode(error.url, "UTF-8")
         certificateErrorPageUrl = url
         loadUrl(url)
@@ -192,7 +192,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     }
 
     private fun genericJsInjects(): String =
-        genericInjects ?: context.assets.open(GENERIC_INJECTS_ASSET).bufferedReader().use { it.readText() }.also { genericInjects = it }
+        pageScript ?: context.assets.open(GENERIC_INJECTS_ASSET).bufferedReader().use { it.readText() }.also { pageScript = it }
 
     override fun restoreState(inState: Bundle): WebBackForwardList? =
         super.restoreState(inState).also { currentOriginalUrl = url?.toUri() }
@@ -201,12 +201,12 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean =
         if (pointerMode && RemoteInput.isNavigationSource(event)) false else super.dispatchGenericMotionEvent(event)
 
-    fun setVirtualCursorMode(enabled: Boolean) {
+    fun usePointer(enabled: Boolean) {
         pointerMode = enabled
     }
 
     /** A preview of the visible page, at most [PREVIEW_MAX_SIDE] px on its long side; [bitmap] is reused if it fits. */
-    fun renderThumbnail(bitmap: Bitmap?): Bitmap? {
+    fun drawPreview(bitmap: Bitmap?): Bitmap? {
         if (width == 0 || height == 0) return null
         val scale = minOf(1f, PREVIEW_MAX_SIDE / maxOf(width, height))
         val previewWidth = maxOf(1, (width * scale).toInt())
@@ -233,7 +233,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     fun onPermissionsResult(permissions: Array<String>, grantResults: IntArray, typeGeo: Boolean) =
         this.permissions.onAndroidPermissionsResult(permissions, grantResults, typeGeo)
 
-    fun onUpdateAdblockSetting(adblockEnabled: Boolean) {
+    fun onBlockerToggled(adblockEnabled: Boolean) {
         youtubeAdblock.setEnabled(adblockEnabled)
         adblockPage.setEnabled(adblockEnabled)
         // Malware and phishing protection does not depend on the ad blocking choice.
@@ -250,10 +250,10 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
 
     companion object {
         const val TAG = "BrowserWebView"
-        const val WEB_VIEW_TAG = "VireoLumaTV WebView"
-        const val INTERNAL_SCHEME = "internal://"
-        const val INTERNAL_SCHEME_WARNING_DOMAIN = "warning"
-        const val INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT = "certificate"
+        const val LOG_TAG = "VireoLumaTV WebView"
+        const val APP_SCHEME = "internal://"
+        const val WARNING_HOST = "warning"
+        const val WARNING_CERT_PATH = "certificate"
         private const val JS_INTERFACE_NAME = "VireoLumaTVApp"
         private const val ASSET_BASE = "file:///android_asset/"
         private const val CERTIFICATE_WARNING_ASSET = "pages/warning-certificate.html"

@@ -68,7 +68,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     override fun createView(context: Context): View =
         webView ?: BrowserWebView(context, this).also {
             // Before the first navigation, with this tab's choice even before it is attached.
-            it.onUpdateAdblockSetting(adblockEnabled)
+            it.onBlockerToggled(adblockEnabled)
             webView = it
         }
 
@@ -79,12 +79,12 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     override fun zoom(closer: Boolean) { webView?.run { if (closer) zoomIn() else zoomOut() } }
     override fun setOnline(online: Boolean) { webView?.setNetworkAvailable(online) }
     override fun onFilePicked(resultCode: Int, data: Intent?) { webView?.onFilePicked(resultCode, data) }
-    override fun setAdBlocking(enabled: Boolean) { webView?.onUpdateAdblockSetting(enabled) }
-    override suspend fun preview(reuse: Bitmap?): Bitmap? = webView?.renderThumbnail(reuse)
+    override fun setAdBlocking(enabled: Boolean) { webView?.onBlockerToggled(enabled) }
+    override suspend fun preview(reuse: Bitmap?): Bitmap? = webView?.drawPreview(reuse)
 
     override fun resume() {
         webView?.apply {
-            onUpdateAdblockSetting(adblockEnabled)
+            onBlockerToggled(adblockEnabled)
             resumeTimers()
             onResume()
         }
@@ -117,12 +117,12 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         cursor.removeAllViews()
         cursor.addView(view)
         cursor.resetInput()
-        cursor.cursorEnabled = true
-        view.setVirtualCursorMode(true)
+        cursor.pointerEnabled = true
+        view.usePointer(true)
         view.isFocusableInTouchMode = true
         view.requestFocus()
-        cursor.cursorDrawerDelegate.callback = this
-        cursor.cursorDrawerDelegate.animateAppearing()
+        cursor.pointerController.callback = this
+        cursor.pointerController.fadeIn()
         resume()
     }
 
@@ -131,7 +131,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         pause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
         window = null
-        container?.cursorDrawerDelegate?.callback = null
+        container?.pointerController?.callback = null
         container = null
         if (destroyView) {
             permissionRequests.clear()
@@ -154,9 +154,9 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     }
 
     override fun setPointerMode(enabled: Boolean) {
-        container?.cursorEnabled = enabled
-        if (enabled) container?.cursorDrawerDelegate?.animateAppearing()
-        webView?.setVirtualCursorMode(enabled)
+        container?.pointerEnabled = enabled
+        if (enabled) container?.pointerController?.fadeIn()
+        webView?.usePointer(enabled)
     }
 
     override fun onPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean {
@@ -168,7 +168,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     /** Pointer long press: asks the page for the link under it, then opens the pointer menu there. */
     override fun onLongPress(x: Int, y: Int) {
         val view = webView ?: return
-        view.evaluateJavascript(PageScripts.LONG_PRESS_SCRIPT) { json ->
+        view.evaluateJavascript(PageScripts.HOLD_SCRIPT) { json ->
             if (webView !== view || container == null) return@evaluateJavascript
             // The answer is JSON, not a raw address.
             val link = runCatching { JSONTokener(json).nextValue() as? String }.getOrNull()
@@ -178,7 +178,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
 
     private fun showPointerMenu(baseUrl: String?, href: String?, x: Int, y: Int) {
         val cursor = container ?: return
-        window?.openPointerMenu(cursor.cursorDrawerDelegate, PagePoint(baseUrl, href, x, y))
+        window?.openPointerMenu(cursor.pointerController, PagePoint(baseUrl, href, x, y))
     }
 
     // The page's side, called by BrowserWebView and its clients.
@@ -242,8 +242,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         }
         window?.onEnterFullscreen()
         webView?.visibility = View.GONE
-        webView?.setVirtualCursorMode(false)
-        container?.cursorEnabled = false
+        webView?.usePointer(false)
+        container?.pointerEnabled = false
         (view.parent as? ViewGroup)?.removeView(view)
         container?.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         fullscreenView = view
@@ -259,8 +259,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         fullscreenView = null
         (shown?.parent as? ViewGroup)?.removeView(shown)
         webView?.visibility = View.VISIBLE
-        webView?.setVirtualCursorMode(true)
-        container?.cursorEnabled = true
+        webView?.usePointer(true)
+        container?.pointerEnabled = true
         window?.onExitFullscreen(restoreBrowserControls)
     }
 

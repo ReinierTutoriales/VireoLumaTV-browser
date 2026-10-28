@@ -9,8 +9,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /** History pages use the last delivered row, not the number of rows still visible. */
-class HistoryPages(private val history: () -> VisitDao = { AppDatabase.db.historyDao() }) : ScreenModel() {
-    val lastLoadedItems = LiveValue<List<HistoryItem>>(emptyList())
+class HistoryPages(private val history: () -> VisitDao = { AppDatabase.db.visitDao() }) : ScreenModel() {
+    val loadedPage = LiveValue<List<HistoryItem>>(emptyList())
     var searchQuery = ""
     private var request: Job? = null
     private var beforeTime: Long? = null
@@ -24,15 +24,15 @@ class HistoryPages(private val history: () -> VisitDao = { AppDatabase.db.histor
             beforeTime = null
             beforeId = 0
             exhausted = false
-            lastLoadedItems.value = emptyList()
+            loadedPage.value = emptyList()
         }
         val query = searchQuery
-        return modelScope.launch {
+        return workScope.launch {
             val dao = history()
             val rows = if (query.isEmpty()) dao.page(beforeTime, beforeId) else dao.search(likePattern(query))
             rows.lastOrNull()?.let { beforeTime = it.time; beforeId = it.id }
             exhausted = query.isNotEmpty() || rows.size < 100
-            lastLoadedItems.value = rows
+            loadedPage.value = rows
         }.also { request = it }
     }
 

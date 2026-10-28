@@ -48,7 +48,7 @@ class VirtualCursorPointerTest {
         surface.layout(0, 0, 800, 800)
         val delegate = PointerController(activity, surface)
         delegate.cursorPosition.set(123f, 456f)
-        delegate.animateAppearing()
+        delegate.fadeIn()
         try { test(delegate, surface, clicks) } finally {
             surface.touch.forEach { it.recycle() }
             controller.pause().stop().destroy()
@@ -100,7 +100,7 @@ class VirtualCursorPointerTest {
             }
         }
         key(delegate, KeyEvent.ACTION_DOWN)
-        val runnable = PointerController::class.java.getDeclaredField("longPressRunnable")
+        val runnable = PointerController::class.java.getDeclaredField("holdTimeout")
             .apply { isAccessible = true }.get(delegate) as Runnable
         runnable.run()
         key(delegate, KeyEvent.ACTION_UP)
@@ -120,7 +120,7 @@ class VirtualCursorPointerTest {
         withCursor { delegate, _, _ ->
             delegate.init()
             delegate.cursorPosition.set(10f, 400f)
-            val update = PointerController::class.java.getDeclaredField("cursorUpdateRunnable")
+            val update = PointerController::class.java.getDeclaredField("pointerTick")
                 .apply { isAccessible = true }.get(delegate) as Runnable
             assertTrue(delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT)))
             val end = SystemClock.uptimeMillis() + holdMs

@@ -23,7 +23,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         fun showAppMenu()
         fun search(text: String)
         fun onUrlInputDone()
-        fun onExtendedAddressBarMode() {}
+        fun onAddressEditing() {}
         fun onAddressInputCancelled() {}
         fun onAddressTyped(text: String) {}
         fun focusSuggestions(): Boolean = false
@@ -65,7 +65,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                 }
             }
             val owner = context as AppCompatActivity
-            ScreenModels.get(RunningDownloads::class, context).activeDownloads.subscribe(owner) {
+            ScreenModels.get(RunningDownloads::class, context).runningDownloads.subscribe(owner) {
                 val count = it.size
                 ui.menuButton.setImageResource(if (count == 0) R.drawable.ic_more else R.drawable.ic_menu_downloads)
                 ui.menuButton.contentDescription = if (count == 0) context.getString(R.string.nav_menu)
@@ -85,7 +85,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         if (editing) return
         ui.addressField.requestFocus()
         renderEditing(true)
-        callback?.onExtendedAddressBarMode()
+        callback?.onAddressEditing()
         keyboard.showSoftInput(ui.addressField, InputMethodManager.SHOW_IMPLICIT)
         removeCallbacks(selectText)
         postDelayed(selectText, 500)
@@ -143,24 +143,24 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         }
     }
 
-    fun setAddressBoxText(text: String) {
+    fun showAddress(text: String) {
         pageAddress = text.takeUnless { it == Config.HOME_PAGE_URL }.orEmpty()
         if (!editing) ui.addressField.setText(pageAddress)
     }
 
-    fun setAddressBoxTextColor(color: Int) = ui.addressField.setTextColor(color)
+    fun tintAddress(color: Int) = ui.addressField.setTextColor(color)
 
-    fun dismissExtendedAddressBarMode() {
+    fun closeAddressEditing() {
         if (editing) finishEditing(cancelled = false)
     }
 
     fun cancelAddressInput() {
         if (editing) finishEditing(cancelled = true)
         ui.addressField.clearFocus()
-        catchFocus()
+        takeFocus()
     }
 
-    fun catchFocus() { backButton.requestFocus() }
+    fun takeFocus() { backButton.requestFocus() }
 
     override fun onDetachedFromWindow() {
         removeCallbacks(selectText)

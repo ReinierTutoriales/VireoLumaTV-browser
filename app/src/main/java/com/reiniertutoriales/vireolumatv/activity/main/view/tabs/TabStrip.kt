@@ -25,17 +25,17 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     private val vb = TabStripBinding.inflate(LayoutInflater.from(context), this)
     private val adapter = TabChips(::showTabOptions)
-    private lateinit var tabsModel: TabStore
-    private lateinit var settingsModel: BrowserSettings
+    private lateinit var tabStore: TabStore
+    private lateinit var browserSettings: BrowserSettings
 
     var current: Int by adapter::current
     var listener: TabChips.Listener? by adapter::listener
 
     init {
         if (!isInEditMode) {
-            tabsModel = ScreenModels.get(TabStore::class, context)
-            settingsModel = ScreenModels.get(BrowserSettings::class, context)
-            adapter.tabsModel = tabsModel
+            tabStore = ScreenModels.get(TabStore::class, context)
+            browserSettings = ScreenModels.get(BrowserSettings::class, context)
+            adapter.tabStore = tabStore
             vb.tabList.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             vb.addButton.setOnClickListener { listener?.onAddNewTabSelected() }
         }
@@ -44,16 +44,16 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         if (isInEditMode) return
-        tabsModel.tabsStates.subscribe(listObserver)
-        tabsModel.currentTab.subscribe(currentObserver)
+        tabStore.openTabs.subscribe(listObserver)
+        tabStore.currentTab.subscribe(currentObserver)
         vb.tabList.adapter = adapter
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         if (isInEditMode) return
-        tabsModel.tabsStates.unsubscribe(listObserver)
-        tabsModel.currentTab.unsubscribe(currentObserver)
+        tabStore.openTabs.unsubscribe(listObserver)
+        tabStore.currentTab.unsubscribe(currentObserver)
     }
 
     override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
@@ -61,7 +61,7 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         if (gainFocus) focusCurrentTab()
     }
 
-    fun onTabTitleUpdated(tab: BrowserTab) = adapter.refresh(tab)
+    fun onTabTitle(tab: BrowserTab) = adapter.refresh(tab)
 
     fun onFavIconUpdated(tab: BrowserTab) = adapter.refresh(tab)
 
@@ -70,15 +70,15 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         AlertDialog.Builder(context)
             .setTitle(R.string.tabs_title)
             .setItems(R.array.tabs_actions) { _, option ->
-                val tabs = tabsModel.tabsStates
+                val tabs = tabStore.openTabs
                 val index = tabs.indexOf(tab)
                 if (index < 0) return@setItems
                 when (option) {
-                    OPEN_NEW -> listener?.openInNewTab(settingsModel.homePage, index + 1)
+                    OPEN_NEW -> listener?.openInNewTab(browserSettings.homePage, index + 1)
                     CLOSE -> listener?.closeTab(tab)
                     CLOSE_ALL -> {
-                        tabsModel.onCloseAllTabs()
-                        listener?.openInNewTab(settingsModel.homePage, 0)
+                        tabStore.onCloseOthers()
+                        listener?.openInNewTab(browserSettings.homePage, 0)
                     }
                     MOVE_LEFT -> if (index > 0) tabs.swap(index, index - 1)
                     MOVE_RIGHT -> if (index < tabs.lastIndex) tabs.swap(index, index + 1)
@@ -88,7 +88,7 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     }
 
     private fun focusCurrentTab(): Boolean {
-        val tab = tabsModel.tabsStates.getOrNull(current)
+        val tab = tabStore.openTabs.getOrNull(current)
         for (i in 0 until vb.tabList.childCount) {
             val row = vb.tabList.getChildAt(i)
             if (row.tag === tab && row.requestFocus()) return true
@@ -104,12 +104,12 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     }
 
     private val listObserver: (LiveList<BrowserTab>) -> Unit = {
-        adapter.onTabListChanged()
+        adapter.onTabsChanged()
         revealCurrent()
     }
 
     private val currentObserver: (BrowserTab?) -> Unit = { tab ->
-        val index = tabsModel.tabsStates.indexOf(tab)
+        val index = tabStore.openTabs.indexOf(tab)
         if (index >= 0 && index != current) {
             current = index
             revealCurrent()

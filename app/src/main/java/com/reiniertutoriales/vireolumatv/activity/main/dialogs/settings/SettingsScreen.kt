@@ -20,7 +20,7 @@ class SettingsScreen(context: Context, val model: BrowserSettings) : AppCompatDi
                 R.id.shortcuts_page_tab -> ShortcutsPage(context)
                 R.id.about_page_tab -> AboutPage(context).apply {
                     callback = object : AboutPage.Callback {
-                        override fun onNeedToCloseSettings() = dismiss()
+                        override fun onSettingsDone() = dismiss()
                     }
                 }
                 else -> error("Unknown settings page: $page")

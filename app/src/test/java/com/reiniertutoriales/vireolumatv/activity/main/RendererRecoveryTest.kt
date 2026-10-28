@@ -27,14 +27,14 @@ class RendererRecoveryTest {
         val restore = Engines.replaceForTest(callback)
         try {
             val tab = BrowserTab(url = "https://latest.test").apply { savedState = Bundle() }
-            assertTrue(tab.restoreWebView())
+            assertTrue(tab.restorePage())
             assertEquals(1, restores)
             tab.rendererLost = true
-            assertFalse(tab.restoreWebView())
+            assertFalse(tab.restorePage())
             assertEquals(1, restores)
             assertEquals("https://latest.test", tab.url)
             tab.rendererLost = false
-            assertTrue(tab.restoreWebView())
+            assertTrue(tab.restorePage())
             assertEquals(2, restores)
         } finally { restore() }
     }

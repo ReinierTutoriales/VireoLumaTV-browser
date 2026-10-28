@@ -21,11 +21,11 @@ import java.util.concurrent.TimeUnit
 class VisitHistoryTest {
     @Before fun emptyHistory() = runBlocking {
         // Private mode skips history; other tests may leave it on in the shared settings.
-        com.reiniertutoriales.vireolumatv.AppContext.config.incognitoMode = false
+        com.reiniertutoriales.vireolumatv.AppContext.config.privateBrowsing = false
         withContext(Dispatchers.IO) { AppDatabase.db.clearAllTables() }
     }
 
-    private fun stored(): List<String> = runBlocking { withContext(Dispatchers.IO) { AppDatabase.db.historyDao().getAll().map { "${it.title}|${it.url}" } } }
+    private fun stored(): List<String> = runBlocking { withContext(Dispatchers.IO) { AppDatabase.db.visitDao().getAll().map { "${it.title}|${it.url}" } } }
 
     /** Lets the settle delay pass and the database write finish. */
     private fun settle(expected: Int) {
@@ -39,19 +39,19 @@ class VisitHistoryTest {
 
     @Test fun aQuickHopIsReplacedAndOnlyWebPagesAreStored() {
         val model = VisitLog()
-        model.logVisitedHistory("Redirect", "https://a.test/start", null)
-        model.logVisitedHistory("Final", "https://a.test/final", null)
-        model.logVisitedHistory("Home", Config.HOME_PAGE_URL, null)
-        model.logVisitedHistory("File", "file:///sdcard/x.html", null)
+        model.recordVisit("Redirect", "https://a.test/start", null)
+        model.recordVisit("Final", "https://a.test/final", null)
+        model.recordVisit("Home", Config.HOME_PAGE_URL, null)
+        model.recordVisit("File", "file:///sdcard/x.html", null)
         settle(1)
         assertEquals(listOf("Final|https://a.test/final"), stored())
     }
 
     @Test fun aLateTitleUpdatesTheStoredVisit() {
         val model = VisitLog()
-        model.logVisitedHistory(null, "https://b.test/", null)
+        model.recordVisit(null, "https://b.test/", null)
         settle(1)
-        model.onTabTitleUpdated(BrowserTab(url = "https://b.test/", title = "Loaded title"))
+        model.onTabTitle(BrowserTab(url = "https://b.test/", title = "Loaded title"))
         val deadline = System.currentTimeMillis() + 5_000
         while (stored() != listOf("Loaded title|https://b.test/") && System.currentTimeMillis() < deadline) {
             Thread.sleep(20)

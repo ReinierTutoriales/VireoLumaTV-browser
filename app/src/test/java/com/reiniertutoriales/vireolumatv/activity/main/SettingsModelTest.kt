@@ -13,7 +13,7 @@ import org.robolectric.annotation.Config as RoboConfig
 class SettingsModelTest {
     @Test fun searchHomeFollowsTheSearchEngineSite() {
         val model = BrowserSettings()
-        model.config.searchEngineURL.value = "https://search.example/find?q=[query]"
+        model.config.searchAddress.value = "https://search.example/find?q=[query]"
         model.setHomePageProperties(Config.HomePageMode.SEARCH_ENGINE, null)
         assertEquals("https://search.example", model.homePage)
         model.setSearchEngineURL("http://other.example/?s=[query]")

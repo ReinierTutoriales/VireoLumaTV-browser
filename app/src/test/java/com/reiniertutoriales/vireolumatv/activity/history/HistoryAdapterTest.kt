@@ -35,24 +35,24 @@ class HistoryAdapterTest {
         this.url = url
     }
 
-    private fun HistoryRows.rows() = currentList.filter { !it.isDateHeader }.map { it.url }
+    private fun HistoryRows.rows() = currentList.filter { !it.isDayHeader }.map { it.url }
 
     @Test
     fun addItemsInsertsOneHeaderPerDayAndCountsOnlyRealItems() {
         val adapter = adapter().apply { addItems(listOf(item(day, "a"), item(day + 1000, "b"), item(nextDay, "c"))) }.settle()
 
         assertEquals(5, adapter.itemCount)
-        assertEquals(3L, adapter.realCount)
-        assertTrue(adapter.currentList[0].isDateHeader)
-        assertFalse(adapter.currentList[1].isDateHeader)
-        assertTrue(adapter.currentList[3].isDateHeader)
+        assertEquals(3L, adapter.rowCount)
+        assertTrue(adapter.currentList[0].isDayHeader)
+        assertFalse(adapter.currentList[1].isDayHeader)
+        assertTrue(adapter.currentList[3].isDayHeader)
     }
 
     @Test
     fun addingNothingChangesNothing() {
         val adapter = adapter().apply { addItems(emptyList()) }.settle()
         assertEquals(0, adapter.itemCount)
-        assertEquals(0L, adapter.realCount)
+        assertEquals(0L, adapter.rowCount)
     }
 
     @Test
@@ -67,10 +67,10 @@ class HistoryAdapterTest {
     @Test
     fun leavingMultiselectClearsSelection() {
         val adapter = adapter().apply { addItems(listOf(item(day, "a"))) }.settle()
-        adapter.isMultiselectMode = true
-        adapter.toggleSelection(adapter.currentList.first { !it.isDateHeader })
+        adapter.selectionMode = true
+        adapter.toggleSelection(adapter.currentList.first { !it.isDayHeader })
 
-        adapter.isMultiselectMode = false
+        adapter.selectionMode = false
 
         assertTrue(adapter.selectedItems.isEmpty())
     }
@@ -98,7 +98,7 @@ class HistoryAdapterTest {
         adapter.remove(a)
 
         assertEquals(2, adapter.settle().itemCount)
-        assertTrue(adapter.currentList[0].isDateHeader)
+        assertTrue(adapter.currentList[0].isDayHeader)
         assertEquals(listOf("b"), adapter.rows())
     }
 
@@ -110,6 +110,6 @@ class HistoryAdapterTest {
         adapter.remove(a)
 
         adapter.settle()
-        assertEquals("Offset for the next page must equal the stored rows still listed", 1L, adapter.realCount)
+        assertEquals("Offset for the next page must equal the stored rows still listed", 1L, adapter.rowCount)
     }
 }

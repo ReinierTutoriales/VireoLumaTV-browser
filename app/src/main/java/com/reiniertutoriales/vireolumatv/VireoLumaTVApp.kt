@@ -29,16 +29,16 @@ import kotlin.system.exitProcess
 class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
     companion object {
         lateinit var instance: VireoLumaTVApp
-        const val CHANNEL_ID_DOWNLOADS: String = "downloads"
-        const val MAIN_PREFS_NAME = "main.xml"
+        const val DOWNLOAD_CHANNEL: String = "downloads"
+        const val PREFS_FILE = "main.xml"
         val TAG = VireoLumaTVApp::class.simpleName
     }
 
     lateinit var threadPool: ThreadPoolExecutor
         private set
 
-    var needToExitProcessAfterMainActivityFinish = false
-    var needRestartMainActivityAfterExitingProcess = false
+    var exitProcessOnFinish = false
+    var restartAfterExit = false
     override fun onCreate() {
         Log.i(TAG, "onCreate")
         super.onCreate()
@@ -57,13 +57,13 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
             IncognitoWebViewData.configure(this)
         }
 
-        AppContext.init(this, Config(getSharedPreferences(MAIN_PREFS_NAME, MODE_MULTI_PROCESS)))
+        AppContext.init(this, Config(getSharedPreferences(PREFS_FILE, MODE_MULTI_PROCESS)))
 
-        val maxThreadsInOfflineJobsPool = Runtime.getRuntime().availableProcessors()
-        threadPool = ThreadPoolExecutor(0, maxThreadsInOfflineJobsPool, 20,
-                TimeUnit.SECONDS, ArrayBlockingQueue(maxThreadsInOfflineJobsPool))
+        val backgroundThreads = Runtime.getRuntime().availableProcessors()
+        threadPool = ThreadPoolExecutor(0, backgroundThreads, 20,
+                TimeUnit.SECONDS, ArrayBlockingQueue(backgroundThreads))
 
-        initWebEngineStuff()
+        setUpEngine()
         threadPool.execute { com.reiniertutoriales.vireolumatv.webengine.webview.MediaPolicy.prewarm() }
 
         initNotificationChannels()
@@ -75,8 +75,8 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
     }
 
     @Suppress("KotlinConstantConditions")
-    private fun initWebEngineStuff() {
-        Log.i(TAG, "initWebEngineStuff")
+    private fun setUpEngine() {
+        Log.i(TAG, "setUpEngine")
 
         Engines.install(WebViewPageEngine.Backend)
 
@@ -84,15 +84,15 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
         CookieHandler.setDefault(cookieManager)
         Favicons.store = object : Favicons.Store {
             override fun find(host: String): SiteSettings? {
-                return AppDatabase.db.hostsDao().findByHostName(host)
+                return AppDatabase.db.siteSettingsDao().findByHostName(host)
             }
 
             override suspend fun update(row: SiteSettings) {
-                AppDatabase.db.hostsDao().storeFavicon(row.hostName, row.favicon)
+                AppDatabase.db.siteSettingsDao().storeFavicon(row.hostName, row.favicon)
             }
 
             override suspend fun insert(row: SiteSettings) {
-                AppDatabase.db.hostsDao().storeFavicon(row.hostName, row.favicon)
+                AppDatabase.db.siteSettingsDao().storeFavicon(row.hostName, row.favicon)
             }
         }
     }
@@ -102,7 +102,7 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
             val name = getString(R.string.menu_downloads)
             val descriptionText = getString(R.string.downloads_channel_description)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID_DOWNLOADS, name, importance)
+            val channel = NotificationChannel(DOWNLOAD_CHANNEL, name, importance)
             channel.description = descriptionText
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
@@ -118,9 +118,9 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
 
     override fun onActivityDestroyed(activity: Activity) {
         Log.i(TAG, "onActivityDestroyed: " + activity.javaClass.simpleName)
-        if (needToExitProcessAfterMainActivityFinish && activity is MainActivity) {
+        if (exitProcessOnFinish && activity is MainActivity) {
             Log.i(TAG, "onActivityDestroyed: exiting process")
-            if (needRestartMainActivityAfterExitingProcess) {
+            if (restartAfterExit) {
                 Log.i(TAG, "onActivityDestroyed: restarting main activity")
                 val intent = Intent(this@VireoLumaTVApp, MainActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)

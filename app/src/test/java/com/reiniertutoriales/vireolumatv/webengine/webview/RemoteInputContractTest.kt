@@ -34,9 +34,9 @@ class RemoteInputContractTest {
     private fun withLayout(test: (PointerLayout) -> Unit) {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         val config = AppContext.config
-        val axesWereDisabled = config.disableMotionAxesDpadNavigation
+        val axesWereDisabled = config.ignoreStickAxes
         try {
-            config.disableMotionAxesDpadNavigation = false
+            config.ignoreStickAxes = false
             val layout = PointerLayout(controller.get())
             controller.get().setContentView(layout)
             shadowOf(Looper.getMainLooper()).idle() // The first traversal attaches the layout.
@@ -47,19 +47,19 @@ class RemoteInputContractTest {
                 View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
             layout.layout(0, 0, 960, 540)
             // Start away from the edges: these tests are about movement, not edge scrolling.
-            layout.cursorDrawerDelegate.cursorPosition.set(480f, 270f)
-            frameStep = PointerController::class.java.getDeclaredField("cursorUpdateRunnable")
-                .apply { isAccessible = true }.get(layout.cursorDrawerDelegate) as Runnable
+            layout.pointerController.cursorPosition.set(480f, 270f)
+            frameStep = PointerController::class.java.getDeclaredField("pointerTick")
+                .apply { isAccessible = true }.get(layout.pointerController) as Runnable
             test(layout)
         } finally {
-            config.disableMotionAxesDpadNavigation = axesWereDisabled
+            config.ignoreStickAxes = axesWereDisabled
             controller.pause().stop().destroy()
             ShadowChoreographer.setPaused(false)
         }
     }
 
-    private val PointerLayout.pointerX get() = cursorDrawerDelegate.cursorPosition.x
-    private val PointerLayout.pointerY get() = cursorDrawerDelegate.cursorPosition.y
+    private val PointerLayout.pointerX get() = pointerController.cursorPosition.x
+    private val PointerLayout.pointerY get() = pointerController.cursorPosition.y
 
     private var frameStep: Runnable? = null
 
@@ -154,7 +154,7 @@ class RemoteInputContractTest {
     }
 
     @Test fun turningOffStickNavigationKeepsTheHatAndKeysAsDpad() = withLayout { layout ->
-        AppContext.config.disableMotionAxesDpadNavigation = true
+        AppContext.config.ignoreStickAxes = true
         val start = layout.pointerX
         // Still consumed: otherwise Android would synthesize D-pad keys from the stick itself.
         assertTrue(motion(layout, InputDevice.SOURCE_JOYSTICK, MotionEvent.AXIS_X to 1f))

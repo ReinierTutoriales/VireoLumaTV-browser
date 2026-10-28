@@ -13,14 +13,14 @@ import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 class PrivateBrowserActivity : MainActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!isFinishing && !config.incognitoModeHintSuppress &&
+        if (!isFinishing && !config.privateHintSeen &&
             supportFragmentManager.findFragmentByTag(PRIVATE_NOTICE) == null) {
             PrivateSessionNotice().show(supportFragmentManager, PRIVATE_NOTICE)
         }
     }
 
     override fun onDestroy() {
-        if (isFinishing) VireoLumaTVApp.instance.needToExitProcessAfterMainActivityFinish = true
+        if (isFinishing) VireoLumaTVApp.instance.exitProcessOnFinish = true
         super.onDestroy()
     }
 
@@ -33,6 +33,6 @@ class PrivateSessionNotice : DialogFragment() {
         .setTitle(R.string.menu_private)
         .setMessage(R.string.private_explained)
         .setPositiveButton(android.R.string.ok, null)
-        .setNeutralButton(R.string.action_dont_show_again) { _, _ -> AppContext.config.incognitoModeHintSuppress = true }
+        .setNeutralButton(R.string.action_dont_show_again) { _, _ -> AppContext.config.privateHintSeen = true }
         .create()
 }

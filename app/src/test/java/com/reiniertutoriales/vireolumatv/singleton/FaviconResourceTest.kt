@@ -53,7 +53,7 @@ class FaviconResourceTest {
 
     private fun withCache(test: (File) -> Unit) {
         val app = RuntimeEnvironment.getApplication()
-        val config = Config(app.getSharedPreferences("favicon-resource-test", 0)).apply { incognitoMode = false }
+        val config = Config(app.getSharedPreferences("favicon-resource-test", 0)).apply { privateBrowsing = false }
         AppContext.init(app, config)
         val previous = Favicons.store
         val directory = Favicons.directory

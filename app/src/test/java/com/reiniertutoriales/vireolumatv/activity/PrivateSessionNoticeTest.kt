@@ -22,7 +22,7 @@ class PrivateSessionNoticeTest {
     @Test fun restoredNoticeRemainsSingleAndSuppressionIsAnExplicitChoice() {
         val app = RuntimeEnvironment.getApplication()
         val settings = BrowserConfig(app.getSharedPreferences("private-notice-test", 0))
-        settings.incognitoModeHintSuppress = false
+        settings.privateHintSeen = false
         AppContext.init(app, settings)
         val first = Robolectric.buildActivity(AppCompatActivity::class.java)
         first.get().setTheme(R.style.AppTheme)
@@ -36,11 +36,11 @@ class PrivateSessionNoticeTest {
         try {
             val fragments = restored.get().supportFragmentManager.fragments.filterIsInstance<PrivateSessionNotice>()
             assertEquals(1, fragments.size)
-            assertFalse(settings.incognitoModeHintSuppress)
+            assertFalse(settings.privateHintSeen)
             (fragments.single().requireDialog() as AlertDialog)
                 .getButton(DialogInterface.BUTTON_NEUTRAL).performClick()
             org.robolectric.shadows.ShadowLooper.idleMainLooper()
-            assertTrue(settings.incognitoModeHintSuppress)
+            assertTrue(settings.privateHintSeen)
         } finally { restored.pause().stop().destroy() }
     }
 }

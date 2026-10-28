@@ -16,7 +16,7 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
     FrameLayout(context, attrs) {
 
     /** The user's pointer mode for the page (off = direct D-pad navigation of the page). */
-    var cursorEnabled = true
+    var pointerEnabled = true
         set(value) {
             if (field == value) return
             field = value
@@ -24,7 +24,7 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
             invalidate()
         }
 
-    /** Browser chrome owns the remote while it covers the page; [cursorEnabled] is kept. */
+    /** Browser chrome owns the remote while it covers the page; [pointerEnabled] is kept. */
     var cursorSuppressed = false
         set(value) {
             if (field == value) return
@@ -35,22 +35,22 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
 
     var onPageTouch: (() -> Unit)? = null
 
-    lateinit var cursorDrawerDelegate: PointerController
+    lateinit var pointerController: PointerController
 
     private val remoteInput = RemoteInput(
         target = object : RemoteInput.Target {
-            override fun onKey(event: KeyEvent) = cursorDrawerDelegate.dispatchKeyEvent(event)
-            override fun onStick(x: Float, y: Float) = cursorDrawerDelegate.onStick(x, y)
+            override fun onKey(event: KeyEvent) = pointerController.dispatchKeyEvent(event)
+            override fun onStick(x: Float, y: Float) = pointerController.onStick(x, y)
         },
-        stickEnabled = { !AppContext.config.disableMotionAxesDpadNavigation },
+        stickEnabled = { !AppContext.config.ignoreStickAxes },
         // The OK press that focuses an editor must still deliver its release to the page.
-        isTyping = { !cursorDrawerDelegate.isSelectionPressed && (isTextInputActive() || imeVisible()) },
+        isTyping = { !pointerController.isSelectionPressed && (isTextInputActive() || imeVisible()) },
     )
 
     init {
         if (!isInEditMode) {
             setWillNotDraw(false)
-            cursorDrawerDelegate = PointerController(context, this).apply { init() }
+            pointerController = PointerController(context, this).apply { init() }
         }
     }
 
@@ -59,16 +59,16 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
     private fun imeVisible(): Boolean =
         ViewCompat.getRootWindowInsets(rootView)?.isVisible(WindowInsetsCompat.Type.ime()) == true
 
-    private val pointerActive: Boolean get() = cursorEnabled && !cursorSuppressed
+    private val pointerActive: Boolean get() = pointerEnabled && !cursorSuppressed
 
     fun resetInput() {
         remoteInput.resetState()
-        if (::cursorDrawerDelegate.isInitialized) cursorDrawerDelegate.resetInput()
+        if (::pointerController.isInitialized) pointerController.resetInput()
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        if (!isInEditMode) cursorDrawerDelegate.onSizeChanged(w, h, oldw, oldh)
+        if (!isInEditMode) pointerController.onSizeChanged(w, h, oldw, oldh)
     }
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
@@ -95,6 +95,6 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
 
     override fun dispatchDraw(canvas: Canvas) {
         super.dispatchDraw(canvas)
-        if (!isInEditMode && pointerActive && !isTextInputActive()) cursorDrawerDelegate.dispatchDraw(canvas)
+        if (!isInEditMode && pointerActive && !isTextInputActive()) pointerController.dispatchDraw(canvas)
     }
 }

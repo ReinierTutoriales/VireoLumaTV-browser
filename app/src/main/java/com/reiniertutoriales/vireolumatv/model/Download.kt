@@ -10,7 +10,7 @@ import java.io.InputStream
 /**
  * One download. The stored columns are the "downloads" table of schema 19; the other fields only
  * live while the download runs or while a list shows it. [size] is the byte total once known, or
- * [BROKEN_MARK] / [CANCELLED_MARK] after a failure or cancellation.
+ * [SIZE_FAILED] / [SIZE_CANCELLED] after a failure or cancellation.
  */
 @Entity(
     tableName = "downloads",
@@ -26,32 +26,32 @@ class Download() {
     @Volatile var size: Long = 0
     @Volatile @ColumnInfo(name = "bytes_received") var bytesReceived: Long = 0
 
-    @Ignore var operationAfterDownload = AfterDownload.NOP
+    @Ignore var afterDownload = AfterDownload.NOP
     @Ignore @Volatile var cancelled = false
     /** Private downloads are never stored, so they all keep id 0. */
     @Ignore var incognito = false
     /** A day heading row in the download list, not a download. */
-    @Ignore var isDateHeader = false
+    @Ignore var isDayHeader = false
     @Ignore var mimeType: String? = null
     @Ignore var referer: String? = null
-    @Ignore var userAgentString: String? = null
+    @Ignore var userAgent: String? = null
     /** A page blob handed over as a base64 data URL; released once written. */
     @Ignore var base64BlobData: String? = null
     /** Content the page already opened; closed once written. */
     @Ignore var stream: InputStream? = null
 
     constructor(
-        url: String, filename: String, filepath: String?, operationAfterDownload: AfterDownload,
-        mimeType: String?, referer: String?, userAgentString: String?, base64BlobData: String?,
+        url: String, filename: String, filepath: String?, afterDownload: AfterDownload,
+        mimeType: String?, referer: String?, userAgent: String?, base64BlobData: String?,
         stream: InputStream?, size: Long = 0L,
     ) : this() {
         this.url = url
         this.filename = filename
         this.filepath = filepath.orEmpty()
-        this.operationAfterDownload = operationAfterDownload
+        this.afterDownload = afterDownload
         this.mimeType = mimeType
         this.referer = referer
-        this.userAgentString = userAgentString
+        this.userAgent = userAgent
         this.base64BlobData = base64BlobData
         this.stream = stream
         this.size = size
@@ -63,12 +63,12 @@ class Download() {
     enum class AfterDownload { NOP, INSTALL }
 
     companion object {
-        const val BROKEN_MARK = -2L
-        const val CANCELLED_MARK = -3L
+        const val SIZE_FAILED = -2L
+        const val SIZE_CANCELLED = -3L
 
-        fun createDateHeaderInfo(time: Long) = Download().apply {
+        fun dayHeader(time: Long) = Download().apply {
             this.time = time
-            isDateHeader = true
+            isDayHeader = true
         }
     }
 }

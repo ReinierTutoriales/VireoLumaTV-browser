@@ -100,7 +100,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
     /** Video stream failures are the ones worth a log line, within a budget. */
     private inline fun logStream(url: Uri, detail: () -> String) {
         val kind = StreamDiagnostics.kind(url) ?: return
-        if (view.streamLogBudget.allow()) Log.w(BrowserWebView.WEB_VIEW_TAG, "Stream $kind ${detail()} host=${url.host}")
+        if (view.streamLogBudget.allow()) Log.w(BrowserWebView.LOG_TAG, "Stream $kind ${detail()} host=${url.host}")
     }
 
     override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean = engine.onRenderProcessGone()

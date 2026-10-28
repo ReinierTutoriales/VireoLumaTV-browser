@@ -30,8 +30,8 @@ import java.util.Locale
 class GeneralPage @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : ScrollView(context, attrs, defStyleAttr) {
-    var settingsModel = ScreenModels.get(BrowserSettings::class, activity!!)
-    var adblockModel = ScreenModels.get(AdBlocker::class, activity!!)
+    var browserSettings = ScreenModels.get(BrowserSettings::class, activity!!)
+    var adBlocker = ScreenModels.get(AdBlocker::class, activity!!)
     var config = AppContext.config
 
     private val rows = SettingsRows(
@@ -62,14 +62,14 @@ class GeneralPage @JvmOverloads constructor(
     private fun addSearchEngine() {
         val urls = Config.SEARCH_ENGINES.map { it.url }
         val custom = Config.SEARCH_ENGINES.lastIndex
-        val saved = config.searchEngineURL.value
+        val saved = config.searchAddress.value
         val known = if (saved == "") 0 else urls.indexOf(saved)
         rows.choice(R.string.settings_search_engine, R.id.spEngine, Config.SEARCH_ENGINES.map { it.title }.toTypedArray(),
             if (known == -1) custom else known) { position ->
             val group = searchEngineUrl.parent as View
             if (position == custom) {
                 reveal(group)
-                searchEngineUrl.setText(config.searchEngineURL.value)
+                searchEngineUrl.setText(config.searchAddress.value)
                 searchEngineUrl.requestFocus()
             } else {
                 group.visibility = View.GONE
@@ -85,31 +85,31 @@ class GeneralPage @JvmOverloads constructor(
     private fun addHomePage() {
         val modes = Config.HomePageMode.entries
         homePageMode = rows.choice(R.string.settings_home_page, R.id.spHomePage,
-            resources.getStringArray(R.array.settings_home_page_modes), settingsModel.homePageMode.ordinal) { position ->
+            resources.getStringArray(R.array.settings_home_page_modes), browserSettings.homePageMode.ordinal) { position ->
             (customHomePageUrl.parent as View).visibility =
                 if (modes[position] == Config.HomePageMode.CUSTOM) View.VISIBLE else View.GONE
         }
         customHomePageUrl = rows.field(R.string.settings_home_page_address, R.string.field_address,
-            visible = settingsModel.homePageMode == Config.HomePageMode.CUSTOM)
-        customHomePageUrl.setText(settingsModel.homePage)
+            visible = browserSettings.homePageMode == Config.HomePageMode.CUSTOM)
+        customHomePageUrl.setText(browserSettings.homePage)
     }
 
     private fun addUserAgent() {
-        if (config.userAgentString.value?.contains("TV Bro/1.0 ") == true) {
-            config.userAgentString.value = null // Legacy value: the default user agent applies now.
+        if (config.userAgentOverride.value?.contains("TV Bro/1.0 ") == true) {
+            config.userAgentOverride.value = null // Legacy value: the default user agent applies now.
         }
-        val presets = settingsModel.uaStrings
-        val custom = settingsModel.userAgentStringTitles.lastIndex
-        val saved = config.userAgentString.value
+        val presets = browserSettings.uaStrings
+        val custom = browserSettings.userAgentStringTitles.lastIndex
+        val saved = config.userAgentOverride.value
         val known = if (saved == null) 0 else presets.indexOf(saved)
-        rows.choice(R.string.settings_user_agent_choice, R.id.spTitles, settingsModel.userAgentStringTitles,
+        rows.choice(R.string.settings_user_agent_choice, R.id.spTitles, browserSettings.userAgentStringTitles,
             if (known == -1) custom else known) { position ->
             val group = userAgent.parent as View
             if (position == custom) {
                 // Repeated custom selections keep a saved or half-typed value.
                 if (group.visibility != View.VISIBLE) {
                     reveal(group)
-                    userAgent.setText(config.userAgentString.value.orEmpty())
+                    userAgent.setText(config.userAgentOverride.value.orEmpty())
                     userAgent.requestFocus()
                 }
             } else {
@@ -134,20 +134,20 @@ class GeneralPage @JvmOverloads constructor(
             adBlockListUrl = field(null, R.string.field_address, id = R.id.etAdBlockerListUrl)
             adBlockStatus = status(R.id.tvAdBlockerListInfo, R.id.btnAdBlockerUpdate,
                 R.drawable.ic_refresh, R.string.blocker_update_lists) {
-                if (!adblockModel.clientLoading.value) {
-                    saveAdBlockListUrl()
-                    adblockModel.loadAdBlockList(true)
+                if (!adBlocker.listLoading.value) {
+                    setBlockListUrl()
+                    adBlocker.loadBlockList(true)
                 }
             }
         }
-        adBlockListUrl.setText(config.adBlockListURL.value)
-        updateAdBlockInfo()
+        adBlockListUrl.setText(config.blockListUrl.value)
+        showBlockerState()
     }
 
     private fun addAppearanceAndPlayback() {
         rows.toggle(R.string.settings_darken_pages, R.id.llWebViewAlgorithmicDarkening,
-            config.webviewUseAlgorithmicDarkeningWithDarkUiMode) { _, on ->
-            config.webviewUseAlgorithmicDarkeningWithDarkUiMode = on
+            config.darkenPages) { _, on ->
+            config.darkenPages = on
         }
         rows.toggle(R.string.settings_autoplay, R.id.llAllowAutoplayMedia, config.allowAutoplayMedia) { _, on ->
             config.allowAutoplayMedia = on
@@ -156,16 +156,16 @@ class GeneralPage @JvmOverloads constructor(
         val heights = intArrayOf(0, 1080, 720, 480)
         rows.choice(R.string.settings_video_quality, R.id.spVideoMaxQuality, resources.getStringArray(R.array.settings_video_qualities),
             heights.indexOf(config.videoMaxHeight).coerceAtLeast(0)) { config.videoMaxHeight = heights[it] }
-        rows.toggle(R.string.settings_debugging, R.id.llWebEngineDebug, config.webEngineDebug) { switch, on ->
+        rows.toggle(R.string.settings_debugging, R.id.llWebEngineDebug, config.pageDebugging) { switch, on ->
             if (!on) {
-                config.webEngineDebug = false
+                config.pageDebugging = false
                 return@toggle
             }
             AlertDialog.Builder(context)
                 .setTitle(R.string.warning_title)
                 .setMessage(R.string.settings_debugging_warning)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
-                    config.webEngineDebug = true
+                    config.pageDebugging = true
                     Toast.makeText(context, R.string.settings_restart_needed, Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton(R.string.action_cancel) { _, _ -> switch.isChecked = false }
@@ -175,54 +175,54 @@ class GeneralPage @JvmOverloads constructor(
     }
 
     private fun addInput() {
-        rows.toggle(R.string.settings_keep_screen_on, R.id.llKeepScreenOn, settingsModel.keepScreenOn.value) { _, on ->
-            settingsModel.keepScreenOn.value = on
+        rows.toggle(R.string.settings_keep_screen_on, R.id.llKeepScreenOn, browserSettings.keepScreenOn.value) { _, on ->
+            browserSettings.keepScreenOn.value = on
         }
         rows.toggle(R.string.settings_stick_moves_pointer, R.id.llNavigateWithJoystickAxes,
-            !config.disableMotionAxesDpadNavigation) { _, on -> config.disableMotionAxesDpadNavigation = !on }
+            !config.ignoreStickAxes) { _, on -> config.ignoreStickAxes = !on }
         val percent = { value: Int -> context.getString(R.string.settings_percent_of_default, value) }
-        rows.slider(R.string.settings_pointer_speed, R.id.sbCursorMaxSpeed, Config.CURSOR_PHYSICS_PERCENT_MIN,
-            Config.CURSOR_PHYSICS_PERCENT_MAX, config.cursorMaxSpeedPercent, percent) { config.cursorMaxSpeedPercent = it }
-        rows.slider(R.string.settings_pointer_acceleration, R.id.sbCursorAcceleration, Config.CURSOR_PHYSICS_PERCENT_MIN,
-            Config.CURSOR_PHYSICS_PERCENT_MAX, config.cursorAccelerationPercent, percent) { config.cursorAccelerationPercent = it }
+        rows.slider(R.string.settings_pointer_speed, R.id.sbCursorMaxSpeed, Config.POINTER_PERCENT_MIN,
+            Config.POINTER_PERCENT_MAX, config.pointerSpeedPercent, percent) { config.pointerSpeedPercent = it }
+        rows.slider(R.string.settings_pointer_acceleration, R.id.sbCursorAcceleration, Config.POINTER_PERCENT_MIN,
+            Config.POINTER_PERCENT_MAX, config.pointerAccelPercent, percent) { config.pointerAccelPercent = it }
     }
 
-    private val loadingObserver: (Boolean) -> Unit = { updateAdBlockInfo() }
-    private val resultObserver: (AdBlocker.UpdateResult) -> Unit = { updateAdBlockInfo() }
-    private val sourceObserver: (String) -> Unit = { updateAdBlockInfo() }
+    private val loadingObserver: (Boolean) -> Unit = { showBlockerState() }
+    private val resultObserver: (AdBlocker.UpdateResult) -> Unit = { showBlockerState() }
+    private val sourceObserver: (String) -> Unit = { showBlockerState() }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        adblockModel.clientLoading.subscribe(loadingObserver)
-        adblockModel.updateResult.subscribe(resultObserver)
-        config.adBlockListURL.subscribe(sourceObserver)
+        adBlocker.listLoading.subscribe(loadingObserver)
+        adBlocker.updateResult.subscribe(resultObserver)
+        config.blockListUrl.subscribe(sourceObserver)
     }
 
     override fun onDetachedFromWindow() {
-        adblockModel.clientLoading.unsubscribe(loadingObserver)
-        adblockModel.updateResult.unsubscribe(resultObserver)
-        config.adBlockListURL.unsubscribe(sourceObserver)
+        adBlocker.listLoading.unsubscribe(loadingObserver)
+        adBlocker.updateResult.unsubscribe(resultObserver)
+        config.blockListUrl.unsubscribe(sourceObserver)
         super.onDetachedFromWindow()
     }
 
-    private fun saveAdBlockListUrl() {
+    private fun setBlockListUrl() {
         val source = adBlockListUrl.text.toString().trim().ifEmpty { Config.DEFAULT_ADBLOCK_LIST_URL }
-        if (config.adBlockListURL.value != source) {
-            config.adBlockListLastUpdate = 0L
-            config.adBlockListNextRetry = 0L
-            config.adBlockListURL.value = source
+        if (config.blockListUrl.value != source) {
+            config.blockListUpdatedAt = 0L
+            config.blockListRetryAt = 0L
+            config.blockListUrl.value = source
         }
     }
 
-    private fun updateAdBlockInfo() {
-        val loading = adblockModel.clientLoading.value
-        val lastUpdate = if (config.adBlockListLastUpdate == 0L) context.getString(R.string.blocker_never)
-            else SimpleDateFormat("hh:mm dd MMMM yyyy", Locale.getDefault()).format(Date(config.adBlockListLastUpdate))
-        val lists = if (config.adBlockListURL.value == Config.DEFAULT_ADBLOCK_LIST_URL)
-            adblockModel.configuredListNames().joinToString(" · ") else config.adBlockListURL.value
+    private fun showBlockerState() {
+        val loading = adBlocker.listLoading.value
+        val lastUpdate = if (config.blockListUpdatedAt == 0L) context.getString(R.string.blocker_never)
+            else SimpleDateFormat("hh:mm dd MMMM yyyy", Locale.getDefault()).format(Date(config.blockListUpdatedAt))
+        val lists = if (config.blockListUrl.value == Config.DEFAULT_ADBLOCK_LIST_URL)
+            adBlocker.configuredListNames().joinToString(" · ") else config.blockListUrl.value
         val state = when {
             loading -> R.string.blocker_updating
-            else -> when (adblockModel.updateResult.value) {
+            else -> when (adBlocker.updateResult.value) {
                 AdBlocker.UpdateResult.UPDATED -> R.string.blocker_updated
                 AdBlocker.UpdateResult.PARTIAL -> R.string.blocker_partial
                 AdBlocker.UpdateResult.CACHED -> R.string.blocker_using_saved
@@ -230,7 +230,7 @@ class GeneralPage @JvmOverloads constructor(
                 else -> null
             }
         }
-        val notRefreshed = adblockModel.unavailableLists.value
+        val notRefreshed = adBlocker.unavailableLists.value
         adBlockStatus.text.text = buildList {
             add("${context.getString(R.string.blocker_last_update)}: $lastUpdate")
             add(lists)
@@ -245,10 +245,10 @@ class GeneralPage @JvmOverloads constructor(
     }
 
     fun save() {
-        settingsModel.setSearchEngineURL(searchEngineUrl.text.toString())
-        settingsModel.setHomePageProperties(Config.HomePageMode.entries[homePageMode.selectedItemPosition],
+        browserSettings.setSearchEngineURL(searchEngineUrl.text.toString())
+        browserSettings.setHomePageProperties(Config.HomePageMode.entries[homePageMode.selectedItemPosition],
             customHomePageUrl.text.toString())
-        config.userAgentString.value = userAgent.text.toString().trim(' ').ifEmpty { null }
-        saveAdBlockListUrl()
+        config.userAgentOverride.value = userAgent.text.toString().trim(' ').ifEmpty { null }
+        setBlockListUrl()
     }
 }

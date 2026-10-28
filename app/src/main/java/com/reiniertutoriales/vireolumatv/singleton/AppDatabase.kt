@@ -27,10 +27,10 @@ import com.reiniertutoriales.vireolumatv.model.dao.TabDao
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun downloadDao(): DownloadDao
-    abstract fun historyDao(): VisitDao
-    abstract fun favoritesDao(): FavoriteDao
-    abstract fun tabsDao(): TabDao
-    abstract fun hostsDao(): SiteSettingsDao
+    abstract fun visitDao(): VisitDao
+    abstract fun favoriteDao(): FavoriteDao
+    abstract fun tabDao(): TabDao
+    abstract fun siteSettingsDao(): SiteSettingsDao
 
     companion object {
         const val FILE_NAME = "main.db"

@@ -40,7 +40,7 @@ class AdBlocker @JvmOverloads constructor(
 
         // uBlock "Quick fixes" expire in 8 hours, the others in 4-5 days. With conditional
         // requests an unchanged list costs one HTTP 304, and adblock-rust recompiles in about a second.
-        const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24
+        const val BLOCK_LIST_REFRESH_MINUTES = 60 * 24
         // Some lists failed or could not be cached: retry the same day, not the next one.
         private const val PARTIAL_UPDATE_RETRY_MINUTES = 60 * 6
         // No server reached (TV started before Wi-Fi, DNS down): retry soon. Regaining the network
@@ -123,43 +123,43 @@ class AdBlocker @JvmOverloads constructor(
 
     enum class UpdateResult { IDLE, UPDATED, PARTIAL, CACHED, ERROR }
     val updateResult = LiveValue(UpdateResult.IDLE)
-    fun configuredListNames(url: String = config.adBlockListURL.value): List<String> =
+    fun configuredListNames(url: String = config.blockListUrl.value): List<String> =
         getConfiguredFilterLists(url).map { it.name }
     // Lists the last attempt did not refresh: saved text was used, or no usable text existed.
     val unavailableLists = LiveValue<List<String>>(emptyList())
-    val clientLoading = LiveValue(false)
+    val listLoading = LiveValue(false)
     val config = AppContext.config
-    val hasActiveRules: Boolean get() = hasCurrentClient(config.adBlockListURL.value)
+    val hasActiveRules: Boolean get() = hasCurrentClient(config.blockListUrl.value)
 
-    private val sourceObserver: (String) -> Unit = { loadAdBlockList(true) }
+    private val sourceObserver: (String) -> Unit = { loadBlockList(true) }
 
     init {
         if (autoLoad) {
-            config.adBlockListURL.subscribe(sourceObserver, notifyOnSubscribe = false)
-            loadAdBlockList(false)
+            config.blockListUrl.subscribe(sourceObserver, notifyOnSubscribe = false)
+            loadBlockList(false)
         }
     }
 
     /** Cheap check for callers that run often (Activity resume, network regained). */
     fun updateIfDue(networkRestored: Boolean = false) {
-        if (clientLoading.value) return
+        if (listLoading.value) return
         val retryNow = networkRestored && lastAttemptUnreachable
-        if (retryNow || isUpdateDue(System.currentTimeMillis())) loadAdBlockList(retryNow)
+        if (retryNow || isUpdateDue(System.currentTimeMillis())) loadBlockList(retryNow)
     }
 
     private fun isUpdateDue(now: Long): Boolean {
-        val retryAt = config.adBlockListNextRetry
+        val retryAt = config.blockListRetryAt
         return if (retryAt != 0L) now >= retryAt
-        else now >= config.adBlockListLastUpdate + AUTO_UPDATE_INTERVAL_MINUTES * 60_000L
+        else now >= config.blockListUpdatedAt + BLOCK_LIST_REFRESH_MINUTES * 60_000L
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    fun loadAdBlockList(forceReload: Boolean): Job = modelScope.launch {
-        if (clientLoading.value) return@launch
-        val configuredUrl = config.adBlockListURL.value
+    fun loadBlockList(forceReload: Boolean): Job = workScope.launch {
+        if (listLoading.value) return@launch
+        val configuredUrl = config.blockListUrl.value
         val now = System.currentTimeMillis()
         val needUpdate = forceReload || isUpdateDue(now)
-        clientLoading.value = true
+        listLoading.value = true
         var loadedClient: ContentBlocker? = null
         var downloadAttempted = false
         var updated = false
@@ -169,14 +169,14 @@ class AdBlocker @JvmOverloads constructor(
         try {
             withContext(Dispatchers.IO) ioContext@ {
                 val filesDir = VireoLumaTVApp.instance.filesDir
-                val serializedFile = AdblockCache.fileFor(filesDir, engine, configuredUrl)
+                val cachedList = AdblockCache.fileFor(filesDir, engine, configuredUrl)
                 val filterLists = getConfiguredFilterLists(configuredUrl)
                 // Protect initial page requests while expired lists download in the background.
                 // A refresh of an already active blocker does not allocate another cached native client.
                 if (!hasCurrentClient(configuredUrl)) {
-                    loadedClient = deserializeCachedList(serializedFile)
+                    loadedClient = deserializeCachedList(cachedList)
                     loadedClient?.let { cached ->
-                        if (config.adBlockListURL.value == configuredUrl) {
+                        if (config.blockListUrl.value == configuredUrl) {
                             installClient(cached, configuredUrl)
                         }
                     }
@@ -209,7 +209,7 @@ class AdBlocker @JvmOverloads constructor(
                     } else {
                         // Nothing new (HTTP 304 or failed downloads): keep the compiled rules.
                         if (resolvedLists.none { it.source == FilterListSource.DOWNLOAD }) {
-                            val cachedClient = loadedClient ?: if (hasCurrentClient(configuredUrl)) null else deserializeCachedList(serializedFile)
+                            val cachedClient = loadedClient ?: if (hasCurrentClient(configuredUrl)) null else deserializeCachedList(cachedList)
                             if (cachedClient != null || hasCurrentClient(configuredUrl)) {
                                 loadedClient = cachedClient
                                 updated = true
@@ -226,7 +226,7 @@ class AdBlocker @JvmOverloads constructor(
                         }
                         val freshClient = engine.compile(filterTexts(resolvedLists))
                         if (freshClient != null) {
-                            val cacheWritten = AdblockCache.write(serializedFile, freshClient)
+                            val cacheWritten = AdblockCache.write(cachedList, freshClient)
                             if (!cacheWritten) Log.w(TAG, "Compiled rules active but cache write failed; will retry")
                             else deleteLegacyCaches(filterLists)
                             loadedClient = freshClient
@@ -249,7 +249,7 @@ class AdBlocker @JvmOverloads constructor(
                     Log.w(TAG, "Can not prepare adblock filter lists", e)
                 }
                 //update failed: keep blocking with the last serialized list that worked
-                loadedClient = loadedClient ?: if (hasCurrentClient(configuredUrl)) null else deserializeCachedList(serializedFile)
+                loadedClient = loadedClient ?: if (hasCurrentClient(configuredUrl)) null else deserializeCachedList(cachedList)
                 if (loadedClient != null) {
                     Log.i(TAG, "Using cached adblock list after update failure")
                 } else if (hasCurrentClient()) {
@@ -259,16 +259,16 @@ class AdBlocker @JvmOverloads constructor(
                 }
             }
             // A client that is not installed below is freed in the finally block.
-            if (config.adBlockListURL.value != configuredUrl) return@launch
+            if (config.blockListUrl.value != configuredUrl) return@launch
             //if nothing could be loaded keep the current client (if any) instead of replacing it with an empty one
             loadedClient?.let {
                 installClient(it, configuredUrl)
             }
             // HTTP 304 is a successful check: the saved copy is the current list.
-            if (updated && reachedServer) config.adBlockListLastUpdate = now
+            if (updated && reachedServer) config.blockListUpdatedAt = now
             if (downloadAttempted) {
                 lastAttemptUnreachable = !reachedServer
-                config.adBlockListNextRetry = when {
+                config.blockListRetryAt = when {
                     !reachedServer -> now + FAILURE_RETRY_MINUTES * 60_000L
                     !updated || partialUpdate -> now + PARTIAL_UPDATE_RETRY_MINUTES * 60_000L
                     else -> 0L
@@ -288,8 +288,8 @@ class AdBlocker @JvmOverloads constructor(
             // Compiled or restored but not installed (list URL changed, model cleared, cancelled
             // while the native compile ran): free its native memory now.
             loadedClient?.let { if (it !== installedClient?.blocker) it.release() }
-            clientLoading.value = false
-            if (!cleared && config.adBlockListURL.value != configuredUrl) loadAdBlockList(true)
+            listLoading.value = false
+            if (!cleared && config.blockListUrl.value != configuredUrl) loadBlockList(true)
         }
     }
 
@@ -470,7 +470,7 @@ class AdBlocker @JvmOverloads constructor(
     }
 
     private fun installAuxiliary(value: Auxiliary) = synchronized(installLock) {
-        if (cleared || config.adBlockListURL.value != value.source) {
+        if (cleared || config.blockListUrl.value != value.source) {
             value.popup?.release()
             return@synchronized
         }
@@ -527,9 +527,9 @@ class AdBlocker @JvmOverloads constructor(
             .ifBlank { "none" }
     }
 
-    private fun deserializeCachedList(serializedFile: File): ContentBlocker? {
+    private fun deserializeCachedList(cachedList: File): ContentBlocker? {
         return try {
-            engine.deserialize(serializedFile)
+            engine.deserialize(cachedList)
         } catch (e: Exception) {
             Log.w(TAG, "Can not restore compiled adblock cache", e)
             null
@@ -542,7 +542,7 @@ class AdBlocker @JvmOverloads constructor(
     }
 
     override fun onClear() {
-        config.adBlockListURL.unsubscribe(sourceObserver)
+        config.blockListUrl.unsubscribe(sourceObserver)
         synchronized(installLock) {
             cleared = true
             installedClient?.blocker?.release()

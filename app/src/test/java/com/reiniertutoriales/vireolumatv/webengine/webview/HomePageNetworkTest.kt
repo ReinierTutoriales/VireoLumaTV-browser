@@ -22,7 +22,7 @@ import java.lang.reflect.Proxy
 class HomePageNetworkTest {
     @Test fun missingHomepageIconDoesNotStartLookupOnInterceptionThread() {
         val app = RuntimeEnvironment.getApplication()
-        AppContext.init(app, Config(app.getSharedPreferences("home-network-test", 0)).apply { incognitoMode = false })
+        AppContext.init(app, Config(app.getSharedPreferences("home-network-test", 0)).apply { privateBrowsing = false })
         Favicons.clear()
         val previous = Favicons.store
         Favicons.store = object : Favicons.Store {

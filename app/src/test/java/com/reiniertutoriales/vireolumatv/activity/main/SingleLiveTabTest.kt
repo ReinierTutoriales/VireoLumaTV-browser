@@ -61,12 +61,12 @@ class SingleLiveTabTest {
         val restore = Engines.replaceForTest(providerCallback)
         val model = TabStore()
         // Persistence has separate Room/atomic-file tests; keep this test focused on renderer lifetime.
-        model.modelScope.cancel()
+        model.workScope.cancel()
         try {
             val first = BrowserTab(url = "https://one.test", incognito = privateMode)
             val second = BrowserTab(url = "https://two.test", incognito = privateMode)
-            model.tabsStates.add(first)
-            model.tabsStates.add(second)
+            model.openTabs.add(first)
+            model.openTabs.add(second)
             val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
                 arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
             val parent = FrameLayout(app)
@@ -92,7 +92,7 @@ class SingleLiveTabTest {
             model.changeTab(first, allocate, parent, window)
             assertEquals(count, events.size)
             val transportTab = BrowserTab(url = "https://transport.test", incognito = privateMode)
-            model.tabsStates.add(transportTab)
+            model.openTabs.add(transportTab)
             model.changeTab(transportTab, allocate, parent, window, loadInitialUrl = false)
             assertEquals(2, loads) // Caller/Chromium owns initial navigation, with no duplicate request.
             assertEquals(1, views.size)

@@ -76,12 +76,12 @@ internal class BrowserChromeClient(private val view: BrowserWebView) : WebChrome
     override fun onConsoleMessage(message: ConsoleMessage): Boolean {
         val level = message.messageLevel()
         val important = level == ConsoleMessage.MessageLevel.ERROR || level == ConsoleMessage.MessageLevel.WARNING
-        if (!view.config.webEngineDebug && (!important || !view.consoleLogBudget.allow())) return true
+        if (!view.config.pageDebugging && (!important || !view.consoleLogBudget.allow())) return true
         val text = "[${message.lineNumber()}] " + message.message().take(MAX_CONSOLE_CHARS)
         when (level) {
-            ConsoleMessage.MessageLevel.ERROR -> Log.e(BrowserWebView.WEB_VIEW_TAG, text)
-            ConsoleMessage.MessageLevel.WARNING -> Log.w(BrowserWebView.WEB_VIEW_TAG, text)
-            else -> Log.i(BrowserWebView.WEB_VIEW_TAG, text)
+            ConsoleMessage.MessageLevel.ERROR -> Log.e(BrowserWebView.LOG_TAG, text)
+            ConsoleMessage.MessageLevel.WARNING -> Log.w(BrowserWebView.LOG_TAG, text)
+            else -> Log.i(BrowserWebView.LOG_TAG, text)
         }
         return true
     }

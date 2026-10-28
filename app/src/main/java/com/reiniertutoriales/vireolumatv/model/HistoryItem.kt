@@ -24,16 +24,16 @@ class HistoryItem {
     var incognito: Boolean? = null
 
     /** A day heading row in the history list, not a visit. */
-    @Ignore var isDateHeader = false
+    @Ignore var isDayHeader = false
     /** Ticked in the history list's selection mode. */
     @Ignore var selected = false
     /** Already written to the database. */
     @Ignore var saved = false
 
     companion object {
-        fun createDateHeaderInfo(time: Long) = HistoryItem().apply {
+        fun dayHeader(time: Long) = HistoryItem().apply {
             this.time = time
-            isDateHeader = true
+            isDayHeader = true
         }
     }
 }

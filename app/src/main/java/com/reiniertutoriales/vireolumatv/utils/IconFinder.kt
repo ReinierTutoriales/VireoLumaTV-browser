@@ -42,25 +42,25 @@ class IconFinder {
     }
 
     /** Reads [url] and returns its candidates, ending with "/favicon.ico" when none is a usable bitmap. */
-    fun extractFavIconsFromURL(url: URL): ArrayList<IconCandidate> {
-        val (icons, manifest) = read(url) { extractFavIconsFromHTML(url, it) }
+    fun iconsFromAddress(url: URL): ArrayList<IconCandidate> {
+        val (icons, manifest) = read(url) { iconsFromDocument(url, it) }
         if (manifest != null && icons.none(::isFetchableBitmap)) {
             try {
                 val manifestUrl = URL(url, manifest)
-                icons += read(manifestUrl) { extractFavIconsFromWebManifest(manifestUrl, it) }
+                icons += read(manifestUrl) { iconsFromManifest(manifestUrl, it) }
                     .take(MAX_ICON_CANDIDATES - icons.size)
             } catch (_: Exception) {
                 // An unreachable or broken manifest leaves the page's own candidates and the default.
             }
         }
         if (icons.none(::isFetchableBitmap)) {
-            icons += IconCandidate(DEFAULT_ICON_SRC, DEFAULT_ICON_TYPE, null, DEFAULT_ICON_SIZE_STRING, url)
+            icons += IconCandidate(FALLBACK_ICON_PATH, FALLBACK_ICON_TYPE, null, FALLBACK_ICON_SIZES, url)
         }
         return icons
     }
 
     /** Icon links in the head of [html] and the manifest address, if the page names one. */
-    fun extractFavIconsFromHTML(baseURL: URL?, html: BufferedReader): Pair<ArrayList<IconCandidate>, String?> {
+    fun iconsFromDocument(baseURL: URL?, html: BufferedReader): Pair<ArrayList<IconCandidate>, String?> {
         val head = try {
             readHead(html)
         } catch (_: Exception) {
@@ -85,7 +85,7 @@ class IconFinder {
     }
 
     /** The "icons" of a web app manifest; anything malformed ends the list without an error. */
-    fun extractFavIconsFromWebManifest(manifestURL: URL?, manifest: Reader): ArrayList<IconCandidate> {
+    fun iconsFromManifest(manifestURL: URL?, manifest: Reader): ArrayList<IconCandidate> {
         val icons = ArrayList<IconCandidate>()
         try {
             JsonReader(BoundedReader(manifest, MAX_DOCUMENT_CHARS)).use { json ->
@@ -236,10 +236,10 @@ class IconFinder {
     }
 
     companion object {
-        const val DEFAULT_ICON_SRC = "/favicon.ico"
-        const val DEFAULT_ICON_TYPE = "image/x-icon"
-        const val DEFAULT_ICON_SIZE = 16
-        const val DEFAULT_ICON_SIZE_STRING = "${DEFAULT_ICON_SIZE}x$DEFAULT_ICON_SIZE"
+        const val FALLBACK_ICON_PATH = "/favicon.ico"
+        const val FALLBACK_ICON_TYPE = "image/x-icon"
+        const val FALLBACK_ICON_SIZE = 16
+        const val FALLBACK_ICON_SIZES = "${FALLBACK_ICON_SIZE}x$FALLBACK_ICON_SIZE"
         const val MAX_DOCUMENT_CHARS = 256 * 1024
         private const val MAX_ICON_CANDIDATES = 32
         private const val CONNECTION_TIMEOUT_MS = 5_000
@@ -251,6 +251,6 @@ class IconFinder {
         private val WHITESPACE = Regex("\\s+")
         private val ICON_RELS = setOf("icon", "apple-touch-icon", "apple-touch-icon-precomposed", "fluid-icon")
         private val TYPES = mapOf("png" to "image/png", "jpg" to "image/jpeg", "jpeg" to "image/jpeg",
-            "ico" to DEFAULT_ICON_TYPE, "gif" to "image/gif", "svg" to SVG, "webp" to "image/webp")
+            "ico" to FALLBACK_ICON_TYPE, "gif" to "image/gif", "svg" to SVG, "webp" to "image/webp")
     }
 }

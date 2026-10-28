@@ -55,12 +55,12 @@ class BrowserUiSnapshotTest {
         }
         val activity = host.get()
         val tabs = ScreenModels.get(TabStore::class, activity)
-        tabs.modelScope.cancel()
-        tabs.tabsStates.clear()
-        tabs.tabsStates.add(BrowserTab(url = BrowserConfig.HOME_PAGE_URL, title = "Inicio", position = 0))
-        tabs.tabsStates.add(BrowserTab(url = BrowserConfig.HOME_PAGE_URL,
+        tabs.workScope.cancel()
+        tabs.openTabs.clear()
+        tabs.openTabs.add(BrowserTab(url = BrowserConfig.HOME_PAGE_URL, title = "Inicio", position = 0))
+        tabs.openTabs.add(BrowserTab(url = BrowserConfig.HOME_PAGE_URL,
             title = "Documentación: título largo para comprobar el recorte de las pestañas", position = 1))
-        tabs.currentTab.value = tabs.tabsStates[0]
+        tabs.currentTab.value = tabs.openTabs[0]
         val vb = BrowserWindowBinding.inflate(activity.layoutInflater)
         try {
             assertTrue("Blocker shield needs a readable initial description",
@@ -70,7 +70,7 @@ class BrowserUiSnapshotTest {
             vb.pointerMenu.visibility = View.INVISIBLE
             vb.loadProgress.visibility = View.GONE
             vb.startupSpinner.visibility = View.GONE
-            vb.controlsRow.setAddressBoxText("https://example.test/documentacion/una-direccion-larga")
+            vb.controlsRow.showAddress("https://example.test/documentacion/una-direccion-larga")
             vb.controlsRow.forwardButton.isEnabled = false
             activity.setContentView(vb.root)
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
@@ -96,7 +96,7 @@ class BrowserUiSnapshotTest {
         } finally {
             vb.root.removeAllViews()
             tabs.currentTab.value = null
-            tabs.tabsStates.clear()
+            tabs.openTabs.clear()
             host.pause().stop().destroy()
             AppCompatDelegate.setDefaultNightMode(previousMode)
             RuntimeEnvironment.setFontScale(previousScale)

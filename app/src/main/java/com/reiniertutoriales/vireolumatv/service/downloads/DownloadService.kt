@@ -36,13 +36,13 @@ open class DownloadService : Service() {
     private val executor = Executors.newFixedThreadPool(2)
     private val main = Handler(Looper.getMainLooper())
     private val notification by lazy {
-        NotificationCompat.Builder(this, VireoLumaTVApp.CHANNEL_ID_DOWNLOADS)
+        NotificationCompat.Builder(this, VireoLumaTVApp.DOWNLOAD_CHANNEL)
             .setSmallIcon(R.drawable.ic_launcher)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
     }
 
-    internal val downloadTasksListener = object : Transfer.Callback {
+    internal val transferListener = object : Transfer.Callback {
         @Volatile private var lastProgress = 0L
 
         override fun onProgress(task: Transfer) {
@@ -50,24 +50,24 @@ open class DownloadService : Service() {
             if (now - lastProgress < PROGRESS_INTERVAL_MS) return
             lastProgress = now
             main.post {
-                model.notifyListenersAboutDownloadProgress(task)
-                if (model.activeDownloads.isNotEmpty()) notifications.notify(DOWNLOAD_NOTIFICATION_ID, buildNotification())
+                model.reportProgress(task)
+                if (model.runningDownloads.isNotEmpty()) notifications.notify(DOWNLOAD_NOTIFICATION, buildNotification())
             }
         }
 
         override fun onError(task: Transfer, responseCode: Int, responseMessage: String) {
-            DownloadHistory.update(task.downloadInfo)
+            DownloadHistory.update(task.job)
             main.post {
-                model.notifyListenersAboutError(task, responseCode, responseMessage)
-                onTaskEnded(task)
+                model.reportError(task, responseCode, responseMessage)
+                onTransferEnded(task)
             }
         }
 
         override fun onDone(task: Transfer) {
-            DownloadHistory.update(task.downloadInfo)
+            DownloadHistory.update(task.job)
             main.post {
-                model.notifyListenersAboutDownloadProgress(task)
-                onTaskEnded(task)
+                model.reportProgress(task)
+                onTransferEnded(task)
             }
         }
     }
@@ -81,7 +81,7 @@ open class DownloadService : Service() {
     override fun onDestroy() {
         cancelAll()
         executor.shutdown()
-        ScreenModels.markAsNeedless(model, this)
+        ScreenModels.discard(model, this)
         super.onDestroy()
     }
 
@@ -94,7 +94,7 @@ open class DownloadService : Service() {
      * within seconds. The downloads are cancelled so their partial files are removed, not orphaned.
      */
     override fun onTimeout(startId: Int, fgsType: Int) {
-        Log.w(TAG, "Foreground time limit reached; cancelling ${model.activeDownloads.size} downloads")
+        Log.w(TAG, "Foreground time limit reached; cancelling ${model.runningDownloads.size} downloads")
         cancelAll()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -104,14 +104,14 @@ open class DownloadService : Service() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !reserveLegacyFile(download)) return
         download.time = System.currentTimeMillis()
         val task = when {
-            download.base64BlobData != null -> BlobTransfer(download, download.base64BlobData!!, downloadTasksListener)
-            download.stream != null -> StreamTransfer(download, download.stream!!, downloadTasksListener)
-            else -> FileTransfer(download, download.userAgentString, downloadTasksListener)
+            download.base64BlobData != null -> BlobTransfer(download, download.base64BlobData!!, transferListener)
+            download.stream != null -> StreamTransfer(download, download.stream!!, transferListener)
+            else -> FileTransfer(download, download.userAgent, transferListener)
         }
-        model.activeDownloads.add(task)
+        model.runningDownloads.add(task)
         executor.execute(task)
         startService(Intent(this, javaClass))
-        startForeground(DOWNLOAD_NOTIFICATION_ID, buildNotification())
+        startForeground(DOWNLOAD_NOTIFICATION, buildNotification())
     }
 
     /** Before Android 11 the file goes straight into the public Downloads folder, under a free name. */
@@ -133,23 +133,23 @@ open class DownloadService : Service() {
         return true
     }
 
-    private fun cancelAll() = model.activeDownloads.forEach { it.downloadInfo.cancelled = true }
+    private fun cancelAll() = model.runningDownloads.forEach { it.job.cancelled = true }
 
-    private fun onTaskEnded(task: Transfer) {
-        val info = task.downloadInfo
+    private fun onTransferEnded(task: Transfer) {
+        val info = task.job
         if (info.size >= 0 && !info.cancelled &&
-            info.operationAfterDownload == Download.AfterDownload.INSTALL && ApkInstaller.canInstall(this)) {
+            info.afterDownload == Download.AfterDownload.INSTALL && ApkInstaller.canInstall(this)) {
             ApkInstaller.launch(this, info)
         }
         model.onDownloadEnded(task)
-        if (model.activeDownloads.isEmpty()) {
+        if (model.runningDownloads.isEmpty()) {
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
     }
 
     private fun buildNotification(): Notification {
-        val infos = model.activeDownloads.map { it.downloadInfo }
+        val infos = model.runningDownloads.map { it.job }
         val received = infos.sumOf { it.bytesReceived }
         val sizeKnown = infos.isNotEmpty() && infos.all { it.size > 0 }
         val total = if (sizeKnown) infos.sumOf { it.size } else 0L
@@ -170,7 +170,7 @@ open class DownloadService : Service() {
 
     companion object {
         const val TAG = "DownloadService"
-        const val DOWNLOAD_NOTIFICATION_ID = 101101
+        const val DOWNLOAD_NOTIFICATION = 101101
         private const val PROGRESS_INTERVAL_MS = 100L
 
         fun intent(context: Context, incognito: Boolean): Intent = Intent(context,

@@ -52,11 +52,11 @@ class CursorMenuFocusTest {
         BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
             .set(tab, lazyOf(engine))
         val config = AppContext.config
-        val previous = config.directNavigationModeHintSuppress
-        config.directNavigationModeHintSuppress = true
+        val previous = config.keyModeHintSeen
+        config.keyModeHintSeen = true
         try {
-            menu.show(tab, provider, cursor.cursorDrawerDelegate, com.reiniertutoriales.vireolumatv.webengine.PagePoint(null, null, 400, 400),
-                BackPresses(onEmulatedBackEvent = {}))
+            menu.show(tab, provider, cursor.pointerController, com.reiniertutoriales.vireolumatv.webengine.PagePoint(null, null, 400, 400),
+                BackPresses(onBackKey = {}))
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             menu.findViewById<View>(R.id.dpad_mode_button).requestFocus()
             assertFalse(page.hasFocus())
@@ -65,7 +65,7 @@ class CursorMenuFocusTest {
             assertTrue("The closed cursor menu must return focus to the page", page.hasFocus())
             assertTrue(directMode)
         } finally {
-            config.directNavigationModeHintSuppress = previous
+            config.keyModeHintSeen = previous
             controller.pause().stop().destroy()
         }
     }

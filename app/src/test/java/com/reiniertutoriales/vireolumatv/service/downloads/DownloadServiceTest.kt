@@ -38,11 +38,11 @@ class DownloadServiceTest {
         val service = controller.get()
         val model = ScreenModels.get(RunningDownloads::class, service)
         val info = Download().apply { incognito = true }
-        model.activeDownloads.add(StreamTransfer(info, "x".byteInputStream(), service.downloadTasksListener))
+        model.runningDownloads.add(StreamTransfer(info, "x".byteInputStream(), service.transferListener))
         service.onTimeout(1, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         assertTrue("A running download must be cancelled", info.cancelled)
         assertTrue("The service must stop itself within the timeout", shadowOf(service).isStoppedBySelf)
-        model.activeDownloads.clear()
+        model.runningDownloads.clear()
         controller.destroy()
     }
 }

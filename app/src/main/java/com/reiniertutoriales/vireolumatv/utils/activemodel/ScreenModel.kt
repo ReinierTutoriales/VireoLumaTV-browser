@@ -7,12 +7,12 @@ import kotlinx.coroutines.cancel
 
 /**
  * State shared by every screen or service that asks [ScreenModels] for it, kept until
- * its last user lets go. [modelScope] runs on the main thread and is cancelled at that point.
+ * its last user lets go. [workScope] runs on the main thread and is cancelled at that point.
  */
 abstract class ScreenModel {
     private var scope: CoroutineScope? = null
 
-    val modelScope: CoroutineScope
+    val workScope: CoroutineScope
         get() = scope ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).also { scope = it }
 
     fun clear() {

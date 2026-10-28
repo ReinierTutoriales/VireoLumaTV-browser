@@ -30,10 +30,10 @@ class ExitPersistenceTest {
         val previous = BrowserTab(url = "https://previous.test").apply {
             savedState = Bundle().apply { putString("history", "previous tab history") }
         }
-        val previousSave = model.modelScope.launch { model.saveTab(previous) }
+        val previousSave = model.workScope.launch { model.saveTab(previous) }
         tab.selected = false
         tab.title = "obsolete"
-        val obsoleteSave = model.modelScope.launch { model.saveTab(tab) }
+        val obsoleteSave = model.workScope.launch { model.saveTab(tab) }
         tab.selected = true
         tab.title = "latest"
         val pending = model.saveTabBeforeExit(tab)
@@ -52,13 +52,13 @@ class ExitPersistenceTest {
         assertNotNull(previous.wvStateFileName)
         assertTrue(tab.id > 0)
         assertNotNull(tab.wvStateFileName)
-        val stored = AppDatabase.db.tabsDao().getAll(false).single { it.url == tab.url }
+        val stored = AppDatabase.db.tabDao().getAll(false).single { it.url == tab.url }
         assertEquals(tab.id, stored.id)
         assertEquals("latest", stored.title)
         assertTrue(stored.selected)
-        AppDatabase.db.tabsDao().delete(tab)
+        AppDatabase.db.tabDao().delete(tab)
         tab.removeFiles()
-        AppDatabase.db.tabsDao().delete(previous)
+        AppDatabase.db.tabDao().delete(previous)
         previous.removeFiles()
     }
 }

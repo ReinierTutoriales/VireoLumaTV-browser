@@ -52,7 +52,7 @@ class DownloadBackoffCancellationTest {
             assertEquals(1, requests.get())
             assertEquals(0, errors.get())
             assertEquals(1, done.get())
-            assertEquals(Download.CANCELLED_MARK, download.size)
+            assertEquals(Download.SIZE_CANCELLED, download.size)
         } finally {
             download.cancelled = true
             worker.interrupt()

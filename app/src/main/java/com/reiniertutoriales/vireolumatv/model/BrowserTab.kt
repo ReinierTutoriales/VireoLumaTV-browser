@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicLong
 /**
  * One open tab, the "tabs" table of schema 19. The stored part says what the tab shows; the
  * engine and the fields marked @Ignore exist only while the browser runs. Navigation history
- * lives in a state file under [TAB_WVSTATES_DIR] named by [wvStateFileName], and the preview in
- * [TAB_THUMBNAILS_DIR].
+ * lives in a state file under [HISTORY_DIR] named by [wvStateFileName], and the preview in
+ * [PREVIEW_DIR].
  *
  * A tab is equal only to itself: two tabs on the same address are still two tabs, so list
  * lookups and removals never mistake one for another. [copy] makes a detached snapshot for saving.
@@ -59,7 +59,7 @@ data class BrowserTab(
     @Ignore var lastLoadingUrl: String? = null
     @Ignore var blockedAds = 0
     @Ignore var blockedPopups = 0
-    @Ignore var cachedHostConfig: SiteSettings? = null
+    @Ignore var cachedSiteSettings: SiteSettings? = null
     /** Set while a page-opened window is screened against popup ad rules. */
     @Ignore @Volatile var popupGuard: PopupGuard? = null
     /** The tab that opened this popup, kept alive while it shows so closing it resumes the page. */
@@ -74,7 +74,7 @@ data class BrowserTab(
     override fun hashCode(): Int = System.identityHashCode(this)
 
     /** Restores the engine from the kept or stored state; false means the address must be loaded. */
-    fun restoreWebView(): Boolean {
+    fun restorePage(): Boolean {
         if (rendererLost) return false
         return try {
             val state = savedState ?: stateFile()?.takeIf { it.exists() }?.readBytes()?.let(engine::readHistory)
@@ -94,13 +94,13 @@ data class BrowserTab(
      * Writes [savedState] to this tab's own state file, atomically. A name from an older version,
      * which duplicate tabs may share, is replaced by a new one instead of being overwritten.
      */
-    fun saveWebViewStateToFile() {
+    fun saveHistoryFile() {
         val state = savedState ?: return
         val prefix = if (incognito) "private-tab-" else "tab-"
         val name = wvStateFileName?.takeIf { it.startsWith(prefix) } ?: prefix + UUID.randomUUID()
         val bytes = if (state is Bundle) BundleBytes.encode(state) else state.toString().toByteArray(Charsets.UTF_8)
         try {
-            val directory = File(AppContext.context.filesDir, TAB_WVSTATES_DIR)
+            val directory = File(AppContext.context.filesDir, HISTORY_DIR)
             if (!directory.isDirectory && !directory.mkdir()) return
             val file = AtomicFile(File(directory, name))
             val output = file.startWrite()
@@ -119,7 +119,7 @@ data class BrowserTab(
 
     /** Deletes this tab's preview and state files. */
     fun removeFiles() {
-        removeThumbnailFile()
+        deletePreview()
         stateFile()?.delete()
         wvStateFileName = null
     }
@@ -134,17 +134,17 @@ data class BrowserTab(
     }
 
     /** Stores [thumbnail] as this tab's preview, replacing the previous preview file. */
-    suspend fun updateThumbnail(context: Context, thumbnail: Bitmap) {
+    suspend fun refreshPreview(context: Context, thumbnail: Bitmap) {
         this.thumbnail = thumbnail
         val prefix = if (incognito) "private-preview-" else "preview-"
         val name = prefix + previewToken + "-" + md5Name(url.toByteArray())
         withContext(Dispatchers.IO) {
             synchronized(this@BrowserTab) {
-                val directory = File(context.cacheDir, TAB_THUMBNAILS_DIR)
+                val directory = File(context.cacheDir, PREVIEW_DIR)
                 if (!directory.isDirectory && !directory.mkdir()) return@withContext
                 // Older versions named previews by address alone, possibly shared by duplicate tabs: keep those.
                 if (thumbnailHash != name && thumbnailHash?.let { it.startsWith("preview-") || it.startsWith("private-preview-") } == true) {
-                    removeThumbnailFile()
+                    deletePreview()
                 }
                 try {
                     // JPEG encodes an RGB_565 preview several times faster than PNG on TV CPUs; BitmapFactory
@@ -159,8 +159,8 @@ data class BrowserTab(
     }
 
     /** Decodes the stored preview at most [PREVIEW_MAX_SIDE] px wide or high, without keeping it. Call on IO. */
-    fun loadThumbnail(): Bitmap? {
-        val file = thumbnailFile() ?: return null
+    fun loadPreview(): Bitmap? {
+        val file = previewFile() ?: return null
         if (!file.exists() || file.length() > PREVIEW_MAX_BYTES) return null
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, options)
@@ -175,19 +175,19 @@ data class BrowserTab(
         return BitmapFactory.decodeFile(file.absolutePath, options)
     }
 
-    private fun stateFile(): File? = wvStateFileName?.let { File(File(AppContext.context.filesDir, TAB_WVSTATES_DIR), it) }
+    private fun stateFile(): File? = wvStateFileName?.let { File(File(AppContext.context.filesDir, HISTORY_DIR), it) }
 
-    private fun thumbnailFile(): File? = thumbnailHash?.let { File(File(AppContext.context.cacheDir, TAB_THUMBNAILS_DIR), "$it.png") }
+    private fun previewFile(): File? = thumbnailHash?.let { File(File(AppContext.context.cacheDir, PREVIEW_DIR), "$it.png") }
 
-    private fun removeThumbnailFile() {
-        thumbnailFile()?.delete()
+    private fun deletePreview() {
+        previewFile()?.delete()
         thumbnailHash = null
     }
 
     companion object {
         private const val TAG = "BrowserTab"
-        const val TAB_THUMBNAILS_DIR = "tabthumbs"
-        const val TAB_WVSTATES_DIR = "wvstates"
+        const val PREVIEW_DIR = "tabthumbs"
+        const val HISTORY_DIR = "wvstates"
         private const val PREVIEW_QUALITY = 85
         private const val PREVIEW_MAX_SIDE = 480
         private const val PREVIEW_MAX_BYTES = 2L * 1024 * 1024

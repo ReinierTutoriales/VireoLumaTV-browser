@@ -22,7 +22,7 @@ class PreviewResourceTest {
     @Test fun legacyLargePreviewIsBoundedAndDoesNotRetainBackgroundBitmap() {
         val app = RuntimeEnvironment.getApplication()
         AppContext.init(app, Config(app.getSharedPreferences("preview-test", 0)))
-        val directory = File(app.cacheDir, BrowserTab.TAB_THUMBNAILS_DIR).apply { mkdirs() }
+        val directory = File(app.cacheDir, BrowserTab.PREVIEW_DIR).apply { mkdirs() }
         val file = File(directory, "large-preview.png")
         Bitmap.createBitmap(1920, 1080, Bitmap.Config.ARGB_8888).also { bitmap ->
             file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -30,7 +30,7 @@ class PreviewResourceTest {
         }
         try {
             val tab = BrowserTab(thumbnailHash = "large-preview")
-            val preview = tab.loadThumbnail()
+            val preview = tab.loadPreview()
             assertNotNull(preview)
             assertTrue(preview!!.width <= 480 && preview.height <= 480)
             assertNull(tab.thumbnail)
@@ -43,10 +43,10 @@ class PreviewResourceTest {
         val model = TabStore()
         try {
             val tab = BrowserTab(url = "https://one.test")
-            tab.cachedHostConfig = SiteSettings("one.test").apply { popupBlockLevel = SiteSettings.POPUP_BLOCK_NONE }
-            assertEquals(SiteSettings.POPUP_BLOCK_NONE, model.popupBlockingLevel(tab))
+            tab.cachedSiteSettings = SiteSettings("one.test").apply { popupBlockLevel = SiteSettings.POPUPS_ALLOWED }
+            assertEquals(SiteSettings.POPUPS_ALLOWED, model.popupBlockingLevel(tab))
             tab.url = "https://two.test"
-            assertEquals(SiteSettings.DEFAULT_BLOCK_POPUPS_VALUE, model.popupBlockingLevel(tab))
+            assertEquals(SiteSettings.DEFAULT_POPUP_POLICY, model.popupBlockingLevel(tab))
         } finally { model.clear() }
     }
 }

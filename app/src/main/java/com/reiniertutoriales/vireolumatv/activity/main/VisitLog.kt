@@ -32,28 +32,28 @@ class VisitLog : ScreenModel() {
     private var lastVisit: HistoryItem? = null
     private var pendingVisit: Job? = null
 
-    fun loadState() = modelScope.launch {
+    fun loadState() = workScope.launch {
         if (loaded) return@launch
         loaded = true
-        if (config.appVersionCodeMark != BuildConfig.VERSION_CODE) {
+        if (config.lastVersionCode != BuildConfig.VERSION_CODE) {
             // An update leaves its own downloaded installer behind; remove it once.
-            config.appVersionCodeMark = BuildConfig.VERSION_CODE
+            config.lastVersionCode = BuildConfig.VERSION_CODE
             withContext(Dispatchers.IO) { ReleaseUpdater.clearDownloads(VireoLumaTVApp.instance) }
         }
         trimHistory()
-        lastVisit = runCatching { AppDatabase.db.historyDao().last().firstOrNull() }.getOrNull()
+        lastVisit = runCatching { AppDatabase.db.visitDao().last().firstOrNull() }.getOrNull()
     }
 
     /** Past [HISTORY_TRIM_THRESHOLD] visits, those older than [HISTORY_KEEP_DAYS] days are removed. */
     private suspend fun trimHistory() {
-        val history = AppDatabase.db.historyDao()
+        val history = AppDatabase.db.visitDao()
         if (history.exceeds(HISTORY_TRIM_THRESHOLD)) {
             history.deleteWhereTimeLessThan(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(HISTORY_KEEP_DAYS))
         }
     }
 
     /** Records a page visit; the same address twice in a row, the home page and non-web pages are skipped. */
-    fun logVisitedHistory(title: String?, url: String, faviconHash: String?) {
+    fun recordVisit(title: String?, url: String, faviconHash: String?) {
         if (url == lastVisit?.url || url == Config.HOME_PAGE_URL || !url.startsWith("http", ignoreCase = true)) return
         val now = System.currentTimeMillis()
         lastVisit?.let { if (!it.saved && now - it.time < VISIT_SETTLE_MS) pendingVisit?.cancel() }
@@ -64,9 +64,9 @@ class VisitLog : ScreenModel() {
             favicon = faviconHash
         }
         lastVisit = visit
-        pendingVisit = modelScope.launch {
+        pendingVisit = workScope.launch {
             delay(VISIT_SETTLE_MS)
-            val history = AppDatabase.db.historyDao()
+            val history = AppDatabase.db.visitDao()
             val insertedTitle = visit.title
             visit.id = history.insert(visit)
             visit.saved = true
@@ -76,18 +76,18 @@ class VisitLog : ScreenModel() {
     }
 
     /** A title that arrives after the visit was logged replaces the stored one. */
-    fun onTabTitleUpdated(tab: BrowserTab) {
-        if (config.incognitoMode) return
+    fun onTabTitle(tab: BrowserTab) {
+        if (config.privateBrowsing) return
         val visit = lastVisit?.takeIf { it.url == tab.url } ?: return
         visit.title = tab.title
-        if (visit.saved) modelScope.launch { AppDatabase.db.historyDao().updateTitle(visit.id, visit.title) }
+        if (visit.saved) workScope.launch { AppDatabase.db.visitDao().updateTitle(visit.id, visit.title) }
     }
 
     /**
      * Gives private mode WebView data of its own: a data directory suffix from Android 9, and
-     * before that a backup of the normal data that [clearIncognitoData] puts back.
+     * before that a backup of the normal data that [clearPrivateData] puts back.
      */
-    fun prepareSwitchToIncognito() {
+    fun preparePrivateWindow() {
         val app = VireoLumaTVApp.instance
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) return IncognitoWebViewData.configure(app)
         val (data, cache) = legacyDirectories()
@@ -97,7 +97,7 @@ class VisitLog : ScreenModel() {
         cache.renameTo(cache.backup())
     }
 
-    fun clearIncognitoData() = modelScope.launch(Dispatchers.IO) {
+    fun clearPrivateData() = workScope.launch(Dispatchers.IO) {
         val app = VireoLumaTVApp.instance
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) return@launch IncognitoWebViewData.clear(app)
         for (directory in legacyDirectories()) {
@@ -108,14 +108,14 @@ class VisitLog : ScreenModel() {
 
     private fun legacyDirectories(): List<File> {
         val app = VireoLumaTVApp.instance
-        return listOf(File(requireNotNull(app.filesDir.parentFile), WEB_VIEW_DATA_FOLDER), File(app.cacheDir, WEB_VIEW_CACHE_FOLDER))
+        return listOf(File(requireNotNull(app.filesDir.parentFile), WEBVIEW_DATA_DIR), File(app.cacheDir, WEBVIEW_CACHE_DIR))
     }
 
     private fun File.backup() = File(parentFile, name + BACKUP_SUFFIX)
 
     companion object {
-        const val WEB_VIEW_DATA_FOLDER = "app_webview"
-        const val WEB_VIEW_CACHE_FOLDER = "WebView"
+        const val WEBVIEW_DATA_DIR = "app_webview"
+        const val WEBVIEW_CACHE_DIR = "WebView"
         private const val BACKUP_SUFFIX = "_backup"
         private const val VISIT_SETTLE_MS = 5_000L
         private const val HISTORY_TRIM_THRESHOLD = 5000

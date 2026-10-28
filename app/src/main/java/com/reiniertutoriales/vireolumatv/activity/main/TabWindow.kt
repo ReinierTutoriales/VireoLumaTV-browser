@@ -36,15 +36,15 @@ import kotlinx.coroutines.launch
  */
 internal class TabWindow(private val browser: MainActivity, private val tab: BrowserTab) : PageWindow {
     private val vb get() = browser.vb
-    private val tabs get() = browser.tabsModel
-    private val ui get() = browser.uiHandler
+    private val tabs get() = browser.tabStore
+    private val ui get() = browser.mainThread
     private val isShownTab get() = tabs.currentTab.value === tab
 
     override val activity: Activity get() = browser
 
     override fun openInNewTab(url: String, load: Boolean): PageEngine? {
-        val current = tabs.tabsStates.indexOf(tabs.currentTab.value)
-        return browser.openInNewTab(url, if (current == -1) tabs.tabsStates.size else current + 1, true, load)
+        val current = tabs.openTabs.indexOf(tabs.currentTab.value)
+        return browser.openInNewTab(url, if (current == -1) tabs.openTabs.size else current + 1, true, load)
     }
 
     // Downloads
@@ -75,8 +75,8 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     override fun onTitle(title: String) {
         tab.title = title
-        vb.tabStrip.onTabTitleUpdated(tab)
-        browser.viewModel.onTabTitleUpdated(tab)
+        vb.tabStrip.onTabTitle(tab)
+        browser.visitLog.onTabTitle(tab)
     }
 
     override fun onIcon(icon: Bitmap) = vb.tabStrip.onFavIconUpdated(tab)
@@ -113,15 +113,15 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         tab.blockedPopups = 0
         ui.removeCallbacks(capturePreview)
         // After the address is updated, so redirects look up the right site.
-        browser.lifecycleScope.launch { tabs.findHostConfig(tab, false) }
-        browser.onWebViewUpdated(tab)
+        browser.lifecycleScope.launch { tabs.siteSettingsFor(tab, false) }
+        browser.onPageViewChanged(tab)
     }
 
     override fun onPageFinished(url: String?) {
         if (tabs.currentTab.value == null) return
-        browser.onWebViewUpdated(tab)
+        browser.onPageViewChanged(tab)
         updateAddress(url)
-        tabs.tabsStates.forEach { if (it !== tab) it.thumbnail = null }
+        tabs.openTabs.forEach { if (it !== tab) it.thumbnail = null }
         // Drawing a WebView in software is slow on TV chips: one preview once the page has settled,
         // not one per redirect, frame or single-page navigation.
         ui.removeCallbacks(capturePreview)
@@ -130,7 +130,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     private fun updateAddress(reported: String?) {
         (tab.engine.url ?: reported)?.let { tab.url = it }
-        if (browser.tabAtStripSelection() === tab) vb.controlsRow.setAddressBoxText(tab.url)
+        if (browser.tabAtStripSelection() === tab) vb.controlsRow.showAddress(tab.url)
     }
 
     private val capturePreview = Runnable {
@@ -138,12 +138,12 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
             tab.engine.view?.isAttachedToWindow != true) return@Runnable
         browser.lifecycleScope.launch {
             val preview = tab.engine.preview(tab.thumbnail) ?: return@launch
-            tab.updateThumbnail(browser, preview)
-            if (vb.controlsOverlay.isVisible && isShownTab) browser.displayThumbnail(tab)
+            tab.refreshPreview(browser, preview)
+            if (vb.controlsOverlay.isVisible && isShownTab) browser.showPreview(tab)
         }
     }
 
-    override fun onCertificateError() = vb.controlsRow.setAddressBoxTextColor(browser.getColor(R.color.error))
+    override fun onCertificateError() = vb.controlsRow.tintAddress(browser.getColor(R.color.error))
 
     override fun onRendererGone() {
         if (isShownTab) browser.changeTab(tab)
@@ -155,14 +155,14 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     override fun onVisited(url: String) {
         val shown = tabs.currentTab.value ?: return
-        if (!browser.config.incognitoMode) browser.viewModel.logVisitedHistory(shown.title, url, shown.faviconHash)
+        if (!browser.config.privateBrowsing) browser.visitLog.recordVisit(shown.title, url, shown.faviconHash)
     }
 
     // Ads, dialogs and pop-ups
 
-    override fun isAd(url: Uri, requestType: String?, page: Uri): Boolean = browser.adblockModel.isAd(url, requestType, page)
+    override fun isAd(url: Uri, requestType: String?, page: Uri): Boolean = browser.adBlocker.isAd(url, requestType, page)
 
-    override fun adRedirect(url: Uri, requestType: String?, page: Uri): String? = browser.adblockModel.redirectFor(url, requestType, page)
+    override fun adRedirect(url: Uri, requestType: String?, page: Uri): String? = browser.adBlocker.redirectFor(url, requestType, page)
 
     override val blocksAds: Boolean get() = tab.adblock ?: browser.config.adBlockEnabled
 
@@ -170,14 +170,14 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
     override val blocksDialogs: Boolean get() = tab.url != Config.HOME_PAGE_URL && blocksNewWindow(dialog = true, userGesture = false)
 
     private fun blocksNewWindow(dialog: Boolean, userGesture: Boolean): Boolean = when (tabs.popupBlockingLevel(tab)) {
-        SiteSettings.POPUP_BLOCK_NONE -> false
-        SiteSettings.POPUP_BLOCK_DIALOGS -> dialog
-        SiteSettings.POPUP_BLOCK_NEW_AUTO_OPENED_TABS -> dialog || !userGesture
+        SiteSettings.POPUPS_ALLOWED -> false
+        SiteSettings.POPUPS_ASK -> dialog
+        SiteSettings.POPUPS_BLOCK_AUTOMATIC -> dialog || !userGesture
         else -> true
     }
 
     override fun isTabUnderAd(url: Uri, page: Uri?): Boolean {
-        if (!blocksAds || !browser.adblockModel.isTabUnderAd(url, page)) return false
+        if (!blocksAds || !browser.adBlocker.isTabUnderAd(url, page)) return false
         Log.i(TAG, "Blocked tab-under navigation to ${url.host}")
         tab.blockedPopups++
         browser.showBlockedPopup(tab, newTab = true)
@@ -212,9 +212,9 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
             onDialogBlocked(!dialog)
             return null
         }
-        val popup = BrowserTab(incognito = browser.config.incognitoMode).apply { this.opener = opener }
+        val popup = BrowserTab(incognito = browser.config.privateBrowsing).apply { this.opener = opener }
         val view = browser.createWebView(popup) ?: return null
-        tabs.tabsStates.add(tabs.tabsStates.indexOf(opener) + 1, popup)
+        tabs.openTabs.add(tabs.openTabs.indexOf(opener) + 1, popup)
         val show = Runnable {
             if (popup.closed) return@Runnable
             if (browser.isFinishing || browser.isDestroyed || tabs.currentTab.value !== opener) tabs.onCloseTab(popup)
@@ -222,7 +222,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         }
         if (blocksAds) {
             val openerUrl = runCatching { opener.url.toUri() }.getOrNull()
-            val model = browser.adblockModel
+            val model = browser.adBlocker
             popup.popupGuard = PopupGuard(
                 isAd = { url -> model.isPopupAd(url, openerUrl) },
                 onBlocked = { ui.post { browser.onPopupAdBlocked(popup, opener) } },
@@ -237,7 +237,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
     }
 
     override fun closeWindow(view: Any) {
-        tabs.tabsStates.firstOrNull { it.engine.ownsView(view) }?.let(browser::closeTab)
+        tabs.openTabs.firstOrNull { it.engine.ownsView(view) }?.let(browser::closeTab)
     }
 
     // Fullscreen
@@ -264,7 +264,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
     // Pointer menu and link actions
 
     override fun openPointerMenu(cursor: PointerController, target: PagePoint) {
-        ui.post { vb.pointerMenu.show(tab, this, cursor, target, browser.backNavigationEventsAdapter) }
+        ui.post { vb.pointerMenu.show(tab, this, cursor, target, browser.backPresses) }
     }
 
     /** The link actions menu at the pointer: what applies depends on whether a web link is under it. */

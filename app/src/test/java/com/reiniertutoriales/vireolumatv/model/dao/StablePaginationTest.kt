@@ -21,7 +21,7 @@ class StablePaginationTest {
     @Test fun visitsWithEqualTimestampsHaveStablePagesAndSearchOrder() = runBlocking {
         val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java).build()
         try {
-            val dao = db.historyDao()
+            val dao = db.visitDao()
             val ids = (1..102).map { n -> dao.insert(HistoryItem().apply {
                 time = 1_000L
                 title = "Visit $n"

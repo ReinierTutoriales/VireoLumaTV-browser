@@ -15,24 +15,24 @@ class Config(val prefs: SharedPreferences) {
     enum class HomePageMode { HOME_PAGE, SEARCH_ENGINE, CUSTOM, BLANK }
 
     /** Written synchronously: the private-mode process reads it right after the switch. */
-    var incognitoMode by flag(INCOGNITO_MODE_KEY, false, commit = true)
-    var incognitoModeHintSuppress by flag("incognito_mode_hint_suppress", false)
-    var directNavigationModeHintSuppress by flag("direct_navigation_mode_hint_suppress", false)
+    var privateBrowsing by flag(PRIVATE_MODE_KEY, false, commit = true)
+    var privateHintSeen by flag("incognito_mode_hint_suppress", false)
+    var keyModeHintSeen by flag("direct_navigation_mode_hint_suppress", false)
     var keepScreenOn by flag("keep_screen_on", false)
     /** When true, stick and hat motion is not turned into D-pad keys. */
-    var disableMotionAxesDpadNavigation by flag("disable_motion_axes_dpad_navigation", false)
+    var ignoreStickAxes by flag("disable_motion_axes_dpad_navigation", false)
     var allowAutoplayMedia by flag("allow_autoplay_media", false)
-    var webviewUseAlgorithmicDarkeningWithDarkUiMode by flag("webview_use_algorithmic_darkening_with_dark_ui_mode", true)
-    var webEngineDebug by flag("web_engine_debug", false)
+    var darkenPages by flag("webview_use_algorithmic_darkening_with_dark_ui_mode", true)
+    var pageDebugging by flag("web_engine_debug", false)
 
     /** Pointer top speed, as a percent of the default derived from the screen width. */
-    var cursorMaxSpeedPercent by percent(CURSOR_MAX_SPEED_PERCENT_KEY)
+    var pointerSpeedPercent by percent(POINTER_SPEED_KEY)
     /** Pointer acceleration, as a percent of the default ramp per frame. */
-    var cursorAccelerationPercent by percent("cursor_acceleration_percent")
+    var pointerAccelPercent by percent("cursor_acceleration_percent")
 
     /** Maximum video height in pixels; 0 lets the site decide. */
     var videoMaxHeight by number("video_max_height", 0)
-    var appVersionCodeMark by number("app_version_code_mark", 0)
+    var lastVersionCode by number("app_version_code_mark", 0)
 
     var homePage: String
         get() = prefs.getString(HOME_PAGE_KEY, HOME_URL_ALIAS) ?: HOME_URL_ALIAS
@@ -52,25 +52,25 @@ class Config(val prefs: SharedPreferences) {
         }
         set(value) = prefs.edit { putInt(HOME_PAGE_MODE_KEY, value.ordinal) }
 
-    val searchEngineURL = StringPreference(SEARCH_ENGINE_URL_PREF_KEY, DUCKDUCKGO_SEARCH_URL)
+    val searchAddress = StringPreference(SEARCH_URL_KEY, DUCKDUCKGO_SEARCH_URL)
 
     /** Null means the WebView's own user agent. */
-    val userAgentString = OptionalStringPreference("user_agent")
+    val userAgentOverride = OptionalStringPreference("user_agent")
 
     /** Read on every request, so it is kept in memory as well. */
-    var adBlockEnabled: Boolean = prefs.getBoolean(ADBLOCK_ENABLED_PREF_KEY, true)
+    var adBlockEnabled: Boolean = prefs.getBoolean(BLOCKER_ENABLED_KEY, true)
         set(value) {
             field = value
-            prefs.edit { putBoolean(ADBLOCK_ENABLED_PREF_KEY, value) }
+            prefs.edit { putBoolean(BLOCKER_ENABLED_KEY, value) }
         }
-    val adBlockListURL = StringPreference(ADBLOCK_LIST_URL_KEY, DEFAULT_ADBLOCK_LIST_URL)
-    var adBlockListLastUpdate by time("adblock_last_update")
-    var adBlockListNextRetry by time("adblock_list_next_retry")
+    val blockListUrl = StringPreference(BLOCK_LIST_URL_KEY, DEFAULT_ADBLOCK_LIST_URL)
+    var blockListUpdatedAt by time("adblock_last_update")
+    var blockListRetryAt by time("adblock_list_next_retry")
 
     init {
         // DuckDuckGo became the default search once; later choices are kept.
         if (!prefs.getBoolean(DDG_DEFAULT_APPLIED_KEY, false)) {
-            searchEngineURL.value = DUCKDUCKGO_SEARCH_URL
+            searchAddress.value = DUCKDUCKGO_SEARCH_URL
             prefs.edit { putBoolean(DDG_DEFAULT_APPLIED_KEY, true) }
         }
     }
@@ -105,8 +105,8 @@ class Config(val prefs: SharedPreferences) {
         { prefs.getLong(key, 0L) }, { value: Long -> prefs.edit { putLong(key, value) } })
 
     private fun percent(key: String) = setting(
-        { prefs.getInt(key, 100).coerceIn(CURSOR_PHYSICS_PERCENT_MIN, CURSOR_PHYSICS_PERCENT_MAX) },
-        { value: Int -> prefs.edit { putInt(key, value.coerceIn(CURSOR_PHYSICS_PERCENT_MIN, CURSOR_PHYSICS_PERCENT_MAX)) } })
+        { prefs.getInt(key, 100).coerceIn(POINTER_PERCENT_MIN, POINTER_PERCENT_MAX) },
+        { value: Int -> prefs.edit { putInt(key, value.coerceIn(POINTER_PERCENT_MIN, POINTER_PERCENT_MAX)) } })
 
     private fun <T> setting(read: () -> T, write: (T) -> Unit) = object : ReadWriteProperty<Any?, T> {
         override fun getValue(thisRef: Any?, property: KProperty<*>): T = read()
@@ -117,18 +117,18 @@ class Config(val prefs: SharedPreferences) {
     data class SearchEngine(val title: String, val url: String)
 
     companion object {
-        const val SEARCH_ENGINE_URL_PREF_KEY = "search_engine_url"
+        const val SEARCH_URL_KEY = "search_engine_url"
         const val HOME_PAGE_KEY = "home_page"
-        const val INCOGNITO_MODE_KEY = "incognito_mode"
-        const val CURSOR_MAX_SPEED_PERCENT_KEY = "cursor_max_speed_percent"
-        const val ADBLOCK_ENABLED_PREF_KEY = "adblock_enabled"
-        const val ADBLOCK_LIST_URL_KEY = "adblock_list_url"
+        const val PRIVATE_MODE_KEY = "incognito_mode"
+        const val POINTER_SPEED_KEY = "cursor_max_speed_percent"
+        const val BLOCKER_ENABLED_KEY = "adblock_enabled"
+        const val BLOCK_LIST_URL_KEY = "adblock_list_url"
         private const val HOME_PAGE_MODE_KEY = "home_page_mode"
         private const val LEGACY_SEARCH_AS_HOME_KEY = "search_engine_as_home_page"
         private const val DDG_DEFAULT_APPLIED_KEY = "minimal_home_search_migrated"
 
-        const val CURSOR_PHYSICS_PERCENT_MIN = 25
-        const val CURSOR_PHYSICS_PERCENT_MAX = 200
+        const val POINTER_PERCENT_MIN = 25
+        const val POINTER_PERCENT_MAX = 200
 
         const val HOME_URL_ALIAS = "about:home"
         const val HOME_PAGE_URL = "https://vireolumatv.invalid/appcontent/home/"

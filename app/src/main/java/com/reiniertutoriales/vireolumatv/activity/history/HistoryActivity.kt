@@ -29,7 +29,7 @@ class HistoryActivity : AppCompatActivity() {
     /** Back leaves selection mode first; only then does it close the screen. */
     private val leaveSelection = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
-            adapter.isMultiselectMode = false
+            adapter.selectionMode = false
             updateCommands()
         }
     }
@@ -47,7 +47,7 @@ class HistoryActivity : AppCompatActivity() {
         vb.clearButton.setOnClickListener { confirmDelete(all = true) }
         vb.deleteSelectedButton.setOnClickListener { confirmDelete(all = false) }
 
-        model.lastLoadedItems.subscribe(this) {
+        model.loadedPage.subscribe(this) {
             if (it.isEmpty() || it === consumedPage) return@subscribe
             consumedPage = it
             adapter.addItems(it)
@@ -67,7 +67,7 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun onItemClick(item: HistoryItem) {
-        if (adapter.isMultiselectMode) {
+        if (adapter.selectionMode) {
             adapter.toggleSelection(item)
             updateCommands()
         } else {
@@ -77,27 +77,27 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun onItemLongClick(item: HistoryItem): Boolean {
-        if (adapter.isMultiselectMode) return false
-        adapter.isMultiselectMode = true
+        if (adapter.selectionMode) return false
+        adapter.selectionMode = true
         adapter.toggleSelection(item)
         updateCommands()
         return true
     }
 
     private fun updateCommands() {
-        leaveSelection.isEnabled = adapter.isMultiselectMode
+        leaveSelection.isEnabled = adapter.selectionMode
         vb.deleteSelectedButton.isVisible = adapter.selectedItems.isNotEmpty()
     }
 
     private fun confirmDelete(all: Boolean) {
         val selection = adapter.selectedItems
-        if (adapter.realCount == 0L || (!all && selection.isEmpty())) return
+        if (adapter.rowCount == 0L || (!all && selection.isEmpty())) return
         AlertDialog.Builder(this)
             .setTitle(R.string.action_delete)
             .setMessage(if (all) R.string.history_delete_all else R.string.history_delete_selected)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 lifecycleScope.launch {
-                    val history = AppDatabase.db.historyDao()
+                    val history = AppDatabase.db.visitDao()
                     if (all) {
                         history.deleteWhereTimeLessThan(Long.MAX_VALUE)
                         adapter.erase()
@@ -105,7 +105,7 @@ class HistoryActivity : AppCompatActivity() {
                         history.delete(*selection.toTypedArray())
                         adapter.remove(selection)
                     }
-                    adapter.isMultiselectMode = false
+                    adapter.selectionMode = false
                     updateCommands()
                     vb.clearButton.requestFocus()
                 }

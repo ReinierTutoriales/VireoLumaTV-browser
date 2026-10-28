@@ -23,7 +23,7 @@ class StorageWriteContractTest {
     @Test fun independentHostFieldsPreserveEachOtherAndTheRowIdentity() = runBlocking {
         val db = database()
         try {
-            val hosts = db.hostsDao()
+            val hosts = db.siteSettingsDao()
             val original = hosts.ensureHost("site.test")
             hosts.storePopupLevel(original.hostName, 3)
             // A favicon completion based on this older row must not restore its null popup level.
@@ -45,7 +45,7 @@ class StorageWriteContractTest {
     @Test fun editingAStaleBookmarkPreservesOtherStoredColumns() = runBlocking {
         val db = database()
         try {
-            val bookmarks = db.favoritesDao()
+            val bookmarks = db.favoriteDao()
             bookmarks.insert(Favorite().apply { title = "Before"; url = "https://before.test"; validUntil = 123L })
             val stale = bookmarks.getAll().single().copyForEdit()
             db.openHelper.writableDatabase.execSQL("UPDATE favorites SET DESCRIPTION = 'kept', VALID_UNTIL = 456")
@@ -80,7 +80,7 @@ class StorageWriteContractTest {
     @Test fun historyTrimDecisionUsesStrictlyMoreThanTheThreshold() = runBlocking {
         val db = database()
         try {
-            val history = db.historyDao()
+            val history = db.visitDao()
             assertFalse(history.exceeds(0))
             history.insert(com.reiniertutoriales.vireolumatv.model.HistoryItem())
             assertTrue(history.exceeds(0))

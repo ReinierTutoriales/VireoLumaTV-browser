@@ -21,7 +21,7 @@ import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-const val MAX_CONNECT_RETRIES = 5
+const val CONNECT_ATTEMPTS = 5
 
 /** Redirects followed before a download is reported as broken. */
 internal const val MAX_REDIRECTS = 5
@@ -29,9 +29,9 @@ internal const val MAX_REDIRECTS = 5
 /**
  * One download running on the service's pool. Every task ends exactly once: the output is published
  * (complete) or removed (cancelled or failed) first, then [Callback.onDone] or [Callback.onError]
- * reports the final [Download.size]: the byte count, [Download.CANCELLED_MARK] or [Download.BROKEN_MARK].
+ * reports the final [Download.size]: the byte count, [Download.SIZE_CANCELLED] or [Download.SIZE_FAILED].
  */
-sealed class Transfer(var downloadInfo: Download, private val callback: Callback) : Runnable {
+sealed class Transfer(var job: Download, private val callback: Callback) : Runnable {
 
     interface Callback {
         fun onProgress(task: Transfer)
@@ -53,36 +53,36 @@ sealed class Transfer(var downloadInfo: Download, private val callback: Callback
     protected open fun release() {}
 
     final override fun run() {
-        DownloadHistory.insert(downloadInfo)
+        DownloadHistory.insert(job)
         val outcome = try {
-            if (downloadInfo.cancelled) Outcome.Cancelled else transfer()
+            if (job.cancelled) Outcome.Cancelled else transfer()
         } catch (error: Exception) {
-            if (downloadInfo.cancelled) Outcome.Cancelled else Outcome.Failed(0, error.toString())
+            if (job.cancelled) Outcome.Cancelled else Outcome.Failed(0, error.toString())
         } finally {
             release()
         }
         when (outcome) {
-            Outcome.Complete -> downloadInfo.size = downloadInfo.bytesReceived
+            Outcome.Complete -> job.size = job.bytesReceived
             Outcome.Cancelled -> {
-                downloadInfo.bytesReceived = 0
-                downloadInfo.size = Download.CANCELLED_MARK
+                job.bytesReceived = 0
+                job.size = Download.SIZE_CANCELLED
             }
-            is Outcome.Failed -> downloadInfo.size = Download.BROKEN_MARK
+            is Outcome.Failed -> job.size = Download.SIZE_FAILED
         }
-        finishOutput(downloadInfo, keep = outcome == Outcome.Complete)
+        finishOutput(job, keep = outcome == Outcome.Complete)
         if (outcome is Outcome.Failed) callback.onError(this, outcome.code, outcome.message)
         else callback.onDone(this)
     }
 
     /** Copies [input] into a new download output, reporting progress; false if cancelled meanwhile. */
     protected fun save(input: InputStream): Boolean {
-        openOutput(downloadInfo).use { output ->
+        openOutput(job).use { output ->
             val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
             var count = input.read(buffer)
             while (count != -1) {
-                if (downloadInfo.cancelled) return false
+                if (job.cancelled) return false
                 output.write(buffer, 0, count)
-                downloadInfo.bytesReceived += count
+                job.bytesReceived += count
                 callback.onProgress(this)
                 count = input.read(buffer)
             }
@@ -96,15 +96,15 @@ sealed class Transfer(var downloadInfo: Download, private val callback: Callback
 }
 
 /** Downloads [Download.url] with the page's cookies, referer and user agent. */
-class FileTransfer(downloadInfo: Download, private val userAgent: String?, callback: Callback) :
-    Transfer(downloadInfo, callback) {
+class FileTransfer(job: Download, private val userAgent: String?, callback: Callback) :
+    Transfer(job, callback) {
 
     override fun transfer(): Outcome {
-        var url = URL(downloadInfo.url)
+        var url = URL(job.url)
         var redirects = 0
         var retries = 0
         while (true) {
-            if (downloadInfo.cancelled) return Outcome.Cancelled
+            if (job.cancelled) return Outcome.Cancelled
             val connection = connect(url)
             try {
                 val code = connection.responseCode
@@ -120,7 +120,7 @@ class FileTransfer(downloadInfo: Download, private val userAgent: String?, callb
                     }
                     code == HttpURLConnection.HTTP_UNAVAILABLE || code == HttpURLConnection.HTTP_GATEWAY_TIMEOUT -> {
                         val delay = DownloadRetryPolicy.delayMillis(++retries, connection.getHeaderField("Retry-After"))
-                        if (retries >= MAX_CONNECT_RETRIES || delay == null) {
+                        if (retries >= CONNECT_ATTEMPTS || delay == null) {
                             return Outcome.Failed(code, connection.responseMessage.orEmpty())
                         }
                         connection.disconnect()
@@ -142,26 +142,26 @@ class FileTransfer(downloadInfo: Download, private val userAgent: String?, callb
         readTimeout = 10_000
         useCaches = false
         userAgent?.let { setRequestProperty("User-Agent", it) }
-        downloadInfo.mimeType?.takeIf { it != "application/octet-stream" }?.let { setRequestProperty("Accept", it) }
-        downloadInfo.referer?.let { setRequestProperty("Referer", it) }
+        job.mimeType?.takeIf { it != "application/octet-stream" }?.let { setRequestProperty("Accept", it) }
+        job.referer?.let { setRequestProperty("Referer", it) }
         CookieManager.getInstance().getCookie(url.toString())?.let { setRequestProperty("Cookie", it) }
         connect()
     }
 
     private fun receive(connection: HttpURLConnection): Outcome {
-        downloadInfo.size = connection.contentLengthLong
+        job.size = connection.contentLengthLong
         val disposition = connection.getHeaderField("Content-Disposition")
         // Before Android 11 the service already reserved a unique file for the original name.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && disposition != null) {
-            downloadInfo.filename = FileNames.sanitizeFileName(FileNames.guessFileName(
-                downloadInfo.url, disposition, connection.getHeaderField("Content-Type"))) ?: "downloadfile"
+            job.filename = FileNames.sanitizeFileName(FileNames.guessFileName(
+                job.url, disposition, connection.getHeaderField("Content-Type"))) ?: "downloadfile"
         }
         return connection.inputStream.use { if (save(it)) Outcome.Complete else Outcome.Cancelled }
     }
 
     private fun waitUnlessCancelled(millis: Long): Boolean {
         val deadline = System.nanoTime() + millis * 1_000_000L
-        while (!downloadInfo.cancelled) {
+        while (!job.cancelled) {
             val remaining = (deadline - System.nanoTime()) / 1_000_000L
             if (remaining <= 0) return true
             Thread.sleep(minOf(250L, remaining))
@@ -176,8 +176,8 @@ class FileTransfer(downloadInfo: Download, private val userAgent: String?, callb
 }
 
 /** Decodes a page blob handed over as a base64 data URL, without holding a second decoded copy. */
-class BlobTransfer(downloadInfo: Download, blobBase64Data: String, callback: Callback) :
-    Transfer(downloadInfo, callback) {
+class BlobTransfer(job: Download, blobBase64Data: String, callback: Callback) :
+    Transfer(job, callback) {
     private var encoded: String? = blobBase64Data
 
     override fun transfer(): Outcome =
@@ -187,13 +187,13 @@ class BlobTransfer(downloadInfo: Download, blobBase64Data: String, callback: Cal
 
     override fun release() {
         encoded = null
-        downloadInfo.base64BlobData = null
+        job.base64BlobData = null
     }
 }
 
 /** Saves a stream the page already opened, such as a data URL or an intercepted response. */
-class StreamTransfer(downloadInfo: Download, private val stream: InputStream, callback: Callback) :
-    Transfer(downloadInfo, callback) {
+class StreamTransfer(job: Download, private val stream: InputStream, callback: Callback) :
+    Transfer(job, callback) {
 
     override fun transfer(): Outcome = if (save(stream)) Outcome.Complete else Outcome.Cancelled
 
@@ -202,36 +202,36 @@ class StreamTransfer(downloadInfo: Download, private val stream: InputStream, ca
             stream.close()
         } catch (_: IOException) {
         }
-        downloadInfo.stream = null
+        job.stream = null
     }
 }
 
 // Callers run only on Android 11+ (MediaStore.Downloads columns are API 29+).
 @RequiresApi(Build.VERSION_CODES.R)
-internal fun buildDownloadDetails(downloadInfo: Download) = ContentValues().apply {
-    if (downloadInfo.filename.isNotEmpty()) put(MediaStore.Downloads.DISPLAY_NAME, downloadInfo.filename)
-    if (!downloadInfo.incognito) {
-        put(MediaStore.Downloads.DOWNLOAD_URI, downloadInfo.url)
-        put(MediaStore.Downloads.REFERER_URI, downloadInfo.referer)
+internal fun buildDownloadDetails(job: Download) = ContentValues().apply {
+    if (job.filename.isNotEmpty()) put(MediaStore.Downloads.DISPLAY_NAME, job.filename)
+    if (!job.incognito) {
+        put(MediaStore.Downloads.DOWNLOAD_URI, job.url)
+        put(MediaStore.Downloads.REFERER_URI, job.referer)
     }
     put(MediaStore.Downloads.IS_PENDING, 1)
 }
 
 /** Android 11+: a pending MediaStore entry whose URI becomes [Download.filepath]; earlier: the reserved file. */
-private fun openOutput(downloadInfo: Download): OutputStream {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return FileOutputStream(downloadInfo.filepath)
+private fun openOutput(job: Download): OutputStream {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return FileOutputStream(job.filepath)
     val resolver = VireoLumaTVApp.instance.contentResolver
     val uri = resolver.insert(MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
-        buildDownloadDetails(downloadInfo)) ?: throw IOException("Could not create the download entry")
-    downloadInfo.filepath = uri.toString()
-    DownloadHistory.update(downloadInfo)
+        buildDownloadDetails(job)) ?: throw IOException("Could not create the download entry")
+    job.filepath = uri.toString()
+    DownloadHistory.update(job)
     val descriptor = resolver.openFileDescriptor(uri, "w", null) ?: throw IOException("Could not open the download output")
     return AutoCloseOutputStream(descriptor)
 }
 
 /** Publishes a complete output, or deletes an incomplete one; a task that never opened one has nothing to do. */
-private fun finishOutput(downloadInfo: Download, keep: Boolean) {
-    val path = downloadInfo.filepath
+private fun finishOutput(job: Download, keep: Boolean) {
+    val path = job.filepath
     if (path.isEmpty()) return
     try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

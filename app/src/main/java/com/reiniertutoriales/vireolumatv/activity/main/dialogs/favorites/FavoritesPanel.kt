@@ -36,7 +36,7 @@ class FavoritesPanel(
     private val rows = FavoriteRows(
         onOpen = { dismiss(); onOpen(it) },
         onEdit = ::edit,
-        onDelete = { item -> refresh { AppDatabase.db.favoritesDao().delete(item) } },
+        onDelete = { item -> refresh { AppDatabase.db.favoriteDao().delete(item) } },
     )
 
     init {
@@ -65,7 +65,7 @@ class FavoritesPanel(
         if (busy) return
         FavoriteEditor(context, item) { edited ->
             refresh {
-                val favorites = AppDatabase.db.favoritesDao()
+                val favorites = AppDatabase.db.favoriteDao()
                 if (edited.id == 0L) favorites.insert(edited) else favorites.update(edited)
             }
         }.show()
@@ -78,7 +78,7 @@ class FavoritesPanel(
         operations.launch(Dispatchers.Main) {
             try {
                 write()
-                val snapshot = AppDatabase.db.favoritesDao().getAll()
+                val snapshot = AppDatabase.db.favoriteDao().getAll()
                 rows.submitList(snapshot) { renderRows() }
             } catch (cancelled: CancellationException) {
                 throw cancelled

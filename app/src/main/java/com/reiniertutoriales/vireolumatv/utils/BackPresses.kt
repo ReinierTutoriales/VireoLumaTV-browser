@@ -8,9 +8,9 @@ import android.view.MotionEvent
 
 /** Converts remote and controller Back gestures into one navigation action per press. */
 class BackPresses(
-    private val onEmulatedBackEvent: () -> Unit,
+    private val onBackKey: () -> Unit,
     private val longPressTimeoutMs: Int = 500,
-    var gameControllersLongPressBForBackNavigation: Boolean = false,
+    var holdBGoesBack: Boolean = false,
 ) {
     init {
         require(longPressTimeoutMs > 0)
@@ -47,7 +47,7 @@ class BackPresses(
         return Press(code, time, longOnly, ignored)
     }
 
-    fun dispatchSystemBackNavigationEvent(): Boolean {
+    fun sendSystemBack(): Boolean {
         val time = SystemClock.uptimeMillis()
         if (isDuplicate(Channel.SYSTEM, time)) return false
         recentStarts[Channel.SYSTEM.ordinal] = time
@@ -62,7 +62,7 @@ class BackPresses(
                 if (event.repeatCount == 0 || keyPress?.code != event.keyCode) {
                     keyPress = begin(
                         Channel.KEY, event.keyCode, event.eventTime,
-                        gameControllersLongPressBForBackNavigation && isController(event.source),
+                        holdBGoesBack && isController(event.source),
                     )
                 }
                 val press = keyPress ?: return true
@@ -99,7 +99,7 @@ class BackPresses(
         if (held && press == null) {
             motionPress = begin(
                 Channel.MOTION, MotionEvent.BUTTON_BACK, event.eventTime,
-                gameControllersLongPressBForBackNavigation && controller,
+                holdBGoesBack && controller,
             )
         } else if (held && press != null && press.longOnly && !press.ignored && !press.fired &&
             event.eventTime - press.startedAt >= longPressTimeoutMs) {
@@ -120,7 +120,7 @@ class BackPresses(
 
     private fun emit() {
         try {
-            onEmulatedBackEvent()
+            onBackKey()
         } catch (error: RuntimeException) {
             Log.e("BackPresses", "Back handler failed", error)
         }

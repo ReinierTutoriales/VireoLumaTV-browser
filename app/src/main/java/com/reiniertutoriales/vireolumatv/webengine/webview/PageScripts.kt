@@ -1,7 +1,7 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
 object PageScripts {
-    const val LONG_PRESS_SCRIPT = """
+    const val HOLD_SCRIPT = """
 (function() {
     var element = window.VIREOLUMATV_activeElement;
     if (!element || !element.isConnected) return null;

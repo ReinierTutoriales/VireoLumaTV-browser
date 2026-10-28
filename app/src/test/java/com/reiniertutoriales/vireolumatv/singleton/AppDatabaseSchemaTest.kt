@@ -46,13 +46,13 @@ class AppDatabaseSchemaTest {
         }
         val db = Room.databaseBuilder(context, AppDatabase::class.java, file.name).allowMainThreadQueries().build()
         try {
-            assertEquals(listOf("Kept"), db.historyDao().getAll().map(HistoryItem::title))
+            assertEquals(listOf("Kept"), db.visitDao().getAll().map(HistoryItem::title))
             // The retired Date converter stored milliseconds in this unchanged INTEGER column.
             db.openHelper.writableDatabase.execSQL("UPDATE favorites SET PARENT = 0")
-            val bookmark = db.favoritesDao().getAll().single()
+            val bookmark = db.favoriteDao().getAll().single()
             assertEquals(123456789L, bookmark.validUntil)
-            db.favoritesDao().update(bookmark.copyForEdit().apply { title = "Edited" })
-            assertEquals(123456789L, db.favoritesDao().getAll().single().validUntil)
+            db.favoriteDao().update(bookmark.copyForEdit().apply { title = "Edited" })
+            assertEquals(123456789L, db.favoriteDao().getAll().single().validUntil)
         } finally {
             db.close()
         }

@@ -94,7 +94,7 @@ object Favicons {
 
     private suspend fun lookUp(url: URL, host: String, origin: String): Bitmap? {
         failedAt.get(origin)?.let { if (SystemClock.elapsedRealtime() - it < RETRY_AFTER_MS) return null }
-        val privateMode = AppContext.config.incognitoMode
+        val privateMode = AppContext.config.privateBrowsing
         val icon = try {
             val row = if (privateMode) null else withContext(Dispatchers.IO) { store.find(host) }
             stored(row) ?: network.withPermit { fromSite(url) }?.also { if (!privateMode) save(host, it, row) }
@@ -119,7 +119,7 @@ object Favicons {
     /** The first decodable of the site's few candidates closest to [PREFERRED_SIDE]. */
     private suspend fun fromSite(url: URL): Bitmap? {
         // A page can list hundreds of duplicates, or SVGs that cannot be decoded here.
-        val candidates = withContext(Dispatchers.IO) { extractor.extractFavIconsFromURL(url) }
+        val candidates = withContext(Dispatchers.IO) { extractor.iconsFromAddress(url) }
             .filter { it.src.length <= MAX_ICON_URL && isWeb(it.src) && !it.type.equals("image/svg+xml", ignoreCase = true) }
             .distinctBy { it.src }
             .sortedBy { abs(it.width.toLong() - PREFERRED_SIDE) + abs(it.height.toLong() - PREFERRED_SIDE) }

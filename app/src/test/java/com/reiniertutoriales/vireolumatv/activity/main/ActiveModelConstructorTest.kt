@@ -12,6 +12,6 @@ class ActiveModelConstructorTest {
         val user = Any()
         val model = ScreenModels.get(OverloadedModel::class, user)
         try { assertEquals(42, model.initial) }
-        finally { ScreenModels.markAsNeedless(model, user) }
+        finally { ScreenModels.discard(model, user) }
     }
 }

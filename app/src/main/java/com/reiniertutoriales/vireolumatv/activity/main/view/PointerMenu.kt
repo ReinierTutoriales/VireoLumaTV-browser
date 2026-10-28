@@ -40,7 +40,7 @@ class PointerMenu @JvmOverloads constructor(context: Context, attrs: AttributeSe
 
     init {
         vb.movePageButton.setOnClickListener {
-            target?.cursor?.goToGrabMode()
+            target?.cursor?.startDragging()
             close(grow = true)
         }
         vb.linkOptionsButton.setOnClickListener {
@@ -51,7 +51,7 @@ class PointerMenu @JvmOverloads constructor(context: Context, attrs: AttributeSe
         vb.dpadModeButton.setOnClickListener {
             val t = target ?: return@setOnClickListener
             hide()
-            if (AppContext.config.directNavigationModeHintSuppress) enterDirectNavigation(t) else explainDirectNavigation(t)
+            if (AppContext.config.keyModeHintSeen) enterDirectNavigation(t) else explainDirectNavigation(t)
         }
         vb.zoomInButton.setOnClickListener { target?.tab?.engine?.zoom(closer = true) }
         vb.zoomOutButton.setOnClickListener { target?.tab?.engine?.zoom(closer = false) }
@@ -94,7 +94,7 @@ class PointerMenu @JvmOverloads constructor(context: Context, attrs: AttributeSe
         panel.scaleY = 1f
         if (restoreFocus && closed != null) {
             closed.tab.engine.view?.requestFocus()
-            closed.cursor.animateAppearing()
+            closed.cursor.fadeIn()
         }
     }
 
@@ -105,7 +105,7 @@ class PointerMenu @JvmOverloads constructor(context: Context, attrs: AttributeSe
 
     private fun enterDirectNavigation(t: Target) {
         t.tab.engine.setPointerMode(false)
-        t.back.gameControllersLongPressBForBackNavigation = true
+        t.back.holdBGoesBack = true
     }
 
     /** Explains D-pad mode once, with an option to stop explaining it. */
@@ -121,7 +121,7 @@ class PointerMenu @JvmOverloads constructor(context: Context, attrs: AttributeSe
             .setMessage(R.string.dpad_mode_message)
             .setView(content)
             .setPositiveButton(android.R.string.ok) { _, _ ->
-                if (dontAskAgain.isChecked) AppContext.config.directNavigationModeHintSuppress = true
+                if (dontAskAgain.isChecked) AppContext.config.keyModeHintSeen = true
                 enterDirectNavigation(t)
             }
             .setOnDismissListener { t.tab.engine.view?.requestFocus() }

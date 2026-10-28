@@ -36,10 +36,10 @@ class HistoryRequestTest {
             model.loadItems()
             ShadowLooper.idleMainLooper()
             assertTrue(previous.isCancelled)
-            assertEquals("%new\\%%", model.lastLoadedItems.value.single().title)
+            assertEquals("%new\\%%", model.loadedPage.value.single().title)
             waiting.complete(listOf(HistoryItem().apply { title = "Stale" }))
             ShadowLooper.idleMainLooper()
-            assertEquals("%new\\%%", model.lastLoadedItems.value.single().title)
+            assertEquals("%new\\%%", model.loadedPage.value.single().title)
         } finally { model.clear() }
     }
 }

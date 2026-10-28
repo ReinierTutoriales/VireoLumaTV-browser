@@ -39,16 +39,16 @@ class DownloadListAdapterTest {
         this.size = size
     }
 
-    private fun DownloadRows.rows() = currentList.filter { !it.isDateHeader }.map { it.filename }
+    private fun DownloadRows.rows() = currentList.filter { !it.isDayHeader }.map { it.filename }
 
     @Test
     fun addItemsInsertsOneHeaderPerDayAndCountsOnlyRealItems() {
         val adapter = adapter().apply { addItems(listOf(download(1, day, "a"), download(2, day + 1000, "b"), download(3, nextDay, "c"))) }.settle()
 
         assertEquals(5, adapter.itemCount)
-        assertEquals(3L, adapter.realCount)
-        assertTrue(adapter.currentList[0].isDateHeader)
-        assertTrue(adapter.currentList[3].isDateHeader)
+        assertEquals(3L, adapter.rowCount)
+        assertTrue(adapter.currentList[0].isDayHeader)
+        assertTrue(adapter.currentList[3].isDayHeader)
     }
 
     @Test
@@ -58,7 +58,7 @@ class DownloadListAdapterTest {
             addLiveItem(download(1, day, "a"))
         }.settle()
 
-        assertEquals(1L, adapter.realCount)
+        assertEquals(1L, adapter.rowCount)
     }
 
     @Test
@@ -68,7 +68,7 @@ class DownloadListAdapterTest {
 
         adapter.remove(a)
 
-        assertEquals(1L, adapter.settle().realCount)
+        assertEquals(1L, adapter.settle().rowCount)
         assertEquals(listOf("b"), adapter.rows())
         assertEquals(2, adapter.itemCount)
     }
@@ -93,14 +93,14 @@ class DownloadListAdapterTest {
         adapter.updateDownload(download(1, day, "a", size = 100).apply { bytesReceived = 150 })
 
         assertEquals(0L, a.size)
-        assertFalse(adapter.settle().realCount == 0L)
+        assertFalse(adapter.settle().rowCount == 0L)
     }
 
     /** Binds [info] into a real row and returns its size text and progress bar. */
     private fun bindRow(info: Download): Pair<String, android.widget.ProgressBar> {
         val adapter = adapter().apply { addItems(listOf(info)) }.settle()
         val parent = android.widget.FrameLayout(VireoLumaTVApp.instance.apply { setTheme(com.reiniertutoriales.vireolumatv.R.style.AppTheme) })
-        val holder = adapter.onCreateViewHolder(parent, DownloadRows.VIEW_TYPE_DOWNLOAD_ITEM)
+        val holder = adapter.onCreateViewHolder(parent, DownloadRows.ROW_DOWNLOAD)
         adapter.onBindViewHolder(holder, 1)
         val row = holder.itemView
         return row.findViewById<android.widget.TextView>(com.reiniertutoriales.vireolumatv.R.id.size_text).text.toString() to
@@ -126,7 +126,7 @@ class DownloadListAdapterTest {
     fun finishedAndBrokenDownloadsHideTheBar() {
         val (_, done) = bindRow(download(1, day, "a", size = 10L).apply { bytesReceived = 10 })
         assertEquals(android.view.View.GONE, done.visibility)
-        val (_, broken) = bindRow(download(2, day, "b", size = Download.BROKEN_MARK))
+        val (_, broken) = bindRow(download(2, day, "b", size = Download.SIZE_FAILED))
         assertEquals(android.view.View.GONE, broken.visibility)
     }
 }
