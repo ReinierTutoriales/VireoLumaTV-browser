@@ -5,7 +5,9 @@ import androidx.room.Room
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,12 +40,14 @@ class StablePaginationTest {
         val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java).build()
         try {
             val dao = db.downloadDao()
-            val ids = (1..102).map { n -> dao.insert(Download().apply {
-                time = 1_000L
-                filename = "file-$n"
-                filepath = "/tmp/file-$n"
-                url = "https://example.test/$n"
-            }) }
+            val ids = withContext(Dispatchers.IO) {
+                (1..102).map { n -> dao.insert(Download().apply {
+                    time = 1_000L
+                    filename = "file-$n"
+                    filepath = "/tmp/file-$n"
+                    url = "https://example.test/$n"
+                }) }
+            }
             assertEquals(ids.reversed().take(100), dao.allByLimitOffset(0).map { it.id })
             assertEquals(ids.reversed().drop(100), dao.allByLimitOffset(100).map { it.id })
         } finally {
