@@ -185,4 +185,5 @@
     <string name="last_update">Last update</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
+    <string name="app_menu_downloads">Menu. %1$d active downloads</string>
 </resources>

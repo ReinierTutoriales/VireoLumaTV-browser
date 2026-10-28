@@ -5,12 +5,8 @@ import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.OnFocusChangeListener
-import android.view.View.OnKeyListener
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -21,213 +17,153 @@ import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
 import com.reiniertutoriales.vireolumatv.databinding.ViewActionbarBinding
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 
-class ActionBar @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null
-) : LinearLayout(context, attrs) {
-
-    private val vb = ViewActionbarBinding.inflate( LayoutInflater.from(context),this)
-    var callback: Callback? = null
-    private var downloadAnimation: Animation? = null
-    private var downloadsModel = ActiveModelsRepository.get(ActiveDownloadsModel::class, context)
-    private var addressBoxText = ""
-    private var extendedAddressBarMode = false
-    val isEditingAddress: Boolean get() = extendedAddressBarMode
-    private val selectAddressRunnable = Runnable {
-        if (vb.etUrl.hasFocus()) vb.etUrl.selectAll()
-    }
-
+/** One TV command row. Focusing the address does not start editing or open the keyboard. */
+class ActionBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : LinearLayout(context, attrs) {
     interface Callback {
         fun showAppMenu()
         fun search(text: String)
-        fun onExtendedAddressBarMode() {}
         fun onUrlInputDone()
+        fun onExtendedAddressBarMode() {}
         fun onAddressInputCancelled() {}
-        /** Text typed while the address is edited, to look up suggestions. */
         fun onAddressTyped(text: String) {}
-        /** D-pad Down while editing: move focus to the suggestions; false when there are none. */
         fun focusSuggestions(): Boolean = false
     }
 
-    // Set while focus moves from the address into its suggestions, so the edit is not cancelled.
-    private var focusingSuggestions = false
+    var callback: Callback? = null
+    private val ui = ViewActionbarBinding.inflate(LayoutInflater.from(context), this)
+    val backButton: ImageButton get() = ui.ibBack
+    val forwardButton: ImageButton get() = ui.ibForward
+    val refreshButton: ImageButton get() = ui.ibRefresh
+    val homeButton: ImageButton get() = ui.ibHome
+    val adBlockButton: ImageButton get() = ui.ibAdBlock
+    private val commands get() = listOf(ui.ibBack, ui.ibForward, ui.ibRefresh, ui.ibHome, ui.ibAdBlock, ui.ibMenu)
+    private var pageAddress = ""
+    private var editing = false
+    private var enteringSuggestions = false
+    val isEditingAddress get() = editing
+    private val keyboard get() = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    private val selectText = Runnable { if (editing && ui.etUrl.hasFocus()) ui.etUrl.selectAll() }
 
-    /** Page commands and blocker state owned by the activity; the bar only lays them out. */
-    val backButton: ImageButton get() = vb.ibBack
-    val forwardButton: ImageButton get() = vb.ibForward
-    val refreshButton: ImageButton get() = vb.ibRefresh
-    val homeButton: ImageButton get() = vb.ibHome
-    val adBlockButton: ImageButton get() = vb.ibAdBlock
-
-    private val etUrlFocusChangeListener = OnFocusChangeListener { _, focused ->
-        if (!focused && !focusingSuggestions) {
-            removeCallbacks(selectAddressRunnable)
-            if (extendedAddressBarMode) {
-                dismissExtendedAddressBarMode()
-                vb.etUrl.setText(addressBoxText)
-                callback?.onAddressInputCancelled()
+    init {
+        orientation = HORIZONTAL
+        if (!isInEditMode) {
+            ui.ibMenu.setOnClickListener { callback?.showAppMenu() }
+            renderEditing(false)
+            ui.etUrl.setOnClickListener { beginEditing() }
+            ui.etUrl.setOnFocusChangeListener { _, focused ->
+                if (!focused && editing && !enteringSuggestions) finishEditing(cancelled = true)
+            }
+            ui.etUrl.doAfterTextChanged { if (editing) callback?.onAddressTyped(it.toString()) }
+            ui.etUrl.setOnKeyListener { _, code, event -> handleAddressKey(code, event) }
+            ui.etUrl.setOnEditorActionListener { _, action, _ ->
+                when (action) {
+                    EditorInfo.IME_ACTION_SEARCH, EditorInfo.IME_ACTION_GO, EditorInfo.IME_ACTION_DONE -> {
+                        confirmAddress()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            val owner = context as AppCompatActivity
+            ActiveModelsRepository.get(ActiveDownloadsModel::class, context).activeDownloads.subscribe(owner) {
+                val count = it.size
+                ui.ibMenu.setImageResource(if (count == 0) R.drawable.ic_more else R.drawable.ic_menu_downloads)
+                ui.ibMenu.contentDescription = if (count == 0) context.getString(R.string.app_menu)
+                    else context.getString(R.string.app_menu_downloads, count)
             }
         }
     }
 
-    private fun startAddressInput() {
-        if (extendedAddressBarMode) return
-        vb.etUrl.requestFocus()
-        enterExtendedAddressBarMode()
-        vb.etUrl.showSoftInputOnFocus = true
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.showSoftInput(vb.etUrl, InputMethodManager.SHOW_IMPLICIT)
-        removeCallbacks(selectAddressRunnable)
-        postDelayed(selectAddressRunnable, 500) // Let the TV keyboard finish opening.
+    private fun renderEditing(value: Boolean) {
+        editing = value
+        ui.etUrl.isCursorVisible = value
+        ui.etUrl.showSoftInputOnFocus = value
+        commands.forEach { it.visibility = if (value) GONE else VISIBLE }
     }
 
-    private fun submitAddress() {
-        val text = vb.etUrl.text.toString().trim()
-        if (text.isEmpty()) return
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
-        dismissExtendedAddressBarMode()
-        vb.etUrl.clearFocus()
-        // Commit a previewed tab before loading the search result into it.
+    private fun beginEditing() {
+        if (editing) return
+        ui.etUrl.requestFocus()
+        renderEditing(true)
+        callback?.onExtendedAddressBarMode()
+        keyboard.showSoftInput(ui.etUrl, InputMethodManager.SHOW_IMPLICIT)
+        removeCallbacks(selectText)
+        postDelayed(selectText, 500)
+    }
+
+    private fun finishEditing(cancelled: Boolean) {
+        removeCallbacks(selectText)
+        keyboard.hideSoftInputFromWindow(ui.etUrl.windowToken, 0)
+        renderEditing(false)
+        if (cancelled) {
+            ui.etUrl.setText(pageAddress)
+            callback?.onAddressInputCancelled()
+        }
+    }
+
+    private fun confirmAddress() {
+        if (!editing) return
+        val destination = ui.etUrl.text.toString().trim()
+        if (destination.isEmpty()) return
+        finishEditing(cancelled = false)
+        ui.etUrl.clearFocus()
         callback?.onUrlInputDone()
-        callback?.search(text)
+        callback?.search(destination)
     }
 
-    /** Opens [text] as if it had been typed and confirmed, e.g. a picked suggestion. */
-    fun submit(text: String) {
-        if (!extendedAddressBarMode) return
-        vb.etUrl.setText(text)
-        submitAddress()
-    }
-
-    private val etUrlKeyListener = OnKeyListener { _, _, event ->
-        when (event.keyCode) {
-            KeyEvent.KEYCODE_DPAD_DOWN -> if (extendedAddressBarMode) {
-                if (event.action == KeyEvent.ACTION_DOWN) {
-                    focusingSuggestions = true
-                    try {
-                        if (callback?.focusSuggestions() != true) return@OnKeyListener false
-                    } finally {
-                        focusingSuggestions = false
-                    }
-                }
-                true
-            } else false
-            KeyEvent.KEYCODE_DPAD_RIGHT -> if (!extendedAddressBarMode) {
-                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-                    vb.etUrl.focusSearch(View.FOCUS_RIGHT)?.requestFocus()
-                }
-                true
-            } else false
+    private fun handleAddressKey(code: Int, event: KeyEvent): Boolean {
+        val down = event.action == KeyEvent.ACTION_DOWN
+        return when (code) {
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) {
-                    if (extendedAddressBarMode) submitAddress() else startAddressInput()
+                if (!down && !event.isCanceled) {
+                    if (editing) confirmAddress() else beginEditing()
                 }
                 true
+            }
+            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                if (!editing) false else if (!down) true else {
+                    enteringSuggestions = true
+                    try { callback?.focusSuggestions() == true } finally { enteringSuggestions = false }
+                }
+            }
+            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                if (editing) false else {
+                    if (down && event.repeatCount == 0) backButton.requestFocus()
+                    true
+                }
             }
             else -> false
         }
     }
 
-    init {
-        init()
-    }
-
-    fun init() {
-        orientation = HORIZONTAL
-
-        if (isInEditMode) return
-
-        vb.ibMenu.setOnClickListener { callback?.showAppMenu() }
-
-        vb.etUrl.onFocusChangeListener = etUrlFocusChangeListener
-        vb.etUrl.showSoftInputOnFocus = false
-        vb.etUrl.isCursorVisible = false
-        vb.etUrl.setOnClickListener { startAddressInput() }
-
-        vb.etUrl.setOnKeyListener(etUrlKeyListener)
-        vb.etUrl.doAfterTextChanged { text ->
-            if (extendedAddressBarMode) callback?.onAddressTyped(text?.toString().orEmpty())
-        }
-        vb.etUrl.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_GO ||
-                actionId == EditorInfo.IME_ACTION_DONE) {
-                submitAddress()
-                true
-            } else false
-        }
-
-
-        // Downloads have no button of their own: the menu button signals active transfers.
-        downloadsModel.activeDownloads.subscribe(context as AppCompatActivity) {
-            if (it.isNotEmpty()) {
-                if (downloadAnimation == null) {
-                    downloadAnimation = AnimationUtils.loadAnimation(context, R.anim.infinite_fadeinout_anim)
-                    vb.ibMenu.startAnimation(downloadAnimation)
-                }
-            } else {
-                downloadAnimation?.apply {
-                    this.reset()
-                    vb.ibMenu.clearAnimation()
-                    downloadAnimation = null
-                }
-            }
+    fun submit(text: String) {
+        if (editing) {
+            ui.etUrl.setText(text)
+            confirmAddress()
         }
     }
 
     fun setAddressBoxText(text: String) {
-        addressBoxText = if (text == Config.HOME_PAGE_URL) "" else text
-        // A page finishing or redirecting must not overwrite a search being typed.
-        if (!extendedAddressBarMode) vb.etUrl.setText(addressBoxText)
+        pageAddress = text.takeUnless { it == Config.HOME_PAGE_URL }.orEmpty()
+        if (!editing) ui.etUrl.setText(pageAddress)
     }
 
-    fun setAddressBoxTextColor(color: Int) {
-        vb.etUrl.setTextColor(color)
-    }
-
-    private fun enterExtendedAddressBarMode() {
-        if (extendedAddressBarMode) return
-        extendedAddressBarMode = true
-        vb.etUrl.isCursorVisible = true
-        for (i in 0 until childCount) {
-            val child = getChildAt(i)
-            if (child is ImageButton) {
-                child.visibility = GONE
-            }
-        }
-        callback?.onExtendedAddressBarMode()
-    }
+    fun setAddressBoxTextColor(color: Int) = ui.etUrl.setTextColor(color)
 
     fun dismissExtendedAddressBarMode() {
-        if (!extendedAddressBarMode) return
-        extendedAddressBarMode = false
-        vb.etUrl.showSoftInputOnFocus = false
-        vb.etUrl.isCursorVisible = false
-        for (i in 0 until childCount) {
-            val child = getChildAt(i)
-            if (child is ImageButton) {
-                child.visibility = VISIBLE
-            }
-        }
+        if (editing) finishEditing(cancelled = false)
     }
 
     fun cancelAddressInput() {
-        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
-        dismissExtendedAddressBarMode()
-        vb.etUrl.clearFocus()
-        vb.etUrl.setText(addressBoxText)
-        callback?.onAddressInputCancelled()
+        if (editing) finishEditing(cancelled = true)
+        ui.etUrl.clearFocus()
         catchFocus()
     }
 
-    fun catchFocus() {
-        vb.ibBack.requestFocus()
-    }
+    fun catchFocus() { backButton.requestFocus() }
 
     override fun onDetachedFromWindow() {
-        removeCallbacks(selectAddressRunnable)
-        vb.ibMenu.clearAnimation()
-        downloadAnimation = null
+        removeCallbacks(selectText)
         super.onDetachedFromWindow()
     }
 }
