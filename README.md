@@ -5,7 +5,7 @@ Utiliza Android System WebView y funciona con mando o gamepad desde Android 7.0 
 
 ## Descargar e instalar
 
-**[Descargar VireoLumaTV 2.0.0](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/tag/v2.0.0)**
+**[Descargar la última versión](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/latest)**
 
 Elige el APK compatible con tu dispositivo:
 
@@ -43,5 +43,5 @@ Este es el repositorio independiente de VireoLumaTV. La rama principal es `maste
 
 - [Notas de la versión](RELEASE_NOTES.md)
 - [Privacidad](PRIVACY.md)
-- [Licencia](LICENSE.md) y [avisos de componentes y procedencia](NOTICE.md)
+- [Licencia MIT](LICENSE.md) y [avisos de componentes y procedencia](NOTICE.md)
 - [Reglas de desarrollo](AGENTS.md) y [contratos de regresión](docs/REGRESSION_POLICY.md)

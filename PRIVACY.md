@@ -1,6 +1,6 @@
 # VireoLumaTV privacy policy
 
-Source review updated: October 28, 2026. Version 2.0.0 is published; consult the source tag for your installed release.
+Source review updated: October 28, 2026. Consult the source tag for your installed release.
 
 VireoLumaTV is an Android TV browser maintained by ReinierTutoriales and distributed through its independent GitHub repository. This policy describes the application's handling of data. Component licenses and source provenance are recorded separately in [NOTICE.md](NOTICE.md).
 

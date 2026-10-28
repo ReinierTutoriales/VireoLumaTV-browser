@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about_source">VireoLumaTV від ReinierTutoriales · Вихідний код</string>
-    <string name="about_tv_bro_credit">Заснований на вихідному коді TV Bro: %s</string>
     <string name="about_tagline">Веб-браузер для керування пультом ТБ</string>
     <string name="about_version">Версія %s</string>
     <string name="about_build">Збірка: %1$s · %2$s</string>
-    <string name="about_license">Ліцензія</string>
+    <string name="about_license">Ліцензія · MIT</string>
     <string name="about_privacy">Політика конфіденційності</string>
     <string name="error">Помилка</string>
     <string name="action_allow">Дозволити</string>

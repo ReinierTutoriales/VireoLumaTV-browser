@@ -1,14 +1,14 @@
-VireoLumaTV retains the TV Bro provenance notices while source independence is reviewed. The application uses adblock-rust (MPL 2.0), built by native/adblock-jni.
+VireoLumaTV — source and license information
 
-Application-source base for the component migration:
-https://github.com/ReinierTutoriales/VireoLumaTV-browser/tree/668968a34c2b215182968c06a8b5da763b3cbb7e
+Original application code: MIT, Copyright (c) 2026 ReinierTutoriales.
+The application license is included as APP-LICENSE.txt.
+Project: https://github.com/ReinierTutoriales/VireoLumaTV-browser
+Each release includes RELEASE_SOURCE.txt with the exact source commit.
 
-Historical DownloadUtils.kt (releases through v1.2.2), with MPL 2.0 and Apache 2.0 notices:
-https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/43ffce3ec0bb21c7f6cfddc9af6d9208d509e154/app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt
-That implementation was replaced. Current filename handling is utils/FileNames.kt in the application sources.
+Native blocking engine: adblock-rust 0.13.3, MPL 2.0.
+Source: https://github.com/brave/adblock-rust/tree/v0.13.3
+JNI bridge and dependency lockfile: native/adblock-jni in the application sources.
+The bridge retains its MPL 2.0 license.
 
-adblock-rust 0.13.3 sources (native ad blocking engine, MPL 2.0):
-https://github.com/brave/adblock-rust/tree/v0.13.3
-JNI bridge and pinned dependency versions: native/adblock-jni (Cargo.lock) in the application source commit.
-
-Each public release must identify its exact application source commit. These pointers document inspected sources; they do not certify the resolved transitive artifacts. Preserve notices and make corresponding covered source available when distributing changed versions.
+See NOTICE.md and rust-crates.txt for separately licensed components.
+Make corresponding covered source and required notices available when distributing binaries.

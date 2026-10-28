@@ -1,7 +1,7 @@
 # VireoLumaTV — Agent Instructions
 
 ## Project
-Simple WebView-only Android TV browser optimized for remote control and low-memory devices (based on TV Bro, Gecko removed).
+Simple WebView-only Android TV browser optimized for remote control and low-memory devices using Android System WebView.
 
 ## Stack
 - Kotlin / Android (WebView)
@@ -19,7 +19,7 @@ exact head is the integration gate; report local tests and CI separately.
 - Keep the app small, simple, and predictable on low-memory Android TV hardware.
 - WebView only — do not reintroduce GeckoView or multi-engine complexity.
 - Optimize for TV remote navigation, focus, and D-pad usability.
-- Preserve license/attribution requirements (distinct name, app ID, icon, About screen credit to original TV Bro; see LICENSE.md, NOTICE.md, docs/audit/archive-2026-10-01/LICENSE_REBRANDING_AUDIT.md).
+- Apply MIT to the original application code as selected by the owner. Preserve separately licensed component notices and the native bridge MPL 2.0 terms; see LICENSE.md and NOTICE.md.
 - Prefer native Android / WebView APIs. Avoid unnecessary dependencies.
 - Do not invent APIs, behaviors, or engine features not present in the codebase.
 

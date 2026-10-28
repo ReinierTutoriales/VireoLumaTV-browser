@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about_source">VireoLumaTV · ReinierTutoriales 出品 · 源代码</string>
-    <string name="about_tv_bro_credit">基于 TV Bro 的源代码：%s</string>
     <string name="about_tagline">为电视遥控器打造的网页浏览器</string>
     <string name="about_version">版本 %s</string>
     <string name="about_build">构建：%1$s · %2$s</string>
-    <string name="about_license">许可证</string>
+    <string name="about_license">许可证 · MIT</string>
     <string name="about_privacy">隐私政策</string>
     <string name="error">错误</string>
     <string name="action_allow">允许</string>

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about_source">VireoLumaTV از ReinierTutoriales · کد منبع</string>
-    <string name="about_tv_bro_credit">بر پایهٔ کد منبع TV Bro: %s</string>
     <string name="about_tagline">مرورگر وب ساخته‌شده برای کنترل تلویزیون</string>
     <string name="about_version">نسخهٔ %s</string>
     <string name="about_build">ساخت: %1$s · %2$s</string>
-    <string name="about_license">مجوز</string>
+    <string name="about_license">مجوز · MIT</string>
     <string name="about_privacy">سیاست حریم خصوصی</string>
     <string name="error">خطا</string>
     <string name="action_allow">اجازه</string>

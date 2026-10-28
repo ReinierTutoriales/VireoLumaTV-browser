@@ -23,7 +23,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** The About and Shortcuts pages: content, the license credit, and D-pad reach of every row. */
+/** Application identity, license and D-pad reach of every settings row. */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -70,14 +70,14 @@ class SettingsTabsTest {
         try { test() } finally { restore() }
     }
 
-    @Test fun aboutPageCreditsTvBroAndReachesEveryLink() = withEngine { withPage({ AboutPage(it) }) { list ->
-        val credit = list.findViewById<ViewGroup>(R.id.rowTvBroSource)
-        val text = (credit.getChildAt(0) as TextView).text.toString()
-        assertTrue("License: About must state it uses TV Bro sources with the link: $text",
-            "TV Bro" in text && "https://github.com/truefedex/tv-bro" in text)
-        assertEquals(View.VISIBLE, credit.visibility)
+    @Test fun aboutPageShowsTheOwnerAndMitAndReachesEveryLink() = withEngine { withPage({ AboutPage(it) }) { list ->
+        val source = list.findViewById<ViewGroup>(R.id.rowProjectSource)
+        assertTrue((source.getChildAt(0) as TextView).text.toString().contains("ReinierTutoriales"))
+        val license = list.findViewById<ViewGroup>(R.id.rowLicense)
+        assertTrue((license.getChildAt(0) as TextView).text.toString().contains("MIT"))
+        assertEquals(View.VISIBLE, license.visibility)
         val names = downOrder(list).map { list.resources.getResourceEntryName(it.id) }
-        assertEquals(listOf("rowProjectSource", "rowTvBroSource", "rowLicense", "rowPrivacyPolicy", "btnCheckUpdate"), names)
+        assertEquals(listOf("rowProjectSource", "rowLicense", "rowPrivacyPolicy", "btnCheckUpdate"), names)
     } }
 
     @Test fun shortcutsPageShowsOneReachableRowPerShortcut() = withPage({ ShortcutsPage(it) }) { list ->

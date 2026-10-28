@@ -20,7 +20,6 @@
     <item name="sbCursorAcceleration" type="id" />
     <item name="btnClearWebCache" type="id" />
     <item name="rowProjectSource" type="id" />
-    <item name="rowTvBroSource" type="id" />
     <item name="rowLicense" type="id" />
     <item name="rowPrivacyPolicy" type="id" />
     <item name="btnCheckUpdate" type="id" />

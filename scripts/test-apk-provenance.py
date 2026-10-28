@@ -31,8 +31,9 @@ class PackageAuditTest(unittest.TestCase):
         self.assertEqual([name], audit.class_names(dex_with_class(name)))
         with self.assertRaises(ValueError): audit.class_names(b'not a dex')
 
-    def run_package(self, root, class_name, extras=()):
+    def run_package(self, root, class_name, extras=(), resources='resource string/about_license', root_license=b'reviewed source'):
         package = root / 'example.apk'
+        (root / 'LICENSE.md').write_bytes(root_license)
         with zipfile.ZipFile(package, 'w') as apk:
             apk.writestr('classes.dex', dex_with_class(class_name))
             for path in audit.PACKAGED_SOURCES:
@@ -43,7 +44,7 @@ class PackageAuditTest(unittest.TestCase):
             for name in extras: apk.writestr(name, b'retired')
         def dump(args, **kwargs):
             if args[2] == 'badging': return "package: name='com.reiniertutoriales.vireolumatv'"
-            return 'resource string/about_tv_bro_credit'
+            return resources
         with patch.object(audit.subprocess, 'check_output', side_effect=dump):
             return audit.audit(package, Path('aapt2'), root)
 
@@ -59,6 +60,19 @@ class PackageAuditTest(unittest.TestCase):
                                       ['assets/pages/ic_warning.svg'])
             self.assertEqual(2, len(report['checks']['issues']))
             self.assertEqual(['pages/ic_warning.svg'], report['checks']['removed_assets_still_packaged'])
+
+    def test_rejects_retired_license_and_credit_resource(self):
+        with tempfile.TemporaryDirectory() as folder:
+            report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;',
+                ['assets/licenses/TV-Bro-LICENSE.md'], resources='resource string/about_tv_bro_credit')
+            self.assertEqual(2, len(report['checks']['issues']))
+            self.assertTrue(report['checks']['legacy_credit_resource_present'])
+
+    def test_rejects_different_application_license(self):
+        with tempfile.TemporaryDirectory() as folder:
+            report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;', root_license=b'other license')
+            self.assertFalse(report['checks']['application_license_matches_root'])
+            self.assertEqual(1, len(report['checks']['issues']))
 
 
 if __name__ == '__main__': unittest.main()

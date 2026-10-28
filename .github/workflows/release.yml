@@ -123,23 +123,31 @@ jobs:
           PY
           openssl dgst -sha256 -verify "$RUNNER_TEMP/release-public.pem" -signature dist/SHA256SUMS.txt.sig dist/SHA256SUMS.txt
           rm -f "$key"
-      - name: Archive earlier releases before 2.0.0
-        if: inputs.version == '2.0.0'
+      - name: Archive earlier releases
         run: |
           mkdir -p previous-releases
           gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" > previous-releases/releases.json
           gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/heads" > previous-releases/branches.json
           gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags" > previous-releases/tags.json
-          for tag in v1.0.0 v1.1.0 v1.2.0 v1.2.1 v1.2.2; do
+          python - <<'PY' > previous-releases/tags.txt
+          import json, os, re
+          from pathlib import Path
+          version = tuple(map(int, os.environ['VERSION'].split('.')))
+          for release in json.loads(Path('previous-releases/releases.json').read_text()):
+              match = re.fullmatch(r'v(\d+)\.(\d+)\.(\d+)', release['tag_name'])
+              if match and tuple(map(int, match.groups())) < version:
+                  print(release['tag_name'])
+          PY
+          while IFS= read -r tag; do
             mkdir -p "previous-releases/$tag"
             gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir "previous-releases/$tag"
-          done
+          done < previous-releases/tags.txt
           python - <<'PY'
           import hashlib, json
           from pathlib import Path
           root = Path('previous-releases')
           releases = json.loads((root / 'releases.json').read_text())
-          for tag in ('v1.0.0', 'v1.1.0', 'v1.2.0', 'v1.2.1', 'v1.2.2'):
+          for tag in (root / 'tags.txt').read_text().splitlines():
               release = next(item for item in releases if item['tag_name'] == tag)
               for asset in release['assets']:
                   path = root / tag / asset['name']
@@ -149,10 +157,9 @@ jobs:
                       assert digest == 'sha256:' + hashlib.sha256(path.read_bytes()).hexdigest(), str(path)
           PY
       - name: Save earlier release archive
-        if: inputs.version == '2.0.0'
         uses: actions/upload-artifact@v7.0.2
         with:
-          name: VireoLumaTV-before-2.0.0
+          name: VireoLumaTV-before-${{ inputs.version }}
           path: previous-releases/
           if-no-files-found: error
           retention-days: 90

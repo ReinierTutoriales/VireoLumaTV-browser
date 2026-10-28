@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about_source">VireoLumaTV de ReinierTutoriales · Código fuente</string>
-    <string name="about_tv_bro_credit">Basado en el código fuente de TV Bro: %s</string>
     <string name="about_tagline">Un navegador web pensado para el mando de la TV</string>
     <string name="about_version">Versión %s</string>
     <string name="about_build">Compilación: %1$s · %2$s</string>
-    <string name="about_license">Licencia</string>
+    <string name="about_license">Licencia · MIT</string>
     <string name="about_privacy">Política de privacidad</string>
     <string name="error">Error</string>
     <string name="action_allow">Permitir</string>
