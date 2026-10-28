@@ -1,42 +1,70 @@
 package com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.recyclerview.widget.AsyncDifferConfig
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
+import com.reiniertutoriales.vireolumatv.utils.ViewFaviconLoader
 
 /**
- * Created by PDT on 13.09.2016.
+ * Bookmark rows. Activating a row opens the bookmark, or edits it in [editMode], where a Delete
+ * button follows each row (D-pad Right). Only changed rows are rebound, via [submitList].
  */
-class FavoritesListAdapter(private val favorites: List<FavoriteItem>, private val itemsListener: FavoriteItemView.Listener) : BaseAdapter() {
-    var isEditMode = false
-        set(editMode) {
-            field = editMode
-            notifyDataSetChanged()
+class FavoritesListAdapter(
+    private val onOpen: (FavoriteItem) -> Unit,
+    private val onEdit: (FavoriteItem) -> Unit,
+    private val onDelete: (FavoriteItem) -> Unit,
+    config: AsyncDifferConfig<FavoriteItem> = AsyncDifferConfig.Builder(DIFF).build(),
+) : ListAdapter<FavoriteItem, FavoritesListAdapter.Row>(config) {
+
+    var editMode = false
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyItemRangeChanged(0, itemCount)
         }
 
-    override fun getCount(): Int {
-        return favorites.size
+    init {
+        setHasStableIds(true)
     }
 
-    override fun getItem(i: Int): Any {
-        return favorites[i]
-    }
+    override fun getItemId(position: Int): Long = getItem(position).id
 
-    override fun getItemId(i: Int): Long {
-        return i.toLong()
-    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+        Row(LayoutInflater.from(parent.context).inflate(R.layout.view_favorite_item, parent, false))
 
-    override fun getView(i: Int, convertView: View?, viewGroup: ViewGroup): View {
-        val view: FavoriteItemView
-        if (convertView != null) {
-            view = convertView as FavoriteItemView
-        } else {
-            view = FavoriteItemView(viewGroup.context)
-            view.listener = itemsListener
+    override fun onBindViewHolder(holder: Row, position: Int) = holder.bind(getItem(position))
+
+    inner class Row(view: View) : RecyclerView.ViewHolder(view) {
+        private val content: View = view.findViewById(R.id.llContent)
+        private val title: TextView = view.findViewById(R.id.tvTitle)
+        private val url: TextView = view.findViewById(R.id.tvUrl)
+        private val delete: ImageButton = view.findViewById(R.id.ibDelete)
+        private val icon = ViewFaviconLoader(view, view.findViewById<ImageView>(R.id.ivIcon))
+
+        fun bind(item: FavoriteItem) {
+            title.text = item.title?.takeIf { it.isNotBlank() } ?: item.url
+            url.text = item.url
+            icon.bind(item.url)
+            delete.visibility = if (editMode) View.VISIBLE else View.GONE
+            content.setOnClickListener { if (editMode) onEdit(item) else if (!item.isFolder) onOpen(item) }
+            delete.setOnClickListener { onDelete(item) }
         }
-        view.bind(favorites[i], isEditMode)
-        return view
+    }
+
+    companion object {
+        val DIFF = object : DiffUtil.ItemCallback<FavoriteItem>() {
+            override fun areItemsTheSame(old: FavoriteItem, new: FavoriteItem) = old.id == new.id
+            override fun areContentsTheSame(old: FavoriteItem, new: FavoriteItem) =
+                old.title == new.title && old.url == new.url
+        }
     }
 }

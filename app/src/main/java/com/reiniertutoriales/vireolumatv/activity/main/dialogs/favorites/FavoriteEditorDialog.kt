@@ -2,28 +2,15 @@ package com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites
 
 import android.app.Dialog
 import android.content.Context
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.TextView
-
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
 import com.reiniertutoriales.vireolumatv.utils.Utils
 
-/**
- * Created by PDT on 13.09.2016.
- */
-class FavoriteEditorDialog(context: Context, private val callback: Callback, private val item: FavoriteItem) : Dialog(context) {
-    private val tvTitle: TextView
-    private val tvUrl: TextView
-    private val etTitle: EditText
-    private val etUrl: EditText
-    private val ibTitle: ImageButton
-    private val ibUrl: ImageButton
-    private val btnDone: Button
-    private val btnCancel: Button
+/** Edits a bookmark's title and address; an address without "scheme://" gets https://. */
+class FavoriteEditorDialog(context: Context, private val callback: Callback, private val item: FavoriteItem) :
+    Dialog(context) {
 
     interface Callback {
         fun onDone(item: FavoriteItem)
@@ -33,50 +20,23 @@ class FavoriteEditorDialog(context: Context, private val callback: Callback, pri
         setCancelable(true)
         setTitle(if (item.id == 0L) R.string.new_bookmark else R.string.edit)
         setContentView(R.layout.dialog_new_favorite_item)
-        tvTitle = findViewById<View>(R.id.tvTitle) as TextView
-        tvUrl = findViewById<View>(R.id.tvUrl) as TextView
-        etTitle = findViewById<View>(R.id.etTitle) as EditText
-        etUrl = findViewById<View>(R.id.etUrl) as EditText
-        ibTitle = findViewById<View>(R.id.ibTitle) as ImageButton
-        ibUrl = findViewById<View>(R.id.ibUrl) as ImageButton
-        btnDone = findViewById<View>(R.id.btnDone) as Button
-        btnCancel = findViewById<View>(R.id.btnCancel) as Button
-
-        ibTitle.setOnClickListener {
-            ibTitle.visibility = View.GONE
-            tvTitle.visibility = View.GONE
-            etTitle.visibility = View.VISIBLE
-            etTitle.requestFocus()
-        }
-
-        ibUrl.setOnClickListener {
-            ibUrl.visibility = View.GONE
-            tvUrl.visibility = View.GONE
-            etUrl.visibility = View.VISIBLE
-            etUrl.requestFocus()
-        }
-
-        btnDone.setOnClickListener {
-            var urlStr = etUrl.text.toString().trim()
-            // "https://" alone is not a bookmark: keep the dialog open instead of saving it.
-            if (urlStr.isEmpty()) {
+        val title = findViewById<EditText>(R.id.etTitle).apply { setText(item.title) }
+        val address = findViewById<EditText>(R.id.etUrl).apply { setText(item.url) }
+        findViewById<Button>(R.id.btnCancel).setOnClickListener { dismiss() }
+        findViewById<Button>(R.id.btnDone).setOnClickListener {
+            val url = address.text.toString().trim()
+            if (url.isEmpty()) { // An empty address is not a bookmark: keep the dialog open.
                 Utils.showToast(context, R.string.error)
                 return@setOnClickListener
             }
-            this@FavoriteEditorDialog.item.title = etTitle.text.toString()
-            //add https:// if url not starts with any schema
-            if (!urlStr.matches( Regex("^[A-Za-z]+://.*$"))) {
-                urlStr = "https://$urlStr"
-            }
-            this@FavoriteEditorDialog.item.url = urlStr
-            callback.onDone(this@FavoriteEditorDialog.item)
+            item.title = title.text.toString()
+            item.url = if (SCHEME.matches(url)) url else "https://$url"
+            callback.onDone(item)
             dismiss()
         }
-        btnCancel.setOnClickListener { dismiss() }
+    }
 
-        tvTitle.text = item.title
-        etTitle.setText(item.title)
-        tvUrl.text = item.url
-        etUrl.setText(item.url)
+    private companion object {
+        val SCHEME = Regex("^[A-Za-z]+://.*$")
     }
 }

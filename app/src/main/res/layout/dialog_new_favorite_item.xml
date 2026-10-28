@@ -1,130 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Title and address are editable at once; Done saves, Cancel closes. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="15dp"
-    android:minWidth="400dp">
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:minWidth="520dp"
+    android:orientation="vertical"
+    android:padding="24dp">
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:text="@string/new_bookmark"
-        android:textSize="20sp"
-        android:gravity="center"
-        android:textStyle="bold" />
+        android:layout_height="wrap_content"
+        android:labelFor="@+id/etTitle"
+        android:text="@string/title"
+        android:textSize="16sp" />
 
-    <View
+    <EditText
+        android:id="@id/etTitle"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:background="#aaa" />
+        android:layout_height="wrap_content"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="1" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/title" />
-
-    <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical">
+        android:layout_marginTop="12dp"
+        android:labelFor="@+id/etUrl"
+        android:text="@string/url"
+        android:textSize="16sp" />
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/etTitle"
-            android:hint="@string/title"
-            android:importantForAutofill="no"
-            android:visibility="gone"
-            android:lines="1"
-            android:inputType="text" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/tvTitle"
-            android:layout_weight="1"
-            android:textStyle="bold"
-            android:lines="1"
-            android:ellipsize="end" />
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_bg_selector"
-            android:id="@+id/ibTitle"
-            android:contentDescription="@string/edit"
-            android:src="@drawable/ic_mode_edit_grey_400_18dp" />
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/url" />
-
-    <LinearLayout
-        android:orientation="horizontal"
+    <EditText
+        android:id="@id/etUrl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical">
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/etUrl"
-            android:hint="@string/url"
-            android:importantForAutofill="no"
-            android:visibility="gone"
-            android:lines="1"
-            android:inputType="textUri" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/tvUrl"
-            android:layout_weight="1"
-            android:textStyle="bold"
-            android:lines="1"
-            android:ellipsize="end" />
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_bg_selector"
-            android:id="@+id/ibUrl"
-            android:contentDescription="@string/edit"
-            android:src="@drawable/ic_mode_edit_grey_400_18dp" />
-    </LinearLayout>
+        android:importantForAutofill="no"
+        android:inputType="textUri"
+        android:maxLines="1" />
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="20dp"
+        android:gravity="end"
+        android:orientation="horizontal">
 
         <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_bg_selector"
-            android:text="@string/cancel"
             android:id="@+id/btnCancel"
-            android:layout_marginEnd="10dp"
-            android:layout_weight="1" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@string/cancel" />
 
         <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_bg_selector"
-            android:text="@string/done"
             android:id="@+id/btnDone"
-            android:layout_marginStart="10dp"
-            android:layout_weight="1" />
-
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/done" />
     </LinearLayout>
 </LinearLayout>

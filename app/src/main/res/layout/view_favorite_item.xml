@@ -1,51 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- One bookmark: the row opens it (or edits it in edit mode); Delete appears only in edit mode. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical">
-
-    <ImageView
-        android:contentDescription="@null"
-        android:layout_width="54dp"
-        android:layout_height="54dp"
-        android:id="@+id/ivIcon"
-        android:src="@drawable/ic_not_available" />
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
 
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/llContent"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="6dp"
-        android:gravity="center_vertical"
         android:layout_weight="1"
-        android:id="@+id/llContent">
+        android:background="@drawable/settings_row_bg"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:minHeight="56dp"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/tvTitle"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:lines="1"
-            android:ellipsize="end" />
+        <ImageView
+            android:id="@+id/ivIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter" />
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Takes the space left by the icon; no nested weight, so each row is measured once. -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/tvUrl"
-            android:textSize="14sp"
-            android:lines="1"
-            android:ellipsize="end" />
+            android:layout_marginStart="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                android:textColor="@color/day_night_text_color"
+                android:textSize="14sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/ibDelete"
+        style="@style/BrowserControl"
+        android:layout_marginStart="8dp"
         android:contentDescription="@string/delete"
         android:src="@drawable/ic_delete_grey_400_24dp"
-        android:minHeight="50dp"
-        android:minWidth="50dp" />
+        android:visibility="gone" />
 </LinearLayout>
