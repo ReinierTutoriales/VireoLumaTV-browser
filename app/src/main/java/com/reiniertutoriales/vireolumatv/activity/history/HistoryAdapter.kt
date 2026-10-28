@@ -21,7 +21,7 @@ import com.reiniertutoriales.vireolumatv.utils.sameLocalDay
  * History rows with a date header before each day. Only the rows that changed are rebound:
  * the list is diffed off the main thread and applied with [submitList].
  *
- * [realCount] counts stored entries on screen, which is the offset for the next page.
+ * [realCount] counts visible stored entries; the model owns the next-page boundary.
  */
 class HistoryAdapter(
     private val onItemClick: (HistoryItem) -> Unit,

@@ -17,13 +17,14 @@ class HistoryModel(private val history: () -> HistoryDao = { AppDatabase.db.hist
     private var beforeId = 0L
     private var exhausted = false
 
-    fun loadItems(offset: Long = 0): Job {
-        if (offset != 0L && (request?.isActive == true || exhausted)) return request ?: Job().apply { complete() }
-        if (offset == 0L) {
+    fun loadItems(append: Boolean = false): Job {
+        if (append && (request?.isActive == true || exhausted)) return request ?: Job().apply { complete() }
+        if (!append) {
             request?.cancel()
             beforeTime = null
             beforeId = 0
             exhausted = false
+            lastLoadedItems.value = emptyList()
         }
         val query = searchQuery
         return modelScope.launch {

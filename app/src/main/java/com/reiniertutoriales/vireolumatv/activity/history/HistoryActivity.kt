@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 class HistoryActivity : AppCompatActivity() {
     private lateinit var vb: ActivityHistoryBinding
     private lateinit var model: HistoryModel
+    private var consumedPage: List<HistoryItem>? = null
     private val adapter = HistoryAdapter(::onItemClick, ::onItemLongClick)
 
     /** Back leaves selection mode first; only then does it close the screen. */
@@ -46,8 +47,9 @@ class HistoryActivity : AppCompatActivity() {
         vb.btnClear.setOnClickListener { confirmDelete(all = true) }
         vb.btnDeleteSelected.setOnClickListener { confirmDelete(all = false) }
 
-        model.lastLoadedItems.subscribe(this, false) {
-            if (it.isEmpty()) return@subscribe
+        model.lastLoadedItems.subscribe(this) {
+            if (it.isEmpty() || it === consumedPage) return@subscribe
+            consumedPage = it
             adapter.addItems(it)
             vb.listView.requestFocus()
         }
@@ -59,7 +61,7 @@ class HistoryActivity : AppCompatActivity() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             val last = (recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
             if (model.searchQuery.isEmpty() && adapter.itemCount > 0 && last >= adapter.itemCount - 2) {
-                model.loadItems(adapter.realCount)
+                model.loadItems(append = true)
             }
         }
     }
