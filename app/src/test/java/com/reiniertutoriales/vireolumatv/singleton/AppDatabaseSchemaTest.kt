@@ -41,11 +41,18 @@ class AppDatabaseSchemaTest {
             val setup = schema.getJSONArray("setupQueries")
             for (i in 0 until setup.length()) sqlite.execSQL(setup.getString(i))
             sqlite.execSQL("INSERT INTO history (time, title, url) VALUES (1, 'Kept', 'https://kept.test')")
+            sqlite.execSQL("INSERT INTO favorites (TITLE, URL, HOME_PAGE_BOOKMARK, I_ORDER, VALID_UNTIL, USEFUL) VALUES ('Legacy', 'https://legacy.test', 0, 0, 123456789, 0)")
             sqlite.version = schema.getInt("version")
         }
         val db = Room.databaseBuilder(context, AppDatabase::class.java, file.name).allowMainThreadQueries().build()
         try {
             assertEquals(listOf("Kept"), db.historyDao().getAll().map(HistoryItem::title))
+            // The retired Date converter stored milliseconds in this unchanged INTEGER column.
+            db.openHelper.writableDatabase.execSQL("UPDATE favorites SET PARENT = 0")
+            val bookmark = db.favoritesDao().getAll().single()
+            assertEquals(123456789L, bookmark.validUntil)
+            db.favoritesDao().update(bookmark.copyForEdit().apply { title = "Edited" })
+            assertEquals(123456789L, db.favoritesDao().getAll().single().validUntil)
         } finally {
             db.close()
         }

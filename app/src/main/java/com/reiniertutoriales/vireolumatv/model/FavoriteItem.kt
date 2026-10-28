@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import java.util.Date
 
 /**
  * One bookmark, the "favorites" table of schema 19. The upper-case column names are what that
@@ -28,7 +27,7 @@ class FavoriteItem {
     @ColumnInfo(name = "I_ORDER") var order = 0
     @ColumnInfo(name = "DEST_URL") var destUrl: String? = null
     @ColumnInfo(name = "DESCRIPTION") var description: String? = null
-    @ColumnInfo(name = "VALID_UNTIL") var validUntil: Date? = null
+    @ColumnInfo(name = "VALID_UNTIL") var validUntil: Long? = null
     @ColumnInfo(name = "USEFUL") var useful = false
 
     /** A detached edit keeps the displayed row and legacy columns intact until the write succeeds. */
@@ -42,7 +41,7 @@ class FavoriteItem {
         copy.order = order
         copy.destUrl = destUrl
         copy.description = description
-        copy.validUntil = validUntil?.let { Date(it.time) }
+        copy.validUntil = validUntil
         copy.useful = useful
     }
 

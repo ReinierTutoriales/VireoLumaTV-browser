@@ -4,7 +4,6 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.FavoriteItem
-import java.util.Date
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,7 +23,7 @@ class FavoriteEditorDialogTest {
             val original = FavoriteItem().apply {
                 id = 7; title = "Before"; url = "https://before.test"; parent = 12
                 favicon = "icon"; homePageBookmark = true; order = 3
-                destUrl = "destination"; description = "description"; validUntil = Date(123); useful = true
+                destUrl = "destination"; description = "description"; validUntil = 123L; useful = true
             }
             var saved: FavoriteItem? = null
             val dialog = FavoriteEditorDialog(owner.get(), object : FavoriteEditorDialog.Callback {
@@ -48,7 +47,6 @@ class FavoriteEditorDialogTest {
             assertEquals(original.destUrl, edit.destUrl)
             assertEquals(original.description, edit.description)
             assertEquals(original.validUntil, edit.validUntil)
-            assertNotSame(original.validUntil, edit.validUntil)
             assertEquals(original.useful, edit.useful)
         } finally { owner.pause().stop().destroy() }
     }
