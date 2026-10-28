@@ -134,5 +134,8 @@ WebView real ni a revisión legal.
 `index.html` usa SVG en línea y solo carga imágenes `data:`. Ningún archivo,
 prueba ni script referencia las siete imágenes `pages/home/favicons/*` ni
 `ic_not_available.svg`, `mic.svg`, `more.svg` y `search.svg`. Se eliminaron
-esos once assets y se marcaron `ELIMINADO` en el inventario. Se conserva
-`pages/ic_warning.svg`: la página de aviso de certificado la utiliza.
+esos once assets y se marcaron `ELIMINADO` en el inventario.
+
+La página de certificado reemplazó su imagen heredada por una marca CSS y texto
+decorativo (`aria-hidden`); el título sigue anunciando el aviso. La imagen
+`pages/ic_warning.svg` también se eliminó y se marcó `ELIMINADO`.
