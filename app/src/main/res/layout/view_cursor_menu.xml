@@ -1,76 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<!--
+  Pointer menu, a cross around the pointer: grab in the centre, link actions above, D-pad mode
+  below, zoom out to the left and zoom in to the right. Each arm leads back to the centre.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="170dp"
-    android:layout_height="170dp">
+    android:id="@+id/cursorMenuPanel"
+    android:layout_width="168dp"
+    android:layout_height="168dp"
+    android:background="@drawable/cursor_menu_bg"
+    android:padding="4dp">
 
     <ImageButton
-        style="@style/BrowserControl"
-            tools:targetApi="26"
         android:id="@+id/btnGrabMode"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="@drawable/button_bg_selector"
-        android:src="@drawable/ic_circle_plus"
+        style="@style/BrowserControl"
+        android:layout_gravity="center"
         android:contentDescription="@string/cursor_grab_mode"
-        app:tint="@color/day_night_icon_color"
-        android:defaultFocusHighlightEnabled="false"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:nextFocusUp="@id/btnContextMenu"
+        android:nextFocusDown="@id/btnDPADMode"
+        android:nextFocusLeft="@id/btnZoomOut"
+        android:nextFocusRight="@id/btnZoomIn"
+        android:src="@drawable/ic_circle_plus"
+        app:tint="@color/day_night_icon_color" />
 
     <ImageButton
-        style="@style/BrowserControl"
-        android:id="@+id/btnZoomIn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:scaleType="fitCenter"
-        android:background="@drawable/button_bg_selector"
-        android:src="@drawable/ic_zoom_in_gray_24dp"
-        android:contentDescription="@string/zoom_in"
-        app:tint="@color/day_night_icon_color"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <ImageButton
-        style="@style/BrowserControl"
-        android:id="@+id/btnZoomOut"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:scaleType="fitCenter"
-        android:background="@drawable/button_bg_selector"
-        android:src="@drawable/ic_zoom_out_gray_24dp"
-        android:contentDescription="@string/zoom_out"
-        app:tint="@color/day_night_icon_color"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <ImageButton
-        style="@style/BrowserControl"
         android:id="@+id/btnContextMenu"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:scaleType="fitCenter"
-        android:background="@drawable/button_bg_selector"
-        android:src="@drawable/ic_menu_24"
-        android:contentDescription="@string/link_actions"
-        app:tint="@color/day_night_icon_color"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <ImageButton
         style="@style/BrowserControl"
+        android:layout_gravity="top|center_horizontal"
+        android:contentDescription="@string/link_actions"
+        android:nextFocusDown="@id/btnGrabMode"
+        android:src="@drawable/ic_menu_24"
+        app:tint="@color/day_night_icon_color" />
+
+    <ImageButton
         android:id="@+id/btnDPADMode"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:scaleType="fitCenter"
-        android:background="@drawable/button_bg_selector"
-        android:src="@drawable/gamepad_circle_up_24px"
+        style="@style/BrowserControl"
+        android:layout_gravity="bottom|center_horizontal"
         android:contentDescription="@string/direct_navigation_mode_title"
-        app:tint="@color/day_night_icon_color"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:nextFocusUp="@id/btnGrabMode"
+        android:src="@drawable/gamepad_circle_up_24px"
+        app:tint="@color/day_night_icon_color" />
+
+    <ImageButton
+        android:id="@+id/btnZoomOut"
+        style="@style/BrowserControl"
+        android:layout_gravity="start|center_vertical"
+        android:contentDescription="@string/zoom_out"
+        android:nextFocusRight="@id/btnGrabMode"
+        android:src="@drawable/ic_zoom_out_gray_24dp"
+        app:tint="@color/day_night_icon_color" />
+
+    <ImageButton
+        android:id="@+id/btnZoomIn"
+        style="@style/BrowserControl"
+        android:layout_gravity="end|center_vertical"
+        android:contentDescription="@string/zoom_in"
+        android:nextFocusLeft="@id/btnGrabMode"
+        android:src="@drawable/ic_zoom_in_gray_24dp"
+        app:tint="@color/day_night_icon_color" />
+</FrameLayout>

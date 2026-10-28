@@ -62,7 +62,6 @@ import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.Favorit
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesDialog
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsDialog
 import com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
-import com.reiniertutoriales.vireolumatv.activity.main.view.CursorMenuView
 import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabsAdapter.Listener
 import com.reiniertutoriales.vireolumatv.databinding.ActivityMainBinding
 import com.reiniertutoriales.vireolumatv.model.Download
@@ -1016,7 +1015,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     private fun handleBackNavigation() {
         // Unwind the active interaction before changing the browser's input mode.
         when {
-            vb.vCursorMenu.isVisible -> vb.vCursorMenu.close(CursorMenuView.CloseAnimation.ROTATE_OUT)
+            vb.vCursorMenu.isVisible -> vb.vCursorMenu.close()
             isFullscreen -> tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
             vb.vActionBar.isEditingAddress -> vb.vActionBar.cancelAddressInput()
             thumbnailOverlayVisible -> hideMenuOverlay()

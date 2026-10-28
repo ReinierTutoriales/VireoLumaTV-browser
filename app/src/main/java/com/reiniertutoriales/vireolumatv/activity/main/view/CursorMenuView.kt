@@ -1,161 +1,143 @@
 package com.reiniertutoriales.vireolumatv.activity.main.view
 
-import android.app.AlertDialog
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.CheckBox
 import android.widget.FrameLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.databinding.ViewCursorMenuBinding
-import com.reiniertutoriales.vireolumatv.utils.dip2px
 import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
+import com.reiniertutoriales.vireolumatv.utils.dip2px
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
-import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
 
-class CursorMenuView @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-): FrameLayout(context, attrs, defStyleAttr) {
+/**
+ * The menu a long press opens at the pointer: grab mode, link actions, D-pad mode and zoom. It
+ * covers the page and places its panel around the pointer, kept on screen. Closing it, by a
+ * command or by [close], returns focus to the page and shows the pointer again.
+ */
+class CursorMenuView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+    FrameLayout(context, attrs) {
 
-    private var vb: ViewCursorMenuBinding =
-        ViewCursorMenuBinding.inflate(LayoutInflater.from(context), this, true)
-    private var menuContext: MenuContext? = null
+    /** What the menu was opened on: the tab, the pointer position and the element under it. */
+    private class Target(
+        val tab: WebTabState,
+        val windowProvider: WebEngineWindowProviderCallback,
+        val cursor: CursorDrawerDelegate,
+        val back: BackNavigationEventsAdapter,
+        val baseUri: String?, val linkUri: String?, val srcUri: String?,
+        val title: String?, val altText: String?, val textContent: String?,
+        val x: Int, val y: Int,
+    )
+
+    private val vb = ViewCursorMenuBinding.inflate(LayoutInflater.from(context), this, true)
+    private val panel get() = vb.root
+    private var target: Target? = null
 
     init {
         vb.btnGrabMode.setOnClickListener {
-            menuContext?.cursorDrawerDelegate?.goToGrabMode()
-            close(CloseAnimation.EXPLODE_OUT)
+            target?.cursor?.goToGrabMode()
+            close(grow = true)
         }
         vb.btnContextMenu.setOnClickListener {
-            val mc = menuContext ?: return@setOnClickListener
-            closeWithoutAnimation()
-            mc.windowProvider.suggestActionsForLink(mc.baseUri, mc.linkUri, mc.srcUri,
-                mc.title, mc.altText, mc.textContent, mc.x, mc.y)
+            val t = target ?: return@setOnClickListener
+            hide()
+            t.windowProvider.suggestActionsForLink(t.baseUri, t.linkUri, t.srcUri, t.title, t.altText, t.textContent, t.x, t.y)
         }
         vb.btnDPADMode.setOnClickListener {
-            val mc = menuContext ?: return@setOnClickListener
-            closeWithoutAnimation()
-            if (AppContext.provideConfig().directNavigationModeHintSuppress) {
-                enterDirectNavigationMode(mc)
-            } else {
-                showDirectNavigationModeDialog(mc)
-            }
+            val t = target ?: return@setOnClickListener
+            hide()
+            if (AppContext.provideConfig().directNavigationModeHintSuppress) enterDirectNavigation(t) else explainDirectNavigation(t)
         }
-        vb.btnZoomIn.setOnClickListener { menuContext?.tab?.webEngine?.zoomIn() }
-        vb.btnZoomOut.setOnClickListener { menuContext?.tab?.webEngine?.zoomOut() }
+        vb.btnZoomIn.setOnClickListener { target?.tab?.webEngine?.zoomIn() }
+        vb.btnZoomOut.setOnClickListener { target?.tab?.webEngine?.zoomOut() }
     }
 
     fun show(
-        tab: WebTabState,
-        windowProvider: WebEngineWindowProviderCallback,
-        cursorDrawerDelegate: CursorDrawerDelegate,
-        baseUri: String?,
-        linkUri: String?,
-        srcUri: String?,
-        title: String?,
-        altText: String?,
-        textContent: String?,
-        x: Int,
-        y: Int,
-        backNavigationEventsAdapter: BackNavigationEventsAdapter
+        tab: WebTabState, windowProvider: WebEngineWindowProviderCallback, cursorDrawerDelegate: CursorDrawerDelegate,
+        baseUri: String?, linkUri: String?, srcUri: String?, title: String?, altText: String?, textContent: String?,
+        x: Int, y: Int, backNavigationEventsAdapter: BackNavigationEventsAdapter,
     ) {
-        val mc = MenuContext(tab, windowProvider, cursorDrawerDelegate,
-            baseUri, linkUri, srcUri, title, altText, textContent, x, y, backNavigationEventsAdapter)
-        menuContext = mc
-        vb.root.animate().cancel()
-        visibility = VISIBLE
-        // Move the small menu within the screen, not the full-screen overlay.
-        vb.root.post {
-            if (menuContext !== mc || !isAttachedToWindow) return@post
-            vb.root.translationX = (x - vb.root.width / 2f)
-                .coerceIn(0f, (width - vb.root.width).coerceAtLeast(0).toFloat())
-            vb.root.translationY = (y - vb.root.height / 2f)
-                .coerceIn(0f, (height - vb.root.height).coerceAtLeast(0).toFloat())
+        val shown = Target(tab, windowProvider, cursorDrawerDelegate, backNavigationEventsAdapter,
+            baseUri, linkUri, srcUri, title, altText, textContent, x, y)
+        target = shown
+        panel.animate().cancel()
+        isVisible = true
+        panel.post {
+            if (target !== shown || !isAttachedToWindow) return@post
+            panel.translationX = (x - panel.width / 2f).coerceIn(0f, (width - panel.width).coerceAtLeast(0).toFloat())
+            panel.translationY = (y - panel.height / 2f).coerceIn(0f, (height - panel.height).coerceAtLeast(0).toFloat())
             vb.btnGrabMode.requestFocus()
             cursorDrawerDelegate.hideCursor()
         }
-        vb.root.alpha = 0f
-        vb.root.scaleX = 0.94f
-        vb.root.scaleY = 0.94f
-        vb.root.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(180).start()
+        panel.alpha = 0f
+        panel.scaleX = OPEN_SCALE
+        panel.scaleY = OPEN_SCALE
+        panel.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(OPEN_MS).start()
     }
 
-    /** Hides the menu immediately (no animation). Used before showing a dialog so focus does not re-trigger menu actions. */
-    private fun closeWithoutAnimation(restoreFocus: Boolean = true) {
-        val previous = menuContext
-        menuContext = null
-        vb.root.animate().cancel()
-        visibility = GONE
-        if (restoreFocus) {
-            previous?.tab?.webEngine?.getView()?.requestFocus()
-            previous?.cursorDrawerDelegate?.animateAppearing()
+    /** Fades the menu out; [grow] makes it expand as it goes, for grab mode. */
+    fun close(grow: Boolean = false) {
+        if (target == null) return
+        val scale = if (grow) GROW_SCALE else 1f
+        panel.animate().cancel()
+        panel.animate().alpha(0f).scaleX(scale).scaleY(scale).setDuration(CLOSE_MS).withEndAction { hide() }.start()
+    }
+
+    /** Hides at once, before a dialog opens, so a key meant for the dialog cannot reach the menu. */
+    private fun hide(restoreFocus: Boolean = true) {
+        val closed = target
+        target = null
+        panel.animate().cancel()
+        isVisible = false
+        panel.alpha = 1f
+        panel.scaleX = 1f
+        panel.scaleY = 1f
+        if (restoreFocus && closed != null) {
+            closed.tab.webEngine.getView()?.requestFocus()
+            closed.cursor.animateAppearing()
         }
-        vb.root.alpha = 1f
-        vb.root.scaleX = 1f
-        vb.root.scaleY = 1f
-    }
-
-    fun close(animation: CloseAnimation = CloseAnimation.FADE_OUT) {
-        if (menuContext == null) return
-        vb.root.animate().cancel()
-        val scale = if (animation == CloseAnimation.EXPLODE_OUT) 1.08f else 1f
-        vb.root.animate().alpha(0f).scaleX(scale).scaleY(scale).setDuration(140)
-            .withEndAction { closeWithoutAnimation() }.start()
     }
 
     override fun onDetachedFromWindow() {
-        closeWithoutAnimation(restoreFocus = false)
+        hide(restoreFocus = false)
         super.onDetachedFromWindow()
     }
 
-    enum class CloseAnimation {
-        FADE_OUT,
-        ROTATE_OUT,
-        EXPLODE_OUT
+    private fun enterDirectNavigation(t: Target) {
+        t.tab.webEngine.setVirtualCursorMode(false)
+        t.back.gameControllersLongPressBForBackNavigation = true
     }
 
-    private fun enterDirectNavigationMode(mc: MenuContext) {
-        mc.tab.webEngine.setVirtualCursorMode(false)
-        mc.backNavigationEventsAdapter.gameControllersLongPressBForBackNavigation = true
-    }
-
-    private fun showDirectNavigationModeDialog(mc: MenuContext) {
-        val pad = 24.dip2px(context).toInt()
-        val checkBox = CheckBox(context).apply {
-            text = context.getString(R.string.don_t_show_again)
-        }
-        val container = FrameLayout(context).apply {
-            setPadding(pad, pad, pad, pad)
-            addView(checkBox)
+    /** Explains D-pad mode once, with an option to stop explaining it. */
+    private fun explainDirectNavigation(t: Target) {
+        val dontAskAgain = CheckBox(context).apply { setText(R.string.don_t_show_again) }
+        val padding = 24.dip2px(context).toInt()
+        val content = FrameLayout(context).apply {
+            setPadding(padding, padding, padding, padding)
+            addView(dontAskAgain)
         }
         AlertDialog.Builder(context)
             .setTitle(R.string.direct_navigation_mode_title)
             .setMessage(R.string.direct_navigation_mode_message)
-            .setView(container)
+            .setView(content)
             .setPositiveButton(android.R.string.ok) { _, _ ->
-                if (checkBox.isChecked) {
-                    AppContext.provideConfig().directNavigationModeHintSuppress = true
-                }
-                enterDirectNavigationMode(mc)
+                if (dontAskAgain.isChecked) AppContext.provideConfig().directNavigationModeHintSuppress = true
+                enterDirectNavigation(t)
             }
-            .setOnDismissListener { mc.tab.webEngine.getView()?.requestFocus() }
+            .setOnDismissListener { t.tab.webEngine.getView()?.requestFocus() }
             .show()
     }
 
-    private data class MenuContext (
-        val tab: WebTabState,
-        val windowProvider: WebEngineWindowProviderCallback,
-        val cursorDrawerDelegate: CursorDrawerDelegate,
-        val baseUri: String?,
-        val linkUri: String?,
-        val srcUri: String?,
-        val title: String?,
-        val altText: String?,
-        val textContent: String?,
-        val x: Int,
-        val y: Int,
-        val backNavigationEventsAdapter: BackNavigationEventsAdapter
-    )
+    private companion object {
+        const val OPEN_MS = 180L
+        const val CLOSE_MS = 140L
+        const val OPEN_SCALE = 0.94f
+        const val GROW_SCALE = 1.08f
+    }
 }

@@ -69,4 +69,25 @@ class CursorMenuFocusTest {
             controller.pause().stop().destroy()
         }
     }
+
+    @Test fun theCrossLeadsFromTheCentreToEachArmAndBack() {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        activity.setTheme(R.style.AppTheme)
+        val menu = CursorMenuView(activity)
+        activity.setContentView(menu)
+        fun id(view: Int, direction: Int) = when (direction) {
+            View.FOCUS_UP -> menu.findViewById<View>(view).nextFocusUpId
+            View.FOCUS_DOWN -> menu.findViewById<View>(view).nextFocusDownId
+            View.FOCUS_LEFT -> menu.findViewById<View>(view).nextFocusLeftId
+            else -> menu.findViewById<View>(view).nextFocusRightId
+        }
+        assertEquals(R.id.btnContextMenu, id(R.id.btnGrabMode, View.FOCUS_UP))
+        assertEquals(R.id.btnDPADMode, id(R.id.btnGrabMode, View.FOCUS_DOWN))
+        assertEquals(R.id.btnZoomOut, id(R.id.btnGrabMode, View.FOCUS_LEFT))
+        assertEquals(R.id.btnZoomIn, id(R.id.btnGrabMode, View.FOCUS_RIGHT))
+        assertEquals(R.id.btnGrabMode, id(R.id.btnContextMenu, View.FOCUS_DOWN))
+        assertEquals(R.id.btnGrabMode, id(R.id.btnDPADMode, View.FOCUS_UP))
+        assertEquals(R.id.btnGrabMode, id(R.id.btnZoomOut, View.FOCUS_RIGHT))
+        assertEquals(R.id.btnGrabMode, id(R.id.btnZoomIn, View.FOCUS_LEFT))
+    }
 }

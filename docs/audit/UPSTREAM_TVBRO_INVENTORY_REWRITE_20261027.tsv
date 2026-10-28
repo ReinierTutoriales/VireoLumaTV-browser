@@ -143,7 +143,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settin
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/ShortcutsSettingsView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/ShortcutsSettingsView.kt	81
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/VersionSettingsView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt	82
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/ActionBar.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt	43
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/CursorMenuView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt	59
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/CursorMenuView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt	88
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsAdapter.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt	84
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsDiffUtillCallback.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsDiffUtillCallback.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt	64
@@ -207,6 +207,7 @@ app/src/main/res/drawable-xxxhdpi/ic_launcher.png	PROPIO
 app/src/main/res/drawable/back_icon_selector.xml	IDENTICO	app/src/main/res/drawable/back_icon_selector.xml	0
 app/src/main/res/drawable/browser_address_bg.xml	PROPIO		
 app/src/main/res/drawable/button_bg_selector.xml	MODIFICADO	app/src/main/res/drawable/button_bg_selector.xml	59
+app/src/main/res/drawable/cursor_menu_bg.xml	PROPIO
 app/src/main/res/drawable/floating_toolbar_bg.xml	PROPIO		
 app/src/main/res/drawable/forward_icon_selector.xml	IDENTICO	app/src/main/res/drawable/forward_icon_selector.xml	0
 app/src/main/res/drawable/gamepad_circle_up_24px.xml	IDENTICO	app/src/main/res/drawable/gamepad_circle_up_24px.xml	0
@@ -253,7 +254,7 @@ app/src/main/res/layout/dialog_search_engine.xml	ELIMINADO	app/src/main/res/layo
 app/src/main/res/layout/dialog_settings.xml	MODIFICADO	app/src/main/res/layout/dialog_settings.xml	34
 app/src/main/res/layout/dialog_shortcut.xml	MODIFICADO	app/src/main/res/layout/dialog_shortcut.xml	5
 app/src/main/res/layout/view_actionbar.xml	MODIFICADO	app/src/main/res/layout/view_actionbar.xml	56
-app/src/main/res/layout/view_cursor_menu.xml	MODIFICADO	app/src/main/res/layout/view_cursor_menu.xml	26
+app/src/main/res/layout/view_cursor_menu.xml	REESCRITO	app/src/main/res/layout/view_cursor_menu.xml	72
 app/src/main/res/layout/view_download_item.xml	REESCRITO	app/src/main/res/layout/view_download_item.xml	57
 app/src/main/res/layout/view_favorite_item.xml	MODIFICADO	app/src/main/res/layout/view_favorite_item.xml	4
 app/src/main/res/layout/view_history_header_item.xml	ELIMINADO	app/src/main/res/layout/view_history_header_item.xml
