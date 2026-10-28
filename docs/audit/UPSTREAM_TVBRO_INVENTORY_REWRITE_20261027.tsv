@@ -128,7 +128,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/IncognitoSessi
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/MainActivity.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivity.kt	32
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/MainActivityViewModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt	82
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt	71
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabsModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt	41
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabsModel.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt	77
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/SearchEngineConfigDialogFactory.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/ShortcutDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt	73
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	12

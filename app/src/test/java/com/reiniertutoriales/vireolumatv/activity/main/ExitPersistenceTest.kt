@@ -22,10 +22,7 @@ import org.robolectric.annotation.Config
 class ExitPersistenceTest {
     @Test fun exitReturnsBeforeDiskWriteAndPersistsAfterModelIsCleared() = runBlocking {
         val model = TabsModel()
-        val mutex = TabsModel::class.java.getDeclaredField("saveMutex").let {
-            it.isAccessible = true
-            it.get(model) as Mutex
-        }
+        val mutex = model.storage
         val tab = WebTabState(url = "https://exit.test", selected = true).apply {
             savedState = Bundle().apply { putString("history", "kept after exit") }
         }

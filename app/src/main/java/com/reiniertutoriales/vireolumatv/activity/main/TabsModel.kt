@@ -3,91 +3,82 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
+import com.reiniertutoriales.vireolumatv.utils.hasInternet
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineWindowProviderCallback
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.net.URL
-import com.reiniertutoriales.vireolumatv.utils.hasInternet
 
+/**
+ * The open tabs of the current mode and the one on screen. Only that tab keeps a WebView (plus
+ * the page that opened a visible popup); the others keep their saved history and get a new
+ * WebView when shown again. Saves and deletions are serialized so they reach the database in order.
+ */
 class TabsModel : ActiveModel() {
-    companion object {
-        //literal, not ::class.java.simpleName: R8 renames the class in release builds
-        const val TAG = "TabsModel"
-
-        private val incognitoSession = IncognitoSessionTabs()
-    }
-
-    private val saveMutex = Mutex()
-    var loaded = false
     val currentTab = ObservableValue<WebTabState?>(null)
     val tabsStates = ObservableList<WebTabState>()
+    var loaded = false
+        private set
+
     private val config = AppContext.provideConfig()
-    private var incognitoMode = config.incognitoMode
+    /** Orders saves and deletions; held only around the IO part. */
+    @VisibleForTesting internal val storage = Mutex()
+    private var loadedIncognito = config.incognitoMode
 
     init {
-        tabsStates.subscribe({
-            //auto-update positions on any list change
-            var positionsChanged = false
-            tabsStates.forEachIndexed { index, webTabState ->
-                if (webTabState.position != index) {
-                    webTabState.position = index
-                    positionsChanged = true
+        // A tab's stored position is its place in the list; reordering stores the new places.
+        tabsStates.subscribe({ tabs ->
+            var moved = false
+            tabs.forEachIndexed { index, tab ->
+                if (tab.position != index) {
+                    tab.position = index
+                    moved = true
                 }
             }
-            if (positionsChanged) {
-                val tabsListClone = listOf(*tabsStates.toTypedArray())
-                modelScope.launch(Dispatchers.Main) {
-                    val tabsDao = AppDatabase.db.tabsDao()
-                    tabsDao.updatePositions(tabsListClone)
-                }
+            if (moved) {
+                val snapshot = tabs.toList()
+                modelScope.launch { AppDatabase.db.tabsDao().updatePositions(snapshot) }
             }
-        }, false)
+        }, notifyOnSubscribe = false)
     }
 
-    fun loadState() = modelScope.launch(Dispatchers.Main) {
-        if (loaded) {
-            //check is incognito mode changed
-            if (incognitoMode != config.incognitoMode) {
-                incognitoMode = config.incognitoMode
-                loaded = false
-            } else {
-                return@launch
-            }
-        }
-        val tabsDao = AppDatabase.db.tabsDao()
-        if (config.incognitoMode) {
-            tabsStates.replaceAll(incognitoSession.load(tabsDao))
-        } else {
-            tabsStates.replaceAll(tabsDao.getAll(false))
-        }
+    /** Loads the current mode's tabs once, and again after a switch between normal and private mode. */
+    fun loadState() = modelScope.launch {
+        if (loaded && loadedIncognito == config.incognitoMode) return@launch
+        loadedIncognito = config.incognitoMode
+        val dao = AppDatabase.db.tabsDao()
+        tabsStates.replaceAll(if (loadedIncognito) incognitoSession.load(dao) else dao.getAll(false))
         loaded = true
     }
 
-    // Start the state capture before returning to the Activity, finish the small atomic write even
-    // if the last Activity destroys its model. No Activity or View is captured by this job.
+    /** Starts saving before the window goes away; the short write finishes even if the model is cleared. */
     fun saveTabBeforeExit(tab: WebTabState) = modelScope.launch(start = CoroutineStart.UNDISPATCHED) {
         withContext(NonCancellable) { saveTab(tab) }
     }
 
+    /**
+     * Saves [tab]: its engine state was captured on the main thread, the file and row are written
+     * on IO. A later save of the same tab, or closing it, makes an earlier unfinished save give up.
+     */
     suspend fun saveTab(tab: WebTabState) {
         val revision = tab.persistenceRevision.incrementAndGet()
         val snapshot = tab.copy().apply { savedState = tab.savedState }
-        // Capture WebView state on Main, serialize and commit the captured state on IO.
         withContext(Dispatchers.IO + NonCancellable) {
-            saveMutex.withLock {
+            storage.withLock {
                 if (tab.closed || revision != tab.persistenceRevision.get()) return@withLock
                 snapshot.id = tab.id
                 snapshot.saveWebViewStateToFile()
@@ -102,126 +93,114 @@ class TabsModel : ActiveModel() {
         tab.webEngine.onDetachFromWindow(completely = true, destroyTab = true)
         tabsStates.remove(tab)
         modelScope.launch(Dispatchers.IO) {
-            saveMutex.withLock {
+            storage.withLock {
                 AppDatabase.db.tabsDao().delete(tab)
                 tab.removeFiles()
             }
         }
     }
 
-    fun onCloseAllTabs() = modelScope.launch(Dispatchers.Main) {
-        val tabsClone = ArrayList(tabsStates)
-        tabsClone.forEach {
-            it.closed = true
-            it.webEngine.onDetachFromWindow(completely = true, destroyTab = true)
+    fun onCloseAllTabs() = modelScope.launch {
+        val closing = tabsStates.toList()
+        for (tab in closing) {
+            tab.closed = true
+            tab.webEngine.onDetachFromWindow(completely = true, destroyTab = true)
         }
         currentTab.value = null
         tabsStates.clear()
-        val mode = config.incognitoMode
+        val incognito = config.incognitoMode
         withContext(Dispatchers.IO) {
-            saveMutex.withLock {
-                AppDatabase.db.tabsDao().deleteAll(mode)
-                tabsClone.forEach { it.removeFiles() }
+            storage.withLock {
+                AppDatabase.db.tabsDao().deleteAll(incognito)
+                closing.forEach(WebTabState::removeFiles)
             }
         }
     }
 
+    /** The window is going away: every WebView is destroyed, the tabs stay open. */
     fun onDetachActivity() {
-        for (tab in tabsStates) {
-            tab.webEngine.onDetachFromWindow(completely = true, destroyTab = false)
-        }
+        for (tab in tabsStates) tab.webEngine.onDetachFromWindow(completely = true, destroyTab = false)
     }
 
+    /**
+     * Shows [newTab] in [webViewParent]. The previous tab is paused, detached and saved; other
+     * WebViews are released first, so a low-RAM device never holds two renderers for a switch.
+     * A tab without a live WebView gets one from [webViewProvider] and its history back, or its
+     * address loaded when there is none (and [loadInitialUrl]).
+     */
     fun changeTab(
         newTab: WebTabState,
         webViewProvider: (tab: WebTabState) -> View?,
         webViewParent: ViewGroup,
         webEngineWindowProviderCallback: WebEngineWindowProviderCallback,
-        loadInitialUrl: Boolean = true
+        loadInitialUrl: Boolean = true,
     ) {
-        if (currentTab.value == newTab && newTab.webEngine.getView() != null) return
-        if (currentTab.value != newTab) {
-            tabsStates.forEach {
-                it.selected = false
+        val previous = currentTab.value
+        if (previous === newTab && newTab.webEngine.getView() != null) return
+        if (previous !== newTab) {
+            tabsStates.forEach { it.selected = false }
+            previous?.let { old ->
+                old.webEngine.onDetachFromWindow(completely = false, destroyTab = false)
+                old.onPause()
+                modelScope.launch { saveTab(old) }
             }
-            currentTab.value?.apply {
-                webEngine.onDetachFromWindow(completely = false, destroyTab = false)
-                onPause()
-                modelScope.launch { saveTab(this@apply) }
-            }
-
             newTab.selected = true
             currentTab.value = newTab
         }
-        // Release the old renderer before allocating its replacement, including on low-RAM devices.
         releaseBackgroundWebViews(newTab)
-        var wv = newTab.webEngine.getView()
-        var needReloadUrl = false
-        if (wv == null) {
-            wv = webViewProvider(newTab)
-            if (wv == null) {
-                return
-            }
-            needReloadUrl = !newTab.restoreWebView()
+        var needsLoad = false
+        if (newTab.webEngine.getView() == null) {
+            webViewProvider(newTab) ?: return
+            needsLoad = !newTab.restoreWebView()
         }
         newTab.webEngine.onAttachToWindow(webEngineWindowProviderCallback, webViewParent)
-        if (needReloadUrl && loadInitialUrl) {
+        if (needsLoad && loadInitialUrl) {
             newTab.webEngine.loadUrl(newTab.url)
             newTab.rendererLost = false
         }
         newTab.webEngine.setNetworkAvailable(VireoLumaTVApp.instance.hasInternet())
     }
 
-    // Only the visible tab owns a WebView. Captured history survives destruction and is restored
-    // when the user returns; background pages (including audio/video) stop running. Exception: the
-    // page that opened the visible popup stays paused in memory, so closing the popup resumes it
-    // (a video player) instead of reloading it. onTrimMemory still frees it under pressure.
+    /**
+     * Destroys every WebView but [activeTab]'s, and its opener's while a popup shows, so closing the
+     * popup resumes that page (a video player) instead of reloading it. Memory pressure still frees it.
+     */
     private fun releaseBackgroundWebViews(activeTab: WebTabState) {
-        val opener = activeTab.opener?.takeIf { !it.closed && tabsStates.contains(it) }
-        var released = 0
-        for (tab in tabsStates) {
-            if (tab === activeTab || tab === opener || tab.webEngine.getView() == null) continue
-            tab.webEngine.onDetachFromWindow(completely = true, destroyTab = false)
-            released++
-        }
-        if (released > 0) {
-            Log.i(TAG, "released $released background WebView(s), kept only current tab")
-        }
+        val opener = activeTab.opener?.takeIf { !it.closed && it in tabsStates }
+        val background = tabsStates.filter { it !== activeTab && it !== opener && it.webEngine.getView() != null }
+        background.forEach { it.webEngine.onDetachFromWindow(completely = true, destroyTab = false) }
+        if (background.isNotEmpty()) Log.i(TAG, "Released ${background.size} background WebView(s)")
     }
 
+    /** The settings of [tab]'s site, cached on the tab; with [createIfNotFound] a row is made for it. */
     suspend fun findHostConfig(tab: WebTabState, createIfNotFound: Boolean): HostConfig? {
-        Log.d(TAG, "findOrCreateHostConfig")
-        val currentHostName = try {
-            URL(tab.url).host
-        } catch (e: Exception) {
-            Log.w(TAG, "Can not parse current url host: $e")
-            return null
+        val host = hostOf(tab.url) ?: return null
+        tab.cachedHostConfig?.takeIf { it.hostName == host }?.let { return it }
+        val hosts = AppDatabase.db.hostsDao()
+        var config = withContext(Dispatchers.IO) { hosts.findByHostName(host) }
+        if (config == null && createIfNotFound) {
+            config = HostConfig(host).apply { id = hosts.insert(this) }
         }
-        var hostConfig = tab.cachedHostConfig
-        if (hostConfig == null || hostConfig.hostName != currentHostName) {
-            val db = com.reiniertutoriales.vireolumatv.singleton.AppDatabase.db.hostsDao()
-            hostConfig = withContext(Dispatchers.IO) { db.findByHostName(currentHostName) }
-            if (hostConfig == null && createIfNotFound) {
-                hostConfig = HostConfig(currentHostName)
-                hostConfig.id = db.insert(hostConfig)
-            }
-            if (runCatching { URL(tab.url).host }.getOrNull() == currentHostName) {
-                tab.cachedHostConfig = hostConfig
-            }
-        }
-        return hostConfig
+        // The tab may have moved to another site while the database answered.
+        if (hostOf(tab.url) == host) tab.cachedHostConfig = config
+        return config
     }
 
-    /** Synchronous WebView policy callbacks must never wait for disk on the UI thread. */
-    fun popupBlockingLevel(tab: WebTabState): Int {
-        val host = runCatching { URL(tab.url).host }.getOrNull()
-        return tab.cachedHostConfig?.takeIf { it.hostName == host }?.popupBlockLevel
-            ?: HostConfig.DEFAULT_BLOCK_POPUPS_VALUE
-    }
+    /** The pop-up level for [tab]'s site from the cache only: WebView asks on the main thread. */
+    fun popupBlockingLevel(tab: WebTabState): Int =
+        tab.cachedHostConfig?.takeIf { it.hostName == hostOf(tab.url) }?.popupBlockLevel ?: HostConfig.DEFAULT_BLOCK_POPUPS_VALUE
 
     suspend fun changePopupBlockingLevel(newLevel: Int, tab: WebTabState) {
-        val hostConfig = findHostConfig(tab,true) ?: return
-        hostConfig.popupBlockLevel = newLevel
-        AppDatabase.db.hostsDao().update(hostConfig)
+        val config = findHostConfig(tab, createIfNotFound = true) ?: return
+        config.popupBlockLevel = newLevel
+        AppDatabase.db.hostsDao().update(config)
+    }
+
+    private fun hostOf(url: String): String? = runCatching { URL(url).host }.getOrNull()
+
+    companion object {
+        // A literal: R8 renames the class in release builds.
+        const val TAG = "TabsModel"
+        private val incognitoSession = IncognitoSessionTabs()
     }
 }
