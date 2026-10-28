@@ -104,6 +104,68 @@ class AdblockUpdateTest {
         }
     }
 
+    @Test fun incompatibleV6NativeCacheRebuildsFromSavedTextAfterAHttpFailure() {
+        assertTrue("The real native engine must be loaded", RustAdblock.isAvailable)
+        val native = RustAdBlockEngine { AdblockResources.json(VireoLumaTVApp.instance) }
+        var compiles = 0
+        val engine = object : ContentBlockerEngine {
+            override val cacheFileName = native.cacheFileName
+            override fun compile(filterLists: List<String>): ContentBlocker? {
+                compiles++
+                return native.compile(filterLists)
+            }
+            override fun deserialize(file: File) = native.deserialize(file)
+        }
+        val requests = java.util.concurrent.atomic.AtomicInteger()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/") { response ->
+            requests.incrementAndGet()
+            response.sendResponseHeaders(503, -1)
+            response.close()
+        }
+        server.start()
+        val source = "http://127.0.0.1:${server.address.port}/list.txt"
+        val cache = AdblockCache.fileFor(VireoLumaTVApp.instance.filesDir, engine, source)
+        val savedText = File(VireoLumaTVApp.instance.filesDir,
+            "adblock_list_custom_${AdblockCache.sourceKey(source)}.txt")
+        val model = AdBlocker(engine, autoLoad = false)
+        model.config.blockListUrl.value = source
+        model.config.blockListUpdatedAt = System.currentTimeMillis()
+        model.config.blockListRetryAt = 0
+        cache.writeBytes(requireNotNull(javaClass.getResourceAsStream("/adblock/0.13.3.dat")).use { it.readBytes() })
+        savedText.writeText("||old-cache.test^")
+        try {
+            assertEquals("Fixture was serialized by adblock 0.13.3", 6, cache.readBytes()[4].toInt())
+            assertNull("The new engine must reject the old format", native.deserialize(cache))
+            finish(model.loadBlockList(false))
+            assertEquals(1, requests.get())
+            assertEquals(1, compiles)
+            assertTrue(model.isAd(Uri.parse("https://old-cache.test/banner.js"), "script", Uri.parse("https://page.test")))
+            assertFalse(model.listLoading.value)
+            assertEquals(AdBlocker.UpdateResult.CACHED, model.updateResult.value)
+            assertEquals("||old-cache.test^", savedText.readText())
+            assertEquals("The replacement cache uses the current format", 8, cache.readBytes()[4].toInt())
+            val restored = requireNotNull(native.deserialize(cache))
+            try {
+                assertEquals(ContentBlocker.BLOCK, restored.check(Uri.parse("https://old-cache.test/banner.js"),
+                    "script", Uri.parse("https://page.test")))
+            } finally { restored.release() }
+            model.clear()
+            val nextSession = AdBlocker(engine, autoLoad = false)
+            try {
+                finish(nextSession.loadBlockList(false))
+                assertEquals("The rewritten cache needs no second compilation", 1, compiles)
+                assertEquals("The next session restores without another request", 1, requests.get())
+                assertTrue(nextSession.isAd(Uri.parse("https://old-cache.test/banner.js"), "script", Uri.parse("https://page.test")))
+            } finally { nextSession.clear() }
+        } finally {
+            model.clear()
+            server.stop(0)
+            cache.delete()
+            savedText.delete()
+        }
+    }
+
     private fun finish(job: Job) {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
         while (!job.isCompleted && System.nanoTime() < deadline) {
