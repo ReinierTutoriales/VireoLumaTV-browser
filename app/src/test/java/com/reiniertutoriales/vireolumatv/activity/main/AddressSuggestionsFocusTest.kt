@@ -12,7 +12,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
+import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
 import com.reiniertutoriales.vireolumatv.activity.main.view.AddressSuggestionsView
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -35,11 +35,11 @@ class AddressSuggestionsFocusTest {
         controller.setup()
         try {
             val activity = controller.get()
-            val bar = ActionBar(activity)
+            val bar = BrowserControls(activity)
             val suggestions = AddressSuggestionsView(activity)
             val searched = mutableListOf<String>()
             val typed = mutableListOf<String>()
-            bar.callback = object : ActionBar.Callback {
+            bar.callback = object : BrowserControls.Callback {
                 override fun showAppMenu() {}
                 override fun search(text: String) { searched += text }
                 override fun onUrlInputDone() {}

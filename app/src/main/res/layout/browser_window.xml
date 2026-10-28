@@ -15,7 +15,7 @@
     tools:context=".activity.main.MainActivity"
     tools:deviceIds="tv">
 
-    <com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
+    <com.reiniertutoriales.vireolumatv.widgets.cursor.PointerLayout
         android:id="@+id/page_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
@@ -74,7 +74,7 @@
         android:paddingEnd="@dimen/safe_horizontal"
         android:paddingBottom="48dp">
 
-        <com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
+        <com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
             android:id="@+id/controls_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -96,7 +96,7 @@
             android:padding="12dp"
             android:visibility="gone" />
 
-        <com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabsView
+        <com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabStrip
             android:id="@+id/tab_strip"
             android:layout_width="match_parent"
             android:layout_height="56dp"
@@ -108,7 +108,7 @@
             android:nextFocusUp="@+id/address_field" />
     </RelativeLayout>
 
-    <com.reiniertutoriales.vireolumatv.activity.main.view.CursorMenuView
+    <com.reiniertutoriales.vireolumatv.activity.main.view.PointerMenu
         android:id="@+id/pointer_menu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

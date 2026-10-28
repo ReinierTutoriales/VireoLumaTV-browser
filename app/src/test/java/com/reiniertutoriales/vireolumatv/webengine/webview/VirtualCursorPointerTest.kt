@@ -10,7 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import com.reiniertutoriales.vireolumatv.AppContext
-import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
 import org.robolectric.shadows.ShadowSystemClock
 import java.time.Duration
 import org.junit.Assert.*
@@ -32,7 +32,7 @@ class VirtualCursorPointerTest {
         }
     }
 
-    private fun withCursor(test: (CursorDrawerDelegate, Surface, IntArray) -> Unit) {
+    private fun withCursor(test: (PointerController, Surface, IntArray) -> Unit) {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         val activity = controller.get()
         val surface = Surface(activity)
@@ -46,7 +46,7 @@ class VirtualCursorPointerTest {
         surface.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY))
         surface.layout(0, 0, 800, 800)
-        val delegate = CursorDrawerDelegate(activity, surface)
+        val delegate = PointerController(activity, surface)
         delegate.cursorPosition.set(123f, 456f)
         delegate.animateAppearing()
         try { test(delegate, surface, clicks) } finally {
@@ -55,7 +55,7 @@ class VirtualCursorPointerTest {
         }
     }
 
-    private fun key(delegate: CursorDrawerDelegate, action: Int, code: Int = KeyEvent.KEYCODE_DPAD_CENTER) {
+    private fun key(delegate: PointerController, action: Int, code: Int = KeyEvent.KEYCODE_DPAD_CENTER) {
         assertTrue(delegate.dispatchKeyEvent(KeyEvent(action, code)))
     }
 
@@ -92,7 +92,7 @@ class VirtualCursorPointerTest {
 
     @Test fun longPressCancelsTapAndTheNextTapStillWorks() = withCursor { delegate, surface, clicks ->
         var longPresses = 0
-        delegate.callback = object : CursorDrawerDelegate.Callback {
+        delegate.callback = object : PointerController.Callback {
             override fun onLongPress(x: Int, y: Int) {
                 assertEquals(123, x)
                 assertEquals(456, y)
@@ -100,7 +100,7 @@ class VirtualCursorPointerTest {
             }
         }
         key(delegate, KeyEvent.ACTION_DOWN)
-        val runnable = CursorDrawerDelegate::class.java.getDeclaredField("longPressRunnable")
+        val runnable = PointerController::class.java.getDeclaredField("longPressRunnable")
             .apply { isAccessible = true }.get(delegate) as Runnable
         runnable.run()
         key(delegate, KeyEvent.ACTION_UP)
@@ -120,7 +120,7 @@ class VirtualCursorPointerTest {
         withCursor { delegate, _, _ ->
             delegate.init()
             delegate.cursorPosition.set(10f, 400f)
-            val update = CursorDrawerDelegate::class.java.getDeclaredField("cursorUpdateRunnable")
+            val update = PointerController::class.java.getDeclaredField("cursorUpdateRunnable")
                 .apply { isAccessible = true }.get(delegate) as Runnable
             assertTrue(delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT)))
             val end = SystemClock.uptimeMillis() + holdMs

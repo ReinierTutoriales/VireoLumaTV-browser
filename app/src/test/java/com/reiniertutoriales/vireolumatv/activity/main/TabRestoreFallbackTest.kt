@@ -5,10 +5,10 @@ import android.view.View
 import android.widget.FrameLayout
 import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
-import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
+import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import kotlinx.coroutines.cancel
 import org.junit.Assert.*
 import org.junit.Test
@@ -25,8 +25,8 @@ import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class TabRestoreFallbackTest {
     private fun tabWithEngine(engine: PageEngine, privateMode: Boolean = false) =
-        WebTabState(url = "https://saved.test/page", incognito = privateMode).apply {
-            WebTabState::class.java.getDeclaredField("engine\$delegate")
+        BrowserTab(url = "https://saved.test/page", incognito = privateMode).apply {
+            BrowserTab::class.java.getDeclaredField("engine\$delegate")
                 .apply { isAccessible = true }.set(this, lazyOf(engine))
         }
 
@@ -46,7 +46,7 @@ class TabRestoreFallbackTest {
                 }
             } as PageEngine
             val tab = tabWithEngine(engine, privateMode).apply { savedState = Bundle() }
-            val model = TabsModel()
+            val model = TabStore()
             model.modelScope.cancel() // Persistence is covered by separate Room/atomic-file tests.
             model.tabsStates.add(tab)
             val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
@@ -74,7 +74,7 @@ class TabRestoreFallbackTest {
             }
         } as PageEngine
         val tab = tabWithEngine(engine).apply { wvStateFileName = "tab-rejected-state-test" }
-        val file = File(app.filesDir, "${WebTabState.TAB_WVSTATES_DIR}/${tab.wvStateFileName}")
+        val file = File(app.filesDir, "${BrowserTab.TAB_WVSTATES_DIR}/${tab.wvStateFileName}")
         file.parentFile!!.mkdirs()
         file.writeBytes(requireNotNull(BundleBytes.encode(Bundle())))
         try {
@@ -85,7 +85,7 @@ class TabRestoreFallbackTest {
     }
 
     @Test fun invalidMemoryStateFallsBackInsteadOfThrowing() {
-        val engine = WebViewWebEngine(WebTabState())
+        val engine = WebViewPageEngine(BrowserTab())
         val tab = tabWithEngine(engine).apply { savedState = "invalid legacy payload" }
         assertFalse(tab.restoreWebView())
         assertEquals("https://saved.test/page", tab.url)
@@ -93,7 +93,7 @@ class TabRestoreFallbackTest {
 
     @Test fun realEngineRestoresValidHistoryAndRejectsEmptyBundle() {
         val app = RuntimeEnvironment.getApplication()
-        val engine = WebViewWebEngine(WebTabState())
+        val engine = WebViewPageEngine(BrowserTab())
         val tab = tabWithEngine(engine)
         try {
             val live = engine.createView(app) as WebView
@@ -114,6 +114,6 @@ class TabRestoreFallbackTest {
     }
 
     @Test fun engineWithoutLiveViewDoesNotManufactureSavedState() {
-        assertNull(WebViewWebEngine(WebTabState()).saveHistory())
+        assertNull(WebViewPageEngine(BrowserTab()).saveHistory())
     }
 }

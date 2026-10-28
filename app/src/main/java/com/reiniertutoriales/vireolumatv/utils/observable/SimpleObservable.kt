@@ -9,7 +9,7 @@ import kotlin.reflect.KProperty
  * Something observers can follow. An observer is registered at most once; notifying works on a
  * copy of the list, so an observer may unsubscribe itself or others while being notified.
  */
-interface Subscribable<O> {
+interface Watchable<O> {
     val observers: ArrayList<O>
 
     /** Calls [observer] once with the current state. */
@@ -55,7 +55,7 @@ interface Subscribable<O> {
 typealias ValueObserver<T> = (value: T) -> Unit
 
 /** A value that tells its observers, newest first, whenever it is set. Also usable as a delegate. */
-open class ObservableValue<T>(default: T) : Subscribable<ValueObserver<T>> {
+open class LiveValue<T>(default: T) : Watchable<ValueObserver<T>> {
     override val observers = ArrayList<ValueObserver<T>>()
 
     open var value: T = default

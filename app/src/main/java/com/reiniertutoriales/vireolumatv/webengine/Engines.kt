@@ -2,11 +2,11 @@ package com.reiniertutoriales.vireolumatv.webengine
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 
 /** The engine implementation: each tab's [PageEngine], the shared cache and a version to show. */
 interface EngineBackend {
-    fun create(tab: WebTabState): PageEngine
+    fun create(tab: BrowserTab): PageEngine
     suspend fun clearCache(context: Context)
     val version: String
 }
@@ -29,7 +29,7 @@ object Engines {
 
     private val installed get() = checkNotNull(backend) { "No page engine installed" }
 
-    fun create(tab: WebTabState): PageEngine = installed.create(tab)
+    fun create(tab: BrowserTab): PageEngine = installed.create(tab)
 
     suspend fun clearCache(context: Context) = installed.clearCache(context)
 

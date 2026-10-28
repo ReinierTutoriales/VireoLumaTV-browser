@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -38,7 +38,7 @@ class VisitHistoryTest {
     }
 
     @Test fun aQuickHopIsReplacedAndOnlyWebPagesAreStored() {
-        val model = MainActivityViewModel()
+        val model = VisitLog()
         model.logVisitedHistory("Redirect", "https://a.test/start", null)
         model.logVisitedHistory("Final", "https://a.test/final", null)
         model.logVisitedHistory("Home", Config.HOME_PAGE_URL, null)
@@ -48,10 +48,10 @@ class VisitHistoryTest {
     }
 
     @Test fun aLateTitleUpdatesTheStoredVisit() {
-        val model = MainActivityViewModel()
+        val model = VisitLog()
         model.logVisitedHistory(null, "https://b.test/", null)
         settle(1)
-        model.onTabTitleUpdated(WebTabState(url = "https://b.test/", title = "Loaded title"))
+        model.onTabTitleUpdated(BrowserTab(url = "https://b.test/", title = "Loaded title"))
         val deadline = System.currentTimeMillis() + 5_000
         while (stored() != listOf("Loaded title|https://b.test/") && System.currentTimeMillis() < deadline) {
             Thread.sleep(20)

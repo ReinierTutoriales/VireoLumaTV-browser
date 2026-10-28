@@ -21,7 +21,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.databinding.DownloadsScreenBinding
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import kotlinx.coroutines.launch
 import java.io.File
 import com.reiniertutoriales.vireolumatv.utils.toast
@@ -32,19 +32,19 @@ import com.reiniertutoriales.vireolumatv.utils.toast
  * stored. OK opens a finished file; a long press offers install, folder and delete, or cancel while
  * the download runs.
  */
-open class DownloadsActivity : AppCompatActivity(), ActiveDownloadsModel.Listener {
+open class DownloadsActivity : AppCompatActivity(), RunningDownloads.Listener {
     private lateinit var vb: DownloadsScreenBinding
-    private lateinit var active: ActiveDownloadsModel
-    private lateinit var history: DownloadsHistoryModel
-    private val adapter = DownloadListAdapter(::open, ::showOptions)
+    private lateinit var active: RunningDownloads
+    private lateinit var history: DownloadHistoryPages
+    private val adapter = DownloadRows(::open, ::showOptions)
     private val privateSession: Boolean get() = this is IncognitoDownloadsActivity
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         vb = DownloadsScreenBinding.inflate(layoutInflater)
         setContentView(vb.root)
-        active = ActiveModelsRepository.get(ActiveDownloadsModel::class, this)
-        history = ActiveModelsRepository.get(DownloadsHistoryModel::class, this)
+        active = ScreenModels.get(RunningDownloads::class, this)
+        history = ScreenModels.get(DownloadHistoryPages::class, this)
 
         vb.itemList.layoutManager = LinearLayoutManager(this)
         vb.itemList.adapter = adapter

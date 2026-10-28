@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Stable ids for the rows MainSettingsView builds; used by tests and focus checks. -->
+<!-- Stable ids for the rows GeneralPage builds; used by tests and focus checks. -->
 <resources>
     <item name="spEngine" type="id" />
     <item name="spHomePage" type="id" />

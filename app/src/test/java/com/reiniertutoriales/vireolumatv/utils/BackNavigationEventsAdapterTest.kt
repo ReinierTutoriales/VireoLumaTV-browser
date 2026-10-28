@@ -30,7 +30,7 @@ class BackNavigationEventsAdapterTest {
 
     @Test fun consecutiveRemotePressesEachNavigateAndCanceledPressDoesNot() {
         var navigations = 0
-        val adapter = BackNavigationEventsAdapter({ navigations++ })
+        val adapter = BackPresses({ navigations++ })
         val time = SystemClock.uptimeMillis() + 1000
         adapter.dispatchKeyEvent(key(time, KeyEvent.ACTION_DOWN))
         assertEquals(0, navigations)
@@ -45,7 +45,7 @@ class BackNavigationEventsAdapterTest {
 
     @Test fun controllerShortPressIsIgnoredAndLongPressFiresOnlyOnce() {
         var navigations = 0
-        val adapter = BackNavigationEventsAdapter({ navigations++ },
+        val adapter = BackPresses({ navigations++ },
             gameControllersLongPressBForBackNavigation = true)
         val time = SystemClock.uptimeMillis() + 1000
         adapter.dispatchKeyEvent(key(time, KeyEvent.ACTION_DOWN, source = InputDevice.SOURCE_GAMEPAD))
@@ -60,7 +60,7 @@ class BackNavigationEventsAdapterTest {
 
     @Test fun sameGestureAcrossKeyAndMotionChannelsNavigatesOnce() {
         var navigations = 0
-        val adapter = BackNavigationEventsAdapter({ navigations++ })
+        val adapter = BackPresses({ navigations++ })
         val time = SystemClock.uptimeMillis() + 1000
         adapter.dispatchKeyEvent(key(time, KeyEvent.ACTION_DOWN))
         val pressed = motion(time + 10, MotionEvent.BUTTON_BACK, InputDevice.SOURCE_GAMEPAD)
@@ -78,7 +78,7 @@ class BackNavigationEventsAdapterTest {
 
     @Test fun systemCallbackDuplicatesAnActiveKeyPressOnlyOnce() {
         var navigations = 0
-        val adapter = BackNavigationEventsAdapter({ navigations++ })
+        val adapter = BackPresses({ navigations++ })
         val time = SystemClock.uptimeMillis()
         adapter.dispatchKeyEvent(key(time, KeyEvent.ACTION_DOWN))
         assertFalse(adapter.dispatchSystemBackNavigationEvent())
@@ -88,7 +88,7 @@ class BackNavigationEventsAdapterTest {
 
     @Test fun motionLongPressAndCancellationNeverFireOnRelease() {
         var navigations = 0
-        val adapter = BackNavigationEventsAdapter({ navigations++ }, 500,
+        val adapter = BackPresses({ navigations++ }, 500,
             gameControllersLongPressBForBackNavigation = true)
         val time = SystemClock.uptimeMillis() + 1000
         val events = listOf(
@@ -109,7 +109,7 @@ class BackNavigationEventsAdapterTest {
 
     @Test fun mouseSecondaryButtonIsNotBackButDedicatedBackButtonIs() {
         var navigations = 0
-        val adapter = BackNavigationEventsAdapter({ navigations++ })
+        val adapter = BackPresses({ navigations++ })
         val time = SystemClock.uptimeMillis() + 1000
         val right = motion(time, MotionEvent.BUTTON_SECONDARY, InputDevice.SOURCE_MOUSE)
         val back = motion(time + 100, MotionEvent.BUTTON_BACK, InputDevice.SOURCE_MOUSE)

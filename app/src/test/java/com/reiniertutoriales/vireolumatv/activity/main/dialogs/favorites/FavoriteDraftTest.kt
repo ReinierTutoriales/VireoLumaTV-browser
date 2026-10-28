@@ -3,7 +3,7 @@ package com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.model.FavoriteItem
+import com.reiniertutoriales.vireolumatv.model.Favorite
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,13 +20,13 @@ class FavoriteDraftTest {
         owner.get().setTheme(R.style.AppTheme)
         owner.setup()
         try {
-            val original = FavoriteItem().apply {
+            val original = Favorite().apply {
                 id = 7; title = "Before"; url = "https://before.test"; parent = 12
                 favicon = "icon"; homePageBookmark = true; order = 3
                 destUrl = "destination"; description = "description"; validUntil = 123L; useful = true
             }
-            var saved: FavoriteItem? = null
-            val dialog = FavoriteEditorDialog(owner.get(), original) { item -> saved = item }
+            var saved: Favorite? = null
+            val dialog = FavoriteEditor(owner.get(), original) { item -> saved = item }
             dialog.show()
             dialog.findViewById<EditText>(R.id.title_field)!!.setText("After")
             dialog.findViewById<EditText>(R.id.address_field)!!.setText("  after.test  ")
@@ -54,9 +54,9 @@ class FavoriteDraftTest {
         owner.get().setTheme(R.style.AppTheme)
         owner.setup()
         try {
-            val original = FavoriteItem().apply { title = "Before"; url = "https://before.test" }
+            val original = Favorite().apply { title = "Before"; url = "https://before.test" }
             var calls = 0
-            val dialog = FavoriteEditorDialog(owner.get(), original) { item -> calls++ }
+            val dialog = FavoriteEditor(owner.get(), original) { item -> calls++ }
             dialog.show()
             dialog.findViewById<EditText>(R.id.title_field)!!.setText("After")
             dialog.findViewById<EditText>(R.id.address_field)!!.setText("  ")

@@ -26,7 +26,7 @@ class Download() {
     @Volatile var size: Long = 0
     @Volatile @ColumnInfo(name = "bytes_received") var bytesReceived: Long = 0
 
-    @Ignore var operationAfterDownload = OperationAfterDownload.NOP
+    @Ignore var operationAfterDownload = AfterDownload.NOP
     @Ignore @Volatile var cancelled = false
     /** Private downloads are never stored, so they all keep id 0. */
     @Ignore var incognito = false
@@ -41,7 +41,7 @@ class Download() {
     @Ignore var stream: InputStream? = null
 
     constructor(
-        url: String, filename: String, filepath: String?, operationAfterDownload: OperationAfterDownload,
+        url: String, filename: String, filepath: String?, operationAfterDownload: AfterDownload,
         mimeType: String?, referer: String?, userAgentString: String?, base64BlobData: String?,
         stream: InputStream?, size: Long = 0L,
     ) : this() {
@@ -60,7 +60,7 @@ class Download() {
     /** The same download: the same object, or the same stored row (a history copy of a running one). */
     fun matches(other: Download?): Boolean = other != null && (this === other || (id != 0L && id == other.id))
 
-    enum class OperationAfterDownload { NOP, INSTALL }
+    enum class AfterDownload { NOP, INSTALL }
 
     companion object {
         const val BROKEN_MARK = -2L

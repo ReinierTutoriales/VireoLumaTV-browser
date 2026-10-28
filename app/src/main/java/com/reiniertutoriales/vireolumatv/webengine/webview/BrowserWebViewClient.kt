@@ -28,7 +28,7 @@ import java.net.URLConnection
  * Navigation and loading of one page: popup and tab-under guards, the packaged home page,
  * ad blocking, page lifecycle, certificate errors and HTTP authentication.
  */
-internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient() {
+internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewClient() {
     private val window get() = view.window
     private val engine get() = view.engine
 
@@ -47,7 +47,7 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
         if (request.isForMainFrame && engine.onPopupNavigation(request.url)) return blocked()
         val page = this.view.currentOriginalUrl
         if (page != null && page.toString().startsWith(Config.HOME_PAGE_URL, ignoreCase = true)) {
-            HomePageHelper.shouldInterceptRequest(request)?.let { return it }
+            StartPageAssets.shouldInterceptRequest(request)?.let { return it }
             val address = request.url.toString()
             if (address.startsWith(Config.HOME_PAGE_URL)) {
                 return homePageAsset(view, address) ?: super.shouldInterceptRequest(view, request)
@@ -68,7 +68,7 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
         return try {
             WebResourceResponse(URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream", "UTF-8", view.context.assets.open(path))
         } catch (_: IOException) {
-            Log.w(WebViewEx.TAG, "Home page asset not found: $path")
+            Log.w(BrowserWebView.TAG, "Home page asset not found: $path")
             null
         }
     }
@@ -100,7 +100,7 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
     /** Video stream failures are the ones worth a log line, within a budget. */
     private inline fun logStream(url: Uri, detail: () -> String) {
         val kind = StreamDiagnostics.kind(url) ?: return
-        if (view.streamLogBudget.allow()) Log.w(WebViewEx.WEB_VIEW_TAG, "Stream $kind ${detail()} host=${url.host}")
+        if (view.streamLogBudget.allow()) Log.w(BrowserWebView.WEB_VIEW_TAG, "Stream $kind ${detail()} host=${url.host}")
     }
 
     override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean = engine.onRenderProcessGone()
@@ -110,7 +110,7 @@ internal class BrowserWebViewClient(private val view: WebViewEx) : WebViewClient
      * and only once, may proceed. Errors of other hosts' resources are not shown as a page warning.
      */
     override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
-        Log.e(WebViewEx.TAG, "Certificate error for ${error.url}")
+        Log.e(BrowserWebView.TAG, "Certificate error for ${error.url}")
         val owner = this.view
         if (owner.trustSsl && CertificateTrust.isSameCertificate(owner.lastSSLError?.certificate, error.certificate)) {
             owner.trustSsl = false

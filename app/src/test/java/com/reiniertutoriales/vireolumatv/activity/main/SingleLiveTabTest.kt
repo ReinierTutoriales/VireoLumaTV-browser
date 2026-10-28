@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.webengine.*
 import kotlinx.coroutines.cancel
 import org.junit.Assert.*
@@ -25,15 +25,15 @@ class SingleLiveTabTest {
 
     private fun verify(privateMode: Boolean) {
         val app = RuntimeEnvironment.getApplication()
-        val views = IdentityHashMap<WebTabState, View>()
-        val engines = IdentityHashMap<WebTabState, PageEngine>()
-        val histories = IdentityHashMap<WebTabState, String>()
+        val views = IdentityHashMap<BrowserTab, View>()
+        val engines = IdentityHashMap<BrowserTab, PageEngine>()
+        val histories = IdentityHashMap<BrowserTab, String>()
         val events = mutableListOf<String>()
         var loads = 0
         val providerCallback = Proxy.newProxyInstance(EngineBackend::class.java.classLoader,
             arrayOf(EngineBackend::class.java)) { _, method, args ->
             if (method.name != "create") null else {
-                val tab = args!![0] as WebTabState
+                val tab = args!![0] as BrowserTab
                 engines.getOrPut(tab) {
                     Proxy.newProxyInstance(PageEngine::class.java.classLoader,
                         arrayOf(PageEngine::class.java)) { _, call, values ->
@@ -59,18 +59,18 @@ class SingleLiveTabTest {
             }
         } as EngineBackend
         val restore = Engines.replaceForTest(providerCallback)
-        val model = TabsModel()
+        val model = TabStore()
         // Persistence has separate Room/atomic-file tests; keep this test focused on renderer lifetime.
         model.modelScope.cancel()
         try {
-            val first = WebTabState(url = "https://one.test", incognito = privateMode)
-            val second = WebTabState(url = "https://two.test", incognito = privateMode)
+            val first = BrowserTab(url = "https://one.test", incognito = privateMode)
+            val second = BrowserTab(url = "https://two.test", incognito = privateMode)
             model.tabsStates.add(first)
             model.tabsStates.add(second)
             val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
                 arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
             val parent = FrameLayout(app)
-            val allocate: (WebTabState) -> View? = { tab ->
+            val allocate: (BrowserTab) -> View? = { tab ->
                 assertTrue("Old renderer must be released before allocating another", views.isEmpty())
                 events.add("create:${tab.url}")
                 View(app).also { views[tab] = it }
@@ -91,7 +91,7 @@ class SingleLiveTabTest {
             val count = events.size
             model.changeTab(first, allocate, parent, window)
             assertEquals(count, events.size)
-            val transportTab = WebTabState(url = "https://transport.test", incognito = privateMode)
+            val transportTab = BrowserTab(url = "https://transport.test", incognito = privateMode)
             model.tabsStates.add(transportTab)
             model.changeTab(transportTab, allocate, parent, window, loadInitialUrl = false)
             assertEquals(2, loads) // Caller/Chromium owns initial navigation, with no duplicate request.

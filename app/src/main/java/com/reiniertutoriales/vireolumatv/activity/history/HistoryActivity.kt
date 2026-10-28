@@ -13,7 +13,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.databinding.HistoryScreenBinding
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import kotlinx.coroutines.launch
 
 /**
@@ -22,9 +22,9 @@ import kotlinx.coroutines.launch
  */
 class HistoryActivity : AppCompatActivity() {
     private lateinit var vb: HistoryScreenBinding
-    private lateinit var model: HistoryModel
+    private lateinit var model: HistoryPages
     private var consumedPage: List<HistoryItem>? = null
-    private val adapter = HistoryAdapter(::onItemClick, ::onItemLongClick)
+    private val adapter = HistoryRows(::onItemClick, ::onItemLongClick)
 
     /** Back leaves selection mode first; only then does it close the screen. */
     private val leaveSelection = object : OnBackPressedCallback(false) {
@@ -38,7 +38,7 @@ class HistoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         vb = HistoryScreenBinding.inflate(layoutInflater)
         setContentView(vb.root)
-        model = ActiveModelsRepository.get(HistoryModel::class, this)
+        model = ScreenModels.get(HistoryPages::class, this)
         onBackPressedDispatcher.addCallback(this, leaveSelection)
 
         vb.itemList.layoutManager = LinearLayoutManager(this)

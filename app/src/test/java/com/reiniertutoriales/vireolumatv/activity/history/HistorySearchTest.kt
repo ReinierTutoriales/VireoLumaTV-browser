@@ -24,7 +24,7 @@ class HistorySearchTest {
             dao.insert(HistoryItem().apply { time = 3; title = "Other"; url = "https://other.test" })
 
             suspend fun find(query: String): List<String> {
-                val pattern = HistoryModel.likePattern(query)
+                val pattern = HistoryPages.likePattern(query)
                 return dao.search(pattern).map { it.title }
             }
 

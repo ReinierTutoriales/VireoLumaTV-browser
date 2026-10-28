@@ -7,8 +7,8 @@ import android.util.AtomicFile
 import android.util.Log
 import android.util.LruCache
 import com.reiniertutoriales.vireolumatv.AppContext
-import com.reiniertutoriales.vireolumatv.model.HostConfig
-import com.reiniertutoriales.vireolumatv.utils.FaviconExtractor
+import com.reiniertutoriales.vireolumatv.model.SiteSettings
+import com.reiniertutoriales.vireolumatv.utils.IconFinder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -36,9 +36,9 @@ import kotlin.math.abs
 object Favicons {
     /** Where a host's icon file is recorded (the hosts table). */
     interface Store {
-        fun find(host: String): HostConfig? = null
-        suspend fun update(row: HostConfig) {}
-        suspend fun insert(row: HostConfig) {}
+        fun find(host: String): SiteSettings? = null
+        suspend fun update(row: SiteSettings) {}
+        suspend fun insert(row: SiteSettings) {}
     }
 
     var store: Store = object : Store {}
@@ -64,7 +64,7 @@ object Favicons {
     private val writing = Mutex()
     // A fixed set of locks keeps one lookup per host without a map that grows with every site.
     private val hostLocks = Array(32) { Mutex() }
-    private val extractor = FaviconExtractor()
+    private val extractor = IconFinder()
 
     /** The icon of [address], a web address or a bare host (tried over HTTPS, then HTTP). */
     suspend fun get(address: String): Bitmap? {
@@ -108,7 +108,7 @@ object Favicons {
         return icon
     }
 
-    private suspend fun stored(row: HostConfig?): Bitmap? {
+    private suspend fun stored(row: SiteSettings?): Bitmap? {
         val name = row?.favicon ?: return null
         return withContext(Dispatchers.IO) {
             val file = File(directory, name)
@@ -167,7 +167,7 @@ object Favicons {
      * Writes the icon atomically under a hash of [host] (so no two sites share a file) and records it.
      * A failure only loses the saved copy, never the icon being shown.
      */
-    private suspend fun save(host: String, icon: Bitmap, row: HostConfig?) = withContext(Dispatchers.IO) {
+    private suspend fun save(host: String, icon: Bitmap, row: SiteSettings?) = withContext(Dispatchers.IO) {
         try {
             write(host, icon, row)
         } catch (error: CancellationException) {
@@ -177,7 +177,7 @@ object Favicons {
         }
     }
 
-    private suspend fun write(host: String, icon: Bitmap, row: HostConfig?) {
+    private suspend fun write(host: String, icon: Bitmap, row: SiteSettings?) {
         val dir = directory
         if (!dir.isDirectory && !dir.mkdirs()) return
         val name = MessageDigest.getInstance("SHA-256").digest(host.toByteArray())
@@ -197,7 +197,7 @@ object Favicons {
                 row.favicon = name
                 store.update(row)
             } else {
-                store.insert(HostConfig(host).apply { favicon = name })
+                store.insert(SiteSettings(host).apply { favicon = name })
             }
         }
     }

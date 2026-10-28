@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.app.Application
 import android.os.Bundle
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.webengine.*
 import org.junit.Assert.*
 import org.junit.Test
@@ -26,7 +26,7 @@ class RendererRecoveryTest {
         } as EngineBackend
         val restore = Engines.replaceForTest(callback)
         try {
-            val tab = WebTabState(url = "https://latest.test").apply { savedState = Bundle() }
+            val tab = BrowserTab(url = "https://latest.test").apply { savedState = Bundle() }
             assertTrue(tab.restoreWebView())
             assertEquals(1, restores)
             tab.rendererLost = true

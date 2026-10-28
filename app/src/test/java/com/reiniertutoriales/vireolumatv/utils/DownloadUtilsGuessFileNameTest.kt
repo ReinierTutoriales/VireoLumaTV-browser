@@ -24,7 +24,7 @@ class DownloadUtilsGuessFileNameTest {
     }
 
     private fun guess(url: String, disposition: String? = null, mime: String? = null) =
-        DownloadUtils.guessFileName(url, disposition, mime)
+        FileNames.guessFileName(url, disposition, mime)
 
     @Test fun nameComesFromTheAddressWithoutQuery() {
         assertEquals("report.pdf", guess("https://example.test/files/report.pdf?token=1"))

@@ -116,7 +116,7 @@
 
         <!-- Private mode. -->
         <activity
-            android:name=".activity.IncognitoModeMainActivity"
+            android:name=".activity.PrivateBrowserActivity"
             android:configChanges="uiMode"
             android:exported="false"
             android:launchMode="singleTask"

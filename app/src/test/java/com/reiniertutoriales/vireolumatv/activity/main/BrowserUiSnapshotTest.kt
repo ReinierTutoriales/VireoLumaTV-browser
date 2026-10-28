@@ -16,8 +16,8 @@ import com.reiniertutoriales.vireolumatv.Config as BrowserConfig
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
-import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import kotlinx.coroutines.cancel
 import org.junit.Assert.*
 import org.junit.Test
@@ -54,11 +54,11 @@ class BrowserUiSnapshotTest {
             setup()
         }
         val activity = host.get()
-        val tabs = ActiveModelsRepository.get(TabsModel::class, activity)
+        val tabs = ScreenModels.get(TabStore::class, activity)
         tabs.modelScope.cancel()
         tabs.tabsStates.clear()
-        tabs.tabsStates.add(WebTabState(url = BrowserConfig.HOME_PAGE_URL, title = "Inicio", position = 0))
-        tabs.tabsStates.add(WebTabState(url = BrowserConfig.HOME_PAGE_URL,
+        tabs.tabsStates.add(BrowserTab(url = BrowserConfig.HOME_PAGE_URL, title = "Inicio", position = 0))
+        tabs.tabsStates.add(BrowserTab(url = BrowserConfig.HOME_PAGE_URL,
             title = "Documentación: título largo para comprobar el recorte de las pestañas", position = 1))
         tabs.currentTab.value = tabs.tabsStates[0]
         val vb = BrowserWindowBinding.inflate(activity.layoutInflater)

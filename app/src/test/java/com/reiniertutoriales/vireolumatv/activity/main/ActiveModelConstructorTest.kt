@@ -1,17 +1,17 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModel
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class ActiveModelConstructorTest {
-    class OverloadedModel @JvmOverloads constructor(val initial: Int = 42) : ActiveModel()
+    class OverloadedModel @JvmOverloads constructor(val initial: Int = 42) : ScreenModel()
 
     @Test fun repositoryExplicitlyUsesTheNoArgumentConstructor() {
         val user = Any()
-        val model = ActiveModelsRepository.get(OverloadedModel::class, user)
+        val model = ScreenModels.get(OverloadedModel::class, user)
         try { assertEquals(42, model.initial) }
-        finally { ActiveModelsRepository.markAsNeedless(model, user) }
+        finally { ScreenModels.markAsNeedless(model, user) }
     }
 }

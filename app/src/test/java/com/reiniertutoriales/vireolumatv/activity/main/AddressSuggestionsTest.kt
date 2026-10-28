@@ -1,13 +1,13 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
-import com.reiniertutoriales.vireolumatv.model.FavoriteItem
+import com.reiniertutoriales.vireolumatv.model.Favorite
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AddressSuggestionsTest {
-    private fun bookmark(title: String?, url: String) = FavoriteItem().apply { this.title = title; this.url = url }
+    private fun bookmark(title: String?, url: String) = Favorite().apply { this.title = title; this.url = url }
     private fun visit(title: String, url: String) = HistoryItem().apply { this.title = title; this.url = url }
 
     @Test fun nothingTypedSuggestsNothing() {

@@ -23,11 +23,11 @@ class HistoryAdapterTest {
     private val day = 1_700_000_000_000L
     private val nextDay = day + 2 * 24 * 60 * 60 * 1000L
 
-    private fun adapter() = HistoryAdapter({}, { false }, AsyncDifferConfig.Builder(HistoryAdapter.DIFF_CALLBACK)
+    private fun adapter() = HistoryRows({}, { false }, AsyncDifferConfig.Builder(HistoryRows.DIFF_CALLBACK)
         .setBackgroundThreadExecutor(Executor { it.run() })
         .build())
 
-    private fun HistoryAdapter.settle() = also { ShadowLooper.idleMainLooper() }
+    private fun HistoryRows.settle() = also { ShadowLooper.idleMainLooper() }
 
     private fun item(time: Long, url: String, id: Long = time) = HistoryItem().apply {
         this.id = id
@@ -35,7 +35,7 @@ class HistoryAdapterTest {
         this.url = url
     }
 
-    private fun HistoryAdapter.rows() = currentList.filter { !it.isDateHeader }.map { it.url }
+    private fun HistoryRows.rows() = currentList.filter { !it.isDateHeader }.map { it.url }
 
     @Test
     fun addItemsInsertsOneHeaderPerDayAndCountsOnlyRealItems() {

@@ -15,10 +15,10 @@ import kotlinx.coroutines.cancel
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
-import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
-import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
+import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import org.junit.Assert.*
 import org.junit.Test
@@ -69,7 +69,7 @@ class BrowserNavigationTest {
         }
         val activity = Robolectric.buildActivity(MainActivity::class.java).get()
         val vb = BrowserWindowBinding.inflate(host.get().layoutInflater)
-        val tabs = ActiveModelsRepository.get(TabsModel::class, host.get())
+        val tabs = ScreenModels.get(TabStore::class, host.get())
         val page = View(host.get()).apply { isFocusableInTouchMode = true }
         var virtualCursor = true
         var exitedFullscreen = 0
@@ -94,18 +94,18 @@ class BrowserNavigationTest {
                 else -> null
             }
         } as PageEngine
-        val tab = WebTabState(url = "https://example.test", selected = true).apply {
+        val tab = BrowserTab(url = "https://example.test", selected = true).apply {
             thumbnail = this@Fixture.thumbnail
         }
         init {
-            WebTabState::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
+            BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
                 .set(tab, lazyOf(engine))
             tabs.tabsStates.clear()
             tabs.tabsStates.add(tab)
             tabs.currentTab.value = tab
             activity.vb = vb
             activity.tabsModel = tabs
-            activity.settingsModel = ActiveModelsRepository.get(SettingsModel::class, host.get())
+            activity.settingsModel = ScreenModels.get(BrowserSettings::class, host.get())
             activity.uiHandler = Handler(Looper.getMainLooper())
             vb.pageContainer.addView(page)
             vb.controlsOverlay.visibility = View.INVISIBLE
@@ -246,7 +246,7 @@ class BrowserNavigationTest {
     }
 
     @Test fun blockerShieldTogglesTheSelectedTabAndReportsPause() = Fixture().use { f ->
-        f.activity.adblockModel = AdblockModel(autoLoad = false)
+        f.activity.adblockModel = AdBlocker(autoLoad = false)
         f.tab.adblock = true
         f.vb.tabStrip.current = 0
         f.activity.handleBackNavigation()
@@ -273,8 +273,8 @@ class BrowserNavigationTest {
     @Test fun fullscreenExitRestoresOneCoherentMenuAndNextBackReturnsToPage() = Fixture().use { f ->
         // Exercise the real engine's fullscreen teardown and the real Activity callback together.
         val callback = TabWindow(f.activity, f.tab)
-        val engine = WebViewWebEngine(f.tab).apply { window = callback }
-        WebViewWebEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
+        val engine = WebViewPageEngine(f.tab).apply { window = callback }
+        WebViewPageEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
             .set(engine, f.vb.pageContainer)
         val video = View(f.host.get()).apply { isFocusableInTouchMode = true }
         engine.enterFullscreen(video)

@@ -8,8 +8,8 @@ import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.MainSettingsView
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.GeneralPage
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,8 +22,8 @@ import org.robolectric.annotation.Config
 class MainSettingsLifecycleTest {
     @Test fun reopeningSettingsReleasesObserversAndKeepsRefreshInTheFocusPath() {
         // Use a model with networking disabled: this test exercises the actual settings hierarchy.
-        val model = AdblockModel(autoLoad = false)
-        val restore = ActiveModelsRepository.replaceForTest(AdblockModel::class, model)
+        val model = AdBlocker(autoLoad = false)
+        val restore = ScreenModels.replaceForTest(AdBlocker::class, model)
         val controller = Robolectric.buildActivity(FragmentActivity::class.java)
         controller.get().setTheme(R.style.AppTheme)
         controller.setup()
@@ -36,7 +36,7 @@ class MainSettingsLifecycleTest {
         try {
             repeat(3) {
                 model.config.userAgentString.value = customUserAgent
-                val settings = MainSettingsView(activity)
+                val settings = GeneralPage(activity)
                 root.addView(settings)
                 val spinner = settings.findViewById<Spinner>(R.id.spTitles)
                 val editor = settings.findViewById<EditText>(R.id.etUAString)

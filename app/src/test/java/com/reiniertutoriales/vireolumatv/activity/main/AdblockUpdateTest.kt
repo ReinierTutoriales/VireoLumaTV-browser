@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class AdblockUpdateTest {
     @Test fun configuredListNamesReflectActualSources() {
-        val model = AdblockModel(autoLoad = false)
+        val model = AdBlocker(autoLoad = false)
         try {
             assertEquals(listOf("EasyList", "EasyPrivacy", "EasyList Spanish", "uBlock filters",
                 "uBlock Quick fixes", "uBlock Unbreak", "uBlock Badware risks"),
@@ -64,7 +64,7 @@ class AdblockUpdateTest {
                 return if (file.exists()) blocker(file.readText()) else null
             }
         }
-        val model = AdblockModel(engine, autoLoad = false)
+        val model = AdBlocker(engine, autoLoad = false)
         val source = "http://127.0.0.1:${server.address.port}/"
         model.config.adBlockListURL.value = source
         model.config.adBlockListLastUpdate = 0
@@ -92,7 +92,7 @@ class AdblockUpdateTest {
             assertEquals("An existing native client should not be deserialized again", 1, restores)
             assertFalse(model.clientLoading.value)
             assertEquals(successTime, model.config.adBlockListLastUpdate)
-            assertEquals(AdblockModel.UpdateResult.CACHED, model.updateResult.value)
+            assertEquals(AdBlocker.UpdateResult.CACHED, model.updateResult.value)
             assertEquals(listOf("Custom"), model.unavailableLists.value)
             assertTrue(model.config.adBlockListNextRetry > System.currentTimeMillis())
         } finally {

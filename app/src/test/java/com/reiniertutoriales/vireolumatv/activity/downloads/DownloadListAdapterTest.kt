@@ -23,12 +23,12 @@ class DownloadListAdapterTest {
     private val day = 1_700_000_000_000L
     private val nextDay = day + 2 * 24 * 60 * 60 * 1000L
 
-    private fun adapter() = DownloadListAdapter({}, { _, _ -> false },
-        AsyncDifferConfig.Builder(DownloadListAdapter.DIFF_CALLBACK)
+    private fun adapter() = DownloadRows({}, { _, _ -> false },
+        AsyncDifferConfig.Builder(DownloadRows.DIFF_CALLBACK)
             .setBackgroundThreadExecutor(Executor { it.run() })
             .build())
 
-    private fun DownloadListAdapter.settle() = also { ShadowLooper.idleMainLooper() }
+    private fun DownloadRows.settle() = also { ShadowLooper.idleMainLooper() }
 
     private fun download(id: Long, time: Long, name: String, size: Long = 0L) = Download().apply {
         this.id = id
@@ -39,7 +39,7 @@ class DownloadListAdapterTest {
         this.size = size
     }
 
-    private fun DownloadListAdapter.rows() = currentList.filter { !it.isDateHeader }.map { it.filename }
+    private fun DownloadRows.rows() = currentList.filter { !it.isDateHeader }.map { it.filename }
 
     @Test
     fun addItemsInsertsOneHeaderPerDayAndCountsOnlyRealItems() {
@@ -100,7 +100,7 @@ class DownloadListAdapterTest {
     private fun bindRow(info: Download): Pair<String, android.widget.ProgressBar> {
         val adapter = adapter().apply { addItems(listOf(info)) }.settle()
         val parent = android.widget.FrameLayout(VireoLumaTVApp.instance.apply { setTheme(com.reiniertutoriales.vireolumatv.R.style.AppTheme) })
-        val holder = adapter.onCreateViewHolder(parent, DownloadListAdapter.VIEW_TYPE_DOWNLOAD_ITEM)
+        val holder = adapter.onCreateViewHolder(parent, DownloadRows.VIEW_TYPE_DOWNLOAD_ITEM)
         adapter.onBindViewHolder(holder, 1)
         val row = holder.itemView
         return row.findViewById<android.widget.TextView>(com.reiniertutoriales.vireolumatv.R.id.size_text).text.toString() to

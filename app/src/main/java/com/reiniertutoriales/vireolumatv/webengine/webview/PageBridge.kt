@@ -6,7 +6,7 @@ import android.os.SystemClock
 import android.util.Base64
 import android.webkit.JavascriptInterface
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
+import com.reiniertutoriales.vireolumatv.utils.FileNames
 import java.security.SecureRandom
 
 /**
@@ -14,11 +14,11 @@ import java.security.SecureRandom
  * it is serving: filters for web frames only, certificate trust only from the warning page, blob
  * downloads only from a web page and only after a fresh press. Calls arrive on the JavaBridge thread.
  */
-internal class PageBridge(private val engine: WebViewWebEngine) {
+internal class PageBridge(private val engine: WebViewPageEngine) {
     private val main = Handler(Looper.getMainLooper())
     private val random = SecureRandom()
     private val blobs = BlobTransfers(SystemClock::uptimeMillis, ::newToken)
-    private val page get() = engine.view as? WebViewEx
+    private val page get() = engine.view as? BrowserWebView
     private val webPage get() = page?.currentOriginalUrl?.takeIf(BridgePagePolicy::isNormalWebPage)
 
     /** Element hiding and scriptlets for a frame (see page_filters.js). */
@@ -71,10 +71,10 @@ internal class PageBridge(private val engine: WebViewWebEngine) {
     fun takeBlobDownloadData(token: String, base64BlobData: String, url: String) {
         val source = webPage?.toString() ?: return
         val ticket = blobs.take(token, url, source, base64BlobData) ?: return
-        val name = DownloadUtils.sanitizeFileName(ticket.fileName) ?: DownloadUtils.guessFileName(url, null, ticket.mimeType)
+        val name = FileNames.sanitizeFileName(ticket.fileName) ?: FileNames.guessFileName(url, null, ticket.mimeType)
         main.post {
             if (webPage?.toString() != ticket.page) return@post
-            engine.window?.download(Download(url, name, null, Download.OperationAfterDownload.NOP, ticket.mimeType,
+            engine.window?.download(Download(url, name, null, Download.AfterDownload.NOP, ticket.mimeType,
                 null, null, base64BlobData, null))
         }
     }

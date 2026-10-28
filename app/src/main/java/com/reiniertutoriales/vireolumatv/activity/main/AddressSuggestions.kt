@@ -1,7 +1,7 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
-import com.reiniertutoriales.vireolumatv.activity.history.HistoryModel
-import com.reiniertutoriales.vireolumatv.model.FavoriteItem
+import com.reiniertutoriales.vireolumatv.activity.history.HistoryPages
+import com.reiniertutoriales.vireolumatv.model.Favorite
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import java.util.Locale
@@ -17,7 +17,7 @@ data class AddressSuggestion(val title: String, val url: String, val bookmark: B
 object AddressSuggestions {
     const val MAX = 6
 
-    fun rank(typed: String, bookmarks: List<FavoriteItem>, history: List<HistoryItem>): List<AddressSuggestion> {
+    fun rank(typed: String, bookmarks: List<Favorite>, history: List<HistoryItem>): List<AddressSuggestion> {
         val query = typed.trim().lowercase(Locale.ROOT)
         if (query.isEmpty()) return emptyList()
         val seen = HashSet<String>()
@@ -43,7 +43,7 @@ object AddressSuggestions {
         if (query.isEmpty()) return emptyList()
         val bookmarks = AppDatabase.db.favoritesDao().getAll()
         val history = if (incognito) emptyList() else
-            AppDatabase.db.historyDao().search(HistoryModel.likePattern(query))
+            AppDatabase.db.historyDao().search(HistoryPages.likePattern(query))
         return rank(query, bookmarks, history)
     }
 

@@ -12,7 +12,7 @@ import org.robolectric.annotation.Config as RoboConfig
 @RoboConfig(application = VireoLumaTVApp::class, sdk = [28])
 class SettingsModelTest {
     @Test fun searchHomeFollowsTheSearchEngineSite() {
-        val model = SettingsModel()
+        val model = BrowserSettings()
         model.config.searchEngineURL.value = "https://search.example/find?q=[query]"
         model.setHomePageProperties(Config.HomePageMode.SEARCH_ENGINE, null)
         assertEquals("https://search.example", model.homePage)
@@ -21,7 +21,7 @@ class SettingsModelTest {
     }
 
     @Test fun customAndBuiltInHomePages() {
-        val model = SettingsModel()
+        val model = BrowserSettings()
         model.setHomePageProperties(Config.HomePageMode.CUSTOM, "https://mine.example/")
         assertEquals("https://mine.example/", model.homePage)
         model.setSearchEngineURL("https://search.example/?q=[query]")
@@ -31,7 +31,7 @@ class SettingsModelTest {
     }
 
     @Test fun keepScreenOnIsStoredAndAnnounced() {
-        val model = SettingsModel()
+        val model = BrowserSettings()
         val seen = mutableListOf<Boolean>()
         model.keepScreenOn.subscribe({ seen += it }, notifyOnSubscribe = false)
         model.keepScreenOn.value = true

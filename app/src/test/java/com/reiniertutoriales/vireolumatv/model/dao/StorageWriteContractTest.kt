@@ -3,8 +3,8 @@ package com.reiniertutoriales.vireolumatv.model.dao
 import android.app.Application
 import androidx.room.Room
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.model.FavoriteItem
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.Favorite
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -46,7 +46,7 @@ class StorageWriteContractTest {
         val db = database()
         try {
             val bookmarks = db.favoritesDao()
-            bookmarks.insert(FavoriteItem().apply { title = "Before"; url = "https://before.test"; validUntil = 123L })
+            bookmarks.insert(Favorite().apply { title = "Before"; url = "https://before.test"; validUntil = 123L })
             val stale = bookmarks.getAll().single().copyForEdit()
             db.openHelper.writableDatabase.execSQL("UPDATE favorites SET DESCRIPTION = 'kept', VALID_UNTIL = 456")
             bookmarks.update(stale.apply { title = "After"; url = "https://after.test" })
@@ -89,13 +89,13 @@ class StorageWriteContractTest {
     }
 
     @Test fun reorderedTabsAreSnapshottedBeforeTheFirstWriteSuspends() = runBlocking {
-        val tabs = listOf(WebTabState(id = 7, position = 0), WebTabState(id = 9, position = 1))
+        val tabs = listOf(BrowserTab(id = 7, position = 0), BrowserTab(id = 9, position = 1))
         val written = mutableListOf<Pair<Long, Int>>()
-        val storage = object : TabsDao {
-            override suspend fun getAll(incognito: Boolean) = emptyList<WebTabState>()
-            override suspend fun insert(item: WebTabState) = 0L
-            override suspend fun update(item: WebTabState) {}
-            override suspend fun delete(item: WebTabState) {}
+        val storage = object : TabDao {
+            override suspend fun getAll(incognito: Boolean) = emptyList<BrowserTab>()
+            override suspend fun insert(item: BrowserTab) = 0L
+            override suspend fun update(item: BrowserTab) {}
+            override suspend fun delete(item: BrowserTab) {}
             override suspend fun deleteAll(incognito: Boolean) {}
             override suspend fun unselectAll(incognito: Boolean) {}
             override suspend fun updatePosition(position: Int, id: Long) {

@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,9 +19,9 @@ class WebViewUserAgentTest {
         reference.settings.userAgentString = null
         val expectedDefault = reference.settings.userAgentString
         reference.destroy()
-        val engine = WebViewWebEngine(WebTabState())
+        val engine = WebViewPageEngine(BrowserTab())
         try {
-            val live = engine.createView(app) as WebViewEx
+            val live = engine.createView(app) as BrowserWebView
             engine.userAgent = "CustomBrowser/2.0"
             assertEquals("CustomBrowser/2.0", live.settings.userAgentString)
             engine.userAgent = null

@@ -5,9 +5,9 @@ import android.widget.FrameLayout
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.activity.main.TabsModel
-import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.activity.main.TabStore
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import kotlinx.coroutines.cancel
 import org.junit.Assert.*
 import org.junit.Test
@@ -20,8 +20,8 @@ import org.robolectric.annotation.Config as RobolectricConfig
 @RobolectricConfig(application = Application::class, sdk = [28])
 class TabRowsTest {
     @Test fun recycledSelectedRowResetsSelection() = withAdapter { adapter, model, parent ->
-        val first = WebTabState(url = Config.HOME_PAGE_URL, position = 0)
-        val second = WebTabState(url = Config.HOME_PAGE_URL, position = 1)
+        val first = BrowserTab(url = Config.HOME_PAGE_URL, position = 0)
+        val second = BrowserTab(url = Config.HOME_PAGE_URL, position = 1)
         model.tabsStates.add(first)
         model.tabsStates.add(second)
         adapter.onTabListChanged()
@@ -37,8 +37,8 @@ class TabRowsTest {
     }
 
     @Test fun changingCurrentMovesTheSelection() = withAdapter { adapter, model, parent ->
-        model.tabsStates.add(WebTabState(url = Config.HOME_PAGE_URL))
-        model.tabsStates.add(WebTabState(url = Config.HOME_PAGE_URL))
+        model.tabsStates.add(BrowserTab(url = Config.HOME_PAGE_URL))
+        model.tabsStates.add(BrowserTab(url = Config.HOME_PAGE_URL))
         adapter.onTabListChanged()
         adapter.current = 1
         val holder = adapter.onCreateViewHolder(parent, 0)
@@ -49,8 +49,8 @@ class TabRowsTest {
     }
 
     @Test fun closingTheLastTabKeepsAValidSelection() = withAdapter { adapter, model, _ ->
-        model.tabsStates.add(WebTabState(url = Config.HOME_PAGE_URL))
-        model.tabsStates.add(WebTabState(url = Config.HOME_PAGE_URL))
+        model.tabsStates.add(BrowserTab(url = Config.HOME_PAGE_URL))
+        model.tabsStates.add(BrowserTab(url = Config.HOME_PAGE_URL))
         adapter.onTabListChanged()
         adapter.current = 1
         model.tabsStates.removeAt(1)
@@ -59,8 +59,8 @@ class TabRowsTest {
     }
 
     @Test fun movingTabsPreservesFocusedIdentityAndUnsavedRowsAreDistinct() = withAdapter { adapter, model, _ ->
-        val first = WebTabState(url = Config.HOME_PAGE_URL)
-        val second = WebTabState(url = Config.HOME_PAGE_URL)
+        val first = BrowserTab(url = Config.HOME_PAGE_URL)
+        val second = BrowserTab(url = Config.HOME_PAGE_URL)
         model.tabsStates.add(first)
         model.tabsStates.add(second)
         adapter.onTabListChanged()
@@ -68,19 +68,19 @@ class TabRowsTest {
         model.tabsStates.swap(0, 1)
         adapter.onTabListChanged()
         assertEquals(1, adapter.current)
-        assertFalse(TabsAdapter.Diff(listOf(first), listOf(second)).areItemsTheSame(0, 0))
-        assertTrue(TabsAdapter.Diff(listOf(first), listOf(first)).areItemsTheSame(0, 0))
+        assertFalse(TabChips.Diff(listOf(first), listOf(second)).areItemsTheSame(0, 0))
+        assertTrue(TabChips.Diff(listOf(first), listOf(first)).areItemsTheSame(0, 0))
     }
 
-    private fun withAdapter(test: (TabsAdapter, TabsModel, FrameLayout) -> Unit) {
+    private fun withAdapter(test: (TabChips, TabStore, FrameLayout) -> Unit) {
         val app = RuntimeEnvironment.getApplication()
         app.setTheme(R.style.AppTheme)
         AppContext.init(app, Config(app.getSharedPreferences("tab-rows-test", 0)))
-        val model = ActiveModelsRepository.get(TabsModel::class, app)
+        val model = ScreenModels.get(TabStore::class, app)
         model.modelScope.cancel() // This view test does not persist reordering.
         try {
-            val adapter = TabsAdapter {}.apply { tabsModel = model }
+            val adapter = TabChips {}.apply { tabsModel = model }
             test(adapter, model, FrameLayout(app))
-        } finally { ActiveModelsRepository.markAsNeedlessAllModelsUsedBy(app) }
+        } finally { ScreenModels.markAsNeedlessAllModelsUsedBy(app) }
     }
 }

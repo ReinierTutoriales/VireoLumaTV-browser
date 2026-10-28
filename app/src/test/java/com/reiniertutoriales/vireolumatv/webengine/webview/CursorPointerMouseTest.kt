@@ -9,7 +9,7 @@ import android.view.View
 import android.widget.FrameLayout
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -37,17 +37,17 @@ class CursorPointerMouseTest {
         }
     }
 
-    private fun withCursor(test: (CursorDrawerDelegate, Surface, () -> Unit) -> Unit) {
+    private fun withCursor(test: (PointerController, Surface, () -> Unit) -> Unit) {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         val surface = Surface(controller.get())
         controller.get().setContentView(surface)
         surface.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
         surface.layout(0, 0, 960, 540)
-        val delegate = CursorDrawerDelegate(controller.get(), surface).apply { init() }
+        val delegate = PointerController(controller.get(), surface).apply { init() }
         delegate.cursorPosition.set(480f, 270f)
         delegate.animateAppearing()
-        val update = CursorDrawerDelegate::class.java.getDeclaredField("cursorUpdateRunnable")
+        val update = PointerController::class.java.getDeclaredField("cursorUpdateRunnable")
             .apply { isAccessible = true }.get(delegate) as Runnable
         val frame = {
             ShadowSystemClock.advanceBy(Duration.ofMillis(16))
@@ -60,7 +60,7 @@ class CursorPointerMouseTest {
         }
     }
 
-    private fun key(delegate: CursorDrawerDelegate, action: Int, code: Int) {
+    private fun key(delegate: PointerController, action: Int, code: Int) {
         val now = SystemClock.uptimeMillis()
         assertTrue(delegate.dispatchKeyEvent(KeyEvent(now, now, action, code, 0)))
     }

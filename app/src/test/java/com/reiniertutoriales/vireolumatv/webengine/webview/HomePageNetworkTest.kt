@@ -6,7 +6,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.model.HostConfig
+import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.reiniertutoriales.vireolumatv.singleton.Favicons
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -26,7 +26,7 @@ class HomePageNetworkTest {
         Favicons.clear()
         val previous = Favicons.store
         Favicons.store = object : Favicons.Store {
-            override fun find(host: String): HostConfig? =
+            override fun find(host: String): SiteSettings? =
                 throw AssertionError("The interceptor must never start a favicon lookup")
         }
         val view = WebView(app)
@@ -34,16 +34,16 @@ class HomePageNetworkTest {
             arrayOf(WebResourceRequest::class.java)) { _, method, _ ->
             if (method.name == "getUrl") Uri.parse("favicon://missing.example") else null
         } as WebResourceRequest
-        try { assertEquals(404, HomePageHelper.shouldInterceptRequest(request)!!.statusCode) }
+        try { assertEquals(404, StartPageAssets.shouldInterceptRequest(request)!!.statusCode) }
         finally { view.destroy(); Favicons.store = previous; Favicons.clear() }
     }
 
     @Test fun regularPageRequestsAreNotIntercepted() {
-        assertNull(HomePageHelper.shouldInterceptRequest(requestFor("https://example.test/index.html")))
+        assertNull(StartPageAssets.shouldInterceptRequest(requestFor("https://example.test/index.html")))
     }
 
     @Test fun faviconRequestWithoutHostIsNotIntercepted() {
-        assertNull(HomePageHelper.shouldInterceptRequest(requestFor("favicon:")))
+        assertNull(StartPageAssets.shouldInterceptRequest(requestFor("favicon:")))
     }
 
     private fun requestFor(url: String) = Proxy.newProxyInstance(WebResourceRequest::class.java.classLoader,

@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.reiniertutoriales.vireolumatv.utils.observable.ObservableValue
+import com.reiniertutoriales.vireolumatv.utils.observable.LiveValue
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -76,7 +76,7 @@ class Config(val prefs: SharedPreferences) {
     }
 
     /** A text setting that notifies its observers when it changes. */
-    inner class StringPreference(private val key: String, default: String) : ObservableValue<String>(default) {
+    inner class StringPreference(private val key: String, default: String) : LiveValue<String>(default) {
         override var value: String = prefs.getString(key, default) ?: default
             set(value) {
                 prefs.edit { putString(key, value) }
@@ -86,7 +86,7 @@ class Config(val prefs: SharedPreferences) {
     }
 
     /** Like [StringPreference]; null removes the stored value. */
-    inner class OptionalStringPreference(private val key: String) : ObservableValue<String?>(null) {
+    inner class OptionalStringPreference(private val key: String) : LiveValue<String?>(null) {
         override var value: String? = prefs.getString(key, null)
             set(value) {
                 prefs.edit { if (value == null) remove(key) else putString(key, value) }

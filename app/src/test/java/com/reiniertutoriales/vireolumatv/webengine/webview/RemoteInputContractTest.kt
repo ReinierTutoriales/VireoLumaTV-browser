@@ -9,8 +9,8 @@ import android.view.MotionEvent
 import android.view.View
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
-import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerLayout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -25,19 +25,19 @@ import org.robolectric.shadows.ShadowSystemClock
 import java.time.Duration
 
 /**
- * What the remote and gamepad do to the page cursor, observed only through [CursorLayout]'s
+ * What the remote and gamepad do to the page cursor, observed only through [PointerLayout]'s
  * public dispatch methods and the cursor position, so it holds for any implementation.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class RemoteInputContractTest {
-    private fun withLayout(test: (CursorLayout) -> Unit) {
+    private fun withLayout(test: (PointerLayout) -> Unit) {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         val config = AppContext.config
         val axesWereDisabled = config.disableMotionAxesDpadNavigation
         try {
             config.disableMotionAxesDpadNavigation = false
-            val layout = CursorLayout(controller.get())
+            val layout = PointerLayout(controller.get())
             controller.get().setContentView(layout)
             shadowOf(Looper.getMainLooper()).idle() // The first traversal attaches the layout.
             // From here display frames are stepped by [frames] only, so a moving pointer cannot
@@ -48,7 +48,7 @@ class RemoteInputContractTest {
             layout.layout(0, 0, 960, 540)
             // Start away from the edges: these tests are about movement, not edge scrolling.
             layout.cursorDrawerDelegate.cursorPosition.set(480f, 270f)
-            frameStep = CursorDrawerDelegate::class.java.getDeclaredField("cursorUpdateRunnable")
+            frameStep = PointerController::class.java.getDeclaredField("cursorUpdateRunnable")
                 .apply { isAccessible = true }.get(layout.cursorDrawerDelegate) as Runnable
             test(layout)
         } finally {
@@ -58,8 +58,8 @@ class RemoteInputContractTest {
         }
     }
 
-    private val CursorLayout.pointerX get() = cursorDrawerDelegate.cursorPosition.x
-    private val CursorLayout.pointerY get() = cursorDrawerDelegate.cursorPosition.y
+    private val PointerLayout.pointerX get() = cursorDrawerDelegate.cursorPosition.x
+    private val PointerLayout.pointerY get() = cursorDrawerDelegate.cursorPosition.y
 
     private var frameStep: Runnable? = null
 
@@ -73,12 +73,12 @@ class RemoteInputContractTest {
         shadowOf(Looper.getMainLooper()).idle()
     }
 
-    private fun key(layout: CursorLayout, action: Int, code: Int): Boolean {
+    private fun key(layout: PointerLayout, action: Int, code: Int): Boolean {
         val now = SystemClock.uptimeMillis()
         return layout.dispatchKeyEvent(KeyEvent(now, now, action, code, 0, 0, 1, 0, 0, InputDevice.SOURCE_DPAD))
     }
 
-    private fun motion(layout: CursorLayout, source: Int, vararg axes: Pair<Int, Float>): Boolean {
+    private fun motion(layout: PointerLayout, source: Int, vararg axes: Pair<Int, Float>): Boolean {
         val now = SystemClock.uptimeMillis()
         val properties = MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_UNKNOWN }
         val coords = MotionEvent.PointerCoords().apply { axes.forEach { (axis, value) -> setAxisValue(axis, value) } }
@@ -87,7 +87,7 @@ class RemoteInputContractTest {
         return try { layout.dispatchGenericMotionEvent(event) } finally { event.recycle() }
     }
 
-    private fun hat(layout: CursorLayout, x: Float, y: Float = 0f) =
+    private fun hat(layout: PointerLayout, x: Float, y: Float = 0f) =
         motion(layout, InputDevice.SOURCE_JOYSTICK, MotionEvent.AXIS_HAT_X to x, MotionEvent.AXIS_HAT_Y to y)
 
     @Test fun dpadKeyMovesTheCursorOnlyWhileHeld() = withLayout { layout ->

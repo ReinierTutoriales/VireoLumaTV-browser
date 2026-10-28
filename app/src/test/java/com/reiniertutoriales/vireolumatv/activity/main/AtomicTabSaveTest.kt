@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.app.Application
 import androidx.room.Room
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -20,9 +20,9 @@ class AtomicTabSaveTest {
             .allowMainThreadQueries().build()
         try {
             val dao = db.tabsDao()
-            dao.save(WebTabState(url = "https://one.test", selected = true))
-            dao.save(WebTabState(url = "https://private.test", selected = true, incognito = true))
-            val next = WebTabState(url = "https://two.test", selected = true)
+            dao.save(BrowserTab(url = "https://one.test", selected = true))
+            dao.save(BrowserTab(url = "https://private.test", selected = true, incognito = true))
+            val next = BrowserTab(url = "https://two.test", selected = true)
             next.id = dao.save(next)
             next.title = "Updated"
             assertEquals(next.id, dao.save(next))
@@ -38,8 +38,8 @@ class AtomicTabSaveTest {
         val app = RuntimeEnvironment.getApplication()
         com.reiniertutoriales.vireolumatv.AppContext.init(app,
             com.reiniertutoriales.vireolumatv.Config(app.getSharedPreferences("closed-tab-test", 0)))
-        val model = TabsModel()
-        val tab = WebTabState(url = "https://closed.test").apply { closed = true }
+        val model = TabStore()
+        val tab = BrowserTab(url = "https://closed.test").apply { closed = true }
         model.saveTab(tab)
         assertEquals(0L, tab.id)
     }
@@ -49,10 +49,10 @@ class AtomicTabSaveTest {
             .allowMainThreadQueries().build()
         try {
             val dao = db.tabsDao()
-            val original = dao.save(WebTabState(url = "https://original.test", selected = true))
+            val original = dao.save(BrowserTab(url = "https://original.test", selected = true))
             db.openHelper.writableDatabase.execSQL("CREATE TRIGGER reject_insert BEFORE INSERT ON tabs BEGIN SELECT RAISE(ABORT, 'test failure'); END")
             var failed = false
-            try { dao.save(WebTabState(url = "https://failed.test", selected = true)) }
+            try { dao.save(BrowserTab(url = "https://failed.test", selected = true)) }
             catch (_: Exception) { failed = true }
             assertTrue(failed)
             val remaining = dao.getAll(false).single()

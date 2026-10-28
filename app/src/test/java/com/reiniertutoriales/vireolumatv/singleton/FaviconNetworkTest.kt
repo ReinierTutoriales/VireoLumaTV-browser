@@ -3,7 +3,7 @@ package com.reiniertutoriales.vireolumatv.singleton
 import android.app.Application
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.utils.FaviconExtractor
+import com.reiniertutoriales.vireolumatv.utils.IconFinder
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -53,7 +53,7 @@ class FaviconNetworkTest {
     }
 
     @Test fun htmlAndManifestCandidateStorageIsBounded() {
-        val extractor = FaviconExtractor()
+        val extractor = IconFinder()
         val html = "<head>" + (1..1000).joinToString("") { "<link rel=\"icon\" href=\"/$it.png\">" } + "</head>"
         assertEquals(32, extractor.extractFavIconsFromHTML(URL("https://test.example"), html.reader().buffered()).first.size)
         val manifest = "{\"icons\":[" + (1..1000).joinToString(",") { "{\"src\":\"/$it.png\"}" } + "]}"

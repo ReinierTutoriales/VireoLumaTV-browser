@@ -5,7 +5,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerLayout
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,7 +20,7 @@ class CursorLayoutRecoveryTest {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         try {
             val activity = controller.get()
-            val layout = CursorLayout(activity)
+            val layout = PointerLayout(activity)
             val keys = mutableListOf<Int>()
             val editor = object : View(activity) {
                 override fun onCheckIsTextEditor() = true
@@ -50,7 +50,7 @@ class CursorLayoutRecoveryTest {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         try {
             val activity = controller.get()
-            val layout = CursorLayout(activity)
+            val layout = PointerLayout(activity)
             var editing = false
             var clicks = 0
             val touches = mutableListOf<Int>()
@@ -94,7 +94,7 @@ class CursorLayoutRecoveryTest {
     @Test fun cursorSurvivesDrawingFlagChangesAndResizesWhileDisabled() {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         val activity = controller.get()
-        val layout = CursorLayout(activity)
+        val layout = PointerLayout(activity)
         var clicks = 0
         val touches = mutableListOf<Int>()
         val target = View(activity).apply {

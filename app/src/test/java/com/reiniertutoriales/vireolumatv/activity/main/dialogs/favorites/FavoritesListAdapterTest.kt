@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.model.FavoriteItem
+import com.reiniertutoriales.vireolumatv.model.Favorite
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -25,20 +25,20 @@ import java.util.concurrent.Executor
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class FavoritesListAdapterTest {
-    private val opened = mutableListOf<FavoriteItem>()
-    private val edited = mutableListOf<FavoriteItem>()
-    private val deleted = mutableListOf<FavoriteItem>()
+    private val opened = mutableListOf<Favorite>()
+    private val edited = mutableListOf<Favorite>()
+    private val deleted = mutableListOf<Favorite>()
 
     private fun bookmark(id: Long, title: String?, url: String?) =
-        FavoriteItem().apply { this.id = id; this.title = title; this.url = url }
+        Favorite().apply { this.id = id; this.title = title; this.url = url }
 
-    private fun withList(items: List<FavoriteItem>, test: (RecyclerView, FavoritesListAdapter) -> Unit) {
+    private fun withList(items: List<Favorite>, test: (RecyclerView, FavoriteRows) -> Unit) {
         val controller = Robolectric.buildActivity(FragmentActivity::class.java)
         controller.get().setTheme(R.style.AppTheme)
         controller.setup()
         try {
-            val adapter = FavoritesListAdapter({ opened += it }, { edited += it }, { deleted += it },
-                AsyncDifferConfig.Builder(FavoritesListAdapter.DIFF).setBackgroundThreadExecutor(Executor { it.run() }).build())
+            val adapter = FavoriteRows({ opened += it }, { edited += it }, { deleted += it },
+                AsyncDifferConfig.Builder(FavoriteRows.DIFF).setBackgroundThreadExecutor(Executor { it.run() }).build())
             val list = RecyclerView(controller.get()).apply {
                 layoutManager = LinearLayoutManager(context)
                 this.adapter = adapter

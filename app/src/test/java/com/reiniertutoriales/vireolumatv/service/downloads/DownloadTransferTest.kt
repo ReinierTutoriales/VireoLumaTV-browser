@@ -21,16 +21,16 @@ class DownloadTransferTest {
     private val base = "http://127.0.0.1:${server.address.port}"
 
     /** Records how the task ended and whether its output was already finished at that moment. */
-    private inner class Recorder : DownloadTask.Callback {
+    private inner class Recorder : Transfer.Callback {
         var done = 0
         var errors = 0
         var errorCode = -1
         var fileAtEnd: Boolean? = null
-        override fun onProgress(task: DownloadTask) {}
-        override fun onError(task: DownloadTask, responseCode: Int, responseMessage: String) {
+        override fun onProgress(task: Transfer) {}
+        override fun onError(task: Transfer, responseCode: Int, responseMessage: String) {
             errors++; errorCode = responseCode; fileAtEnd = File(task.downloadInfo.filepath).exists()
         }
-        override fun onDone(task: DownloadTask) { done++; fileAtEnd = File(task.downloadInfo.filepath).exists() }
+        override fun onDone(task: Transfer) { done++; fileAtEnd = File(task.downloadInfo.filepath).exists() }
     }
 
     private fun download(name: String, path: String) = Download().apply {
@@ -55,7 +55,7 @@ class DownloadTransferTest {
         server.createContext("/final") { it.reply(200, "payload") }
         val info = download("redirected.txt", "/start")
         val recorder = Recorder()
-        FileDownloadTask(info, "test", recorder).run()
+        FileTransfer(info, "test", recorder).run()
         assertEquals(1, recorder.done)
         assertEquals(true, recorder.fileAtEnd)
         assertEquals("payload", File(info.filepath).readText())
@@ -66,7 +66,7 @@ class DownloadTransferTest {
         server.createContext("/start") { it.reply(302, location = "ftp://example.test/file") }
         val info = download("ftp.txt", "/start")
         val recorder = Recorder()
-        FileDownloadTask(info, "test", recorder).run()
+        FileTransfer(info, "test", recorder).run()
         assertEquals(1, recorder.errors)
         assertEquals(302, recorder.errorCode)
         assertEquals(Download.BROKEN_MARK, info.size)
@@ -78,7 +78,7 @@ class DownloadTransferTest {
         server.createContext("/loop") { hits++; it.reply(302, location = "/loop") }
         val info = download("loop.txt", "/loop")
         val recorder = Recorder()
-        FileDownloadTask(info, "test", recorder).run()
+        FileTransfer(info, "test", recorder).run()
         assertEquals(1, recorder.errors)
         assertEquals(MAX_REDIRECTS + 1, hits)
     }
@@ -95,7 +95,7 @@ class DownloadTransferTest {
                 return len
             }
         }
-        StreamDownloadTask(info, input, recorder).run()
+        StreamTransfer(info, input, recorder).run()
         assertEquals(1, recorder.done)
         assertEquals(Download.CANCELLED_MARK, info.size)
         assertEquals(0L, info.bytesReceived)

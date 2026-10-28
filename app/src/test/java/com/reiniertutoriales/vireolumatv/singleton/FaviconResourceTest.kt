@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.os.Looper
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.model.HostConfig
+import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -29,9 +29,9 @@ class FaviconResourceTest {
         }
         var readOnMain = true
         Favicons.store = object : Favicons.Store {
-            override fun find(host: String): HostConfig {
+            override fun find(host: String): SiteSettings {
                 readOnMain = Looper.myLooper() == Looper.getMainLooper()
-                return HostConfig(host).apply { favicon = file.name }
+                return SiteSettings(host).apply { favicon = file.name }
             }
         }
         val icon = runBlocking { Favicons.get("https://sample.test") }
@@ -43,7 +43,7 @@ class FaviconResourceTest {
 
     @Test fun cancellationIsPropagatedInsteadOfStartingNetworkDiscovery() = withCache {
         Favicons.store = object : Favicons.Store {
-            override fun find(host: String): HostConfig? { throw CancellationException("row left screen") }
+            override fun find(host: String): SiteSettings? { throw CancellationException("row left screen") }
         }
         var cancelled = false
         try { runBlocking { Favicons.get("https://cancelled.invalid") } }

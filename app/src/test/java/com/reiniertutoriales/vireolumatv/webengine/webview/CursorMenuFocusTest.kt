@@ -6,12 +6,12 @@ import android.widget.FrameLayout
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.main.view.CursorMenuView
-import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.utils.BackNavigationEventsAdapter
+import com.reiniertutoriales.vireolumatv.activity.main.view.PointerMenu
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.utils.BackPresses
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
-import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerLayout
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -28,11 +28,11 @@ class CursorMenuFocusTest {
         val activity = controller.get()
         activity.setTheme(R.style.AppTheme)
         val root = FrameLayout(activity)
-        val cursor = CursorLayout(activity)
+        val cursor = PointerLayout(activity)
         val page = View(activity).apply { isFocusableInTouchMode = true }
         cursor.addView(page)
         root.addView(cursor)
-        val menu = CursorMenuView(activity)
+        val menu = PointerMenu(activity)
         root.addView(menu)
         activity.setContentView(root)
         root.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
@@ -48,15 +48,15 @@ class CursorMenuFocusTest {
         } as PageEngine
         val provider = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
             arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
-        val tab = WebTabState()
-        WebTabState::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
+        val tab = BrowserTab()
+        BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
             .set(tab, lazyOf(engine))
         val config = AppContext.config
         val previous = config.directNavigationModeHintSuppress
         config.directNavigationModeHintSuppress = true
         try {
             menu.show(tab, provider, cursor.cursorDrawerDelegate, com.reiniertutoriales.vireolumatv.webengine.PagePoint(null, null, 400, 400),
-                BackNavigationEventsAdapter(onEmulatedBackEvent = {}))
+                BackPresses(onEmulatedBackEvent = {}))
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             menu.findViewById<View>(R.id.dpad_mode_button).requestFocus()
             assertFalse(page.hasFocus())
@@ -73,7 +73,7 @@ class CursorMenuFocusTest {
     @Test fun theCrossLeadsFromTheCentreToEachArmAndBack() {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         activity.setTheme(R.style.AppTheme)
-        val menu = CursorMenuView(activity)
+        val menu = PointerMenu(activity)
         activity.setContentView(menu)
         fun id(view: Int, direction: Int) = when (direction) {
             View.FOCUS_UP -> menu.findViewById<View>(view).nextFocusUpId

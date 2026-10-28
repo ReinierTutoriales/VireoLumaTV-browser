@@ -18,7 +18,7 @@ import android.webkit.WebView
  * The page's requests to the browser window: script dialogs (cancelled while dialogs are
  * blocked), fullscreen video, progress and title, permissions, files, icons and new windows.
  */
-internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClient() {
+internal class BrowserChromeClient(private val view: BrowserWebView) : WebChromeClient() {
     private val window get() = view.window
     private val engine get() = view.engine
     private var fullscreen: CustomViewCallback? = null
@@ -43,7 +43,7 @@ internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClien
 
     override fun onShowCustomView(view: View, callback: CustomViewCallback) {
         if (fullscreen != null) {
-            Log.i(WebViewEx.TAG, "Fullscreen refused: one is already shown")
+            Log.i(BrowserWebView.TAG, "Fullscreen refused: one is already shown")
             callback.onCustomViewHidden()
             return
         }
@@ -79,9 +79,9 @@ internal class BrowserChromeClient(private val view: WebViewEx) : WebChromeClien
         if (!view.config.webEngineDebug && (!important || !view.consoleLogBudget.allow())) return true
         val text = "[${message.lineNumber()}] " + message.message().take(MAX_CONSOLE_CHARS)
         when (level) {
-            ConsoleMessage.MessageLevel.ERROR -> Log.e(WebViewEx.WEB_VIEW_TAG, text)
-            ConsoleMessage.MessageLevel.WARNING -> Log.w(WebViewEx.WEB_VIEW_TAG, text)
-            else -> Log.i(WebViewEx.WEB_VIEW_TAG, text)
+            ConsoleMessage.MessageLevel.ERROR -> Log.e(BrowserWebView.WEB_VIEW_TAG, text)
+            ConsoleMessage.MessageLevel.WARNING -> Log.w(BrowserWebView.WEB_VIEW_TAG, text)
+            else -> Log.i(BrowserWebView.WEB_VIEW_TAG, text)
         }
         return true
     }

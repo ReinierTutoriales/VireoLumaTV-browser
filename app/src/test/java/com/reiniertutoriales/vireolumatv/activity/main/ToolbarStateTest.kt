@@ -5,9 +5,9 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
-import com.reiniertutoriales.vireolumatv.activity.main.view.ActionBar
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
+import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,11 +23,11 @@ class ToolbarStateTest {
         owner.get().setTheme(R.style.AppTheme)
         owner.setup()
         try {
-            val bar = ActionBar(owner.get())
+            val bar = BrowserControls(owner.get())
             owner.get().setContentView(bar)
             var cancellations = 0
             val actions = mutableListOf<String>()
-            bar.callback = object : ActionBar.Callback {
+            bar.callback = object : BrowserControls.Callback {
                 override fun showAppMenu() {}
                 override fun search(text: String) { actions += text }
                 override fun onUrlInputDone() { actions += "commit" }

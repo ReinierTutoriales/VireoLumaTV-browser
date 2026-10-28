@@ -17,21 +17,21 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
+import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
-import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.utils.FileNames
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import java.io.File
 import java.util.concurrent.Executors
 
 /**
  * Runs downloads on two worker threads while the browser is bound to it, as a dataSync foreground
- * service with one ongoing notification for all of them. Results reach [ActiveDownloadsModel] on the
+ * service with one ongoing notification for all of them. Results reach [RunningDownloads] on the
  * main thread; progress is passed on at most every [PROGRESS_INTERVAL_MS].
  */
 open class DownloadService : Service() {
-    private lateinit var model: ActiveDownloadsModel
+    private lateinit var model: RunningDownloads
     private lateinit var notifications: NotificationManager
     private val executor = Executors.newFixedThreadPool(2)
     private val main = Handler(Looper.getMainLooper())
@@ -42,10 +42,10 @@ open class DownloadService : Service() {
             .setOnlyAlertOnce(true)
     }
 
-    internal val downloadTasksListener = object : DownloadTask.Callback {
+    internal val downloadTasksListener = object : Transfer.Callback {
         @Volatile private var lastProgress = 0L
 
-        override fun onProgress(task: DownloadTask) {
+        override fun onProgress(task: Transfer) {
             val now = SystemClock.elapsedRealtime()
             if (now - lastProgress < PROGRESS_INTERVAL_MS) return
             lastProgress = now
@@ -55,7 +55,7 @@ open class DownloadService : Service() {
             }
         }
 
-        override fun onError(task: DownloadTask, responseCode: Int, responseMessage: String) {
+        override fun onError(task: Transfer, responseCode: Int, responseMessage: String) {
             DownloadHistory.update(task.downloadInfo)
             main.post {
                 model.notifyListenersAboutError(task, responseCode, responseMessage)
@@ -63,7 +63,7 @@ open class DownloadService : Service() {
             }
         }
 
-        override fun onDone(task: DownloadTask) {
+        override fun onDone(task: Transfer) {
             DownloadHistory.update(task.downloadInfo)
             main.post {
                 model.notifyListenersAboutDownloadProgress(task)
@@ -74,14 +74,14 @@ open class DownloadService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        model = ActiveModelsRepository.get(ActiveDownloadsModel::class, this)
+        model = ScreenModels.get(RunningDownloads::class, this)
         notifications = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
     override fun onDestroy() {
         cancelAll()
         executor.shutdown()
-        ActiveModelsRepository.markAsNeedless(model, this)
+        ScreenModels.markAsNeedless(model, this)
         super.onDestroy()
     }
 
@@ -104,9 +104,9 @@ open class DownloadService : Service() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !reserveLegacyFile(download)) return
         download.time = System.currentTimeMillis()
         val task = when {
-            download.base64BlobData != null -> BlobDownloadTask(download, download.base64BlobData!!, downloadTasksListener)
-            download.stream != null -> StreamDownloadTask(download, download.stream!!, downloadTasksListener)
-            else -> FileDownloadTask(download, download.userAgentString, downloadTasksListener)
+            download.base64BlobData != null -> BlobTransfer(download, download.base64BlobData!!, downloadTasksListener)
+            download.stream != null -> StreamTransfer(download, download.stream!!, downloadTasksListener)
+            else -> FileTransfer(download, download.userAgentString, downloadTasksListener)
         }
         model.activeDownloads.add(task)
         executor.execute(task)
@@ -127,7 +127,7 @@ open class DownloadService : Service() {
             return false
         }
         // The name becomes part of a path: it must never leave the Downloads folder.
-        val file = freeFile(folder, DownloadUtils.sanitizeFileName(download.filename) ?: "downloadfile")
+        val file = freeFile(folder, FileNames.sanitizeFileName(download.filename) ?: "downloadfile")
         download.filename = file.name
         download.filepath = file.absolutePath
         return true
@@ -135,10 +135,10 @@ open class DownloadService : Service() {
 
     private fun cancelAll() = model.activeDownloads.forEach { it.downloadInfo.cancelled = true }
 
-    private fun onTaskEnded(task: DownloadTask) {
+    private fun onTaskEnded(task: Transfer) {
         val info = task.downloadInfo
         if (info.size >= 0 && !info.cancelled &&
-            info.operationAfterDownload == Download.OperationAfterDownload.INSTALL && ApkInstaller.canInstall(this)) {
+            info.operationAfterDownload == Download.AfterDownload.INSTALL && ApkInstaller.canInstall(this)) {
             ApkInstaller.launch(this, info)
         }
         model.onDownloadEnded(task)

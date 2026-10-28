@@ -9,13 +9,13 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
-import com.reiniertutoriales.vireolumatv.model.HostConfig
+import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.Favicons
 import com.reiniertutoriales.vireolumatv.utils.IncognitoWebViewData
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.webengine.Engines
-import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewWebEngine
+import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import java.net.CookieHandler
 import java.net.CookieManager
 import java.util.concurrent.ArrayBlockingQueue
@@ -68,7 +68,7 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
 
         initNotificationChannels()
 
-        ActiveModelsRepository.init(this)
+        ScreenModels.init(this)
 
 
         registerActivityLifecycleCallbacks(this)
@@ -78,20 +78,20 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
     private fun initWebEngineStuff() {
         Log.i(TAG, "initWebEngineStuff")
 
-        Engines.install(WebViewWebEngine.Backend)
+        Engines.install(WebViewPageEngine.Backend)
 
         val cookieManager = CookieManager()
         CookieHandler.setDefault(cookieManager)
         Favicons.store = object : Favicons.Store {
-            override fun find(host: String): HostConfig? {
+            override fun find(host: String): SiteSettings? {
                 return AppDatabase.db.hostsDao().findByHostName(host)
             }
 
-            override suspend fun update(row: HostConfig) {
+            override suspend fun update(row: SiteSettings) {
                 AppDatabase.db.hostsDao().storeFavicon(row.hostName, row.favicon)
             }
 
-            override suspend fun insert(row: HostConfig) {
+            override suspend fun insert(row: SiteSettings) {
                 AppDatabase.db.hostsDao().storeFavicon(row.hostName, row.favicon)
             }
         }

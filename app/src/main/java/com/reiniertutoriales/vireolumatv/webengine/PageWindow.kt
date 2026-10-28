@@ -6,7 +6,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.view.View
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
 
 /** The browser window as one tab's page sees it while the tab is shown. */
 interface PageWindow {
@@ -64,7 +64,7 @@ interface PageWindow {
 
     // Pointer
 
-    fun openPointerMenu(cursor: CursorDrawerDelegate, target: PagePoint)
+    fun openPointerMenu(cursor: PointerController, target: PagePoint)
     fun openLinkActions(target: PagePoint)
 }
 

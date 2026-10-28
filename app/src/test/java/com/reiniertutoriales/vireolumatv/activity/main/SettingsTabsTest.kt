@@ -9,9 +9,9 @@ import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.ShortcutsSettingsView
-import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.VersionSettingsView
-import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcut
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.ShortcutsPage
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.AboutPage
+import com.reiniertutoriales.vireolumatv.singleton.shortcuts.RemoteShortcut
 import com.reiniertutoriales.vireolumatv.webengine.Engines
 import com.reiniertutoriales.vireolumatv.webengine.EngineBackend
 import org.junit.Assert.assertEquals
@@ -70,7 +70,7 @@ class SettingsTabsTest {
         try { test() } finally { restore() }
     }
 
-    @Test fun aboutPageCreditsTvBroAndReachesEveryLink() = withEngine { withPage({ VersionSettingsView(it) }) { list ->
+    @Test fun aboutPageCreditsTvBroAndReachesEveryLink() = withEngine { withPage({ AboutPage(it) }) { list ->
         val credit = list.findViewById<ViewGroup>(R.id.rowTvBroSource)
         val text = (credit.getChildAt(0) as TextView).text.toString()
         assertTrue("License: About must state it uses TV Bro sources with the link: $text",
@@ -80,10 +80,10 @@ class SettingsTabsTest {
         assertEquals(listOf("rowProjectSource", "rowTvBroSource", "rowLicense", "rowPrivacyPolicy", "btnCheckUpdate"), names)
     } }
 
-    @Test fun shortcutsPageShowsOneReachableRowPerShortcut() = withPage({ ShortcutsSettingsView(it) }) { list ->
+    @Test fun shortcutsPageShowsOneReachableRowPerShortcut() = withPage({ ShortcutsPage(it) }) { list ->
         val order = downOrder(list)
-        assertEquals(Shortcut.entries.size, order.size)
-        order.zip(Shortcut.entries).forEach { (row, shortcut) ->
+        assertEquals(RemoteShortcut.entries.size, order.size)
+        order.zip(RemoteShortcut.entries).forEach { (row, shortcut) ->
             val title = ((row as ViewGroup).getChildAt(0) as TextView).text.toString()
             assertEquals(list.context.getString(shortcut.titleResId), title)
             val key = (row.getChildAt(1) as TextView)

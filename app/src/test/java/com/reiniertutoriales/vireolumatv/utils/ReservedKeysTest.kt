@@ -13,9 +13,9 @@ class ReservedKeysTest {
             assertTrue("key $it", it in RemoteInput.NAVIGATION_KEYS)
         }
         listOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_ESCAPE).forEach {
-            assertTrue("key $it", it in BackNavigationEventsAdapter.BACK_KEYS)
+            assertTrue("key $it", it in BackPresses.BACK_KEYS)
         }
         assertFalse(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE in RemoteInput.NAVIGATION_KEYS)
-        assertFalse(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE in BackNavigationEventsAdapter.BACK_KEYS)
+        assertFalse(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE in BackPresses.BACK_KEYS)
     }
 }

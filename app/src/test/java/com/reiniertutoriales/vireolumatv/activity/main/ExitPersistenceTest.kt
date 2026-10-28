@@ -3,7 +3,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.os.Bundle
 import android.os.Looper
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.model.WebTabState
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -21,13 +21,13 @@ import org.robolectric.annotation.Config
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class ExitPersistenceTest {
     @Test fun exitReturnsBeforeDiskWriteAndPersistsAfterModelIsCleared() = runBlocking {
-        val model = TabsModel()
+        val model = TabStore()
         val mutex = model.storage
-        val tab = WebTabState(url = "https://exit.test", selected = true).apply {
+        val tab = BrowserTab(url = "https://exit.test", selected = true).apply {
             savedState = Bundle().apply { putString("history", "kept after exit") }
         }
         mutex.lock() // Hold the IO transaction so completion cannot race the assertion.
-        val previous = WebTabState(url = "https://previous.test").apply {
+        val previous = BrowserTab(url = "https://previous.test").apply {
             savedState = Bundle().apply { putString("history", "previous tab history") }
         }
         val previousSave = model.modelScope.launch { model.saveTab(previous) }

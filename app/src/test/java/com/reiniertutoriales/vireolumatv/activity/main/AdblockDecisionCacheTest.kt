@@ -23,12 +23,12 @@ class AdblockDecisionCacheTest {
         }
         override fun serialize(file: File) = true
     }
-    private fun install(model: AdblockModel, blocker: ContentBlocker) {
-        AdblockModel::class.java.getDeclaredMethod("installClient", ContentBlocker::class.java, String::class.java)
+    private fun install(model: AdBlocker, blocker: ContentBlocker) {
+        AdBlocker::class.java.getDeclaredMethod("installClient", ContentBlocker::class.java, String::class.java)
             .apply { isAccessible = true }.invoke(model, blocker, "test")
     }
     @Test fun repeatedPlaylistsUseOneMatchButContextTypeAndTokensRemainIndependent() {
-        val model = AdblockModel(autoLoad = false)
+        val model = AdBlocker(autoLoad = false)
         val blocker = Blocker()
         val url = Uri.parse("https://stream.test/live.m3u8?token=one")
         val page = Uri.parse("https://page.test")
@@ -49,7 +49,7 @@ class AdblockDecisionCacheTest {
         } finally { model.clear() }
     }
     @Test fun cacheIsBoundedAndOversizedUrlsAreNotRetained() {
-        val model = AdblockModel(autoLoad = false)
+        val model = AdBlocker(autoLoad = false)
         val blocker = Blocker()
         val page = Uri.parse("https://page.test")
         val first = Uri.parse("https://stream.test/0.m3u8?" + "x".repeat(1000))
@@ -66,7 +66,7 @@ class AdblockDecisionCacheTest {
         } finally { model.clear() }
     }
     @Test fun matcherFailuresAreNotCachedAsAllowedDecisions() {
-        val model = AdblockModel(autoLoad = false)
+        val model = AdBlocker(autoLoad = false)
         val blocker = Blocker(true).apply { fail = true }
         val url = Uri.parse("https://stream.test/live.m3u8")
         val page = Uri.parse("https://page.test")
@@ -79,7 +79,7 @@ class AdblockDecisionCacheTest {
         } finally { model.clear() }
     }
     @Test fun replacingRulesDoesNotWaitForABusyNativeMatcher() {
-        val model = AdblockModel(autoLoad = false)
+        val model = AdBlocker(autoLoad = false)
         val entered = java.util.concurrent.CountDownLatch(1)
         val release = java.util.concurrent.CountDownLatch(1)
         val executor = java.util.concurrent.Executors.newFixedThreadPool(2)

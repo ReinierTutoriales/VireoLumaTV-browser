@@ -18,23 +18,23 @@ import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.model.HostConfig
+import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.reiniertutoriales.vireolumatv.model.PopupGuard
-import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.utils.DownloadUtils
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.utils.FileNames
 import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.PagePoint
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
-import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorDrawerDelegate
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
 import kotlinx.coroutines.launch
 
 /**
  * The browser window as seen by one [tab]'s page: address and title updates, downloads, pop-ups
  * and dialogs under the site's rules, ads, fullscreen, links to other apps and the pointer menu.
  */
-internal class TabWindow(private val browser: MainActivity, private val tab: WebTabState) : PageWindow {
+internal class TabWindow(private val browser: MainActivity, private val tab: BrowserTab) : PageWindow {
     private val vb get() = browser.vb
     private val tabs get() = browser.tabsModel
     private val ui get() = browser.uiHandler
@@ -55,7 +55,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
             Log.i(TAG, "Download without a recent press ignored")
             return
         }
-        startDownload(url, DownloadUtils.guessFileName(url, contentDisposition, mimeType), mimeType, userAgent, length)
+        startDownload(url, FileNames.guessFileName(url, contentDisposition, mimeType), mimeType, userAgent, length)
     }
 
     override fun download(download: Download) = browser.downloads.request(download)
@@ -63,11 +63,11 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
     /** The link menu's download: the user chose it; the name and type come from the address. */
     private fun downloadLink(url: String) {
         val type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(url))
-        startDownload(url, DownloadUtils.guessFileName(url, null, type), type, tab.engine.userAgent, 0L)
+        startDownload(url, FileNames.guessFileName(url, null, type), type, tab.engine.userAgent, 0L)
     }
 
     private fun startDownload(url: String, name: String, mimeType: String?, userAgent: String?, length: Long) =
-        download(Download(url, name, null, Download.OperationAfterDownload.NOP, mimeType, tab.url, userAgent, null, null, length))
+        download(Download(url, name, null, Download.AfterDownload.NOP, mimeType, tab.url, userAgent, null, null, length))
 
     // Page state
 
@@ -170,9 +170,9 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
     override val blocksDialogs: Boolean get() = tab.url != Config.HOME_PAGE_URL && blocksNewWindow(dialog = true, userGesture = false)
 
     private fun blocksNewWindow(dialog: Boolean, userGesture: Boolean): Boolean = when (tabs.popupBlockingLevel(tab)) {
-        HostConfig.POPUP_BLOCK_NONE -> false
-        HostConfig.POPUP_BLOCK_DIALOGS -> dialog
-        HostConfig.POPUP_BLOCK_NEW_AUTO_OPENED_TABS -> dialog || !userGesture
+        SiteSettings.POPUP_BLOCK_NONE -> false
+        SiteSettings.POPUP_BLOCK_DIALOGS -> dialog
+        SiteSettings.POPUP_BLOCK_NEW_AUTO_OPENED_TABS -> dialog || !userGesture
         else -> true
     }
 
@@ -212,7 +212,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
             onDialogBlocked(!dialog)
             return null
         }
-        val popup = WebTabState(incognito = browser.config.incognitoMode).apply { this.opener = opener }
+        val popup = BrowserTab(incognito = browser.config.incognitoMode).apply { this.opener = opener }
         val view = browser.createWebView(popup) ?: return null
         tabs.tabsStates.add(tabs.tabsStates.indexOf(opener) + 1, popup)
         val show = Runnable {
@@ -263,7 +263,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Web
 
     // Pointer menu and link actions
 
-    override fun openPointerMenu(cursor: CursorDrawerDelegate, target: PagePoint) {
+    override fun openPointerMenu(cursor: PointerController, target: PagePoint) {
         ui.post { vb.pointerMenu.show(tab, this, cursor, target, browser.backNavigationEventsAdapter) }
     }
 

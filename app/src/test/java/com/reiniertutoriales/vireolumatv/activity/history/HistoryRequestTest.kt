@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.history
 
 import android.app.Application
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
-import com.reiniertutoriales.vireolumatv.model.dao.HistoryDao
+import com.reiniertutoriales.vireolumatv.model.dao.VisitDao
 import kotlinx.coroutines.CompletableDeferred
 import org.junit.Assert.*
 import org.junit.Test
@@ -16,7 +16,7 @@ import org.robolectric.shadows.ShadowLooper
 class HistoryRequestTest {
     @Test fun aNewSearchReplacesAnInFlightPageInsteadOfBeingDropped() {
         val waiting = CompletableDeferred<List<HistoryItem>>()
-        val dao = object : HistoryDao {
+        val dao = object : VisitDao {
             override suspend fun page(beforeTime: Long?, beforeId: Long) = waiting.await()
             override suspend fun search(pattern: String) = listOf(HistoryItem().apply { title = pattern })
             override suspend fun getAll() = emptyList<HistoryItem>()
@@ -27,7 +27,7 @@ class HistoryRequestTest {
             override suspend fun delete(vararg item: HistoryItem) {}
             override suspend fun deleteWhereTimeLessThan(time: Long) {}
         }
-        val model = HistoryModel { dao }
+        val model = HistoryPages { dao }
         try {
             val previous = model.loadItems()
             ShadowLooper.idleMainLooper()

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Rows are added by MainSettingsView, top to bottom in D-pad order. -->
+<!-- Rows are added by GeneralPage, top to bottom in D-pad order. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:clipToPadding="false"
     android:id="@+id/settingsList"

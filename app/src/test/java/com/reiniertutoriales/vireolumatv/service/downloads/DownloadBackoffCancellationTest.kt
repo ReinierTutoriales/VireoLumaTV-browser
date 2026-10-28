@@ -37,12 +37,12 @@ class DownloadBackoffCancellationTest {
             filename = "cancel-backoff.bin"
             filepath = File(VireoLumaTVApp.instance.cacheDir, filename).absolutePath
         }
-        val callback = object : DownloadTask.Callback {
-            override fun onProgress(task: DownloadTask) {}
-            override fun onError(task: DownloadTask, responseCode: Int, responseMessage: String) { errors.incrementAndGet() }
-            override fun onDone(task: DownloadTask) { done.incrementAndGet() }
+        val callback = object : Transfer.Callback {
+            override fun onProgress(task: Transfer) {}
+            override fun onError(task: Transfer, responseCode: Int, responseMessage: String) { errors.incrementAndGet() }
+            override fun onDone(task: Transfer) { done.incrementAndGet() }
         }
-        val worker = Thread(FileDownloadTask(download, "network-test", callback))
+        val worker = Thread(FileTransfer(download, "network-test", callback))
         try {
             worker.start()
             assertTrue(received.await(5, TimeUnit.SECONDS))

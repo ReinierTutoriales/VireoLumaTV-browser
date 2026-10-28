@@ -4,7 +4,7 @@ import android.app.Application
 import android.graphics.Bitmap
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
-import com.reiniertutoriales.vireolumatv.model.HostConfig
+import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -36,9 +36,9 @@ class IncognitoFaviconTest {
         var writes = 0
         val previousDelegate = Favicons.store
         Favicons.store = object : Favicons.Store {
-            override fun find(host: String): HostConfig? { reads++; return null }
-            override suspend fun insert(row: HostConfig) { writes++; if (recordFails) error("disk full") }
-            override suspend fun update(row: HostConfig) { writes++ }
+            override fun find(host: String): SiteSettings? { reads++; return null }
+            override suspend fun insert(row: SiteSettings) { writes++; if (recordFails) error("disk full") }
+            override suspend fun update(row: SiteSettings) { writes++ }
         }
         val icon = ByteArrayOutputStream().also {
             Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888).compress(Bitmap.CompressFormat.PNG, 100, it)

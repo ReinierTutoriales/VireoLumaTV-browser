@@ -2,9 +2,9 @@ package com.reiniertutoriales.vireolumatv.service.downloads
 
 import android.content.pm.ServiceInfo
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.downloads.ActiveDownloadsModel
+import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -36,9 +36,9 @@ class DownloadServiceTest {
     @Test fun foregroundTimeoutCancelsDownloadsAndStopsTheService() {
         val controller = Robolectric.buildService(DownloadService::class.java).create()
         val service = controller.get()
-        val model = ActiveModelsRepository.get(ActiveDownloadsModel::class, service)
+        val model = ScreenModels.get(RunningDownloads::class, service)
         val info = Download().apply { incognito = true }
-        model.activeDownloads.add(StreamDownloadTask(info, "x".byteInputStream(), service.downloadTasksListener))
+        model.activeDownloads.add(StreamTransfer(info, "x".byteInputStream(), service.downloadTasksListener))
         service.onTimeout(1, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         assertTrue("A running download must be cancelled", info.cancelled)
         assertTrue("The service must stop itself within the timeout", shadowOf(service).isStoppedBySelf)

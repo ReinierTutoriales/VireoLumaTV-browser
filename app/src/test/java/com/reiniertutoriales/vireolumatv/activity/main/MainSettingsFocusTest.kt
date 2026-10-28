@@ -8,8 +8,8 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.FragmentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.MainSettingsView
-import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.GeneralPage
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
@@ -25,8 +25,8 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class MainSettingsFocusTest {
     @Test fun downAndUpVisitEveryControlOnceAndRowsToggleTheirSetting() {
-        val model = AdblockModel(autoLoad = false)
-        val restore = ActiveModelsRepository.replaceForTest(AdblockModel::class, model)
+        val model = AdBlocker(autoLoad = false)
+        val restore = ScreenModels.replaceForTest(AdBlocker::class, model)
         val previousAdBlock = model.config.adBlockEnabled
         val controller = Robolectric.buildActivity(FragmentActivity::class.java)
         controller.get().setTheme(R.style.AppTheme)
@@ -36,7 +36,7 @@ class MainSettingsFocusTest {
             val activity = controller.get()
             val root = FrameLayout(activity)
             activity.setContentView(root)
-            val settings = MainSettingsView(activity)
+            val settings = GeneralPage(activity)
             root.addView(settings)
             // A remote key leaves touch mode; only then are spinners, switches and sliders focus stops.
             val viewRoot = activity.window.decorView.parent

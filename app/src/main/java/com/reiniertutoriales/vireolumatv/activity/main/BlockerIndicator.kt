@@ -7,14 +7,14 @@ internal fun blockerIndicator(
     enabled: Boolean,
     rulesReady: Boolean,
     loading: Boolean,
-    result: AdblockModel.UpdateResult,
+    result: AdBlocker.UpdateResult,
 ): BlockerIndicator = when {
     !enabled -> BlockerIndicator.PAUSED
     !rulesReady && loading -> BlockerIndicator.LOADING
     !rulesReady -> BlockerIndicator.UNAVAILABLE
     loading -> BlockerIndicator.REFRESHING
-    result == AdblockModel.UpdateResult.PARTIAL -> BlockerIndicator.PARTIAL
-    result == AdblockModel.UpdateResult.CACHED ||
-        result == AdblockModel.UpdateResult.ERROR -> BlockerIndicator.SAVED
+    result == AdBlocker.UpdateResult.PARTIAL -> BlockerIndicator.PARTIAL
+    result == AdBlocker.UpdateResult.CACHED ||
+        result == AdBlocker.UpdateResult.ERROR -> BlockerIndicator.SAVED
     else -> BlockerIndicator.ACTIVE
 }

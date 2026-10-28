@@ -1,7 +1,7 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
-import com.reiniertutoriales.vireolumatv.model.WebTabState
-import com.reiniertutoriales.vireolumatv.model.dao.TabsDao
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.model.dao.TabDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -11,7 +11,7 @@ internal class IncognitoSessionTabs {
     private val mutex = Mutex()
     private var sanitized = false
 
-    suspend fun load(dao: TabsDao): List<WebTabState> = mutex.withLock {
+    suspend fun load(dao: TabDao): List<BrowserTab> = mutex.withLock {
         if (!sanitized) {
             val stale = dao.getAll(true)
             val normal = dao.getAll(false)

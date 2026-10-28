@@ -48,7 +48,7 @@ class AdblockPopupAndCosmeticTest {
         }
         server.start()
         val engine = CountingEngine()
-        val model = AdblockModel(engine, autoLoad = false)
+        val model = AdBlocker(engine, autoLoad = false)
         val source = "http://127.0.0.1:${server.address.port}/"
         model.config.adBlockListURL.value = source
         model.config.adBlockListLastUpdate = 0
@@ -80,12 +80,12 @@ class AdblockPopupAndCosmeticTest {
             finish(model.loadAdBlockList(true))
             assertEquals(2, requests.get())
             assertEquals("HTTP 304 must not recompile", compiled, engine.compiles)
-            assertEquals(AdblockModel.UpdateResult.UPDATED, model.updateResult.value)
+            assertEquals(AdBlocker.UpdateResult.UPDATED, model.updateResult.value)
             assertTrue("A 304 is a successful check", model.config.adBlockListLastUpdate > firstUpdate)
             assertEquals(0L, model.config.adBlockListNextRetry)
 
             // A new process restores popup and element hiding rules from their own caches.
-            val restored = AdblockModel(engine, autoLoad = false)
+            val restored = AdBlocker(engine, autoLoad = false)
             try {
                 finish(restored.loadAdBlockList(false))
                 assertEquals(2, requests.get())

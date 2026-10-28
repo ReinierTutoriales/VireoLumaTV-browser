@@ -5,8 +5,8 @@
     @android.webkit.JavascriptInterface public <methods>;
 }
 
-# ActiveModelsRepository creates each model through its no-argument constructor.
--keepclassmembers class * extends com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModel {
+# ScreenModels creates each model through its no-argument constructor.
+-keepclassmembers class * extends com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModel {
     <init>();
 }
 
