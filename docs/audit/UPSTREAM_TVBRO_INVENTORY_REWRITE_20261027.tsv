@@ -11,17 +11,17 @@ ruta	clasificacion	ruta_tvbro	cambio_pct_aprox
 .github/pull_request_template.md	PROPIO
 .github/workflows/apply-patch-queue.yml	PROPIO
 .github/workflows/ci.yml	PROPIO
-.github/workflows/release.yml	MODIFICADO	.github/workflows/release.yml	75
-.gitignore	IDENTICO_BLOB	.gitignore	0
+.github/workflows/release.yml	REESCRITO	.github/workflows/release.yml	67
+.gitignore	REESCRITO	.gitignore	90
 AGENTS.md	PROPIO
 CLAUDE.md	PROPIO
 LICENSE.md	IDENTICO	LICENSE.md	0
 NOTICE.md	PROPIO
-PRIVACY.md	MODIFICADO	PRIVACY.md	57
+PRIVACY.md	REESCRITO	PRIVACY.md	100
 README.md	REESCRITO	README.md	66
-RELEASE_NOTES.md	MODIFICADO	RELEASE_NOTES.md	100
+RELEASE_NOTES.md	REESCRITO	RELEASE_NOTES.md	100
 app/.gitignore	PROPIO
-app/build.gradle.kts	MODIFICADO	app/build.gradle.kts	55
+app/build.gradle.kts	REESCRITO	app/build.gradle.kts	69
 app/common/.gitignore	ELIMINADO	app/common/.gitignore	0
 app/common/build.gradle.kts	ELIMINADO	app/common/build.gradle.kts	11
 app/common/consumer-rules.pro	ELIMINADO	app/common/consumer-rules.pro	33
@@ -78,9 +78,9 @@ app/common/src/main/res/values/strings.xml	ELIMINADO	app/common/src/main/res/val
 app/generic/.gitignore	ELIMINADO	app/generic/.gitignore	0
 app/gradlew	ELIMINADO	app/gradlew	0
 app/gradlew.bat	ELIMINADO	app/gradlew.bat	0
-app/proguard-rules.pro	MODIFICADO	app/proguard-rules.pro	31
+app/proguard-rules.pro	REESCRITO	app/proguard-rules.pro	100
 app/schemas/com.reiniertutoriales.vireolumatv.singleton.AppDatabase/19.json	PROPIO
-app/src/main/AndroidManifest.xml	MODIFICADO	app/src/main/AndroidManifest.xml	11
+app/src/main/AndroidManifest.xml	REESCRITO	app/src/main/AndroidManifest.xml	27
 app/src/main/assets/adblock/noop-0.1s.mp3	PROPIO
 app/src/main/assets/adblock/noop-1s.mp4	PROPIO
 app/src/main/assets/adblock/page_filters.js	PROPIO
@@ -442,7 +442,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdb
 app/src/test/java/com/reiniertutoriales/vireolumatv/widgets/NotificationViewTest.kt	PROPIO
 art/vireolumatv-banner.png	PROPIO
 art/vireolumatv-icon-master.png	PROPIO
-build.gradle.kts	MODIFICADO	build.gradle.kts	14
+build.gradle.kts	REESCRITO	build.gradle.kts	60
 buildSrc/build.gradle.kts	ELIMINADO	buildSrc/build.gradle.kts	0
 buildSrc/settings.gradle.kts	ELIMINADO	buildSrc/settings.gradle.kts	0
 buildSrc/src/main/kotlin/vireolumatv/VireoLumaTVAndroidModulePlugin.kt	ELIMINADO
@@ -481,13 +481,13 @@ docs/audit/assets/AFTER_browser-states-night.png	PROPIO
 docs/audit/assets/BEFORE_browser-day.png	PROPIO
 docs/audit/assets/BEFORE_browser-night.png	PROPIO
 docs/audit/assets/UI_PROPOSAL_20261007.svg	PROPIO
-gradle.properties	IDENTICO_BLOB	gradle.properties	0
+gradle.properties	REESCRITO	gradle.properties	75
 gradle/gradle-daemon-jvm.properties	PROPIO
-gradle/libs.versions.toml	MODIFICADO	gradle/libs.versions.toml	35
-gradle/wrapper/gradle-wrapper.jar	IDENTICO_BLOB	gradle/wrapper/gradle-wrapper.jar	0
+gradle/libs.versions.toml	REESCRITO	gradle/libs.versions.toml	39
+gradle/wrapper/gradle-wrapper.jar	REGENERADO	gradle/wrapper/gradle-wrapper.jar	0
 gradle/wrapper/gradle-wrapper.properties	PROPIO
-gradlew	IDENTICO_BLOB	app/gradlew	0
-gradlew.bat	IDENTICO_BLOB	gradlew.bat	0
+gradlew	REGENERADO	app/gradlew	0
+gradlew.bat	REGENERADO	gradlew.bat	0
 licenses/Apache-2.0.txt	PROPIO
 licenses/MPL-2.0.txt	PROPIO
 licenses/rust-crates.txt	PROPIO
@@ -501,7 +501,7 @@ metadata/en-US/changelogs/68.txt	ELIMINADO	metadata/en-US/changelogs/68.txt	0
 metadata/en-US/changelogs/69.txt	ELIMINADO	metadata/en-US/changelogs/69.txt	0
 metadata/en-US/full_description.txt	REESCRITO	metadata/en-US/full_description.txt	9
 metadata/en-US/short_description.txt	REESCRITO	metadata/en-US/short_description.txt	0
-metadata/en-US/title.txt	MODIFICADO	metadata/en-US/title.txt	100
+metadata/en-US/title.txt	REESCRITO	metadata/en-US/title.txt	100
 native/adblock-jni/.gitignore	PROPIO
 native/adblock-jni/Cargo.lock	PROPIO
 native/adblock-jni/Cargo.toml	PROPIO
@@ -514,7 +514,7 @@ scripts/test-page-filters.cjs	PROPIO
 scripts/test-webview-controls.cjs	PROPIO
 scripts/test-window-open-decoy.cjs	PROPIO
 scripts/test-youtube-adblock.cjs	PROPIO
-settings.gradle.kts	MODIFICADO	settings.gradle.kts	16
+settings.gradle.kts	REESCRITO	settings.gradle.kts	14
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/LinkAction.kt	PROPIO
 app/src/main/res/drawable/ic_menu_downloads.xml	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/PrivateSessionNoticeTest.kt	PROPIO
