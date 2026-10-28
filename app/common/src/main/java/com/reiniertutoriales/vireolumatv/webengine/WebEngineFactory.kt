@@ -2,7 +2,6 @@ package com.reiniertutoriales.vireolumatv.webengine
 
 import android.content.Context
 import androidx.annotation.UiThread
-import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.widgets.cursor.CursorLayout
 
@@ -10,7 +9,6 @@ interface WebEngineProviderCallback {
     suspend fun initialize(context: Context, webViewContainer: CursorLayout)
     fun createWebEngine(tab: WebTabState): WebEngine
     suspend fun clearCache(ctx: Context)
-    fun onThemeSettingUpdated(value: Config.Theme)
     fun getWebEngineVersionString(): String
 }
 
@@ -50,9 +48,6 @@ object WebEngineFactory {
         initializedProvider.callback.clearCache(ctx)
     }
 
-    fun onThemeSettingUpdated(value: Config.Theme) {
-        initializedProvider.callback.onThemeSettingUpdated(value)
-    }
 
     fun getWebEngineVersionString(): String {
         return initializedProvider.callback.getWebEngineVersionString()

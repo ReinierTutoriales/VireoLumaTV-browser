@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.media.MediaDrm
@@ -197,24 +196,15 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 setWebContentsDebuggingEnabled(true)
             }
 
-            val allowDarkening = config.webviewUseAlgorithmicDarkeningWithDarkUiMode
-            val uiNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+            // The interface is always dark, so the setting alone decides whether pages are darkened.
+            val darkenPages = config.webviewUseAlgorithmicDarkeningWithDarkUiMode
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
-                    if (uiNightMode == Configuration.UI_MODE_NIGHT_YES && allowDarkening) {
-                        WebSettingsCompat.setAlgorithmicDarkeningAllowed(this, true)
-                    } else {
-                        WebSettingsCompat.setAlgorithmicDarkeningAllowed(this, false)
-                    }
+                    WebSettingsCompat.setAlgorithmicDarkeningAllowed(this, darkenPages)
                 }
-            } else {
-                if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-                    if (uiNightMode == Configuration.UI_MODE_NIGHT_YES && allowDarkening) {
-                        WebSettingsCompat.setForceDark(this, WebSettingsCompat.FORCE_DARK_ON)
-                    } else {
-                        WebSettingsCompat.setForceDark(this, WebSettingsCompat.FORCE_DARK_OFF)
-                    }
-                }
+            } else if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+                WebSettingsCompat.setForceDark(this,
+                    if (darkenPages) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF)
             }
         }
 

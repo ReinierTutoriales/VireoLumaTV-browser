@@ -108,12 +108,6 @@
   <string name="direct_navigation_mode_title">Tryb bezpośredniej nawigacji</string>
   <string name="direct_navigation_mode_message">Bezpośrednia nawigacja ukrywa kursor na ekranie i przekazuje naciśnięcia z pilota lub pada bezpośrednio do strony, dzięki czemu witryny obsługujące fokus TV lub klawiatury mogą podświetlać linki i elementy sterujące.\n\nAby wyjść z tego trybu: naciśnij Wstecz na pilocie telewizora lub przytrzymaj przycisk B na padzie.\n\nTryb ten najlepiej działa z silnikiem WebView: WebView obsługuje przesuwanie fokusu po stronie za pomocą krzyżaka.</string>
   <string name="need_restart">Aplikacja potrzebuje restartu</string>
-  <string name="theme">Motyw</string>
-  <array name="themes">
-    <item>Kolor systemu</item>
-    <item>Biały</item>
-    <item>Mroczny</item>
-  </array>
   <string name="incognito_mode">Tryb incognito</string>
   <string name="incognito_mode_hint">Teraz możesz przeglądać internet prywatnie, a pozostali ludzie którzy używają tego urządzenia nie zobaczą Twojej aktywności. Aplikacja VireoLumaTV nie będzie zapisywać Twojej historii przeglądania, ciasteczek oraz danych stron, informacji dodanych w formularzach.\n\nJednakże, zapisane zostaną pobrane pliki i zakładki. Twoja aktywność będzie nadal widoczna dla stron które odwiedzasz, twojej organizacji oraz dostawcy internetu.</string>
   <string name="don_t_show_again">Nie pokazuj ponownie</string>

@@ -45,7 +45,6 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -184,14 +183,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
 
-        config.theme.subscribe(this.lifecycle, false) {
-            when (it) {
-                Config.Theme.BLACK -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                Config.Theme.WHITE -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-                else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-            }
-            WebEngineFactory.onThemeSettingUpdated(it)
-        }
 
         settingsModel.keepScreenOn.subscribe(this.lifecycle) {
             if (it) {

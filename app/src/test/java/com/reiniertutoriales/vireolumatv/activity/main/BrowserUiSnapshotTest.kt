@@ -33,14 +33,15 @@ import java.io.File
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class BrowserUiSnapshotTest {
+    // The interface is dark only; a light system mode must not change it.
     @Test @Config(qualifiers = "w960dp-h540dp-notnight-mdpi")
-    fun dayControls() = capture("day")
+    fun controlsWithLightSystemMode() = capture("system-light")
 
     @Test @Config(qualifiers = "w960dp-h540dp-night-mdpi")
-    fun nightControls() = capture("night")
+    fun controlsWithDarkSystemMode() = capture("system-dark")
 
     @Test @Config(qualifiers = "w960dp-h540dp-notnight-mdpi")
-    fun enlargedTextControls() = capture("day-large-text", 1.5f)
+    fun enlargedTextControls() = capture("large-text", 1.5f)
 
     private fun capture(name: String, fontScale: Float = 1f) {
         val previousScale = RuntimeEnvironment.getApplication().resources.configuration.fontScale

@@ -506,9 +506,6 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
                     }
                 }
 
-                override fun onThemeSettingUpdated(value: Config.Theme) {
-                    //nop
-                }
 
                 override fun getWebEngineVersionString(): String {
                     val webViewPackage = WebViewCompat.getCurrentWebViewPackage(AppContext.get())

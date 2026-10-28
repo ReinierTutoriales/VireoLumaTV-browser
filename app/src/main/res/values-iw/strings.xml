@@ -95,12 +95,6 @@
   <string name="update_ad_blocker_list">עדכן את רשימת חוסמי המודעות</string>
   <string name="toggle_ads_blocking">החלף החלפת מודעות</string>
   <string name="need_restart">צריך הפעלה מחדש של האפליקציה</string>
-  <string name="theme">נושא</string>
-  <array name="themes">
-    <item>מערכת</item>
-    <item>לבן</item>
-    <item>אפל</item>
-  </array>
   <string name="toggle_keep_screen_on">השאר מסך דלוק</string>
   <string name="navigate_with_joystick_axes">ניווט עם צירי ג\'ויסטיק</string>
   <string name="cursor_max_speed">מהירות מקסימלית של הסמן הווירטואלי</string>

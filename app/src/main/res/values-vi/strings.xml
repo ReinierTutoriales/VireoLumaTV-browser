@@ -99,12 +99,6 @@
   <string name="never">không bao giờ</string>
   <string name="update_ad_blocker_list">Làm mới danh sách trình chặn quảng cáo</string>
   <string name="need_restart">Cần khởi động lại ứng dụng</string>
-  <string name="theme">Chủ đề</string>
-  <array name="themes">
-    <item>Mặc định hệ thống</item>
-    <item>Chủ đề sáng</item>
-    <item>Chủ đề tối</item>
-  </array>
   <string name="toggle_keep_screen_on">Luôn bật màn hình</string>
   <string name="navigate_with_joystick_axes">Điều hướng bằng trục joystick</string>
   <string name="cursor_max_speed">Tốc độ tối đa của con trỏ ảo</string>

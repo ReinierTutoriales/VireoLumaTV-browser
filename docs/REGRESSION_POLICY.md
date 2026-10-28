@@ -52,6 +52,10 @@ scroll de borde, el modo agarrar y el desplazamiento del puntero se envían a la
 El stick analógico mueve el puntero a velocidad proporcional; el hat del gamepad es su D-pad. «Navegar con los ejes
 del joystick» desactivado apaga solo el stick. Pendiente de validación en Android TV.
 
+**Interfaz solo oscura (2026-10-27, petición del propietario):** el tema de la aplicación es oscuro siempre;
+se retiran el ajuste Tema y la paleta clara. «Oscurecer las páginas web» depende solo de su ajuste
+(activado por defecto), ya no del modo noche del sistema. Pendiente de validación en Android TV.
+
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 

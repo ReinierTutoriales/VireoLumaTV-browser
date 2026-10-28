@@ -96,12 +96,6 @@
   <string name="update_ad_blocker_list">لیست مسدودکننده تبلیغات را به روز کنید</string>
   <string name="toggle_ads_blocking">مسدود کردن تبلیغات را تغییر دهید</string>
   <string name="need_restart">نیاز به راه اندازی مجدد برنامه</string>
-  <string name="theme">موضوع</string>
-  <array name="themes">
-    <item>سیستم</item>
-    <item>سفید</item>
-    <item>تاریک</item>
-  </array>
   <string name="toggle_keep_screen_on">صفحه نمایش را روشن بگذارید</string>
   <string name="navigate_with_joystick_axes">پیمایش با محورهای جوی‌استیک</string>
   <string name="cursor_max_speed">حداکثر سرعت مکان‌نمای مجازی</string>

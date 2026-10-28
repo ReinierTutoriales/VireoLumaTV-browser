@@ -119,16 +119,10 @@
     <string name="direct_navigation_mode_title">Modo de navegación directa</string>
     <string name="direct_navigation_mode_message">La navegación directa oculta el cursor y envía las teclas del mando o del control de juegos directamente a la página, para que las webs compatibles con TV o teclado resalten enlaces y controles.\n\nPara salir de este modo: pulsa Atrás en el mando de la TV, o mantén pulsado el botón B en un control de juegos.\n\nEste modo funciona mejor con el motor WebView: WebView permite mover el foco por la página con la cruceta.</string>
     <string name="need_restart">Hay que reiniciar la aplicación</string>
-    <string name="theme">Tema</string>
-    <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Oscurecer las páginas web con el tema oscuro (requiere reiniciar)</string>
+    <string name="webview_use_algorithmic_darkening_with_dark_ui_mode">Oscurecer las páginas web (requiere reiniciar)</string>
     <string name="allow_autoplay_media">Permitir reproducción automática</string>
     <string name="web_engine_debug">Depuración del motor web (requiere reiniciar)</string>
     <string name="web_engine_debug_warning_message">Activar la depuración del motor web puede exponer el contenido de las páginas, las cookies y datos de sesión sensibles a cualquiera con acceso de depuración al dispositivo. Actívala solo en dispositivos de confianza para diagnosticar problemas.</string>
-    <array name="themes">
-        <item>Sistema</item>
-        <item>Claro</item>
-        <item>Oscuro</item>
-    </array>
     <string name="incognito_mode">Modo incógnito</string>
     <string name="incognito_mode_hint">Ahora puedes navegar en privado y las demás personas que usen este dispositivo no verán tu actividad. VireoLumaTV no guardará tu historial, cookies ni datos de sitios, ni la información que escribas en formularios.\n\nSin embargo, las descargas y los marcadores sí se guardan. Tu actividad aún puede ser visible para las webs que visites, tu organización o tu proveedor de internet.</string>
     <string name="don_t_show_again">No volver a mostrar</string>

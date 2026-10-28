@@ -10,7 +10,6 @@
     <item name="etAdBlockerListUrl" type="id" />
     <item name="tvAdBlockerListInfo" type="id" />
     <item name="btnAdBlockerUpdate" type="id" />
-    <item name="spTheme" type="id" />
     <item name="llWebViewAlgorithmicDarkening" type="id" />
     <item name="llAllowAutoplayMedia" type="id" />
     <item name="spVideoMaxQuality" type="id" />

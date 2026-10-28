@@ -10,7 +10,6 @@ class Config(val prefs: SharedPreferences) {
         const val SEARCH_ENGINE_AS_HOME_PAGE_KEY = "search_engine_as_home_page"
         const val HOME_PAGE_KEY = "home_page"
         const val USER_AGENT_PREF_KEY = "user_agent"
-        const val THEME_KEY = "theme"
         const val HOME_URL_ALIAS = "about:home"
         const val KEEP_SCREEN_ON_KEY = "keep_screen_on"
         /** When true, analog stick / hat axes from generic motion events are not translated to DPAD keys. */
@@ -48,10 +47,6 @@ class Config(val prefs: SharedPreferences) {
         private const val MINIMAL_HOME_SEARCH_MIGRATED = "minimal_home_search_migrated"
         const val HOME_PAGE_URL = "https://vireolumatv.invalid/appcontent/home/"
         //const val HOME_PAGE_URL = "http://10.0.2.2:5000/appcontent/home/"
-    }
-
-    enum class Theme {
-        SYSTEM, WHITE, BLACK;
     }
 
     enum class HomePageMode {
@@ -115,14 +110,6 @@ class Config(val prefs: SharedPreferences) {
             ).apply()
         }
 
-    var theme = object : ObservableValue<Theme>(Theme.SYSTEM) {
-        override var value: Theme = Theme.entries.getOrNull(prefs.getInt(THEME_KEY, 0)) ?: Theme.SYSTEM
-            set(value) {
-                prefs.edit().putInt(THEME_KEY, value.ordinal).apply()
-                field = value
-                notifyObservers()
-            }
-    }
 
     var homePageMode: HomePageMode
         get() = prefs.getInt(HOME_PAGE_MODE, 0)

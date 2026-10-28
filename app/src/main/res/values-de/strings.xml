@@ -99,12 +99,6 @@
   <string name="never">Nie</string>
   <string name="update_ad_blocker_list">AdBlocker-Liste aktualisieren</string>
   <string name="need_restart">Benötigt App-Neustart</string>
-  <string name="theme">Thema</string>
-  <array name="themes">
-    <item>System</item>
-    <item>Hell</item>
-    <item>Dunkel</item>
-  </array>
   <string name="toggle_keep_screen_on">Bildschirm eingeschaltet lassen</string>
   <string name="navigate_with_joystick_axes">Mit Joystick-Achsen navigieren</string>
   <string name="cursor_max_speed">Maximale Geschwindigkeit des virtuellen Cursors</string>

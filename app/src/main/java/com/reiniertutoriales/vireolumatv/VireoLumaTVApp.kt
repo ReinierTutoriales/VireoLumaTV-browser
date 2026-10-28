@@ -8,7 +8,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.AppCompatDelegate
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.HostConfig
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
@@ -70,11 +69,6 @@ class VireoLumaTVApp : Application(), Application.ActivityLifecycleCallbacks {
 
         ActiveModelsRepository.init(this)
 
-        when (AppContext.provideConfig().theme.value) {
-            Config.Theme.BLACK -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            Config.Theme.WHITE -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        }
 
         registerActivityLifecycleCallbacks(this)
     }

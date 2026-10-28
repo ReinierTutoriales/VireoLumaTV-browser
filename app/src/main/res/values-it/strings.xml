@@ -108,12 +108,6 @@
   <string name="direct_navigation_mode_title">Modalità navigazione diretta</string>
   <string name="direct_navigation_mode_message">La navigazione diretta nasconde il cursore sullo schermo e invia i tasti del telecomando o del controller di gioco direttamente alla pagina web, così i siti che supportano il focus TV o da tastiera possono evidenziare link e controlli.\n\nPer uscire da questa modalità: premi Indietro sul telecomando del TV oppure tieni premuto il pulsante B su un controller di gioco.\n\nQuesta modalità funziona meglio con il motore WebView: WebView consente di spostare il focus nella pagina con il D-pad.</string>
   <string name="need_restart">È necessario riavviare l\'app</string>
-  <string name="theme">Tema</string>
-  <array name="themes">
-    <item>Sistema</item>
-    <item>Chiaro</item>
-    <item>Scuro</item>
-  </array>
   <string name="incognito_mode">Modalità Incognito</string>
   <string name="incognito_mode_hint">Ora puoi navigare in privato e altri utilizzatori di questo dispositivo non vedranno la tua attività. VireoLumaTV non salverà la cronologia di navigazione, i cookie e i dati del sito, le informazioni inserite nei moduli.\n\nTuttavia, i download e i segnalibri verranno salvati. La tua attività potrebbe essere comunque visibile ai siti Web che visiti, alla tua organizzazione o al provider di servizi Internet.</string>
   <string name="don_t_show_again">Non mostrare più</string>

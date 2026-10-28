@@ -145,13 +145,6 @@ class MainSettingsView @JvmOverloads constructor(
     }
 
     private fun addAppearanceAndPlayback() {
-        rows.choice(R.string.theme, R.id.spTheme, resources.getStringArray(R.array.themes),
-            config.theme.value.ordinal) { position ->
-            if (config.theme.value.ordinal != position) {
-                config.theme.value = Config.Theme.entries[position]
-                Toast.makeText(context, R.string.need_restart, Toast.LENGTH_SHORT).show()
-            }
-        }
         rows.toggle(R.string.webview_use_algorithmic_darkening_with_dark_ui_mode, R.id.llWebViewAlgorithmicDarkening,
             config.webviewUseAlgorithmicDarkeningWithDarkUiMode) { _, on ->
             config.webviewUseAlgorithmicDarkeningWithDarkUiMode = on

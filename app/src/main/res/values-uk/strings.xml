@@ -92,12 +92,6 @@
   <string name="never">ніколи</string>
   <string name="update_ad_blocker_list">Оновити список блокувальника реклами</string>
   <string name="need_restart">Потрібен перезапуск програми</string>
-  <string name="theme">Тема</string>
-  <array name="themes">
-    <item>Системна</item>
-    <item>Біла</item>
-    <item>Темна</item>
-  </array>
   <string name="toggle_keep_screen_on">Підтримувати екран увімкненим</string>
   <string name="navigate_with_joystick_axes">Навігація осями джойстика</string>
   <string name="cursor_max_speed">Максимальна швидкість віртуального курсора</string>
