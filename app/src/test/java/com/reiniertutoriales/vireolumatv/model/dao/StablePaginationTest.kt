@@ -28,6 +28,8 @@ class StablePaginationTest {
                 url = "https://example.test/$n"
             }) }
             assertEquals(ids.reversed().take(100), dao.page().map { it.id })
+            assertEquals(ids.last(), dao.last().single().id)
+            assertEquals(ids.reversed().take(100), dao.search("%example.test%").map { it.id })
             val boundary = dao.page().last()
             dao.delete(dao.page().first())
             dao.insert(HistoryItem().apply { time = 2_000L; title = "New"; url = "https://new.test" })
