@@ -1,7 +1,8 @@
 package com.reiniertutoriales.vireolumatv.utils
 
-import org.junit.Assert.*
-import org.junit.Ignore
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -13,102 +14,73 @@ import java.net.URL
 class FaviconExtractorTest {
     private val extractor = FaviconExtractor()
 
-    @Test
-    fun minifiedHtmlWithoutAHeadCannotGrowBeyondTheDocumentBudget() {
-        val prefix = "<link rel=\"icon\" href=\"/bounded.png\">"
-        val text = prefix + "x".repeat(FaviconExtractor.MAX_DOCUMENT_CHARS + 8192)
-        val reader = text.reader().buffered()
+    private fun html(base: String?, text: String) =
+        extractor.extractFavIconsFromHTML(base?.let(::URL), text.reader().buffered())
+
+    @Test fun aPageWithoutHeadEndIsReadOnlyUpToTheBudget() {
+        val reader = ("<link rel=\"icon\" href=\"/bounded.png\">" + "x".repeat(FaviconExtractor.MAX_DOCUMENT_CHARS + 8192))
+            .reader().buffered()
         val (icons, _) = extractor.extractFavIconsFromHTML(URL("https://example.com"), reader)
         assertEquals("https://example.com/bounded.png", icons.single().src)
-        assertTrue(reader.read() >= 0) // The extractor stopped while input still remains.
+        assertTrue("Reading stopped with input left", reader.read() >= 0)
     }
 
-    @Test
-    fun iconInfoSizesParsing() {
-        val info = FaviconExtractor.IconInfo(
-            "test/test.ico",//relative path
-            FaviconExtractor.DEFAULT_ICON_TYPE,
-            null,
-            "32x32",
-            URL("http://example.com/folder/index.html")
-        )
-        assertEquals(32, info.width)
-        assertEquals(info.width, info.height)
-        assertEquals("http://example.com/folder/test/test.ico", info.src)
-
-        val info2 = FaviconExtractor.IconInfo(
-            "/test/test.ico",//path from root
-            null,
-            null,
-            "any",//in case of any string in non-00x00 format
-            URL("http://example.com/folder/index.html")
-        )
-        assertEquals(0, info2.width)
-        assertEquals("http://example.com/test/test.ico", info2.src)
+    @Test fun candidateAddressesResolveAgainstThePageAndSizesAreRead() {
+        val base = URL("http://example.com/folder/index.html")
+        val relative = FaviconExtractor.IconInfo("test/test.ico", FaviconExtractor.DEFAULT_ICON_TYPE, null, "32x32", base)
+        assertEquals("http://example.com/folder/test/test.ico", relative.src)
+        assertEquals(32, relative.width)
+        assertEquals(32, relative.height)
+        val rooted = FaviconExtractor.IconInfo("/test/test.ico", null, null, "any", base)
+        assertEquals("http://example.com/test/test.ico", rooted.src)
+        assertEquals(0, rooted.width)
+        assertEquals("The type follows the extension", FaviconExtractor.DEFAULT_ICON_TYPE, rooted.type)
     }
 
-    @Test
-    fun extractFavIconsFromHTML() {
-        val (icons, manifestHref) = extractor.extractFavIconsFromHTML(null, """<html>
+    @Test fun headIconsAndTheManifestAddressAreFound() {
+        val (icons, manifest) = html(null, """
+            <html><head>
+            <link rel="icon" class="site" href="https://cdn.example/favicon.svg">
+            <link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
+            </head></html>
+        """.trimIndent())
+        assertEquals("icon", icons.single().rel)
+        assertEquals("image/svg+xml", icons.single().type)
+        assertEquals("/manifest.json", manifest)
+    }
+
+    @Test fun relTokensQuotedValuesAndUpperCaseTagsAreUnderstood() {
+        val (icons, manifest) = html("https://example.com/dir/", """
             <head>
-            <link rel="icon" class="js-site-favicon" href="https://github.githubassets.com/favicons/favicon.svg">
-            <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials">
+            <link rel="shortcut icon" href="/a b.ico">
+            <LINK REL=ICON HREF=/upper.png SIZES=32X32>
+            <link href='touch.png' rel='apple-touch-icon-precomposed'>
+            <link rel="stylesheet" href="/style.css">
             </head>
-        </html>""".trimMargin().reader().buffered())
-        assertEquals(1, icons.size)
-        assertEquals("icon", icons[0].rel)
-        assertEquals("image/svg+xml", icons[0].type)
-        assertNotNull(manifestHref)
+            <link rel="icon" href="/after-head.png">
+        """.trimIndent())
+        assertEquals(listOf("https://example.com/a b.ico", "https://example.com/upper.png", "https://example.com/dir/touch.png"),
+            icons.map { it.src })
+        assertEquals(32, icons[1].width)
+        assertEquals("Apple touch icons default to 180 px", 180, icons[2].width)
+        assertNull(manifest)
     }
 
-    @Test
-    fun extractFavIconsFromWebManifest() {
+    @Test fun manifestIconsResolveAgainstTheManifest() {
         val icons = extractor.extractFavIconsFromWebManifest(URL("http://example.com/test/manifest.json"), """
-            {
-              "short_name": "Weather",
-              "name": "Weather: Do I need an umbrella?",
-              "icons": [
-                {
-                  "src": "/images/icons-vector.svg",
-                  "type": "image/svg+xml",
-                  "sizes": "512x512"
-                },
-                {
-                  "src": "images/icons-192.png",
-                  "type": "image/png",
-                  "sizes": "192x192"
-                }
-              ],
-              "id": "/?source=pwa",
-              "description": "Weather forecast information"
-            }
+            {"name": "Weather", "icons": [
+              {"src": "/images/icons-vector.svg", "type": "image/svg+xml", "sizes": "512x512"},
+              {"src": "images/icons-192.png", "type": "image/png", "sizes": "192x192"}
+            ], "id": "/?source=pwa"}
         """.trimIndent().reader())
-
-        assertEquals(2, icons.size)
-        assertEquals("http://example.com/images/icons-vector.svg", icons[0].src)
-        assertEquals("http://example.com/test/images/icons-192.png", icons[1].src)
+        assertEquals(listOf("http://example.com/images/icons-vector.svg", "http://example.com/test/images/icons-192.png"),
+            icons.map { it.src })
+        assertEquals(192, icons[1].width)
     }
 
-    /**
-     * Large integration test, may fail if third party pages changed (it is ok)
-     * Comment @Ignore annotation if want to run
-     */
-    @Ignore
-    @Test
-    fun extractFavIconsFromURL() {
-        var icons = extractor.extractFavIconsFromURL(
-            URL("https://developer.android.com/reference/org/xmlpull/v1/XmlPullParser")
-        )
-        assertEquals(11, icons.size)
-
-        icons = extractor.extractFavIconsFromURL(
-            URL("https://uibakery.io/regex-library/html-regex-java")
-        )
-        assertEquals(3, icons.size)
-
-        icons = extractor.extractFavIconsFromURL(
-            URL("https://github.com/bumptech/glide/issues/2152")
-        )
-        assertEquals(14, icons.size)
+    @Test fun aBrokenManifestKeepsWhatWasRead() {
+        val icons = extractor.extractFavIconsFromWebManifest(URL("http://example.com/m.json"),
+            """{"icons": [{"src": "/a.png"}, {"src": """.reader())
+        assertEquals(listOf("http://example.com/a.png"), icons.map { it.src })
     }
 }
