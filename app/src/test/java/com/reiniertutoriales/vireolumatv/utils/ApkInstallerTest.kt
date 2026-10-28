@@ -69,13 +69,12 @@ class ApkInstallerTest {
     }
 
     @Test
-    fun legacyPublicDownloadCanStillBeInstalled() {
+    fun legacyDownloadInSharedDirectoryCanStillBeInstalled() {
         val app = RuntimeEnvironment.getApplication()
-        // Robolectric keeps separate default roots for these two Environment APIs.
-        org.robolectric.shadows.ShadowEnvironment.setExternalStoragePublicDirectory(
-            android.os.Environment.getExternalStorageDirectory().toPath())
-        val file = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(
-            android.os.Environment.DIRECTORY_DOWNLOADS), "legacy.apk").apply {
+        // FileProvider maps Download/ under the external storage root; Robolectric's
+        // public-directory shadow uses a different root from the provider shadow.
+        val file = java.io.File(android.os.Environment.getExternalStorageDirectory(),
+            "Download/legacy.apk").apply {
             parentFile!!.mkdirs(); writeText("apk")
         }
         ApkInstaller.launch(app, download(file.absolutePath))
