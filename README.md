@@ -1,20 +1,47 @@
 # VireoLumaTV
 
-An Android TV browser maintained by ReinierTutoriales. It uses the system WebView and supports TV remotes and gamepads on Android API 24 and later.
+Navegador para Android TV desarrollado y mantenido por **ReinierTutoriales**.
+Utiliza Android System WebView y funciona con mando o gamepad desde Android 7.0 (API 24).
 
-The interface has one top command capsule, a tab strip and native dialogs. Local address suggestions use bookmarks and history; the app also provides downloads, remote shortcuts, per-site blocking and a Rust filter engine. One WebView stays live at a time while other tabs retain their saved state.
+## Descargar e instalar
 
-The current source migration is tracked in [the removal backlog](docs/audit/TVBRO_REMOVAL_BACKLOG_20261027.md). Automated checks cover parts of the behavior; real TV navigation, playback and memory measurements remain separate acceptance steps.
+**[Descargar VireoLumaTV 2.0.0](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/tag/v2.0.0)**
 
-Source and support: https://github.com/ReinierTutoriales/VireoLumaTV-browser
-Original TV Bro source code: https://github.com/truefedex/tv-bro
+Elige el APK compatible con tu dispositivo:
 
-## License and attribution
+| Arquitectura | Dispositivo |
+|---|---|
+| `armeabi-v7a` | Android de 32 bits, incluido el onn de referencia de 32 bits |
+| `arm64-v8a` | Android de 64 bits |
+| `x86_64` | Equipos Intel/AMD o emuladores compatibles |
 
-The original TV Bro copyright, conditions, and disclaimer are preserved in [LICENSE.md](LICENSE.md). This license has specific requirements for modified binaries; it is not an unmodified standard BSD license. VireoLumaTV must retain its distinct name, application ID, and icon and show the original-source attribution in its About screen.
+En la variante `generic`, abre **Ajustes → Acerca de → Actualizar** para buscar nuevas
+releases de este repositorio. La app comprueba la firma de los checksums y el SHA-256
+del APK antes de abrir el instalador de Android. Las variantes `google` y `foss`
+no utilizan este actualizador.
 
-Additional component notices are recorded in [NOTICE.md](NOTICE.md). The license and rebranding audit, including unresolved release requirements, is in [docs/audit/archive-2026-10-01/LICENSE_REBRANDING_AUDIT.md](docs/audit/archive-2026-10-01/LICENSE_REBRANDING_AUDIT.md).
+Las instalaciones con el certificado de release vigente desde 1.2.1 pueden actualizarse
+sin desinstalar. Android rechaza actualizaciones con otra firma, incluidos los builds debug.
+Si necesitas desinstalar para cambiar de firma, exporta antes tus favoritos: desinstalar borra los datos.
 
-## Development status
+## Funciones
 
-The [regression policy](docs/REGRESSION_POLICY.md), [contributor rules](AGENTS.md), [current work plan](docs/ROADMAP.md) and [consolidated audit](docs/audit/CONSOLIDATED_AUDIT_20261007.md) track the one-branch review, corrections and validation status. Older audits describe their own source revisions and must be checked against current code before applying changes.
+- Barra superior con dirección, navegación, Inicio, bloqueador y menú.
+- Pestañas, interfaz oscura y controles nativos para mando.
+- Sugerencias locales de favoritos e historial.
+- Favoritos, historial, descargas, modo privado y atajos del mando.
+- Bloqueador basado en Rust, con siete fuentes de filtros y control por sitio.
+- Conservación del estado de pestañas y recuperación cuando se pierde el renderer.
+
+El comportamiento de las webs y del vídeo depende también del proveedor WebView,
+el servidor, la conexión y el hardware. Las pruebas automáticas no sustituyen la
+validación física de mando, reproducción y memoria del build actual.
+
+## Proyecto y documentación
+
+Este es el repositorio independiente de VireoLumaTV. La rama principal es `master`.
+
+- [Notas de la versión](RELEASE_NOTES.md)
+- [Privacidad](PRIVACY.md)
+- [Licencia](LICENSE.md) y [avisos de componentes y procedencia](NOTICE.md)
+- [Reglas de desarrollo](AGENTS.md) y [contratos de regresión](docs/REGRESSION_POLICY.md)
