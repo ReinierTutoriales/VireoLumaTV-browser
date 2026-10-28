@@ -60,11 +60,11 @@ class MainSettingsView @JvmOverloads constructor(
     }
 
     private fun addSearchEngine() {
-        val urls = Config.SearchEnginesURLs
-        val custom = Config.SearchEnginesTitles.lastIndex
+        val urls = Config.SEARCH_ENGINES.map { it.url }
+        val custom = Config.SEARCH_ENGINES.lastIndex
         val saved = config.searchEngineURL.value
         val known = if (saved == "") 0 else urls.indexOf(saved)
-        rows.choice(R.string.choose_default_search_engine, R.id.spEngine, Config.SearchEnginesTitles,
+        rows.choice(R.string.choose_default_search_engine, R.id.spEngine, Config.SEARCH_ENGINES.map { it.title }.toTypedArray(),
             if (known == -1) custom else known) { position ->
             val group = searchEngineUrl.parent as View
             if (position == custom) {

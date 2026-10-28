@@ -28,7 +28,7 @@ app/common/consumer-rules.pro	MODIFICADO	app/common/consumer-rules.pro	33
 app/common/proguard-rules.pro	MODIFICADO	app/common/proguard-rules.pro	4
 app/common/src/main/AndroidManifest.xml	IDENTICO	app/common/src/main/AndroidManifest.xml	0
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/AppContext.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/AppContext.kt	4
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/Config.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/Config.kt	20
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/Config.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/Config.kt	76
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/Download.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/model/Download.kt	9
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/FavoriteItem.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/model/FavoriteItem.kt	3
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/model/HistoryItem.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/model/HistoryItem.kt	3
@@ -129,7 +129,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/MainActivity.k
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/MainActivityViewModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/MainActivityViewModel.kt	42
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/SettingsModel.kt	9
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabsModel.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/TabsModel.kt	41
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/SearchEngineConfigDialogFactory.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt	8
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/SearchEngineConfigDialogFactory.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/SearchEngineConfigDialogFactory.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/ShortcutDialog.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/ShortcutDialog.kt	73
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteEditorDialog.kt	12
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteItemView.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/favorites/FavoriteItemView.kt
@@ -248,7 +248,7 @@ app/src/main/res/layout/activity_history.xml	REESCRITO	app/src/main/res/layout/a
 app/src/main/res/layout/activity_main.xml	MODIFICADO	app/src/main/res/layout/activity_main.xml	32
 app/src/main/res/layout/dialog_favorites.xml	IDENTICO	app/src/main/res/layout/dialog_favorites.xml	0
 app/src/main/res/layout/dialog_new_favorite_item.xml	MODIFICADO	app/src/main/res/layout/dialog_new_favorite_item.xml	5
-app/src/main/res/layout/dialog_search_engine.xml	MODIFICADO	app/src/main/res/layout/dialog_search_engine.xml	2
+app/src/main/res/layout/dialog_search_engine.xml	ELIMINADO	app/src/main/res/layout/dialog_search_engine.xml
 app/src/main/res/layout/dialog_settings.xml	MODIFICADO	app/src/main/res/layout/dialog_settings.xml	34
 app/src/main/res/layout/dialog_shortcut.xml	MODIFICADO	app/src/main/res/layout/dialog_shortcut.xml	5
 app/src/main/res/layout/view_actionbar.xml	MODIFICADO	app/src/main/res/layout/view_actionbar.xml	56
@@ -296,6 +296,7 @@ app/src/main/res/values/styles.xml	MODIFICADO	app/src/main/res/values/styles.xml
 app/src/main/res/values/themes.xml	MODIFICADO	app/src/main/res/values/themes.xml	24
 app/src/main/res/xml/provider_paths.xml	IDENTICO	app/src/main/res/xml/provider_paths.xml	0
 app/src/release/AndroidManifest.xml	IDENTICO	app/src/release/AndroidManifest.xml	0
+app/src/test/java/com/reiniertutoriales/vireolumatv/ConfigTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/history/HistorySearchTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/history/HistorySelectionTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ActiveModelConstructorTest.kt	PROPIO		
