@@ -57,6 +57,14 @@ class RustAdBlockEngineTest {
         } finally { blocker.release() }
     }
 
+    @Test fun infixHostnameBoundariesUseThePositionOfTheActualMatch() {
+        val blocker = engine.compile("||foo.bar")!!
+        try {
+            assertEquals(ContentBlocker.BLOCK, blocker.decision("https://a.foo.bar.baz/asset.js", "script"))
+            assertEquals(ContentBlocker.ALLOW, blocker.decision("https://abc.foo.barx.test/asset.js", "script"))
+        } finally { blocker.release() }
+    }
+
     @Test fun pageFiltersResolveEntitiesAliasesAndScriptletExceptions() {
         val blocker = engine.compile(rules)!!
         try {

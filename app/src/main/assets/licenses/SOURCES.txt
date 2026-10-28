@@ -5,8 +5,8 @@ The application license is included as APP-LICENSE.txt.
 Project: https://github.com/ReinierTutoriales/VireoLumaTV-browser
 Each release includes RELEASE_SOURCE.txt with the exact source commit.
 
-Native blocking engine: adblock-rust 0.13.3, MPL 2.0.
-Source: https://github.com/brave/adblock-rust/tree/v0.13.3
+Native blocking engine: adblock-rust 0.13.5, MPL 2.0.
+Source: https://crates.io/crates/adblock/0.13.5
 JNI bridge and dependency lockfile: native/adblock-jni in the application sources.
 The bridge retains its MPL 2.0 license.
 

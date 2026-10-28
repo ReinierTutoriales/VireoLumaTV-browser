@@ -8,10 +8,10 @@ license does not relicense those components.
 
 ## Native blocking engine and JNI bridge
 
-adblock-rust 0.13.3, by Brave Software, and the bridge in native/adblock-jni
+adblock-rust 0.13.5, by Brave Software, and the bridge in native/adblock-jni
 are licensed under MPL 2.0. The bridge builds libvireoadblock.so.
 
-- Source: https://github.com/brave/adblock-rust/tree/v0.13.3
+- Source: https://crates.io/crates/adblock/0.13.5
 - License: licenses/MPL-2.0.txt
 - Exact dependency versions: native/adblock-jni/Cargo.lock
 - Crate notices and license texts: licenses/rust-crates.txt
