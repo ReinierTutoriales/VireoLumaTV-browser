@@ -1,1 +1,1 @@
-Simple web browser optimized to use with TV remote
+Browse the web with a TV remote, tabs, bookmarks and page blocking.
