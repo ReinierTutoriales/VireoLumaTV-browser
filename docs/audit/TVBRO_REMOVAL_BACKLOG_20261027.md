@@ -1,5 +1,41 @@
 # Backlog de eliminación de código heredado de TV Bro — 2026-10-27
 
+## Cobertura actual — base `b1fa6f71`, 2026-10-28
+
+La CI 553 de esa base terminó correctamente. Se incorporan las 28 rutas que faltaban
+en el TSV, comprobando su creación en commits de este proyecto y leyendo las seis
+superficies de producción: sugerencias, menú, entrada desde pestañas, vista/fila de
+sugerencias e instalación de APK. Las demás son pruebas, documentación y configuración
+añadidas durante este desarrollo. `LiveValueTest` procede de la prueba propia del
+observable anterior; su renombrado no constituye una implementación nueva.
+
+El árbol con el verificador añadido contiene 434 archivos versionados: 336 `PROPIO`,
+94 `REESCRITO`, tres `REGENERADO` y un `IDENTICO` (`LICENSE.md`). La cobertura de rutas
+es 434/434; **no es un porcentaje de independencia ni de rendimiento**. Los estados
+de secciones anteriores describen sus SHA históricos. Los textos y renombrados de
+`5d3bcdaf` a `ec2c49c1` necesitan revisión de procedencia por contenido; el TSV no
+convierte un cambio de nombre en sustitución del código original.
+
+`scripts/check-source-inventory.py` comprueba en CI archivos sin registrar, duplicados,
+etiquetas inválidas y rutas marcadas eliminadas que siguen versionadas. El control
+del APK comprueba el paquete generado por separado. Permanecen las comprobaciones
+físicas de mando, WebView, vídeo y memoria y la revisión previa a retirar avisos.
+
+Contraste con documentación oficial consultada el 2026-10-28:
+
+- [WebKit](https://developer.android.com/jetpack/androidx/releases/webkit): la versión
+  estable actual es 1.18.0, ya declarada en el catálogo del proyecto.
+- [Jetpack WebKit](https://developer.android.com/develop/ui/views/layout/webapps/jetpack-webkit-overview):
+  las funciones dependen también del WebView instalado. Los controladores de scripts,
+  política de medios y oscurecimiento comprueban `WebViewFeature.isFeatureSupported`.
+- [Gestión de WebView](https://developer.android.com/develop/ui/views/layout/webapps/managing-webview):
+  la pérdida del renderer requiere descartar la instancia. `BrowserWebViewClient`
+  delega en `WebViewPageEngine.onRenderProcessGone`, que elimina la vista y prepara
+  la recarga de la URL; la suite de recuperación cubre ese contrato con dobles.
+
+No se cambia la prioridad del renderer ni se activa prefetch sin una medición del
+presupuesto de memoria del dispositivo de referencia.
+
 Base: `rewrite/independent-core` @ `6bac762`. Referencia: `truefedex/tv-bro` @ `6cb4b7c`.
 Inventario por archivo: [UPSTREAM_TVBRO_INVENTORY_REWRITE_20261027.tsv](UPSTREAM_TVBRO_INVENTORY_REWRITE_20261027.tsv).
 Línea base: 162 tests unitarios, todos pasan (`testGenericDebugUnitTest`).

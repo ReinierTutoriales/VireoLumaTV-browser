@@ -80,6 +80,7 @@ jobs:
 
       - name: Unit tests
         run: |
+          python scripts/check-source-inventory.py
           node scripts/test-home-page-security.cjs
           python scripts/test-apk-provenance.py
           node scripts/test-blob-transfer.cjs
