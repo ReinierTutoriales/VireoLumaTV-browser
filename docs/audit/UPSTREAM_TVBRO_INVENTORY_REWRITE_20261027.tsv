@@ -40,7 +40,7 @@ app/common/src/main/java/com/reiniertutoriales/vireolumatv/singleton/FaviconsPoo
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapter.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/BackNavigationEventsAdapter.kt	94
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/BoundedReader.kt	PROPIO		
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DPADNavigationEventsAdapter.kt	ELIMINADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/DPADNavigationEventsAdapter.kt	
-app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/DownloadUtils.kt	13
+app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtils.kt	REESCRITO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/DownloadUtils.kt	99
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/Extensions.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/Extensions.kt	2
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/FaviconExtractor.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/FaviconExtractor.kt	41
 app/common/src/main/java/com/reiniertutoriales/vireolumatv/utils/NavigationReservedShortcutKeyCodes.kt	MODIFICADO	app/common/src/main/java/com/phlox/tvwebbrowser/utils/NavigationReservedShortcutKeyCodes.kt	3
@@ -347,6 +347,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BundleBytesTest.kt	PRO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapterTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BoundedReaderTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtilsDataUrlTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtilsGuessFileNameTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtilsSanitizeFileNameTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/FaviconExtractorTest.kt	MODIFICADO	app/src/test/java/com/phlox/tvwebbrowser/utils/FaviconExtractorTest.kt	11
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/IncognitoWebViewSessionTest.kt	PROPIO		

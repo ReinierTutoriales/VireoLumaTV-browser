@@ -1,211 +1,164 @@
-/* -*- Mode: Java; c-basic-offset: 4; tab-width: 20; indent-tabs-mode: nil; -*-
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- *   Copyright (C) 2006 The Android Open Source Project
- *
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License. */
-
 package com.reiniertutoriales.vireolumatv.utils
 
 import android.net.Uri
 import android.webkit.MimeTypeMap
-
 import java.io.ByteArrayOutputStream
-import java.io.UnsupportedEncodingException
-import java.util.regex.Pattern
 
+/** File names and payloads for downloads that come from web pages and servers. */
 object DownloadUtils {
+    private const val GENERIC_NAME = "downloadfile"
+    private const val OCTET_STREAM = "application/octet-stream"
 
     /**
-     * Format as defined in RFC 2616 and RFC 5987 / RFC 6266.
-     * Both attachment and inline disposition types are supported.
+     * The name to save a download under: the Content-Disposition name (RFC 6266, including the
+     * encoded `filename*` form of RFC 5987), else the last segment of [url] without its query, else
+     * [GENERIC_NAME]. A name without an extension gets one from [mimeType]; an extension that
+     * contradicts a specific [mimeType] is replaced by that type's extension.
      */
-    private val CONTENT_DISPOSITION_PATTERN = Pattern.compile("(?:attachment|inline)\\s*;\\s*filename\\s*=\\s*" +
-            "(\"((?:\\\\.|[^\"\\\\])*)\"|[^;]*)\\s*" +
-            "(?:;\\s*filename\\*\\s*=\\s*(utf-8|iso-8859-1)'[^']*'(\\S*))?",
-            Pattern.CASE_INSENSITIVE)
+    fun guessFileName(url: String, contentDisposition: String?, mimeType: String?): String {
+        val name = contentDisposition?.let(::dispositionName)?.substringAfterLast('/')
+            ?: nameFromUrl(url)
+            ?: GENERIC_NAME
+        val firstDot = name.indexOf('.')
+        if (firstDot < 0) return name + extensionFor(mimeType)
+        val stem = name.substring(0, firstDot)
+        val extension = name.substring(firstDot)
+        return stem + (replacementExtension(name, mimeType) ?: extension)
+    }
+
+    private fun nameFromUrl(url: String): String? {
+        val path = Uri.decode(url).let { decoded ->
+            val query = decoded.indexOf('?')
+            if (query > 0) decoded.substring(0, query) else decoded
+        }
+        if (path.endsWith('/')) return null
+        val slash = path.lastIndexOf('/')
+        return if (slash >= 0) path.substring(slash + 1) else null
+    }
+
+    /** ".ext" for [mimeType]; ".html" or ".txt" for text without a known extension; ".bin" otherwise. */
+    private fun extensionFor(mimeType: String?): String {
+        mimeType?.let { MimeTypeMap.getSingleton().getExtensionFromMimeType(it) }?.let { return ".$it" }
+        return when {
+            mimeType == null || !mimeType.startsWith("text/", ignoreCase = true) -> ".bin"
+            mimeType.equals("text/html", ignoreCase = true) -> ".html"
+            else -> ".txt"
+        }
+    }
+
+    /** The extension [mimeType] calls for when the name's last extension names another type. */
+    private fun replacementExtension(name: String, mimeType: String?): String? {
+        if (mimeType == null || mimeType == OCTET_STREAM) return null
+        val types = MimeTypeMap.getSingleton()
+        val named = types.getMimeTypeFromExtension(name.substringAfterLast('.')) ?: return null
+        if (named.equals(mimeType, ignoreCase = true)) return null
+        return types.getExtensionFromMimeType(mimeType)?.let { ".$it" }
+    }
 
     /**
-     * Definition as per RFC 5987, section 3.2.1. (value-chars)
+     * The file name in an "attachment" or "inline" Content-Disposition value, or null. The encoded
+     * `filename*` parameter wins over `filename` wherever it appears; other parameters are ignored.
      */
-    private val ENCODED_SYMBOL_PATTERN = Pattern.compile("%[0-9a-f]{2}|[0-9a-z!#$&+-.^_`|~]", Pattern.CASE_INSENSITIVE)
-
-    /**
-     * Guess the name of the file that should be downloaded.
-     *
-     * This method is largely identical to [android.webkit.URLUtil.guessFileName]
-     * which unfortunately does not implement RfC 5987.
-     */
-    fun guessFileName(url: String,
-                      contentDisposition: String?,
-                      mimeType: String?): String {
-        var filename: String? = null
-        var extension: String? = null
-
-        // Extract file name from content disposition header field
-        if (contentDisposition != null) {
-            filename = parseContentDisposition(contentDisposition)
-            if (filename != null) {
-                val index = filename.lastIndexOf('/') + 1
-                if (index > 0) {
-                    filename = filename.substring(index)
-                }
+    private fun dispositionName(value: String): String? {
+        val parts = splitParameters(value)
+        val type = parts.firstOrNull()?.trim()?.lowercase() ?: return null
+        if (type != "attachment" && type != "inline") return null
+        var plain: String? = null
+        var encoded: String? = null
+        for (part in parts.drop(1)) {
+            val equals = part.indexOf('=')
+            if (equals < 0) continue
+            val key = part.substring(0, equals).trim().lowercase()
+            val raw = part.substring(equals + 1).trim()
+            when (key) {
+                "filename" -> plain = unquote(raw)
+                "filename*" -> encoded = decodeExtValue(raw)
             }
         }
+        return encoded ?: plain
+    }
 
-        // If all the other http-related approaches failed, use the plain uri
-        if (filename == null) {
-            var decodedUrl: String? = Uri.decode(url)
-            if (decodedUrl != null) {
-                val queryIndex = decodedUrl.indexOf('?')
-                // If there is a query string strip it, same as desktop browsers
-                if (queryIndex > 0) {
-                    decodedUrl = decodedUrl.substring(0, queryIndex)
+    /** Splits at ';' outside double quotes. */
+    private fun splitParameters(value: String): List<String> {
+        val parts = ArrayList<String>()
+        val current = StringBuilder()
+        var quoted = false
+        var escaped = false
+        for (c in value) {
+            when {
+                escaped -> escaped = false
+                quoted && c == '\\' -> escaped = true
+                c == '"' -> quoted = !quoted
+                c == ';' && !quoted -> {
+                    parts += current.toString()
+                    current.clear()
+                    continue
                 }
-                if (!decodedUrl.endsWith("/")) {
-                    val index = decodedUrl.lastIndexOf('/') + 1
-                    if (index > 0) {
-                        filename = decodedUrl.substring(index)
-                    }
-                }
+            }
+            current.append(c)
+        }
+        parts += current.toString()
+        return parts
+    }
+
+    /** A quoted-string without its quotes and backslash escapes; a token as it is. */
+    private fun unquote(raw: String): String {
+        if (raw.length < 2 || raw.first() != '"' || raw.last() != '"') return raw
+        val text = StringBuilder()
+        var escaped = false
+        for (c in raw.substring(1, raw.length - 1)) {
+            if (!escaped && c == '\\') escaped = true else {
+                text.append(c)
+                escaped = false
             }
         }
+        return text.toString()
+    }
 
-        // Finally, if couldn't get filename from URI, get a generic filename
-        if (filename == null) {
-            filename = "downloadfile"
+    /** RFC 5987 ext-value "charset'language'%XX…" for UTF-8 or ISO-8859-1; null otherwise. */
+    private fun decodeExtValue(raw: String): String? {
+        val fields = raw.split('\'', limit = 3)
+        if (fields.size != 3) return null
+        val charset = when (fields[0].trim().lowercase()) {
+            "utf-8" -> Charsets.UTF_8
+            "iso-8859-1" -> Charsets.ISO_8859_1
+            else -> return null
         }
-
-        // Split filename between base and extension
-        // Add an extension if filename does not have one
-        val dotIndex = filename.indexOf('.')
-        if (dotIndex < 0) {
-            if (mimeType != null) {
-                extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-                if (extension != null) {
-                    extension = ".$extension"
-                }
+        val bytes = ByteArrayOutputStream()
+        val text = fields[2]
+        var i = 0
+        while (i < text.length) {
+            val c = text[i]
+            val hex = if (c == '%' && i + 2 <= text.lastIndex) text.substring(i + 1, i + 3).toIntOrNull(16) else null
+            if (hex != null) {
+                bytes.write(hex)
+                i += 3
+                continue
             }
-            if (extension == null) {
-                if (mimeType != null && mimeType.lowercase().startsWith("text/")) {
-                    if (mimeType.equals("text/html", ignoreCase = true)) {
-                        extension = ".html"
-                    } else {
-                        extension = ".txt"
-                    }
-                } else {
-                    extension = ".bin"
-                }
-            }
-        } else {
-            if (mimeType != null && "application/octet-stream" != mimeType) {
-                // Compare the last segment of the extension against the mime type.
-                // If there's a mismatch, discard the entire extension.
-                val lastDotIndex = filename.lastIndexOf('.')
-                val typeFromExt = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                        filename.substring(lastDotIndex + 1))
-                if (typeFromExt != null && !typeFromExt.equals(mimeType, ignoreCase = true)) {
-                    extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-                    if (extension != null) {
-                        extension = ".$extension"
-                    }
-                }
-            }
-            if (extension == null) {
-                extension = filename.substring(dotIndex)
-            }
-            filename = filename.substring(0, dotIndex)
+            if (c.code < 128 && !c.isWhitespace()) bytes.write(c.code)
+            i++
         }
-
-        return filename + extension
+        return String(bytes.toByteArray(), charset)
     }
 
     private val UNSAFE_FILE_NAME_CHARS = Regex("[\\x00-\\x1F\\x7F:*?\"<>|]")
 
     /**
-     * Makes a file name coming from untrusted input (web page, server headers) safe to use as a single
-     * path segment: drops any directory part, replaces control/reserved characters and leading dots.
-     * Returns null if nothing usable remains (e.g. "..", "/", "").
+     * Makes a file name from a page or server safe as one path segment: drops any directory part,
+     * replaces control and reserved characters and leading dots. Null when nothing usable is left.
      */
     fun sanitizeFileName(name: String?): String? {
         if (name == null) return null
-        val cleaned = name.substringAfterLast('/').substringAfterLast('\\')
+        return name.substringAfterLast('/').substringAfterLast('\\')
             .replace(UNSAFE_FILE_NAME_CHARS, "_")
-            .trim()
-            .trimStart('.')
-            .trim()
-        return cleaned.ifEmpty { null }
+            .trim().trimStart('.').trim()
+            .ifEmpty { null }
     }
 
     /**
-     * Returns the base64 payload of a data URL produced by FileReader.readAsDataURL().
-     * The media type part can't be rebuilt from Blob.type: browsers write "application/octet-stream"
-     * when Blob.type is empty. Input without the ";base64," marker is returned unchanged.
+     * The base64 payload of a data URL from FileReader.readAsDataURL(). Its media type is not
+     * used: browsers write "application/octet-stream" when Blob.type is empty. Input without
+     * ";base64," is returned unchanged.
      */
-    fun dataUrlBase64Payload(dataUrl: String): String {
-        return dataUrl.substringAfter(";base64,", dataUrl)
-    }
-
-    private fun parseContentDisposition(contentDisposition: String): String? {
-        try {
-            val m = CONTENT_DISPOSITION_PATTERN.matcher(contentDisposition)
-
-            if (m.find()) {
-                // If escaped string is found, decode it using the given encoding.
-                val encodedFileName = m.group(4)
-                val encoding = m.group(3)
-
-                // The encoding group only matches together with the encoded name.
-                if (encodedFileName != null && encoding != null) {
-                    return decodeHeaderField(encodedFileName, encoding)
-                }
-
-                // Return quoted string if available and replace escaped characters.
-                val quotedFileName = m.group(2)
-
-                return quotedFileName?.replace("\\\\(.)".toRegex(), "$1") ?: m.group(1)
-
-                // Otherwise try to extract the unquoted file name
-            }
-        } catch (ex: IllegalStateException) {
-            // This function is defined as returning null when it can't parse the header
-        } catch (ex: UnsupportedEncodingException) {
-        }
-
-        return null
-    }
-
-    @Throws(UnsupportedEncodingException::class)
-    private fun decodeHeaderField(field: String, encoding: String): String {
-        val m = ENCODED_SYMBOL_PATTERN.matcher(field)
-        val stream = ByteArrayOutputStream()
-
-        while (m.find()) {
-            val symbol = m.group()
-
-            if (symbol.startsWith("%")) {
-                stream.write(Integer.parseInt(symbol.substring(1), 16))
-            } else {
-                stream.write(symbol[0].code)
-            }
-        }
-
-        return stream.toString(encoding)
-    }
-
+    fun dataUrlBase64Payload(dataUrl: String): String = dataUrl.substringAfter(";base64,", dataUrl)
 }
