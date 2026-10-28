@@ -90,6 +90,7 @@ jobs:
           node scripts/test-window-open-decoy.cjs
           node scripts/test-adblock-surrogates.cjs
           node scripts/test-page-filters.cjs
+          cargo test --locked --manifest-path native/adblock-jni/Cargo.toml
           ./gradlew testGenericDebugUnitTest --stacktrace
 
       - name: Upload UI previews
