@@ -27,12 +27,35 @@ class TabRowsTest {
         adapter.onTabListChanged()
         val holder = adapter.onCreateViewHolder(parent, 0)
         adapter.bindViewHolder(holder, 0)
-        assertTrue(holder.vb.root.isChecked)
+        assertTrue(holder.itemView.isSelected)
         adapter.bindViewHolder(holder, 1)
-        assertFalse(holder.vb.root.isChecked)
+        assertFalse("A row rebound to another tab must not stay selected", holder.itemView.isSelected)
+        adapter.bindViewHolder(holder, 0)
         adapter.onViewRecycled(holder)
-        assertNull(holder.vb.root.tag)
-        assertNull(adapter.checkedView)
+        assertNull(holder.tab)
+        assertFalse("A recycled row must not keep the selection", holder.itemView.isSelected)
+    }
+
+    @Test fun changingCurrentMovesTheSelection() = withAdapter { adapter, model, parent ->
+        model.tabsStates.add(WebTabState(url = Config.HOME_PAGE_URL))
+        model.tabsStates.add(WebTabState(url = Config.HOME_PAGE_URL))
+        adapter.onTabListChanged()
+        adapter.current = 1
+        val holder = adapter.onCreateViewHolder(parent, 0)
+        adapter.bindViewHolder(holder, 0)
+        assertFalse(holder.itemView.isSelected)
+        adapter.bindViewHolder(holder, 1)
+        assertTrue(holder.itemView.isSelected)
+    }
+
+    @Test fun closingTheLastTabKeepsAValidSelection() = withAdapter { adapter, model, _ ->
+        model.tabsStates.add(WebTabState(url = Config.HOME_PAGE_URL))
+        model.tabsStates.add(WebTabState(url = Config.HOME_PAGE_URL))
+        adapter.onTabListChanged()
+        adapter.current = 1
+        model.tabsStates.removeAt(1)
+        adapter.onTabListChanged()
+        assertEquals(0, adapter.current)
     }
 
     @Test fun movingTabsPreservesFocusedIdentityAndUnsavedRowsAreDistinct() = withAdapter { adapter, model, _ ->
@@ -45,8 +68,8 @@ class TabRowsTest {
         model.tabsStates.swap(0, 1)
         adapter.onTabListChanged()
         assertEquals(1, adapter.current)
-        assertFalse(TabsDiffUtillCallback(listOf(first), listOf(second)).areItemsTheSame(0, 0))
-        assertTrue(TabsDiffUtillCallback(listOf(first), listOf(first)).areItemsTheSame(0, 0))
+        assertFalse(TabsAdapter.Diff(listOf(first), listOf(second)).areItemsTheSame(0, 0))
+        assertTrue(TabsAdapter.Diff(listOf(first), listOf(first)).areItemsTheSame(0, 0))
     }
 
     private fun withAdapter(test: (TabsAdapter, TabsModel, FrameLayout) -> Unit) {
@@ -56,8 +79,7 @@ class TabRowsTest {
         val model = ActiveModelsRepository.get(TabsModel::class, app)
         model.modelScope.cancel() // This view test does not persist reordering.
         try {
-            val view = TabsView(app)
-            val adapter = TabsAdapter(view).apply { tabsModel = model }
+            val adapter = TabsAdapter {}.apply { tabsModel = model }
             test(adapter, model, FrameLayout(app))
         } finally { ActiveModelsRepository.markAsNeedlessAllModelsUsedBy(app) }
     }

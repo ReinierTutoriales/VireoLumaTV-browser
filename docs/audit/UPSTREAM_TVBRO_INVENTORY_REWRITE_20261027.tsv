@@ -140,9 +140,9 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settin
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/VersionSettingsView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/dialogs/settings/VersionSettingsView.kt	82
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/ActionBar.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/ActionBar.kt	43
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/CursorMenuView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/CursorMenuView.kt	59
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsAdapter.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt	48
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsDiffUtillCallback.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsDiffUtillCallback.kt	26
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt	16
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsAdapter.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsAdapter.kt	84
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsDiffUtillCallback.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsDiffUtillCallback.kt
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsView.kt	REESCRITO	app/src/main/java/com/phlox/tvwebbrowser/activity/main/view/tabs/TabsView.kt	64
 app/src/main/java/com/reiniertutoriales/vireolumatv/adblock/AdblockCache.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/adblock/AdblockFilterListValidator.kt	PROPIO		
 app/src/main/java/com/reiniertutoriales/vireolumatv/adblock/AdblockListDownloader.kt	PROPIO		
@@ -187,13 +187,13 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActiva
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewEx.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewEx.kt	27
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewWebEngine.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/webengine/webview/WebViewWebEngine.kt	32
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockController.kt	PROPIO		
-app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableContainer.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableContainer.kt	5
+app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableContainer.kt	ELIMINADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableContainer.kt
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/CheckableImageButton.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/CheckableImageButton.kt	3
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/NotificationView.kt	MODIFICADO	app/src/main/java/com/phlox/tvwebbrowser/widgets/NotificationView.kt	31
 app/src/main/res/anim/infinite_fadeinout_anim.xml	IDENTICO	app/src/main/res/anim/infinite_fadeinout_anim.xml	0
 app/src/main/res/anim/right_menu_in_anim.xml	IDENTICO	app/src/main/res/anim/right_menu_in_anim.xml	0
 app/src/main/res/anim/right_menu_out_anim.xml	IDENTICO	app/src/main/res/anim/right_menu_out_anim.xml	0
-app/src/main/res/color/webtab_horizontal_text_selector.xml	IDENTICO	app/src/main/res/color/webtab_horizontal_text_selector.xml	0
+app/src/main/res/color/webtab_horizontal_text_selector.xml	ELIMINADO	app/src/main/res/color/webtab_horizontal_text_selector.xml
 app/src/main/res/drawable-hdpi/ic_launcher.png	PROPIO		
 app/src/main/res/drawable-mdpi/ic_launcher.png	PROPIO		
 app/src/main/res/drawable-xhdpi/ic_launcher.png	PROPIO		
@@ -238,7 +238,7 @@ app/src/main/res/drawable/settings_row_bg.xml	PROPIO
 app/src/main/res/drawable/settings_row_bg_selected.xml	PROPIO		
 app/src/main/res/drawable/settings_tab_bg_selector.xml	MODIFICADO	app/src/main/res/drawable/settings_tab_bg_selector.xml	45
 app/src/main/res/drawable/text_link_background_selector.xml	ELIMINADO	app/src/main/res/drawable/text_link_background_selector.xml	
-app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	MODIFICADO	app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	96
+app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	REESCRITO	app/src/main/res/drawable/webtab_horizontal_bkg_selector.xml	89
 app/src/main/res/layout/activity_downloads.xml	MODIFICADO	app/src/main/res/layout/activity_downloads.xml	4
 app/src/main/res/layout/activity_history.xml	MODIFICADO	app/src/main/res/layout/activity_history.xml	3
 app/src/main/res/layout/activity_main.xml	MODIFICADO	app/src/main/res/layout/activity_main.xml	32
@@ -253,7 +253,7 @@ app/src/main/res/layout/view_download_item.xml	MODIFICADO	app/src/main/res/layou
 app/src/main/res/layout/view_favorite_item.xml	MODIFICADO	app/src/main/res/layout/view_favorite_item.xml	4
 app/src/main/res/layout/view_history_header_item.xml	IDENTICO	app/src/main/res/layout/view_history_header_item.xml	0
 app/src/main/res/layout/view_history_item.xml	MODIFICADO	app/src/main/res/layout/view_history_item.xml	8
-app/src/main/res/layout/view_horizontal_webtab_item.xml	MODIFICADO	app/src/main/res/layout/view_horizontal_webtab_item.xml	31
+app/src/main/res/layout/view_horizontal_webtab_item.xml	REESCRITO	app/src/main/res/layout/view_horizontal_webtab_item.xml	65
 app/src/main/res/layout/view_notification.xml	MODIFICADO	app/src/main/res/layout/view_notification.xml	3
 app/src/main/res/layout/view_setting_button.xml	PROPIO		
 app/src/main/res/layout/view_setting_choice.xml	PROPIO		
@@ -315,6 +315,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabRestoreFall
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialogTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsPagesTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabRowsTest.kt	PROPIO		
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsDiffTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/adblock/AdblockCacheTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/adblock/AdblockFilterListValidatorTest.kt	PROPIO		
 app/src/test/java/com/reiniertutoriales/vireolumatv/adblock/AdblockListDownloaderTest.kt	PROPIO		

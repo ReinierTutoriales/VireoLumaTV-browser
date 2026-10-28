@@ -14,8 +14,6 @@
     <color name="button_background_disabled">#1B2534</color>
     <color name="day_night_icon_color">#EDF3FA</color>
     <color name="progressbar_tint">#6FD08C</color>
-    <color name="web_tab_text_color">#EDF3FA</color>
-    <color name="web_tab_selected_text_color">#EDF3FA</color>
     <color name="settings_tab_color">#253247</color>
     <color name="settings_tab_color_activated">#314561</color>
     <color name="settings_tab_activated_underline_color">#6FD08C</color>

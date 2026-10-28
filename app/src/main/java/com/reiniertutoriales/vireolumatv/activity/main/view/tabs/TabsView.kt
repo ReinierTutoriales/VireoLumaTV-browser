@@ -1,158 +1,127 @@
 package com.reiniertutoriales.vireolumatv.activity.main.view.tabs
 
-import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.SettingsModel
 import com.reiniertutoriales.vireolumatv.activity.main.TabsModel
-import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabsAdapter.Listener
 import com.reiniertutoriales.vireolumatv.databinding.ViewTabsBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ActiveModelsRepository
 import com.reiniertutoriales.vireolumatv.utils.observable.ObservableList
-import androidx.core.view.isNotEmpty
 
-class TabsView @JvmOverloads constructor(
-  context: Context,
-  attrs: AttributeSet? = null
-) : RelativeLayout(context, attrs) {
+/**
+ * The tab strip under the top capsule. The strip itself takes focus from the capsule and hands it to
+ * the selected tab, or to "+" when that tab is not on screen, so focus always lands on a control.
+ */
+class TabsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+    RelativeLayout(context, attrs) {
 
-  private var vb = ViewTabsBinding.inflate(LayoutInflater.from(context), this)
+    private val vb = ViewTabsBinding.inflate(LayoutInflater.from(context), this)
+    private val adapter = TabsAdapter(::showTabOptions)
+    private lateinit var tabsModel: TabsModel
+    private lateinit var settingsModel: SettingsModel
 
-  private lateinit var tabsModel: TabsModel
-  private val adapter: TabsAdapter = TabsAdapter(this)
-  private lateinit var settingsModel: SettingsModel
-  var current: Int by adapter::current
-  var listener: Listener? by adapter::listener
+    var current: Int by adapter::current
+    var listener: TabsAdapter.Listener? by adapter::listener
 
-  init {
-      init()
-  }
-
-  fun init() {
-    if (isInEditMode) return
-    tabsModel = ActiveModelsRepository.get(TabsModel::class, context)
-    settingsModel = ActiveModelsRepository.get(SettingsModel::class, context)
-    adapter.tabsModel = tabsModel
-    vb.rvTabs.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-    vb.btnAdd.setOnClickListener{
-      listener?.onAddNewTabSelected()
-    }
-  }
-
-  override fun onAttachedToWindow() {
-    super.onAttachedToWindow()
-    if (isInEditMode) return
-    tabsModel.tabsStates.subscribe(listChangeObserver)
-    tabsModel.currentTab.subscribe(currentTabObserver)
-    vb.rvTabs.adapter = adapter
-  }
-
-  override fun onDetachedFromWindow() {
-    super.onDetachedFromWindow()
-    if (isInEditMode) return
-    tabsModel.tabsStates.unsubscribe(listChangeObserver)
-    tabsModel.currentTab.unsubscribe(currentTabObserver)
-  }
-
-  fun showTabOptions(tab: WebTabState) {
-    AlertDialog.Builder(context)
-      .setTitle(R.string.tabs)
-      .setItems(R.array.tabs_options) { _, i ->
-        val tabIndex = tabsModel.tabsStates.indexOf(tab)
-        if (tabIndex < 0) return@setItems
-        when (i) {
-          //Open new Tab
-          0 -> {
-            listener?.openInNewTab(settingsModel.homePage, tabIndex + 1)
-          }
-          //Close current
-          1 -> listener?.closeTab(tab)
-          //Close all
-          2 -> {
-            tabsModel.onCloseAllTabs()
-            listener?.openInNewTab(settingsModel.homePage, 0)
-          }
-          //Move left
-          3 -> if (tabIndex > 0) {
-            tabsModel.tabsStates.swap(tabIndex, tabIndex - 1)
-          }
-          //Move right
-          4 -> if (tabIndex < (tabsModel.tabsStates.size - 1)) {
-            tabsModel.tabsStates.swap(tabIndex, tabIndex + 1)
-          }
+    init {
+        if (!isInEditMode) {
+            tabsModel = ActiveModelsRepository.get(TabsModel::class, context)
+            settingsModel = ActiveModelsRepository.get(SettingsModel::class, context)
+            adapter.tabsModel = tabsModel
+            vb.rvTabs.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+            vb.btnAdd.setOnClickListener { listener?.onAddNewTabSelected() }
         }
-      }
-      .show()
-  }
-
-  fun focusCurrentTab(): Boolean {
-    for (i in 0 until vb.rvTabs.childCount) {
-      val child = vb.rvTabs.getChildAt(i)
-      if (child.tag === tabsModel.tabsStates.getOrNull(current) && child.requestFocus()) return true
     }
-    // The selected row can be offscreen or the list can be empty; keep an actionable focus.
-    return vb.btnAdd.requestFocus()
-  }
 
-  override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
-    if (gainFocus && isNotEmpty()) {
-      for (i in 0 until vb.rvTabs.childCount) {
-        val child = vb.rvTabs.getChildAt(i)
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        if (isInEditMode) return
+        tabsModel.tabsStates.subscribe(listObserver)
+        tabsModel.currentTab.subscribe(currentObserver)
+        vb.rvTabs.adapter = adapter
+    }
 
-        if (child.tag is WebTabState) {
-          val tab = child.tag
-          val index = tabsModel.tabsStates.indexOf(tab)
-          if (index == current && !child.hasFocus()) {
-            child.requestFocus()
-          }
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        if (isInEditMode) return
+        tabsModel.tabsStates.unsubscribe(listObserver)
+        tabsModel.currentTab.unsubscribe(currentObserver)
+    }
+
+    override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
+        if (gainFocus) focusCurrentTab()
+    }
+
+    fun onTabTitleUpdated(tab: WebTabState) = adapter.refresh(tab)
+
+    fun onFavIconUpdated(tab: WebTabState) = adapter.refresh(tab)
+
+    /** Options for [tab]; each acts on that tab, wherever it has moved meanwhile. */
+    fun showTabOptions(tab: WebTabState) {
+        AlertDialog.Builder(context)
+            .setTitle(R.string.tabs)
+            .setItems(R.array.tabs_options) { _, option ->
+                val tabs = tabsModel.tabsStates
+                val index = tabs.indexOf(tab)
+                if (index < 0) return@setItems
+                when (option) {
+                    OPEN_NEW -> listener?.openInNewTab(settingsModel.homePage, index + 1)
+                    CLOSE -> listener?.closeTab(tab)
+                    CLOSE_ALL -> {
+                        tabsModel.onCloseAllTabs()
+                        listener?.openInNewTab(settingsModel.homePage, 0)
+                    }
+                    MOVE_LEFT -> if (index > 0) tabs.swap(index, index - 1)
+                    MOVE_RIGHT -> if (index < tabs.lastIndex) tabs.swap(index, index + 1)
+                }
+            }
+            .show()
+    }
+
+    private fun focusCurrentTab(): Boolean {
+        val tab = tabsModel.tabsStates.getOrNull(current)
+        for (i in 0 until vb.rvTabs.childCount) {
+            val row = vb.rvTabs.getChildAt(i)
+            if (row.tag === tab && row.requestFocus()) return true
         }
-      }
-    } else {
-      super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
+        return vb.btnAdd.requestFocus()
     }
-  }
 
-  fun onTabTitleUpdated(tab: WebTabState) {
-    val tabIndex = tabsModel.tabsStates.indexOf(tab)
-    if (tabIndex >= 0) adapter.notifyItemChanged(tabIndex)
-  }
-
-  fun onFavIconUpdated(tab: WebTabState) {
-    val tabIndex = tabsModel.tabsStates.indexOf(tab)
-    if (tabIndex >= 0) adapter.notifyItemChanged(tabIndex)
-  }
-
-  private fun scrollToSeeCurrentTab() {
-    if (current !in 0 until adapter.itemCount) return
-    val lm = (vb.rvTabs.layoutManager as LinearLayoutManager)
-    if (current < lm.findFirstCompletelyVisibleItemPosition() ||
-      current > lm.findLastCompletelyVisibleItemPosition()
-    ) {
-      vb.rvTabs.scrollToPosition(current)
+    private fun revealCurrent() {
+        if (current !in 0 until adapter.itemCount) return
+        val layout = vb.rvTabs.layoutManager as LinearLayoutManager
+        if (current < layout.findFirstCompletelyVisibleItemPosition() ||
+            current > layout.findLastCompletelyVisibleItemPosition()) vb.rvTabs.scrollToPosition(current)
     }
-  }
 
-  private val listChangeObserver: (ObservableList<WebTabState>) -> Unit = {
-    adapter.onTabListChanged()
-
-    scrollToSeeCurrentTab()
-  }
-
-  private val currentTabObserver: (value: WebTabState?) -> Unit =  {
-    val new = tabsModel.tabsStates.indexOf(it)
-    if (new != -1 && current != new) {
-      if (current in 0 until adapter.itemCount) adapter.notifyItemChanged(current)
-      current = new
-      adapter.notifyItemChanged(new)
-
-      scrollToSeeCurrentTab()
+    private val listObserver: (ObservableList<WebTabState>) -> Unit = {
+        adapter.onTabListChanged()
+        revealCurrent()
     }
-  }
+
+    private val currentObserver: (WebTabState?) -> Unit = { tab ->
+        val index = tabsModel.tabsStates.indexOf(tab)
+        if (index >= 0 && index != current) {
+            current = index
+            revealCurrent()
+        }
+    }
+
+    private companion object {
+        // Positions in R.array.tabs_options.
+        const val OPEN_NEW = 0
+        const val CLOSE = 1
+        const val CLOSE_ALL = 2
+        const val MOVE_LEFT = 3
+        const val MOVE_RIGHT = 4
+    }
 }

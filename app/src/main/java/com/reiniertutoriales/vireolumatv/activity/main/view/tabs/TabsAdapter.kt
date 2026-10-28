@@ -3,28 +3,21 @@ package com.reiniertutoriales.vireolumatv.activity.main.view.tabs
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.TabsModel
-import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabsAdapter.TabViewHolder
-import com.reiniertutoriales.vireolumatv.databinding.ViewHorizontalWebtabItemBinding
 import com.reiniertutoriales.vireolumatv.model.WebTabState
 import com.reiniertutoriales.vireolumatv.utils.ViewFaviconLoader
-import com.reiniertutoriales.vireolumatv.widgets.CheckableContainer
 
-
-class TabsAdapter(private val tabsView: TabsView) : RecyclerView.Adapter<TabViewHolder>() {
-    var tabsModel: TabsModel? = null
-        set(value) {
-            field = value
-            onTabListChanged()
-        }
-    private val tabsCopy =
-        ArrayList<WebTabState>().apply { addAll(tabsModel?.tabsStates ?: emptyList()) }
-    var current: Int = 0
-    var listener: Listener? = null
-    var checkedView: CheckableContainer? = null
+/**
+ * Tab rows of the strip. The selected row is the one at [current]; it is derived on every bind, so a
+ * recycled row can never keep a stale selection. Focusing a row selects it (preview, contract N06),
+ * activating it opens it and a long press asks [onLongPress] for the tab options.
+ */
+class TabsAdapter(private val onLongPress: (WebTabState) -> Unit) : RecyclerView.Adapter<TabsAdapter.Row>() {
 
     interface Listener {
         fun onTitleChanged(index: Int)
@@ -34,86 +27,106 @@ class TabsAdapter(private val tabsView: TabsView) : RecyclerView.Adapter<TabView
         fun openInNewTab(url: String, tabIndex: Int)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TabViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.view_horizontal_webtab_item, parent, false)
-        return TabViewHolder(view)
+    var listener: Listener? = null
+    var tabsModel: TabsModel? = null
+        set(value) {
+            field = value
+            onTabListChanged()
+        }
+
+    private val shown = ArrayList<WebTabState>()
+
+    private var selected = 0
+
+    /** Index of the selected tab in the strip; changing it redraws the old and the new row. */
+    var current: Int
+        get() = selected
+        set(value) {
+            if (selected == value) return
+            val previous = selected
+            selected = value
+            if (previous in shown.indices) notifyItemChanged(previous)
+            if (value in shown.indices) notifyItemChanged(value)
+        }
+
+    /** Re-reads the model's tabs; the selected tab keeps its selection when tabs move. */
+    fun onTabListChanged() {
+        val selectedTab = shown.getOrNull(selected)
+        val previous = selected
+        val next = tabsModel?.tabsStates?.toList().orEmpty()
+        val diff = DiffUtil.calculateDiff(Diff(shown, next))
+        shown.clear()
+        shown.addAll(next)
+        // Only the index changes here; row updates must wait until the diff has been dispatched.
+        selected = shown.indexOfFirst { it === selectedTab }.takeIf { it >= 0 }
+            ?: previous.coerceIn(0, maxOf(0, shown.lastIndex))
+        diff.dispatchUpdatesTo(this)
+        if (previous in shown.indices) notifyItemChanged(previous)
+        if (selected != previous && selected in shown.indices) notifyItemChanged(selected)
     }
 
-    override fun onBindViewHolder(holder: TabViewHolder, position: Int) {
-        holder.bind(tabsCopy[position])
+    fun refresh(tab: WebTabState) {
+        val index = shown.indexOfFirst { it === tab }
+        if (index >= 0) notifyItemChanged(index)
     }
 
-    override fun onViewRecycled(holder: TabViewHolder) {
-        if (checkedView === holder.vb.root) checkedView = null
-        holder.clear()
+    override fun getItemCount() = shown.size
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+        Row(LayoutInflater.from(parent.context).inflate(R.layout.view_horizontal_webtab_item, parent, false))
+
+    override fun onBindViewHolder(holder: Row, position: Int) = holder.bind(shown[position], position == selected)
+
+    override fun onViewRecycled(holder: Row) {
+        holder.unbind()
         super.onViewRecycled(holder)
     }
 
-    override fun getItemCount(): Int {
-        return tabsCopy.size
-    }
+    inner class Row(view: View) : RecyclerView.ViewHolder(view) {
+        private val title: TextView = view.findViewById(R.id.tvTitle)
+        private val favicon = ViewFaviconLoader(view, view.findViewById<ImageView>(R.id.ivFavicon))
 
-    fun onTabListChanged() {
-        val focusedTab = tabsCopy.getOrNull(current)
-        val previous = current
-        val tabsDiffUtilCallback =
-            TabsDiffUtillCallback(tabsCopy, tabsModel?.tabsStates ?: emptyList())
-        val tabsDiffResult = DiffUtil.calculateDiff(tabsDiffUtilCallback)
-        tabsCopy.apply { clear() }.addAll(tabsModel?.tabsStates ?: emptyList())
-        current = tabsCopy.indexOfFirst { it === focusedTab }.takeIf { it >= 0 }
-            ?: previous.coerceIn(0, maxOf(0, tabsCopy.lastIndex))
-        tabsDiffResult.dispatchUpdatesTo(this)
-        if (previous in tabsCopy.indices) notifyItemChanged(previous)
-        if (current != previous && current in tabsCopy.indices) notifyItemChanged(current)
-    }
+        /** The tab this row shows, or null once recycled. */
+        val tab: WebTabState? get() = itemView.tag as? WebTabState
 
-    inner class TabViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val vb = ViewHorizontalWebtabItemBinding.bind(itemView)
-
-        private val faviconLoader = ViewFaviconLoader(itemView, vb.ivFavicon)
-
-        fun clear() {
-            faviconLoader.clear()
-            vb.root.tag = null
-            vb.root.isChecked = false
-        }
-
-        fun bind(tabState: WebTabState) {
-            vb.root.tag = tabState
-            vb.tvTitle.text = tabState.title
-            // A recycled selected row must also explicitly reset its unselected state.
-            if (checkedView === vb.root) checkedView = null
-            vb.root.isChecked = current == tabState.position
-            if (vb.root.isChecked) {
-                checkedView?.isChecked = false
-                checkedView = vb.root
-            }
-            faviconLoader.bind(tabState.url)
-
-            vb.root.setOnFocusChangeListener { _, hasFocus ->
-                val index = currentPosition(tabState)
-                if (hasFocus && index != RecyclerView.NO_POSITION && current != index) {
+        fun bind(tab: WebTabState, isCurrent: Boolean) {
+            itemView.tag = tab
+            itemView.isSelected = isCurrent
+            title.text = tab.title
+            favicon.bind(tab.url)
+            itemView.setOnFocusChangeListener { _, focused ->
+                val index = positionOf(tab)
+                if (focused && index != RecyclerView.NO_POSITION && index != selected) {
                     current = index
-                    checkedView?.isChecked = false
-                    vb.root.isChecked = true
-                    checkedView = vb.root
                     listener?.onTitleChanged(index)
                 }
             }
-            vb.root.setOnClickListener {
-                val index = currentPosition(tabState)
-                if (index != RecyclerView.NO_POSITION) listener?.onTitleSelected(index)
+            itemView.setOnClickListener {
+                positionOf(tab).takeIf { it != RecyclerView.NO_POSITION }?.let { listener?.onTitleSelected(it) }
             }
-            vb.root.setOnLongClickListener {
-                if (currentPosition(tabState) == RecyclerView.NO_POSITION) false
-                else { tabsView.showTabOptions(tabState); true }
+            itemView.setOnLongClickListener {
+                (positionOf(tab) != RecyclerView.NO_POSITION).also { if (it) onLongPress(tab) }
             }
         }
 
-        private fun currentPosition(tab: WebTabState): Int {
-            val index = bindingAdapterPosition
-            return if (index in tabsCopy.indices && tabsCopy[index] === tab) index else RecyclerView.NO_POSITION
+        fun unbind() {
+            favicon.clear()
+            itemView.tag = null
+            itemView.isSelected = false
         }
+
+        /** This row's position, if it still shows [tab]; a stale callback must not act on another tab. */
+        private fun positionOf(tab: WebTabState): Int {
+            val index = bindingAdapterPosition
+            return if (index in shown.indices && shown[index] === tab) index else RecyclerView.NO_POSITION
+        }
+    }
+
+    /** Rows are the same tab by identity, or by stored id once saved; a row redraws on title or address. */
+    internal class Diff(private val old: List<WebTabState>, private val new: List<WebTabState>) : DiffUtil.Callback() {
+        override fun getOldListSize() = old.size
+        override fun getNewListSize() = new.size
+        override fun areItemsTheSame(o: Int, n: Int) = old[o] === new[n] || (old[o].id != 0L && old[o].id == new[n].id)
+        override fun areContentsTheSame(o: Int, n: Int) = old[o].title == new[n].title && old[o].url == new[n].url
     }
 }
