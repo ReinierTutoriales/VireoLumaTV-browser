@@ -4,277 +4,192 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.AtomicFile
 import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.reiniertutoriales.vireolumatv.AppContext
+import com.reiniertutoriales.vireolumatv.utils.BundleBytes
+import com.reiniertutoriales.vireolumatv.utils.md5Name
 import com.reiniertutoriales.vireolumatv.webengine.WebEngineFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.File
-import java.io.FileOutputStream
-import java.nio.charset.Charset
-import com.reiniertutoriales.vireolumatv.utils.BundleBytes
-import com.reiniertutoriales.vireolumatv.utils.md5Name
-
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Created by PDT on 24.08.2016.
+ * One open tab, the "tabs" table of schema 19. The stored part says what the tab shows; the
+ * engine and the fields marked @Ignore exist only while the browser runs. Navigation history
+ * lives in a state file under [TAB_WVSTATES_DIR] named by [wvStateFileName], and the preview in
+ * [TAB_THUMBNAILS_DIR].
  *
- * Class to store state of tab with webView
+ * A tab is equal only to itself: two tabs on the same address are still two tabs, so list
+ * lookups and removals never mistake one for another. [copy] makes a detached snapshot for saving.
  */
 @Entity(tableName = "tabs")
-data class WebTabState(@PrimaryKey(autoGenerate = true)
-                       var id: Long = 0,
-                       var url: String = "",
-                       var title: String = "",
-                       var selected: Boolean = false,
-                       var thumbnailHash: String? = null,
-                       var faviconHash: String? = null,
-                       var incognito: Boolean = false,
-                       var position: Int = 0,
-                       @Deprecated("This field is not used anymore")
-                       @ColumnInfo(name = "wv_state", typeAffinity = ColumnInfo.BLOB)
-                       var wvState: ByteArray? = null,
-                       @ColumnInfo(name = "wv_state_file")
-                       var wvStateFileName: String? = null,
-                       var adblock: Boolean? = null,
-                       var scale: Float? = null) {
-    companion object {
-        val TAG: String = WebTabState::class.java.simpleName
-
-        const val TAB_THUMBNAILS_DIR = "tabthumbs"
-        const val TAB_WVSTATES_DIR = "wvstates"
-        const val GECKO_SESSION_STATE_HASH_PREFIX = "gecko:"
-    }
-
-    @Ignore
-    var thumbnail: Bitmap? = null
-    @Ignore
-    private val thumbnailToken = java.util.UUID.randomUUID().toString()
-    @Ignore
-    var savedState: Any? = null
-    @delegate:Ignore
-    val webEngine by lazy { WebEngineFactory.createWebEngine(this) }
-    @Ignore
-    @Volatile
-    var closed: Boolean = false
-    @Ignore
-    var rendererLost: Boolean = false
-    @Ignore
-    val persistenceRevision = java.util.concurrent.atomic.AtomicLong(0)
-    @Ignore
-    var lastLoadingUrl: String? = null //this is last url appeared in WebViewClient.shouldOverrideUrlLoading callback
-    @Ignore
-    var blockedAds = 0
-    @Ignore
-    var blockedPopups = 0
-    @Ignore
-    var cachedHostConfig: HostConfig? = null
+data class WebTabState(
+    @PrimaryKey(autoGenerate = true) var id: Long = 0,
+    var url: String = "",
+    var title: String = "",
+    var selected: Boolean = false,
+    var thumbnailHash: String? = null,
+    var faviconHash: String? = null,
+    var incognito: Boolean = false,
+    var position: Int = 0,
+    /** A column of schema 19 that is no longer read; state lives in a file. */
+    @ColumnInfo(name = "wv_state", typeAffinity = ColumnInfo.BLOB) var wvState: ByteArray? = null,
+    @ColumnInfo(name = "wv_state_file") var wvStateFileName: String? = null,
+    /** This tab's ad blocking, or null to follow the setting. */
+    var adblock: Boolean? = null,
+    var scale: Float? = null,
+) {
+    @Ignore var thumbnail: Bitmap? = null
+    /** Engine state taken when the tab was last paused, kept until it is written to its file. */
+    @Ignore var savedState: Any? = null
+    @delegate:Ignore val webEngine by lazy { WebEngineFactory.createWebEngine(this) }
+    @Ignore @Volatile var closed = false
+    /** The renderer died: its saved history may be what crashed it, so the address is loaded afresh. */
+    @Ignore var rendererLost = false
+    /** Bumped for each save, so a slower earlier save cannot overwrite a later one. */
+    @Ignore val persistenceRevision = AtomicLong(0)
+    /** The last address WebView asked to load in this tab. */
+    @Ignore var lastLoadingUrl: String? = null
+    @Ignore var blockedAds = 0
+    @Ignore var blockedPopups = 0
+    @Ignore var cachedHostConfig: HostConfig? = null
     /** Set while a page-opened window is screened against popup ad rules. */
-    @Ignore
-    @Volatile
-    var popupGuard: PopupGuard? = null
-    /** Tab that opened this popup: kept alive while the popup is shown so closing it resumes the page. */
-    @Ignore
-    var opener: WebTabState? = null
+    @Ignore @Volatile var popupGuard: PopupGuard? = null
+    /** The tab that opened this popup, kept alive while it shows so closing it resumes the page. */
+    @Ignore var opener: WebTabState? = null
     /** A media element of the current page (any frame) started playing. */
-    @Ignore
-    @Volatile
-    var mediaStarted: Boolean = false
+    @Ignore @Volatile var mediaStarted = false
+    /** Makes this run's preview names unique, so a new preview never reuses an open file. */
+    @Ignore private val previewToken = UUID.randomUUID().toString()
 
-    constructor(context: Context, json: JSONObject) : this() {
-        try {
-            url = json.getString("url")
-            title = json.getString("title")
-            selected = json.getBoolean("selected")
-            if (json.has("thumbnail")) {
-                thumbnailHash = json.getString("thumbnail")
-            }
-            if (json.has("wv_state")) {
-                val state = BundleBytes.fromLegacyJson(json.getJSONObject("wv_state"))
-                if (!state.isEmpty) {
-                    savedState = state
-                }
-            }
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
+    override fun equals(other: Any?): Boolean = this === other
 
-    }
+    override fun hashCode(): Int = System.identityHashCode(this)
 
-    private suspend fun saveThumbnail(context: Context) {
-        val thumbnail = this.thumbnail
-        val thumbnailHash = this.thumbnailHash
-        val url = url
-        if (thumbnail == null) return
-        withContext(Dispatchers.IO) {
-            synchronized(this@WebTabState) {
-                val tabsThumbsDir = File(context.cacheDir.absolutePath + File.separator + TAB_THUMBNAILS_DIR)
-                if (tabsThumbsDir.exists() || tabsThumbsDir.mkdir()) {
-                    try {
-                        val hash = md5Name(url.toByteArray(Charset.defaultCharset()))
-                            .let { (if (incognito) "private-preview-" else "preview-") + thumbnailToken + "-" + it }
-                        if (hash != null) {
-                            if (thumbnailHash != null && thumbnailHash != hash &&
-                                (thumbnailHash.startsWith("preview-") || thumbnailHash.startsWith("private-preview-"))) {
-                                removeThumbnailFile()
-                            }
-                            val file = File(getThumbnailPath(hash))
-                            var fos: FileOutputStream? = null
-                            try {
-                                fos = FileOutputStream(file)
-                                // JPEG encodes an RGB_565 preview several times faster than PNG on TV CPUs.
-                                // BitmapFactory detects the format, so the legacy .png name is kept.
-                                thumbnail.compress(Bitmap.CompressFormat.JPEG, 85, fos)
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            } finally {
-                                fos?.close()
-                            }
-
-                            this@WebTabState.thumbnailHash = hash
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun getThumbnailPath(hash: String) =
-        AppContext.get().cacheDir.absolutePath + File.separator + TAB_THUMBNAILS_DIR + File.separator + hash + ".png"
-
-    private fun getWVStatePath(hash: String): String {
-        return if (hash.startsWith(GECKO_SESSION_STATE_HASH_PREFIX)) {
-            AppContext.get().filesDir.absolutePath + File.separator + TAB_WVSTATES_DIR + File.separator + hash.substring(
-                GECKO_SESSION_STATE_HASH_PREFIX.length)
-        } else {
-            AppContext.get().filesDir.absolutePath + File.separator + TAB_WVSTATES_DIR + File.separator + hash
-        }
-    }
-
-    fun removeFiles() {
-        if (thumbnailHash != null) {
-            removeThumbnailFile()
-        }
-        wvStateFileName?.apply {
-            File(getWVStatePath(this)).delete()
-            wvStateFileName = null
-        }
-    }
-
-    private fun removeThumbnailFile() {
-        if (thumbnailHash == null) return
-        val thumbnailFile = File(getThumbnailPath(thumbnailHash!!))
-        thumbnailFile.delete()
-        thumbnailHash = null
-    }
-
+    /** Restores the engine from the kept or stored state; false means the address must be loaded. */
     fun restoreWebView(): Boolean {
         if (rendererLost) return false
         return try {
-            var state = savedState
-            if (state == null) {
-                val stateFileName = wvStateFileName ?: return false
-                if (stateFileName.startsWith(GECKO_SESSION_STATE_HASH_PREFIX)) return false
-                val stateBytes = File(getWVStatePath(stateFileName)).readBytes()
-                state = webEngine.stateFromBytes(stateBytes) ?: return false
-            }
+            val state = savedState ?: stateFile()?.takeIf { it.exists() }?.readBytes()?.let(webEngine::stateFromBytes)
+                ?: return false
             val restored = webEngine.restoreState(state)
-            // Keep a usable snapshot only after the engine accepts it. Persisted files are
-            // preserved until the normal atomic save replaces them; failure loads the saved URL.
+            // Keep the snapshot only once the engine accepted it; the file stays until the next save replaces it.
             savedState = if (restored) state else null
             restored
-        } catch (e: Exception) {
+        } catch (error: Exception) {
             savedState = null
-            Log.w(TAG, "Could not restore tab state; loading saved URL", e)
+            Log.w(TAG, "Could not restore tab state; loading the saved address", error)
             false
         }
     }
 
+    /**
+     * Writes [savedState] to this tab's own state file, atomically. A name from an older version,
+     * which duplicate tabs may share, is replaced by a new one instead of being overwritten.
+     */
     fun saveWebViewStateToFile() {
-        val state = savedState
-        var stateFileName = wvStateFileName
-        if (stateFileName != null && stateFileName.startsWith(GECKO_SESSION_STATE_HASH_PREFIX)) {
-            File(getWVStatePath(stateFileName)).delete()
-            stateFileName = null
-        }
-        if (state == null) return
-        // Private tabs must not overwrite a legacy file shared with a normal tab.
+        val state = savedState ?: return
         val prefix = if (incognito) "private-tab-" else "tab-"
-        // Old content hashes may be shared by duplicate tabs; never overwrite their shared file.
-        if (stateFileName?.startsWith(prefix) != true) stateFileName = null
-        val stateBytes = when (state) {
-            is Bundle -> {
-                BundleBytes.encode(state)
-            }
-            else -> {
-                state.toString().toByteArray(Charsets.UTF_8)
-            }
-        }
-        if (stateFileName == null) {
-            stateFileName = prefix + java.util.UUID.randomUUID().toString()
-        }
+        val name = wvStateFileName?.takeIf { it.startsWith(prefix) } ?: prefix + UUID.randomUUID()
+        val bytes = if (state is Bundle) BundleBytes.encode(state) else state.toString().toByteArray(Charsets.UTF_8)
         try {
-            val statesDir = File(AppContext.get().filesDir.absolutePath + File.separator + TAB_WVSTATES_DIR)
-            if (statesDir.exists() || statesDir.mkdir()) {
-                val file = android.util.AtomicFile(File(getWVStatePath(stateFileName)))
-                var output: FileOutputStream? = null
-                try {
-                    output = file.startWrite()
-                    output.write(stateBytes)
-                    file.finishWrite(output)
-                    wvStateFileName = stateFileName
-                } catch (error: Exception) {
-                    file.failWrite(output)
-                    throw error
-                }
+            val directory = File(AppContext.get().filesDir, TAB_WVSTATES_DIR)
+            if (!directory.isDirectory && !directory.mkdir()) return
+            val file = AtomicFile(File(directory, name))
+            val output = file.startWrite()
+            try {
+                output.write(bytes)
+                file.finishWrite(output)
+            } catch (error: Exception) {
+                file.failWrite(output)
+                throw error
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+            wvStateFileName = name
+        } catch (error: Exception) {
+            Log.w(TAG, "Could not save tab state", error)
         }
     }
 
+    /** Deletes this tab's preview and state files. */
+    fun removeFiles() {
+        removeThumbnailFile()
+        stateFile()?.delete()
+        wvStateFileName = null
+    }
+
     fun trimMemory() {
-        // Keep the last captured state until saveTab() has persisted it. Clearing it here can race
-        // with the asynchronous save started when switching tabs after the engine is discarded.
+        // [savedState] stays until saveTab() has written it: a save may still be on its way.
         webEngine.trimMemory()
     }
 
     fun onPause() {
-        webEngine.let {
-            savedState = it.saveState()
+        savedState = webEngine.saveState()
+    }
+
+    /** Stores [thumbnail] as this tab's preview, replacing the previous preview file. */
+    suspend fun updateThumbnail(context: Context, thumbnail: Bitmap) {
+        this.thumbnail = thumbnail
+        val prefix = if (incognito) "private-preview-" else "preview-"
+        val name = prefix + previewToken + "-" + md5Name(url.toByteArray())
+        withContext(Dispatchers.IO) {
+            synchronized(this@WebTabState) {
+                val directory = File(context.cacheDir, TAB_THUMBNAILS_DIR)
+                if (!directory.isDirectory && !directory.mkdir()) return@withContext
+                // Older versions named previews by address alone, possibly shared by duplicate tabs: keep those.
+                if (thumbnailHash != name && thumbnailHash?.let { it.startsWith("preview-") || it.startsWith("private-preview-") } == true) {
+                    removeThumbnailFile()
+                }
+                try {
+                    // JPEG encodes an RGB_565 preview several times faster than PNG on TV CPUs; BitmapFactory
+                    // reads either, so the ".png" name of older versions is kept.
+                    File(directory, "$name.png").outputStream().use { thumbnail.compress(Bitmap.CompressFormat.JPEG, PREVIEW_QUALITY, it) }
+                    thumbnailHash = name
+                } catch (error: Exception) {
+                    Log.w(TAG, "Could not save the tab preview", error)
+                }
+            }
         }
     }
 
-    suspend fun updateThumbnail(context: Context, thumbnail: Bitmap) {
-        this.thumbnail = thumbnail
-        val url = url
-        val hash = md5Name(url.toByteArray(Charset.defaultCharset())) + hashCode()
-        if (hash != thumbnailHash) saveThumbnail(context)
-    }
-
-    /** Decode a bounded preview without retaining it on a background tab. Call on IO. */
+    /** Decodes the stored preview at most [PREVIEW_MAX_SIDE] px wide or high, without keeping it. Call on IO. */
     fun loadThumbnail(): Bitmap? {
-        val hash = thumbnailHash ?: return null
-        val file = File(getThumbnailPath(hash))
-        if (!file.exists() || file.length() > 2 * 1024 * 1024) return null
+        val file = thumbnailFile() ?: return null
+        if (!file.exists() || file.length() > PREVIEW_MAX_BYTES) return null
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, options)
         if (options.outWidth <= 0 || options.outHeight <= 0) return null
         var sample = 1
-        while ((options.outWidth - 1) / sample + 1 > 480 || (options.outHeight - 1) / sample + 1 > 480) {
+        while ((options.outWidth - 1) / sample + 1 > PREVIEW_MAX_SIDE || (options.outHeight - 1) / sample + 1 > PREVIEW_MAX_SIDE) {
             sample *= 2
         }
         options.inJustDecodeBounds = false
         options.inSampleSize = sample
         options.inPreferredConfig = Bitmap.Config.RGB_565
         return BitmapFactory.decodeFile(file.absolutePath, options)
+    }
+
+    private fun stateFile(): File? = wvStateFileName?.let { File(File(AppContext.get().filesDir, TAB_WVSTATES_DIR), it) }
+
+    private fun thumbnailFile(): File? = thumbnailHash?.let { File(File(AppContext.get().cacheDir, TAB_THUMBNAILS_DIR), "$it.png") }
+
+    private fun removeThumbnailFile() {
+        thumbnailFile()?.delete()
+        thumbnailHash = null
+    }
+
+    companion object {
+        private const val TAG = "WebTabState"
+        const val TAB_THUMBNAILS_DIR = "tabthumbs"
+        const val TAB_WVSTATES_DIR = "wvstates"
+        private const val PREVIEW_QUALITY = 85
+        private const val PREVIEW_MAX_SIDE = 480
+        private const val PREVIEW_MAX_BYTES = 2L * 1024 * 1024
     }
 }

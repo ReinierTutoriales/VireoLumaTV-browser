@@ -190,11 +190,11 @@ class TabsModel : ActiveModel() {
     }
 
     suspend fun findHostConfig(tab: WebTabState, createIfNotFound: Boolean): HostConfig? {
-        Log.d(WebTabState.TAG, "findOrCreateHostConfig")
+        Log.d(TAG, "findOrCreateHostConfig")
         val currentHostName = try {
             URL(tab.url).host
         } catch (e: Exception) {
-            Log.w(WebTabState.TAG, "Can not parse current url host: $e")
+            Log.w(TAG, "Can not parse current url host: $e")
             return null
         }
         var hostConfig = tab.cachedHostConfig
