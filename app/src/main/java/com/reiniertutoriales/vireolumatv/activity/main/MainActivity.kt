@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -59,6 +60,7 @@ import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.Engines
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
+import com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import com.reiniertutoriales.vireolumatv.widgets.ToastBar
 import kotlinx.coroutines.Dispatchers
@@ -120,6 +122,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         WebViewPageEngine.pageFiltersProvider = { url -> filters.pageFilters(url) }
         WebViewPageEngine.hiddenSelectorsProvider = { url, classes, ids -> filters.hiddenSelectors(url, classes, ids) }
         tabStore = ScreenModels.get(TabStore::class, this)
+        ServiceWorkerFilter.policy = serviceWorkerPolicy
+        ServiceWorkerFilter.install(this)
         mainThread = Handler(Looper.getMainLooper())
         vb = BrowserWindowBinding.inflate(layoutInflater)
         setContentView(vb.root)
@@ -231,7 +235,19 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         super.onPause()
     }
 
+    /** Service workers belong to no tab: the shown tab's choice applies to its own site, else the setting. */
+    private val serviceWorkerPolicy = object : ServiceWorkerFilter.Policy {
+        override fun blocksAds(site: Uri): Boolean {
+            val tab = tabStore.currentTab.value
+            val sameSite = tab != null && tab.url.toUri().host.equals(site.host, ignoreCase = true)
+            return (if (sameSite) tab?.adblock else null) ?: config.adBlockEnabled
+        }
+        override fun isAd(url: Uri, type: String?, site: Uri) = adBlocker.isAd(url, type, site)
+        override fun redirect(url: Uri, type: String?, site: Uri) = adBlocker.redirectFor(url, type, site)
+    }
+
     override fun onDestroy() {
+        if (ServiceWorkerFilter.policy === serviceWorkerPolicy) ServiceWorkerFilter.policy = null
         overlayVisible = false
         previewGeneration++
         // Uninitialized when onCreate() restarted the window in the other mode.
