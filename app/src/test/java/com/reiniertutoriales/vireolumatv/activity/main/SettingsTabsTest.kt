@@ -81,6 +81,7 @@ class SettingsTabsTest {
     } }
 
     @Config(sdk = [25])
+    @GraphicsMode(GraphicsMode.Mode.LEGACY)
     @Test fun installerFailureIsReportedAndTheUpdateButtonIsEnabledAgain() = withEngine {
         lateinit var page: AboutPage
         withPage({ AboutPage(it).also { value -> page = value } }) { list ->
@@ -107,6 +108,7 @@ class SettingsTabsTest {
     }
 
     @Config(sdk = [25])
+    @GraphicsMode(GraphicsMode.Mode.LEGACY)
     @Test fun retryingADownloadedUpdateUsesTheSameFileWithoutCheckingTheNetwork() = withEngine {
         lateinit var page: AboutPage
         withPage({ AboutPage(it).also { value -> page = value } }) { list ->
