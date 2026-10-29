@@ -51,6 +51,8 @@ callback. El permiso `RECORD_AUDIO` se conserva para el micrófono que piden las
 scroll de borde, el modo agarrar y el desplazamiento del puntero se envían a la página como rueda y hover de ratón.
 El stick analógico mueve el puntero a velocidad proporcional; el hat del gamepad es su D-pad. «Navegar con los ejes
 del joystick» desactivado apaga solo el stick. Pendiente de validación en Android TV.
+Al salir de un vídeo a pantalla completa la página recupera el modo que tenía antes (puntero o D-pad
+directo); N05 no fuerza el puntero.
 
 **Interfaz solo oscura (2026-10-27, petición del propietario):** el tema de la aplicación es oscuro siempre;
 se retiran el ajuste Tema y la paleta clara. «Oscurecer las páginas web» depende solo de su ajuste

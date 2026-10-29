@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.text.InputType
-import android.util.Base64
 import android.util.Log
 import android.webkit.HttpAuthHandler
 import android.webkit.RenderProcessGoneDetail
@@ -46,7 +45,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
         // window.open(url) loads its first document without shouldOverrideUrlLoading.
-        if (request.isForMainFrame && engine.onPopupNavigation(request.url)) return blocked()
+        if (request.isForMainFrame && engine.onPopupNavigation(request.url)) return BlockedResponses.blocked()
         val page = this.view.currentOriginalUrl
         if (page != null && page.toString().startsWith(Config.HOME_PAGE_URL, ignoreCase = true)) {
             StartPageAssets.shouldInterceptRequest(request)?.let { return it }
@@ -59,8 +58,8 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
             return super.shouldInterceptRequest(view, request)
         }
         this.view.countBlockedAd()
-        engine.adRedirect(request, page)?.let { dataUrlResponse(it, request.requestHeaders) }?.let { return it }
-        return AdblockSurrogates.responseFor(resourceContext, request.url, request.requestHeaders) ?: blocked()
+        engine.adRedirect(request, page)?.let { BlockedResponses.dataUrl(it, request.requestHeaders) }?.let { return it }
+        return AdblockSurrogates.responseFor(resourceContext, request.url, request.requestHeaders) ?: BlockedResponses.blocked()
     }
 
     /** The packaged home page is served from assets/pages/home under its own https address. */
@@ -156,24 +155,5 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
             .setPositiveButton(android.R.string.ok) { _, _ -> handler?.proceed(user.text.toString(), password.text.toString()) }
             .setNegativeButton(android.R.string.cancel) { _, _ -> handler?.cancel() }
             .show()
-    }
-
-    private fun blocked() = WebResourceResponse("text/plain", "utf-8", "".byteInputStream()).apply {
-        setStatusCodeAndReasonPhrase(403, "Blocked")
-    }
-
-    /** A blocked request answered with the filter list's `data:` replacement resource. */
-    private fun dataUrlResponse(dataUrl: String, requestHeaders: Map<String, String>?): WebResourceResponse? {
-        val comma = dataUrl.indexOf(',')
-        if (!dataUrl.startsWith("data:") || comma < 0) return null
-        val header = dataUrl.substring(5, comma)
-        val body = dataUrl.substring(comma + 1)
-        val bytes = try {
-            if (header.endsWith(";base64")) Base64.decode(body, Base64.DEFAULT) else Uri.decode(body).toByteArray()
-        } catch (_: IllegalArgumentException) {
-            return null
-        }
-        val mime = header.substringBefore(';').ifEmpty { "text/plain" }
-        return WebResourceResponse(mime, "utf-8", 200, "OK", AdblockSurrogates.replacementHeaders(requestHeaders), bytes.inputStream())
     }
 }

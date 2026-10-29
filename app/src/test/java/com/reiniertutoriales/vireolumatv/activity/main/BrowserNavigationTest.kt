@@ -328,6 +328,54 @@ class BrowserNavigationTest {
         assertTrue(f.page.hasFocus())
     }
 
+    @Test fun fullscreenExitKeepsDirectDpadNavigation() = Fixture().use { f ->
+        val callback = TabWindow(f.activity, f.tab)
+        val engine = WebViewPageEngine(f.tab).apply { window = callback }
+        WebViewPageEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
+            .set(engine, f.vb.pageContainer)
+        engine.setPointerMode(false)
+        val video = View(f.host.get()).apply { isFocusableInTouchMode = true }
+        engine.enterFullscreen(video)
+        engine.closeFullscreen()
+        assertNull(video.parent)
+        assertFalse("Leaving a video must not switch D-pad navigation back to the pointer",
+            f.vb.pageContainer.pointerEnabled)
+        engine.setPointerMode(true)
+        engine.enterFullscreen(video)
+        engine.closeFullscreen()
+        assertTrue(f.vb.pageContainer.pointerEnabled)
+    }
+
+    @Test fun aLateSecondFullscreenEndChangesNothing() = Fixture().use { f ->
+        val callback = TabWindow(f.activity, f.tab)
+        val engine = WebViewPageEngine(f.tab).apply { window = callback }
+        WebViewPageEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
+            .set(engine, f.vb.pageContainer)
+        engine.setPointerMode(false)
+        engine.enterFullscreen(View(f.host.get()).apply { isFocusableInTouchMode = true })
+        engine.exitFullscreen(restoreBrowserControls = true)
+        f.activity.consumeBack()
+        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
+        // WebView may report the end again (onHideCustomView after the browser closed it).
+        engine.exitFullscreen(restoreBrowserControls = true)
+        assertFalse("A repeated end must not switch D-pad navigation to the pointer", f.vb.pageContainer.pointerEnabled)
+        assertEquals("A repeated end must not reopen the capsule", View.INVISIBLE, f.vb.controlsOverlay.visibility)
+    }
+
+    @Test fun missingWebViewShowsTheDialogBeforeAnyServiceWorkerSetUp() = Fixture().use { f ->
+        val broken = Proxy.newProxyInstance(PageEngine::class.java.classLoader, arrayOf(PageEngine::class.java)) { _, method, _ ->
+            if (method.name == "createView") throw RuntimeException("No WebView provider") else null
+        } as PageEngine
+        val tab = BrowserTab(url = "https://example.test")
+        BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }.set(tab, lazyOf(broken))
+        assertNull(f.activity.createWebView(tab))
+        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+        assertNotNull("The existing no-WebView dialog must be shown", dialog)
+        assertTrue(dialog.isShowing)
+        assertFalse("Nothing may touch the WebView provider after it failed",
+            com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter.installed)
+    }
+
     @Test fun cancelSearchRestoresButtonsAndKeyboardSearchLoadsConfiguredEngine() = Fixture().use { f ->
         f.activity.consumeBack()
         val address = f.vb.controlsRow.findViewById<EditText>(R.id.address_field)

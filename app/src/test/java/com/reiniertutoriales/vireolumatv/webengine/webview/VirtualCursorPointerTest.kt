@@ -134,9 +134,91 @@ class VirtualCursorPointerTest {
         return distance
     }
 
-    @Test fun cursorSpeedDoesNotDependOnTheDeviceFrameRate() {
+    private fun initConfig() {
         val app = org.robolectric.RuntimeEnvironment.getApplication()
         AppContext.init(app, com.reiniertutoriales.vireolumatv.Config(app.getSharedPreferences("cursor-speed-test", 0)))
+    }
+
+    /**
+     * Distance along x after [holdMs] at 60 fps, with [input] called 8 ms after every frame. Input
+     * events arrive between frames on a real device (key repeats, stick samples).
+     */
+    private fun distanceWith(holdMs: Long, start: (PointerController) -> Unit, input: (PointerController, Int) -> Unit): Float {
+        var distance = 0f
+        withCursor { delegate, _, _ ->
+            delegate.init()
+            delegate.cursorPosition.set(10f, 400f)
+            val update = PointerController::class.java.getDeclaredField("pointerTick")
+                .apply { isAccessible = true }.get(delegate) as Runnable
+            start(delegate)
+            var frame = 0
+            val end = SystemClock.uptimeMillis() + holdMs
+            while (SystemClock.uptimeMillis() < end) {
+                ShadowSystemClock.advanceBy(Duration.ofMillis(8))
+                input(delegate, frame++)
+                ShadowSystemClock.advanceBy(Duration.ofMillis(8))
+                update.run()
+            }
+            distance = delegate.cursorPosition.x - 10f
+            delegate.resetInput()
+        }
+        return distance
+    }
+
+    @Test fun keyRepeatsDoNotSlowThePointer() {
+        initConfig()
+        val press = { d: PointerController ->
+            assertTrue(d.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT)))
+        }
+        val steady = distanceWith(600, press) { _, _ -> }
+        // Android repeats a held key about every 50 ms; each repeat must not restart the frame clock.
+        val repeating = distanceWith(600, press) { d, frame ->
+            if (frame % 3 == 2) {
+                val now = SystemClock.uptimeMillis()
+                d.dispatchKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT, frame / 3 + 1))
+            }
+        }
+        assertTrue("The pointer must move: $steady", steady > 100f)
+        assertEquals(steady, repeating, steady * 0.05f)
+    }
+
+    @Test fun stickSamplesDoNotSlowThePointer() {
+        initConfig()
+        val tilt = { d: PointerController -> d.onStick(1f, 0f) }
+        val steady = distanceWith(600, tilt) { _, _ -> }
+        // A gamepad reports the stick continuously; tiny changes must not shorten the next frame.
+        val sampled = distanceWith(600, tilt) { d, frame -> d.onStick(if (frame % 2 == 0) 0.999f else 1f, 0f) }
+        assertTrue("The pointer must move: $steady", steady > 100f)
+        assertEquals(steady, sampled, steady * 0.05f)
+    }
+
+    @Test fun releasingOneOfTwoHeldDirectionsKeepsTheOtherAxisSpeed() {
+        initConfig()
+        withCursor { delegate, _, _ ->
+            delegate.init()
+            delegate.cursorPosition.set(10f, 10f)
+            val update = PointerController::class.java.getDeclaredField("pointerTick")
+                .apply { isAccessible = true }.get(delegate) as Runnable
+            val frame = { ShadowSystemClock.advanceBy(Duration.ofMillis(16)); update.run() }
+            assertTrue(delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT)))
+            assertTrue(delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN)))
+            repeat(15) { frame() }
+            val before = delegate.cursorPosition.x
+            frame()
+            val stepBefore = delegate.cursorPosition.x - before
+            assertTrue(delegate.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN)))
+            val y = delegate.cursorPosition.y
+            val x = delegate.cursorPosition.x
+            frame()
+            assertEquals("Down released: the pointer stops moving down", y, delegate.cursorPosition.y, 0.01f)
+            assertTrue("Right is still held: it must not restart from rest",
+                delegate.cursorPosition.x - x >= stepBefore * 0.95f)
+            delegate.resetInput()
+        }
+    }
+
+    @Test fun cursorSpeedDoesNotDependOnTheDeviceFrameRate() {
+        initConfig()
         val at60fps = distanceWhileHolding(frameMs = 16, holdMs = 400)
         val at30fps = distanceWhileHolding(frameMs = 33, holdMs = 400)
         assertTrue("The cursor must move: $at60fps", at60fps > 50f)

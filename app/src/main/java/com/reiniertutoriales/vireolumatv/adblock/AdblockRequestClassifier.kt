@@ -8,6 +8,17 @@ internal object AdblockRequestClassifier {
     fun pageContext(url: Uri, currentPage: Uri, mainFrame: Boolean): Uri =
         if (mainFrame) url else currentPage
 
+    /**
+     * A service worker's request belongs to no tab: its site is the web Referer (the worker or the
+     * page that started the fetch). Without one the site is unknown (null); guessing would decide
+     * first- or third-party rules wrongly.
+     */
+    fun serviceWorkerContext(headers: Map<String, String>): Uri? {
+        val referer = headers.entries.firstOrNull { it.key.equals("Referer", true) }?.value
+            ?.let(Uri::parse)
+        return referer?.takeIf { (it.scheme == "https" || it.scheme == "http") && !it.host.isNullOrEmpty() }
+    }
+
     fun classify(url: Uri, headers: Map<String, String>, mainFrame: Boolean): String {
         if (mainFrame) return "document"
         fun header(name: String): String? = headers.entries.firstOrNull { it.key.equals(name, true) }?.value

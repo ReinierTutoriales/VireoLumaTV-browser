@@ -35,6 +35,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     internal var window: PageWindow? = null
     private var container: PointerLayout? = null
     private var fullscreenView: View? = null
+    /** The page's pointer mode before fullscreen, restored after it (D-pad mode stays D-pad mode). */
+    private var pointerBeforeFullscreen = true
     /** Pending Android permission requests: code to "is it the location request". */
     private val permissionRequests = HashMap<Int, Pair<Boolean, Long>>()
     internal val bridge = PageBridge(this)
@@ -241,6 +243,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
             (view.parent as? ViewGroup)?.removeView(view)
             return
         }
+        pointerBeforeFullscreen = container?.pointerEnabled ?: true
         window?.onEnterFullscreen()
         webView?.visibility = View.GONE
         webView?.usePointer(false)
@@ -256,12 +259,13 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
      * state and focus in one step, so no separate visibility change can race a later menu transition.
      */
     internal fun exitFullscreen(restoreBrowserControls: Boolean) {
-        val shown = fullscreenView
+        // Idempotent: WebView may report the end of fullscreen after the browser already closed it.
+        val shown = fullscreenView ?: return
         fullscreenView = null
-        (shown?.parent as? ViewGroup)?.removeView(shown)
+        (shown.parent as? ViewGroup)?.removeView(shown)
         webView?.visibility = View.VISIBLE
-        webView?.usePointer(true)
-        container?.pointerEnabled = true
+        webView?.usePointer(pointerBeforeFullscreen)
+        container?.pointerEnabled = pointerBeforeFullscreen
         window?.onExitFullscreen(restoreBrowserControls)
     }
 
@@ -294,3 +298,4 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         }
     }
 }
+
