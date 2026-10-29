@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A tab chip; four fit beside the new-tab control. The open tab is View.isSelected: tinted
+<!-- A tab: the chip opens it, the X after it closes it; both are D-pad stops. The row keeps the tab
+     width, so four still fit beside the new-tab control. The open tab is View.isSelected: tinted
      with the brand color and announced by accessibility services; focus inverts it. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,35 +8,56 @@
     android:layout_height="@dimen/tab_height"
     android:layout_gravity="center_vertical"
     android:layout_marginEnd="@dimen/control_gap"
-    android:background="@drawable/bg_chip"
-    android:defaultFocusHighlightEnabled="false"
-    android:focusable="true"
-    android:focusableInTouchMode="true"
+    android:clipChildren="false"
     android:gravity="center_vertical"
-    android:nextFocusUp="@+id/address_field"
-    android:orientation="horizontal"
-    android:paddingStart="12dp"
-    android:paddingEnd="14dp"
-    android:stateListAnimator="@animator/focus_scale_chip"
-    tools:targetApi="26">
+    android:orientation="horizontal">
 
-    <ImageView
-        android:id="@+id/site_icon"
-        android:duplicateParentState="true"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:contentDescription="@null"
-        android:scaleType="fitCenter"
-        tools:src="@drawable/ic_launcher" />
+    <LinearLayout
+        android:id="@+id/tab_body"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/bg_chip"
+        android:defaultFocusHighlightEnabled="false"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center_vertical"
+        android:nextFocusUp="@+id/address_field"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:stateListAnimator="@animator/focus_scale_chip"
+        tools:targetApi="26">
 
-    <TextView
-        android:id="@+id/title_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:duplicateParentState="true"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAppearance="@style/TextAppearance.Vireo.Label"
-        tools:text="@string/app_name" />
+        <ImageView
+            android:id="@+id/site_icon"
+            android:duplicateParentState="true"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="@null"
+            android:scaleType="fitCenter"
+            tools:src="@drawable/ic_launcher" />
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:duplicateParentState="true"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Vireo.Label"
+            tools:text="@string/app_name" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/close_button"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_width="@dimen/tab_height"
+        android:layout_height="@dimen/tab_height"
+        android:layout_marginStart="4dp"
+        android:contentDescription="@string/menu_close_tab"
+        android:nextFocusUp="@+id/address_field"
+        android:padding="10dp"
+        android:src="@drawable/ic_tab_close" />
 </LinearLayout>

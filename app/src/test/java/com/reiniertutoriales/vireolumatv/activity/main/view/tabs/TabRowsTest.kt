@@ -72,6 +72,40 @@ class TabRowsTest {
         assertTrue(TabChips.Diff(listOf(first), listOf(first)).areItemsTheSame(0, 0))
     }
 
+    @Test fun eachRowHasACloseButtonForItsOwnTab() = withAdapter { adapter, model, parent ->
+        val first = BrowserTab(url = Config.HOME_PAGE_URL, position = 0)
+        val second = BrowserTab(url = Config.HOME_PAGE_URL, position = 1)
+        model.openTabs.add(first)
+        model.openTabs.add(second)
+        adapter.onTabsChanged()
+        val closed = mutableListOf<BrowserTab?>()
+        adapter.listener = object : TabChips.Listener {
+            override fun onTitleChanged(index: Int) {}
+            override fun onTitleSelected(index: Int) {}
+            override fun onAddNewTabSelected() {}
+            override fun closeTab(tabState: BrowserTab?) { closed += tabState }
+            override fun openInNewTab(url: String, tabIndex: Int) {}
+        }
+        val list = androidx.recyclerview.widget.RecyclerView(parent.context).apply {
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context,
+                androidx.recyclerview.widget.RecyclerView.HORIZONTAL, false)
+            this.adapter = adapter
+        }
+        parent.addView(list)
+        list.measure(android.view.View.MeasureSpec.makeMeasureSpec(1600, android.view.View.MeasureSpec.EXACTLY),
+            android.view.View.MeasureSpec.makeMeasureSpec(200, android.view.View.MeasureSpec.EXACTLY))
+        list.layout(0, 0, 1600, 200)
+        val row = list.getChildAt(1)
+        val close = row.findViewById<android.view.View>(R.id.close_button)
+        assertNotNull("Every tab must show its own close button", close)
+        assertTrue("The close button must take D-pad focus", close.isFocusable)
+        val body = row.findViewById<android.view.View>(R.id.tab_body)
+        assertTrue("The close button sits after the tab, so Right reaches it", close.left >= body.right)
+        assertSame("Right from a tab reaches its own close button", close, body.focusSearch(android.view.View.FOCUS_RIGHT))
+        assertTrue(close.performClick())
+        assertEquals(listOf<BrowserTab?>(second), closed)
+    }
+
     private fun withAdapter(test: (TabChips, TabStore, FrameLayout) -> Unit) {
         val app = RuntimeEnvironment.getApplication()
         app.setTheme(R.style.AppTheme)

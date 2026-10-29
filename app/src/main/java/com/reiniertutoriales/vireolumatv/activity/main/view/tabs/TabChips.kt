@@ -15,7 +15,7 @@ import com.reiniertutoriales.vireolumatv.utils.ViewFaviconLoader
 /**
  * Tab rows of the strip. The selected row is the one at [current]; it is derived on every bind, so a
  * recycled row can never keep a stale selection. Focusing a row selects it (preview, contract N06),
- * activating it opens it and a long press asks [onLongPress] for the tab options.
+ * activating it opens it, a long press asks [onLongPress] for the tab options and its X closes it.
  */
 class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Adapter<TabChips.Row>() {
 
@@ -83,6 +83,8 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
     }
 
     inner class Row(view: View) : RecyclerView.ViewHolder(view) {
+        private val body: View = view.findViewById(R.id.tab_body)
+        private val close: View = view.findViewById(R.id.close_button)
         private val title: TextView = view.findViewById(R.id.title_text)
         private val favicon = ViewFaviconLoader(view, view.findViewById<ImageView>(R.id.site_icon))
 
@@ -94,18 +96,21 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
             itemView.isSelected = isCurrent
             title.text = tab.title
             favicon.bind(tab.url)
-            itemView.setOnFocusChangeListener { _, focused ->
+            body.setOnFocusChangeListener { _, focused ->
                 val index = positionOf(tab)
                 if (focused && index != RecyclerView.NO_POSITION && index != selected) {
                     current = index
                     listener?.onTitleChanged(index)
                 }
             }
-            itemView.setOnClickListener {
+            body.setOnClickListener {
                 positionOf(tab).takeIf { it != RecyclerView.NO_POSITION }?.let { listener?.onTitleSelected(it) }
             }
-            itemView.setOnLongClickListener {
+            body.setOnLongClickListener {
                 (positionOf(tab) != RecyclerView.NO_POSITION).also { if (it) onLongPress(tab) }
+            }
+            close.setOnClickListener {
+                if (positionOf(tab) != RecyclerView.NO_POSITION) listener?.closeTab(tab)
             }
         }
 

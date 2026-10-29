@@ -73,6 +73,10 @@ lateral a la derecha con icono por entrada; Atrás lo cierra sin elegir. La vist
 ocupa la pantalla detrás de los controles, sin recortar. Las mismas acciones y el mismo orden de foco
 (N01–N06) se conservan. Pendiente de validación en Android TV.
 
+**Cerrar pestaña con X (2026-10-29, petición del propietario):** cada pestaña de la tira lleva su propio
+botón X a la derecha, dentro de los mismos 188 dp; es una parada de foco con D-pad (Derecha desde la
+pestaña) y cierra esa pestaña igual que «Cerrar pestaña». Pendiente de validación en Android TV.
+
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 
