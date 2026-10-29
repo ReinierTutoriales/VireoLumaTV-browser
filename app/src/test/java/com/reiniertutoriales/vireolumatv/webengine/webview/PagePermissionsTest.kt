@@ -70,4 +70,28 @@ class PagePermissionsTest {
         assertNull(first.granted)
         assertNull("The newer request was not approved yet", second.granted)
     }
+    @Test fun unknownWebViewResourcesAreDeniedInsteadOfBeingGrantedWithTheWholeRequest() {
+        val unknown = Request(arrayOf("android.webkit.resource.FUTURE_CAPABILITY"))
+        permissions.onRequest(unknown)
+        assertTrue(unknown.denied)
+        assertNull(unknown.granted)
+    }
+
+    @Test fun approvedKnownResourcesDoNotAlsoGrantUnknownCapabilities() {
+        shadowOf(activity.application as Application).grantPermissions(Manifest.permission.RECORD_AUDIO)
+        val mixed = Request(arrayOf(PermissionRequest.RESOURCE_AUDIO_CAPTURE, "android.webkit.resource.FUTURE_CAPABILITY"))
+        permissions.onRequest(mixed)
+        allow()
+        assertEquals(listOf(PermissionRequest.RESOURCE_AUDIO_CAPTURE), mixed.granted)
+    }
+
+    @Test fun androidResultsOnlyGrantResourcesThePageActuallyRequested() {
+        val request = Request(arrayOf(PermissionRequest.RESOURCE_AUDIO_CAPTURE))
+        permissions.onRequest(request)
+        allow()
+        permissions.onAndroidPermissionsResult(arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO),
+            intArrayOf(PackageManager.PERMISSION_GRANTED, PackageManager.PERMISSION_GRANTED), false)
+        assertEquals(listOf(PermissionRequest.RESOURCE_AUDIO_CAPTURE), request.granted)
+    }
+
 }

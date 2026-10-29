@@ -33,7 +33,11 @@ internal class PagePermissions(
     fun onRequest(newRequest: PermissionRequest) {
         if (newRequest.resources.toList() == listOf(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID)) {
             // Protected media (DRM video) needs no question: it works when the device has Widevine.
-            if (MediaDrm.isCryptoSchemeSupported(WIDEVINE)) newRequest.grant(newRequest.resources) else newRequest.deny()
+            if (MediaDrm.isCryptoSchemeSupported(WIDEVINE)) newRequest.grant(arrayOf(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID)) else newRequest.deny()
+            return
+        }
+        if (newRequest.resources.none { it in ANDROID_PERMISSION || it == PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID }) {
+            newRequest.deny()
             return
         }
         val activity = activity() ?: return newRequest.deny()
@@ -62,14 +66,15 @@ internal class PagePermissions(
         val grantable = ArrayList<String>()
         for (resource in approved.resources) {
             val android = ANDROID_PERMISSION[resource]
-            if (android != null && ContextCompat.checkSelfPermission(activity, android) != PackageManager.PERMISSION_GRANTED) {
-                missing += android
-            } else {
+            if (android != null) {
+                if (ContextCompat.checkSelfPermission(activity, android) != PackageManager.PERMISSION_GRANTED) missing += android
+                else grantable += resource
+            } else if (resource == PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID && MediaDrm.isCryptoSchemeSupported(WIDEVINE)) {
                 grantable += resource
             }
         }
         if (missing.isEmpty()) {
-            approved.grant(approved.resources)
+            if (grantable.isEmpty()) approved.deny() else approved.grant(grantable.toTypedArray())
             request = null
             return
         }
@@ -124,6 +129,7 @@ internal class PagePermissions(
             .filter { results.getOrNull(it) == PackageManager.PERMISSION_GRANTED }
             .mapNotNull { index -> ANDROID_PERMISSION.entries.firstOrNull { it.value == permissions[index] }?.key }
             .plus(grantableWithoutAndroid.orEmpty())
+            .filter { it in pending.resources }
         grantableWithoutAndroid = null
         if (granted.isEmpty()) pending.deny() else pending.grant(granted.toTypedArray())
         request = null
