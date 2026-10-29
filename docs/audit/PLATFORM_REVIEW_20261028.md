@@ -77,6 +77,8 @@ Revisión adicional del actualizador, publicación, permisos, descargas, interce
 
 Otro fallo de descargas anterior a Android 11: elegir el primer nombre libre no lo reservaba hasta que el worker abría el archivo. Dos tareas con el mismo nombre podían recibir la misma ruta. La reserva usa ahora `createNewFile()` atómico, conserva archivos existentes y elimina la reserva si el executor rechaza la tarea. `DownloadServiceTest` cubre dos tareas esperando antes de cualquier escritura.
 
+Se comprobó también la escritura del historial de descargas: `Transfer.run` insertaba el registro antes del `try/finally`, por lo que una excepción de base de datos dejaba el stream sin liberar y no notificaba fin. La inserción ahora entra en la ruta de fallo y cierre; un fallo de actualización de metadatos se registra sin impedir el cierre y notificación de la transferencia. Tests con triggers SQLite fuerzan ambas excepciones. Esto evita abortar el recorrido; no garantiza que los metadatos se persistan si el almacenamiento sigue fallando.
+
 ### ¿Se puede actualizar como una aplicación Android?
 
 El flujo `generic` consulta manualmente desde Acerca de, elige ABI, verifica la firma ECDSA de los checksums y el SHA-256 del APK, y entrega un URI de solo lectura al instalador del sistema. `google` desactiva este actualizador; `foss` tiene identificador propio. La publicación usa el keystore de release y exige el certificado SHA-256 `7485dc06a3e9b12528679ff8c5f8d06b308300ff454fce8f9f0193e66adf051f`. El workflow indica que esa clave rige desde 1.2.1: no demuestra compatibilidad con instalaciones anteriores firmadas con otra clave ni con APK debug.
