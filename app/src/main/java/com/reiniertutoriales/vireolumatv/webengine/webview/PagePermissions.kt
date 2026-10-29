@@ -21,6 +21,8 @@ internal class PagePermissions(
     private val activity: () -> Activity?,
     private val requestAndroid: (permissions: Array<String>, location: Boolean) -> Unit,
 ) {
+    internal var generation = 0L
+        private set
     private var dialog: AlertDialog? = null
     private var request: PermissionRequest? = null
     /** Resources of [request] the app may grant without asking Android, waiting with it. */
@@ -31,14 +33,17 @@ internal class PagePermissions(
     private var locationCallback: GeolocationPermissions.Callback? = null
 
     fun onRequest(newRequest: PermissionRequest) {
+        invalidatePending()
         if (newRequest.resources.toList() == listOf(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID)) {
             // Protected media (DRM video) needs no question: it works when the device has Widevine.
-            if (MediaDrm.isCryptoSchemeSupported(WIDEVINE)) newRequest.grant(newRequest.resources) else newRequest.deny()
+            if (MediaDrm.isCryptoSchemeSupported(WIDEVINE)) newRequest.grant(arrayOf(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID)) else newRequest.deny()
+            return
+        }
+        if (newRequest.resources.none { it in ANDROID_PERMISSION || it == PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID }) {
+            newRequest.deny()
             return
         }
         val activity = activity() ?: return newRequest.deny()
-        forgetPageRequest()
-        request?.deny()
         request = newRequest
         dialog = AlertDialog.Builder(activity)
             .setMessage(activity.getString(R.string.permission_request, newRequest.resources.joinToString("\n")))
@@ -62,14 +67,15 @@ internal class PagePermissions(
         val grantable = ArrayList<String>()
         for (resource in approved.resources) {
             val android = ANDROID_PERMISSION[resource]
-            if (android != null && ContextCompat.checkSelfPermission(activity, android) != PackageManager.PERMISSION_GRANTED) {
-                missing += android
-            } else {
+            if (android != null) {
+                if (ContextCompat.checkSelfPermission(activity, android) != PackageManager.PERMISSION_GRANTED) missing += android
+                else grantable += resource
+            } else if (resource == PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID && MediaDrm.isCryptoSchemeSupported(WIDEVINE)) {
                 grantable += resource
             }
         }
         if (missing.isEmpty()) {
-            approved.grant(approved.resources)
+            if (grantable.isEmpty()) approved.deny() else approved.grant(grantable.toTypedArray())
             request = null
             return
         }
@@ -80,11 +86,13 @@ internal class PagePermissions(
 
     fun onCanceled(canceled: PermissionRequest) {
         if (request !== canceled) return
+        generation++
         forgetPageRequest()
         request = null
     }
 
     fun onLocationPrompt(origin: String, callback: GeolocationPermissions.Callback) {
+        invalidatePending()
         // The page waits for an answer, so one is always given.
         val activity = activity() ?: return callback.invoke(origin, false, false)
         locationOrigin = origin
@@ -109,13 +117,15 @@ internal class PagePermissions(
     }
 
     fun onLocationPromptHidden() {
+        generation++
         dialog?.dismiss()
         dialog = null
         locationCallback = null
     }
 
     /** Android's answer to [requestAndroid]: grants what the user and the system allowed. */
-    fun onAndroidPermissionsResult(permissions: Array<String>, results: IntArray, location: Boolean) {
+    fun onAndroidPermissionsResult(permissions: Array<String>, results: IntArray, location: Boolean, ownerGeneration: Long) {
+        if (ownerGeneration != generation) return
         if (location) return answerLocation(results.firstOrNull() == PackageManager.PERMISSION_GRANTED)
         val pending = waitingForAndroid ?: return
         waitingForAndroid = null
@@ -124,6 +134,7 @@ internal class PagePermissions(
             .filter { results.getOrNull(it) == PackageManager.PERMISSION_GRANTED }
             .mapNotNull { index -> ANDROID_PERMISSION.entries.firstOrNull { it.value == permissions[index] }?.key }
             .plus(grantableWithoutAndroid.orEmpty())
+            .filter { it in pending.resources }
         grantableWithoutAndroid = null
         if (granted.isEmpty()) pending.deny() else pending.grant(granted.toTypedArray())
         request = null
@@ -133,6 +144,16 @@ internal class PagePermissions(
         locationCallback?.invoke(locationOrigin, allow, allow)
         locationCallback = null
         locationOrigin = null
+    }
+
+    fun destroy() = invalidatePending()
+
+    private fun invalidatePending() {
+        generation++
+        forgetPageRequest()
+        request?.deny()
+        request = null
+        answerLocation(false)
     }
 
     private fun forgetPageRequest() {

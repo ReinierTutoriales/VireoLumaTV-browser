@@ -23,7 +23,10 @@ import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
 import com.reiniertutoriales.vireolumatv.utils.FileNames
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import java.io.File
-import java.util.concurrent.Executors
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 /**
  * Runs downloads on two worker threads while the browser is bound to it, as a dataSync foreground
@@ -33,7 +36,7 @@ import java.util.concurrent.Executors
 open class DownloadService : Service() {
     private lateinit var model: RunningDownloads
     private lateinit var notifications: NotificationManager
-    private val executor = Executors.newFixedThreadPool(2)
+    private val executor = ThreadPoolExecutor(2, 2, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue<Runnable>(4))
     private val main = Handler(Looper.getMainLooper())
     private val notification by lazy {
         NotificationCompat.Builder(this, VireoLumaTVApp.DOWNLOAD_CHANNEL)
@@ -100,8 +103,12 @@ open class DownloadService : Service() {
         stopSelf()
     }
 
-    fun startDownload(download: Download) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !reserveLegacyFile(download)) return
+    fun startDownload(download: Download): Boolean {
+        if (model.runningDownloads.size >= MAX_OUTSTANDING) return reject(download)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !reserveLegacyFile(download)) {
+            download.discardPayload()
+            return false
+        }
         download.time = System.currentTimeMillis()
         val task = when {
             download.base64BlobData != null -> BlobTransfer(download, download.base64BlobData!!, transferListener)
@@ -109,9 +116,23 @@ open class DownloadService : Service() {
             else -> FileTransfer(download, download.userAgent, transferListener)
         }
         model.runningDownloads.add(task)
-        executor.execute(task)
+        try {
+            executor.execute(task)
+        } catch (_: RejectedExecutionException) {
+            model.runningDownloads.remove(task)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) File(download.filepath).delete()
+            return reject(download)
+        }
         startService(Intent(this, javaClass))
         startForeground(DOWNLOAD_NOTIFICATION, buildNotification())
+        return true
+    }
+
+    private fun reject(download: Download): Boolean {
+        download.cancelled = true
+        download.discardPayload()
+        Toast.makeText(this, R.string.download_queue_full, Toast.LENGTH_SHORT).show()
+        return false
     }
 
     /** Before Android 11 the file goes straight into the public Downloads folder, under a free name. */
@@ -127,7 +148,12 @@ open class DownloadService : Service() {
             return false
         }
         // The name becomes part of a path: it must never leave the Downloads folder.
-        val file = freeFile(folder, FileNames.sanitizeFileName(download.filename) ?: "downloadfile")
+        val file = try {
+            reserveFile(folder, FileNames.sanitizeFileName(download.filename) ?: "downloadfile")
+        } catch (_: java.io.IOException) {
+            Toast.makeText(this, R.string.download_folder_error, Toast.LENGTH_SHORT).show()
+            return false
+        }
         download.filename = file.name
         download.filepath = file.absolutePath
         return true
@@ -169,12 +195,22 @@ open class DownloadService : Service() {
     class Binder(val service: DownloadService) : android.os.Binder()
 
     companion object {
+        // Two active transfers plus four waiting tasks; this is an admission bound, not a RAM budget.
+        internal const val MAX_OUTSTANDING = 6
         const val TAG = "DownloadService"
         const val DOWNLOAD_NOTIFICATION = 101101
         private const val PROGRESS_INTERVAL_MS = 100L
 
         fun intent(context: Context, incognito: Boolean): Intent = Intent(context,
             if (incognito) IncognitoDownloadService::class.java else DownloadService::class.java)
+
+        /** Atomically claim a legacy output, including while its task is still waiting. */
+        internal fun reserveFile(folder: File, name: String): File {
+            while (true) {
+                val candidate = freeFile(folder, name)
+                if (candidate.createNewFile()) return candidate
+            }
+        }
 
         /** [name] in [folder], or "name_(n).ext" with the first free n; a leading dot is not an extension. */
         internal fun freeFile(folder: File, name: String): File {

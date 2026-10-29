@@ -34,6 +34,40 @@ class ReleaseUpdaterTest {
         ReleaseUpdater.checksumFor("aaa111  other.apk", "VireoLumaTV-1.2.0-arm64-v8a.apk")
     }
 
+    @Test fun interruptedUpdateDeletesPartialApkAndClosesItsInput() {
+        val target = kotlin.io.path.createTempFile(suffix = ".apk").toFile()
+        var closed = false
+        var reads = 0
+        val input = object : java.io.InputStream() {
+            override fun read(): Int = if (reads++ < 10) 42 else throw IOException("connection lost")
+            override fun close() { closed = true }
+        }
+        try {
+            try {
+                ReleaseUpdater.saveVerified(input, target, "unused")
+                fail("Interrupted updates must fail")
+            } catch (_: IOException) { }
+            assertFalse("An interrupted APK must not remain installable", target.exists())
+            assertTrue(closed)
+        } finally { target.delete() }
+    }
+
+    @Test fun onlyChecksumVerifiedUpdatesAreKept() {
+        val target = kotlin.io.path.createTempFile(suffix = ".apk").toFile()
+        val bytes = "verified APK payload".toByteArray()
+        val digest = java.security.MessageDigest.getInstance("SHA-256").digest(bytes)
+            .joinToString("") { "%02x".format(it) }
+        try {
+            assertEquals(target, ReleaseUpdater.saveVerified(bytes.inputStream(), target, digest))
+            assertArrayEquals(bytes, target.readBytes())
+            try {
+                ReleaseUpdater.saveVerified(bytes.inputStream(), target, "wrong")
+                fail("An altered update must fail")
+            } catch (_: IOException) { }
+            assertFalse(target.exists())
+        } finally { target.delete() }
+    }
+
     private fun keyPair() = KeyPairGenerator.getInstance("EC").apply {
         initialize(ECGenParameterSpec("secp256r1"))
     }.generateKeyPair()

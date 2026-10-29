@@ -57,6 +57,13 @@ class Download() {
         this.size = size
     }
 
+    /** Releases payloads which were rejected or abandoned before a worker took ownership. */
+    internal fun discardPayload() {
+        try { stream?.close() } catch (_: java.io.IOException) { }
+        stream = null
+        base64BlobData = null
+    }
+
     /** The same download: the same object, or the same stored row (a history copy of a running one). */
     fun matches(other: Download?): Boolean = other != null && (this === other || (id != 0L && id == other.id))
 
