@@ -54,10 +54,42 @@ class ServiceWorkerFilterTest {
         assertEquals(1, rules.asked.size)
     }
 
-    @Test fun withoutAReferrerTheRequestIsItsOwnSite() {
+    @Test fun withoutAReferrerTheSiteIsUnknownAndNothingIsGuessed() {
         val rules = Rules()
-        filter(rules).shouldInterceptRequest(Request("https://ads.example/pixel", emptyMap()))
-        assertEquals("https://ads.example/pixel", rules.asked.single().third)
+        assertNull(filter(rules).shouldInterceptRequest(Request("https://ads.example/pixel", emptyMap())))
+        assertEquals(0, rules.asked.size)
+        assertEquals(0, rules.sites.size)
+    }
+
+    /** The real engine: party-dependent rules see the worker's site, never the request itself. */
+    @Test fun thirdPartyRulesUseTheWorkersSite() {
+        val engine = com.reiniertutoriales.vireolumatv.adblock.RustAdBlockEngine {
+            com.reiniertutoriales.vireolumatv.adblock.AdblockResources.json(RuntimeEnvironment.getApplication())
+        }
+        val blocker = engine.compile("||tracker.example^${'$'}third-party")!!
+        try {
+            val rules = object : ServiceWorkerFilter.Policy {
+                override fun blocksAds(site: Uri) = true
+                override fun isAd(url: Uri, type: String?, site: Uri) =
+                    blocker.check(url, type, site) != com.reiniertutoriales.vireolumatv.adblock.ContentBlocker.ALLOW
+                override fun redirect(url: Uri, type: String?, site: Uri): String? = null
+            }
+            val sw = filter(rules)
+            assertNotNull("Third-party tracker fetched by another site's worker",
+                sw.shouldInterceptRequest(Request("https://tracker.example/t.js", mapOf("Referer" to "https://video.example/sw.js"))))
+            assertNull("The tracker's own worker is first-party",
+                sw.shouldInterceptRequest(Request("https://tracker.example/t.js", mapOf("Referer" to "https://tracker.example/sw.js"))))
+            assertNull("Without a site the rule is not applied as if first- or third-party",
+                sw.shouldInterceptRequest(Request("https://tracker.example/t.js", emptyMap())))
+        } finally { blocker.release() }
+    }
+
+    @Test fun theShownTabsChoiceAppliesOnlyToItsSite() {
+        val shown = ServiceWorkerFilter.ShownSite("video.example", false)
+        assertEquals(false, shown.blocks(Uri.parse("https://VIDEO.example/sw.js"), byDefault = true))
+        assertEquals(true, shown.blocks(Uri.parse("https://other.example/sw.js"), byDefault = true))
+        assertEquals(true, ServiceWorkerFilter.ShownSite("video.example", null).blocks(Uri.parse("https://video.example/"), true))
+        assertEquals(false, ServiceWorkerFilter.ShownSite.NONE.blocks(Uri.parse("https://video.example/"), false))
     }
 
     @Test fun aSiteWithBlockingOffAndAClosedWindowLetEverythingThrough() {

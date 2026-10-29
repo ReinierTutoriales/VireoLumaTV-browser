@@ -133,6 +133,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
             if (tab.url != url) {
                 tab.url = url
                 vb.tabStrip.onFavIconUpdated(tab)
+                if (isShownTab) browser.publishShownSite()
             }
         }
         if (browser.tabAtStripSelection() === tab) vb.controlsRow.showAddress(tab.url)

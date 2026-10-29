@@ -123,7 +123,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         WebViewPageEngine.hiddenSelectorsProvider = { url, classes, ids -> filters.hiddenSelectors(url, classes, ids) }
         tabStore = ScreenModels.get(TabStore::class, this)
         ServiceWorkerFilter.policy = serviceWorkerPolicy
-        ServiceWorkerFilter.install(this)
         mainThread = Handler(Looper.getMainLooper())
         vb = BrowserWindowBinding.inflate(layoutInflater)
         setContentView(vb.root)
@@ -145,6 +144,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         }
         tabStore.currentTab.observe(this) { tab ->
             vb.controlsRow.showAddress(tab?.url.orEmpty())
+            publishShownSite()
             tab?.let(::onPageViewChanged)
         }
         adBlocker.listLoading.observe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
@@ -235,13 +235,19 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         super.onPause()
     }
 
+    /** The shown tab's blocker choice for service workers; replaced whole on the main thread. */
+    @Volatile private var shownSite = ServiceWorkerFilter.ShownSite.NONE
+
+    /** Call on the main thread whenever the shown tab, its address or its blocker choice changes. */
+    internal fun publishShownSite() {
+        val tab = tabStore.currentTab.value
+        shownSite = ServiceWorkerFilter.ShownSite(tab?.url?.toUri()?.host, tab?.adblock)
+    }
+
     /** Service workers belong to no tab: the shown tab's choice applies to its own site, else the setting. */
-    private val serviceWorkerPolicy = object : ServiceWorkerFilter.Policy {
-        override fun blocksAds(site: Uri): Boolean {
-            val tab = tabStore.currentTab.value
-            val sameSite = tab != null && tab.url.toUri().host.equals(site.host, ignoreCase = true)
-            return (if (sameSite) tab?.adblock else null) ?: config.adBlockEnabled
-        }
+    @VisibleForTesting
+    internal val serviceWorkerPolicy = object : ServiceWorkerFilter.Policy {
+        override fun blocksAds(site: Uri): Boolean = shownSite.blocks(site, config.adBlockEnabled)
         override fun isAd(url: Uri, type: String?, site: Uri) = adBlocker.isAd(url, type, site)
         override fun redirect(url: Uri, type: String?, site: Uri) = adBlocker.redirectFor(url, type, site)
     }
@@ -411,6 +417,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             return
         }
         tab.url = url
+        publishShownSite()
         tab.engine.load(url)
     }
 
@@ -499,6 +506,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             showNoWebViewDialog()
             return null
         }
+        // The provider is ready once a WebView exists; registering earlier could fail before the dialog above.
+        ServiceWorkerFilter.install(this)
         config.userAgentOverride.value?.let { tab.engine.userAgent = it }
         return view
     }
@@ -521,6 +530,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     /** The capsule follows the shown tab: Back and Forward availability and the blocker shield. */
     internal fun onPageViewChanged(tab: BrowserTab) {
+        if (tab === tabStore.currentTab.value) publishShownSite()
         vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
         vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
         val blocking = tab.adblock ?: config.adBlockEnabled

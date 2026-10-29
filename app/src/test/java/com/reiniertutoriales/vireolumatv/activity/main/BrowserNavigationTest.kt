@@ -362,6 +362,20 @@ class BrowserNavigationTest {
         assertEquals("A repeated end must not reopen the capsule", View.INVISIBLE, f.vb.controlsOverlay.visibility)
     }
 
+    @Test fun missingWebViewShowsTheDialogBeforeAnyServiceWorkerSetUp() = Fixture().use { f ->
+        val broken = Proxy.newProxyInstance(PageEngine::class.java.classLoader, arrayOf(PageEngine::class.java)) { _, method, _ ->
+            if (method.name == "createView") throw RuntimeException("No WebView provider") else null
+        } as PageEngine
+        val tab = BrowserTab(url = "https://example.test")
+        BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }.set(tab, lazyOf(broken))
+        assertNull(f.activity.createWebView(tab))
+        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
+        assertNotNull("The existing no-WebView dialog must be shown", dialog)
+        assertTrue(dialog.isShowing)
+        assertFalse("Nothing may touch the WebView provider after it failed",
+            com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter.installed)
+    }
+
     @Test fun cancelSearchRestoresButtonsAndKeyboardSearchLoadsConfiguredEngine() = Fixture().use { f ->
         f.activity.consumeBack()
         val address = f.vb.controlsRow.findViewById<EditText>(R.id.address_field)

@@ -58,7 +58,8 @@ class Config(val prefs: SharedPreferences) {
     val userAgentOverride = OptionalStringPreference("user_agent")
 
     /** Read on every request, so it is kept in memory as well. */
-    var adBlockEnabled: Boolean = prefs.getBoolean(BLOCKER_ENABLED_KEY, true)
+    // Read by WebView worker threads when they decide on ads.
+    @Volatile var adBlockEnabled: Boolean = prefs.getBoolean(BLOCKER_ENABLED_KEY, true)
         set(value) {
             field = value
             prefs.edit { putBoolean(BLOCKER_ENABLED_KEY, value) }
