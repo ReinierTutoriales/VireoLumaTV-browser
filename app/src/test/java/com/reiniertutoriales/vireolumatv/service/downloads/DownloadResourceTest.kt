@@ -130,7 +130,7 @@ class DownloadResourceTest {
             assertEquals(42L, info.size)
         } finally {
             sql.execSQL("DROP TRIGGER IF EXISTS reject_test_update")
-            executor.submit { db.downloadDao().delete(info) }.get(5, java.util.concurrent.TimeUnit.SECONDS)
+            executor.submit { kotlinx.coroutines.runBlocking { db.downloadDao().delete(info) } }.get(5, java.util.concurrent.TimeUnit.SECONDS)
             executor.shutdownNow()
         }
     }
