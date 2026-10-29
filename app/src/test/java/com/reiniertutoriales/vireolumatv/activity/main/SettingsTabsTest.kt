@@ -80,6 +80,55 @@ class SettingsTabsTest {
         assertEquals(listOf("rowProjectSource", "rowLicense", "rowPrivacyPolicy", "btnCheckUpdate"), names)
     } }
 
+    @Config(sdk = [25])
+    @Test fun installerFailureIsReportedAndTheUpdateButtonIsEnabledAgain() = withEngine {
+        lateinit var page: AboutPage
+        withPage({ AboutPage(it).also { value -> page = value } }) { list ->
+            val apk = java.io.File(list.context.cacheDir, "updates/test.apk").apply {
+                parentFile!!.mkdirs(); writeText("test")
+            }
+            val unavailableInstaller = object : android.content.ContextWrapper(list.context) {
+                override fun startActivity(intent: android.content.Intent) {
+                    throw android.content.ActivityNotFoundException("No installer")
+                }
+            }
+            val work: suspend () -> Unit = {
+                com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater.install(unavailableInstaller, apk)
+            }
+            try {
+                AboutPage::class.java.getDeclaredMethod("whileUpdating", kotlin.jvm.functions.Function1::class.java)
+                    .apply { isAccessible = true }.invoke(page, work)
+                org.robolectric.shadows.ShadowLooper.idleMainLooper()
+                assertEquals(list.context.getString(R.string.update_failed),
+                    org.robolectric.shadows.ShadowToast.getTextOfLatestToast())
+                assertTrue(list.findViewById<View>(R.id.btnCheckUpdate).isEnabled)
+            } finally { apk.delete() }
+        }
+    }
+
+    @Config(sdk = [25])
+    @Test fun retryingADownloadedUpdateUsesTheSameFileWithoutCheckingTheNetwork() = withEngine {
+        lateinit var page: AboutPage
+        withPage({ AboutPage(it).also { value -> page = value } }) { list ->
+            val apk = java.io.File(list.context.cacheDir, "updates/retry.apk").apply {
+                parentFile!!.mkdirs(); writeText("verified by download before it reaches this state")
+            }
+            try {
+                AboutPage::class.java.getDeclaredField("pendingUpdate").apply { isAccessible = true }.set(page, apk)
+                list.findViewById<View>(R.id.btnCheckUpdate).performClick()
+                org.robolectric.shadows.ShadowLooper.idleMainLooper()
+                val intent = org.robolectric.Shadows.shadowOf(org.robolectric.RuntimeEnvironment.getApplication())
+                    .nextStartedActivity
+                assertEquals(android.content.Intent.ACTION_VIEW, intent.action)
+                assertEquals("application/vnd.android.package-archive", intent.type)
+                assertEquals("content", intent.data!!.scheme)
+                assertTrue(intent.flags and android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION != 0)
+                assertTrue(apk.exists())
+                assertTrue(list.findViewById<View>(R.id.btnCheckUpdate).isEnabled)
+            } finally { apk.delete() }
+        }
+    }
+
     @Test fun shortcutsPageShowsOneReachableRowPerShortcut() = withPage({ ShortcutsPage(it) }) { list ->
         val order = downOrder(list)
         assertEquals(RemoteShortcut.entries.size, order.size)
