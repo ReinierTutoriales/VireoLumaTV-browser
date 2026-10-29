@@ -93,7 +93,7 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
             itemView.tag = tab
             itemView.isSelected = isCurrent
             itemView.findViewById<View>(R.id.close_tab_button).setOnClickListener {
-                if (this.tab === tab && positionOf(tab) != RecyclerView.NO_POSITION) listener?.closeTab(tab)
+                if (this.tab === tab && shown.any { it === tab }) listener?.closeTab(tab)
             }
             title.text = tab.title
             favicon.bind(tab.url)
