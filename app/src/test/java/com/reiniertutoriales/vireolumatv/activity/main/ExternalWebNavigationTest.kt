@@ -48,4 +48,30 @@ class ExternalWebNavigationTest {
         assertEquals("https", intent!!.scheme)
         assertTrue(intent.categories.contains(Intent.CATEGORY_BROWSABLE))
     }
+    @Test fun pageSelectedComponentsSelectorsAndUriGrantsAreRemoved() {
+        val input = "intent://example.com/path#Intent;scheme=https;" +
+            "component=com.other/.ExportedActivity;launchFlags=0xc3;" +
+            "S.browser_fallback_url=https%3A%2F%2Ffallback.test%2F;" +
+            "SEL;component=com.other/.SelectorActivity;end"
+        val parsed = requireNotNull(ExternalWebNavigation.parseIntentUrl(input))
+        assertEquals(null, parsed.component)
+        assertEquals(null, parsed.selector)
+        assertEquals(0, parsed.flags and (Intent.FLAG_GRANT_READ_URI_PERMISSION or
+            Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
+            Intent.FLAG_GRANT_PREFIX_URI_PERMISSION))
+        assertEquals(null, parsed.clipData)
+        assertTrue(parsed.hasCategory(Intent.CATEGORY_BROWSABLE))
+        assertEquals("https://example.com/path", parsed.dataString)
+    }
+
+    @Test fun packageScopedDeepLinksKeepTheirDataAndBenignExtras() {
+        val parsed = requireNotNull(ExternalWebNavigation.parseIntentUrl(
+            "intent://watch/video#Intent;scheme=videoapp;package=com.video.player;S.source=browser;end"))
+        assertEquals("com.video.player", parsed.`package`)
+        assertEquals("videoapp://watch/video", parsed.dataString)
+        assertEquals("browser", parsed.getStringExtra("source"))
+        assertEquals(Intent.ACTION_VIEW, parsed.action)
+        assertTrue(parsed.hasCategory(Intent.CATEGORY_BROWSABLE))
+    }
+
 }

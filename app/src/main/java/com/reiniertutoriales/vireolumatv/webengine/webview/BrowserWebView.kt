@@ -90,6 +90,10 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         displayZoomControls = false
         allowContentAccess = false
         cacheMode = WebSettings.LOAD_DEFAULT
+        // Visible rows already load icons through ViewFaviconLoader with their own bounded cache.
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOWNLOAD_FAVICONS_ENABLED)) {
+            WebSettingsCompat.setDownloadFaviconsEnabled(this, false)
+        }
         mediaPlaybackRequiresUserGesture = !config.allowAutoplayMedia
         setGeolocationEnabled(true)
         // New windows only through onCreateWindow, where the pop-up rules apply.

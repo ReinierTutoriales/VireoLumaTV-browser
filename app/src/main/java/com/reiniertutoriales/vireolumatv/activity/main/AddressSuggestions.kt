@@ -22,18 +22,23 @@ object AddressSuggestions {
         if (query.isEmpty()) return emptyList()
         val seen = HashSet<String>()
         val result = ArrayList<AddressSuggestion>(MAX)
-        fun take(candidates: List<AddressSuggestion>) {
-            for (candidate in candidates.sortedBy { strength(query, it) }) {
-                if (result.size == MAX) return
-                if (strength(query, candidate) < NO_MATCH && seen.add(key(candidate.url))) result += candidate
+        // Three fixed priority passes preserve stable order without sorting or materializing
+        // a second list of every bookmark. Only the (at most six) selected rows are constructed.
+        fun <T> take(items: List<T>, bookmark: Boolean, titleOf: (T) -> String?, urlOf: (T) -> String?) {
+            for (priority in 0 until NO_MATCH) {
+                for (item in items) {
+                    if (result.size == MAX) return
+                    val url = urlOf(item) ?: continue
+                    if (!bookmark && url.isBlank()) continue
+                    val title = titleOf(item)?.takeIf { it.isNotBlank() } ?: url
+                    if (strength(query, title, url) == priority && seen.add(key(url))) {
+                        result += AddressSuggestion(title, url, bookmark)
+                    }
+                }
             }
         }
-        take(bookmarks.mapNotNull { item ->
-            item.url?.let { AddressSuggestion(item.title?.takeIf { it.isNotBlank() } ?: it, it, bookmark = true) }
-        })
-        take(history.mapNotNull { item ->
-            item.url.takeIf { it.isNotBlank() }?.let { AddressSuggestion(item.title.ifBlank { it }, it, bookmark = false) }
-        })
+        take(bookmarks, true, { it.title }, { it.url })
+        take(history, false, { it.title }, { it.url })
         return result
     }
 
@@ -49,13 +54,13 @@ object AddressSuggestions {
 
     private const val NO_MATCH = 3
 
-    private fun strength(query: String, suggestion: AddressSuggestion): Int {
-        val host = hostOf(suggestion.url)
+    private fun strength(query: String, title: String, url: String): Int {
+        val host = hostOf(url)
         return when {
             host.startsWith(query) -> 0
-            suggestion.title.lowercase(Locale.ROOT).startsWith(query) -> 1
-            suggestion.url.lowercase(Locale.ROOT).contains(query) ||
-                suggestion.title.lowercase(Locale.ROOT).contains(query) -> 2
+            title.lowercase(Locale.ROOT).startsWith(query) -> 1
+            url.lowercase(Locale.ROOT).contains(query) ||
+                title.lowercase(Locale.ROOT).contains(query) -> 2
             else -> NO_MATCH
         }
     }

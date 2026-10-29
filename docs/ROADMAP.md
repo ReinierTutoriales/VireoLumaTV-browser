@@ -200,7 +200,7 @@ Solo se adopta si mejora de forma medible a `ad-block 0.0.4` sin superar el pres
 de memoria del onn. Licencia MPL-2.0.
 
 Estado: adoptado en la versión 1.1.0 (F4, F5 y F6 integradas en `fixes/audit`). Capa JNI en `native/adblock-jni` (adblock 0.13.3, jni 0.22),
-compilada por Gradle con el NDK 28.2 para `arm64-v8a`, `armeabi-v7a` y `x86_64`; los tests de
+compilada por Gradle con el NDK r30 (`30.0.16248370`) para `arm64-v8a`, `armeabi-v7a` y `x86_64`; los tests de
 JVM cargan una compilación de host del mismo motor. Medido en x86_64 con las mismas listas y
 URLs (pendiente repetir en el onn). En Chromium con sitios reales y el mismo motor: 98/100 en
 adblock-tester.com.
@@ -275,7 +275,7 @@ Opciones: conservar el historial por trazabilidad, o construir una rama limpia p
 | Favicons | `readTimeout` es por lectura, no un límite total; pico transitorio de hasta ~2× el icono |
 | Adblock | Al cambiar la URL personalizada, la caché anterior se elimina tras guardar una nueva generación compilada; si esa escritura falla, la caché antigua puede permanecer hasta el próximo éxito. |
 | Escritura atómica | Sin `fsync`: protege frente a `lmkd`, no frente a un corte de luz |
-| `intent:` de una página | Se abren sin confirmación, a diferencia de otros esquemas externos (`askUserAndOpenInExternalApp`); decidir si pedir confirmación |
+| `intent:` de una página | Piden confirmación; `ExternalWebNavigation` elimina componente, selector y permisos de URI antes de resolver el destino. La validación física sigue pendiente |
 | `androidx.webkit` | 1.18.0 adoptada en la auditoría (compila y pasa tests); validar el WebView en el onn |
 | Robolectric | 4.17 con targetSdk 37 en JDK 21. Los tests de `FaviconExtractorTest` fijan SDK 28 porque no necesitan APIs nuevas |
 | targetSdk 37 | Subido en 1.1.1. Lint sin errores; el comportamiento en ejecución (bordes de pantalla, permisos) solo se valida en el onn |

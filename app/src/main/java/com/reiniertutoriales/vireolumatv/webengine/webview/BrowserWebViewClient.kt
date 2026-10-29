@@ -29,6 +29,8 @@ import java.net.URLConnection
  * ad blocking, page lifecycle, certificate errors and HTTP authentication.
  */
 internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewClient() {
+    // Capture on construction; request interception runs off the WebView UI thread.
+    private val resourceContext = view.context.applicationContext
     private val window get() = view.window
     private val engine get() = view.engine
 
@@ -50,7 +52,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
             StartPageAssets.shouldInterceptRequest(request)?.let { return it }
             val address = request.url.toString()
             if (address.startsWith(Config.HOME_PAGE_URL)) {
-                return homePageAsset(view, address) ?: super.shouldInterceptRequest(view, request)
+                return homePageAsset(address) ?: super.shouldInterceptRequest(view, request)
             }
         }
         if (page == null || window?.blocksAds != true || !engine.isAd(request, page)) {
@@ -58,15 +60,15 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
         }
         this.view.countBlockedAd()
         engine.adRedirect(request, page)?.let { dataUrlResponse(it, request.requestHeaders) }?.let { return it }
-        return AdblockSurrogates.responseFor(view.context, request.url, request.requestHeaders) ?: blocked()
+        return AdblockSurrogates.responseFor(resourceContext, request.url, request.requestHeaders) ?: blocked()
     }
 
     /** The packaged home page is served from assets/pages/home under its own https address. */
-    private fun homePageAsset(view: WebView, address: String): WebResourceResponse? {
+    private fun homePageAsset(address: String): WebResourceResponse? {
         val relative = address.substring(Config.HOME_PAGE_URL.length).takeUnless { it.isEmpty() || it == "/" } ?: "index.html"
         val path = "pages/home/$relative"
         return try {
-            WebResourceResponse(URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream", "UTF-8", view.context.assets.open(path))
+            WebResourceResponse(URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream", "UTF-8", resourceContext.assets.open(path))
         } catch (_: IOException) {
             Log.w(BrowserWebView.TAG, "Home page asset not found: $path")
             null

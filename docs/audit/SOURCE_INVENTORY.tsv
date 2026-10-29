@@ -429,6 +429,9 @@ scripts/test-webview-controls.cjs	PROPIO
 scripts/test-window-open-decoy.cjs	PROPIO
 scripts/test-youtube-adblock.cjs	PROPIO
 settings.gradle.kts	REESCRITO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/WindowBackgroundTest.kt	PROPIO
+docs/audit/PLATFORM_REVIEW_20261028.md	PROPIO
+scripts/measure-tv.py	PROPIO
 app/src/test/resources/adblock/0.13.3.dat	REGENERADO
 app/src/test/resources/adblock/README.md	PROPIO
 native/adblock-jni/examples/export_cache_fixture.rs	PROPIO
