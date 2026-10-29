@@ -35,6 +35,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     internal var window: PageWindow? = null
     private var container: PointerLayout? = null
     private var fullscreenView: View? = null
+    /** The page's pointer mode before fullscreen, restored after it (D-pad mode stays D-pad mode). */
+    private var pointerBeforeFullscreen = true
     /** Pending Android permission requests: code to "is it the location request". */
     private val permissionRequests = HashMap<Int, Boolean>()
     internal val bridge = PageBridge(this)
@@ -240,6 +242,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
             (view.parent as? ViewGroup)?.removeView(view)
             return
         }
+        pointerBeforeFullscreen = container?.pointerEnabled ?: true
         window?.onEnterFullscreen()
         webView?.visibility = View.GONE
         webView?.usePointer(false)
@@ -258,9 +261,10 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         val shown = fullscreenView
         fullscreenView = null
         (shown?.parent as? ViewGroup)?.removeView(shown)
+        val pointer = if (shown != null) pointerBeforeFullscreen else true
         webView?.visibility = View.VISIBLE
-        webView?.usePointer(true)
-        container?.pointerEnabled = true
+        webView?.usePointer(pointer)
+        container?.pointerEnabled = pointer
         window?.onExitFullscreen(restoreBrowserControls)
     }
 

@@ -328,6 +328,24 @@ class BrowserNavigationTest {
         assertTrue(f.page.hasFocus())
     }
 
+    @Test fun fullscreenExitKeepsDirectDpadNavigation() = Fixture().use { f ->
+        val callback = TabWindow(f.activity, f.tab)
+        val engine = WebViewPageEngine(f.tab).apply { window = callback }
+        WebViewPageEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
+            .set(engine, f.vb.pageContainer)
+        engine.setPointerMode(false)
+        val video = View(f.host.get()).apply { isFocusableInTouchMode = true }
+        engine.enterFullscreen(video)
+        engine.closeFullscreen()
+        assertNull(video.parent)
+        assertFalse("Leaving a video must not switch D-pad navigation back to the pointer",
+            f.vb.pageContainer.pointerEnabled)
+        engine.setPointerMode(true)
+        engine.enterFullscreen(video)
+        engine.closeFullscreen()
+        assertTrue(f.vb.pageContainer.pointerEnabled)
+    }
+
     @Test fun cancelSearchRestoresButtonsAndKeyboardSearchLoadsConfiguredEngine() = Fixture().use { f ->
         f.activity.consumeBack()
         val address = f.vb.controlsRow.findViewById<EditText>(R.id.address_field)
