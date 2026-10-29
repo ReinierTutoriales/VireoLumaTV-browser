@@ -208,11 +208,12 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
      * ad blocking the opener stays alive until the pop-up's destination is known to be no ad.
      */
     override fun createWindow(dialog: Boolean, userGesture: Boolean): View? {
-        if (blocksNewWindow(dialog, userGesture)) {
+        if (blocksNewWindow(dialog, userGesture) || (tabs.popupBlockingLevel(tab) != SiteSettings.POPUPS_ALLOWED && !UserActivation.consume())) {
             onDialogBlocked(!dialog)
             return null
         }
-        val opener = tabs.currentTab.value ?: return null
+        val opener = tab
+        if (opener.closed || tabs.currentTab.value !== opener) return null
         if (blocksAds && opener.mediaStarted) {
             // The page gets an inert window (window_open_decoy.js); the player is never replaced.
             Log.i(TAG, "Blocked a new window from a page playing media")
