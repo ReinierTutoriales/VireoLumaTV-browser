@@ -23,7 +23,7 @@ internal enum class AppMenuEntry(@StringRes val label: Int, @DrawableRes val ico
     CLOSE_APPLICATION(R.string.menu_quit, R.drawable.ic_exit),
 }
 
-internal fun appMenuEntries(): List<AppMenuEntry> = AppMenuEntry.entries.toList()
+internal fun appMenuEntries(): List<AppMenuEntry> = AppMenuEntry.entries.filterNot { it == AppMenuEntry.FAVORITES }
 
 /**
  * The application menu as a TV side panel: full height at the end of the screen, one row per
