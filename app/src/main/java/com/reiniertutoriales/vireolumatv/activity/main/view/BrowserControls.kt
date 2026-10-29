@@ -183,7 +183,9 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         takeFocus()
     }
 
-    fun takeFocus() { backButton.requestFocus() }
+    fun takeFocus() {
+        (commands.firstOrNull { it.isEnabled && it.visibility == VISIBLE } ?: ui.addressField).requestFocus()
+    }
 
     override fun onDetachedFromWindow() {
         removeCallbacks(selectText)

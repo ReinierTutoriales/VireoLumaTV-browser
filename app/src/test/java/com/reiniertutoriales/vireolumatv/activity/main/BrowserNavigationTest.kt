@@ -38,6 +38,8 @@ class BrowserNavigationTest {
         val address = bar.findViewById<EditText>(R.id.address_field)
         bar.backButton.isEnabled = false
         bar.forwardButton.isEnabled = false
+        bar.takeFocus()
+        assertTrue(bar.refreshButton.hasFocus())
         address.requestFocus()
         f.key(bar, KeyEvent.KEYCODE_DPAD_RIGHT)
         assertTrue(bar.refreshButton.hasFocus())
