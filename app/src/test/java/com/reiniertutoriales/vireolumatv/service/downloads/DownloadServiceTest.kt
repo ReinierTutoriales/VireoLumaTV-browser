@@ -33,6 +33,19 @@ class DownloadServiceTest {
         assertEquals("README_(1)", DownloadService.freeFile(dir, "README").name)
     }
 
+    @Test fun waitingDownloadsReserveDistinctLegacyFilesBeforeAnyWorkerWrites() {
+        val first = DownloadService.reserveFile(folder.root, "same.zip")
+        val second = DownloadService.reserveFile(folder.root, "same.zip")
+        assertEquals("same.zip", first.name)
+        assertEquals("same_(1).zip", second.name)
+        assertTrue(first.exists())
+        assertTrue(second.exists())
+        first.writeText("first payload")
+        val third = DownloadService.reserveFile(folder.root, "same.zip")
+        assertEquals("same_(2).zip", third.name)
+        assertEquals("first payload", first.readText())
+    }
+
     @Test fun foregroundTimeoutCancelsDownloadsAndStopsTheService() {
         val controller = Robolectric.buildService(DownloadService::class.java).create()
         val service = controller.get()

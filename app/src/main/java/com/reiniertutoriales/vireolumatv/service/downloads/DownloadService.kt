@@ -120,6 +120,7 @@ open class DownloadService : Service() {
             executor.execute(task)
         } catch (_: RejectedExecutionException) {
             model.runningDownloads.remove(task)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) File(download.filepath).delete()
             return reject(download)
         }
         startService(Intent(this, javaClass))
@@ -147,7 +148,12 @@ open class DownloadService : Service() {
             return false
         }
         // The name becomes part of a path: it must never leave the Downloads folder.
-        val file = freeFile(folder, FileNames.sanitizeFileName(download.filename) ?: "downloadfile")
+        val file = try {
+            reserveFile(folder, FileNames.sanitizeFileName(download.filename) ?: "downloadfile")
+        } catch (_: java.io.IOException) {
+            Toast.makeText(this, R.string.download_folder_error, Toast.LENGTH_SHORT).show()
+            return false
+        }
         download.filename = file.name
         download.filepath = file.absolutePath
         return true
@@ -197,6 +203,14 @@ open class DownloadService : Service() {
 
         fun intent(context: Context, incognito: Boolean): Intent = Intent(context,
             if (incognito) IncognitoDownloadService::class.java else DownloadService::class.java)
+
+        /** Atomically claim a legacy output, including while its task is still waiting. */
+        internal fun reserveFile(folder: File, name: String): File {
+            while (true) {
+                val candidate = freeFile(folder, name)
+                if (candidate.createNewFile()) return candidate
+            }
+        }
 
         /** [name] in [folder], or "name_(n).ext" with the first free n; a leading dot is not an extension. */
         internal fun freeFile(folder: File, name: String): File {
