@@ -53,6 +53,10 @@ class PointerController(val context: Context, val surface: View) {
     private var accelerationScale = 1f
     // Monotonic clock: wall-clock changes (NTP sync on TV boxes) must not freeze or hide the pointer.
     private var lastMove = SystemClock.uptimeMillis() - HIDE_AFTER_MS
+    // Frame clock, kept apart from [lastMove]: key repeats and stick samples arrive between frames
+    // and must not shorten the next frame's movement.
+    private var lastFrame = 0L
+    private var moving = false
 
     // Finger gesture for OK, long press and drag (grab mode).
     private var pressed = false
@@ -119,10 +123,15 @@ class PointerController(val context: Context, val surface: View) {
     private fun onDirectionUp(event: KeyEvent, dx: Int, dy: Int) {
         lastMove = SystemClock.uptimeMillis()
         surface.keyDispatcherState.handleUpEvent(event)
-        speedX = 0f
-        speedY = 0f
-        if (dx != 0) keyDirX = 0
-        if (dy != 0) keyDirY = 0
+        // Only the released axis stops; a direction still held keeps its speed.
+        if (dx != 0) {
+            keyDirX = 0
+            speedX = 0f
+        }
+        if (dy != 0) {
+            keyDirY = 0
+            speedY = 0f
+        }
     }
 
     /** Analog speed in -1..1 per axis, already outside the stick's dead zone; 0,0 releases it. */
@@ -141,7 +150,9 @@ class PointerController(val context: Context, val surface: View) {
         val config = AppContext.config
         speedCap = speedBaseline * config.pointerSpeedPercent / 100f
         accelerationScale = config.pointerAccelPercent / 100f
-        surface.removeCallbacks(pointerTick)
+        if (moving) return
+        moving = true
+        lastFrame = SystemClock.uptimeMillis()
         surface.post(pointerTick)
     }
 
@@ -195,7 +206,8 @@ class PointerController(val context: Context, val surface: View) {
             mainThread.removeCallbacks(redrawOnHide)
             val now = SystemClock.uptimeMillis()
             // Bounded so a long GC or renderer stall does not turn into a jump.
-            val elapsed = (now - lastMove).coerceIn(1L, MAX_FRAME_MS)
+            val elapsed = (now - lastFrame).coerceIn(1L, MAX_FRAME_MS)
+            lastFrame = now
             lastMove = now
             // Speeds are px per 60 Hz frame; scaling by real frame time keeps 30 fps TVs as fast.
             val frames = elapsed / REFERENCE_FRAME_MS
@@ -210,6 +222,7 @@ class PointerController(val context: Context, val surface: View) {
                 if (abs(speedY) < MIN_SPEED) speedY = 0f
             }
             if (speedX == 0f && speedY == 0f && keyDirX == 0 && keyDirY == 0) {
+                moving = false
                 scheduleHide()
                 return
             }
@@ -350,6 +363,7 @@ class PointerController(val context: Context, val surface: View) {
     /** Stop held keys and gestures when a menu, dialog or another tab takes the input. */
     fun resetInput() {
         surface.removeCallbacks(pointerTick)
+        moving = false
         surface.removeCallbacks(holdTimeout)
         mainThread.removeCallbacks(redrawOnHide)
         if (pressed) touch(MotionEvent.ACTION_CANCEL)
