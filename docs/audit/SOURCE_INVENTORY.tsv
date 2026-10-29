@@ -145,6 +145,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/PageEngine.kt	PROP
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/PageWindow.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/AdblockPageController.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobTransfers.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlockedResponses.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicy.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserChromeClient.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserWebView.kt	REESCRITO
@@ -155,6 +156,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolic
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridge.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissions.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageScripts.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/ServiceWorkerFilter.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StartPageAssets.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnostics.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActivation.kt	PROPIO
@@ -357,6 +359,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolic
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridgeSurfaceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissionsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/RemoteInputContractTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/ServiceWorkerFilterTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnosticsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActivationTrackerTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/VirtualCursorPointerTest.kt	PROPIO
