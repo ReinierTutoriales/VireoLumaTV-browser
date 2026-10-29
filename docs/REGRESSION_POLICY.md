@@ -59,10 +59,15 @@ se retiran el ajuste Tema y la paleta clara. «Oscurecer las páginas web» depe
 (activado por defecto), ya no del modo noche del sistema. Pendiente de validación en Android TV.
 
 **Sugerencias de dirección (2026-10-27, petición del propietario):** al editar la dirección se muestran hasta
-seis sugerencias locales (favoritos e historial; solo favoritos en incógnito) en lugar de la tira de pestañas.
+seis sugerencias locales del historial (ninguna en incógnito) en lugar de la tira de pestañas.
 Abajo entra en la lista sin cancelar la edición, Arriba vuelve al campo, OK abre la sugerencia y Atrás sigue N04.
 El campo ya no prohíbe las sugerencias del teclado (`textUri`) ni abre el teclado a pantalla completa.
 Nada sale del dispositivo. Pendiente de validación en Android TV con varios teclados.
+
+**Favoritos eliminados (2026-10-29, petición del propietario):** se retiran el menú Favoritos, su panel,
+su editor y las sugerencias de favoritos. La base de datos pasa a la versión 20: la migración 19→20 borra la
+tabla `favorites` con sus filas y deja intactas `history`, `tabs`, `downloads` y `hosts`. No se puede deshacer
+para los datos ya migrados.
 
 **Rediseño TV (2026-10-28, petición del propietario):** interfaz nativa de Android TV con vistas
 AppCompat, sin dependencias nuevas. El foco invierte el control (superficie clara, contenido oscuro) y lo

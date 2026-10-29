@@ -69,7 +69,7 @@ Una auditoría o propuesta antigua no autoriza aplicar automáticamente sus parc
   cierre de IME/diálogo y apertura/cierre del menú. Probar cada transición.
 - Foco visible y controles alcanzables con D-pad. Foco no ejecuta acciones ni
   oculta otra fila; los comandos se ejecutan sobre la pestaña que se ve seleccionada.
-- Conservar historial, URLs, pestañas normales, favoritos, descargas e aislamiento
+- Conservar historial, URLs, pestañas normales, descargas e aislamiento
   privado. No cambiar Room, estados legacy, firma o applicationId como efecto
   secundario. No publicar versión/APK como parte de una refactorización.
 - Optimizar recursos sin convertir «pestaña suspendida» en «pestaña vacía» ni

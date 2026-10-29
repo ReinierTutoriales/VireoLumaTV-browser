@@ -41,12 +41,10 @@ import com.reiniertutoriales.vireolumatv.activity.PrivateBrowserActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
-import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesPanel
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
 import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
 import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabChips
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
-import com.reiniertutoriales.vireolumatv.model.Favorite
 import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.Favicons
@@ -341,7 +339,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     private fun runAppMenuEntry(entry: AppMenuEntry) = when (entry) {
         AppMenuEntry.HISTORY -> showHistory()
-        AppMenuEntry.FAVORITES -> showFavorites()
         AppMenuEntry.DOWNLOADS -> showDownloads()
         AppMenuEntry.INCOGNITO -> togglePrivateMode()
         AppMenuEntry.SETTINGS -> showSettings()
@@ -354,12 +351,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     fun showHistory() {
         historyResult.launch(Intent(this, HistoryActivity::class.java))
-        closeCapsule()
-    }
-
-    fun showFavorites() {
-        val shown = tabStore.currentTab.value
-        FavoritesPanel(this, lifecycleScope, shown?.title, shown?.url) { item -> item.url?.let(::navigate) }.show()
         closeCapsule()
     }
 

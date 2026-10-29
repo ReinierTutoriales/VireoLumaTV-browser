@@ -3,7 +3,6 @@ package com.reiniertutoriales.vireolumatv.model.dao
 import android.app.Application
 import androidx.room.Room
 import com.reiniertutoriales.vireolumatv.model.Download
-import com.reiniertutoriales.vireolumatv.model.Favorite
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.runBlocking
@@ -39,22 +38,6 @@ class StorageWriteContractTest {
             val created = requireNotNull(hosts.findByHostName("created-by-icon.test"))
             assertEquals("icon.png", created.favicon)
             assertNull(created.popupBlockLevel)
-        } finally { db.close() }
-    }
-
-    @Test fun editingAStaleBookmarkPreservesOtherStoredColumns() = runBlocking {
-        val db = database()
-        try {
-            val bookmarks = db.favoriteDao()
-            bookmarks.insert(Favorite().apply { title = "Before"; url = "https://before.test"; validUntil = 123L })
-            val stale = bookmarks.getAll().single().copyForEdit()
-            db.openHelper.writableDatabase.execSQL("UPDATE favorites SET DESCRIPTION = 'kept', VALID_UNTIL = 456")
-            bookmarks.update(stale.apply { title = "After"; url = "https://after.test" })
-            val result = bookmarks.getAll().single()
-            assertEquals("After", result.title)
-            assertEquals("https://after.test", result.url)
-            assertEquals("kept", result.description)
-            assertEquals(456L, result.validUntil)
         } finally { db.close() }
     }
 

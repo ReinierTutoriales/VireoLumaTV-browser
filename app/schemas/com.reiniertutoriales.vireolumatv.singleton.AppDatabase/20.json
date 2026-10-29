@@ -1,0 +1,285 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 20,
+    "identityHash": "fc3efc7b6382710946899726652fcbbb",
+    "entities": [
+      {
+        "tableName": "downloads",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `time` INTEGER NOT NULL, `filename` TEXT NOT NULL, `filepath` TEXT NOT NULL, `url` TEXT NOT NULL, `size` INTEGER NOT NULL, `bytes_received` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "filename",
+            "columnName": "filename",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "filepath",
+            "columnName": "filepath",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "size",
+            "columnName": "size",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bytesReceived",
+            "columnName": "bytes_received",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "downloads_time_idx",
+            "unique": false,
+            "columnNames": [
+              "time"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `downloads_time_idx` ON `${TABLE_NAME}` (`time`)"
+          },
+          {
+            "name": "downloads_filename_idx",
+            "unique": false,
+            "columnNames": [
+              "filename"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `downloads_filename_idx` ON `${TABLE_NAME}` (`filename`)"
+          }
+        ]
+      },
+      {
+        "tableName": "history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `time` INTEGER NOT NULL, `title` TEXT NOT NULL, `url` TEXT NOT NULL, `favicon` TEXT, `incognito` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "favicon",
+            "columnName": "favicon",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "incognito",
+            "columnName": "incognito",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "history_time_idx",
+            "unique": false,
+            "columnNames": [
+              "time"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `history_time_idx` ON `${TABLE_NAME}` (`time`)"
+          },
+          {
+            "name": "history_title_idx",
+            "unique": false,
+            "columnNames": [
+              "title"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `history_title_idx` ON `${TABLE_NAME}` (`title`)"
+          },
+          {
+            "name": "history_url_idx",
+            "unique": false,
+            "columnNames": [
+              "url"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `history_url_idx` ON `${TABLE_NAME}` (`url`)"
+          }
+        ]
+      },
+      {
+        "tableName": "tabs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `url` TEXT NOT NULL, `title` TEXT NOT NULL, `selected` INTEGER NOT NULL, `thumbnailHash` TEXT, `faviconHash` TEXT, `incognito` INTEGER NOT NULL, `position` INTEGER NOT NULL, `wv_state` BLOB, `wv_state_file` TEXT, `adblock` INTEGER, `scale` REAL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "selected",
+            "columnName": "selected",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "thumbnailHash",
+            "columnName": "thumbnailHash",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "faviconHash",
+            "columnName": "faviconHash",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "incognito",
+            "columnName": "incognito",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "wvState",
+            "columnName": "wv_state",
+            "affinity": "BLOB"
+          },
+          {
+            "fieldPath": "wvStateFileName",
+            "columnName": "wv_state_file",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "adblock",
+            "columnName": "adblock",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "scale",
+            "columnName": "scale",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "hosts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`host_name` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `popup_block_level` INTEGER, `favicon` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "hostName",
+            "columnName": "host_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "popupBlockLevel",
+            "columnName": "popup_block_level",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "favicon",
+            "columnName": "favicon",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "hosts_name_idx",
+            "unique": true,
+            "columnNames": [
+              "host_name"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `hosts_name_idx` ON `${TABLE_NAME}` (`host_name`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fc3efc7b6382710946899726652fcbbb')"
+    ]
+  }
+}

@@ -9,8 +9,6 @@
     <string name="error">Помилка</string>
     <string name="action_allow">Дозволити</string>
     <string name="action_deny">Заборонити</string>
-    <string name="action_edit">Змінити</string>
-    <string name="action_done">Готово</string>
     <string name="action_delete">Видалити</string>
     <string name="action_cancel">Скасувати</string>
     <string name="action_clear">Очистити</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">Нова вкладка</string>
     <string name="tabs_title">Вкладка</string>
     <string name="menu_history">Історія</string>
-    <string name="menu_favorites">Вибране</string>
     <string name="menu_downloads">Завантаження</string>
     <string name="menu_private">Режим інкогніто</string>
     <string name="menu_settings">Налаштування</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">Використовуються збережені правила; жоден список не завантажено.</string>
     <string name="blocker_not_refreshed">Не оновлено: %1$s</string>
     <string name="blocker_update_failed">Не вдалося завантажити списки фільтрів. Перевірте з\'єднання або адресу списку.</string>
-    <string name="favorites_add">Додати цю сторінку</string>
-    <string name="favorites_empty">У вибраному поки нічого немає</string>
-    <string name="favorites_new">Нова закладка</string>
-    <string name="field_title">Назва</string>
     <string name="field_address">Адреса</string>
     <string name="history_delete_selected">Видалити вибрані сторінки з історії?</string>
     <string name="history_delete_all">Видалити всю історію?</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">Перезапустіть VireoLumaTV, щоб застосувати</string>
     <string name="settings_clear_cache">Очистити кеш вебданих</string>
     <string name="warning_title">Увага</string>
-    <string name="private_explained">Приватний режим не зберігає історію, cookie, дані сайтів і введене у форми після виходу з нього.\n\nЗавантаження та вибране зберігаються. Відвідані сайти, ваша мережа й інтернет-провайдер усе одно бачать вашу активність.</string>
+    <string name="private_explained">Приватний режим не зберігає історію, cookie, дані сайтів і введене у форми після виходу з нього.\n\nЗавантаження зберігаються. Відвідані сайти, ваша мережа й інтернет-провайдер усе одно бачать вашу активність.</string>
     <string name="shortcut_unassigned">Не призначено</string>
     <string name="shortcut_current_key">Клавіша:</string>
     <string name="shortcut_key_code">Клавіша %d</string>

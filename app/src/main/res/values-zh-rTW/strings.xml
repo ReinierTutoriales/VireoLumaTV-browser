@@ -9,8 +9,6 @@
     <string name="error">錯誤</string>
     <string name="action_allow">允許</string>
     <string name="action_deny">不允許</string>
-    <string name="action_edit">編輯</string>
-    <string name="action_done">完成</string>
     <string name="action_delete">刪除</string>
     <string name="action_cancel">取消</string>
     <string name="action_clear">清除</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">新分頁</string>
     <string name="tabs_title">分頁</string>
     <string name="menu_history">瀏覽記錄</string>
-    <string name="menu_favorites">我的最愛</string>
     <string name="menu_downloads">下載</string>
     <string name="menu_private">無痕模式</string>
     <string name="menu_settings">設定</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">正在使用已儲存的規則；未下載任何清單。</string>
     <string name="blocker_not_refreshed">未更新：%1$s</string>
     <string name="blocker_update_failed">無法載入過濾清單。請檢查連線或清單網址。</string>
-    <string name="favorites_add">新增這個網頁</string>
-    <string name="favorites_empty">尚無我的最愛</string>
-    <string name="favorites_new">新增我的最愛</string>
-    <string name="field_title">標題</string>
     <string name="field_address">網址</string>
     <string name="history_delete_selected">要從瀏覽記錄中刪除所選網頁嗎？</string>
     <string name="history_delete_all">要刪除所有瀏覽記錄嗎？</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">重新啟動 VireoLumaTV 後生效</string>
     <string name="settings_clear_cache">清除網頁快取</string>
     <string name="warning_title">警告</string>
-    <string name="private_explained">無痕瀏覽在離開後不會保留瀏覽記錄、Cookie、網站資料和表單內容。\n\n下載項目和我的最愛會保留。您造訪的網站、所在網路和網路服務供應商仍可看到您的活動。</string>
+    <string name="private_explained">無痕瀏覽在離開後不會保留瀏覽記錄、Cookie、網站資料和表單內容。\n\n下載項目會保留。您造訪的網站、所在網路和網路服務供應商仍可看到您的活動。</string>
     <string name="shortcut_unassigned">未指派</string>
     <string name="shortcut_current_key">按鍵：</string>
     <string name="shortcut_key_code">按鍵 %d</string>

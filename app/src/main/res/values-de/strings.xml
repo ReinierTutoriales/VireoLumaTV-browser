@@ -9,8 +9,6 @@
     <string name="error">Fehler</string>
     <string name="action_allow">Zulassen</string>
     <string name="action_deny">Nicht zulassen</string>
-    <string name="action_edit">Bearbeiten</string>
-    <string name="action_done">Fertig</string>
     <string name="action_delete">Löschen</string>
     <string name="action_cancel">Abbrechen</string>
     <string name="action_clear">Leeren</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">Neuer Tab</string>
     <string name="tabs_title">Tab</string>
     <string name="menu_history">Verlauf</string>
-    <string name="menu_favorites">Favoriten</string>
     <string name="menu_downloads">Downloads</string>
     <string name="menu_private">Inkognito-Modus</string>
     <string name="menu_settings">Einstellungen</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">Gespeicherte Regeln werden verwendet; keine Liste wurde heruntergeladen.</string>
     <string name="blocker_not_refreshed">Nicht aktualisiert: %1$s</string>
     <string name="blocker_update_failed">Die Filterlisten konnten nicht geladen werden. Prüfe die Verbindung oder die Listenadresse.</string>
-    <string name="favorites_add">Diese Seite hinzufügen</string>
-    <string name="favorites_empty">Noch keine Favoriten</string>
-    <string name="favorites_new">Neuer Favorit</string>
-    <string name="field_title">Titel</string>
     <string name="field_address">Adresse</string>
     <string name="history_delete_selected">Ausgewählte Seiten aus dem Verlauf löschen?</string>
     <string name="history_delete_all">Gesamten Verlauf löschen?</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">Starte VireoLumaTV neu, um das zu übernehmen</string>
     <string name="settings_clear_cache">Zwischengespeicherte Webdaten löschen</string>
     <string name="warning_title">Warnung</string>
-    <string name="private_explained">Beim privaten Surfen werden Verlauf, Cookies, Websitedaten und Formulareingaben nach dem Beenden nicht gespeichert.\n\nDownloads und Favoriten bleiben erhalten. Besuchte Websites, dein Netzwerk und dein Internetanbieter können deine Aktivität weiterhin sehen.</string>
+    <string name="private_explained">Beim privaten Surfen werden Verlauf, Cookies, Websitedaten und Formulareingaben nach dem Beenden nicht gespeichert.\n\nDownloads bleiben erhalten. Besuchte Websites, dein Netzwerk und dein Internetanbieter können deine Aktivität weiterhin sehen.</string>
     <string name="shortcut_unassigned">Nicht zugewiesen</string>
     <string name="shortcut_current_key">Taste:</string>
     <string name="shortcut_key_code">Taste %d</string>

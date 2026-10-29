@@ -9,8 +9,6 @@
     <string name="error">خطا</string>
     <string name="action_allow">اجازه</string>
     <string name="action_deny">اجازه نده</string>
-    <string name="action_edit">ویرایش</string>
-    <string name="action_done">تمام</string>
     <string name="action_delete">حذف</string>
     <string name="action_cancel">لغو</string>
     <string name="action_clear">پاک کردن</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">زبانهٔ جدید</string>
     <string name="tabs_title">زبانه</string>
     <string name="menu_history">تاریخچه</string>
-    <string name="menu_favorites">علاقه‌مندی‌ها</string>
     <string name="menu_downloads">بارگیری‌ها</string>
     <string name="menu_private">حالت ناشناس</string>
     <string name="menu_settings">تنظیمات</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">قوانین ذخیره‌شده استفاده می‌شوند؛ هیچ فهرستی بارگیری نشد.</string>
     <string name="blocker_not_refreshed">به‌روز نشده: %1$s</string>
     <string name="blocker_update_failed">فهرست‌های فیلتر بارگیری نشدند. اتصال یا نشانی فهرست را بررسی کنید.</string>
-    <string name="favorites_add">افزودن این صفحه</string>
-    <string name="favorites_empty">هنوز علاقه‌مندی‌ای نیست</string>
-    <string name="favorites_new">علاقه‌مندی جدید</string>
-    <string name="field_title">عنوان</string>
     <string name="field_address">نشانی</string>
     <string name="history_delete_selected">صفحه‌های انتخاب‌شده از تاریخچه حذف شوند؟</string>
     <string name="history_delete_all">کل تاریخچه پاک شود؟</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">برای اعمال، VireoLumaTV را دوباره راه‌اندازی کنید</string>
     <string name="settings_clear_cache">پاک کردن دادهٔ وب ذخیره‌شده</string>
     <string name="warning_title">هشدار</string>
-    <string name="private_explained">مرور خصوصی پس از خروج، تاریخچه، کوکی‌ها، داده‌های سایت و ورودی‌های فرم را نگه نمی‌دارد.\n\nبارگیری‌ها و علاقه‌مندی‌ها حفظ می‌شوند. سایت‌هایی که بازدید می‌کنید، شبکهٔ شما و ارائه‌دهندهٔ اینترنت همچنان فعالیت شما را می‌بینند.</string>
+    <string name="private_explained">مرور خصوصی پس از خروج، تاریخچه، کوکی‌ها، داده‌های سایت و ورودی‌های فرم را نگه نمی‌دارد.\n\nبارگیری‌ها حفظ می‌شوند. سایت‌هایی که بازدید می‌کنید، شبکهٔ شما و ارائه‌دهندهٔ اینترنت همچنان فعالیت شما را می‌بینند.</string>
     <string name="shortcut_unassigned">تعیین نشده</string>
     <string name="shortcut_current_key">کلید:</string>
     <string name="shortcut_key_code">کلید %d</string>

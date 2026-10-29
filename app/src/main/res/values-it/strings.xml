@@ -9,8 +9,6 @@
     <string name="error">Errore</string>
     <string name="action_allow">Consenti</string>
     <string name="action_deny">Non consentire</string>
-    <string name="action_edit">Modifica</string>
-    <string name="action_done">Fine</string>
     <string name="action_delete">Elimina</string>
     <string name="action_cancel">Annulla</string>
     <string name="action_clear">Cancella</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">Nuova scheda</string>
     <string name="tabs_title">Scheda</string>
     <string name="menu_history">Cronologia</string>
-    <string name="menu_favorites">Preferiti</string>
     <string name="menu_downloads">Download</string>
     <string name="menu_private">Modalità in incognito</string>
     <string name="menu_settings">Impostazioni</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">Vengono usate le regole salvate; nessun elenco è stato scaricato.</string>
     <string name="blocker_not_refreshed">Non aggiornati: %1$s</string>
     <string name="blocker_update_failed">Impossibile caricare gli elenchi filtri. Controlla la connessione o l\'indirizzo dell\'elenco.</string>
-    <string name="favorites_add">Aggiungi questa pagina</string>
-    <string name="favorites_empty">Ancora nessun preferito</string>
-    <string name="favorites_new">Nuovo preferito</string>
-    <string name="field_title">Titolo</string>
     <string name="field_address">Indirizzo</string>
     <string name="history_delete_selected">Eliminare dalla cronologia le pagine selezionate?</string>
     <string name="history_delete_all">Cancellare tutta la cronologia?</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">Riavvia VireoLumaTV per applicarlo</string>
     <string name="settings_clear_cache">Cancella i dati web in cache</string>
     <string name="warning_title">Attenzione</string>
-    <string name="private_explained">La navigazione privata non conserva cronologia, cookie, dati dei siti e dati dei moduli quando ne esci.\n\nI download e i preferiti vengono mantenuti. I siti visitati, la tua rete e il tuo provider possono comunque vedere la tua attività.</string>
+    <string name="private_explained">La navigazione privata non conserva cronologia, cookie, dati dei siti e dati dei moduli quando ne esci.\n\nI download vengono mantenuti. I siti visitati, la tua rete e il tuo provider possono comunque vedere la tua attività.</string>
     <string name="shortcut_unassigned">Non assegnata</string>
     <string name="shortcut_current_key">Tasto:</string>
     <string name="shortcut_key_code">Tasto %d</string>

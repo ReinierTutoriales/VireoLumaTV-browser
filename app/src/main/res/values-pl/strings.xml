@@ -9,8 +9,6 @@
     <string name="error">Błąd</string>
     <string name="action_allow">Zezwól</string>
     <string name="action_deny">Nie zezwalaj</string>
-    <string name="action_edit">Edytuj</string>
-    <string name="action_done">Gotowe</string>
     <string name="action_delete">Usuń</string>
     <string name="action_cancel">Anuluj</string>
     <string name="action_clear">Wyczyść</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">Nowa karta</string>
     <string name="tabs_title">Karta</string>
     <string name="menu_history">Historia</string>
-    <string name="menu_favorites">Ulubione</string>
     <string name="menu_downloads">Pobrane</string>
     <string name="menu_private">Tryb incognito</string>
     <string name="menu_settings">Ustawienia</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">Używane są zapisane reguły; nie pobrano żadnej listy.</string>
     <string name="blocker_not_refreshed">Nie zaktualizowano: %1$s</string>
     <string name="blocker_update_failed">Nie udało się wczytać list filtrów. Sprawdź połączenie lub adres listy.</string>
-    <string name="favorites_add">Dodaj tę stronę</string>
-    <string name="favorites_empty">Brak ulubionych</string>
-    <string name="favorites_new">Nowa ulubiona</string>
-    <string name="field_title">Tytuł</string>
     <string name="field_address">Adres</string>
     <string name="history_delete_selected">Usunąć zaznaczone strony z historii?</string>
     <string name="history_delete_all">Usunąć całą historię?</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">Uruchom ponownie VireoLumaTV, aby zastosować</string>
     <string name="settings_clear_cache">Wyczyść dane stron w pamięci podręcznej</string>
     <string name="warning_title">Ostrzeżenie</string>
-    <string name="private_explained">Przeglądanie prywatne nie zachowuje historii, plików cookie, danych witryn ani wpisów w formularzach po jego zakończeniu.\n\nPobrane pliki i ulubione zostają. Odwiedzane witryny, Twoja sieć i dostawca internetu nadal widzą Twoją aktywność.</string>
+    <string name="private_explained">Przeglądanie prywatne nie zachowuje historii, plików cookie, danych witryn ani wpisów w formularzach po jego zakończeniu.\n\nPobrane pliki zostają. Odwiedzane witryny, Twoja sieć i dostawca internetu nadal widzą Twoją aktywność.</string>
     <string name="shortcut_unassigned">Nie przypisano</string>
     <string name="shortcut_current_key">Klawisz:</string>
     <string name="shortcut_key_code">Klawisz %d</string>

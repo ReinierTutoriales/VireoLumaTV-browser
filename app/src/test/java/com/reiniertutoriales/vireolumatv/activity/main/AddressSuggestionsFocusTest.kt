@@ -65,8 +65,8 @@ class AddressSuggestionsFocusTest {
             assertTrue(bar.isEditingAddress)
             address.setText("you")
             assertEquals("Typing reports the text for lookup", "you", typed.last())
-            suggestions.show(listOf(AddressSuggestion("YouTube", "https://youtube.com", true),
-                AddressSuggestion("Noticias", "https://news.test/you", false)))
+            suggestions.show(listOf(AddressSuggestion("YouTube", "https://youtube.com"),
+                AddressSuggestion("Noticias", "https://news.test/you")))
             ShadowLooper.idleMainLooper()
 
             fun press(view: View, code: Int) {

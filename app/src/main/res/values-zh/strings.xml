@@ -9,8 +9,6 @@
     <string name="error">错误</string>
     <string name="action_allow">允许</string>
     <string name="action_deny">不允许</string>
-    <string name="action_edit">编辑</string>
-    <string name="action_done">完成</string>
     <string name="action_delete">删除</string>
     <string name="action_cancel">取消</string>
     <string name="action_clear">清除</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">新标签页</string>
     <string name="tabs_title">标签页</string>
     <string name="menu_history">历史记录</string>
-    <string name="menu_favorites">收藏</string>
     <string name="menu_downloads">下载</string>
     <string name="menu_private">无痕模式</string>
     <string name="menu_settings">设置</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">正在使用已保存的规则；未下载任何列表。</string>
     <string name="blocker_not_refreshed">未更新：%1$s</string>
     <string name="blocker_update_failed">无法加载过滤列表。请检查网络连接或列表地址。</string>
-    <string name="favorites_add">添加此网页</string>
-    <string name="favorites_empty">还没有收藏</string>
-    <string name="favorites_new">新收藏</string>
-    <string name="field_title">标题</string>
     <string name="field_address">网址</string>
     <string name="history_delete_selected">要从历史记录中删除所选网页吗？</string>
     <string name="history_delete_all">要删除全部历史记录吗？</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">重启 VireoLumaTV 后生效</string>
     <string name="settings_clear_cache">清除网页缓存</string>
     <string name="warning_title">警告</string>
-    <string name="private_explained">无痕浏览在退出后不会保留历史记录、Cookie、网站数据和表单内容。\n\n下载内容和收藏会保留。您访问的网站、所在网络和互联网服务提供商仍可看到您的活动。</string>
+    <string name="private_explained">无痕浏览在退出后不会保留历史记录、Cookie、网站数据和表单内容。\n\n下载内容会保留。您访问的网站、所在网络和互联网服务提供商仍可看到您的活动。</string>
     <string name="shortcut_unassigned">未分配</string>
     <string name="shortcut_current_key">按键：</string>
     <string name="shortcut_key_code">按键 %d</string>

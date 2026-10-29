@@ -15,7 +15,6 @@ import com.reiniertutoriales.vireolumatv.R
 /** Actions offered by the application menu, in display order. */
 internal enum class AppMenuEntry(@StringRes val label: Int, @DrawableRes val icon: Int) {
     HISTORY(R.string.menu_history, R.drawable.ic_history),
-    FAVORITES(R.string.menu_favorites, R.drawable.ic_bookmark),
     DOWNLOADS(R.string.menu_downloads, R.drawable.ic_download),
     INCOGNITO(R.string.menu_private, R.drawable.ic_private),
     SETTINGS(R.string.menu_settings, R.drawable.ic_settings),

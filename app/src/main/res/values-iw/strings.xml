@@ -9,8 +9,6 @@
     <string name="error">שגיאה</string>
     <string name="action_allow">אפשר</string>
     <string name="action_deny">אל תאפשר</string>
-    <string name="action_edit">עריכה</string>
-    <string name="action_done">סיום</string>
     <string name="action_delete">מחיקה</string>
     <string name="action_cancel">ביטול</string>
     <string name="action_clear">ניקוי</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">כרטיסייה חדשה</string>
     <string name="tabs_title">כרטיסייה</string>
     <string name="menu_history">היסטוריה</string>
-    <string name="menu_favorites">מועדפים</string>
     <string name="menu_downloads">הורדות</string>
     <string name="menu_private">מצב גלישה בסתר</string>
     <string name="menu_settings">הגדרות</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">נעשה שימוש בכללים שמורים; לא הורדה אף רשימה.</string>
     <string name="blocker_not_refreshed">לא עודכנו: %1$s</string>
     <string name="blocker_update_failed">לא ניתן לטעון את רשימות הסינון. בדקו את החיבור או את כתובת הרשימה.</string>
-    <string name="favorites_add">הוספת הדף הזה</string>
-    <string name="favorites_empty">אין עדיין מועדפים</string>
-    <string name="favorites_new">מועדף חדש</string>
-    <string name="field_title">כותרת</string>
     <string name="field_address">כתובת</string>
     <string name="history_delete_selected">למחוק את הדפים שנבחרו מההיסטוריה?</string>
     <string name="history_delete_all">למחוק את כל ההיסטוריה?</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">יש להפעיל מחדש את VireoLumaTV כדי להחיל</string>
     <string name="settings_clear_cache">ניקוי נתוני אינטרנט שמורים</string>
     <string name="warning_title">אזהרה</string>
-    <string name="private_explained">גלישה פרטית לא שומרת היסטוריה, קובצי Cookie, נתוני אתרים או מה שהוזן בטפסים לאחר היציאה ממנה.\n\nהורדות ומועדפים נשמרים. האתרים שבהם ביקרת, הרשת וספק האינטרנט עדיין יכולים לראות את הפעילות שלך.</string>
+    <string name="private_explained">גלישה פרטית לא שומרת היסטוריה, קובצי Cookie, נתוני אתרים או מה שהוזן בטפסים לאחר היציאה ממנה.\n\nהורדות נשמרות. האתרים שבהם ביקרת, הרשת וספק האינטרנט עדיין יכולים לראות את הפעילות שלך.</string>
     <string name="shortcut_unassigned">לא הוקצה</string>
     <string name="shortcut_current_key">מקש:</string>
     <string name="shortcut_key_code">מקש %d</string>

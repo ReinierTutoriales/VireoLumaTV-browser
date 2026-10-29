@@ -9,8 +9,6 @@
     <string name="error">Error</string>
     <string name="action_allow">Permitir</string>
     <string name="action_deny">No permitir</string>
-    <string name="action_edit">Editar</string>
-    <string name="action_done">Listo</string>
     <string name="action_delete">Eliminar</string>
     <string name="action_cancel">Cancelar</string>
     <string name="action_clear">Borrar</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">Nueva pestaña</string>
     <string name="tabs_title">Pestaña</string>
     <string name="menu_history">Historial</string>
-    <string name="menu_favorites">Favoritos</string>
     <string name="menu_downloads">Descargas</string>
     <string name="menu_private">Modo incógnito</string>
     <string name="menu_settings">Ajustes</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">Se usan las reglas guardadas; no se descargó ninguna lista.</string>
     <string name="blocker_not_refreshed">Sin actualizar: %1$s</string>
     <string name="blocker_update_failed">No se pudieron cargar las listas de filtros. Revisa la conexión o la dirección de la lista.</string>
-    <string name="favorites_add">Añadir esta página</string>
-    <string name="favorites_empty">Aún no hay favoritos</string>
-    <string name="favorites_new">Nuevo favorito</string>
-    <string name="field_title">Título</string>
     <string name="field_address">Dirección</string>
     <string name="history_delete_selected">¿Eliminar del historial las páginas seleccionadas?</string>
     <string name="history_delete_all">¿Borrar todo el historial?</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">Reinicia VireoLumaTV para aplicarlo</string>
     <string name="settings_clear_cache">Borrar los datos web en caché</string>
     <string name="warning_title">Advertencia</string>
-    <string name="private_explained">La navegación privada no guarda el historial, las cookies, los datos de sitios ni lo que escribes en formularios cuando sales de ella.\n\nLas descargas y los favoritos sí se conservan. Los sitios que visitas, tu red y tu proveedor de internet pueden seguir viendo tu actividad.</string>
+    <string name="private_explained">La navegación privada no guarda el historial, las cookies, los datos de sitios ni lo que escribes en formularios cuando sales de ella.\n\nLas descargas sí se conservan. Los sitios que visitas, tu red y tu proveedor de internet pueden seguir viendo tu actividad.</string>
     <string name="shortcut_unassigned">Sin asignar</string>
     <string name="shortcut_current_key">Tecla:</string>
     <string name="shortcut_key_code">Tecla %d</string>

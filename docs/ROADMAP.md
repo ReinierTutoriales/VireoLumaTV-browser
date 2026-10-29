@@ -15,7 +15,7 @@ con el código actual antes de aplicarlos.
 | --- | --- |
 | Tema guardado fuera de rango | Corrección y pruebas de regresión pasan en CI. |
 | User-Agent personalizado | Corrección y pruebas del selector pasan en CI. |
-| Room v19 | Esquema generado, inspeccionado y versionado; CI comprueba cambios inesperados. |
+| Room v20 | v19 y v20 exportados y versionados; la migración 19→20 elimina favoritos (prueba desde 19.json); CI comprueba cambios inesperados. |
 | JavaScript de inicio, controles y YouTube | Tres suites locales pasan. |
 | Pruebas Android y APK debug/release | Primera CI completa en verde; consultar los checks del PR para el tip actual. |
 | Publicación de rama y CI remoto | Rama publicada y CI ejecutada en el PR #76. |

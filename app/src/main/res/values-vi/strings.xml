@@ -9,8 +9,6 @@
     <string name="error">Lỗi</string>
     <string name="action_allow">Cho phép</string>
     <string name="action_deny">Không cho phép</string>
-    <string name="action_edit">Chỉnh sửa</string>
-    <string name="action_done">Xong</string>
     <string name="action_delete">Xóa</string>
     <string name="action_cancel">Hủy</string>
     <string name="action_clear">Xóa hết</string>
@@ -29,7 +27,6 @@
     <string name="tabs_new">Thẻ mới</string>
     <string name="tabs_title">Thẻ</string>
     <string name="menu_history">Lịch sử</string>
-    <string name="menu_favorites">Yêu thích</string>
     <string name="menu_downloads">Tệp tải xuống</string>
     <string name="menu_private">Chế độ ẩn danh</string>
     <string name="menu_settings">Cài đặt</string>
@@ -89,10 +86,6 @@
     <string name="blocker_using_saved">Đang dùng quy tắc đã lưu; không tải xuống danh sách nào.</string>
     <string name="blocker_not_refreshed">Chưa cập nhật: %1$s</string>
     <string name="blocker_update_failed">Không tải được danh sách bộ lọc. Hãy kiểm tra kết nối hoặc địa chỉ danh sách.</string>
-    <string name="favorites_add">Thêm trang này</string>
-    <string name="favorites_empty">Chưa có mục yêu thích</string>
-    <string name="favorites_new">Mục yêu thích mới</string>
-    <string name="field_title">Tiêu đề</string>
     <string name="field_address">Địa chỉ</string>
     <string name="history_delete_selected">Xóa các trang đã chọn khỏi lịch sử?</string>
     <string name="history_delete_all">Xóa toàn bộ lịch sử?</string>
@@ -137,7 +130,7 @@
     <string name="settings_restart_needed">Khởi động lại VireoLumaTV để áp dụng</string>
     <string name="settings_clear_cache">Xóa dữ liệu web đã lưu</string>
     <string name="warning_title">Cảnh báo</string>
-    <string name="private_explained">Duyệt web riêng tư không giữ lịch sử, cookie, dữ liệu trang web hay nội dung biểu mẫu sau khi bạn thoát.\n\nTệp tải xuống và mục yêu thích vẫn được giữ. Các trang web bạn truy cập, mạng và nhà cung cấp internet vẫn có thể thấy hoạt động của bạn.</string>
+    <string name="private_explained">Duyệt web riêng tư không giữ lịch sử, cookie, dữ liệu trang web hay nội dung biểu mẫu sau khi bạn thoát.\n\nTệp tải xuống vẫn được giữ. Các trang web bạn truy cập, mạng và nhà cung cấp internet vẫn có thể thấy hoạt động của bạn.</string>
     <string name="shortcut_unassigned">Chưa gán</string>
     <string name="shortcut_current_key">Phím:</string>
     <string name="shortcut_key_code">Phím %d</string>

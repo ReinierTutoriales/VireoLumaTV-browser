@@ -12,8 +12,6 @@
     <string name="error">Error</string>
     <string name="action_allow">Allow</string>
     <string name="action_deny">Don\'t allow</string>
-    <string name="action_edit">Edit</string>
-    <string name="action_done">Done</string>
     <string name="action_delete">Delete</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_clear">Clear</string>
@@ -32,7 +30,6 @@
     <string name="tabs_new">New tab</string>
     <string name="tabs_title">Tab</string>
     <string name="menu_history">History</string>
-    <string name="menu_favorites">Favorites</string>
     <string name="menu_downloads">Downloads</string>
     <string name="menu_private">Incognito mode</string>
     <string name="menu_settings">Settings</string>
@@ -92,10 +89,6 @@
     <string name="blocker_using_saved">Using saved rules; no list was downloaded.</string>
     <string name="blocker_not_refreshed">Not updated: %1$s</string>
     <string name="blocker_update_failed">Could not load the filter lists. Check the connection or the list address.</string>
-    <string name="favorites_add">Add this page</string>
-    <string name="favorites_empty">No favorites yet</string>
-    <string name="favorites_new">New favorite</string>
-    <string name="field_title">Title</string>
     <string name="field_address">Address</string>
     <string name="history_delete_selected">Delete the selected pages from history?</string>
     <string name="history_delete_all">Delete all history?</string>
@@ -140,7 +133,7 @@
     <string name="settings_restart_needed">Restart VireoLumaTV to apply this</string>
     <string name="settings_clear_cache">Clear cached web data</string>
     <string name="warning_title">Warning</string>
-    <string name="private_explained">Private browsing doesn\'t keep your history, cookies, site data or form entries after you leave it.\n\nDownloads and favorites are kept. The sites you visit, your network and your internet provider can still see your activity.</string>
+    <string name="private_explained">Private browsing doesn\'t keep your history, cookies, site data or form entries after you leave it.\n\nDownloads are kept. The sites you visit, your network and your internet provider can still see your activity.</string>
     <string name="shortcut_unassigned">Not assigned</string>
     <string name="shortcut_current_key">Key:</string>
     <string name="shortcut_key_code">Key %d</string>
