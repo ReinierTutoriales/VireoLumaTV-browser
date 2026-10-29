@@ -149,15 +149,16 @@ nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
     private fun readBytes(url: String, accept: String?): ByteArray {
         val out = ByteArrayOutputStream()
         val connection = open(url, accept)
-        try { connection.inputStream.use { input ->
-            val buffer = ByteArray(8 * 1024)
-            while (true) {
-                val n = input.read(buffer)
-                if (n < 0) break
-                out.write(buffer, 0, n)
-                if (out.size() > MAX_TEXT_BYTES) throw IOException("Response too large")
+        try {
+            connection.inputStream.use { input ->
+                val buffer = ByteArray(8 * 1024)
+                while (true) {
+                    val n = input.read(buffer)
+                    if (n < 0) break
+                    out.write(buffer, 0, n)
+                    if (out.size() > MAX_TEXT_BYTES) throw IOException("Response too large")
+                }
             }
-        }
         } finally { connection.disconnect() }
         return out.toByteArray()
     }
@@ -183,12 +184,14 @@ nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
         connection.useCaches = false
         connection.setRequestProperty("User-Agent", "VireoLumaTV/${BuildConfig.VERSION_NAME}")
         accept?.let { connection.setRequestProperty("Accept", it) }
-        if (connection.responseCode !in 200..299) {
+        try {
             val code = connection.responseCode
+            if (code !in 200..299) throw IOException("HTTP $code for $url")
+            return connection
+        } catch (error: Exception) {
             connection.disconnect()
-            throw IOException("HTTP $code for $url")
+            throw error
         }
-        return connection
     }
 
     private fun copyLimited(input: InputStream, output: OutputStream) {
