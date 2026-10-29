@@ -136,6 +136,29 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         }
     }
 
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (!editing && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+            val row = listOf<View>(ui.addressField) + commands
+            val current = row.indexOfFirst { it.hasFocus() }
+            if (current >= 0) {
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    val step = if (event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1
+                    var next = current + step
+                    while (next in row.indices) {
+                        val target = row[next]
+                        if (target.isEnabled && target.visibility == VISIBLE && target.isFocusable) {
+                            target.requestFocus()
+                            break
+                        }
+                        next += step
+                    }
+                }
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
     fun submit(text: String) {
         if (editing) {
             ui.addressField.setText(text)
