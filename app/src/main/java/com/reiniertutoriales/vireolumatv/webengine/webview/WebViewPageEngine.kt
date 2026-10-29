@@ -258,13 +258,13 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
      * state and focus in one step, so no separate visibility change can race a later menu transition.
      */
     internal fun exitFullscreen(restoreBrowserControls: Boolean) {
-        val shown = fullscreenView
+        // Idempotent: WebView may report the end of fullscreen after the browser already closed it.
+        val shown = fullscreenView ?: return
         fullscreenView = null
-        (shown?.parent as? ViewGroup)?.removeView(shown)
-        val pointer = if (shown != null) pointerBeforeFullscreen else true
+        (shown.parent as? ViewGroup)?.removeView(shown)
         webView?.visibility = View.VISIBLE
-        webView?.usePointer(pointer)
-        container?.pointerEnabled = pointer
+        webView?.usePointer(pointerBeforeFullscreen)
+        container?.pointerEnabled = pointerBeforeFullscreen
         window?.onExitFullscreen(restoreBrowserControls)
     }
 

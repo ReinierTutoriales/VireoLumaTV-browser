@@ -346,6 +346,22 @@ class BrowserNavigationTest {
         assertTrue(f.vb.pageContainer.pointerEnabled)
     }
 
+    @Test fun aLateSecondFullscreenEndChangesNothing() = Fixture().use { f ->
+        val callback = TabWindow(f.activity, f.tab)
+        val engine = WebViewPageEngine(f.tab).apply { window = callback }
+        WebViewPageEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
+            .set(engine, f.vb.pageContainer)
+        engine.setPointerMode(false)
+        engine.enterFullscreen(View(f.host.get()).apply { isFocusableInTouchMode = true })
+        engine.exitFullscreen(restoreBrowserControls = true)
+        f.activity.consumeBack()
+        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
+        // WebView may report the end again (onHideCustomView after the browser closed it).
+        engine.exitFullscreen(restoreBrowserControls = true)
+        assertFalse("A repeated end must not switch D-pad navigation to the pointer", f.vb.pageContainer.pointerEnabled)
+        assertEquals("A repeated end must not reopen the capsule", View.INVISIBLE, f.vb.controlsOverlay.visibility)
+    }
+
     @Test fun cancelSearchRestoresButtonsAndKeyboardSearchLoadsConfiguredEngine() = Fixture().use { f ->
         f.activity.consumeBack()
         val address = f.vb.controlsRow.findViewById<EditText>(R.id.address_field)
