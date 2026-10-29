@@ -12,6 +12,8 @@ import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.service.downloads.DownloadService
 
@@ -36,6 +38,12 @@ internal class BrowserDownloads(
     fun request(download: Download) {
         if (Looper.myLooper() != Looper.getMainLooper()) {
             main.post { request(download) }
+            return
+        }
+        if (pending.size >= DownloadService.MAX_OUTSTANDING) {
+            download.cancelled = true
+            download.discardPayload()
+            activity.toast(R.string.download_queue_full)
             return
         }
         download.incognito = incognito()
@@ -71,7 +79,7 @@ internal class BrowserDownloads(
             // An interrupted request (empty results) also releases the queue's wait.
             REQUEST_STORAGE -> {
                 waitingForPermission = false
-                if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) startPending() else pending.clear()
+                if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) startPending() else discardPending()
             }
             else -> return false
         }
@@ -87,14 +95,22 @@ internal class BrowserDownloads(
         if (bound) activity.unbindService(connection)
         bound = false
         service = null
+        discardPending()
+    }
+
+    private fun discardPending() {
+        while (pending.isNotEmpty()) pending.removeFirst().let {
+            it.cancelled = true
+            it.discardPayload()
+        }
     }
 
     private fun startPending() {
+        if (waitingForPermission) return
         val service = service ?: return
         while (pending.isNotEmpty()) {
             val download = pending.removeFirst()
-            service.startDownload(download)
-            onStarted(download.filename)
+            if (service.startDownload(download)) onStarted(download.filename)
         }
     }
 
