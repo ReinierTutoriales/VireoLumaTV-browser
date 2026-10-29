@@ -101,3 +101,15 @@ Fuentes oficiales contrastadas:
 - [ServiceWorkerController: interceptación separada](https://developer.android.com/reference/android/webkit/ServiceWorkerController)
 - [Criterios de calidad TV](https://developer.android.com/docs/quality-guidelines/tv-app-quality)
 - [Startup de WebView](https://developer.android.com/develop/ui/views/layout/webapps/optimize-webview-startup)
+
+### Verificación directa de los APK publicados 2.0.1
+
+Se descargaron los tres APK y `SHA256SUMS.txt`/`.sig`. La firma ECDSA del manifiesto se verificó con la clave pública fijada en `ReleaseUpdater`; cada APK coincidió con su hash firmado. `aapt2 dump badging` confirmó en los tres `com.reiniertutoriales.vireolumatv`, `versionCode=95`, `versionName=2.0.1`, target 37 y su ABI. El certificado extraído del bloque APK v2 dio en los tres el fingerprint fijado por el workflow (`7485dc06…df051f`). Esta extracción no es una prueba de instalación Android ni reemplaza verificar su firma en el dispositivo.
+
+| ABI | SHA-256 del APK publicado |
+|---|---|
+| arm64-v8a | `0c80f59162b183f94fb4f747a6966bb6f5e505c3d0e732496a5f26bb079b50d3` |
+| armeabi-v7a | `f33d463a535d194325dab89940f6415e775945454d19fdc9abd4f75264aa1cb3` |
+| x86_64 | `5b01fc667afeefe4d7f828e186beab1ec5fd03af2514b97a170e850dc302b06b` |
+
+`RELEASE_SOURCE.txt` y `SIGNING.txt` también coincidieron con sus hashes firmados. El primero vincula la release a `19da33fb585b3f89bee76ccd083a5b230af42eac`; el segundo registra la verificación con apksigner del workflow. Por tanto, **el APK 2.0.1 publicado no es el `master` auditado `af790f39`**: los commits posteriores requieren otra versión/código de versión y una publicación antes de llegar al actualizador. Mantener ambos como 2.0.1 no permite que `isNewer` ofrezca esos cambios a quien ya tiene 2.0.1. Esta auditoría no ha modificado versiones ni publicado una release.
