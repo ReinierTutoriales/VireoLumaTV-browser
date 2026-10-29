@@ -177,4 +177,5 @@
         <item>720p</item>
         <item>480p</item>
     </string-array>
+    <string name="download_queue_full">Download queue is full. Wait for a download to finish and try again.</string>
 </resources>

@@ -83,4 +83,56 @@ class DownloadResourceTest {
         assertEquals(context.packageName + ":incognito", service.processName)
         assertFalse(service.exported)
     }
+    @Test fun failedHistoryInsertStillClosesInputDeletesReservationAndReportsFailure() {
+        val db = com.reiniertutoriales.vireolumatv.singleton.AppDatabase.db
+        val sql = db.openHelper.writableDatabase
+        sql.execSQL("CREATE TRIGGER reject_test_insert BEFORE INSERT ON downloads BEGIN SELECT RAISE(ABORT, 'history unavailable'); END")
+        val executor = java.util.concurrent.Executors.newSingleThreadExecutor()
+        val reserved = File(VireoLumaTVApp.instance.cacheDir, "history-failure.bin").apply { createNewFile() }
+        var closed = false
+        var errors = 0
+        val stream = object : java.io.ByteArrayInputStream(byteArrayOf(1)) {
+            override fun close() { closed = true; super.close() }
+        }
+        val info = Download().apply { filepath = reserved.absolutePath; this.stream = stream }
+        val listener = object : Transfer.Callback {
+            override fun onProgress(task: Transfer) { fail("A failed history insert cannot start writing") }
+            override fun onDone(task: Transfer) { fail("A failed history insert cannot complete") }
+            override fun onError(task: Transfer, responseCode: Int, responseMessage: String) {
+                errors++
+                assertTrue(responseMessage.contains("history unavailable"))
+            }
+        }
+        try {
+            executor.submit { StreamTransfer(info, stream, listener).run() }.get(5, java.util.concurrent.TimeUnit.SECONDS)
+            assertEquals(1, errors)
+            assertEquals(Download.SIZE_FAILED, info.size)
+            assertTrue(closed)
+            assertNull(info.stream)
+            assertFalse(reserved.exists())
+        } finally {
+            sql.execSQL("DROP TRIGGER reject_test_insert")
+            executor.shutdownNow()
+            reserved.delete()
+        }
+    }
+
+    @Test fun failedHistoryUpdateDoesNotAbortTransferCompletion() {
+        val db = com.reiniertutoriales.vireolumatv.singleton.AppDatabase.db
+        val sql = db.openHelper.writableDatabase
+        val executor = java.util.concurrent.Executors.newSingleThreadExecutor()
+        val info = Download().apply { filename = "metadata-test.bin" }
+        try {
+            executor.submit { DownloadHistory.insert(info) }.get(5, java.util.concurrent.TimeUnit.SECONDS)
+            sql.execSQL("CREATE TRIGGER reject_test_update BEFORE UPDATE ON downloads BEGIN SELECT RAISE(ABORT, 'history unavailable'); END")
+            info.size = 42
+            executor.submit { DownloadHistory.update(info) }.get(5, java.util.concurrent.TimeUnit.SECONDS)
+            assertEquals(42L, info.size)
+        } finally {
+            sql.execSQL("DROP TRIGGER IF EXISTS reject_test_update")
+            executor.submit { kotlinx.coroutines.runBlocking { db.downloadDao().delete(info) } }.get(5, java.util.concurrent.TimeUnit.SECONDS)
+            executor.shutdownNow()
+        }
+    }
+
 }

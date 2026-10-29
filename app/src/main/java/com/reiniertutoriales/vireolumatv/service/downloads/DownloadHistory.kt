@@ -9,6 +9,12 @@ internal object DownloadHistory {
     }
 
     fun update(download: Download) {
-        if (!download.incognito && download.id != 0L) AppDatabase.db.downloadDao().update(download)
+        if (!download.incognito && download.id != 0L) {
+            try { AppDatabase.db.downloadDao().update(download) }
+            catch (error: Exception) {
+                // The transfer must still close its output and notify the UI if metadata cannot be saved.
+                android.util.Log.w(Transfer.TAG, "Could not update download history", error)
+            }
+        }
     }
 }

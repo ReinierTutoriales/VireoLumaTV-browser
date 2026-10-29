@@ -53,8 +53,8 @@ sealed class Transfer(var job: Download, private val callback: Callback) : Runna
     protected open fun release() {}
 
     final override fun run() {
-        DownloadHistory.insert(job)
         val outcome = try {
+            DownloadHistory.insert(job)
             if (job.cancelled) Outcome.Cancelled else transfer()
         } catch (error: Exception) {
             if (job.cancelled) Outcome.Cancelled else Outcome.Failed(0, error.toString())

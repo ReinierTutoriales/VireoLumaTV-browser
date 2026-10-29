@@ -69,14 +69,25 @@ nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
         val dir = File(context.cacheDir, DOWNLOAD_DIR).apply { mkdirs() }
         dir.listFiles()?.forEach { it.delete() }
         val target = File(dir, release.apkName)
-        open(release.apkUrl, null).inputStream.use { input ->
-            target.outputStream().use { copyLimited(input, it) }
+        val connection = open(release.apkUrl, null)
+        return try {
+            saveVerified(connection.inputStream, target, release.sha256)
+        } finally { connection.disconnect() }
+    }
+
+    /** Owns the input and removes incomplete/unverified output on every failure. */
+    internal fun saveVerified(input: InputStream, target: File, expectedSha256: String): File {
+        var verified = false
+        try {
+            input.use { source -> target.outputStream().use { copyLimited(source, it) } }
+            if (!sha256(target).equals(expectedSha256, ignoreCase = true)) {
+                throw IOException("Checksum mismatch for ${target.name}")
+            }
+            verified = true
+            return target
+        } finally {
+            if (!verified) target.delete()
         }
-        if (!sha256(target).equals(release.sha256, ignoreCase = true)) {
-            target.delete()
-            throw IOException("Checksum mismatch for ${release.apkName}")
-        }
-        return target
     }
 
     /** Hands [apk] to the system installer. False when this app may not install packages yet. */
@@ -137,15 +148,18 @@ nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
 
     private fun readBytes(url: String, accept: String?): ByteArray {
         val out = ByteArrayOutputStream()
-        open(url, accept).inputStream.use { input ->
-            val buffer = ByteArray(8 * 1024)
-            while (true) {
-                val n = input.read(buffer)
-                if (n < 0) break
-                out.write(buffer, 0, n)
-                if (out.size() > MAX_TEXT_BYTES) throw IOException("Response too large")
+        val connection = open(url, accept)
+        try {
+            connection.inputStream.use { input ->
+                val buffer = ByteArray(8 * 1024)
+                while (true) {
+                    val n = input.read(buffer)
+                    if (n < 0) break
+                    out.write(buffer, 0, n)
+                    if (out.size() > MAX_TEXT_BYTES) throw IOException("Response too large")
+                }
             }
-        }
+        } finally { connection.disconnect() }
         return out.toByteArray()
     }
 
@@ -170,8 +184,14 @@ nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
         connection.useCaches = false
         connection.setRequestProperty("User-Agent", "VireoLumaTV/${BuildConfig.VERSION_NAME}")
         accept?.let { connection.setRequestProperty("Accept", it) }
-        if (connection.responseCode !in 200..299) throw IOException("HTTP ${connection.responseCode} for $url")
-        return connection
+        try {
+            val code = connection.responseCode
+            if (code !in 200..299) throw IOException("HTTP $code for $url")
+            return connection
+        } catch (error: Exception) {
+            connection.disconnect()
+            throw error
+        }
     }
 
     private fun copyLimited(input: InputStream, output: OutputStream) {

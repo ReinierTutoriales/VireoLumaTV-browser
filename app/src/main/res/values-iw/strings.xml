@@ -174,4 +174,5 @@
         <item>720p</item>
         <item>480p</item>
     </string-array>
+    <string name="download_queue_full">תור ההורדות מלא. יש להמתין לסיום הורדה ולנסות שוב.</string>
 </resources>

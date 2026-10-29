@@ -33,6 +33,19 @@ class DownloadServiceTest {
         assertEquals("README_(1)", DownloadService.freeFile(dir, "README").name)
     }
 
+    @Test fun waitingDownloadsReserveDistinctLegacyFilesBeforeAnyWorkerWrites() {
+        val first = DownloadService.reserveFile(folder.root, "same.zip")
+        val second = DownloadService.reserveFile(folder.root, "same.zip")
+        assertEquals("same.zip", first.name)
+        assertEquals("same_(1).zip", second.name)
+        assertTrue(first.exists())
+        assertTrue(second.exists())
+        first.writeText("first payload")
+        val third = DownloadService.reserveFile(folder.root, "same.zip")
+        assertEquals("same_(2).zip", third.name)
+        assertEquals("first payload", first.readText())
+    }
+
     @Test fun foregroundTimeoutCancelsDownloadsAndStopsTheService() {
         val controller = Robolectric.buildService(DownloadService::class.java).create()
         val service = controller.get()
@@ -45,4 +58,42 @@ class DownloadServiceTest {
         model.runningDownloads.clear()
         controller.destroy()
     }
+    @Test fun saturatedWorkersRejectOverflowWithoutLeakingItsStreamOrReportingItStarted() {
+        val controller = Robolectric.buildService(DownloadService::class.java).create()
+        val service = controller.get()
+        val executor = DownloadService::class.java.getDeclaredField("executor").apply { isAccessible = true }
+            .get(service) as java.util.concurrent.ThreadPoolExecutor
+        val active = java.util.concurrent.CountDownLatch(2)
+        val release = java.util.concurrent.CountDownLatch(1)
+        var rejectedClosed = false
+        try {
+            repeat(2) { executor.execute { active.countDown(); release.await() } }
+            assertTrue(active.await(3, java.util.concurrent.TimeUnit.SECONDS))
+            repeat(4) {
+                assertTrue(service.startDownload(Download().apply {
+                    incognito = true; filename = "$it.bin"; stream = byteArrayOf(1).inputStream()
+                }))
+            }
+            val rejected = Download().apply {
+                incognito = true
+                stream = object : java.io.ByteArrayInputStream(byteArrayOf(1)) {
+                    override fun close() { rejectedClosed = true; super.close() }
+                }
+                base64BlobData = "not retained"
+            }
+            assertFalse(service.startDownload(rejected))
+            assertEquals(4, executor.queue.size)
+            assertTrue(rejectedClosed)
+            assertNull(rejected.stream)
+            assertNull(rejected.base64BlobData)
+            val model = ScreenModels.get(RunningDownloads::class, service)
+            assertEquals(4, model.runningDownloads.size)
+            assertFalse(model.runningDownloads.any { it.job === rejected })
+        } finally {
+            controller.destroy() // Marks accepted queued tasks cancelled before they can create output.
+            release.countDown()
+            assertTrue(executor.awaitTermination(3, java.util.concurrent.TimeUnit.SECONDS))
+        }
+    }
+
 }

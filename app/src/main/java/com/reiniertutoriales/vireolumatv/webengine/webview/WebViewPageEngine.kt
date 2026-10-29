@@ -38,7 +38,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     /** The page's pointer mode before fullscreen, restored after it (D-pad mode stays D-pad mode). */
     private var pointerBeforeFullscreen = true
     /** Pending Android permission requests: code to "is it the location request". */
-    private val permissionRequests = HashMap<Int, Boolean>()
+    private val permissionRequests = HashMap<Int, Pair<Boolean, Long>>()
     internal val bridge = PageBridge(this)
 
     private val adblockEnabled get() = tab.adblock ?: AppContext.config.adBlockEnabled
@@ -162,8 +162,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     }
 
     override fun onPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean {
-        val location = permissionRequests.remove(requestCode) ?: return false
-        webView?.onPermissionsResult(permissions, grantResults, location)
+        val (location, generation) = permissionRequests.remove(requestCode) ?: return false
+        webView?.onPermissionsResult(permissions, grantResults, location, generation)
         return true
     }
 
@@ -197,8 +197,9 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     }
 
     internal fun requestPermissions(permissions: Array<String>, location: Boolean) {
+        val generation = webView?.permissions?.generation ?: return
         val code = window?.requestPermissions(permissions) ?: return
-        permissionRequests[code] = location
+        permissionRequests[code] = location to generation
     }
 
     internal fun isAd(request: WebResourceRequest, page: Uri): Boolean = classified(request, page) { type, context ->
@@ -297,3 +298,4 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         }
     }
 }
+

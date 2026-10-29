@@ -174,4 +174,5 @@
         <item>720p</item>
         <item>480p</item>
     </string-array>
+    <string name="download_queue_full">Kolejka pobierania jest pełna. Poczekaj na zakończenie pobierania i spróbuj ponownie.</string>
 </resources>

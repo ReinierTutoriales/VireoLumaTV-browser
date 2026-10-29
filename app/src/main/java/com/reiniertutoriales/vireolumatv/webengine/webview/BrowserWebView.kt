@@ -234,8 +234,8 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
 
     fun onFilePicked(resultCode: Int, data: Intent?) = chromeClient.onFilePicked(resultCode, data)
 
-    fun onPermissionsResult(permissions: Array<String>, grantResults: IntArray, typeGeo: Boolean) =
-        this.permissions.onAndroidPermissionsResult(permissions, grantResults, typeGeo)
+    fun onPermissionsResult(permissions: Array<String>, grantResults: IntArray, typeGeo: Boolean, generation: Long) =
+        this.permissions.onAndroidPermissionsResult(permissions, grantResults, typeGeo, generation)
 
     fun onBlockerToggled(adblockEnabled: Boolean) {
         youtubeAdblock.setEnabled(adblockEnabled)
@@ -245,6 +245,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     }
 
     override fun destroy() {
+        permissions.destroy()
         ui.removeCallbacks(reportBlockedAds)
         youtubeAdblock.destroy()
         adblockPage.destroy()

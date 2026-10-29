@@ -19,6 +19,8 @@ import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
 import com.reiniertutoriales.vireolumatv.utils.activity
 import com.reiniertutoriales.vireolumatv.webengine.Engines
+import kotlinx.coroutines.CancellationException
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,6 +37,7 @@ class AboutPage @JvmOverloads constructor(
 
     var callback: Callback? = null
     private var updateButton: Button? = null
+    private var pendingUpdate: File? = null
 
     init {
         val rows = SettingsRows(LayoutInflater.from(context).inflate(R.layout.settings_general, this, true)
@@ -65,16 +68,25 @@ class AboutPage @JvmOverloads constructor(
         val owner = activity as? LifecycleOwner ?: return
         updateButton?.isEnabled = false
         owner.lifecycleScope.launch {
-            try { work() } finally { updateButton?.isEnabled = true }
+            try {
+                work()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                context.toast(R.string.update_failed)
+            } finally { updateButton?.isEnabled = true }
         }
     }
 
     private fun checkForUpdates() = whileUpdating {
-        runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() } }
-            .onFailure { context.toast(R.string.update_failed) }
-            .onSuccess { release ->
-                if (release == null) context.toast(R.string.update_none) else confirmUpdate(release)
-            }
+        // Returning from unknown-source settings should retry the verified file, not download it again.
+        pendingUpdate?.takeIf { it.isFile }?.let {
+            ReleaseUpdater.install(context, it)
+            return@whileUpdating
+        }
+        pendingUpdate = null
+        val release = withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() }
+        if (release == null) context.toast(R.string.update_none) else confirmUpdate(release)
     }
 
     private fun confirmUpdate(release: ReleaseUpdater.Release) {
@@ -87,9 +99,9 @@ class AboutPage @JvmOverloads constructor(
     }
 
     private fun downloadAndInstall(release: ReleaseUpdater.Release) = whileUpdating {
-        runCatching { withContext(Dispatchers.IO) { ReleaseUpdater.download(context, release) } }
-            .onSuccess { ReleaseUpdater.install(context, it) }
-            .onFailure { context.toast(R.string.update_failed) }
+        val apk = withContext(Dispatchers.IO) { ReleaseUpdater.download(context, release) }
+        pendingUpdate = apk
+        ReleaseUpdater.install(context, apk)
     }
 
     private companion object {
