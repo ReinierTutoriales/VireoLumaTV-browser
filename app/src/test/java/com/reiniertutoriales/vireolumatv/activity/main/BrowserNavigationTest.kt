@@ -196,6 +196,37 @@ class BrowserNavigationTest {
         assertTrue("Back must be reachable as the first bottom-bar command", f.vb.controlsRow.backButton.hasFocus())
     }
 
+    /** A new tab has no history: Back and Forward are off, and the row must still be walkable both ways. */
+    @Test fun capsuleRowStaysWalkableWithoutHistory() = Fixture().use { f ->
+        val bar = f.vb.controlsRow
+        val address = bar.findViewById<EditText>(R.id.address_field)
+        f.activity.consumeBack()
+        bar.showHistory(canGoBack = false, canGoForward = false)
+        val row = listOf(address, bar.refreshButton, bar.homeButton, bar.adBlockButton, bar.findViewById<View>(R.id.menu_button))
+        assertTrue(address.requestFocus())
+        address.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT))
+        address.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_RIGHT))
+        assertTrue("Right from the address must reach the first usable command", bar.refreshButton.hasFocus())
+        for (i in 1 until row.size - 1) {
+            val next = row[i].focusSearch(View.FOCUS_RIGHT)
+            assertSame("Right from ${row[i].id}", row[i + 1], next)
+            assertTrue(next.requestFocus())
+        }
+        for (i in row.size - 1 downTo 1) {
+            val previous = row[i].focusSearch(View.FOCUS_LEFT)
+            assertSame("Left from ${row[i].id}", row[i - 1], previous)
+            assertTrue("Left must actually move focus", previous.requestFocus())
+        }
+        assertFalse("A disabled command cannot hold focus", bar.backButton.isFocusable)
+        bar.showHistory(canGoBack = true, canGoForward = false)
+        assertTrue(address.requestFocus())
+        address.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT))
+        address.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_RIGHT))
+        assertTrue("With history, Right from the address reaches Back", bar.backButton.hasFocus())
+        assertSame("Left from Back returns to the address", address, bar.backButton.focusSearch(View.FOCUS_LEFT))
+        assertSame("Right from Back skips the disabled Forward", bar.refreshButton, bar.backButton.focusSearch(View.FOCUS_RIGHT))
+    }
+
     @Test fun tabsLeadToSearchAndExitingAddressDoesNotFocusCloseApp() = Fixture().use { f ->
         val bar = f.vb.controlsRow
         val address = bar.findViewById<EditText>(R.id.address_field)

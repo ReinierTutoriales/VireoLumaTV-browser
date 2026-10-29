@@ -128,7 +128,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
             }
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
                 if (editing) false else {
-                    if (down && event.repeatCount == 0) backButton.requestFocus()
+                    if (down && event.repeatCount == 0) commands.firstOrNull { it.isFocusable && it.isShown }?.requestFocus()
                     true
                 }
             }
@@ -160,7 +160,22 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         takeFocus()
     }
 
-    fun takeFocus() { backButton.requestFocus() }
+    fun takeFocus() { commands.firstOrNull { it.isFocusable && it.isShown }?.requestFocus() }
+
+    /**
+     * Back and Forward follow the page's history. A command that cannot run also leaves the focus
+     * order (on every API level), so Left and Right move between the commands that can.
+     */
+    fun showHistory(canGoBack: Boolean, canGoForward: Boolean) {
+        setUsable(backButton, canGoBack)
+        setUsable(forwardButton, canGoForward)
+    }
+
+    private fun setUsable(button: View, usable: Boolean) {
+        if (!usable && button.hasFocus()) commands.firstOrNull { it !== button && it.isFocusable }?.requestFocus()
+        button.isEnabled = usable
+        button.isFocusable = usable
+    }
 
     override fun onDetachedFromWindow() {
         removeCallbacks(selectText)

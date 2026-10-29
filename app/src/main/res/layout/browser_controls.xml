@@ -22,7 +22,6 @@
             android:imeOptions="actionSearch|flagNoExtractUi"
             android:importantForAutofill="no"
             android:inputType="textUri"
-            android:nextFocusRight="@id/back_button"
             android:nextFocusDown="@id/tab_strip" />
     </FrameLayout>
 
@@ -32,8 +31,6 @@
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/nav_back"
         android:src="@drawable/ic_back"
-        android:nextFocusLeft="@id/address_field"
-        android:nextFocusRight="@id/forward_button"
         android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
@@ -42,8 +39,6 @@
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/nav_forward"
         android:src="@drawable/ic_forward"
-        android:nextFocusLeft="@id/back_button"
-        android:nextFocusRight="@id/reload_button"
         android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
@@ -52,8 +47,6 @@
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/nav_reload"
         android:src="@drawable/ic_refresh"
-        android:nextFocusLeft="@id/forward_button"
-        android:nextFocusRight="@id/home_button"
         android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
@@ -62,8 +55,6 @@
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/nav_home"
         android:src="@drawable/ic_home"
-        android:nextFocusLeft="@id/reload_button"
-        android:nextFocusRight="@id/blocker_button"
         android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
@@ -72,8 +63,6 @@
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/blocker_toggle"
         android:src="@drawable/ic_shield_on"
-        android:nextFocusLeft="@id/home_button"
-        android:nextFocusRight="@id/menu_button"
         android:nextFocusDown="@id/tab_strip" />
 
     <ImageButton
@@ -81,6 +70,5 @@
         style="@style/Widget.Vireo.IconButton"
         android:contentDescription="@string/nav_menu"
         android:src="@drawable/ic_more"
-        android:nextFocusLeft="@id/blocker_button"
         android:nextFocusDown="@id/tab_strip" />
 </merge>

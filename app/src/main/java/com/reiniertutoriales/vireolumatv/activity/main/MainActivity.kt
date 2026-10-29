@@ -531,8 +531,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     /** The capsule follows the shown tab: Back and Forward availability and the blocker shield. */
     internal fun onPageViewChanged(tab: BrowserTab) {
         if (tab === tabStore.currentTab.value) publishShownSite()
-        vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
-        vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
+        vb.controlsRow.showHistory(tab.engine.canGoBack, tab.engine.canGoForward)
         val blocking = tab.adblock ?: config.adBlockEnabled
         vb.controlsRow.adBlockButton.setImageResource(if (blocking) R.drawable.ic_shield_on else R.drawable.ic_shield_off)
         updateAdblockStatus(tab)
