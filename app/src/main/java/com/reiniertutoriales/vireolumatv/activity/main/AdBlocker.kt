@@ -366,7 +366,8 @@ class AdBlocker @JvmOverloads constructor(
         uboTitle = "uBlock"
     )
 
-    internal var fetchList = AdblockListDownloader::fetch
+    internal var fetchList: (List<String>, Boolean, AdblockListDownloader.Validators?) -> AdblockListDownloader.Result =
+        AdblockListDownloader::fetch
 
     private fun resolveFilterLists(filterLists: List<FilterList>): List<ResolvedFilterList> {
         return filterLists.mapNotNull { filterList ->
