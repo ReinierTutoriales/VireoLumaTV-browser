@@ -177,8 +177,12 @@ nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
             verify(signature)
         }
 
+    internal fun isSecureUpdateUrl(url: URL): Boolean = url.protocol.equals("https", ignoreCase = true)
+
     private fun open(url: String, accept: String?): HttpURLConnection {
-        val connection = URL(url).openConnection() as HttpURLConnection
+        val source = URL(url)
+        if (!isSecureUpdateUrl(source)) throw IOException("Release updates require HTTPS")
+        val connection = source.openConnection() as HttpURLConnection
         connection.connectTimeout = 10_000
         connection.readTimeout = 20_000
         connection.useCaches = false
@@ -187,6 +191,7 @@ nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
         try {
             val code = connection.responseCode
             if (code !in 200..299) throw IOException("HTTP $code for $url")
+            if (!isSecureUpdateUrl(connection.url)) throw IOException("Release update redirected outside HTTPS")
             return connection
         } catch (error: Exception) {
             connection.disconnect()
