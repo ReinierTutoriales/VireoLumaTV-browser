@@ -74,22 +74,6 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
         }
     }
 
-    /** Reject traversal, encoded separators, queries and fragments before addressing local assets. */
-    internal fun safeHomeAssetPath(address: String): String? {
-        val uri = runCatching { Uri.parse(address) }.getOrNull() ?: return null
-        val base = Uri.parse(Config.HOME_PAGE_URL)
-        if (!uri.scheme.equals(base.scheme, true) || !uri.host.equals(base.host, true) ||
-            uri.port != base.port || uri.encodedQuery != null || uri.encodedFragment != null) return null
-        val basePath = base.encodedPath.orEmpty()
-        val path = uri.encodedPath.orEmpty()
-        if (!path.startsWith(basePath)) return null
-        val encoded = path.removePrefix(basePath)
-        if (encoded.isEmpty() || encoded == "/") return "index.html"
-        if (encoded.startsWith("/") || encoded.contains('%') || encoded.contains('\\') ||
-            encoded.split('/').any { it.isEmpty() || it == "." || it == ".." }) return null
-        return encoded
-    }
-
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
         this.view.onDocumentStarted(url)
@@ -173,3 +157,20 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
             .show()
     }
 }
+
+/** Reject traversal, encoded separators, queries and fragments before addressing local assets. */
+internal fun safeHomeAssetPath(address: String): String? {
+    val uri = runCatching { Uri.parse(address) }.getOrNull() ?: return null
+    val base = Uri.parse(Config.HOME_PAGE_URL)
+    if (!uri.scheme.equals(base.scheme, true) || !uri.host.equals(base.host, true) ||
+        uri.port != base.port || uri.encodedQuery != null || uri.encodedFragment != null) return null
+    val basePath = base.encodedPath.orEmpty()
+    val path = uri.encodedPath.orEmpty()
+    if (!path.startsWith(basePath)) return null
+    val encoded = path.removePrefix(basePath)
+    if (encoded.isEmpty() || encoded == "/") return "index.html"
+    if (encoded.startsWith("/") || encoded.contains('%') || encoded.contains('\\') ||
+        encoded.split('/').any { it.isEmpty() || it == "." || it == ".." }) return null
+    return encoded
+}
+
