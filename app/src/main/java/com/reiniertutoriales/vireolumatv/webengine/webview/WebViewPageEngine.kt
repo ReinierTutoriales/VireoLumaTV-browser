@@ -172,6 +172,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         if (!fullscreen && !tab.mediaStarted && !youtube) return false
         val key = event.keyCode
         val openKey = key == KeyEvent.KEYCODE_MENU ||
+            (!fullscreen && tab.mediaStarted && key == KeyEvent.KEYCODE_DPAD_UP) ||
             (fullscreen && key in setOf(KeyEvent.KEYCODE_DPAD_UP,
                 KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT))
         if (controls.visibility != View.VISIBLE) {
@@ -225,10 +226,15 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         fun add(icon: Int, description: String, action: () -> Unit) {
             row.addView(ImageButton(context).apply {
                 setImageResource(icon)
+                setColorFilter(android.graphics.Color.WHITE)
+                setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF34343C.toInt()))
                 contentDescription = description
                 isFocusable = true
-                minimumWidth = (56 * resources.displayMetrics.density).toInt()
-                minimumHeight = (48 * resources.displayMetrics.density).toInt()
+                val density = resources.displayMetrics.density
+                layoutParams = LinearLayout.LayoutParams((64 * density).toInt(), (52 * density).toInt()).apply {
+                    marginStart = (4 * density).toInt()
+                    marginEnd = (4 * density).toInt()
+                }
                 setOnClickListener {
                     action()
                     if (mediaControls != null) scheduleControlsHide()
@@ -237,7 +243,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
             })
         }
         add(android.R.drawable.ic_media_rew, "Retroceder 10 segundos") { media(MediaCommand.REWIND) }
-        add(android.R.drawable.ic_media_play, "Reproducir o pausar") { media(MediaCommand.PLAY_PAUSE) }
+        add(android.R.drawable.ic_media_pause, "Reproducir o pausar") { media(MediaCommand.PLAY_PAUSE) }
         add(android.R.drawable.ic_media_ff, "Adelantar 10 segundos") { media(MediaCommand.FAST_FORWARD) }
         add(android.R.drawable.ic_media_next, "Siguiente vídeo") { nextYouTubeVideo() }
         if (fullscreenView != null) {
