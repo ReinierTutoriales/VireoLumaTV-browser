@@ -760,6 +760,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             override fun dispatchKeyEvent(event: KeyEvent): Boolean {
                 UserActivation.onKeyEvent(event)
                 if (backPresses.dispatchKeyEvent(event)) return true
+                if ((tabStore.currentTab.value?.engine as? WebViewPageEngine)
+                        ?.handleMediaOverlayKey(event) == true) return true
                 val code = if (event.keyCode != 0) event.keyCode else event.scanCode
                 if (code !in BackPresses.BACK_KEYS &&
                     Shortcuts.getInstance().handle(event, this@MainActivity, tabStore.currentTab.value)) return true
