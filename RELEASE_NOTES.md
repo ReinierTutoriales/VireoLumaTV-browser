@@ -1,21 +1,15 @@
-# VireoLumaTV 2.0.6
+# VireoLumaTV 2.0.7
 
 ## Cambios
+- OSD multimedia nativo tanto para vídeo en fullscreen como en modo normal, con retroceso/avance, pausa y botón contextual Maximizar o Minimizar.
+- Intento de Siguiente para YouTube mediante el control expuesto por su interfaz web; puede no estar disponible en todos los estados del reproductor.
+- Navegación Atrás más eficiente: consulta incremental del historial sin crear listas temporales.
+- Descargas de actualización restringidas a HTTPS también después de redirecciones, manteniendo firma y hashes.
+- Política de códecs cacheada por proceso para evitar recalcular listas en cada navegación.
+- Skills de seguridad y verificación de versiones mejoradas.
 
-- Atrás en TV omite entradas consecutivas con la misma URL para no retroceder a una recarga idéntica; conserva navegación por fragmentos (#) y páginas distintas.
-- Una excepción de certificado TLS solo se reutiliza cuando coinciden los bytes DER de ambos certificados; si no están disponibles, se rechaza.
-- Al cambiar entre modo normal y privado, se conserva una dirección web permitida sin copiar extras arbitrarios del intent de origen.
-- WebView deshabilita explícitamente el acceso a archivos y el acceso cruzado entre URLs locales, manteniendo JavaScript y funciones web.
-- Los recursos internos de Inicio validan origen, segmentos y rutas antes de abrir assets, rechazando recorridos de directorios y separadores codificados.
+## Compatibilidad
+Versión 2.0.7; versionCode 101. Se conservan applicationId, firma, datos, motor WebView y política de resolución de 2.0.6. No se ha forzado una reducción de calidad; YouTube conserva sus controles originales y el bloqueo de anuncios.
 
-## Compatibilidad y actualización
-
-VersionName 2.0.6, versionCode 100; sin cambios intencionados en applicationId, firma, esquema Room, motor WebView ni formatos de datos.
-Las variantes oficiales de APK son armeabi-v7a, arm64-v8a y x86_64. La variante generic conserva la actualización integrada con comprobación de checksums firmados.
-
-## Validación y límites
-
-Las correcciones incluyen pruebas de regresión automatizadas. La publicación exige CI, compilación release, lint y verificación de firma/artefactos.
-No equivale a validar reproducción, navegación, descargas y rendimiento con mando en una TV física.
-
-El aislamiento por origen del puente JavaScript, las reglas de backup y otros endurecimientos identificados en auditoría requieren cambios y verificaciones posteriores; **no se presentan como resueltos en 2.0.6**.
+## Validación
+Los cambios individuales superaron CI. La versión conjunta exige pruebas, lint y compilación release antes de su publicación. La CI no certifica fluidez, calidad 4K/HDR, ni funcionamiento del OSD en hardware físico. El botón Siguiente/Maximizar depende del DOM del reproductor web y requiere prueba con YouTube actual.
