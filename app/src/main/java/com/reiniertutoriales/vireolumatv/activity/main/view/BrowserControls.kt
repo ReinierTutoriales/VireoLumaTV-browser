@@ -11,6 +11,7 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
+import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
@@ -54,6 +55,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         orientation = HORIZONTAL
         if (!isInEditMode) {
             ui.blockerButton.imageTintList = context.getColorStateList(R.color.blocker_icon)
+            showBlockerEnabled(AppContext.config.adBlockEnabled)
             ui.menuButton.setOnClickListener { callback?.showAppMenu() }
             renderEditing(false)
             ui.addressField.setOnClickListener { beginEditing() }
@@ -82,6 +84,12 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                     else context.getString(R.string.nav_menu_downloads, count)
             }
         }
+    }
+
+    fun showBlockerEnabled(enabled: Boolean) {
+        if (adBlockButton.isSelected == enabled) return
+        adBlockButton.isSelected = enabled
+        adBlockButton.setImageResource(if (enabled) R.drawable.ic_shield_on else R.drawable.ic_shield_off)
     }
 
     private fun renderEditing(value: Boolean) {

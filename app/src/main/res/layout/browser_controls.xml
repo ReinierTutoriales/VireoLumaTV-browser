@@ -73,7 +73,7 @@
         style="@style/Widget.Vireo.IconButton"
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/blocker_toggle"
-        android:src="@drawable/ic_shield_on"
+        android:src="@drawable/ic_shield_off"
         android:nextFocusLeft="@id/home_button"
         android:nextFocusRight="@id/menu_button"
         android:nextFocusDown="@id/tab_strip" />
