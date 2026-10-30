@@ -245,10 +245,13 @@ Los comandos multimedia priorizan el elemento fullscreen, después vídeos
 visibles y su reproducción/tamaño, con audio como alternativa. El seek respeta
 los rangos DVR; en vídeo de duración finita con metadatos permite currentTime
 aunque el proveedor aún no informe rangos. No fuerza seek de un directo sin rango.
+VP8, VP9 y AV1 se comprueban por separado; no se deshabilita VP8 por faltar VP9.
+La enumeración de decodificadores se comparte una vez por proceso.
 No añade un reproductor nativo, ni garantiza control de iframes de otro origen o
 una calidad universal: Media3 requiere la fuente y, en contenido protegido,
 configuración DRM. La calidad adaptativa sigue dependiendo del reproductor.
 Fuentes: https://developer.android.com/training/tv/get-started/navigation ;
 https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime ;
-https://developer.android.com/media/media3/exoplayer/media-items .
+https://developer.android.com/media/media3/exoplayer/media-items ;
+https://developer.android.com/reference/android/media/MediaCodecInfo .
 Prueba física con mando/teclado/proveedor WebView pendiente.
