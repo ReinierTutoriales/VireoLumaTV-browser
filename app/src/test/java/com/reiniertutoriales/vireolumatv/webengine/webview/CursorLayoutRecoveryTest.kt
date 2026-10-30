@@ -4,6 +4,7 @@ import android.app.Activity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerLayout
 import org.junit.Assert.*
@@ -16,6 +17,44 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class CursorLayoutRecoveryTest {
+    @Test fun webEditorFocusWithoutKeyboardDoesNotStealTheBookmarkPointerClick() {
+        val controller = Robolectric.buildActivity(Activity::class.java).setup()
+        try {
+            val activity = controller.get()
+            val layout = PointerLayout(activity)
+            val keys = mutableListOf<Int>()
+            val touches = mutableListOf<Pair<Int, Float>>()
+            val page = object : WebView(activity) {
+                override fun onCheckIsTextEditor() = true
+                override fun onKeyDown(code: Int, event: KeyEvent): Boolean {
+                    keys += code
+                    return true
+                }
+                override fun onKeyUp(code: Int, event: KeyEvent) = true
+                override fun onTouchEvent(event: MotionEvent): Boolean {
+                    touches += event.actionMasked to event.x
+                    return true
+                }
+            }.apply { isFocusableInTouchMode = true }
+            layout.addView(page)
+            activity.setContentView(layout)
+            layout.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
+            layout.layout(0, 0, 800, 600)
+            assertTrue(page.requestFocus())
+            assertTrue(page.onCheckIsTextEditor())
+            assertFalse("Dismissed web keyboard must release the remote", layout.isTextInputActive())
+            layout.pointerController.cursorPosition.set(520f, 420f)
+            layout.pointerController.fadeIn()
+            for (action in listOf(KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP)) {
+                assertTrue(layout.dispatchKeyEvent(KeyEvent(action, KeyEvent.KEYCODE_DPAD_CENTER)))
+            }
+            assertTrue("OK must not return to the focused search editor", keys.isEmpty())
+            assertEquals(listOf(MotionEvent.ACTION_DOWN to 520f, MotionEvent.ACTION_UP to 520f), touches)
+            page.destroy()
+        } finally { controller.pause().stop().destroy() }
+    }
+
     @Test fun focusedTextEditorReceivesEnterAndDpadWithoutImeInsets() {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         try {

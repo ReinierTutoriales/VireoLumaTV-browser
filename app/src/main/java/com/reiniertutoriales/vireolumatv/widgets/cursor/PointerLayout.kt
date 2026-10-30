@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.widget.FrameLayout
+import android.webkit.WebView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.reiniertutoriales.vireolumatv.AppContext
@@ -54,7 +55,12 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
         }
     }
 
-    fun isTextInputActive(): Boolean = findFocus()?.onCheckIsTextEditor() == true
+    fun isTextInputActive(): Boolean {
+        val focused = findFocus() ?: return false
+        // WebView can retain an editable DOM focus after the IME is dismissed. That must
+        // not redirect remote clicks away from the pointer back into the search field.
+        return focused.onCheckIsTextEditor() && (focused !is WebView || imeVisible())
+    }
 
     private fun imeVisible(): Boolean =
         ViewCompat.getRootWindowInsets(rootView)?.isVisible(WindowInsetsCompat.Type.ime()) == true
