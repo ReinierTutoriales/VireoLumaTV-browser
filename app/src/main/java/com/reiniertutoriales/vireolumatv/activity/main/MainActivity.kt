@@ -722,7 +722,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val target = Intent(this, if (incognito) PrivateBrowserActivity::class.java else MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         intentToCopy?.let { source ->
-            source.extras?.let(target::putExtras)
             ExternalWebNavigation.copyAllowedData(source, target)
         }
         startActivity(target)
