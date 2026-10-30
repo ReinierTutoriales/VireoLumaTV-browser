@@ -181,6 +181,23 @@ class AdBlocker @JvmOverloads constructor(
                         }
                     }
                 }
+                // An engine upgrade can invalidate the binary cache. Recover from saved text
+                // before waiting on any server, so existing rules protect the initial page.
+                if (!hasCurrentClient(configuredUrl)) {
+                    val saved = filterLists.mapNotNull { list ->
+                        readCachedFilterList(list, File(filesDir, list.cacheFileName))
+                    }
+                    if (saved.isNotEmpty()) {
+                        require(saved.sumOf { it.length.toLong() } <= 16L * 1024 * 1024)
+                        loadedClient = engine.compile(saved)
+                        loadedClient?.let { recovered ->
+                            if (config.blockListUrl.value == configuredUrl) {
+                                installClient(recovered, configuredUrl)
+                                AdblockCache.write(cachedList, recovered)
+                            }
+                        }
+                    }
+                }
                 // Popup and element hiding rules: from their own caches, or once from the saved list text.
                 if (!hasAuxiliary(configuredUrl)) {
                     restoreAuxiliary(configuredUrl) ?: run {
@@ -204,6 +221,12 @@ class AdBlocker @JvmOverloads constructor(
                     unavailable = filterLists.filter { list ->
                         resolvedLists.none { it.filterList == list && it.source != FilterListSource.CACHE }
                     }.map { it.name }
+                    if (missingLists && hasCurrentClient(configuredUrl)) {
+                        // A smaller refresh must not discard rules from the active generation.
+                        // Retry later; downloaded text is saved for the next complete refresh.
+                        Log.w(TAG, "Keeping active rules because the refresh is missing lists")
+                        return@ioContext
+                    }
                     if (resolvedLists.isEmpty()) {
                         Log.w(TAG, "No usable adblock filter list text available")
                     } else {
@@ -343,6 +366,9 @@ class AdBlocker @JvmOverloads constructor(
         uboTitle = "uBlock"
     )
 
+    internal var fetchList: (List<String>, Boolean, AdblockListDownloader.Validators?) -> AdblockListDownloader.Result =
+        AdblockListDownloader::fetch
+
     private fun resolveFilterLists(filterLists: List<FilterList>): List<ResolvedFilterList> {
         return filterLists.mapNotNull { filterList ->
             val cacheFile = File(VireoLumaTVApp.instance.filesDir, filterList.cacheFileName)
@@ -356,7 +382,7 @@ class AdBlocker @JvmOverloads constructor(
                 val savedValidators = readValidators(validatorsFile)
                 val savedMain = if (previous != null && savedValidators != null) readCachedFilterList(filterList, mainFile) else null
                 val validators = if (savedMain != null) savedValidators else null
-                when (val result = AdblockListDownloader.fetch(listOf(filterList.url) + filterList.mirrors,
+                when (val result = fetchList(listOf(filterList.url) + filterList.mirrors,
                     filterList.requiresAdblockHeader, validators)) {
                     AdblockListDownloader.Result.NotModified -> {
                         // The main list is current; its sub-lists are still checked against their own validators.
@@ -407,7 +433,7 @@ class AdBlocker @JvmOverloads constructor(
         if (filterList.uboTitle == null) return mainText
         val base = sourceUrl.substringBeforeLast('/') + "/"
         return SubListCache(cacheFile.parentFile!!, cacheFile.name).refresh(mainText, base) { url, cached ->
-            AdblockListDownloader.fetch(listOf(url), requiresAdblockHeader = false, cached = cached)
+            fetchList(listOf(url), false, cached)
         }
     }
 
@@ -651,7 +677,7 @@ class AdBlocker @JvmOverloads constructor(
      * from the JavaBridge thread by assets/adblock/page_filters.js.
      */
     fun pageFilters(pageUrl: String): String {
-        val current = installedClient ?: return ""
+        val current = installedClient ?: return "{\"pending\":true}"
         current.pageFilters.get(pageUrl)?.let { return it }
         return try {
             (if (current.blocker.isConcurrent) current.blocker.pageFilters(pageUrl)

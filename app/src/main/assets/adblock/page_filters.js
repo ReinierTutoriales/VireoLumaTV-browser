@@ -5,10 +5,9 @@
 // resource templates, so nothing here uses eval() and page CSP cannot block it. The scriptlets
 // below are written for VireoLumaTV from the behaviour documented in the uBlock Origin wiki
 // ("Resources Library"); they accept the same names and arguments as the filter lists.
-(function () {
+(function applyPageFilters(attempt) {
     'use strict';
-    if (window.__vireoPageFilters) return;
-    window.__vireoPageFilters = true;
+    if (window.__vireoPageFilters || window.__vireoPageFiltersWaiting) return;
     var bridge = window.VireoLumaTVApp;
     if (!bridge || typeof bridge.pageFilters !== 'function') return;
     var href = String(location.href);
@@ -16,7 +15,8 @@
     // Tell the browser once that the user is watching media here: popups opened from then on must
     // not replace the player. Muted autoplay (ads, previews) and short clips do not count. Media
     // events do not bubble, so listen in the capture phase.
-    if (typeof bridge.mediaStarted === 'function' && typeof document.addEventListener === 'function') {
+    if (!window.__vireoMediaTracking && typeof bridge.mediaStarted === 'function' && typeof document.addEventListener === 'function') {
+        window.__vireoMediaTracking = true;
         var onMedia = function (event) {
             var media = event && event.target;
             if (!media || media.paused || media.muted || media.volume === 0) return;
@@ -32,7 +32,19 @@
     var data;
     try { data = JSON.parse(bridge.pageFilters(href) || '{}'); } catch (_) { return; }
     if (!data || typeof data !== 'object') return;
-
+    if (data.pending === true) {
+        // Only an explicit pending response is retried. One timer per document, bounded
+        // to twelve retries (about 36 s); a valid empty result is final.
+        if (attempt < 12) {
+            window.__vireoPageFiltersWaiting = true;
+            setTimeout(function () {
+                window.__vireoPageFiltersWaiting = false;
+                applyPageFilters(attempt + 1);
+            }, Math.min(100 * Math.pow(2, attempt), 5000));
+        }
+        return;
+    }
+    window.__vireoPageFilters = true;
     var Reflect_ = window.Reflect, Proxy_ = window.Proxy;
     var defineProperty = Object.defineProperty, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
     var magic = 'vireo' + Math.floor(Math.random() * 1e9).toString(36);
@@ -1372,4 +1384,4 @@
             fn.apply(null, args);
         } catch (_) {}
     }
-})();
+})(0);

@@ -117,3 +117,20 @@ Se descargaron los tres APK y `SHA256SUMS.txt`/`.sig`. La firma ECDSA del manifi
 | x86_64 | `5b01fc667afeefe4d7f828e186beab1ec5fd03af2514b97a170e850dc302b06b` |
 
 `RELEASE_SOURCE.txt` y `SIGNING.txt` también coincidieron con sus hashes firmados. El primero vincula la release a `19da33fb585b3f89bee76ccd083a5b230af42eac`; el segundo registra la verificación con apksigner del workflow. Por tanto, **el APK 2.0.1 publicado no es el `master` auditado `af790f39`**: los commits posteriores requieren otra versión/código de versión y una publicación antes de llegar al actualizador. Mantener ambos como 2.0.1 no permite que `isNewer` ofrezca esos cambios a quien ya tiene 2.0.1. Esta auditoría no ha modificado versiones ni publicado una release.
+
+
+## Recuperación del bloqueador tras actualizar el motor
+
+Correcciones de código: si la caché binaria es incompatible, compilar e instalar
+las listas guardadas antes de esperar respuestas de red. Una actualización a la
+que le faltan listas conserva el motor activo y programa el reintento.
+El puente distingue motor pendiente de un resultado válido sin filtros; el
+script espera con un solo temporizador por documento y hasta doce reintentos
+(aproximadamente 36 segundos). Se conserva el seguimiento del reproductor
+mientras espera. No se recarga ni se reinicia el vídeo automáticamente.
+
+Las pruebas cubren caché DAT6 con motor real, servidor detenido antes de responder,
+lista ausente durante actualización y aplicación diferida de filtros. El reintento
+no puede deshacer scripts que la web ya haya ejecutado; tampoco garantiza filtros
+al primer arranque sin listas guardadas si la red tarda más que el plazo acotado.
+La causa concreta del sitio observado en TV sigue sin reproducirse.

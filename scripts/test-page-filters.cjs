@@ -46,6 +46,32 @@ function page(filters, host = 'stream.example', setup = '') {
 }
 
 (async () => {
+    // A cold engine must not permanently mark a frame as filtered before rules arrive.
+    let delayed = page({}, 'stream.example', `
+        var filterReads = 0;
+        VireoLumaTVApp.pageFilters = function () {
+            filterReads++;
+            return JSON.stringify(filterReads === 1 ? { pending: true } : { hide: ['.late-ad'], script: '' });
+        };
+    `);
+    vm.runInContext(`assert.equal(window.__vireoPageFilters, undefined);`, delayed);
+    vm.runInContext(source, delayed); // Reinjection while waiting must not create another timer.
+    delayed.flush();
+    vm.runInContext(`
+        assert.equal(filterReads, 2);
+        assert.equal(window.__vireoPageFilters, true);
+        assert.match(document.adoptedStyleSheets[0].css, /late-ad/);
+    `, delayed);
+    let waiting = page({}, 'stream.example', `
+        var filterReads = 0;
+        VireoLumaTVApp.pageFilters = function () { filterReads++; return '{"pending":true}'; };
+    `);
+    waiting.flush();
+    vm.runInContext(`assert.equal(filterReads, 13); assert.equal(window.__vireoPageFilters, undefined);`, waiting);
+    let empty = page({}, 'stream.example', `var filterReads = 0; VireoLumaTVApp.pageFilters = function () { filterReads++; return '{}'; };`);
+    empty.flush();
+    vm.runInContext(`assert.equal(filterReads, 1);`, empty);
+
     // Element hiding through a constructed stylesheet (not blocked by page CSP).
     let c = page({ hide: ['.ad-box', '#banner'], script: '' });
     vm.runInContext(`
