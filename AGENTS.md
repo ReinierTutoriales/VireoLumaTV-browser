@@ -102,3 +102,13 @@ Una auditoría o propuesta antigua no autoriza aplicar automáticamente sus parc
 Las listas de pruebas, escenarios críticos y fuentes oficiales están en la
 política. Los cambios meramente documentales requieren revisión de enlaces,
 coherencia y `git diff --check`; no necesitan pruebas nuevas que solo reflejen texto.
+
+## Continuidad en sesiones con herramientas limitadas
+
+- Al reanudar una tarea, consultar el estado remoto real: rama predeterminada, SHA, PR abiertos, CI y último release. La conversación anterior es contexto, no prueba del estado actual.
+- Determinar qué acciones permite la conexión disponible (lectura, edición, PR, merge y workflows). No asumir terminal, compilador local, navegador interactivo, sesión persistente ni ejecución en segundo plano. Si una herramienta falta, utilizar las comprobaciones CI existentes sin atribuirse ejecuciones locales.
+- Antes de editar: leer `AGENTS.md`, la habilidad pertinente, contratos afectados y archivos fuente. Trabajar en una rama descriptiva y hacer cambios mínimos verificables; no modificar `master` directamente para tareas ordinarias.
+- Exigir CI satisfactoria en el SHA exacto del PR antes de integrarlo; tras el merge verificar el SHA de `master`. No confundir CI aprobada con pruebas físicas de TV.
+- Publicar únicamente con petición expresa del propietario: comprobar versión, tag y release existentes, utilizar el flujo `.github/workflows/release.yml` y verificar el resultado de GitHub Actions y los artefactos. Nunca declarar una publicación completa solo porque se inició el workflow.
+- Si la sesión termina con trabajo pendiente, registrar en la respuesta: repositorio, rama, SHA, PR, pruebas ejecutadas y no ejecutadas, bloqueo, siguiente acción exacta y estado del release. En la siguiente sesión volver a consultar esos datos; nunca confiar ciegamente en el informe previo.
+- No incluir credenciales, claves de firma ni valores de secretos en informes, commits, registros o solicitudes.
