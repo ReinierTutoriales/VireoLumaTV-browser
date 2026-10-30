@@ -27,3 +27,6 @@ description: Use when optimizing, cleaning, or reviewing code. Prioritizes simpl
 - Separate a correctness/resource fix from a measured performance improvement.
   Name the affected resource and tradeoff; preserve restoration and functionality.
   Smaller APK size, newer APIs and fewer lines alone do not prove faster playback.
+- Validate compressed assets through Android's loader and the built APK. Source
+  hashes alone do not prove readability; implicit filename/codec handling belongs
+  to the format contract, and an already compressed payload needs no second layer.

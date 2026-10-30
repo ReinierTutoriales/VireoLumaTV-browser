@@ -12,3 +12,8 @@ The bridge retains its MPL 2.0 license.
 
 See NOTICE.md and rust-crates.txt for separately licensed components.
 Make corresponding covered source and required notices available when distributing binaries.
+
+Bundled first-install filter data: assets/adblock/baseline/manifest.json records
+source URLs, retrieval time and hashes. Original source text is shipped as gzip;
+GPL-3.0.txt and NOTICE.md describe its authors and license. The maintenance script
+scripts/refresh-bundled-filters.py verifies locally or refreshes explicitly.

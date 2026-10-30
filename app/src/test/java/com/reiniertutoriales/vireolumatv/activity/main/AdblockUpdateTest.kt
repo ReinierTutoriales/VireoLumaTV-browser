@@ -221,6 +221,7 @@ class AdblockUpdateTest {
         }
         val model = AdBlocker(engine, autoLoad = false)
         val source = com.reiniertutoriales.vireolumatv.Config.DEFAULT_ADBLOCK_LIST_URL
+        model.bundledList = { null } // This fixture deliberately tests an incomplete saved generation.
         model.config.blockListUrl.value = source
         var fail = false
         model.fetchList = { urls, _, _ ->
@@ -248,6 +249,139 @@ class AdblockUpdateTest {
             names.forEach { name -> File(dir, name).delete(); File(dir, "$name.main").delete(); File(dir, "$name.meta").delete() }
             AdblockCache.fileFor(dir, engine, source).delete()
             File(AdblockCache.fileFor(dir, engine, source).path + ".popup.none").delete()
+        }
+    }
+
+    @Test fun freshOfflineInstallBlocksBeforeNetworkReturnsAndNextStartReusesItsCache() {
+        assertTrue(RustAdblock.isAvailable)
+        val native = RustAdBlockEngine { AdblockResources.json(VireoLumaTVApp.instance) }
+        var baseCompiles = 0
+        val engine = object : ContentBlockerEngine {
+            override val cacheFileName = "bundled-baseline-test.dat"
+            override fun compile(filterLists: List<String>): ContentBlocker? {
+                if (filterLists.size == 7) baseCompiles++
+                return native.compile(filterLists)
+            }
+            override fun deserialize(file: File) = native.deserialize(file)
+        }
+        val dir = VireoLumaTVApp.instance.filesDir
+        val source = com.reiniertutoriales.vireolumatv.Config.DEFAULT_ADBLOCK_LIST_URL
+        val manifest = org.json.JSONObject(VireoLumaTVApp.instance.assets.open("adblock/baseline/manifest.json")
+            .bufferedReader().use { it.readText() }).getJSONArray("lists")
+        val names = (0 until manifest.length()).map { manifest.getJSONObject(it).getString("cache") }
+        val cache = AdblockCache.fileFor(dir, engine, source)
+        fun cleanup() {
+            names.forEach { File(dir, it).delete() }
+            cache.delete()
+            File(cache.path + ".popup").delete()
+            File(cache.path + ".popup.none").delete()
+        }
+        cleanup()
+        val model = AdBlocker(engine, autoLoad = false)
+        model.config.blockListUrl.value = source
+        model.config.blockListRetryAt = 0
+        model.config.blockListUpdatedAt = 0
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        model.fetchList = { _, _, _ ->
+            entered.countDown()
+            release.await(10, TimeUnit.SECONDS)
+            throw java.io.IOException("Offline")
+        }
+        try {
+            val job = model.loadBlockList(false)
+            shadowOf(Looper.getMainLooper()).idle()
+            assertTrue("A complete local engine must precede the first download", entered.await(10, TimeUnit.SECONDS))
+            assertTrue(model.hasActiveRules)
+            assertTrue(model.initialRulesReady.isCompleted)
+            assertTrue(model.isAd(Uri.parse("https://ad.doubleclick.net/pagead/ads"), "image", Uri.parse("https://example.com/")))
+            assertFalse(model.isAd(Uri.parse("https://www.wikipedia.org/"), "document", Uri.parse("https://www.wikipedia.org/")))
+            assertEquals(1, baseCompiles)
+            release.countDown()
+            finish(job)
+            assertEquals(AdBlocker.UpdateResult.CACHED, model.updateResult.value)
+            assertEquals(7, model.unavailableLists.value.size)
+            assertEquals(0L, model.config.blockListUpdatedAt)
+            assertTrue(model.config.blockListRetryAt > System.currentTimeMillis())
+            model.clear()
+            val next = AdBlocker(engine, autoLoad = false)
+            var bundledReads = 0
+            var networkCalls = 0
+            next.bundledList = { bundledReads++; null }
+            next.fetchList = { _, _, _ -> networkCalls++; throw java.io.IOException("Unexpected refresh") }
+            try {
+                finish(next.loadBlockList(false))
+                assertTrue(next.hasActiveRules)
+                assertEquals(1, baseCompiles)
+                assertEquals(0, bundledReads)
+                assertEquals(0, networkCalls)
+                assertTrue(next.isAd(Uri.parse("https://ad.doubleclick.net/pagead/ads"), "image", Uri.parse("https://example.com/")))
+            } finally { next.clear() }
+        } finally {
+            release.countDown()
+            model.clear()
+            cleanup()
+        }
+    }
+
+    @Test fun customSubscriptionDoesNotSilentlyInstallTheDefaultBundledLists() {
+        val model = AdBlocker(autoLoad = false)
+        model.config.blockListUrl.value = "https://custom.test/no-offline-list.txt"
+        model.config.blockListUpdatedAt = 0
+        model.config.blockListRetryAt = 0
+        var bundledReads = 0
+        model.bundledList = { bundledReads++; null }
+        model.fetchList = { _, _, _ -> throw java.io.IOException("Offline") }
+        try {
+            finish(model.loadBlockList(false))
+            assertFalse(model.hasActiveRules)
+            assertEquals(AdBlocker.UpdateResult.ERROR, model.updateResult.value)
+            assertEquals(0, bundledReads)
+            assertTrue(model.initialRulesReady.isCompleted)
+        } finally { model.clear() }
+    }
+
+    @Test fun localCompilationFailureStillAllowsTheNormalNetworkUpdate() {
+        var compiles = 0
+        var requests = 0
+        val engine = object : ContentBlockerEngine {
+            override val cacheFileName = "local-rejection-test.dat"
+            override fun deserialize(file: File): ContentBlocker? = null
+            override fun compile(filterLists: List<String>): ContentBlocker {
+                if (++compiles == 1) throw IllegalStateException("Local input rejected")
+                return object : ContentBlocker {
+                    override fun shouldBlock(url: Uri, type: String?, baseHost: String) = url.host == "fresh.test"
+                    override fun serialize(file: File): Boolean { file.writeText("fresh"); return true }
+                }
+            }
+        }
+        val model = AdBlocker(engine, autoLoad = false)
+        val source = "https://custom.test/recovery.txt"
+        model.config.blockListUrl.value = source
+        model.config.blockListUpdatedAt = 0
+        model.config.blockListRetryAt = 0
+        val dir = VireoLumaTVApp.instance.filesDir
+        val saved = File(dir, "adblock_list_custom_${AdblockCache.sourceKey(source)}.txt")
+        saved.writeText("||saved.test^")
+        model.fetchList = { _, _, _ ->
+            requests++
+            AdblockListDownloader.Result.Downloaded("||fresh.test^", null, source)
+        }
+        try {
+            finish(model.loadBlockList(false))
+            assertEquals(2, compiles)
+            assertEquals(1, requests)
+            assertTrue(model.hasActiveRules)
+            assertTrue(model.initialRulesReady.isCompleted)
+            assertEquals(AdBlocker.UpdateResult.UPDATED, model.updateResult.value)
+        } finally {
+            model.clear()
+            saved.delete()
+            File(saved.path + ".main").delete()
+            File(saved.path + ".meta").delete()
+            val cache = AdblockCache.fileFor(dir, engine, source)
+            cache.delete()
+            File(cache.path + ".popup.none").delete()
         }
     }
 

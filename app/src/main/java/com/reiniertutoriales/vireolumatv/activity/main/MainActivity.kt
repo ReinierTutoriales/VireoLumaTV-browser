@@ -158,6 +158,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.startupSpinner.requestFocus()
         visitLog.loadState().join()
         tabStore.loadState().join()
+        if (config.adBlockEnabled) adBlocker.initialRulesReady.await()
         if (!isActive) return@launch
         vb.startupSpinner.visibility = View.GONE
         when {
@@ -174,7 +175,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (::tabStore.isInitialized && tabStore.loaded && intent.data != null) handleIntent(intent)
+        if (::tabStore.isInitialized && tabStore.loaded && intent.data != null &&
+            (!config.adBlockEnabled || adBlocker.initialRulesReady.isCompleted)) handleIntent(intent)
     }
 
     /** An address from another app opens in a new tab, or in the current one when the intent asks for it. */

@@ -31,8 +31,8 @@ WebView no serializa; debe verificarse la restauración y nunca aceptar pantalla
 vacía como efecto permitido de ahorro.
 
 El bloqueador conserva reglas funcionales si falla la red, distingue resultados
-UPDATED/PARTIAL/CACHED/ERROR y programa timestamps de actualización (7 días) y
-reintento parcial (1 día). Los disparadores de primer plano, sesión larga y conectividad se implementaron
+UPDATED/PARTIAL/CACHED/ERROR y programa actualización cada 24 horas,
+reintento parcial a las 6 horas y reintento de fallo de red a los 60 minutos. Los disparadores de primer plano, sesión larga y conectividad se implementaron
 en el [lote adblock](audit/ADBLOCK_OFF_DEVICE_20261007.md); validar integración
 y compatibilidad real en TV sigue pendiente.
 No concluir que cada resultado CACHED significa fallo del bloqueador.
@@ -258,3 +258,36 @@ Fuentes: https://developer.android.com/training/tv/get-started/navigation ;
 https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime ;
 https://developer.android.com/reference/android/media/MediaCodecInfo .
 Prueba física con mando/teclado/proveedor WebView pendiente.
+
+
+## Base de filtros sin conexión y trabajo repetido
+
+En primera instalación o si faltan textos válidos, la suscripción predeterminada
+puede recuperar las siete listas de `assets/adblock/baseline`. El manifiesto fija
+fecha, fuentes, tamaños y SHA-256 del texto original comprimido. Los payloads
+gzip usan extensión `.filterdata` y `noCompress` para evitar el tratamiento
+implícito de `.gz` por Android y una segunda capa de compresión del APK. Se validan antes
+de componer los `!#if`/`!#include` con el mismo preprocesador del runtime.
+La copia válida guardada tiene prioridad; una suscripción personalizada no recibe
+silenciosamente las reglas predeterminadas. La base no se marca como descarga
+actualizada y no retrasa los reintentos existentes. Los fallos de actualización
+mantienen el motor instalado; los siguientes arranques usan la caché compilada.
+
+La recuperación local y la compilación se ejecutan en IO. Con bloqueo global
+activado, el arranque espera de forma suspendida ese intento local antes de abrir
+la página inicial; no espera la descarga. La señal se libera también en fallo o
+cancelación. No garantiza bloqueo de todas las webs ni una actualización vigente
+cuando no hay red. El paquete de fuentes comprimidas añade aproximadamente 2 MB;
+el tamaño final de APK y el coste de primer arranque se comprueban por separado.
+
+Las mutaciones cosméticas se agrupan por elemento y subárbol para evitar recorrer
+repetidamente el mismo árbol dentro del lote de 250 ms. Se conservan las clases,
+IDs, scriptlets, el límite existente de nombres y las posteriores mutaciones.
+La prueba sintética de 100 avisos reduce 100 recorridos de ese subárbol a uno;
+no es una medición de FPS, memoria ni tiempo en TV. YouTube móvil conserva su
+filtro dedicado, fuera de esta ruta de ocultación genérica.
+
+Guías oficiales: https://developer.android.com/topic/architecture/data-layer/offline-first
+(local antes de red) y https://developer.android.com/topic/performance/threads
+(trabajo costoso fuera de Main). Medición física de arranque, app/renderer y sitios
+reales pendiente; no añadir timers, precargas o cambios de límites por intuición.
