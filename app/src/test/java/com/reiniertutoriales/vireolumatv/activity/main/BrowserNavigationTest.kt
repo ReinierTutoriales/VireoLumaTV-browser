@@ -32,6 +32,16 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
+    @Test fun youtubeWatchRemoteBackUsesWebHistoryWithoutHijackingOtherSites() {
+        assertTrue(shouldNavigateYouTubeHistory("https://m.youtube.com/watch?v=abc", true))
+        assertTrue(shouldNavigateYouTubeHistory("https://www.youtube.com/shorts/abc", true))
+        assertFalse(shouldNavigateYouTubeHistory("https://m.youtube.com/watch?v=abc", false))
+        assertFalse(shouldNavigateYouTubeHistory("https://m.youtube.com/", true))
+        assertFalse(shouldNavigateYouTubeHistory("https://youtube.com.evil.test/watch?v=abc", true))
+        assertFalse(shouldNavigateYouTubeHistory("http://m.youtube.com/watch?v=abc", true))
+        assertFalse(shouldNavigateYouTubeHistory("https://example.test/watch?v=abc", true))
+    }
+
     @Test fun shieldColorsFollowThePerTabChoiceAndRemainReadableOnFocus() = Fixture().use { f ->
         val button = f.vb.controlsRow.adBlockButton
         for (enabled in listOf(true, false)) {
