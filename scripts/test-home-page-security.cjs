@@ -19,7 +19,7 @@ assert.equal(attribute(tags('button')[1], 'type'), 'button');
 assert.equal(attribute(tags('button')[1], 'id'), 'add-bookmark');
 assert.equal(attribute(tags('button')[0], 'type'), 'submit');
 assert.equal(tags('a').length, 1);
-assert.equal(attribute(tags('a')[0], 'href'), 'https://www.youtube.com/');
+assert.equal(attribute(tags('a')[0], 'href'), 'https://m.youtube.com/');
 assert.equal(attribute(tags('a')[0], 'aria-label'), 'YouTube');
 // Query values remain query data rather than executable markup or navigation destinations.
 for (const query of ['android tv', 'café & música', 'a+b?#', '<script>alert(1)</script>', 'javascript:alert(1)']) {

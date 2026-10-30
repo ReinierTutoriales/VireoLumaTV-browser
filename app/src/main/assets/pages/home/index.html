@@ -24,8 +24,8 @@
         button:hover, a:hover { border-color: #2563eb; }
         @media (prefers-color-scheme: dark) {
             body { background: #161a1d; color: #f4f6f8; }
-            input, a { background: #22292f; }
-            button { background: #303c47; }
+            input, nav a { background: #22292f; }
+            button, nav button { background: #303c47; }
             input:focus, button:focus, a:focus { outline-color: #8ec5ff; }
         }
         @media (max-width: 600px) {
@@ -47,7 +47,7 @@
         </div>
     </form>
     <nav id="bookmarks" aria-label="Marcadores">
-    <a href="https://www.youtube.com/" aria-label="YouTube">
+    <a href="https://m.youtube.com/" aria-label="YouTube">
         <svg viewBox="0 0 24 20" aria-hidden="true" focusable="false"><rect x="1" y="2" width="22" height="16" rx="5" fill="#f03"/><path d="M10 6 L16 10 L10 14 Z" fill="#fff"/></svg>
     </a>
     <button id="add-bookmark" type="button" aria-label="Agregar marcador"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>

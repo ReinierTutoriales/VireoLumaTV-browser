@@ -60,7 +60,7 @@ Una auditoría o propuesta antigua no autoriza aplicar automáticamente sus parc
 ## Contratos que debe conservar cada cambio
 
 - La cápsula superior contiene dirección/búsqueda, Atrás, Adelante, Recargar,
-  Inicio, escudo del bloqueador y menú. Cerrar pestaña está en el menú.
+  Inicio, escudo del bloqueador y menú. Cerrar pestaña está en el menú y en la X de cada pestaña.
   La barra inferior y la búsqueda por voz se eliminaron por petición del propietario
   (2026-10-27). No reinterpretar una acción existente en silencio.
 - En fullscreen, Atrás debe cerrar el vídeo y restaurar la cápsula y las pestañas

@@ -170,3 +170,34 @@ https://developer.android.com/jetpack/androidx/versions ;
 https://developer.android.com/build/releases/agp-9-5-0-release-notes ;
 https://kotlinlang.org/docs/releases.html ; https://github.com/google/ksp/releases ;
 https://github.com/Kotlin/kotlinx.coroutines/releases ; https://gradle.org/releases/ .
+
+
+## Revisión de cierre — 2026-10-30
+
+Base publicada comprobada: `2c8b8dc4` (2.0.3), CI #594 y release #13 correctas.
+La revisión reúne los cambios de los PR #90 y #91 sin Media3, IFrame Player API,
+reproductor paralelo ni dependencias nuevas. El acceso de Inicio apunta
+explícitamente a `https://m.youtube.com/`; conserva la WebView, el motor de bloqueo,
+sus scriptlets y las reglas de ventanas. No se ha medido otra vez la eficacia
+en sitios reales ni se certifica bloqueo universal. No hay versión nueva publicada.
+
+Se corrige un contraste real en Inicio: `nav a`/`nav button` imponían fondo blanco
+con más especificidad que las reglas oscuras de `a`/`button`; las reglas oscuras
+ahora usan selectores con la misma especificidad. Los iconos conservan nombres
+accesibles. La documentación de sugerencias, WebKit, voz y cierre de pestañas se
+ajusta al contrato actual, sin cambiar Room 19, firma ni ID de aplicación.
+
+Versiones directas contrastadas en sus publicaciones oficiales: AGP 9.5.0,
+Gradle 9.8.2, Kotlin 2.4.21, KSP 2.3.12, AppCompat 1.8.0, WebKit 1.18.0,
+RecyclerView 1.4.0, Lifecycle 2.11.0, Room 2.8.5, coroutines 1.11.0,
+Robolectric 4.17 y adblock 0.13.5. Room3 tiene paquete y APIs distintos;
+RecyclerView está en mantenimiento, lo que no exige migrar toda la UI a Compose.
+No hay una actualización directa justificada por esta revisión.
+
+Pendientes reales: lectura de estado de pestaña sin presupuesto previo de tamaño
+(`BrowserTab.restorePage`), presupuesto agregado de memoria/largeHeap, arranque
+asíncrono y perfiles. No se impone un tamaño arbitrario que descarte historiales
+válidos ni se retira compatibilidad de Android antiguo para declarar limpieza.
+La revisión dirigida y las pruebas automáticas no equivalen a auditar todas las
+rutas, todos los transitivos ni a demostrar fluidez en TV. La validación física
+sigue pendiente.

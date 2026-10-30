@@ -57,7 +57,7 @@
         if (value === null) return;
         var url = address(value);
         if (!url) { alert('Dirección no válida. Usa http:// o https:// sin usuario ni contraseña.'); return; }
-        if (url.href === 'https://www.youtube.com/' || saved.indexOf(url.href) !== -1) return;
+        if (url.href === 'https://m.youtube.com/' || url.href === 'https://www.youtube.com/' || saved.indexOf(url.href) !== -1) return;
         var next = saved.concat(url.href);
         try { localStorage.setItem(KEY, JSON.stringify(next)); }
         catch (_) { alert('No se pudo guardar el marcador.'); return; }
