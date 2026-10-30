@@ -4,6 +4,7 @@ import android.app.Activity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.webkit.WebView
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerLayout
 import org.junit.Assert.*
@@ -16,6 +17,59 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class CursorLayoutRecoveryTest {
+    @Test fun webEditorFocusWithoutKeyboardDoesNotStealTheBookmarkPointerClick() {
+        val controller = Robolectric.buildActivity(Activity::class.java).setup()
+        try {
+            val activity = controller.get()
+            val layout = PointerLayout(activity)
+            val keys = mutableListOf<Int>()
+            val touches = mutableListOf<Pair<Int, Float>>()
+            val page = object : WebView(activity) {
+                override fun findFocus(): View = this
+                override fun onCheckIsTextEditor() = true
+                override fun onKeyDown(code: Int, event: KeyEvent): Boolean {
+                    keys += code
+                    return true
+                }
+                override fun onKeyUp(code: Int, event: KeyEvent) = true
+            }.apply { isFocusableInTouchMode = true }
+            layout.addView(page)
+            // A native hit target records the page tap; Robolectric does not lay out
+            // Chromium DOM content. The focused editor remains the WebView double.
+            var bookmarkClicks = 0
+            val bookmark = View(activity).apply {
+                setOnTouchListener { _, event ->
+                    touches += event.actionMasked to event.x
+                    false
+                }
+                setOnClickListener { bookmarkClicks++ }
+            }
+            layout.addView(bookmark, android.widget.FrameLayout.LayoutParams(800, 600))
+            activity.setContentView(layout)
+            layout.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
+            layout.layout(0, 0, 800, 600)
+            // The provider has no DOM focus implementation in Robolectric. Model the
+            // focused web editor while keeping the real PointerLayout event route.
+            assertEquals(800, bookmark.width)
+            assertEquals(600, bookmark.height)
+            layout.requestChildFocus(page, page)
+            assertSame(page, layout.findFocus())
+            assertTrue(page.onCheckIsTextEditor())
+            assertFalse("Dismissed web keyboard must release the remote", layout.isTextInputActive())
+            layout.pointerController.cursorPosition.set(520f, 420f)
+            layout.pointerController.fadeIn()
+            for (action in listOf(KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP)) {
+                assertTrue(layout.dispatchKeyEvent(KeyEvent(action, KeyEvent.KEYCODE_DPAD_CENTER)))
+            }
+            assertTrue("OK must not return to the focused search editor", keys.isEmpty())
+            assertEquals(listOf(MotionEvent.ACTION_DOWN to 520f, MotionEvent.ACTION_UP to 520f), touches)
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            assertEquals(1, bookmarkClicks)
+            page.destroy()
+        } finally { controller.pause().stop().destroy() }
+    }
+
     @Test fun focusedTextEditorReceivesEnterAndDpadWithoutImeInsets() {
         val controller = Robolectric.buildActivity(Activity::class.java).setup()
         try {
