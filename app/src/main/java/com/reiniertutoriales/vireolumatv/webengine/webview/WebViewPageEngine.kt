@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.KeyEvent
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -149,6 +150,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         view.destroy()
         webView = null
     }
+
+    fun isFullscreenActive(): Boolean = fullscreenView != null
 
     override fun closeFullscreen() {
         webView?.hideCustomView()
