@@ -38,6 +38,27 @@ const media = (overrides = {}) => ({tag: 'video', currentTime: 0, paused: false,
     sandbox.vireoLumaTVSeek(gaps, NaN); assert.equal(gaps.currentTime, 30);
     const dynamic = media({seekable: {length: 1, start() { throw Error('window moved'); }}});
     sandbox.vireoLumaTVSeek(dynamic, 10); assert.equal(dynamic.currentTime, 0);
+    const preview = media({getBoundingClientRect() { return {width: 160, height: 90}; }});
+    const main = media({getBoundingClientRect() { return {width: 1280, height: 720}; }});
+    const backgroundAudio = media({tag: 'audio'});
+    items = [backgroundAudio, preview, main];
+    sandbox.vireoLumaTVTogglePlayback();
+    assert.equal(main.pauses, 1); assert.equal(preview.pauses, 0); assert.equal(backgroundAudio.pauses, 0);
+    const fullscreen = media();
+    sandbox.document.fullscreenElement = fullscreen;
+    fullscreen.matches = selector => selector === 'video, audio';
+    sandbox.vireoLumaTVTogglePlayback(); assert.equal(fullscreen.pauses, 1);
+    delete sandbox.document.fullscreenElement;
+    const hidden = media({getBoundingClientRect() { return {width: 0, height: 0}; }});
+    items = [hidden, backgroundAudio];
+    sandbox.vireoLumaTVTogglePlayback(); assert.equal(backgroundAudio.pauses, 1); assert.equal(hidden.pauses, 0);
+    const progressive = media({duration: 120, currentTime: 50, seekable: ranges([])});
+    items = [progressive];
+    sandbox.vireoLumaTVFastForward(); assert.equal(progressive.currentTime, 60);
+    sandbox.vireoLumaTVSeek(progressive, 300); assert.equal(progressive.currentTime, 120);
+    const unseekableLive = media({duration: Infinity, currentTime: 50, seekable: ranges([])});
+    items = [unseekableLive];
+    sandbox.vireoLumaTVFastForward(); assert.equal(unseekableLive.currentTime, 50);
     const links = ['ESPN', 'OP2', 'OP3', 'Disney+'].map((name, i) => ({href: 'https://example.com/' + i}));
     const script = fs.readFileSync('app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageScripts.kt', 'utf8').split('"""')[1];
     links.forEach(link => {

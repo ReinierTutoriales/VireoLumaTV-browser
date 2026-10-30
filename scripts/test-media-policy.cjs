@@ -24,7 +24,7 @@ function page(config, host = 'www.youtube.com') {
 
 (async () => {
     // Force H.264: VP9/VP8/AV1 and codec-less WebM video are rejected, H.264 and audio are not.
-    let c = page({block: ['vp9', 'av1'], maxHeight: 0});
+    let c = page({block: ['vp8', 'vp9', 'av1'], maxHeight: 0});
     vm.runInContext(`
         var ok = t => MediaSource.isTypeSupported(t);
         assert.equal(ok('video/webm; codecs="vp9"'), false);
@@ -49,6 +49,19 @@ function page(config, host = 'www.youtube.com') {
     vm.runInContext(`
         assert.equal(MediaSource.isTypeSupported('video/webm; codecs="vp9"'), true);
         assert.equal(MediaSource.isTypeSupported('video/mp4; codecs="av01.0.08M.08"'), false);
+    `, c);
+
+    // A TV with VP8 hardware but no VP9 must keep VP8 (and generic WebM) available.
+    c = page({block: ['vp9', 'av1'], maxHeight: 0});
+    vm.runInContext(`
+        assert.equal(MediaSource.isTypeSupported('video/webm; codecs="vp8"'), true);
+        assert.equal(MediaSource.isTypeSupported('video/webm; codecs="vp9"'), false);
+        assert.equal(MediaSource.isTypeSupported('video/webm'), true);
+    `, c);
+    c = page({block: ['vp8'], maxHeight: 0});
+    vm.runInContext(`
+        assert.equal(MediaSource.isTypeSupported('video/webm; codecs="vp8"'), false);
+        assert.equal(MediaSource.isTypeSupported('video/webm; codecs="vp9"'), true);
     `, c);
 
     // Quality cap: resolution probes above 720p fail, portrait videos are compared by area.

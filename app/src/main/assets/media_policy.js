@@ -5,6 +5,7 @@
     'use strict';
     if (!config || window.__vireoMediaPolicy) return;
     window.__vireoMediaPolicy = true;
+    var blockVp8 = config.block.indexOf('vp8') !== -1;
     var blockVp9 = config.block.indexOf('vp9') !== -1;
     var blockAv1 = config.block.indexOf('av1') !== -1;
     var maxHeight = config.maxHeight | 0;
@@ -22,11 +23,10 @@
         if (typeof type !== 'string') return false;
         var lower = type.toLowerCase();
         var codecs = codecsOf(lower);
-        if (blockVp9) {
-            if (/(^|[\s,])(vp0?9|vp0?8)(\.|,|\s|$)/.test(codecs)) return true;
-            // A WebM video query without codecs means VP8/VP9/AV1.
-            if (lower.indexOf('video/webm') === 0 && !codecs) return true;
-        }
+        if (blockVp8 && /(^|[\s,])vp0?8(\.|,|\s|$)/.test(codecs)) return true;
+        if (blockVp9 && /(^|[\s,])vp0?9(\.|,|\s|$)/.test(codecs)) return true;
+        // A generic WebM query cannot identify a codec: reject it only when all are blocked.
+        if (blockVp8 && blockVp9 && blockAv1 && lower.indexOf('video/webm') === 0 && !codecs) return true;
         if (blockAv1 && /(^|[\s,])av0?1(\.|,|\s|$)/.test(codecs)) return true;
         return false;
     }

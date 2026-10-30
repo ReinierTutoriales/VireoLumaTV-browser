@@ -1,6 +1,13 @@
 package com.reiniertutoriales.vireolumatv.activity.main.view
 
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Rect
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
+import com.reiniertutoriales.vireolumatv.AppContext
+import com.reiniertutoriales.vireolumatv.utils.RemoteInput
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -21,10 +28,21 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
     LinearLayout(context, attrs) {
 
     var onPick: ((AddressSuggestion) -> Unit)? = null
+    internal val pointerController by lazy { PointerController(context, this).apply { init() } }
+    private var pointerMode = false
+    private val remote = RemoteInput(
+        target = object : RemoteInput.Target {
+            override fun onKey(event: KeyEvent) = pointerController.dispatchKeyEvent(event)
+            override fun onStick(x: Float, y: Float) = pointerController.onStick(x, y)
+        },
+        stickEnabled = { !AppContext.config.ignoreStickAxes },
+        isTyping = { false },
+    )
     private var shown: List<AddressSuggestion> = emptyList()
 
     init {
         orientation = VERTICAL
+        isFocusableInTouchMode = true
     }
 
     val hasSuggestions: Boolean get() = shown.isNotEmpty()
@@ -51,13 +69,80 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
             addView(row)
         }
         isVisible = suggestions.isNotEmpty()
-        if (keepFocus) focusFirst()
+        if (suggestions.isEmpty()) stopPointer()
+        else if (keepFocus) {
+            if (pointerMode) requestFocus() else focusFirst()
+        }
     }
 
     fun clear() = show(emptyList())
 
     /** Moves focus to the first suggestion; false when there is none. */
-    fun focusFirst(): Boolean = getChildAt(0)?.requestFocus() == true
+    fun focusFirst(): Boolean {
+        stopPointer()
+        return getChildAt(0)?.requestFocus() == true
+    }
+
+    /** A separate pointer surface over native rows; the page's hidden pointer stays suppressed. */
+    fun focusPointer(): Boolean {
+        if (!hasSuggestions) return false
+        pointerMode = true
+        val focused = requestFocus()
+        if (focused) {
+            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .hideSoftInputFromWindow(windowToken, 0)
+            pointerController.fadeIn()
+        } else stopPointer()
+        return focused
+    }
+
+    private fun stopPointer() {
+        pointerMode = false
+        remote.resetState()
+        if (!isInEditMode) pointerController.resetInput()
+        invalidate()
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        if (!isInEditMode) pointerController.onSizeChanged(w, h, oldw, oldh)
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (pointerMode && hasFocus()) {
+            if (event.keyCode == KeyEvent.KEYCODE_DPAD_UP && event.action == KeyEvent.ACTION_DOWN &&
+                event.repeatCount == 0 && pointerController.cursorPosition.y <= 12 * resources.displayMetrics.density) {
+                stopPointer()
+                rootView.findViewById<View>(R.id.address_field)?.requestFocus()
+                return true
+            }
+            if (remote.dispatchKeyEvent(event)) return true
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
+    override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean =
+        (pointerMode && hasFocus() && remote.dispatchGenericMotionEvent(event)) || super.dispatchGenericMotionEvent(event)
+
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
+        if (pointerMode && hasFocus()) pointerController.dispatchDraw(canvas)
+    }
+
+    override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
+        if (!gainFocus && pointerMode) stopPointer()
+    }
+
+    override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+        super.onWindowFocusChanged(hasWindowFocus)
+        if (!hasWindowFocus) stopPointer()
+    }
+
+    override fun onDetachedFromWindow() {
+        stopPointer()
+        super.onDetachedFromWindow()
+    }
 
     internal fun row(index: Int): View? = getChildAt(index)
 }

@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.media.MediaCodecInfo
 import android.media.MediaCodecList
+import android.media.MediaFormat
 import android.os.Build
 import android.util.Log
 import android.webkit.WebView
@@ -14,26 +15,31 @@ import java.util.Locale
 /** Which video codecs pages may use, so playback stays on the TV's hardware decoders. */
 internal object MediaPolicy {
     private const val TAG = "MediaPolicy"
+    private const val MIME_VP8 = MediaFormat.MIMETYPE_VIDEO_VP8
     private const val MIME_VP9 = "video/x-vnd.on2.vp9"
     private const val MIME_AV1 = "video/av01"
 
-    // MediaCodecList enumeration is done once per process.
-    private val hardwareVp9 by lazy { hasHardwareDecoder(MIME_VP9) }
-    private val hardwareAv1 by lazy { hasHardwareDecoder(MIME_AV1) }
-
-    /** Off the main thread at start-up, so the first WebView does not wait for MediaCodecList. */
-    fun prewarm() {
-        hardwareVp9
-        hardwareAv1
+    // Enumerate once per process; retain each codec's actual hardware capability independently.
+    private val hardwareDecoders: Set<String>? by lazy {
+        try {
+            MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos
+                .filter { !it.isEncoder && isHardware(it) }
+                .flatMap { it.supportedTypes.toList() }
+                .map { it.lowercase(Locale.ROOT) }.toSet()
+        } catch (e: Exception) {
+            Log.w(TAG, "Can not query hardware decoders", e)
+            null // Unknown: do not restrict what the page may use.
+        }
     }
 
-    /**
-     * Fixed optimal mode: VP9/AV1 stay available only when the device decodes them in hardware,
-     * otherwise sites fall back to H.264. VP9 also covers VP8 (both software in WebView).
-     */
-    fun blockedCodecs(): List<String> = blockedCodecs(hardwareVp9, hardwareAv1)
+    /** Off the main thread at start-up, so the first WebView does not wait for MediaCodecList. */
+    fun prewarm() { hardwareDecoders }
 
-    internal fun blockedCodecs(hasVp9: Boolean, hasAv1: Boolean): List<String> = buildList {
+    fun blockedCodecs(): List<String> = blockedCodecs(
+        hasHardwareDecoder(MIME_VP8), hasHardwareDecoder(MIME_VP9), hasHardwareDecoder(MIME_AV1))
+
+    internal fun blockedCodecs(hasVp8: Boolean, hasVp9: Boolean, hasAv1: Boolean): List<String> = buildList {
+        if (!hasVp8) add("vp8")
         if (!hasVp9) add("vp9")
         if (!hasAv1) add("av1")
     }
@@ -45,15 +51,7 @@ internal object MediaPolicy {
             maxHeight.coerceAtLeast(0) + "}"
     }
 
-    private fun hasHardwareDecoder(mime: String): Boolean = try {
-        MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos.any { info ->
-            !info.isEncoder && info.supportedTypes.any { it.equals(mime, ignoreCase = true) } &&
-                isHardware(info)
-        }.also { Log.i(TAG, "Hardware decoder for $mime: $it") }
-    } catch (e: Exception) {
-        Log.w(TAG, "Can not query decoders for $mime", e)
-        true // Unknown: do not restrict what the page may use.
-    }
+    private fun hasHardwareDecoder(mime: String): Boolean = hardwareDecoders?.contains(mime) ?: true
 
     private fun isHardware(info: MediaCodecInfo): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return info.isHardwareAccelerated

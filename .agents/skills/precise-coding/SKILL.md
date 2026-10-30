@@ -15,3 +15,15 @@ description: Use when writing or modifying any code. Forces grounded output by v
 8. Follow agent-governance rules: no AI-named branches, no authorship other than the repository owner.
 
 Every line must be traceable to existing code or a clearly labeled minimal assumption.
+
+## Apply lessons before proposing a replacement
+
+- State the expected user behavior and trace the existing consumers before adding
+  a library or replacing a component. Confirm that the proposal preserves the
+  owner's current constraints; API availability alone does not establish fit.
+- Distinguish the system WebView, the site's own player, an embedded player API
+  and a native player. Do not present them as interchangeable or promise that
+  filters, sessions, quality controls or DRM transfer automatically between them.
+- Verify current versions in primary release documentation and compatibility
+  requirements. Resolve conflicting dates or channels before calling a version
+  latest; never infer an installed engine's capabilities from a spoofed user agent.

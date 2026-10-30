@@ -46,6 +46,9 @@ Read only the relevant `.agents/skills/` instructions: `precise-coding` for
 implementation, `testing-discipline` for functional changes, `tv-ui` for
 focus/layout, `code-quality` for refactors, and `agent-governance` before Git
 mutations. Use `source-migration` when replacing inherited code or resources.
+After a verified regression or owner correction, apply the feedback loop in
+`agent-governance`: fix and test the cause, retain only a reusable lesson in the
+relevant existing skill, and consult it before the next related change.
 The contracts and acceptance criteria live in
 `docs/REGRESSION_POLICY.md`; do not duplicate them in skills.
 
@@ -60,7 +63,7 @@ Una auditoría o propuesta antigua no autoriza aplicar automáticamente sus parc
 ## Contratos que debe conservar cada cambio
 
 - La cápsula superior contiene dirección/búsqueda, Atrás, Adelante, Recargar,
-  Inicio, escudo del bloqueador y menú. Cerrar pestaña está en el menú.
+  Inicio, escudo del bloqueador y menú. Cerrar pestaña está en el menú y en la X de cada pestaña.
   La barra inferior y la búsqueda por voz se eliminaron por petición del propietario
   (2026-10-27). No reinterpretar una acción existente en silencio.
 - En fullscreen, Atrás debe cerrar el vídeo y restaurar la cápsula y las pestañas

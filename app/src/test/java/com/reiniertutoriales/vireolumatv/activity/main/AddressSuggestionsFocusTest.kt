@@ -29,6 +29,73 @@ import org.robolectric.shadows.ShadowLooper
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class AddressSuggestionsFocusTest {
+    @Test fun remotePointerCanPickASuggestionWithoutCancellingTheSearch() {
+        val controller = Robolectric.buildActivity(AppCompatActivity::class.java)
+        controller.get().setTheme(R.style.AppTheme)
+        controller.setup()
+        try {
+            val activity = controller.get()
+            val bar = BrowserControls(activity)
+            val suggestions = AddressSuggestionsView(activity)
+            val searched = mutableListOf<String>()
+            bar.callback = object : BrowserControls.Callback {
+                override fun showAppMenu() {}
+                override fun search(text: String) { searched += text }
+                override fun onUrlInputDone() { suggestions.clear() }
+                override fun focusSuggestions() = suggestions.focusPointer()
+                override fun suggestionsHaveFocus() = suggestions.hasFocus()
+            }
+            suggestions.onPick = { bar.submit(it.url) }
+            val screen = LinearLayout(activity).apply {
+                orientation = LinearLayout.VERTICAL
+                addView(bar)
+                addView(suggestions)
+            }
+            activity.setContentView(screen)
+            val address = bar.findViewById<EditText>(R.id.address_field)
+            address.requestFocus()
+            address.performClick()
+            address.setText("news")
+            suggestions.show(listOf(AddressSuggestion("News", "https://news.test", false),
+                AddressSuggestion("Other", "https://other.test", false)))
+            screen.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
+            screen.layout(0, 0, 960, 540)
+            fun press(view: View, code: Int) {
+                view.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
+                view.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
+            }
+            press(address, KeyEvent.KEYCODE_DPAD_DOWN)
+            ShadowLooper.idleMainLooper()
+            assertTrue("The native list must own the pointer", suggestions.isFocused)
+            assertTrue("Entering suggestions preserves the query", bar.isEditingAddress)
+            val second = suggestions.row(1)!!
+            suggestions.pointerController.cursorPosition.set(100f, second.top + second.height / 2f)
+            press(suggestions, KeyEvent.KEYCODE_DPAD_CENTER)
+            ShadowLooper.idleMainLooper()
+            assertEquals(listOf("https://other.test"), searched)
+            assertFalse(bar.isEditingAddress)
+            assertFalse(suggestions.hasSuggestions)
+        } finally { controller.pause().stop().destroy() }
+    }
+
+    @Test fun pointerAtTheTopCanReturnToTheAddress() {
+        val controller = Robolectric.buildActivity(AppCompatActivity::class.java)
+        controller.get().setTheme(R.style.AppTheme)
+        controller.setup()
+        try {
+            val activity = controller.get()
+            val address = EditText(activity).apply { id = R.id.address_field }
+            val suggestions = AddressSuggestionsView(activity)
+            activity.setContentView(LinearLayout(activity).apply { addView(address); addView(suggestions) })
+            suggestions.show(listOf(AddressSuggestion("News", "https://news.test", false)))
+            assertTrue(suggestions.focusPointer())
+            suggestions.pointerController.cursorPosition.y = 0f
+            suggestions.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
+            assertTrue(address.hasFocus())
+        } finally { controller.pause().stop().destroy() }
+    }
+
     @Test fun downEntersSuggestionsUpReturnsAndOkOpensTheSuggestion() {
         val controller = Robolectric.buildActivity(AppCompatActivity::class.java)
         controller.get().setTheme(R.style.AppTheme)

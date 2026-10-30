@@ -20,8 +20,8 @@ protección de rama ni impiden un merge en GitHub**. No se ha modificado esa
 configuración administrativa.
 
 El repositorio usa WebView del sistema con AndroidX WebKit. La biblioteca
-`androidx.webkit:webkit:1.17.1` coincide con la estable publicada oficialmente
-al consultar el 7 de octubre [O4]. Actualizarla no sustituye el proveedor Blink
+`androidx.webkit:webkit:1.18.0` coincide con la estable consultada el
+30 de octubre de 2026 [O4]. Actualizarla no sustituye el proveedor Blink
 instalado por Android/OEM, ni garantiza soporte de todas sus funciones.
 
 Hay una WebView viva por política de recursos; otras pestañas guardan estado y
@@ -50,7 +50,7 @@ los sistemas antiadblock de los reproductores.
 
 **Cambio de contrato (2026-10-27, petición del propietario):** la barra inferior flotante se sustituye por una
 cápsula superior única con URL, Atrás, Adelante, Recargar, Inicio, escudo del bloqueador y menú. Cerrar pestaña
-y voz pasan al menú de aplicación. Pulsación larga en el escudo abre el detalle del bloqueador. Los recorridos
+sigue disponible en el menú y también mediante la X de cada pestaña. Pulsación larga en el escudo abre el detalle del bloqueador. Los recorridos
 N01–N06 se leen con esta cápsula; el resto de comportamiento no cambia. Pendiente de validación en Android TV.
 
 **Búsqueda por voz eliminada (2026-10-27, petición del propietario):** no hay entrada de menú, atajo ni
@@ -68,7 +68,9 @@ se retiran el ajuste Tema y la paleta clara. «Oscurecer las páginas web» depe
 (activado por defecto), ya no del modo noche del sistema. Pendiente de validación en Android TV.
 
 **Sugerencias de dirección (2026-10-27, petición del propietario):** al editar la dirección se muestran hasta
-seis sugerencias locales (favoritos e historial; solo favoritos en incógnito) en lugar de la tira de pestañas.
+seis sugerencias locales del historial en lugar de la tira de pestañas.
+La retirada de favoritos del 29 de octubre deja la lista vacía en incógnito; no
+se consulta historial normal ni se borran datos existentes.
 Abajo entra en la lista sin cancelar la edición, Arriba vuelve al campo, OK abre la sugerencia y Atrás sigue N04.
 El campo ya no prohíbe las sugerencias del teclado (`textUri`) ni abre el teclado a pantalla completa.
 Nada sale del dispositivo. Pendiente de validación en Android TV con varios teclados.
@@ -79,15 +81,15 @@ escala 1,1 (botones), 1,05 (pestañas y botones de texto) o 1,025 (filas), segú
 Los controles del navegador son una capa superior sobre un degradado, dentro de los márgenes seguros de
 48/27 dp; las pestañas son píldoras de 188 dp (caben cuatro y «+»). El menú de aplicación es un panel
 lateral a la derecha con icono por entrada; Atrás lo cierra sin elegir. La vista previa de otra pestaña
-ocupa la pantalla detrás de los controles, sin recortar. Las mismas acciones y el mismo orden de foco
-(N01–N06) se conservan. Pendiente de validación en Android TV.
+ocupa la pantalla detrás de los controles, sin recortar. Las acciones y el orden de foco
+(N01–N06) conservan las correcciones posteriores de controles deshabilitados y cierre de pestañas. Pendiente de validación en Android TV.
 
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 
 | ID | Recorrido | Resultado obligatorio |
 | --- | --- | --- |
-| N01 | Página → abrir cápsula | Cápsula visible con foco en Atrás; foco visible en control accionable. |
+| N01 | Página → abrir cápsula | Cápsula visible con foco en Atrás cuando está habilitado, o en el primer comando habilitado; foco accionable. |
 | N02 | Mover foco por la cápsula → Abajo → pestañas → Arriba → URL | Controles alcanzables, sin ocultar filas por recibir foco; buscar no abre IME hasta activar edición. |
 | N03 | Cápsula Atrás/Adelante/Recargar/Inicio | Ejecutar una sola acción sobre la pestaña seleccionada; botones coherentes con historial. |
 | N04 | Editar dirección → Atrás/cancelar | Cerrar IME/edición antes de alterar historial; no enfocar accidentalmente Salir. |
@@ -230,3 +232,29 @@ antes de obtener una base repetible.
 - O5: https://developer.android.com/topic/performance/baselineprofiles/measure-baselineprofile
 - Memoria/renderer/permisos: fuentes y hallazgos en
   [auditoría oficial Android TV](audit/ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md).
+
+
+## Sugerencias con puntero y selección de vídeo
+
+Al editar la dirección, Abajo entra en las sugerencias: puntero dentro de la lista
+si la página usa puntero, foco por filas en modo D-pad directo. OK elige, Arriba
+desde el borde superior vuelve al campo y Atrás conserva el cierre de edición.
+El puntero de la página permanece suprimido; el de sugerencias se dibuja encima
+de sus filas y se reinicia al cerrar o perder foco. No se envían consultas de
+autocompletado a proveedores externos.
+
+Los comandos multimedia priorizan el elemento fullscreen, después vídeos
+visibles y su reproducción/tamaño, con audio como alternativa. El seek respeta
+los rangos DVR; en vídeo de duración finita con metadatos permite currentTime
+aunque el proveedor aún no informe rangos. No fuerza seek de un directo sin rango.
+VP8, VP9 y AV1 se comprueban por separado; no se deshabilita VP8 por faltar VP9.
+La enumeración de decodificadores se comparte una vez por proceso.
+YouTube conserva el reproductor de su web móvil, con las mismas rutas de filtros,
+scriptlets y bloqueo de ventanas. Se descartan reproductores que desvíen peticiones
+fuera del bloqueador. No se añade Media3 ni un reproductor YouTube incrustado.
+El control de iframes de otro origen y la calidad adaptativa siguen dependiendo
+del reproductor y del proveedor WebView.
+Fuentes: https://developer.android.com/training/tv/get-started/navigation ;
+https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime ;
+https://developer.android.com/reference/android/media/MediaCodecInfo .
+Prueba física con mando/teclado/proveedor WebView pendiente.
