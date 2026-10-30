@@ -32,6 +32,37 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
+    @Test fun shieldColorsFollowThePerTabChoiceAndRemainReadableOnFocus() = Fixture().use { f ->
+        val button = f.vb.controlsRow.adBlockButton
+        for (enabled in listOf(true, false)) {
+            f.tab.adblock = enabled
+            f.activity.onPageViewChanged(f.tab)
+            assertEquals(enabled, button.isSelected)
+            val tint = requireNotNull(button.imageTintList)
+            val normal = tint.getColorForState(if (enabled) intArrayOf(android.R.attr.state_selected) else intArrayOf(), 0)
+            if (enabled) assertTrue(android.graphics.Color.green(normal) > android.graphics.Color.red(normal))
+            else assertTrue(android.graphics.Color.red(normal) > android.graphics.Color.green(normal))
+            val focused = tint.getColorForState(if (enabled) intArrayOf(android.R.attr.state_selected, android.R.attr.state_focused)
+                else intArrayOf(android.R.attr.state_focused), 0)
+            val background = androidx.core.content.ContextCompat.getColor(button.context, R.color.inverse_surface)
+            assertTrue(androidx.core.graphics.ColorUtils.calculateContrast(focused, background) >= 3.0)
+        }
+    }
+
+    @Test fun closingABackgroundTabKeepsTheLivePageAndTheStripAndIgnoresStaleCloses() = Fixture().use { f ->
+        f.tabs.workScope.cancel()
+        val background = BrowserTab(url = "https://background.test")
+        f.tabs.openTabs.add(background)
+        f.activity.openCapsule()
+        f.activity.closeTab(background)
+        assertSame(f.tab, f.tabs.currentTab.value)
+        assertEquals(listOf(f.tab), f.tabs.openTabs.toList())
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        f.activity.closeTab(background)
+        assertSame(f.tab, f.tabs.currentTab.value)
+        assertEquals(1, f.tabs.openTabs.size)
+    }
+
     @Test fun capsuleSkipsDisabledHistoryAndReachesSearchInBothDirections() = Fixture().use { f ->
         f.activity.consumeBack()
         val bar = f.vb.controlsRow

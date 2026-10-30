@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- One focus row: the address, the page commands, the blocker shield (long press: details) and the menu. -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:orientation="horizontal"
     tools:parentTag="android.widget.LinearLayout">
@@ -68,10 +69,11 @@
 
     <ImageButton
         android:id="@+id/blocker_button"
+        app:tint="@color/blocker_icon"
         style="@style/Widget.Vireo.IconButton"
         android:layout_marginEnd="@dimen/control_gap"
         android:contentDescription="@string/blocker_toggle"
-        android:src="@drawable/ic_shield_on"
+        android:src="@drawable/ic_shield_off"
         android:nextFocusLeft="@id/home_button"
         android:nextFocusRight="@id/menu_button"
         android:nextFocusDown="@id/tab_strip" />

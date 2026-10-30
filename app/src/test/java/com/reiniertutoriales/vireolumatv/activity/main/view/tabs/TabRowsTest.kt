@@ -19,6 +19,61 @@ import org.robolectric.annotation.Config as RobolectricConfig
 @RunWith(RobolectricTestRunner::class)
 @RobolectricConfig(application = Application::class, sdk = [28])
 class TabRowsTest {
+    @Test fun remoteReachesTheLargeCloseTargetAndLongPressStillOpensOptions() = withAdapter { _, model, parent ->
+        val tab = BrowserTab(url = Config.HOME_PAGE_URL)
+        model.openTabs.add(tab)
+        val options = mutableListOf<BrowserTab>()
+        val closed = mutableListOf<BrowserTab?>()
+        val adapter = TabChips { options += it }.apply { tabStore = model }
+        adapter.listener = object : TabChips.Listener {
+            override fun onTitleChanged(index: Int) {}
+            override fun onTitleSelected(index: Int) { fail("Close must not activate the title") }
+            override fun onAddNewTabSelected() {}
+            override fun openInNewTab(url: String, tabIndex: Int) {}
+            override fun closeTab(tabState: BrowserTab?) { closed += tabState }
+        }
+        val owner = org.robolectric.Robolectric.buildActivity(android.app.Activity::class.java).setup()
+        val list = androidx.recyclerview.widget.RecyclerView(parent.context).apply {
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context, androidx.recyclerview.widget.RecyclerView.HORIZONTAL, false)
+            this.adapter = adapter
+        }
+        try {
+            owner.get().setContentView(list)
+            list.measure(android.view.View.MeasureSpec.makeMeasureSpec(800, android.view.View.MeasureSpec.EXACTLY),
+                android.view.View.MeasureSpec.makeMeasureSpec(100, android.view.View.MeasureSpec.EXACTLY))
+            list.layout(0, 0, 800, 100)
+            val row = list.getChildAt(0)
+            val close = row.findViewById<android.view.View>(R.id.close_tab_button)
+            val target = parent.resources.getDimensionPixelSize(R.dimen.control_size)
+            assertTrue(close.width >= target && close.height >= target)
+            fun key(view: android.view.View, code: Int) {
+                view.dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, code))
+                view.dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, code))
+            }
+            assertTrue(row.requestFocus())
+            key(row, android.view.KeyEvent.KEYCODE_DPAD_RIGHT)
+            assertTrue(close.hasFocus())
+            key(row, android.view.KeyEvent.KEYCODE_DPAD_LEFT)
+            assertTrue(row.isFocused)
+            assertTrue(row.performLongClick())
+            key(row, android.view.KeyEvent.KEYCODE_DPAD_RIGHT)
+            assertTrue(close.performLongClick())
+            assertEquals(listOf(tab, tab), options)
+            key(row, android.view.KeyEvent.KEYCODE_DPAD_CENTER)
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            assertEquals(listOf(tab), closed)
+            val x = close.left + close.width / 2f
+            val y = close.top + close.height / 2f
+            val now = android.os.SystemClock.uptimeMillis()
+            for (action in listOf(android.view.MotionEvent.ACTION_DOWN, android.view.MotionEvent.ACTION_UP)) {
+                val event = android.view.MotionEvent.obtain(now, now, action, x, y, 0)
+                try { assertTrue(row.dispatchTouchEvent(event)) } finally { event.recycle() }
+            }
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            assertEquals(listOf(tab, tab), closed)
+        } finally { owner.pause().stop().destroy() }
+    }
+
     @Test fun closeButtonActsOnItsBoundTabAndIgnoresRecycledRows() = withAdapter { adapter, model, parent ->
         val tab = BrowserTab(url = Config.HOME_PAGE_URL)
         model.openTabs.add(tab)

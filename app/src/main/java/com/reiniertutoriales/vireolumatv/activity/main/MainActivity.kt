@@ -491,12 +491,26 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (tab == null) return
         val tabs = tabStore.openTabs
         val position = tabs.indexOf(tab)
-        if (tabStore.currentTab.value === tab) tabStore.currentTab.value = null
+        if (position < 0) return
+        val keepCapsule = overlayVisible
+        val wasCurrent = tabStore.currentTab.value === tab
+        if (wasCurrent) tabStore.currentTab.value = null
         val neighbour = tabs.getOrNull(position - 1)?.takeIf { position > 0 } ?: tabs.getOrNull(position + 1)
-        if (neighbour != null) changeTab(neighbour)
-        else openInNewTab(browserSettings.homePage, 0, closeCapsuleAfter = true, navigateImmediately = true)
+        if (wasCurrent || tabStore.currentTab.value == null) {
+            if (neighbour != null) changeTab(neighbour)
+            else openInNewTab(browserSettings.homePage, 0, closeCapsuleAfter = !keepCapsule, navigateImmediately = true)
+        }
         tabStore.onCloseTab(tab)
-        closeCapsule()
+        val current = tabStore.currentTab.value
+        vb.tabStrip.current = tabs.indexOf(current).coerceAtLeast(0)
+        if (keepCapsule) {
+            previewGeneration++
+            mainThread.removeCallbacks(showFocusedPreview)
+            focusedPreviewTab = null
+            vb.controlsRow.showAddress(current?.url.orEmpty())
+            lifecycleScope.launch { showPreview(current) }
+            vb.tabStrip.post { if (overlayVisible) vb.tabStrip.requestFocus() }
+        } else closeCapsule()
     }
 
     internal fun changeTab(newTab: BrowserTab, loadInitialUrl: Boolean = true) =
@@ -538,8 +552,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (tab === tabStore.currentTab.value) publishShownSite()
         vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
         vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
-        val blocking = tab.adblock ?: config.adBlockEnabled
-        vb.controlsRow.adBlockButton.setImageResource(if (blocking) R.drawable.ic_shield_on else R.drawable.ic_shield_off)
         updateAdblockStatus(tab)
     }
 
@@ -576,6 +588,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     internal fun updateAdblockStatus(tab: BrowserTab) {
         val state = getString(blockerStatusLabel(tab))
+        vb.controlsRow.showBlockerEnabled(tab.adblock ?: config.adBlockEnabled)
         vb.controlsRow.adBlockButton.contentDescription = getString(R.string.blocker_summary, state, tab.blockedAds)
         vb.controlsRow.adBlockButton.isActivated =
             (tab.adblock ?: config.adBlockEnabled) && ::adBlocker.isInitialized && adBlocker.hasActiveRules

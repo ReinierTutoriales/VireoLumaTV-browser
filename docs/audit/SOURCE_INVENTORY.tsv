@@ -462,3 +462,4 @@ app/src/main/assets/licenses/GPL-3.0.txt	IDENTICO
 app/src/main/java/com/reiniertutoriales/vireolumatv/adblock/BundledFilterLists.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/adblock/BundledFilterListsTest.kt	PROPIO
 scripts/refresh-bundled-filters.py	PROPIO
+app/src/main/res/color/blocker_icon.xml	PROPIO
