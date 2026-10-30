@@ -29,3 +29,11 @@ description: Use when changing product logic, adding features, or fixing regress
 - Report expected behavior, automatic checks, device measurements and delivery
   state separately. A draft, merged source and an installed official APK are
   different states; never imply that an unbuilt change is already on the TV.
+
+## Security and release gates
+
+- Classify each security report as proven defect, exposure with stated preconditions, or unverified suspicion. Do not call a code inspection a penetration test.
+- Pair security fixes with adversarial cases: cross-origin iframe calls, untrusted certs, path traversal and encoded separators, intent extras, failed downloads, and privacy-mode state; preserve normal playback and browsing paths.
+- Before a version bump, check CI on every merged change and again on the exact combined release candidate; do not use an earlier passing run as proof. Verify versionCode, versionName, signing configuration and unchanged user data contracts.
+- Distinguish a merged PR, successful CI, triggered release workflow and published signed APKs. Confirm the published tag, workflow conclusion and APK/checksum/signature assets before saying a version has shipped.
+- Release CI does not establish better loading speed, lower RAM usage or success on physical TV; require before/after device measurements for those claims.
