@@ -128,6 +128,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         container = cursor
         cursor.removeAllViews()
         cursor.addView(view)
+        addMediaControls(context)
         cursor.resetInput()
         cursor.pointerEnabled = true
         view.usePointer(true)
@@ -140,6 +141,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
 
     override fun detach(destroyView: Boolean) {
         exitFullscreen(restoreBrowserControls = false)
+        removeMediaControls()
         pause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
         window = null
@@ -156,16 +158,19 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         val view = webView ?: return
         if (view.isAttachedToWindow) return
         exitFullscreen(restoreBrowserControls = false)
+        removeMediaControls()
         view.destroy()
         webView = null
     }
 
     /** First navigation press reveals the OSD, without passing the press to the player. */
     fun handleMediaOverlayKey(event: KeyEvent): Boolean {
-        if (fullscreenView == null) return false
+        val fullscreen = fullscreenView != null
+        if (!fullscreen && !tab.mediaStarted) return false
         val controls = mediaControls ?: return false
-        if (event.keyCode !in setOf(KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
-                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MENU)) return false
+        if (event.keyCode != KeyEvent.KEYCODE_MENU &&
+            (!fullscreen || event.keyCode !in setOf(KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT))) return false
         if (controls.visibility == View.VISIBLE) {
             controlHandler.removeCallbacks(dismissControls)
             controlHandler.postDelayed(dismissControls, 6000L)
@@ -181,6 +186,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     }
 
     private fun addMediaControls(context: Context) {
+        removeMediaControls()
         val row = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
@@ -200,11 +206,18 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         add("Pausa") { media(MediaCommand.PLAY_PAUSE) }
         add("+10s") { media(MediaCommand.FAST_FORWARD) }
         add("Siguiente") { nextYouTubeVideo() }
-        add("Salir") { closeFullscreen() }
+        if (fullscreenView != null) add("Salir") { closeFullscreen() }
+        else add("Cerrar") { mediaControls?.visibility = View.GONE; webView?.requestFocus() }
         row.visibility = View.GONE
         container?.addView(row, FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM))
         mediaControls = row
+    }
+
+    private fun removeMediaControls() {
+        controlHandler.removeCallbacks(dismissControls)
+        mediaControls?.let { (it.parent as? ViewGroup)?.removeView(it) }
+        mediaControls = null
     }
 
     private fun nextYouTubeVideo() {
@@ -329,14 +342,13 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         // Idempotent: WebView may report the end of fullscreen after the browser already closed it.
         val shown = fullscreenView ?: return
         fullscreenView = null
-        controlHandler.removeCallbacks(dismissControls)
-        mediaControls?.let { (it.parent as? ViewGroup)?.removeView(it) }
-        mediaControls = null
+        removeMediaControls()
         (shown.parent as? ViewGroup)?.removeView(shown)
         webView?.visibility = View.VISIBLE
         webView?.usePointer(pointerBeforeFullscreen)
         container?.pointerEnabled = pointerBeforeFullscreen
         window?.onExitFullscreen(restoreBrowserControls)
+        if (container != null && webView != null) addMediaControls(webView!!.context)
     }
 
     companion object {
