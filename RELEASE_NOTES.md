@@ -1,29 +1,21 @@
-# VireoLumaTV 2.0.5
+# VireoLumaTV 2.0.6
 
-## Qué deberías notar
+## Cambios
 
-- Después de cerrar el teclado de Inicio, el puntero puede pulsar un marcador aunque el buscador conserve el foco. Se corrige la ruta que enviaba la pulsación al campo y volvía a abrir el teclado.
-- El escudo se muestra verde cuando el bloqueador está habilitado para la pestaña y rojo cuando está deshabilitado. Mantenerlo pulsado conserva el detalle del estado de las reglas y los bloqueos: verde indica la selección, no garantiza que todas las reglas estén disponibles.
-- La X de cada pestaña es más visible y tiene un área de 48 dp. Con el mando, Derecha desde el título lleva a la X, Izquierda vuelve al título y OK cierra. También admite pulsación directa con el puntero.
-- Mantener pulsado el título o la X abre las opciones de esa pestaña. Cerrar una pestaña desde la barra mantiene la barra abierta; cerrar una pestaña en segundo plano conserva la página activa. Una orden repetida sobre una pestaña ya cerrada se ignora.
-- El icono del escudo se reutiliza mientras no cambie su estado, evitando cargar de nuevo el mismo recurso en cada actualización.
+- Atrás en TV omite entradas consecutivas con la misma URL para no retroceder a una recarga idéntica; conserva navegación por fragmentos (#) y páginas distintas.
+- Una excepción de certificado TLS solo se reutiliza cuando coinciden los bytes DER de ambos certificados; si no están disponibles, se rechaza.
+- Al cambiar entre modo normal y privado, se conserva una dirección web permitida sin copiar extras arbitrarios del intent de origen.
+- WebView deshabilita explícitamente el acceso a archivos y el acceso cruzado entre URLs locales, manteniendo JavaScript y funciones web.
+- Los recursos internos de Inicio validan origen, segmentos y rutas antes de abrir assets, rechazando recorridos de directorios y separadores codificados.
 
-Se conservan los cambios de 2.0.4: Inicio con accesos propios, sugerencias locales seleccionables, interfaz negra, siete listas base del bloqueador y controles del vídeo principal.
-YouTube mantiene su web móvil y su reproductor, con las rutas de filtros existentes.
+## Compatibilidad y actualización
 
-## Actualización
+VersionName 2.0.6, versionCode 100; sin cambios intencionados en applicationId, firma, esquema Room, motor WebView ni formatos de datos.
+Las variantes oficiales de APK son armeabi-v7a, arm64-v8a y x86_64. La variante generic conserva la actualización integrada con comprobación de checksums firmados.
 
-Versión 2.0.5; versionCode 99. Mismo applicationId, certificado de release y esquema Room 19 que 2.0.4.
-En la variante generic: Ajustes → Acerca de → Actualizar.
-El actualizador comprueba los checksums firmados y el APK antes de abrir el instalador de Android.
-Con el mismo certificado se puede actualizar sin desinstalar; una firma distinta, incluidos builds debug, no es compatible.
-Las variantes google y foss no utilizan el actualizador integrado.
+## Validación y límites
 
-APK: armeabi-v7a, arm64-v8a y x86_64.
+Las correcciones incluyen pruebas de regresión automatizadas. La publicación exige CI, compilación release, lint y verificación de firma/artefactos.
+No equivale a validar reproducción, navegación, descargas y rendimiento con mando en una TV física.
 
-## Validación
-
-Las correcciones de navegación incluyen pruebas automatizadas; la publicación exige pruebas, lint, compilación release y auditoría del contenido de los APK.
-Se verifica el certificado habitual y se firman los checksums con la clave del actualizador.
-Las pruebas y capturas automáticas no son una medición de fluidez, consumo o memoria en TV.
-Pendiente de validación física: foco y puntero con mando, vídeo, bloqueo en sitios reales y actualización instalada conservando datos.
+El aislamiento por origen del puente JavaScript, las reglas de backup y otros endurecimientos identificados en auditoría requieren cambios y verificaciones posteriores; **no se presentan como resueltos en 2.0.6**.
