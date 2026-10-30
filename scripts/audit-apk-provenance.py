@@ -59,7 +59,7 @@ def audit(apk, aapt2, root):
         if retained: issues.append('Removed assets are still packaged')
         checks['source_assets'] = {}
         baseline = root / 'app/src/main/assets/adblock/baseline'
-        sources = PACKAGED_SOURCES + tuple('adblock/baseline/' + path.name for path in sorted(baseline.glob('*.gz')))
+        sources = PACKAGED_SOURCES + tuple('adblock/baseline/' + path.name for path in sorted(baseline.glob('*.filterdata')))
         for path in sources:
             source = root / 'app/src/main/assets' / path
             if not source.is_file() or 'assets/' + path not in names:
@@ -69,6 +69,10 @@ def audit(apk, aapt2, root):
             matches = binary == source.read_bytes()
             checks['source_assets'][path] = {'sha256': hashlib.sha256(binary).hexdigest(), 'matches_source': matches}
             if not matches: issues.append('Packaged asset differs from reviewed source: ' + path)
+            if path.endswith('.filterdata'):
+                stored = package.getinfo('assets/' + path).compress_type == zipfile.ZIP_STORED
+                checks['source_assets'][path]['stored_without_zip_compression'] = stored
+                if not stored: issues.append('Baseline data is compressed twice: ' + path)
     badging = subprocess.check_output([str(aapt2), 'dump', 'badging', str(apk)], text=True)
     resources = subprocess.check_output([str(aapt2), 'dump', 'resources', str(apk)], text=True)
     checks['package_name'] = re.search(r"package: name='([^']+)'", badging).group(1)

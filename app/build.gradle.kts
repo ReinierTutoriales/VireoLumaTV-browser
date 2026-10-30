@@ -68,6 +68,8 @@ android {
         }
     }
     ndkVersion = libs.versions.android.ndk.get()
+    // Keep gzip payloads opaque to AssetManager and avoid a second APK compression layer.
+    androidResources { noCompress += "filterdata" }
 
     defaultConfig {
         applicationId = "com.reiniertutoriales.vireolumatv"

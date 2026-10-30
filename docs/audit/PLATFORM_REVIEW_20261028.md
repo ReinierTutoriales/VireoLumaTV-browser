@@ -233,3 +233,10 @@ pico en TV; tampoco acredita bloqueo universal o reglas siempre actuales sin red
 La auditoría APK comprueba que el manifiesto, las fuentes gzip y su licencia están
 realmente empaquetados e idénticos a los revisados. El cambio no añade dependencias,
 timers periódicos, otros motores, Room ni una versión publicada.
+
+La CI #601 detectó FileNotFoundException al leer los assets con extensión .gz a
+través de AssetManager; la prueba de primera instalación también quedó sin reglas.
+Se mantienen ambas pruebas: el payload gzip usa ahora extensión .filterdata y
+androidResources.noCompress para conservar bytes/nombre sin compresión duplicada.
+La auditoría APK exige igualdad de bytes y almacenamiento ZIP_STORED de cada payload.
+Referencia: https://developer.android.com/reference/tools/gradle-api/9.5/com/android/build/api/dsl/AndroidResources .

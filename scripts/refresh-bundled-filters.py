@@ -31,16 +31,16 @@ def verify(directory=OUT):
     assert [(x['cache'], x['url'], x['ubo']) for x in manifest['lists']] == SOURCES
     size = 0
     for name, info in manifest['files'].items():
-        assert re.fullmatch(r'[a-z0-9-]+\.txt\.gz', name), name
+        assert re.fullmatch(r'[a-z0-9-]+\.filterdata', name), name
         with gzip.open(directory / name, 'rb') as source:
             data = source.read(LIMIT + 1)
         assert len(data) == info['bytes'] <= LIMIT and digest(data) == info['sha256'], name
         data.decode('utf-8')
         size += len(data)
     assert size <= TOTAL
-    assert set(p.name for p in directory.glob('*.gz')) == set(manifest['files'])
+    assert set(p.name for p in directory.glob('*.filterdata')) == set(manifest['files'])
     print(f"Baseline: {len(manifest['lists'])} lists, {len(manifest['files'])} source files, "
-          f"{size} text bytes, {sum(p.stat().st_size for p in directory.glob('*.gz'))} gzip bytes; hashes OK")
+          f"{size} text bytes, {sum(p.stat().st_size for p in directory.glob('*.filterdata'))} gzip bytes; hashes OK")
 
 
 def refresh_to(directory):
@@ -60,7 +60,7 @@ def refresh_to(directory):
         text = data.decode('utf-8')
         if text.lstrip().startswith('<') or not text.strip():
             raise ValueError(f'Invalid filter text: {url}')
-        name = digest(url.encode())[:24] + '.txt.gz'
+        name = digest(url.encode())[:24] + '.filterdata'
         payloads[url] = (name, len(data), text)
         files[name] = {'url': url, 'bytes': len(data), 'sha256': digest(data)}
         (directory / name).write_bytes(gzip.compress(data, compresslevel=9, mtime=0))
@@ -92,7 +92,7 @@ def refresh_to(directory):
                 'license': 'GPL-3.0 (filter data only; retain upstream source headers)',
                 'lists': lists, 'files': files}
     (directory / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-    for path in directory.glob('*.gz'):
+    for path in directory.glob('*.filterdata'):
         if path.name not in files:
             path.unlink()
     verify(directory)

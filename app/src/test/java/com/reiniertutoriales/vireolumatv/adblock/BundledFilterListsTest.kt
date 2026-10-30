@@ -20,8 +20,8 @@ class BundledFilterListsTest {
         val streams = HashMap<String, ByteArray>()
         val opened = ArrayList<String>()
         val files = JSONObject()
-        val entry = JSONObject().put("cache", "list.txt").put("ubo", true).put("file", "main.txt.gz")
-            .put("includes", JSONObject().put("mobile.txt", "mobile.txt.gz"))
+        val entry = JSONObject().put("cache", "list.txt").put("ubo", true).put("file", "main.filterdata")
+            .put("includes", JSONObject().put("mobile.txt", "mobile.filterdata"))
         fun text(name: String, text: String) {
             val bytes = text.toByteArray()
             streams[name] = ByteArrayOutputStream().also { out -> GZIPOutputStream(out).use { it.write(bytes) } }.toByteArray()
@@ -37,15 +37,15 @@ class BundledFilterListsTest {
 
     @Test fun assetsAreLazyAndOnlyActiveIncludesAreReadWithRuntimePreprocessing() {
         val f = Fixture()
-        f.text("main.txt.gz", "! Title: uBlock test\n||common.test^\n!#if env_mobile\n!#include mobile.txt\n!#endif\n!#if env_firefox\n!#include missing-firefox.txt\n!#endif\n")
-        f.text("mobile.txt.gz", "||mobile-ad.test^\n!#include mobile.txt\n")
+        f.text("main.filterdata", "! Title: uBlock test\n||common.test^\n!#if env_mobile\n!#include mobile.txt\n!#endif\n!#if env_firefox\n!#include missing-firefox.txt\n!#endif\n")
+        f.text("mobile.filterdata", "||mobile-ad.test^\n!#include mobile.txt\n")
         val reader = f.reader()
         assertTrue(f.opened.isEmpty())
         val text = requireNotNull(reader.read("list.txt"))
         assertTrue(text.contains("||common.test^"))
         assertTrue(text.contains("||mobile-ad.test^"))
         assertFalse(text.contains("missing-firefox"))
-        assertEquals(listOf("manifest.json", "main.txt.gz", "mobile.txt.gz"), f.opened)
+        assertEquals(listOf("manifest.json", "main.filterdata", "mobile.filterdata"), f.opened)
         assertNull(reader.read("custom.txt"))
         assertEquals(3, f.opened.size)
     }
@@ -53,8 +53,8 @@ class BundledFilterListsTest {
     @Test fun corruptedOrOversizedDataIsRejectedBeforeCompilation() {
         for (wrongSize in listOf(false, true)) {
             val f = Fixture()
-            f.text("main.txt.gz", "||ad.test^\n")
-            val info = f.files.getJSONObject("main.txt.gz")
+            f.text("main.filterdata", "||ad.test^\n")
+            val info = f.files.getJSONObject("main.filterdata")
             if (wrongSize) info.put("bytes", 1) else info.put("sha256", "incorrect")
             try {
                 f.reader().read("list.txt")

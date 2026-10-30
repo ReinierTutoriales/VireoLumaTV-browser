@@ -39,7 +39,7 @@ internal class BundledFilterLists(private val open: (String) -> InputStream) {
     }
 
     private fun text(name: String): String {
-        if (!Regex("[a-z0-9-]+\\.txt\\.gz").matches(name)) throw IOException("Invalid bundled list path")
+        if (!Regex("[a-z0-9-]+\\.filterdata").matches(name)) throw IOException("Invalid bundled list path")
         val info = manifest.getJSONObject("files").getJSONObject(name)
         val size = info.getInt("bytes")
         if (size !in 1..MAX_TEXT_BYTES) throw IOException("Invalid bundled list size")

@@ -264,7 +264,9 @@ Prueba física con mando/teclado/proveedor WebView pendiente.
 
 En primera instalación o si faltan textos válidos, la suscripción predeterminada
 puede recuperar las siete listas de `assets/adblock/baseline`. El manifiesto fija
-fecha, fuentes, tamaños y SHA-256 del texto original comprimido. Se validan antes
+fecha, fuentes, tamaños y SHA-256 del texto original comprimido. Los payloads
+gzip usan extensión `.filterdata` y `noCompress` para evitar el tratamiento
+implícito de `.gz` por Android y una segunda capa de compresión del APK. Se validan antes
 de componer los `!#if`/`!#include` con el mismo preprocesador del runtime.
 La copia válida guardada tiene prioridad; una suscripción personalizada no recibe
 silenciosamente las reglas predeterminadas. La base no se marca como descarga

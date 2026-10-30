@@ -42,9 +42,9 @@ class PackageAuditTest(unittest.TestCase):
                 source.write_bytes(b'reviewed source')
                 apk.writestr('assets/' + path, source.read_bytes())
             if baseline:
-                source = root / 'app/src/main/assets/adblock/baseline/test.txt.gz'
+                source = root / 'app/src/main/assets/adblock/baseline/test.filterdata'
                 source.write_bytes(b'reviewed compressed data')
-                if not missing_baseline: apk.writestr('assets/adblock/baseline/test.txt.gz', source.read_bytes())
+                if not missing_baseline: apk.writestr('assets/adblock/baseline/test.filterdata', source.read_bytes())
             for name in extras: apk.writestr(name, b'retired')
         def dump(args, **kwargs):
             if args[2] == 'badging': return "package: name='com.reiniertutoriales.vireolumatv'"
@@ -64,7 +64,7 @@ class PackageAuditTest(unittest.TestCase):
                 report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;',
                                           baseline=True, missing_baseline=missing)
                 self.assertEqual(int(missing), len(report['checks']['issues']))
-                if missing: self.assertIn('adblock/baseline/test.txt.gz', report['checks']['issues'][0])
+                if missing: self.assertIn('adblock/baseline/test.filterdata', report['checks']['issues'][0])
 
     def test_rejects_original_namespace_and_deleted_assets(self):
         with tempfile.TemporaryDirectory() as folder:
