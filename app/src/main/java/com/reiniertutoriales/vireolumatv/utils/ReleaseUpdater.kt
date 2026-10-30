@@ -178,7 +178,9 @@ nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
         }
 
     private fun open(url: String, accept: String?): HttpURLConnection {
-        val connection = URL(url).openConnection() as HttpURLConnection
+        val source = URL(url)
+        if (source.protocol != "https") throw IOException("Release updates require HTTPS")
+        val connection = source.openConnection() as HttpURLConnection
         connection.connectTimeout = 10_000
         connection.readTimeout = 20_000
         connection.useCaches = false
@@ -187,6 +189,7 @@ nsiyz3dy2TB63QNpK+ib5XGS2c3pDjtOq89+ayf+TNXRR9uFnL8QWoU9Wg==
         try {
             val code = connection.responseCode
             if (code !in 200..299) throw IOException("HTTP $code for $url")
+            if (connection.url.protocol != "https") throw IOException("Release update redirected outside HTTPS")
             return connection
         } catch (error: Exception) {
             connection.disconnect()
