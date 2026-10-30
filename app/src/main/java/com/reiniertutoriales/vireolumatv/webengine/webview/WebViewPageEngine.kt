@@ -128,7 +128,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         container = cursor
         cursor.removeAllViews()
         cursor.addView(view)
-        addMediaControls(context)
+        addMediaControls(view.context)
         cursor.resetInput()
         cursor.pointerEnabled = true
         view.usePointer(true)
