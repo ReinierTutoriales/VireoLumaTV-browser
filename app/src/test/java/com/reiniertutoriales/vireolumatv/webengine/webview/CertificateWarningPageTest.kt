@@ -14,6 +14,14 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class CertificateWarningPageTest {
+
+    @Test fun certificatesWithOnlyMatchingDisplayNamesAreNotTrusted() {
+        val now = java.util.Date()
+        val first = android.net.http.SslCertificate("CN=Example", "CN=Issuer", now, now)
+        val second = android.net.http.SslCertificate("CN=Example", "CN=Issuer", now, now)
+        assertFalse(CertificateTrust.isSameCertificate(first, second))
+    }
+
     @Test fun valuesAreEscapedAndUnknownPlaceholdersEmpty() {
         assertEquals("<p>&lt;b&gt;x&lt;/b&gt; &amp; </p>",
             CertificateWarningPage.fill("<p>{{a}} &amp; {{missing}}</p>", mapOf("a" to "<b>x</b>")))
