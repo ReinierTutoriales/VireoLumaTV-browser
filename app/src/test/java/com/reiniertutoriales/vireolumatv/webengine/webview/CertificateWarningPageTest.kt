@@ -14,6 +14,14 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class CertificateWarningPageTest {
+
+    @Test fun certificatesWithOnlyMatchingDisplayNamesAreNotTrusted() {
+        assertFalse(CertificateTrust.sameEncoded(null, null))
+        assertFalse(CertificateTrust.sameEncoded(byteArrayOf(1), null))
+        assertFalse(CertificateTrust.sameEncoded(byteArrayOf(1), byteArrayOf(2)))
+        assertTrue(CertificateTrust.sameEncoded(byteArrayOf(1, 2), byteArrayOf(1, 2)))
+    }
+
     @Test fun valuesAreEscapedAndUnknownPlaceholdersEmpty() {
         assertEquals("<p>&lt;b&gt;x&lt;/b&gt; &amp; </p>",
             CertificateWarningPage.fill("<p>{{a}} &amp; {{missing}}</p>", mapOf("a" to "<b>x</b>")))

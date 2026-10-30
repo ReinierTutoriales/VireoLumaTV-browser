@@ -14,8 +14,11 @@ internal object CertificateTrust {
         if (a == null || b == null) return false
         val bytesA = encoded(a)
         val bytesB = encoded(b)
-        return if (bytesA != null && bytesB != null) bytesA.contentEquals(bytesB) else a.toString() == b.toString()
+        return sameEncoded(bytesA, bytesB)
     }
+
+    internal fun sameEncoded(a: ByteArray?, b: ByteArray?): Boolean =
+        a != null && b != null && a.contentEquals(b)
 
     private fun encoded(certificate: SslCertificate): ByteArray? = try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

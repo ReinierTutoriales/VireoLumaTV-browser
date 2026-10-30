@@ -89,6 +89,9 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         builtInZoomControls = true
         displayZoomControls = false
         allowContentAccess = false
+        allowFileAccess = false
+        allowFileAccessFromFileURLs = false
+        allowUniversalAccessFromFileURLs = false
         cacheMode = WebSettings.LOAD_DEFAULT
         // Visible rows already load icons through ViewFaviconLoader with their own bounded cache.
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOWNLOAD_FAVICONS_ENABLED)) {

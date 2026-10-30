@@ -20,6 +20,17 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @RobolectricConfig(application = Application::class, sdk = [28])
 class HomePageNetworkTest {
+    @Test fun internalHomeAssetsRejectTraversalAndUntrustedHosts() {
+        val base = Config.HOME_PAGE_URL
+        assertEquals("index.html", safeHomeAssetPath(base))
+        assertEquals("style.css", safeHomeAssetPath(base + "style.css"))
+        for (url in listOf(base + "../secret", base + "%2e%2e/secret",
+            base + "file%2fsecret", base + "style.css?x=1",
+            base + "style.css#fragment", "https://untrusted.example/style.css")) {
+            assertNull(url, safeHomeAssetPath(url))
+        }
+    }
+
     @Test fun missingHomepageIconDoesNotStartLookupOnInterceptionThread() {
         val app = RuntimeEnvironment.getApplication()
         AppContext.init(app, Config(app.getSharedPreferences("home-network-test", 0)).apply { privateBrowsing = false })
