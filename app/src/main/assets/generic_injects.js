@@ -57,12 +57,30 @@
 
     function playing(element) { return !!element && !element.paused && !element.ended; }
 
+    // Prefer the fullscreen player, then the largest playing video. A small preview or
+    // background audio must not steal remote commands from the main visible video.
     function currentMedia() {
-        var candidates = document.querySelectorAll('video, audio');
-        for (var index = 0; index < candidates.length; index++) {
-            if (playing(candidates[index])) return candidates[index];
+        var fullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+        if (fullscreen) {
+            if (typeof fullscreen.matches === 'function' && fullscreen.matches('video, audio')) return fullscreen;
+
         }
-        return document.querySelector('video') || document.querySelector('audio');
+        var scope = fullscreen && typeof fullscreen.querySelectorAll === 'function' ? fullscreen : document;
+        var candidates = scope.querySelectorAll('video, audio');
+        var best = null, bestScore = -1;
+        for (var index = 0; index < candidates.length; index++) {
+            var element = candidates[index];
+            var video = String(element.tagName || element.tag || '').toLowerCase() === 'video';
+            var area = 0;
+            if (typeof element.getBoundingClientRect === 'function') {
+                var rect = element.getBoundingClientRect();
+                area = Math.max(0, rect.width) * Math.max(0, rect.height);
+                if (area === 0) continue;
+            }
+            var score = (video ? 1e12 : 0) + (playing(element) ? 1e9 : 0) + Math.min(area, 1e8);
+            if (score > bestScore) { best = element; bestScore = score; }
+        }
+        return best;
     }
 
     // Each range is independent: a DVR seek must land inside a range rather than inside a gap.
@@ -70,7 +88,13 @@
         if (!element || !isFinite(destination)) return;
         try {
             var available = element.seekable;
-            if (!available || available.length === 0) return;
+            if (!available || available.length === 0) {
+                // A finite progressive video can seek before its provider reports ranges.
+                // Live streams (Infinity/unknown duration) still require an actual seekable range.
+                if (element.readyState >= 1 && isFinite(element.duration) && element.duration > 0)
+                    element.currentTime = Math.max(0, Math.min(element.duration, destination));
+                return;
+            }
             var closest, minimum = Infinity;
             for (var index = 0; index < available.length; index++) {
                 var lower = available.start(index);
