@@ -223,6 +223,37 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.equal(typeof window.ytAds, 'undefined');
     `, c);
 
+    // A mutation burst must scan a queued subtree once, including nested attribute changes.
+    let batched = page({hide: [], script: ''}, 'stream.example', `
+        var scans = 0, leafScans = 0, lookups = [];
+        var root = {nodeType: 1, id: '', classList: [], querySelectorAll() { return []; }};
+        var child = {nodeType: 1, id: 'panel', classList: ['ad-box'], parentElement: root,
+            querySelectorAll() { scans++; return [leaf]; }};
+        var leaf = {nodeType: 1, id: 'sponsor', classList: ['sponsored'], parentElement: child,
+            querySelectorAll() { leafScans++; return []; }};
+        document.documentElement = root;
+        document.readyState = 'complete';
+        VireoLumaTVApp.hiddenSelectors = function (url, classes, ids) { lookups.push({classes, ids}); return '[]'; };
+    `);
+    batched.flush();
+    vm.runInContext(`
+        for (var i = 0; i < 100; i++) observers[0].fn([
+            {type: 'attributes', target: child}, {type: 'childList', addedNodes: [child, leaf]}
+        ]);
+    `, batched);
+    batched.flush();
+    vm.runInContext(`
+        assert.equal(scans, 1);
+        assert.equal(leafScans, 0);
+        assert.equal(lookups.length, 1);
+        assert.match(lookups[0].ids, /panel/);
+        assert.match(lookups[0].ids, /sponsor/);
+        child.classList.push('new-ad');
+        observers[0].fn([{type: 'attributes', target: child}]);
+    `, batched);
+    batched.flush();
+    vm.runInContext(`assert.equal(lookups.length, 2); assert.equal(lookups[1].classes, 'new-ad');`, batched);
+
     // Single injection per frame.
     vm.runInContext(source, c);
     vm.runInContext(`assert.equal(document.adoptedStyleSheets.length, 1);`, c);

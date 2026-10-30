@@ -1298,7 +1298,7 @@
     // that really occur in the page are sent to the engine, in batches, each name once.
     if (!data.generichide && typeof bridge.hiddenSelectors === 'function') {
         var seenClasses = new Set(), seenIds = new Set(), budget = 4000;
-        var newClasses = [], newIds = [], queue = [], scheduled = false, genericSheet = null, genericStyle = null;
+        var newClasses = [], newIds = [], queue = new Map(), scheduled = false, genericSheet = null, genericStyle = null;
         var collect = function (el) {
             var id = el.id;
             if (typeof id === 'string' && id && !seenIds.has(id) && seenIds.size < budget && !/\s/.test(id)) {
@@ -1327,15 +1327,18 @@
         };
         var flushGeneric = function () {
             scheduled = false;
-            var nodes = queue; queue = [];
-            for (var n = 0; n < nodes.length; n++) {
-                var node = nodes[n].node;
+            var nodes = queue; queue = new Map();
+            nodes.forEach(function (subtree, node) {
+                // An ancestor scan already includes this element and its descendants.
+                for (var parent = node.parentElement; parent; parent = parent.parentElement) {
+                    if (nodes.get(parent) === true) return;
+                }
                 collect(node);
-                if (nodes[n].subtree && node.querySelectorAll) {
+                if (subtree && node.querySelectorAll) {
                     var inner = node.querySelectorAll('[id],[class]');
                     for (var k = 0; k < inner.length; k++) collect(inner[k]);
                 }
-            }
+            });
             if (!newClasses.length && !newIds.length) return;
             var result = [];
             try { result = JSON.parse(bridge.hiddenSelectors(href, newClasses.join(' '), newIds.join(' ')) || '[]'); } catch (_) {}
@@ -1344,7 +1347,7 @@
         };
         var enqueue = function (node, subtree) {
             if (!node || node.nodeType !== 1) return;
-            queue.push({ node: node, subtree: subtree });
+            queue.set(node, queue.get(node) === true || subtree);
             if (!scheduled) { scheduled = true; setTimeout(flushGeneric, 250); }
         };
         try {
