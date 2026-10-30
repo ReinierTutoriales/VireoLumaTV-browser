@@ -18,7 +18,6 @@
         <item name="android:statusBarColor">@color/background</item>
         <item name="android:navigationBarColor">@color/background</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="26">false</item>
         <item name="alertDialogTheme">@style/ThemeOverlay.Vireo.Dialog</item>
         <item name="android:alertDialogTheme">@style/ThemeOverlay.Vireo.Dialog</item>
     </style>
