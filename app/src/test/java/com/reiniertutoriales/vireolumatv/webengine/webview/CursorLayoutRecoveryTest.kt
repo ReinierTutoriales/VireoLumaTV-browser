@@ -25,6 +25,7 @@ class CursorLayoutRecoveryTest {
             val keys = mutableListOf<Int>()
             val touches = mutableListOf<Pair<Int, Float>>()
             val page = object : WebView(activity) {
+                override fun findFocus(): View = this
                 override fun onCheckIsTextEditor() = true
                 override fun onKeyDown(code: Int, event: KeyEvent): Boolean {
                     keys += code
@@ -41,11 +42,9 @@ class CursorLayoutRecoveryTest {
             layout.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
             layout.layout(0, 0, 800, 600)
-            // Robolectric's WebView provider does not implement requestFocus. Establish
-            // Android's actual focus bookkeeping, then exercise normal key dispatch.
-            org.robolectric.util.ReflectionHelpers.callInstanceMethod<Void>(page, "handleFocusGainInternal",
-                org.robolectric.util.ReflectionHelpers.ClassParameter.from(Int::class.javaPrimitiveType!!, View.FOCUS_DOWN),
-                org.robolectric.util.ReflectionHelpers.ClassParameter.from(android.graphics.Rect::class.java, null))
+            // The provider has no DOM focus implementation in Robolectric. Model the
+            // focused web editor while keeping the real PointerLayout event route.
+            layout.requestChildFocus(page, page)
             assertSame(page, layout.findFocus())
             assertTrue(page.onCheckIsTextEditor())
             assertFalse("Dismissed web keyboard must release the remote", layout.isTextInputActive())
