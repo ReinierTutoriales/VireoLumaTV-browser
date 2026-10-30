@@ -24,7 +24,7 @@ class MeaningfulBackHistoryTest {
 
     @Test fun unknownEntriesDoNotCauseUnsupportedSkipping() {
         assertEquals(-1, meaningfulBackOffset(listOf("https://site.test/list", null), 1))
-        assertEquals(-1, meaningfulBackOffset(listOf(null, "https://site.test/video", "https://site.test/video"), 2))
+        assertEquals(-2, meaningfulBackOffset(listOf(null, "https://site.test/video", "https://site.test/video"), 2))
     }
 
     @Test fun emptyOrInvalidHistoryHasNoBackDestination() {
