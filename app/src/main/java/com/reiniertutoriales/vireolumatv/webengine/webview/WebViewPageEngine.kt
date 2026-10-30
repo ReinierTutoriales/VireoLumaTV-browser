@@ -206,8 +206,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         add("Pausa") { media(MediaCommand.PLAY_PAUSE) }
         add("+10s") { media(MediaCommand.FAST_FORWARD) }
         add("Siguiente") { nextYouTubeVideo() }
-        if (fullscreenView != null) add("Salir") { closeFullscreen() }
-        else add("Cerrar") { mediaControls?.visibility = View.GONE; webView?.requestFocus() }
+        if (fullscreenView != null) add("⛶ Minimizar") { closeFullscreen() }
+        else add("⛶ Maximizar") { maximizeWebVideo() }
         row.visibility = View.GONE
         container?.addView(row, FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM))
@@ -218,6 +218,14 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         controlHandler.removeCallbacks(dismissControls)
         mediaControls?.let { (it.parent as? ViewGroup)?.removeView(it) }
         mediaControls = null
+    }
+
+    /** Ask the site's existing player to enter fullscreen; never replace its media pipeline. */
+    private fun maximizeWebVideo() {
+        val view = webView ?: return
+        view.evaluateJavascript(
+            "(function(){var b=document.querySelector('.ytp-fullscreen-button, button[aria-label*=Fullscreen], button[aria-label*=pantalla]');" +
+                "if(b){b.click();return true;}return false;})()", null)
     }
 
     private fun nextYouTubeVideo() {
