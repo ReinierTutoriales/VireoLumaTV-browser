@@ -27,6 +27,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         fun onAddressInputCancelled() {}
         fun onAddressTyped(text: String) {}
         fun focusSuggestions(): Boolean = false
+        fun suggestionsHaveFocus(): Boolean = false
     }
 
     var callback: Callback? = null
@@ -44,6 +45,11 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     private val keyboard get() = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     private val selectText = Runnable { if (editing && ui.addressField.hasFocus()) ui.addressField.selectAll() }
 
+    private val checkAddressFocus = Runnable {
+        if (editing && !ui.addressField.hasFocus() && callback?.suggestionsHaveFocus() != true)
+            finishEditing(cancelled = true)
+    }
+
     init {
         orientation = HORIZONTAL
         if (!isInEditMode) {
@@ -51,7 +57,10 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
             renderEditing(false)
             ui.addressField.setOnClickListener { beginEditing() }
             ui.addressField.setOnFocusChangeListener { _, focused ->
-                if (!focused && editing && !enteringSuggestions) finishEditing(cancelled = true)
+                if (!focused && editing && !enteringSuggestions) {
+                    removeCallbacks(checkAddressFocus)
+                    post(checkAddressFocus)
+                }
             }
             ui.addressField.doAfterTextChanged { if (editing) callback?.onAddressTyped(it?.toString().orEmpty()) }
             ui.addressField.setOnKeyListener { _, code, event -> handleAddressKey(code, event) }
@@ -189,6 +198,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
 
     override fun onDetachedFromWindow() {
         removeCallbacks(selectText)
+        removeCallbacks(checkAddressFocus)
         super.onDetachedFromWindow()
     }
 }
