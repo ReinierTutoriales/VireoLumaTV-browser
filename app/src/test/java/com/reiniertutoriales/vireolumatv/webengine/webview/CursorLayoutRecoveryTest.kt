@@ -41,7 +41,12 @@ class CursorLayoutRecoveryTest {
             layout.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
             layout.layout(0, 0, 800, 600)
-            assertTrue(page.requestFocus())
+            // Robolectric's WebView provider does not implement requestFocus. Establish
+            // Android's actual focus bookkeeping, then exercise normal key dispatch.
+            org.robolectric.util.ReflectionHelpers.callInstanceMethod<Void>(page, "handleFocusGainInternal",
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(Int::class.javaPrimitiveType!!, View.FOCUS_DOWN),
+                org.robolectric.util.ReflectionHelpers.ClassParameter.from(android.graphics.Rect::class.java, null))
+            assertSame(page, layout.findFocus())
             assertTrue(page.onCheckIsTextEditor())
             assertFalse("Dismissed web keyboard must release the remote", layout.isTextInputActive())
             layout.pointerController.cursorPosition.set(520f, 420f)
