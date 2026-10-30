@@ -14,3 +14,15 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
 - The current UI uses one top capsule and tabs. Apply N01–N10 from
   `docs/REGRESSION_POLICY.md`; do not revive the removed bottom toolbar.
 - Record what still needs a real remote/device check. Do not invent UI behaviors.
+
+## Recheck the interaction that actually failed
+
+- Distinguish D-pad focus, the remote's virtual pointer, touch/mouse input and
+  keyboard-owned suggestions. Exercise the reported route and return path; a
+  focus-only test does not prove that the virtual pointer can select a row.
+- Check effective CSS specificity and native state styling for normal, focused,
+  pressed and disabled controls in the supported theme. A dark-theme declaration
+  does not override a more specific light selector; verify contrast where rendered
+  evidence is available and label static review as static review.
+- Preserve the requested YouTube mobile browsing path and its filters. Do not
+  replace it with an embedded player merely to expose another control API.

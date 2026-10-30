@@ -35,3 +35,16 @@ Hard constraints that override convenience:
 - A change is incomplete until it has been verified against existing tests and contracts.
 
 These rules apply to every agent and every change.
+
+## Learn from verified errors
+
+- After a meaningful regression, failed check or owner correction, identify the
+  violated contract and the cause from code, logs or a reproduction. Mark an
+  unconfirmed cause as a hypothesis; do not turn it into a permanent rule.
+- Fix the cause and its regression coverage first. Add one concise, reusable
+  lesson to the relevant existing skill only if it prevents recurrence; update
+  or remove superseded guidance instead of growing a chronological error log.
+- Keep product contracts and evidence in `docs/REGRESSION_POLICY.md` and the
+  existing audit, with a test or commit reference. Do not duplicate them here.
+- Before the next related task, read that lesson and check whether its conditions
+  still apply. New owner instructions take precedence over historical lessons.

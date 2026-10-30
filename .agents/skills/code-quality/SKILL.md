@@ -14,3 +14,16 @@ description: Use when optimizing, cleaning, or reviewing code. Prioritizes simpl
 - Update documentation only when it reflects verified current behavior.
 - Note any remaining need for real Android TV device validation.
 - Follow agent-governance rules on branches and authorship.
+
+## Avoid repeating failed optimization choices
+
+- Trace network requests, script injection, service workers and per-site choices
+  before changing a playback or loading path. Reject a proposed path that bypasses
+  the required blocking policy; retain the working path until equivalent coverage
+  is implemented and checked.
+- Evaluate codec capabilities independently. Do not infer VP8 support from VP9,
+  or efficiency from hardware availability alone. Keep capability enumeration
+  shared and bounded instead of adding repeated scans on interaction paths.
+- Separate a correctness/resource fix from a measured performance improvement.
+  Name the affected resource and tradeoff; preserve restoration and functionality.
+  Smaller APK size, newer APIs and fewer lines alone do not prove faster playback.
