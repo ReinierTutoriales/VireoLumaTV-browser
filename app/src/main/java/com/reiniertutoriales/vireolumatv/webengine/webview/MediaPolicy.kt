@@ -35,8 +35,13 @@ internal object MediaPolicy {
     /** Off the main thread at start-up, so the first WebView does not wait for MediaCodecList. */
     fun prewarm() { hardwareDecoders }
 
-    fun blockedCodecs(): List<String> = blockedCodecs(
-        hasHardwareDecoder(MIME_VP8), hasHardwareDecoder(MIME_VP9), hasHardwareDecoder(MIME_AV1))
+    // The platform decoder list is stable during this process. Avoid rebuilding the
+    // same list on every page navigation and media-policy refresh.
+    private val detectedBlockedCodecs: List<String> by lazy {
+        blockedCodecs(hasHardwareDecoder(MIME_VP8), hasHardwareDecoder(MIME_VP9), hasHardwareDecoder(MIME_AV1))
+    }
+
+    fun blockedCodecs(): List<String> = detectedBlockedCodecs
 
     internal fun blockedCodecs(hasVp8: Boolean, hasVp9: Boolean, hasAv1: Boolean): List<String> = buildList {
         if (!hasVp8) add("vp8")
