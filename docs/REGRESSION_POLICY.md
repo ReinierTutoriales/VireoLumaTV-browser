@@ -230,3 +230,28 @@ antes de obtener una base repetible.
 - O5: https://developer.android.com/topic/performance/baselineprofiles/measure-baselineprofile
 - Memoria/renderer/permisos: fuentes y hallazgos en
   [auditoría oficial Android TV](audit/ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md).
+
+
+## Sugerencias con puntero y selección de vídeo
+
+Al editar la dirección, Abajo entra en las sugerencias: puntero dentro de la lista
+si la página usa puntero, foco por filas en modo D-pad directo. OK elige, Arriba
+desde el borde superior vuelve al campo y Atrás conserva el cierre de edición.
+El puntero de la página permanece suprimido; el de sugerencias se dibuja encima
+de sus filas y se reinicia al cerrar o perder foco. No se envían consultas de
+autocompletado a proveedores externos.
+
+Los comandos multimedia priorizan el elemento fullscreen, después vídeos
+visibles y su reproducción/tamaño, con audio como alternativa. El seek respeta
+los rangos DVR; en vídeo de duración finita con metadatos permite currentTime
+aunque el proveedor aún no informe rangos. No fuerza seek de un directo sin rango.
+VP8, VP9 y AV1 se comprueban por separado; no se deshabilita VP8 por faltar VP9.
+La enumeración de decodificadores se comparte una vez por proceso.
+No añade un reproductor nativo, ni garantiza control de iframes de otro origen o
+una calidad universal: Media3 requiere la fuente y, en contenido protegido,
+configuración DRM. La calidad adaptativa sigue dependiendo del reproductor.
+Fuentes: https://developer.android.com/training/tv/get-started/navigation ;
+https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime ;
+https://developer.android.com/media/media3/exoplayer/media-items ;
+https://developer.android.com/reference/android/media/MediaCodecInfo .
+Prueba física con mando/teclado/proveedor WebView pendiente.

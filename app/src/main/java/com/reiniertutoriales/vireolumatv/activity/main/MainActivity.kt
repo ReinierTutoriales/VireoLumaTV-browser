@@ -392,7 +392,10 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         }
     }
 
-    override fun focusSuggestions(): Boolean = vb.vSuggestions.hasSuggestions && vb.vSuggestions.focusFirst()
+    override fun focusSuggestions(): Boolean = vb.vSuggestions.hasSuggestions &&
+        if (vb.pageContainer.pointerEnabled) vb.vSuggestions.focusPointer() else vb.vSuggestions.focusFirst()
+
+    override fun suggestionsHaveFocus(): Boolean = vb.vSuggestions.hasFocus()
 
     override fun onAddressInputCancelled() = closeSuggestions()
 
