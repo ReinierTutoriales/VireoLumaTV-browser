@@ -31,7 +31,7 @@ class PackageAuditTest(unittest.TestCase):
         self.assertEqual([name], audit.class_names(dex_with_class(name)))
         with self.assertRaises(ValueError): audit.class_names(b'not a dex')
 
-    def run_package(self, root, class_name, extras=(), resources='resource string/about_license', root_license=b'reviewed source'):
+    def run_package(self, root, class_name, extras=(), resources='resource string/about_license', root_license=b'reviewed source', baseline=False, missing_baseline=False):
         package = root / 'example.apk'
         (root / 'LICENSE.md').write_bytes(root_license)
         with zipfile.ZipFile(package, 'w') as apk:
@@ -41,6 +41,10 @@ class PackageAuditTest(unittest.TestCase):
                 source.parent.mkdir(parents=True, exist_ok=True)
                 source.write_bytes(b'reviewed source')
                 apk.writestr('assets/' + path, source.read_bytes())
+            if baseline:
+                source = root / 'app/src/main/assets/adblock/baseline/test.txt.gz'
+                source.write_bytes(b'reviewed compressed data')
+                if not missing_baseline: apk.writestr('assets/adblock/baseline/test.txt.gz', source.read_bytes())
             for name in extras: apk.writestr(name, b'retired')
         def dump(args, **kwargs):
             if args[2] == 'badging': return "package: name='com.reiniertutoriales.vireolumatv'"
@@ -53,6 +57,14 @@ class PackageAuditTest(unittest.TestCase):
             report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;')
             self.assertEqual([], report['checks']['issues'])
             self.assertEqual(64, len(report['sha256']))
+
+    def test_checks_that_baseline_data_is_actually_packaged(self):
+        for missing in [False, True]:
+            with tempfile.TemporaryDirectory() as folder:
+                report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;',
+                                          baseline=True, missing_baseline=missing)
+                self.assertEqual(int(missing), len(report['checks']['issues']))
+                if missing: self.assertIn('adblock/baseline/test.txt.gz', report['checks']['issues'][0])
 
     def test_rejects_original_namespace_and_deleted_assets(self):
         with tempfile.TemporaryDirectory() as folder:

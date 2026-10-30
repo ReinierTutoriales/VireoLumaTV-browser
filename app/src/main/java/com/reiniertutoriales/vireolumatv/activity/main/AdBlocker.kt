@@ -8,6 +8,7 @@ import android.widget.Toast
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.adblock.BundledFilterLists
 import com.reiniertutoriales.vireolumatv.adblock.AdblockCache
 import com.reiniertutoriales.vireolumatv.adblock.AdblockFilterListValidator
 import com.reiniertutoriales.vireolumatv.adblock.AdblockListDownloader
@@ -22,6 +23,7 @@ import com.reiniertutoriales.vireolumatv.adblock.readValidators
 import com.reiniertutoriales.vireolumatv.adblock.writeValidators
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModel
 import com.reiniertutoriales.vireolumatv.utils.observable.LiveValue
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
@@ -128,8 +130,16 @@ class AdBlocker @JvmOverloads constructor(
     // Lists the last attempt did not refresh: saved text was used, or no usable text existed.
     val unavailableLists = LiveValue<List<String>>(emptyList())
     val listLoading = LiveValue(false)
+    /** First local recovery attempt, never the network refresh; startup may await it without blocking Main. */
+    val initialRulesReady = CompletableDeferred<Unit>()
     val config = AppContext.config
     val hasActiveRules: Boolean get() = hasCurrentClient(config.blockListUrl.value)
+
+    // Open assets only on the IO recovery path; normal cached starts never decode the baseline.
+    private val bundledFilters by lazy {
+        BundledFilterLists { VireoLumaTVApp.instance.assets.open("adblock/baseline/$it") }
+    }
+    internal var bundledList: (String) -> String? = { bundledFilters.read(it) }
 
     private val sourceObserver: (String) -> Unit = { loadBlockList(true) }
 
@@ -171,42 +181,8 @@ class AdBlocker @JvmOverloads constructor(
                 val filesDir = VireoLumaTVApp.instance.filesDir
                 val cachedList = AdblockCache.fileFor(filesDir, engine, configuredUrl)
                 val filterLists = getConfiguredFilterLists(configuredUrl)
-                // Protect initial page requests while expired lists download in the background.
-                // A refresh of an already active blocker does not allocate another cached native client.
-                if (!hasCurrentClient(configuredUrl)) {
-                    loadedClient = deserializeCachedList(cachedList)
-                    loadedClient?.let { cached ->
-                        if (config.blockListUrl.value == configuredUrl) {
-                            installClient(cached, configuredUrl)
-                        }
-                    }
-                }
-                // An engine upgrade can invalidate the binary cache. Recover from saved text
-                // before waiting on any server, so existing rules protect the initial page.
-                if (!hasCurrentClient(configuredUrl)) {
-                    val saved = filterLists.mapNotNull { list ->
-                        readCachedFilterList(list, File(filesDir, list.cacheFileName))
-                    }
-                    if (saved.isNotEmpty()) {
-                        require(saved.sumOf { it.length.toLong() } <= 16L * 1024 * 1024)
-                        loadedClient = engine.compile(saved)
-                        loadedClient?.let { recovered ->
-                            if (config.blockListUrl.value == configuredUrl) {
-                                installClient(recovered, configuredUrl)
-                                AdblockCache.write(cachedList, recovered)
-                            }
-                        }
-                    }
-                }
-                // Popup and element hiding rules: from their own caches, or once from the saved list text.
-                if (!hasAuxiliary(configuredUrl)) {
-                    restoreAuxiliary(configuredUrl) ?: run {
-                        val texts = filterLists.mapNotNull { list ->
-                            readCachedFilterList(list, File(filesDir, list.cacheFileName))
-                        }
-                        if (texts.isNotEmpty()) buildAuxiliary(configuredUrl, texts)
-                    }
-                }
+                loadedClient = restoreLocalRules(configuredUrl, filterLists, filesDir, cachedList)
+                initialRulesReady.complete(Unit)
                 if (!needUpdate && loadedClient != null) {
                     Log.i(TAG, "Loaded cached adblock list")
                     return@ioContext
@@ -308,12 +284,79 @@ class AdBlocker @JvmOverloads constructor(
                 Toast.makeText(VireoLumaTVApp.instance, R.string.blocker_update_failed, Toast.LENGTH_SHORT).show()
             }
         } finally {
+            initialRulesReady.complete(Unit)
             // Compiled or restored but not installed (list URL changed, model cleared, cancelled
             // while the native compile ran): free its native memory now.
             loadedClient?.let { if (it !== installedClient?.blocker) it.release() }
             listLoading.value = false
             if (!cleared && config.blockListUrl.value != configuredUrl) loadBlockList(true)
         }
+    }
+
+    /** Local text buffers belong to this call only; they are not held through the network refresh. */
+    private fun restoreLocalRules(
+        configuredUrl: String,
+        filterLists: List<FilterList>,
+        filesDir: File,
+        cachedList: File
+    ): ContentBlocker? {
+        var loadedClient: ContentBlocker? = null
+        // The same text serves network and popup recovery; do not read/decompress it twice.
+        val savedTexts by lazy {
+            filterLists.mapNotNull { list ->
+                val file = File(filesDir, list.cacheFileName)
+                readCachedFilterList(list, file) ?: if (configuredUrl == Config.DEFAULT_ADBLOCK_LIST_URL) {
+                    try {
+                        bundledList(list.cacheFileName)?.takeIf { isValidFilterList(list, it) }?.also {
+                            AdblockCache.writeText(file, it)
+                        }
+                    } catch (error: Exception) {
+                        Log.w(TAG, "Can not read bundled filters: ${list.name}", error)
+                        null
+                    }
+                } else null
+            }
+        }
+        // Protect initial page requests while expired lists download in the background.
+        // A refresh of an already active blocker does not allocate another cached native client.
+        if (!hasCurrentClient(configuredUrl)) {
+            loadedClient = deserializeCachedList(cachedList)
+            loadedClient?.let { cached ->
+                if (config.blockListUrl.value == configuredUrl) {
+                    installClient(cached, configuredUrl)
+                }
+            }
+        }
+        // An engine upgrade can invalidate the binary cache. Recover from saved text
+        // before waiting on any server, so existing rules protect the initial page.
+        if (!hasCurrentClient(configuredUrl)) {
+            val saved = savedTexts
+            if (saved.isNotEmpty()) {
+                require(saved.sumOf { it.length.toLong() } <= 16L * 1024 * 1024)
+                loadedClient = try {
+                    engine.compile(saved)
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Exception) {
+                    Log.w(TAG, "Local filter compilation failed; trying the normal update", error)
+                    null
+                }
+                loadedClient?.let { recovered ->
+                    if (config.blockListUrl.value == configuredUrl) {
+                        installClient(recovered, configuredUrl)
+                        AdblockCache.write(cachedList, recovered)
+                    }
+                }
+            }
+        }
+        // Popup and element hiding rules: from their own caches, or once from the saved list text.
+        if (!hasAuxiliary(configuredUrl)) {
+            restoreAuxiliary(configuredUrl) ?: run {
+                val texts = savedTexts
+                if (texts.isNotEmpty()) buildAuxiliary(configuredUrl, texts)
+            }
+        }
+        return loadedClient
     }
 
     private fun getConfiguredFilterLists(configuredUrl: String): List<FilterList> {
@@ -568,6 +611,7 @@ class AdBlocker @JvmOverloads constructor(
     }
 
     override fun onClear() {
+        initialRulesReady.complete(Unit)
         config.blockListUrl.forget(sourceObserver)
         synchronized(installLock) {
             cleared = true

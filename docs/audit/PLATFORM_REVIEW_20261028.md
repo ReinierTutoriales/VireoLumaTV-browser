@@ -201,3 +201,35 @@ válidos ni se retira compatibilidad de Android antiguo para declarar limpieza.
 La revisión dirigida y las pruebas automáticas no equivalen a auditar todas las
 rutas, todos los transitivos ni a demostrar fluidez en TV. La validación física
 sigue pendiente.
+
+
+## Base local del bloqueador y coalescencia DOM — 2026-10-30
+
+Base de código: `7b91a8da`. Se incluye una copia fechada de las siete listas
+predeterminadas y sus sublistas, con los textos originales comprimidos y los
+avisos de fuente/licencia. Manifiesto: 17 ficheros de origen, 6 738 749 bytes de
+texto y 2 013 372 bytes gzip. `refresh-bundled-filters.py` solo descarga con
+`--refresh`; sin ese argumento comprueba hashes y tamaños sin red. La sustitución
+de la copia se hace después de descargar y validar la generación completa.
+
+Prioridad: motor/caché válidos → textos guardados → base incluida si falta texto.
+No se inyectan listas predeterminadas en suscripciones personalizadas. El trabajo
+local está en IO; con bloqueo global activado se espera ese intento de recuperación
+antes de abrir la página inicial, sin esperar a la red. Los buffers locales se
+reutilizan para reglas de red/popups y salen de ámbito antes de la actualización.
+Si una compilación local lanza una excepción, todavía se intenta la actualización
+normal. La base no se presenta como una descarga reciente. Se conservan las
+revalidaciones HTTP, sus sublistas, el backoff y la última generación funcional.
+
+Ocultación genérica: una cola Map agrupa elementos y elimina recorridos redundantes
+de descendientes cuando ya se recorre su antecesor. En la prueba de 100 avisos
+repetidos se pasa de 100 recorridos del mismo subárbol a uno, conservando IDs,
+clases y cambios posteriores. La prueba falla con el script anterior y pasa con
+el nuevo. No cambia el filtro dedicado de YouTube móvil ni su reproducción.
+
+Coste añadido: unos 2 MB de datos comprimidos en cada APK y compilación inicial
+si no existe caché compatible. Esto no mide todavía latencia/fluidez ni memoria
+pico en TV; tampoco acredita bloqueo universal o reglas siempre actuales sin red.
+La auditoría APK comprueba que el manifiesto, las fuentes gzip y su licencia están
+realmente empaquetados e idénticos a los revisados. El cambio no añade dependencias,
+timers periódicos, otros motores, Room ni una versión publicada.

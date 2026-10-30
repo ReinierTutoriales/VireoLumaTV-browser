@@ -28,9 +28,14 @@ Android System WebView is provided by the device and has its own provider terms.
 
 ## Filter data
 
-EasyList, EasyPrivacy, EasyList Spanish and uBlock Origin filter lists are downloaded
-at runtime as data. Their respective licenses and attribution requirements continue
-to apply. Redirect resources and scriptlets written for this application are in
+A dated baseline of EasyList, EasyPrivacy, EasyList Spanish and uBlock Origin
+filter data is bundled under assets/adblock/baseline and updated at runtime.
+The EasyList authors (https://easylist.to/), EasyList Spanish contributors and
+uBlock Origin contributors retain authorship of these lists. They are distributed
+under GPL-3.0 for this snapshot; GPL-3.0.txt contains the license.
+The manifest records original source URLs, retrieval time and SHA-256 hashes;
+gzip files contain the original UTF-8 source including its attribution headers.
+The application's original code remains separately licensed as described above. Redirect resources and scriptlets written for this application are in
 app/src/main/assets/adblock and app/src/main/assets/surrogates.
 
 ## Release sources

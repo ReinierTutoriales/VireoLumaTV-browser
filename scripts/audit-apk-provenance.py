@@ -19,7 +19,8 @@ REMOVED_ASSETS = (
 )
 PACKAGED_SOURCES = (
     'generic_injects.js', 'pages/home/index.html', 'pages/warning-certificate.html',
-    'licenses/NOTICE.md', 'licenses/APP-LICENSE.txt',
+    'licenses/NOTICE.md', 'licenses/APP-LICENSE.txt', 'licenses/GPL-3.0.txt',
+    'adblock/baseline/manifest.json',
 )
 
 
@@ -57,7 +58,9 @@ def audit(apk, aapt2, root):
         checks['removed_assets_still_packaged'] = retained
         if retained: issues.append('Removed assets are still packaged')
         checks['source_assets'] = {}
-        for path in PACKAGED_SOURCES:
+        baseline = root / 'app/src/main/assets/adblock/baseline'
+        sources = PACKAGED_SOURCES + tuple('adblock/baseline/' + path.name for path in sorted(baseline.glob('*.gz')))
+        for path in sources:
             source = root / 'app/src/main/assets' / path
             if not source.is_file() or 'assets/' + path not in names:
                 issues.append('Required source or packaged asset missing: ' + path)

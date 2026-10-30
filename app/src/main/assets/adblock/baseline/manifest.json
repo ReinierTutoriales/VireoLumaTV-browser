@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "fetched_at": "2026-10-30T10:09:20.337824+00:00",
+  "license": "GPL-3.0 (filter data only; retain upstream source headers)",
+  "lists": [
+    {
+      "cache": "adblock_list_easylist.txt",
+      "url": "https://easylist-downloads.adblockplus.org/easylist.txt",
+      "file": "a18a64c9fbdb14dbe489b65b.txt.gz",
+      "ubo": false,
+      "includes": {}
+    },
+    {
+      "cache": "adblock_list_easyprivacy.txt",
+      "url": "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
+      "file": "f02d04743997168835a20f67.txt.gz",
+      "ubo": false,
+      "includes": {}
+    },
+    {
+      "cache": "adblock_list_easylist_spanish.txt",
+      "url": "https://easylist-downloads.adblockplus.org/easylistspanish.txt",
+      "file": "9a255626cf492c1be8cef96f.txt.gz",
+      "ubo": false,
+      "includes": {}
+    },
+    {
+      "cache": "adblock_list_ubo_filters.txt",
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters.txt",
+      "file": "5ad5e06cbbab2035756685fe.txt.gz",
+      "ubo": true,
+      "includes": {
+        "filters-general.txt": "a899bae8f1a4a3442c1dd1f3.txt.gz",
+        "filters-2020.txt": "ff02a40fad1300d0aca30a43.txt.gz",
+        "filters-2021.txt": "955c93d4d0dc7bc575b5e064.txt.gz",
+        "filters-2022.txt": "aab9a3ecc9d337944ecfe022.txt.gz",
+        "filters-2023.txt": "8f3f5e0bc0e3dcaa088f22b0.txt.gz",
+        "filters-2024.txt": "b50b54810b4ad99f8953603b.txt.gz",
+        "filters-2025.txt": "450a8406273877cbdbed8460.txt.gz",
+        "filters-2026.txt": "8304f80a3ddd332d4d057cf3.txt.gz",
+        "ubo-link-shorteners.txt": "48438fd84bac161a7dc9b3fd.txt.gz",
+        "filters-mobile.txt": "c6f6ecc6fa8424672f618316.txt.gz"
+      }
+    },
+    {
+      "cache": "adblock_list_ubo_quick-fixes.txt",
+      "url": "https://ublockorigin.github.io/uAssets/filters/quick-fixes.txt",
+      "file": "4371c134ba65509982a7b2ad.txt.gz",
+      "ubo": true,
+      "includes": {}
+    },
+    {
+      "cache": "adblock_list_ubo_unbreak.txt",
+      "url": "https://ublockorigin.github.io/uAssets/filters/unbreak.txt",
+      "file": "dfb1abd3d0c9c7ee2c2fd239.txt.gz",
+      "ubo": true,
+      "includes": {}
+    },
+    {
+      "cache": "adblock_list_ubo_badware.txt",
+      "url": "https://ublockorigin.github.io/uAssets/filters/badware.txt",
+      "file": "b7272251afdfd8c7d87f5dd6.txt.gz",
+      "ubo": true,
+      "includes": {}
+    }
+  ],
+  "files": {
+    "a18a64c9fbdb14dbe489b65b.txt.gz": {
+      "url": "https://easylist-downloads.adblockplus.org/easylist.txt",
+      "bytes": 2018010,
+      "sha256": "dc47a87a7f2768408da64b8b6ae4aec3dc2690129ed2a39c2c831286193f9f3e"
+    },
+    "f02d04743997168835a20f67.txt.gz": {
+      "url": "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
+      "bytes": 1444589,
+      "sha256": "46a1a17f4cbff3779278f089ca1d2abd2a9a5ff1eb8b62f3d51c6c1e94626259"
+    },
+    "9a255626cf492c1be8cef96f.txt.gz": {
+      "url": "https://easylist-downloads.adblockplus.org/easylistspanish.txt",
+      "bytes": 128171,
+      "sha256": "514043e966da01d170eeba5a8277cda4e092b0695a14546bef823b7cfcf5b71b"
+    },
+    "5ad5e06cbbab2035756685fe.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters.txt",
+      "bytes": 471713,
+      "sha256": "8cf219062dfc14b6c2ca6a689021414b909f0f87c3f308d19ddde3d68f6679cc"
+    },
+    "a899bae8f1a4a3442c1dd1f3.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters-general.txt",
+      "bytes": 709687,
+      "sha256": "38569630b8805d08d8032893bdf09390cd199821c2506647909f4fde9d98483c"
+    },
+    "ff02a40fad1300d0aca30a43.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters-2020.txt",
+      "bytes": 133241,
+      "sha256": "932aa3df88017f5065b7445e60c96252c3471335972fbc0d6fb8a3070eb1d499"
+    },
+    "955c93d4d0dc7bc575b5e064.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters-2021.txt",
+      "bytes": 166691,
+      "sha256": "eac30f6b97455c62ac5f5ad7f50a73a58c2a74ef74b5ca9877628fa342bffe3e"
+    },
+    "aab9a3ecc9d337944ecfe022.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters-2022.txt",
+      "bytes": 157021,
+      "sha256": "dc766f0eeb80d084f2a97fcece60baaa2c628542fb0bbb641f49bd671b3f5aea"
+    },
+    "8f3f5e0bc0e3dcaa088f22b0.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters-2023.txt",
+      "bytes": 214273,
+      "sha256": "3fa7175b030d7d279fedf6efa468d6ff899ad891ebe73783d804450cc5f98942"
+    },
+    "b50b54810b4ad99f8953603b.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters-2024.txt",
+      "bytes": 231311,
+      "sha256": "8d9852f1fb15d3a4d74348626e8f7a94c21a097ad396ebfa4a2413330e7fc573"
+    },
+    "450a8406273877cbdbed8460.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters-2025.txt",
+      "bytes": 169108,
+      "sha256": "ad7d3b649f0137596e5141fbd1b7a449cd055d50effb05cb76c35d0b62712a1c"
+    },
+    "8304f80a3ddd332d4d057cf3.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters-2026.txt",
+      "bytes": 101968,
+      "sha256": "2627c36e3a48d14b998cc2d2968356d0b0e17332e3db49002b84d98a51d342b4"
+    },
+    "48438fd84bac161a7dc9b3fd.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/ubo-link-shorteners.txt",
+      "bytes": 121264,
+      "sha256": "0e238f7f4581e3dc567703fce6e65e6489a7522c2a6016eafe9faec403ee962d"
+    },
+    "c6f6ecc6fa8424672f618316.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/filters-mobile.txt",
+      "bytes": 20923,
+      "sha256": "e32cef40f31e9ab1d5e18823e310735ab0f494cd5f131e86fdcbe761186988f6"
+    },
+    "4371c134ba65509982a7b2ad.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/quick-fixes.txt",
+      "bytes": 90934,
+      "sha256": "d3cd2496f73916cb121e878ae635c963d856da0d26fd21d4eea8bd52c598dbe8"
+    },
+    "dfb1abd3d0c9c7ee2c2fd239.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/unbreak.txt",
+      "bytes": 281685,
+      "sha256": "8e2b9e6a640fb4c4e01a72d36e6b2e9741fd234f28c960d7d7c75f779f3e5a9f"
+    },
+    "b7272251afdfd8c7d87f5dd6.txt.gz": {
+      "url": "https://ublockorigin.github.io/uAssets/filters/badware.txt",
+      "bytes": 278160,
+      "sha256": "3e6713d166c20b2f1eb011f5f8e390d2d01f93d87b66c23c532891a9fd54e77a"
+    }
+  }
+}
