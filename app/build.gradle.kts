@@ -75,8 +75,8 @@ android {
         applicationId = "com.reiniertutoriales.vireolumatv"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 97
-        versionName = "2.0.3"
+        versionCode = 98
+        versionName = "2.0.4"
     }
 
     // Release keys come from the environment (CI secrets); without them the release is unsigned,
@@ -108,7 +108,7 @@ android {
 
     splits {
         abi {
-            // One APK per ABI: a 32-bit TV installs about 4 MB instead of a universal 10.7 MB.
+            // One APK per ABI avoids bundling native libraries for other architectures.
             isEnable = true
             reset()
             include(*rustAbis.toTypedArray())

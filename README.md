@@ -22,15 +22,15 @@ no utilizan este actualizador.
 
 Las instalaciones con el certificado de release vigente desde 1.2.1 pueden actualizarse
 sin desinstalar. Android rechaza actualizaciones con otra firma, incluidos los builds debug.
-Si necesitas desinstalar para cambiar de firma, exporta antes tus favoritos: desinstalar borra los datos.
+Desinstalar para cambiar de firma borra los datos de la aplicación.
 
 ## Funciones
 
 - Barra superior con dirección, navegación, Inicio, bloqueador y menú.
 - Pestañas, interfaz oscura y controles nativos para mando.
-- Sugerencias locales de favoritos e historial.
-- Favoritos, historial, descargas, modo privado y atajos del mando.
-- Bloqueador basado en Rust, con siete fuentes de filtros y control por sitio.
+- Sugerencias locales del historial, seleccionables con mando.
+- Atajos en Inicio con iconos, historial, descargas, modo privado y atajos del mando.
+- Bloqueador basado en Rust, con siete listas base incluidas, actualizaciones y control por sitio.
 - Conservación del estado de pestañas y recuperación cuando se pierde el renderer.
 
 El comportamiento de las webs y del vídeo depende también del proveedor WebView,
