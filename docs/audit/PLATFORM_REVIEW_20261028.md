@@ -134,3 +134,39 @@ lista ausente durante actualización y aplicación diferida de filtros. El reint
 no puede deshacer scripts que la web ya haya ejecutado; tampoco garantiza filtros
 al primer arranque sin listas guardadas si la red tarda más que el plazo acotado.
 La causa concreta del sitio observado en TV sigue sin reproducirse.
+
+
+## Inicio y revisión dirigida — 2026-10-30
+
+Inicio centra el buscador y la fila de iconos, conserva YouTube y añade +.
+Los accesos nuevos se guardan en el almacenamiento del origen local de Inicio
+(máximo 24), separado del antiguo menú de favoritos/Room. Solo admite HTTP(S),
+sin credenciales ni HTML generado desde entradas del usuario. Los iconos se leen
+de la caché existente; si faltan, se muestra un globo. No se contacta a los sitios
+al abrir Inicio ni al añadir un acceso. El usuario puede borrar estos accesos al
+borrar los datos web; incógnito usa el directorio WebView separado existente.
+El formulario conserva envío GET nativo a DuckDuckGo, valida texto no vacío y
+recorta espacios. No incorpora framework, fuentes externas, polling o animaciones.
+
+Contraste de versiones oficial: AGP 9.5.0, Kotlin 2.4.21, KSP 2.3.12, Gradle
+9.8.2, WebKit 1.18.0, AppCompat 1.8.0, coroutines 1.11.0 y Room 2.8.5 coinciden
+con las releases consultadas de sus proyectos; no se justifica actualizarlas en
+este cambio visual. Esto no certifica todos los transitivos ni completa una
+auditoría de todo el navegador.
+
+Revisión de implementaciones: Inicio ya sirve recursos locales bajo HTTPS y no
+requiere red para dibujarse. No se encontró uso de setAppCache/setRenderPriority,
+LOAD_NO_CACHE ni acceso universal a archivos en el código inspeccionado.
+largeHeap sigue activo y requiere presupuesto medido antes de retirarlo. El
+workaround targetSdkVersion=32 solo en API<=28 para ForceDark sigue presente:
+una API deprecada no debe eliminarse sin preservar esos dispositivos y su tema.
+El arranque asíncrono de WebView, perfiles de arranque y medición de app+renderer
+siguen pendientes concretos; no hay medición física nueva en este trabajo.
+
+Referencias: https://developer.android.com/develop/ui/views/layout/webapps/load-local-content ;
+https://developer.android.com/training/tv/get-started/navigation ;
+https://developer.android.com/develop/ui/views/layout/webapps/optimize-webview-startup ;
+https://developer.android.com/jetpack/androidx/versions ;
+https://developer.android.com/build/releases/agp-9-5-0-release-notes ;
+https://kotlinlang.org/docs/releases.html ; https://github.com/google/ksp/releases ;
+https://github.com/Kotlin/kotlinx.coroutines/releases ; https://gradle.org/releases/ .

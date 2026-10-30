@@ -439,3 +439,4 @@ app/src/test/resources/adblock/0.13.3.dat	REGENERADO
 app/src/test/resources/adblock/README.md	PROPIO
 native/adblock-jni/examples/export_cache_fixture.rs	PROPIO
 native/adblock-jni/tests/hostname_boundary.rs	PROPIO
+app/src/main/assets/pages/home/home.js	PROPIO

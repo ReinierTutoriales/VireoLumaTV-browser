@@ -4,19 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; form-action https://duckduckgo.com; base-uri 'none'; object-src 'none'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'self'; img-src data: favicon:; form-action https://duckduckgo.com; base-uri 'none'; object-src 'none'">
     <link rel="icon" href="data:,">
     <title>VireoLumaTV: Home</title>
     <style>
         * { box-sizing: border-box; }
-        body { display: flex; flex-direction: column; margin: 0; min-height: 100vh; background: #edf6ff; color: #20272c; font-family: sans-serif; }
-        main { width: 72%; max-width: 960px; margin: 18vh auto 0; }
-        label { display: block; margin-bottom: 16px; font-size: 28px; font-weight: 600; }
+        body { display: flex; flex-direction: column; margin: 0; min-height: 100vh; justify-content: center; background: #edf6ff; color: #20272c; font-family: sans-serif; }
+        main { width: 72%; max-width: 960px; margin: 0 auto; padding: 48px 0; }
+        label { display: block; margin-bottom: 16px; font-size: 28px; font-weight: 600; text-align: center; }
         form { display: flex; gap: 12px; }
         input, button, a { border: 2px solid #718096; border-radius: 8px; font: inherit; font-size: 24px; }
         input { min-width: 0; flex: 1; padding: 16px; background: #fff; color: inherit; }
         button { padding: 12px 24px; background: #e1ebf4; color: inherit; cursor: pointer; }
-        a { display: inline-flex; align-items: center; gap: 14px; margin-top: 32px; padding: 16px 24px; color: inherit; background: #fff; text-decoration: none; }
+        nav { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 24px; }
+        nav a, nav button { display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 72px; margin: 8px; padding: 16px; background: #fff; color: inherit; text-decoration: none; }
+        nav img { width: 40px; height: 40px; object-fit: contain; }
         svg { width: 40px; height: 32px; }
         input:focus, button:focus, a:focus { outline: 3px solid #2563eb; outline-offset: 4px; }
         button:hover, a:hover { border-color: #2563eb; }
@@ -27,7 +29,7 @@
             input:focus, button:focus, a:focus { outline-color: #8ec5ff; }
         }
         @media (max-width: 600px) {
-            main { width: 90%; margin-top: 12vh; }
+            main { width: 90%; padding: 24px 0; }
             input, button, a { font-size: 20px; }
             button { padding: 12px; }
         }
@@ -44,10 +46,13 @@
             </div>
         </div>
     </form>
+    <nav id="bookmarks" aria-label="Marcadores">
     <a href="https://www.youtube.com/" aria-label="YouTube">
         <svg viewBox="0 0 24 20" aria-hidden="true" focusable="false"><rect x="1" y="2" width="22" height="16" rx="5" fill="#f03"/><path d="M10 6 L16 10 L10 14 Z" fill="#fff"/></svg>
-        YouTube
     </a>
+    <button id="add-bookmark" type="button" aria-label="Agregar marcador"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+    </nav>
 </main>
+<script src="home.js" defer></script>
 </body>
 </html>
