@@ -53,6 +53,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     init {
         orientation = HORIZONTAL
         if (!isInEditMode) {
+            ui.blockerButton.imageTintList = context.getColorStateList(R.color.blocker_icon)
             ui.menuButton.setOnClickListener { callback?.showAppMenu() }
             renderEditing(false)
             ui.addressField.setOnClickListener { beginEditing() }
