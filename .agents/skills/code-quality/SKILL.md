@@ -30,3 +30,11 @@ description: Use when optimizing, cleaning, or reviewing code. Prioritizes simpl
 - Validate compressed assets through Android's loader and the built APK. Source
   hashes alone do not prove readability; implicit filename/codec handling belongs
   to the format contract, and an already compressed payload needs no second layer.
+
+## Security-sensitive WebView reviews
+
+- Treat WebView documents, subframes, external intents, local assets, downloads and update URLs as separate trust boundaries. Review Android's current official guidance and the actual provider capabilities before changing any of them.
+- An `addJavascriptInterface` caller has no trustworthy frame-origin identity. Do not infer it from the top-level URL or a URL passed by JavaScript. Scope privileged operations using origin-verifiable mechanisms where available, and retain working media, filtering and download paths until tested replacements exist.
+- For one-time TLS exceptions, compare actual certificate bytes; missing cryptographic identity must fail closed. Preserve normal certificate validation and Safe Browsing.
+- Resolve packaged asset paths against an explicitly bounded origin and directory; reject traversal, encoded path separators and ambiguous URLs. Verify file access, backup, intent extras and FileProvider grants independently.
+- Preserve signed release checksum verification and check update redirects, dependency provenance and workflow privileges. Treat any security finding as confirmed only when supported by code and tests; otherwise state the preconditions and remaining validation.
