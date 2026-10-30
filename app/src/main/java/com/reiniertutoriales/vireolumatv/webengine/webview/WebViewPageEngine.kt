@@ -53,7 +53,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         }
 
     override val view: View? get() = webView
-    override val canGoBack get() = webView?.canGoBack() == true
+    override val canGoBack get() = webView?.let { meaningfulBackOffset(it) != null } == true
     override val canGoForward get() = webView?.canGoForward() == true
 
     override fun ownsView(view: Any): Boolean = view === webView
@@ -76,7 +76,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
 
     override fun load(url: String) { webView?.loadUrl(url) }
     override fun reload() { webView?.reload() }
-    override fun back() { webView?.goBack() }
+    override fun back() { webView?.let { view -> meaningfulBackOffset(view)?.let(view::goBackOrForward) } }
     override fun forward() { webView?.goForward() }
     override fun zoom(closer: Boolean) { webView?.run { if (closer) zoomIn() else zoomOut() } }
     override fun setOnline(online: Boolean) { webView?.setNetworkAvailable(online) }
@@ -299,3 +299,28 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     }
 }
 
+
+/**
+ * The TV Back key moves to the previous distinct history URL instead of replaying
+ * consecutive reloads or duplicate same-URL history entries. Hash changes remain
+ * distinct, since they can represent in-page navigation.
+ * A missing WebView history entry must not be skipped speculatively.
+ */
+internal fun meaningfulBackOffset(view: WebView): Int? {
+    val history = view.copyBackForwardList()
+    val current = history.currentIndex
+    if (current <= 0) return null
+    val urls = (0..current).map { history.getItemAtIndex(it)?.url }
+    return meaningfulBackOffset(urls, current)
+}
+
+/** Returns a negative WebView history offset; null means no distinct older URL. */
+internal fun meaningfulBackOffset(urls: List<String?>, currentIndex: Int): Int? {
+    if (currentIndex !in urls.indices || currentIndex == 0) return null
+    val currentUrl = urls[currentIndex] ?: return -1
+    for (index in currentIndex - 1 downTo 0) {
+        val previousUrl = urls[index] ?: return index - currentIndex
+        if (previousUrl != currentUrl) return index - currentIndex
+    }
+    return null
+}

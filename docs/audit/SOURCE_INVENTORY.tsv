@@ -349,6 +349,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/utils/SameLocalDayTest.kt	PR
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveModelsRetentionTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/observable/LiveValueTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobTransfersTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MeaningfulBackHistoryTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicyTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateWarningPageTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorLayoutRecoveryTest.kt	PROPIO
