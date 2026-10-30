@@ -8,6 +8,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.security.MessageDigest
@@ -19,6 +20,7 @@ class BundledFilterListsTest {
     private class Fixture {
         val streams = HashMap<String, ByteArray>()
         val opened = ArrayList<String>()
+        val closed = HashSet<String>()
         val files = JSONObject()
         val entry = JSONObject().put("cache", "list.txt").put("ubo", true).put("file", "main.filterdata")
             .put("includes", JSONObject().put("mobile.txt", "mobile.filterdata"))
@@ -31,7 +33,12 @@ class BundledFilterListsTest {
         fun reader(): BundledFilterLists {
             streams["manifest.json"] = JSONObject().put("version", 1).put("lists", JSONArray().put(entry))
                 .put("files", files).toString().toByteArray()
-            return BundledFilterLists { name -> opened.add(name); checkNotNull(streams[name]).inputStream() }
+            return BundledFilterLists { name ->
+                opened.add(name)
+                object : ByteArrayInputStream(checkNotNull(streams[name])) {
+                    override fun close() { closed.add(name); super.close() }
+                }
+            }
         }
     }
 
@@ -62,6 +69,17 @@ class BundledFilterListsTest {
                 fail("Corrupt snapshot must be rejected")
             } catch (_: IOException) { }
         }
+    }
+
+    @Test fun malformedGzipClosesTheAssetEvenWhenItsHeaderCannotBeRead() {
+        val f = Fixture()
+        f.text("main.filterdata", "||ad.test^\n")
+        f.streams["main.filterdata"] = byteArrayOf(0)
+        try {
+            f.reader().read("list.txt")
+            fail("Malformed gzip must not be accepted")
+        } catch (_: IOException) { }
+        assertTrue(f.closed.contains("main.filterdata"))
     }
 
     @Test fun packagedSevenListsArePresentValidAndFullyComposedWithoutNetwork() {

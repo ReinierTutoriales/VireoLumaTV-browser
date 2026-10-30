@@ -43,7 +43,7 @@ internal class BundledFilterLists(private val open: (String) -> InputStream) {
         val info = manifest.getJSONObject("files").getJSONObject(name)
         val size = info.getInt("bytes")
         if (size !in 1..MAX_TEXT_BYTES) throw IOException("Invalid bundled list size")
-        val bytes = GZIPInputStream(open(name)).use { stream ->
+        val bytes = open(name).use { input -> GZIPInputStream(input).use { stream ->
             val result = ByteArray(size)
             var offset = 0
             while (offset < size) {
@@ -53,7 +53,7 @@ internal class BundledFilterLists(private val open: (String) -> InputStream) {
             }
             if (stream.read() != -1) throw IOException("Bundled list exceeds declared size")
             result
-        }
+        } }
         val hash = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
         if (hash != info.getString("sha256")) throw IOException("Bundled list checksum mismatch")
         return bytes.toString(Charsets.UTF_8)
