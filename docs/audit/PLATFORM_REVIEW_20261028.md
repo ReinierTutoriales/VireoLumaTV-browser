@@ -240,3 +240,10 @@ Se mantienen ambas pruebas: el payload gzip usa ahora extensión .filterdata y
 androidResources.noCompress para conservar bytes/nombre sin compresión duplicada.
 La auditoría APK exige igualdad de bytes y almacenamiento ZIP_STORED de cada payload.
 Referencia: https://developer.android.com/reference/tools/gradle-api/9.5/com/android/build/api/dsl/AndroidResources .
+
+La CI #602 ya carga los assets y crea el motor. Sus dos fallos restantes eran
+aserciones incorrectas del fixture: el host publicitario presente en EasyList es
+ad.doubleclick.net (no el dominio raíz usado en la prueba) y las listas contienen
+comentarios que citan !#if sin ser directivas activas. La comprobación pasa a exigir
+el host de la regla real, también tras restaurar caché, y ausencia de directivas
+al inicio de línea, conservando un caso que prueba esas citas en comentarios.

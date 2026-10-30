@@ -37,12 +37,13 @@ class BundledFilterListsTest {
 
     @Test fun assetsAreLazyAndOnlyActiveIncludesAreReadWithRuntimePreprocessing() {
         val f = Fixture()
-        f.text("main.filterdata", "! Title: uBlock test\n||common.test^\n!#if env_mobile\n!#include mobile.txt\n!#endif\n!#if env_firefox\n!#include missing-firefox.txt\n!#endif\n")
+        f.text("main.filterdata", "! Title: uBlock test\n! !#if env_firefox\n||common.test^\n!#if env_mobile\n!#include mobile.txt\n!#endif\n!#if env_firefox\n!#include missing-firefox.txt\n!#endif\n")
         f.text("mobile.filterdata", "||mobile-ad.test^\n!#include mobile.txt\n")
         val reader = f.reader()
         assertTrue(f.opened.isEmpty())
         val text = requireNotNull(reader.read("list.txt"))
         assertTrue(text.contains("||common.test^"))
+        assertTrue(text.contains("! !#if env_firefox"))
         assertTrue(text.contains("||mobile-ad.test^"))
         assertFalse(text.contains("missing-firefox"))
         assertEquals(listOf("manifest.json", "main.filterdata", "mobile.filterdata"), f.opened)
@@ -73,7 +74,9 @@ class BundledFilterListsTest {
             val entry = lists.getJSONObject(i)
             val text = requireNotNull(reader.read(entry.getString("cache")))
             assertTrue(AdblockFilterListValidator.isValid(text, !entry.getBoolean("ubo")))
-            if (entry.getBoolean("ubo")) assertFalse(text.contains("!#if "))
+            if (entry.getBoolean("ubo")) assertFalse(text.lineSequence().any {
+                it.startsWith("!#if ") || it.startsWith("!#else") || it.startsWith("!#endif")
+            })
         }
     }
 }

@@ -294,7 +294,7 @@ class AdblockUpdateTest {
             assertTrue("A complete local engine must precede the first download", entered.await(10, TimeUnit.SECONDS))
             assertTrue(model.hasActiveRules)
             assertTrue(model.initialRulesReady.isCompleted)
-            assertTrue(model.isAd(Uri.parse("https://doubleclick.net/pagead/ads"), "image", Uri.parse("https://example.com/")))
+            assertTrue(model.isAd(Uri.parse("https://ad.doubleclick.net/pagead/ads"), "image", Uri.parse("https://example.com/")))
             assertFalse(model.isAd(Uri.parse("https://www.wikipedia.org/"), "document", Uri.parse("https://www.wikipedia.org/")))
             assertEquals(1, baseCompiles)
             release.countDown()
@@ -315,6 +315,7 @@ class AdblockUpdateTest {
                 assertEquals(1, baseCompiles)
                 assertEquals(0, bundledReads)
                 assertEquals(0, networkCalls)
+                assertTrue(next.isAd(Uri.parse("https://ad.doubleclick.net/pagead/ads"), "image", Uri.parse("https://example.com/")))
             } finally { next.clear() }
         } finally {
             release.countDown()
