@@ -1,29 +1,31 @@
-# VireoLumaTV 2.0.2
+# VireoLumaTV 2.0.3
 
-## Cambios
+## Qué deberías notar
 
-- Motor adblock 0.13.5 con correcciones de coincidencia de dominios y recuperación de cachés antiguas.
-- Enlaces intent saneados antes de abrir otras aplicaciones.
-- Descargas con cola acotada, rechazo visible y liberación de recursos; reserva de nombres para evitar sobrescrituras en Android antiguo.
-- Actualizador: limpieza de APK incompletos, gestión de errores de instalación y reintento del APK verificado mientras permanece abierta la pantalla Acerca de.
-- Permisos web limitados a recursos conocidos; las respuestas antiguas no autorizan solicitudes posteriores.
-- Puntero: reloj de movimiento estable ante repeticiones del mando y muestras del stick; soltar una dirección conserva la otra.
-- Salir del vídeo restaura el modo previo de navegación; los cierres repetidos no cambian el estado.
-- Filtrado de service workers cuando WebView lo admite y existe Referer válido. Sin Referer no se filtra; estos bloqueos no suman al contador y la excepción por pestaña se aplica al sitio visible.
-- Sugerencias sin ordenación completa, eliminación de fondos redundantes y correcciones del refresco de iconos y acceso a WebView desde hilos de trabajo.
-- Herramientas de compilación actualizadas a AGP 9.5.0.
+- La barra superior permite moverse a izquierda y derecha entre controles habilitados, sin quedar atrapado en Atrás o Adelante cuando no hay historial.
+- El campo de dirección y búsqueda se alcanza desde la barra; OK activa la edición.
+- Cada pestaña tiene un botón visible para cerrarla.
+- Se retiran los marcadores del menú y de las sugerencias; sus datos guardados se conservan.
+- Las ventanas emergentes requieren una activación real consumible, salvo permiso explícito del sitio. Se limita la apertura repetida con el mismo gesto.
+- Después de actualizar el motor, las listas guardadas se recuperan antes de esperar a internet.
+- Una actualización a la que le faltan listas conserva el motor activo.
+- Los filtros de página reintentan cuando el motor sigue cargando, con un temporizador por documento y espera limitada (~36 segundos).
+
+Estos cambios deberían reducir fallos de navegación y los huecos de bloqueo al arrancar o actualizar.
+No garantizan eliminar todos los anuncios ni deshacer una detección antiadblock que la página ya ejecutó.
 
 ## Actualización
 
-Versión 2.0.2; versionCode 96. Se mantienen applicationId, certificado de release y esquema Room 19.
-En generic: Ajustes → Acerca de → Actualizar. Se verifican los checksums firmados y el APK antes de abrir el instalador de Android.
-Las instalaciones con el mismo certificado pueden actualizarse sin desinstalar; las firmas distintas, incluidos builds debug, no son compatibles.
+Versión 2.0.3; versionCode 97. Mismo applicationId, certificado de release y esquema Room 19.
+En la variante generic: Ajustes → Acerca de → Actualizar.
+El actualizador comprueba los checksums firmados y el APK antes de abrir el instalador de Android.
+Con el mismo certificado se puede actualizar sin desinstalar; una firma distinta, incluidos builds debug, no es compatible.
 Las variantes google y foss no utilizan el actualizador integrado.
+
 APK: armeabi-v7a, arm64-v8a y x86_64.
 
 ## Validación
 
-La publicación verifica pruebas, compilación release, certificado vigente y checksums firmados.
-La CI comprueba además lint, esquema Room 19 y contenido de los APK.
-La validación física de mando, vídeo, bloqueo en sitios reales y memoria sigue pendiente.
-Las pruebas de reloj simulado no representan mejoras medidas en una TV.
+Pruebas automatizadas, lint, compilación release y auditoría de contenido de APK.
+La publicación verifica el certificado habitual y firma los checksums con la clave del actualizador.
+Pendiente de validación física: navegación con mando, vídeo y bloqueo en sitios reales.
