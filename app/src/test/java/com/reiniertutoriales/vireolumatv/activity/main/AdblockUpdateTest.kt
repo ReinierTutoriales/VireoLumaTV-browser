@@ -104,7 +104,7 @@ class AdblockUpdateTest {
         }
     }
 
-    @Test fun incompatibleV6NativeCacheRebuildsFromSavedTextAfterAHttpFailure() {
+    @Test fun incompatibleV6NativeCacheRebuildsFromSavedTextWithoutNetwork() {
         assertTrue("The real native engine must be loaded", RustAdblock.isAvailable)
         val native = RustAdBlockEngine { AdblockResources.json(VireoLumaTVApp.instance) }
         var compiles = 0
@@ -138,7 +138,7 @@ class AdblockUpdateTest {
             assertEquals("Fixture was serialized by adblock 0.13.3", 6, cache.readBytes()[4].toInt())
             assertNull("The new engine must reject the old format", native.deserialize(cache))
             finish(model.loadBlockList(false))
-            assertEquals(1, requests.get())
+            assertEquals(0, requests.get())
             assertEquals(1, compiles)
             assertTrue(model.isAd(Uri.parse("https://old-cache.test/banner.js"), "script", Uri.parse("https://page.test")))
             assertFalse(model.listLoading.value)
@@ -155,7 +155,7 @@ class AdblockUpdateTest {
             try {
                 finish(nextSession.loadBlockList(false))
                 assertEquals("The rewritten cache needs no second compilation", 1, compiles)
-                assertEquals("The next session restores without another request", 1, requests.get())
+                assertEquals("The next session restores without another request", 0, requests.get())
                 assertTrue(nextSession.isAd(Uri.parse("https://old-cache.test/banner.js"), "script", Uri.parse("https://page.test")))
             } finally { nextSession.clear() }
         } finally {
@@ -163,6 +163,91 @@ class AdblockUpdateTest {
             server.stop(0)
             cache.delete()
             savedText.delete()
+        }
+    }
+
+    @Test fun savedTextBlocksBeforeTheNetworkAnswersWhenBinaryCacheIsRejected() {
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/") { response ->
+            entered.countDown()
+            release.await(5, TimeUnit.SECONDS)
+            response.sendResponseHeaders(503, -1)
+            response.close()
+        }
+        server.start()
+        val source = "http://127.0.0.1:${server.address.port}/list.txt"
+        val engine = object : ContentBlockerEngine {
+            override val cacheFileName = "recovery-test.dat"
+            override fun deserialize(file: File): ContentBlocker? = null
+            override fun compile(filterLists: List<String>) = object : ContentBlocker {
+                override fun shouldBlock(url: Uri, type: String?, baseHost: String) = url.host == "saved-ad.test"
+                override fun serialize(file: File): Boolean { file.writeText("compiled"); return true }
+            }
+        }
+        val model = AdBlocker(engine, autoLoad = false)
+        model.config.blockListUrl.value = source
+        val saved = File(VireoLumaTVApp.instance.filesDir, "adblock_list_custom_${AdblockCache.sourceKey(source)}.txt")
+        saved.writeText("||saved-ad.test^")
+        try {
+            val job = model.loadBlockList(true)
+            shadowOf(Looper.getMainLooper()).idle()
+            assertTrue(entered.await(5, TimeUnit.SECONDS))
+            assertTrue("Saved rules must already block while the server is stalled",
+                model.isAd(Uri.parse("https://saved-ad.test/a"), "script", Uri.parse("https://page.test")))
+            release.countDown()
+            finish(job)
+        } finally {
+            release.countDown(); model.clear(); server.stop(0)
+            saved.delete()
+            AdblockCache.fileFor(VireoLumaTVApp.instance.filesDir, engine, source).delete()
+        }
+    }
+
+    @Test fun refreshWithMissingListKeepsTheActiveGeneration() {
+        var compiles = 0
+        val engine = object : ContentBlockerEngine {
+            override val cacheFileName = "partial-generation-test.dat"
+            override fun deserialize(file: File): ContentBlocker? = null
+            override fun compile(filterLists: List<String>): ContentBlocker {
+                compiles++
+                val host = if (compiles == 1) "old-ad.test" else "new-ad.test"
+                return object : ContentBlocker {
+                    override fun shouldBlock(url: Uri, type: String?, baseHost: String) = url.host == host
+                    override fun serialize(file: File): Boolean { file.writeText(host); return true }
+                }
+            }
+        }
+        val model = AdBlocker(engine, autoLoad = false)
+        val source = com.reiniertutoriales.vireolumatv.Config.DEFAULT_ADBLOCK_LIST_URL
+        model.config.blockListUrl.value = source
+        var fail = false
+        model.fetchList = { urls, _, _ ->
+            if (fail && urls.first() == source) throw java.io.IOException("EasyList unavailable")
+            val text = "[Adblock Plus 2.0]\n! Title: uBlock test\n" +
+                (1..110).joinToString("\n") { "||${if (fail) "new" else "old"}-$it.test^" }
+            AdblockListDownloader.Result.Downloaded(text, null, urls.first())
+        }
+        val dir = VireoLumaTVApp.instance.filesDir
+        val names = listOf("adblock_list_easylist.txt", "adblock_list_easyprivacy.txt", "adblock_list_easylist_spanish.txt",
+            "adblock_list_ubo_filters.txt", "adblock_list_ubo_quick-fixes.txt", "adblock_list_ubo_unbreak.txt", "adblock_list_ubo_badware.txt")
+        try {
+            names.forEach { File(dir, it).delete() }
+            finish(model.loadBlockList(true))
+            assertEquals(1, compiles)
+            File(dir, names.first()).delete()
+            fail = true
+            finish(model.loadBlockList(true))
+            assertEquals("A refresh missing EasyList must not replace the active engine", 1, compiles)
+            assertTrue(model.isAd(Uri.parse("https://old-ad.test/a"), "script", Uri.parse("https://page.test")))
+            assertTrue(model.unavailableLists.value.contains("EasyList"))
+            assertTrue(model.config.blockListRetryAt > System.currentTimeMillis())
+        } finally {
+            model.clear()
+            names.forEach { name -> File(dir, name).delete(); File(dir, "$name.main").delete(); File(dir, "$name.meta").delete() }
+            AdblockCache.fileFor(dir, engine, source).delete()
+            File(AdblockCache.fileFor(dir, engine, source).path + ".popup.none").delete()
         }
     }
 
