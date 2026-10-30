@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Darkens the top of the page under the browser controls and fades out below them. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <gradient android:angle="270" android:startColor="@color/scrim_strong" android:centerColor="#CC0B0D10" android:endColor="@color/scrim_clear" />
+    <gradient android:angle="270" android:startColor="@color/scrim_strong" android:centerColor="#CC000000" android:endColor="@color/scrim_clear" />
 </shape>

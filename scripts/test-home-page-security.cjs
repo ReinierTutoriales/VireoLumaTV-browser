@@ -40,6 +40,40 @@ const csp = tags('meta').find(tag => attribute(tag, 'http-equiv') === 'Content-S
 assert.ok(attribute(csp, 'content').includes("default-src 'none'"));
 assert.ok(attribute(csp, 'content').includes('form-action https://duckduckgo.com'));
 assert.ok(/input:focus, button:focus, a:focus/.test(html));
+// App-owned pages remain dark even with a light system setting. Verify actual CSS
+// foreground/backdrop pairs rather than relying on a color-scheme declaration alone.
+function luminance(hex) {
+  let digits = hex.slice(1);
+  if (digits.length === 3) digits = digits.split('').map(c => c + c).join('');
+  return [0.2126, 0.7152, 0.0722].reduce((sum, weight, index) => {
+    const value = parseInt(digits.slice(index * 2, index * 2 + 2), 16) / 255;
+    return sum + weight * (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+  }, 0);
+}
+function contrast(a, b) {
+  const values = [luminance(a), luminance(b)].sort((a, b) => b - a);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+}
+function cssRule(page, selector) {
+  const rules = Array.from(page.matchAll(/([^{}]+)\{([^{}]*)\}/g));
+  return rules.find(match => match[1].trim() === selector)?.[2] ?? '';
+}
+function cssColor(rule, property) {
+  return rule.match(new RegExp(`(?:^|;)\\s*${property}:\\s*(#[a-f0-9]+)`, 'i'))?.[1];
+}
+for (const page of [html, fs.readFileSync('app/src/main/assets/pages/warning-certificate.html', 'utf8')]) {
+  assert.ok(/name="color-scheme" content="dark"/.test(page));
+  assert.ok(!/prefers-color-scheme|color-scheme[^;<>]*light/.test(page));
+  const body = cssRule(page, 'body');
+  const background = cssColor(body, 'background');
+  assert.equal(luminance(background), 0);
+  assert.ok(contrast(cssColor(body, 'color'), background) >= 7);
+  assert.ok(/sans-serif/.test(body));
+}
+const field = cssColor(cssRule(html, 'input'), 'background');
+assert.ok(contrast(cssColor(cssRule(html, 'body'), 'color'), field) >= 7);
+assert.ok(contrast(cssColor(cssRule(html, 'input::placeholder'), 'color'), field) >= 4.5);
+assert.ok(contrast(cssRule(html, 'input:focus, button:focus, a:focus').match(/#[a-f0-9]+/i)[0], field) >= 3);
 console.log('Home passed: DuckDuckGo form, one YouTube link, safe query encoding, visible focus and no remote startup assets');
 
 // Exercise actual bookmark code with a small DOM: URL validation, persistence and storage errors.

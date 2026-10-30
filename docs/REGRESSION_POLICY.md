@@ -64,7 +64,9 @@ Al salir de un vídeo a pantalla completa la página recupera el modo que tenía
 directo); N05 no fuerza el puntero.
 
 **Interfaz solo oscura (2026-10-27, petición del propietario):** el tema de la aplicación es oscuro siempre;
-se retiran el ajuste Tema y la paleta clara. «Oscurecer las páginas web» depende solo de su ajuste
+se retiran el ajuste Tema y la paleta clara. Los fondos de la app, Inicio y el aviso de certificado
+son negros, con texto claro, foco diferenciado y fuente sans-serif del sistema;
+Inicio no ofrece una variante clara. «Oscurecer las páginas web» depende solo de su ajuste
 (activado por defecto), ya no del modo noche del sistema. Pendiente de validación en Android TV.
 
 **Sugerencias de dirección (2026-10-27, petición del propietario):** al editar la dirección se muestran hasta
