@@ -26,29 +26,33 @@ class CursorLayoutRecoveryTest {
             val touches = mutableListOf<Pair<Int, Float>>()
             val page = object : WebView(activity) {
                 override fun findFocus(): View = this
-                override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-                    setMeasuredDimension(View.MeasureSpec.getSize(widthMeasureSpec), View.MeasureSpec.getSize(heightMeasureSpec))
-                }
                 override fun onCheckIsTextEditor() = true
                 override fun onKeyDown(code: Int, event: KeyEvent): Boolean {
                     keys += code
                     return true
                 }
                 override fun onKeyUp(code: Int, event: KeyEvent) = true
-                override fun onTouchEvent(event: MotionEvent): Boolean {
-                    touches += event.actionMasked to event.x
-                    return true
-                }
             }.apply { isFocusableInTouchMode = true }
             layout.addView(page)
+            // A native hit target records the page tap; Robolectric does not lay out
+            // Chromium DOM content. The focused editor remains the WebView double.
+            var bookmarkClicks = 0
+            val bookmark = View(activity).apply {
+                setOnTouchListener { _, event ->
+                    touches += event.actionMasked to event.x
+                    false
+                }
+                setOnClickListener { bookmarkClicks++ }
+            }
+            layout.addView(bookmark, android.widget.FrameLayout.LayoutParams(800, 600))
             activity.setContentView(layout)
             layout.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
             layout.layout(0, 0, 800, 600)
             // The provider has no DOM focus implementation in Robolectric. Model the
             // focused web editor while keeping the real PointerLayout event route.
-            assertEquals(800, page.width)
-            assertEquals(600, page.height)
+            assertEquals(800, bookmark.width)
+            assertEquals(600, bookmark.height)
             layout.requestChildFocus(page, page)
             assertSame(page, layout.findFocus())
             assertTrue(page.onCheckIsTextEditor())
@@ -60,6 +64,8 @@ class CursorLayoutRecoveryTest {
             }
             assertTrue("OK must not return to the focused search editor", keys.isEmpty())
             assertEquals(listOf(MotionEvent.ACTION_DOWN to 520f, MotionEvent.ACTION_UP to 520f), touches)
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            assertEquals(1, bookmarkClicks)
             page.destroy()
         } finally { controller.pause().stop().destroy() }
     }
