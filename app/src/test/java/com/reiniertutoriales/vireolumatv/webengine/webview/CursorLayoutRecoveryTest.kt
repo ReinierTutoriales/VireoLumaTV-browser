@@ -26,6 +26,9 @@ class CursorLayoutRecoveryTest {
             val touches = mutableListOf<Pair<Int, Float>>()
             val page = object : WebView(activity) {
                 override fun findFocus(): View = this
+                override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+                    setMeasuredDimension(View.MeasureSpec.getSize(widthMeasureSpec), View.MeasureSpec.getSize(heightMeasureSpec))
+                }
                 override fun onCheckIsTextEditor() = true
                 override fun onKeyDown(code: Int, event: KeyEvent): Boolean {
                     keys += code
@@ -44,6 +47,8 @@ class CursorLayoutRecoveryTest {
             layout.layout(0, 0, 800, 600)
             // The provider has no DOM focus implementation in Robolectric. Model the
             // focused web editor while keeping the real PointerLayout event route.
+            assertEquals(800, page.width)
+            assertEquals(600, page.height)
             layout.requestChildFocus(page, page)
             assertSame(page, layout.findFocus())
             assertTrue(page.onCheckIsTextEditor())
