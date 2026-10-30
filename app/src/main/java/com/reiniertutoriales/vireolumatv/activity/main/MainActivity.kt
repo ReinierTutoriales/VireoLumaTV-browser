@@ -817,7 +817,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             vb.controlsRow.isEditingAddress -> vb.controlsRow.cancelAddressInput()
             overlayVisible -> closeCapsule()
             pointer.canGoBackInPage() -> pointer.consumeBack()
-            shouldNavigateYouTubeHistory(tabStore.currentTab.value?.url, tabStore.currentTab.value?.engine?.canGoBack == true) ->
+            shouldNavigateYouTubeHistory(tabStore.currentTab.value?.engine?.url, tabStore.currentTab.value?.engine?.canGoBack == true) ->
                 tabStore.currentTab.value?.engine?.back()
             else -> {
                 tabStore.currentTab.value?.engine?.setPointerMode(true)
