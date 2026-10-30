@@ -10,7 +10,8 @@ class AppMenuTest {
     fun entriesKeepDisplayOrderAndEndWithClosingTheApplication() {
         val entries = appMenuEntries()
 
-        assertEquals(AppMenuEntry.entries.toList(), entries)
+        assertFalse(entries.contains(AppMenuEntry.FAVORITES))
+        assertEquals(AppMenuEntry.entries.filterNot { it == AppMenuEntry.FAVORITES }, entries)
         assertEquals(AppMenuEntry.CLOSE_APPLICATION, entries.last())
     }
 }

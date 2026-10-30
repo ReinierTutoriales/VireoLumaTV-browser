@@ -39,6 +39,15 @@ No concluir que cada resultado CACHED significa fallo del bloqueador.
 
 ## 2. Contrato de navegación protegido
 
+**Correcciones solicitadas en TV (2026-10-29):** la cápsula recorre horizontalmente
+los controles habilitados, incluida la dirección; OK activa su edición. Cada pestaña
+añade un botón de cierre alcanzable con mando. Favoritos se retira del menú y de
+las sugerencias sin borrar su tabla ni los datos guardados. Las ventanas de páginas
+requieren una activación nativa consumible salvo excepción explícita del sitio.
+Estas correcciones requieren CI y validación física; no resuelven por sí solas
+los sistemas antiadblock de los reproductores.
+
+
 **Cambio de contrato (2026-10-27, petición del propietario):** la barra inferior flotante se sustituye por una
 cápsula superior única con URL, Atrás, Adelante, Recargar, Inicio, escudo del bloqueador y menú. Cerrar pestaña
 y voz pasan al menú de aplicación. Pulsación larga en el escudo abre el detalle del bloqueador. Los recorridos

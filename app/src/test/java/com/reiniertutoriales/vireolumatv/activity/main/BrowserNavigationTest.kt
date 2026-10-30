@@ -32,6 +32,31 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
+    @Test fun capsuleSkipsDisabledHistoryAndReachesSearchInBothDirections() = Fixture().use { f ->
+        f.activity.consumeBack()
+        val bar = f.vb.controlsRow
+        val address = bar.findViewById<EditText>(R.id.address_field)
+        bar.backButton.isEnabled = false
+        bar.forwardButton.isEnabled = false
+        bar.takeFocus()
+        assertTrue(bar.refreshButton.hasFocus())
+        address.requestFocus()
+        f.key(bar, KeyEvent.KEYCODE_DPAD_RIGHT)
+        assertTrue(bar.refreshButton.hasFocus())
+        f.key(bar, KeyEvent.KEYCODE_DPAD_LEFT)
+        assertTrue(address.hasFocus())
+        f.key(bar, KeyEvent.KEYCODE_DPAD_CENTER)
+        assertTrue(bar.isEditingAddress)
+    }
+
+    @Test fun aClaimedPopupGestureWithoutNativeActivationIsRejected() = Fixture().use { f ->
+        UserActivation.consume()
+        val window = TabWindow(f.activity, f.tab)
+        val before = f.activity.tabStore.openTabs.size
+        assertNull(window.createWindow(dialog = false, userGesture = true))
+        assertEquals(before, f.activity.tabStore.openTabs.size)
+    }
+
     @Test fun pageDownloadsRequireAFreshSingleUseActivationBeforeEnteringTheQueue() = Fixture().use { f ->
         val callback = TabWindow(f.activity, f.tab)
         val pending = f.activity.downloads.pending

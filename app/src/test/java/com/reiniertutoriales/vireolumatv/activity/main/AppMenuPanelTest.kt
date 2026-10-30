@@ -37,8 +37,8 @@ class AppMenuPanelTest {
     @Test fun everyEntryIsARowInOrderAndTheFirstHasFocus() {
         val (_, list) = open {}
         val rows = (1 until list.childCount).map { list.getChildAt(it) }
-        assertEquals(AppMenuEntry.entries.size, rows.size)
-        AppMenuEntry.entries.forEachIndexed { index, entry ->
+        assertEquals(appMenuEntries().size, rows.size)
+        appMenuEntries().forEachIndexed { index, entry ->
             assertEquals(host.get().getString(entry.label), rows[index].findViewById<TextView>(R.id.tvLabel).text)
             assertTrue("Every entry is a focus stop", rows[index].isFocusable)
         }
@@ -48,7 +48,7 @@ class AppMenuPanelTest {
     @Test fun choosingAnEntryClosesThePanelAndRunsItOnce() {
         val picked = mutableListOf<AppMenuEntry>()
         val (panel, list) = open { picked += it }
-        list.getChildAt(1 + AppMenuEntry.SETTINGS.ordinal).performClick()
+        list.getChildAt(1 + appMenuEntries().indexOf(AppMenuEntry.SETTINGS)).performClick()
         assertEquals(listOf(AppMenuEntry.SETTINGS), picked)
         assertFalse(panel.isShowing)
     }

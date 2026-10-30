@@ -46,7 +46,7 @@ object AddressSuggestions {
     suspend fun load(typed: String, incognito: Boolean): List<AddressSuggestion> {
         val query = typed.trim()
         if (query.isEmpty()) return emptyList()
-        val bookmarks = AppDatabase.db.favoriteDao().getAll()
+        val bookmarks = emptyList<Favorite>()
         val history = if (incognito) emptyList() else
             AppDatabase.db.visitDao().search(HistoryPages.likePattern(query))
         return rank(query, bookmarks, history)

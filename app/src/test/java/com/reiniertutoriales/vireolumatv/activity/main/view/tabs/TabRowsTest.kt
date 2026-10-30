@@ -19,6 +19,29 @@ import org.robolectric.annotation.Config as RobolectricConfig
 @RunWith(RobolectricTestRunner::class)
 @RobolectricConfig(application = Application::class, sdk = [28])
 class TabRowsTest {
+    @Test fun closeButtonActsOnItsBoundTabAndIgnoresRecycledRows() = withAdapter { adapter, model, parent ->
+        val tab = BrowserTab(url = Config.HOME_PAGE_URL)
+        model.openTabs.add(tab)
+        adapter.onTabsChanged()
+        val closed = mutableListOf<BrowserTab?>()
+        adapter.listener = object : TabChips.Listener {
+            override fun onTitleChanged(index: Int) {}
+            override fun onTitleSelected(index: Int) {}
+            override fun onAddNewTabSelected() {}
+            override fun openInNewTab(url: String, tabIndex: Int) {}
+            override fun closeTab(tabState: BrowserTab?) { closed += tabState }
+        }
+        val holder = adapter.onCreateViewHolder(parent, 0)
+        adapter.bindViewHolder(holder, 0)
+        val close = holder.itemView.findViewById<android.view.View>(R.id.close_tab_button)
+        assertTrue(close.isFocusable)
+        close.performClick()
+        assertEquals(listOf(tab), closed)
+        adapter.onViewRecycled(holder)
+        close.performClick()
+        assertEquals(1, closed.size)
+    }
+
     @Test fun recycledSelectedRowResetsSelection() = withAdapter { adapter, model, parent ->
         val first = BrowserTab(url = Config.HOME_PAGE_URL, position = 0)
         val second = BrowserTab(url = Config.HOME_PAGE_URL, position = 1)
