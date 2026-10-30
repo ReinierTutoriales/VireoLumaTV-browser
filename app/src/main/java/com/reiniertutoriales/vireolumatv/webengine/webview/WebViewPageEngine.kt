@@ -5,9 +5,15 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.KeyEvent
+import android.view.Gravity
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.FrameLayout
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -36,6 +42,9 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     internal var window: PageWindow? = null
     private var container: PointerLayout? = null
     private var fullscreenView: View? = null
+    private var mediaControls: LinearLayout? = null
+    private val controlHandler = Handler(Looper.getMainLooper())
+    private val dismissControls = Runnable { mediaControls?.visibility = View.GONE; fullscreenView?.requestFocus() }
     /** The page's pointer mode before fullscreen, restored after it (D-pad mode stays D-pad mode). */
     private var pointerBeforeFullscreen = true
     /** Pending Android permission requests: code to "is it the location request". */
@@ -151,6 +160,60 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         webView = null
     }
 
+    /** First navigation press reveals the OSD, without passing the press to the player. */
+    fun handleMediaOverlayKey(event: KeyEvent): Boolean {
+        if (fullscreenView == null) return false
+        val controls = mediaControls ?: return false
+        if (event.keyCode !in setOf(KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MENU)) return false
+        if (controls.visibility == View.VISIBLE) {
+            controlHandler.removeCallbacks(dismissControls)
+            controlHandler.postDelayed(dismissControls, 6000L)
+            return false
+        }
+        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+            controls.visibility = View.VISIBLE
+            controls.getChildAt(1)?.requestFocus()
+            controlHandler.removeCallbacks(dismissControls)
+            controlHandler.postDelayed(dismissControls, 6000L)
+        }
+        return true
+    }
+
+    private fun addMediaControls(context: Context) {
+        val row = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(0xDD000000.toInt())
+        }
+        fun add(label: String, action: () -> Unit) {
+            row.addView(Button(context).apply {
+                text = label
+                setOnClickListener {
+                    action()
+                    controlHandler.removeCallbacks(dismissControls)
+                    controlHandler.postDelayed(dismissControls, 6000L)
+                }
+            })
+        }
+        add("-10s") { media(MediaCommand.REWIND) }
+        add("Pausa") { media(MediaCommand.PLAY_PAUSE) }
+        add("+10s") { media(MediaCommand.FAST_FORWARD) }
+        add("Siguiente") { nextYouTubeVideo() }
+        add("Salir") { closeFullscreen() }
+        row.visibility = View.GONE
+        container?.addView(row, FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM))
+        mediaControls = row
+    }
+
+    private fun nextYouTubeVideo() {
+        val host = webView?.currentOriginalUrl?.host.orEmpty().lowercase()
+        if (host != "youtube.com" && host != "m.youtube.com" && host != "www.youtube.com") return
+        webView?.evaluateJavascript(
+            "(function(){var b=document.querySelector('.ytp-next-button:not([disabled])');if(b)b.click();})()", null)
+    }
+
     fun isFullscreenActive(): Boolean = fullscreenView != null
 
     override fun closeFullscreen() {
@@ -254,6 +317,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         (view.parent as? ViewGroup)?.removeView(view)
         container?.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         fullscreenView = view
+        addMediaControls(view.context)
         view.requestFocus()
     }
 
@@ -265,6 +329,9 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         // Idempotent: WebView may report the end of fullscreen after the browser already closed it.
         val shown = fullscreenView ?: return
         fullscreenView = null
+        controlHandler.removeCallbacks(dismissControls)
+        mediaControls?.let { (it.parent as? ViewGroup)?.removeView(it) }
+        mediaControls = null
         (shown.parent as? ViewGroup)?.removeView(shown)
         webView?.visibility = View.VISIBLE
         webView?.usePointer(pointerBeforeFullscreen)
