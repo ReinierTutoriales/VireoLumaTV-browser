@@ -167,6 +167,9 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     fun handleMediaOverlayKey(event: KeyEvent): Boolean {
         val fullscreen = fullscreenView != null
         val controls = mediaControls ?: return false
+        val host = webView?.currentOriginalUrl?.host.orEmpty().lowercase()
+        val youtube = host == "youtube.com" || host == "www.youtube.com" || host == "m.youtube.com"
+        if (!fullscreen && !tab.mediaStarted && !youtube) return false
         val key = event.keyCode
         val openKey = key == KeyEvent.KEYCODE_MENU ||
             (fullscreen && key in setOf(KeyEvent.KEYCODE_DPAD_UP,
