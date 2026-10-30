@@ -8,6 +8,13 @@ import java.security.Signature
 import java.security.spec.ECGenParameterSpec
 
 class ReleaseUpdaterTest {
+    @Test fun updateSourcesAndRedirectTargetsMustStayEncrypted() {
+        assertTrue(ReleaseUpdater.isSecureUpdateUrl(java.net.URL("https://github.com/release.apk")))
+        assertTrue(ReleaseUpdater.isSecureUpdateUrl(java.net.URL("https://objects.githubusercontent.com/release.apk")))
+        assertFalse(ReleaseUpdater.isSecureUpdateUrl(java.net.URL("http://example.com/release.apk")))
+        assertFalse(ReleaseUpdater.isSecureUpdateUrl(java.net.URL("file:///tmp/release.apk")))
+    }
+
     @Test fun newerVersionsCompareNumerically() {
         assertTrue(ReleaseUpdater.isNewer("1.10.0", "1.9.9"))
         assertTrue(ReleaseUpdater.isNewer("1.2.1", "1.2.0"))
