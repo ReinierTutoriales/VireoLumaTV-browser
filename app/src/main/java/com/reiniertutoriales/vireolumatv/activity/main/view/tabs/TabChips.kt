@@ -1,6 +1,7 @@
 package com.reiniertutoriales.vireolumatv.activity.main.view.tabs
 
 import android.view.LayoutInflater
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -83,6 +84,7 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
     }
 
     inner class Row(view: View) : RecyclerView.ViewHolder(view) {
+        private val close: View = view.findViewById(R.id.close_tab_button)
         private val title: TextView = view.findViewById(R.id.title_text)
         private val favicon = ViewFaviconLoader(view, view.findViewById<ImageView>(R.id.site_icon))
 
@@ -92,18 +94,33 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
         fun bind(tab: BrowserTab, isCurrent: Boolean) {
             itemView.tag = tab
             itemView.isSelected = isCurrent
-            itemView.findViewById<View>(R.id.close_tab_button).setOnClickListener {
+            close.setOnClickListener {
                 if (this.tab === tab && shown.any { it === tab }) listener?.closeTab(tab)
             }
             title.text = tab.title
             favicon.bind(tab.url)
-            itemView.setOnFocusChangeListener { _, focused ->
+            val focus = View.OnFocusChangeListener { _, focused ->
                 val index = positionOf(tab)
                 if (focused && index != RecyclerView.NO_POSITION && index != selected) {
                     current = index
                     listener?.onTitleChanged(index)
                 }
             }
+            itemView.onFocusChangeListener = focus
+            close.onFocusChangeListener = focus
+            itemView.setOnKeyListener { _, code, event ->
+                if (code != KeyEvent.KEYCODE_DPAD_RIGHT) false else {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) close.requestFocus()
+                    true
+                }
+            }
+            close.setOnKeyListener { _, code, event ->
+                if (code != KeyEvent.KEYCODE_DPAD_LEFT) false else {
+                    if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) itemView.requestFocus()
+                    true
+                }
+            }
+            close.setOnLongClickListener { itemView.performLongClick() }
             itemView.setOnClickListener {
                 positionOf(tab).takeIf { it != RecyclerView.NO_POSITION }?.let { listener?.onTitleSelected(it) }
             }

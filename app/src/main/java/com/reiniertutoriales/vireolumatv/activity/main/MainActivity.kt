@@ -491,12 +491,26 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (tab == null) return
         val tabs = tabStore.openTabs
         val position = tabs.indexOf(tab)
-        if (tabStore.currentTab.value === tab) tabStore.currentTab.value = null
+        if (position < 0) return
+        val keepCapsule = overlayVisible
+        val wasCurrent = tabStore.currentTab.value === tab
+        if (wasCurrent) tabStore.currentTab.value = null
         val neighbour = tabs.getOrNull(position - 1)?.takeIf { position > 0 } ?: tabs.getOrNull(position + 1)
-        if (neighbour != null) changeTab(neighbour)
-        else openInNewTab(browserSettings.homePage, 0, closeCapsuleAfter = true, navigateImmediately = true)
+        if (wasCurrent || tabStore.currentTab.value == null) {
+            if (neighbour != null) changeTab(neighbour)
+            else openInNewTab(browserSettings.homePage, 0, closeCapsuleAfter = !keepCapsule, navigateImmediately = true)
+        }
         tabStore.onCloseTab(tab)
-        closeCapsule()
+        val current = tabStore.currentTab.value
+        vb.tabStrip.current = tabs.indexOf(current).coerceAtLeast(0)
+        if (keepCapsule) {
+            previewGeneration++
+            mainThread.removeCallbacks(showFocusedPreview)
+            focusedPreviewTab = null
+            vb.controlsRow.showAddress(current?.url.orEmpty())
+            lifecycleScope.launch { showPreview(current) }
+            vb.tabStrip.post { if (overlayVisible) vb.tabStrip.requestFocus() }
+        } else closeCapsule()
     }
 
     internal fun changeTab(newTab: BrowserTab, loadInitialUrl: Boolean = true) =

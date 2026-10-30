@@ -49,6 +49,20 @@ class BrowserNavigationTest {
         }
     }
 
+    @Test fun closingABackgroundTabKeepsTheLivePageAndTheStripAndIgnoresStaleCloses() = Fixture().use { f ->
+        f.tabs.workScope.cancel()
+        val background = BrowserTab(url = "https://background.test")
+        f.tabs.openTabs.add(background)
+        f.activity.openCapsule()
+        f.activity.closeTab(background)
+        assertSame(f.tab, f.tabs.currentTab.value)
+        assertEquals(listOf(f.tab), f.tabs.openTabs.toList())
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        f.activity.closeTab(background)
+        assertSame(f.tab, f.tabs.currentTab.value)
+        assertEquals(1, f.tabs.openTabs.size)
+    }
+
     @Test fun capsuleSkipsDisabledHistoryAndReachesSearchInBothDirections() = Fixture().use { f ->
         f.activity.consumeBack()
         val bar = f.vb.controlsRow

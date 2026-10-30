@@ -15,7 +15,7 @@
     android:nextFocusUp="@+id/address_field"
     android:orientation="horizontal"
     android:paddingStart="12dp"
-    android:paddingEnd="14dp"
+    android:paddingEnd="4dp"
     android:stateListAnimator="@animator/focus_scale_chip"
     tools:targetApi="26">
 
@@ -42,8 +42,9 @@
     <ImageButton
         android:id="@+id/close_tab_button"
         style="@style/Widget.Vireo.IconButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="@dimen/control_size"
+        android:layout_height="@dimen/control_size"
+        android:padding="10dp"
         android:contentDescription="@string/menu_close_tab"
         android:nextFocusUp="@id/address_field"
         android:src="@drawable/ic_tab_close" />

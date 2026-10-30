@@ -77,6 +77,14 @@ Abajo entra en la lista sin cancelar la edición, Arriba vuelve al campo, OK abr
 El campo ya no prohíbe las sugerencias del teclado (`textUri`) ni abre el teclado a pantalla completa.
 Nada sale del dispositivo. Pendiente de validación en Android TV con varios teclados.
 
+**Cierre y escudo (2026-10-30, petición del propietario):** la X tiene un objetivo de 48 dp;
+Derecha desde el título la enfoca y la Izquierda vuelve al título. OK cierra esa pestaña;
+la pulsación larga en título o cierre conserva las opciones. Al cerrar con la cápsula abierta,
+esta permanece abierta; cerrar una pestaña de fondo conserva la página activa y un cierre
+repetido de una pestaña retirada no actúa. El escudo es verde habilitado y rojo pausado,
+con variantes contrastadas al enfocar; el detalle sigue indicando si hay reglas cargadas.
+Validación física pendiente.
+
 **Rediseño TV (2026-10-28, petición del propietario):** interfaz nativa de Android TV con vistas
 AppCompat, sin dependencias nuevas. El foco invierte el control (superficie clara, contenido oscuro) y lo
 escala 1,1 (botones), 1,05 (pestañas y botones de texto) o 1,025 (filas), según el sistema de foco de TV.

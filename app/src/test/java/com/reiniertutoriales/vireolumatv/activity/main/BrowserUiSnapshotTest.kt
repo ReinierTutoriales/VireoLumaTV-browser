@@ -129,10 +129,10 @@ class BrowserUiSnapshotTest {
             assertTrue("Address remains usable at $width", address.width >= 240)
             if (fontScale == 1f) assertEquals("Default address height", 48, address.height)
             else assertTrue("Accessible text may expand the field", address.height >= 48)
-            // Tab chips: 40dp tall, 188dp wide so four fit inside the safe area; "+" is a 48dp control.
+            // Tab chips: 48dp tall, 188dp wide so four fit inside the safe area; "+" is a 48dp control.
             val tabs = vb.tabStrip.findViewById<RecyclerView>(R.id.tab_list)
             val tab = tabs.getChildAt(0)
-            assertEquals("Tab height at $width", 40, tab.height)
+            assertEquals("Tab height at $width", 48, tab.height)
             assertEquals("Tab width at $width", 188, tab.width)
             assertEquals("Add-tab button height at $width", 48, vb.tabStrip.findViewById<View>(R.id.add_button).height)
             if (width >= 960) assertTrue("Four tabs fit beside the add button at $width: ${tabs.width}",

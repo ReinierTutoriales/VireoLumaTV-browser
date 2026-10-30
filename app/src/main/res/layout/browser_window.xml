@@ -98,7 +98,7 @@
         <com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabStrip
             android:id="@+id/tab_strip"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="64dp"
             android:layout_below="@id/controls_row"
             android:layout_marginTop="16dp"
             android:clipChildren="false"
