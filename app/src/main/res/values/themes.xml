@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- The application theme: dark surfaces, brand accent, and the TV dialog style. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="colorPrimary">@color/surface</item>
         <item name="colorPrimaryDark">@color/background</item>
@@ -12,11 +15,17 @@
         <item name="android:textColorSecondary">@color/on_surface_variant</item>
         <item name="android:textColorHint">@color/on_surface_variant</item>
         <item name="android:windowContentOverlay">@null</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="alertDialogTheme">@style/ThemeOverlay.Vireo.Dialog</item>
         <item name="android:alertDialogTheme">@style/ThemeOverlay.Vireo.Dialog</item>
     </style>
 
     <style name="ThemeOverlay.Vireo.Dialog" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
         <item name="android:windowBackground">@drawable/bg_dialog</item>
         <item name="android:windowMinWidthMajor">40%</item>
         <item name="android:windowMinWidthMinor">60%</item>
@@ -35,6 +44,9 @@
 
     <!-- A panel along the end edge of the screen (the application menu). -->
     <style name="SidePanel" parent="Theme.AppCompat.Dialog">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
         <item name="android:windowBackground">@color/surface</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowNoTitle">true</item>
@@ -51,6 +63,9 @@
 
     <!-- Full-window dialogs that draw their own panel (settings). -->
     <style name="SettingsScreen" parent="Theme.AppCompat.Dialog">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowBackground">@color/background</item>

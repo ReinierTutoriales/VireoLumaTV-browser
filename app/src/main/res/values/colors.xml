@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dark-only palette, tuned for a large screen in a dim room. The focused control inverts
-     (light surface, dark content), which reads from across the room without a border. -->
+<!-- One fixed palette: black backdrops, readable text and distinct remote focus states. -->
 <resources>
-    <color name="background">#0E1014</color>
-    <color name="surface">#171A1F</color>
-    <color name="surface_variant">#252A31</color>
-    <color name="surface_high">#30363F</color>
-    <color name="on_surface">#E8EAED</color>
-    <color name="on_surface_variant">#A9B0B9</color>
-    <color name="inverse_surface">#F1F3F5</color>
-    <color name="inverse_on_surface">#14171B</color>
+    <color name="background">#000000</color>
+    <color name="surface">#000000</color>
+    <color name="surface_variant">#141414</color>
+    <color name="surface_high">#242424</color>
+    <color name="on_surface">#E6E6E6</color>
+    <color name="on_surface_variant">#B3B3B3</color>
+    <color name="inverse_surface">#DADADA</color>
+    <color name="inverse_on_surface">#141414</color>
     <color name="brand">#7BD88F</color>
     <color name="brand_container">#1E3826</color>
     <color name="error">#FF8A80</color>
-    <color name="scrim_strong">#F20B0D10</color>
-    <color name="scrim_clear">#000B0D10</color>
+    <color name="scrim_strong">#F2000000</color>
+    <color name="scrim_clear">#00000000</color>
 </resources>
