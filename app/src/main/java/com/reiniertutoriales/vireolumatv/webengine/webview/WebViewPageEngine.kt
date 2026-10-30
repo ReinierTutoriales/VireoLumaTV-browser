@@ -310,10 +310,17 @@ internal fun meaningfulBackOffset(view: WebView): Int? {
     val history = view.copyBackForwardList()
     val current = history.currentIndex
     if (current <= 0) return null
-    val currentUrl = history.getItemAtIndex(current)?.url ?: return -1
-    for (index in current - 1 downTo 0) {
-        val candidate = history.getItemAtIndex(index)?.url ?: return index - current
-        if (candidate != currentUrl) return index - current
+    val urls = (0..current).map { history.getItemAtIndex(it)?.url }
+    return meaningfulBackOffset(urls, current)
+}
+
+/** Returns a negative WebView history offset; null means no distinct older URL. */
+internal fun meaningfulBackOffset(urls: List<String?>, currentIndex: Int): Int? {
+    if (currentIndex !in urls.indices || currentIndex == 0) return null
+    val currentUrl = urls[currentIndex] ?: return -1
+    for (index in currentIndex - 1 downTo 0) {
+        val previousUrl = urls[index] ?: return index - currentIndex
+        if (previousUrl != currentUrl) return index - currentIndex
     }
     return null
 }
