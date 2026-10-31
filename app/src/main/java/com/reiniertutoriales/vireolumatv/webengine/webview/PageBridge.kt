@@ -60,23 +60,21 @@ internal class LegacyPrivilegedBridge(engine: WebViewPageEngine) : FilterBridge(
         engine.privileged.approveCertificate()
     }
 
-    /** Opens a blob download for a fresh press (which it consumes); returns its token or "". */
+    /** Legacy WebView cannot identify the calling frame; fail closed for blob downloads. */
     @JavascriptInterface
-    fun beginBlobDownload(url: String, fileName: String?): String =
-        engine.privileged.beginBlob(url, fileName, webPage() ?: return "")
+    fun beginBlobDownload(url: String, fileName: String?): String = ""
 
     /** Called before the page encodes the blob, so an oversized one is never encoded. */
     @JavascriptInterface
-    fun acceptBlobSize(token: String, size: Long, mimeType: String?): Boolean =
-        engine.privileged.acceptBlob(token, size, mimeType.orEmpty())
+    fun acceptBlobSize(token: String, size: Long, mimeType: String?): Boolean = false
 
     @JavascriptInterface
-    fun cancelBlobDownload(token: String) = engine.privileged.cancelBlob(token)
+    fun cancelBlobDownload(token: String) = Unit
 
     /** The blob's bytes; the string already exists here, the size check only spares decoding and writing it. */
     @JavascriptInterface
     fun takeBlobDownloadData(token: String, base64BlobData: String, url: String) {
-        engine.privileged.takeBlob(token, url, base64BlobData, webPage() ?: return, ::webPage)
+        // No verifiable frame identity on legacy providers: reject privileged blob data.
     }
 
     private fun webPage(): String? = page?.currentOriginalUrl?.takeIf(BridgePagePolicy::isNormalWebPage)?.toString()
