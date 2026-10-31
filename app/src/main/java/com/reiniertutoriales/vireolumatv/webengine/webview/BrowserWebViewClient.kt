@@ -54,11 +54,11 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
                 return homePageAsset(address) ?: super.shouldInterceptRequest(view, request)
             }
         }
-        if (page == null || window?.blocksAds != true || !engine.isAd(request, page)) {
-            return super.shouldInterceptRequest(view, request)
-        }
+        if (page == null || window?.blocksAds != true) return super.shouldInterceptRequest(view, request)
+        val verdict = engine.adVerdict(request, page)
+        if (!verdict.blocked) return super.shouldInterceptRequest(view, request)
         this.view.countBlockedAd()
-        engine.adRedirect(request, page)?.let { BlockedResponses.dataUrl(it, request.requestHeaders) }?.let { return it }
+        verdict.redirect?.let { BlockedResponses.dataUrl(it, request.requestHeaders) }?.let { return it }
         return AdblockSurrogates.responseFor(resourceContext, request.url, request.requestHeaders) ?: BlockedResponses.blocked()
     }
 

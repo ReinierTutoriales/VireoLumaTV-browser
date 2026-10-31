@@ -29,6 +29,7 @@ import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
 import kotlinx.coroutines.launch
+import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 
 /**
  * The browser window as seen by one [tab]'s page: address and title updates, downloads, pop-ups
@@ -167,9 +168,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     // Ads, dialogs and pop-ups
 
-    override fun isAd(url: Uri, requestType: String?, page: Uri): Boolean = browser.adBlocker.isAd(url, requestType, page)
-
-    override fun adRedirect(url: Uri, requestType: String?, page: Uri): String? = browser.adBlocker.redirectFor(url, requestType, page)
+    override fun adVerdict(url: Uri, requestType: String?, page: Uri): AdVerdict = browser.adBlocker.verdict(url, requestType, page)
 
     override val blocksAds: Boolean get() = tab.adblock ?: browser.config.adBlockEnabled
 

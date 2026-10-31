@@ -18,8 +18,10 @@ use jni::{Env, EnvUnowned};
 const ALLOW: jint = 0;
 /// Blocked; the caller answers with an empty error response.
 const BLOCK: jint = 1;
-/// Blocked and a `$redirect` resource is available (see `nativeRedirect`).
+/// Blocked and a `$redirect` resource is available (see `nativeVerdict`).
 const BLOCK_REDIRECT: jint = 2;
+/// `nativeVerdict` answer for a request blocked without a `$redirect` resource.
+const VERDICT_BLOCK: &str = "!";
 
 fn text(env: &Env, value: &JString) -> jni::errors::Result<String> {
     value.try_to_string(env)
@@ -182,9 +184,20 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
         .resolve::<ThrowRuntimeExAndDefault>()
 }
 
-/// `data:` URL of the `$redirect` resource for a blocked request, or an empty string.
+/// One network match for a request: "" to allow it, [`VERDICT_BLOCK`] to block it, or the `data:`
+/// URL of its `$redirect` resource. Callers never need a second match for the replacement.
+fn verdict(engine: &Engine, url: &str, source: &str, kind: &str) -> String {
+    let Some(request) = request(url, source, kind) else { return String::new() };
+    let result = engine.check_network_request(&request);
+    if !result.should_block() {
+        String::new()
+    } else {
+        result.redirect.unwrap_or_else(|| VERDICT_BLOCK.to_owned())
+    }
+}
+
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdblock_nativeRedirect<'caller>(
+pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdblock_nativeVerdict<'caller>(
     mut unowned: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     handle: jlong,
@@ -194,13 +207,11 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
 ) -> JString<'caller> {
     unowned
         .with_env(|env| -> jni::errors::Result<JString<'caller>> {
-            let (url, source, kind) = (text(env, &url)?, text(env, &source)?, text(env, &kind)?);
-            let redirect = engine(handle)
-                .and_then(|engine| request(&url, &source, &kind).map(|r| engine.check_network_request(&r)))
-                .filter(|result| result.should_block())
-                .and_then(|result| result.redirect)
-                .unwrap_or_default();
-            env.new_string(redirect)
+            let answer = match engine(handle) {
+                Some(engine) => verdict(engine, &text(env, &url)?, &text(env, &source)?, &text(env, &kind)?),
+                None => String::new(),
+            };
+            env.new_string(answer)
         })
         .resolve::<ThrowRuntimeExAndDefault>()
 }
@@ -268,4 +279,29 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
             env.new_string(serde_json::Value::from(selectors).to_string())
         })
         .resolve::<ThrowRuntimeExAndDefault>()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn engine_for(rules: &str) -> Engine {
+        let mut filters = FilterSet::new(false);
+        filters.add_filter_list(rules.to_owned(), ParseOptions::default());
+        let mut engine = Engine::new_with_filter_set(filters);
+        load_resources(&mut engine, r#"[{"name":"noopjs","aliases":[],"kind":{"mime":"application/javascript"},"content":"KGZ1bmN0aW9uKCl7fSkoKQ=="}]"#);
+        engine
+    }
+
+    #[test]
+    fn one_match_answers_allow_block_or_redirect() {
+        let engine = engine_for("||ads.test^\n@@||ads.test/allowed^\n||cdn.test/ads/*$script,redirect=noopjs");
+        let page = "https://page.test/";
+        assert_eq!(verdict(&engine, "https://page.test/app.js", page, "script"), "");
+        assert_eq!(verdict(&engine, "https://ads.test/banner.js", page, "script"), VERDICT_BLOCK);
+        assert_eq!(verdict(&engine, "https://ads.test/allowed", page, "script"), "");
+        let redirect = verdict(&engine, "https://cdn.test/ads/loader.js", page, "script");
+        assert!(redirect.starts_with("data:application/javascript;base64,"), "{redirect}");
+        assert_eq!(verdict(&engine, "not a url", page, "script"), "");
+    }
 }
