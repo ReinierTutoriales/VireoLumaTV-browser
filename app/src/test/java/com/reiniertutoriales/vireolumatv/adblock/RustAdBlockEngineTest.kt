@@ -50,11 +50,35 @@ class RustAdBlockEngineTest {
                 Uri.parse("https://tracker.example/")))
             // $redirect: blocked, but the page gets a harmless resource instead of an error.
             assertEquals(ContentBlocker.BLOCK_REDIRECT, blocker.decision("https://cdn.example/ads/loader.js", "script"))
-            val js = blocker.redirect(Uri.parse("https://cdn.example/ads/loader.js"), "script", page)!!
+            val js = blocker.verdict(Uri.parse("https://cdn.example/ads/loader.js"), "script", page).redirect!!
             assertTrue(js, js.startsWith("data:application/javascript;base64,"))
-            val vast = blocker.redirect(Uri.parse("https://video.example/vast/1.xml"), "xhr", page)!!
+            val vast = blocker.verdict(Uri.parse("https://video.example/vast/1.xml"), "xhr", page).redirect!!
             assertTrue(String(android.util.Base64.decode(vast.substringAfter(','), 0)).contains("<VAST version=\"4.0\">"))
         } finally { blocker.release() }
+    }
+
+    @Test fun oneVerdictCarriesBlockRedirectAndExceptionsLikeCheck() {
+        val blocker = engine.compile(rules)!!
+        try {
+            fun verdict(url: String, type: String) = blocker.verdict(Uri.parse(url), type, page)
+            val blocked = verdict("https://ads.example/banner.js", "script")
+            assertTrue(blocked.blocked); assertNull(blocked.redirect)
+            assertFalse("@@ exception", verdict("https://ads.example/allowed", "script").blocked)
+            assertFalse(verdict("https://stream.example/app.js", "script").blocked)
+            val redirected = verdict("https://cdn.example/ads/loader.js", "script")
+            assertTrue(redirected.blocked)
+            assertTrue(redirected.redirect!!.startsWith("data:application/javascript;base64,"))
+            // The verdict and check agree on every case.
+            listOf("https://ads.example/banner.js" to "script", "https://ads.example/allowed" to "script",
+                "https://cdn.example/ads/loader.js" to "script", "https://tracker.example/t.gif" to "image",
+                "https://video.example/vast/1.xml" to "xhr").forEach { (url, type) ->
+                val code = blocker.check(Uri.parse(url), type, page)
+                val v = verdict(url, type)
+                assertEquals(url, code != ContentBlocker.ALLOW, v.blocked)
+                assertEquals(url, code == ContentBlocker.BLOCK_REDIRECT, v.redirect != null)
+            }
+        } finally { blocker.release() }
+        assertFalse("A released engine allows", blocker.verdict(Uri.parse("https://ads.example/x"), "script", page).blocked)
     }
 
     @Test fun infixHostnameBoundariesUseThePositionOfTheActualMatch() {
@@ -94,9 +118,9 @@ class RustAdBlockEngineTest {
             assertEquals(ContentBlocker.ALLOW, blocker.decision("https://media.example/ad.mp4", "media"))
             // Shipped stand-ins: the IMA SDK and silent media.
             assertEquals(ContentBlocker.BLOCK_REDIRECT, blocker.decision("https://imasdk.example/ima3.js", "script"))
-            val ima = blocker.redirect(Uri.parse("https://imasdk.example/ima3.js"), "script", page)!!
+            val ima = blocker.verdict(Uri.parse("https://imasdk.example/ima3.js"), "script", page).redirect!!
             assertTrue(String(android.util.Base64.decode(ima.substringAfter(','), 0)).contains("AdsLoader"))
-            val mp3 = blocker.redirect(Uri.parse("https://media.example/ad.mp3"), "media", page)!!
+            val mp3 = blocker.verdict(Uri.parse("https://media.example/ad.mp3"), "media", page).redirect!!
             assertTrue(mp3, mp3.startsWith("data:audio/mp3;base64,"))
             assertEquals(ContentBlocker.BLOCK_REDIRECT, blocker.decision("https://known.example/ad.js", "script"))
             assertEquals(ContentBlocker.BLOCK, blocker.decision("https://blocked.example/x.js", "script"))

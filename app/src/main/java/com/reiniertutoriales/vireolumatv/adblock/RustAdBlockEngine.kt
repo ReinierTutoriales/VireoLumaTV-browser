@@ -46,9 +46,13 @@ private class RustContentBlocker(private var handle: Long) : ContentBlocker {
         else RustAdblock.nativeCheck(handle, url.toString(), page.toString(), requestType(type))
     }
 
-    override fun redirect(url: Uri, type: String?, page: Uri): String? = lifecycle.read {
-        if (handle == 0L) null
-        else RustAdblock.nativeRedirect(handle, url.toString(), page.toString(), requestType(type)).ifEmpty { null }
+    override fun verdict(url: Uri, type: String?, page: Uri): AdVerdict = lifecycle.read {
+        if (handle == 0L) return@read AdVerdict.ALLOW
+        when (val answer = RustAdblock.nativeVerdict(handle, url.toString(), page.toString(), requestType(type))) {
+            "" -> AdVerdict.ALLOW
+            BLOCK_ANSWER -> AdVerdict.BLOCK
+            else -> AdVerdict.redirect(answer)
+        }
     }
 
     override fun pageFilters(pageUrl: String): String = lifecycle.read {
@@ -73,6 +77,9 @@ private class RustContentBlocker(private var handle: Long) : ContentBlocker {
     }
 
     private companion object {
+        /** nativeVerdict's answer for a block without a `$redirect` resource; any other non-empty answer is one. */
+        const val BLOCK_ANSWER = "!"
+
         /** [AdblockRequestClassifier] names to adblock-rust request types. */
         fun requestType(type: String?): String = when (type) {
             "style" -> "stylesheet"

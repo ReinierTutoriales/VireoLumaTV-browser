@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.net.Uri
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlocker
 import org.junit.Assert.*
 import org.junit.Test
@@ -48,6 +49,50 @@ class AdblockDecisionCacheTest {
             assertFalse(model.isAd(url, "xhr", page))
         } finally { model.clear() }
     }
+    /** Counts native matches: [verdicts] answers by host, as one native call would. */
+    private class VerdictBlocker(private val verdicts: Map<String, AdVerdict>) : ContentBlocker {
+        var matches = 0
+        override val isConcurrent get() = true
+        override fun shouldBlock(url: Uri, type: String?, baseHost: String) = error("matched through verdict only")
+        override fun verdict(url: Uri, type: String?, page: Uri): AdVerdict {
+            matches++
+            return verdicts[url.host] ?: AdVerdict.ALLOW
+        }
+        override fun serialize(file: File) = true
+    }
+
+    @Test fun aNewRequestIsMatchedOnceAndARepeatedOneNotAtAllRedirectIncluded() {
+        val model = AdBlocker(autoLoad = false)
+        val noop = AdVerdict.redirect("data:application/javascript;base64,KGZ1bmN0aW9uKCl7fSkoKQ==")
+        val blocker = VerdictBlocker(mapOf("cdn.test" to noop, "ads.test" to AdVerdict.BLOCK))
+        val page = Uri.parse("https://page.test")
+        try {
+            install(model, blocker)
+            val redirected = Uri.parse("https://cdn.test/ads/loader.js")
+            assertSame(noop, model.verdict(redirected, "script", page))
+            assertEquals(1, blocker.matches)
+            repeat(50) { assertSame(noop, model.verdict(redirected, "script", page)) }
+            assertTrue(model.isAd(redirected, "script", page))
+            assertEquals("redirects come from the cache too", 1, blocker.matches)
+            assertSame(AdVerdict.BLOCK, model.verdict(Uri.parse("https://ads.test/b.js"), "script", page))
+            assertSame(AdVerdict.ALLOW, model.verdict(Uri.parse("https://page.test/app.js"), "script", page))
+            repeat(10) {
+                model.verdict(Uri.parse("https://ads.test/b.js"), "script", page)
+                model.verdict(Uri.parse("https://page.test/app.js"), "script", page)
+            }
+            assertEquals(3, blocker.matches)
+            // Type and page context are part of the key.
+            model.verdict(redirected, "xhr", page)
+            model.verdict(redirected, "script", Uri.parse("https://other.test"))
+            assertEquals(5, blocker.matches)
+            // New rules are a new generation: nothing cached under the old ones is reused.
+            val updated = VerdictBlocker(emptyMap())
+            install(model, updated)
+            assertSame(AdVerdict.ALLOW, model.verdict(redirected, "script", page))
+            assertEquals(1, updated.matches)
+        } finally { model.clear() }
+    }
+
     @Test fun cacheIsBoundedAndOversizedUrlsAreNotRetained() {
         val model = AdBlocker(autoLoad = false)
         val blocker = Blocker()

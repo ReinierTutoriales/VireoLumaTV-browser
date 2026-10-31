@@ -8,6 +8,7 @@ import android.webkit.WebResourceResponse
 import androidx.webkit.ServiceWorkerClientCompat
 import androidx.webkit.ServiceWorkerControllerCompat
 import androidx.webkit.WebViewFeature
+import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 import com.reiniertutoriales.vireolumatv.adblock.AdblockRequestClassifier
 import com.reiniertutoriales.vireolumatv.adblock.AdblockSurrogates
 
@@ -22,8 +23,8 @@ internal class ServiceWorkerFilter(context: Context, private val policy: () -> P
     interface Policy {
         /** Whether ads are blocked for the site at this address. Called off the main thread. */
         fun blocksAds(site: Uri): Boolean
-        fun isAd(url: Uri, type: String?, site: Uri): Boolean
-        fun redirect(url: Uri, type: String?, site: Uri): String?
+        /** Whether the request is blocked, with its `$redirect` resource if the lists name one. */
+        fun verdict(url: Uri, type: String?, site: Uri): AdVerdict
     }
 
     /**
@@ -51,8 +52,9 @@ internal class ServiceWorkerFilter(context: Context, private val policy: () -> P
         val site = AdblockRequestClassifier.serviceWorkerContext(headers) ?: return null
         if (!rules.blocksAds(site)) return null
         val type = AdblockRequestClassifier.classify(url, headers, mainFrame = false)
-        if (!rules.isAd(url, type, site)) return null
-        rules.redirect(url, type, site)?.let { BlockedResponses.dataUrl(it, headers) }?.let { return it }
+        val verdict = rules.verdict(url, type, site)
+        if (!verdict.blocked) return null
+        verdict.redirect?.let { BlockedResponses.dataUrl(it, headers) }?.let { return it }
         return AdblockSurrogates.responseFor(appContext, url, headers) ?: BlockedResponses.blocked()
     }
 

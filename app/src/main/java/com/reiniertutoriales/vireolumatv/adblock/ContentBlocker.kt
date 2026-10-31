@@ -15,15 +15,16 @@ interface ContentBlocker {
     /** Writes the compiled rules to [file]; returns false if they could not be written. */
     fun serialize(file: File): Boolean
 
-    /** True when [check], [redirect] and [pageFilters] may run on several threads at once. */
+    /** True when [check], [verdict] and [pageFilters] may run on several threads at once. */
     val isConcurrent: Boolean get() = false
 
     /** [ALLOW], [BLOCK] or [BLOCK_REDIRECT] for a request made by a document at [page]. */
     fun check(url: Uri, type: String?, page: Uri): Int =
         if (shouldBlock(url, type, page.host ?: "")) BLOCK else ALLOW
 
-    /** `data:` URL of the `$redirect` resource for a blocked request, if the rules name one. */
-    fun redirect(url: Uri, type: String?, page: Uri): String? = null
+    /** The whole answer for a request in one match, including any `$redirect` replacement. */
+    fun verdict(url: Uri, type: String?, page: Uri): AdVerdict =
+        if (check(url, type, page) == ALLOW) AdVerdict.ALLOW else AdVerdict.BLOCK
 
     /** Element hiding and scriptlets for a document URL as JSON (see adblock-jni), or "". */
     fun pageFilters(pageUrl: String): String = ""
@@ -38,6 +39,15 @@ interface ContentBlocker {
         const val ALLOW = 0
         const val BLOCK = 1
         const val BLOCK_REDIRECT = 2
+    }
+}
+
+/** A network request's answer: allowed, blocked, or blocked with a [redirect] `data:` URL to serve instead. */
+class AdVerdict private constructor(val blocked: Boolean, val redirect: String?) {
+    companion object {
+        val ALLOW = AdVerdict(false, null)
+        val BLOCK = AdVerdict(true, null)
+        fun redirect(dataUrl: String) = AdVerdict(true, dataUrl)
     }
 }
 

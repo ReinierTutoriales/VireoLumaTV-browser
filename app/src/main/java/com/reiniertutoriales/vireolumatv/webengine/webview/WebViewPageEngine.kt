@@ -12,6 +12,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.webkit.WebViewCompat
 import com.reiniertutoriales.vireolumatv.AppContext
+import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 import com.reiniertutoriales.vireolumatv.adblock.AdblockRequestClassifier
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.utils.BundleBytes
@@ -203,18 +204,12 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         permissionRequests[code] = location to generation
     }
 
-    internal fun isAd(request: WebResourceRequest, page: Uri): Boolean = classified(request, page) { type, context ->
-        window?.isAd(request.url, type, context) ?: false
-    }
-
-    internal fun adRedirect(request: WebResourceRequest, page: Uri): String? = classified(request, page) { type, context ->
-        window?.adRedirect(request.url, type, context)
-    }
-
-    private inline fun <T> classified(request: WebResourceRequest, page: Uri, decide: (String?, Uri) -> T): T = decide(
+    /** The request classified once and matched once (or found in the decision cache). */
+    internal fun adVerdict(request: WebResourceRequest, page: Uri): AdVerdict = window?.adVerdict(
+        request.url,
         AdblockRequestClassifier.classify(request.url, request.requestHeaders, request.isForMainFrame),
         AdblockRequestClassifier.pageContext(request.url, page, request.isForMainFrame),
-    )
+    ) ?: AdVerdict.ALLOW
 
     internal fun onCreateWindow(dialog: Boolean, userGesture: Boolean): BrowserWebView? =
         window?.createWindow(dialog, userGesture) as? BrowserWebView

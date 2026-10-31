@@ -7,6 +7,7 @@ import android.net.Uri
 import android.view.View
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
+import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 
 /** The browser window as one tab's page sees it while the tab is shown. */
 interface PageWindow {
@@ -44,9 +45,8 @@ interface PageWindow {
 
     val blocksAds: Boolean
     val blocksDialogs: Boolean
-    fun isAd(url: Uri, requestType: String?, page: Uri): Boolean
-    /** `data:` URL of the filter lists' `$redirect` resource for a blocked request, if any. */
-    fun adRedirect(url: Uri, requestType: String?, page: Uri): String?
+    /** Whether a request is blocked, with the filter lists' `$redirect` resource if they name one. */
+    fun adVerdict(url: Uri, requestType: String?, page: Uri): AdVerdict
     /** A page-initiated navigation of this tab to a popunder network; true cancels it. */
     fun isTabUnderAd(url: Uri, page: Uri?): Boolean
     fun onAdsBlocked(count: Int)

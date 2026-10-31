@@ -15,6 +15,7 @@ import com.reiniertutoriales.vireolumatv.adblock.AdblockListDownloader
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.adblock.AdblockResources
 import com.reiniertutoriales.vireolumatv.adblock.RustAdBlockEngine
+import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlocker
 import com.reiniertutoriales.vireolumatv.adblock.ContentBlockerEngine
 import com.reiniertutoriales.vireolumatv.adblock.FilterListPreprocessor
@@ -89,10 +90,12 @@ class AdBlocker @JvmOverloads constructor(
         val lock = Any()
         // A broken native matcher can fail for every resource on a busy page.
         val failureLogged = AtomicBoolean(false)
-        // ~256 KiB of keys: several hundred URLs, enough for a heavy page plus its media playlist.
-        val decisions = object : LruCache<DecisionKey, Int>(256 * 1024) {
-            override fun sizeOf(key: DecisionKey, value: Int): Int =
-                64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length)
+        // ~256 KiB: several hundred URLs, enough for a heavy page plus its media playlist. A verdict
+        // carries its redirect, so a repeated redirected request needs no native match at all.
+        // The key is everything the match depends on; the rules' generation is this client itself.
+        val decisions = object : LruCache<DecisionKey, AdVerdict>(256 * 1024) {
+            override fun sizeOf(key: DecisionKey, value: AdVerdict): Int =
+                64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length + (value.redirect?.length ?: 0))
         }
         // Page filters of recent frame URLs (ad iframes and reloads repeat them): ~1 MiB of text.
         val pageFilters = object : LruCache<String, String>(512 * 1024) {
@@ -623,26 +626,16 @@ class AdBlocker @JvmOverloads constructor(
         super.onClear()
     }
 
-    fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean = decision(url, type, baseUri) != ContentBlocker.ALLOW
+    fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean = verdict(url, type, baseUri).blocked
 
     /**
-     * `data:` URL of the `$redirect` resource for a blocked request (uBO `noopjs`, `1x1.gif`, empty
-     * VAST...), so the page sees a harmless answer instead of an error it can detect.
+     * Whether a request is blocked and, when the lists name one, the `data:` URL of its `$redirect`
+     * resource (uBO `noopjs`, `1x1.gif`, empty VAST...), so the page sees a harmless answer instead of
+     * an error it can detect. One native match for a new request, none for a cached one.
      */
-    fun redirectFor(url: Uri, type: String?, baseUri: Uri): String? {
-        if (decision(url, type, baseUri) != ContentBlocker.BLOCK_REDIRECT) return null
-        val current = installedClient ?: return null
-        return try {
-            if (current.blocker.isConcurrent) current.blocker.redirect(url, type, baseUri)
-            else synchronized(current.lock) { current.blocker.redirect(url, type, baseUri) }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    private fun decision(url: Uri, type: String?, baseUri: Uri): Int {
-        val baseHost = baseUri.host ?: return ContentBlocker.ALLOW
-        val current = installedClient ?: return ContentBlocker.ALLOW
+    fun verdict(url: Uri, type: String?, baseUri: Uri): AdVerdict {
+        val baseHost = baseUri.host ?: return AdVerdict.ALLOW
+        val current = installedClient ?: return AdVerdict.ALLOW
         val text = url.toString()
         val key = if (text.length <= 2048 && baseHost.length <= 255)
             DecisionKey(text, type, baseHost) else null
@@ -651,13 +644,13 @@ class AdBlocker @JvmOverloads constructor(
         key?.let { current.decisions.get(it) }?.let { return it }
         val result = try {
             // adblock-rust is Sync: WebView worker threads match in parallel.
-            if (current.blocker.isConcurrent) current.blocker.check(url, type, baseUri)
-            else synchronized(current.lock) { current.blocker.check(url, type, baseUri) }
+            if (current.blocker.isConcurrent) current.blocker.verdict(url, type, baseUri)
+            else synchronized(current.lock) { current.blocker.verdict(url, type, baseUri) }
         } catch (e: Exception) {
             if (current.failureLogged.compareAndSet(false, true)) {
                 Log.e(TAG, "Adblock matcher failed; later requests can retry", e)
             }
-            return ContentBlocker.ALLOW
+            return AdVerdict.ALLOW
         }
         if (key != null) current.decisions.put(key, result)
         return result

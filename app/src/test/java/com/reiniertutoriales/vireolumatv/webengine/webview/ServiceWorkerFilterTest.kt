@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.net.Uri
 import android.webkit.WebResourceRequest
+import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -28,11 +29,14 @@ class ServiceWorkerFilterTest {
         val asked = mutableListOf<Triple<String, String?, String>>()
         val sites = mutableListOf<String>()
         override fun blocksAds(site: Uri): Boolean = enabled.also { sites += site.toString() }
-        override fun isAd(url: Uri, type: String?, site: Uri): Boolean {
+        override fun verdict(url: Uri, type: String?, site: Uri): AdVerdict {
             asked += Triple(url.toString(), type, site.toString())
-            return url.host == "ads.example"
+            return when (url.host) {
+                "ads.example" -> AdVerdict.BLOCK
+                "player.example" -> AdVerdict.redirect("data:application/javascript;base64,KGZ1bmN0aW9uKCl7fSkoKQ==")
+                else -> AdVerdict.ALLOW
+            }
         }
-        override fun redirect(url: Uri, type: String?, site: Uri): String? = null
     }
 
     private fun filter(rules: ServiceWorkerFilter.Policy?) =
@@ -46,6 +50,14 @@ class ServiceWorkerFilterTest {
         assertNotNull("A worker's ad request must not reach the network", response)
         assertEquals(403, response!!.statusCode)
         assertEquals(Triple("https://ads.example/tag.js", "script", "https://video.example/sw.js"), rules.asked.single())
+    }
+
+    @Test fun aRedirectedWorkerRequestIsServedFromTheSameSingleVerdict() {
+        val rules = Rules()
+        val response = filter(rules).shouldInterceptRequest(Request("https://player.example/ads.js", workerHeaders))
+        assertEquals(200, response!!.statusCode)
+        assertEquals("(function(){})()", response.data.readBytes().decodeToString())
+        assertEquals(1, rules.asked.size)
     }
 
     @Test fun ordinaryWorkerRequestsPass() {
@@ -70,9 +82,7 @@ class ServiceWorkerFilterTest {
         try {
             val rules = object : ServiceWorkerFilter.Policy {
                 override fun blocksAds(site: Uri) = true
-                override fun isAd(url: Uri, type: String?, site: Uri) =
-                    blocker.check(url, type, site) != com.reiniertutoriales.vireolumatv.adblock.ContentBlocker.ALLOW
-                override fun redirect(url: Uri, type: String?, site: Uri): String? = null
+                override fun verdict(url: Uri, type: String?, site: Uri) = blocker.verdict(url, type, site)
             }
             val sw = filter(rules)
             assertNotNull("Third-party tracker fetched by another site's worker",
