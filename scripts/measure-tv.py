@@ -77,12 +77,15 @@ def main():
     for pid in args.renderer_pid: capture('renderer-meminfo-' + str(pid), 'dumpsys', 'meminfo', str(pid))
     report['app_processes'] = process_groups
     capture('native-ui-frames', 'dumpsys', 'gfxinfo', args.package, 'framestats')
+    # CPU snapshots complement per-process memory; not a per-web-request timing measurement.
+    capture('cpu-snapshot', 'dumpsys', 'cpuinfo')
     report['limits'] = [
         'Renderer ownership and supplied source SHA require tester verification.',
         'No aggregate memory total is inferred from unrelated WebView processes.',
         'gfxinfo measures native window frames, not all Chromium rendering or video frames.',
         'The low_ram property is recorded as a property, not claimed as ActivityManager.isLowRamDevice().',
         'The settle interval measures the current screen; it is not an automated navigation benchmark.',
+        'CPU snapshot is system-wide and must not be interpreted as isolated app CPU usage.',
     ]
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     args.output.mkdir(parents=True, exist_ok=True)
