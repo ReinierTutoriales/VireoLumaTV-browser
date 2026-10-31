@@ -59,7 +59,8 @@ data class BrowserTab(
     @Ignore var lastLoadingUrl: String? = null
     @Ignore var blockedAds = 0
     @Ignore var blockedPopups = 0
-    @Ignore var cachedSiteSettings: SiteSettings? = null
+    /** The last answer about this tab's site; read and written on the main thread only. */
+    @Ignore var siteSettings: SiteSettingsLookup? = null
     /** Set while a page-opened window is screened against popup ad rules. */
     @Ignore @Volatile var popupGuard: PopupGuard? = null
     /** The tab that opened this popup, kept alive while it shows so closing it resumes the page. */

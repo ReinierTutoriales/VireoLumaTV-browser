@@ -7,6 +7,8 @@ import androidx.annotation.VisibleForTesting
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.SiteSettings
+import com.reiniertutoriales.vireolumatv.model.SiteSettingsLookup
+import com.reiniertutoriales.vireolumatv.model.dao.SiteSettingsDao
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModel
@@ -172,28 +174,47 @@ class TabStore : ScreenModel() {
         if (background.isNotEmpty()) Log.i(TAG, "Released ${background.size} background WebView(s)")
     }
 
-    /** The settings of [tab]'s site, cached on the tab; with [createIfNotFound] a row is made for it. */
+    /** Where site settings are read and written; tests substitute a double. */
+    @VisibleForTesting internal var siteSettingsDao: () -> SiteSettingsDao = { AppDatabase.db.siteSettingsDao() }
+
+    /**
+     * The settings of [tab]'s site, cached on the tab: a row, or the fact that there is none, so
+     * navigating within a site without settings asks the database once. Any write to site settings
+     * makes earlier answers stale; with [createIfNotFound] a missing row is created, never assumed.
+     */
     suspend fun siteSettingsFor(tab: BrowserTab, createIfNotFound: Boolean): SiteSettings? {
         val host = hostOf(tab.url) ?: return null
-        tab.cachedSiteSettings?.takeIf { it.hostName == host }?.let { return it }
-        val hosts = AppDatabase.db.siteSettingsDao()
+        val hosts = siteSettingsDao()
+        val generation = hosts.generation()
+        tab.siteSettings?.takeIf {
+            it.host == host && it.generation == generation && (it.settings != null || !createIfNotFound)
+        }?.let { return it.settings }
         var config = withContext(Dispatchers.IO) { hosts.findByHostName(host) }
-        if (config == null && createIfNotFound) {
-            config = hosts.ensureHost(host)
-        }
-        // The tab may have moved to another site while the database answered.
-        if (hostOf(tab.url) == host) tab.cachedSiteSettings = config
+        if (config == null && createIfNotFound) config = hosts.ensureHost(host)
+        remember(tab, SiteSettingsLookup(host, config, generation))
         return config
     }
 
     /** The pop-up level for [tab]'s site from the cache only: WebView asks on the main thread. */
     fun popupBlockingLevel(tab: BrowserTab): Int =
-        tab.cachedSiteSettings?.takeIf { it.hostName == hostOf(tab.url) }?.popupBlockLevel ?: SiteSettings.DEFAULT_POPUP_POLICY
+        tab.siteSettings?.takeIf { it.host == hostOf(tab.url) }?.settings?.popupBlockLevel ?: SiteSettings.DEFAULT_POPUP_POLICY
 
     suspend fun setPopupPolicy(newLevel: Int, tab: BrowserTab) {
         val config = siteSettingsFor(tab, createIfNotFound = true) ?: return
+        val generation = siteSettingsDao().storePopupLevel(config.hostName, newLevel)
         config.popupBlockLevel = newLevel
-        AppDatabase.db.siteSettingsDao().storePopupLevel(config.hostName, newLevel)
+        remember(tab, SiteSettingsLookup(config.hostName, config, generation))
+    }
+
+    /**
+     * Keeps [lookup] unless the tab has moved to another site meanwhile, or already holds a newer
+     * answer for the same site: a slow read that began before a write must not replace its result.
+     */
+    private fun remember(tab: BrowserTab, lookup: SiteSettingsLookup) {
+        if (hostOf(tab.url) != lookup.host) return
+        val held = tab.siteSettings
+        if (held != null && held.host == lookup.host && held.generation > lookup.generation) return
+        tab.siteSettings = lookup
     }
 
     private fun hostOf(url: String): String? = runCatching { URL(url).host }.getOrNull()

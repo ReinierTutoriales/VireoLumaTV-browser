@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.model.SiteSettings
+import com.reiniertutoriales.vireolumatv.model.SiteSettingsLookup
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import org.junit.Assert.*
 import org.junit.Test
@@ -43,7 +44,8 @@ class PreviewResourceTest {
         val model = TabStore()
         try {
             val tab = BrowserTab(url = "https://one.test")
-            tab.cachedSiteSettings = SiteSettings("one.test").apply { popupBlockLevel = SiteSettings.POPUPS_ALLOWED }
+            tab.siteSettings = SiteSettingsLookup("one.test",
+                SiteSettings("one.test").apply { popupBlockLevel = SiteSettings.POPUPS_ALLOWED }, 0)
             assertEquals(SiteSettings.POPUPS_ALLOWED, model.popupBlockingLevel(tab))
             tab.url = "https://two.test"
             assertEquals(SiteSettings.DEFAULT_POPUP_POLICY, model.popupBlockingLevel(tab))

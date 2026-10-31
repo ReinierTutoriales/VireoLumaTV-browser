@@ -301,6 +301,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/RendererRecove
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModelTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsTabsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SingleLiveTabTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SiteSettingsCacheTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabRestoreFallbackTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabStripKeysTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ToolbarStateTest.kt	PROPIO
