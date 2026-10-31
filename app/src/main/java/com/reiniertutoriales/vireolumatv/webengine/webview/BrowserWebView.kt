@@ -183,9 +183,10 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
 
     internal fun onDocumentStarted(url: String) {
         currentOriginalUrl = url.toUri()
-        mediaPolicy.onPageStarted()
-        // Setting changes apply from the next document on.
+        // Refresh cached policy before the fallback injection, so a changed setting
+        // cannot inject the previous document policy on older WebView providers.
         mediaPolicy.refresh()
+        mediaPolicy.onPageStarted()
         if (url != ASSET_BASE) certificateErrorPageUrl = null
     }
 
