@@ -5,6 +5,8 @@ import android.os.Build
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
 import com.reiniertutoriales.vireolumatv.model.Download
+import com.reiniertutoriales.vireolumatv.webengine.webview.BlobSpool
+import com.reiniertutoriales.vireolumatv.webengine.webview.BlobTransfers
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,35 +44,41 @@ class DownloadResourceTest {
         assertFalse(Download().matches(Download()))
     }
 
-    @Test fun cancelledBlobDoesNotWriteAFileAndReleasesItsBridgeString() {
+    @Test fun cancelledSpooledBlobWritesNothingAndDeletesItsSpool() {
         val path = File(VireoLumaTVApp.instance.cacheDir, "cancelled-blob.txt")
         path.delete()
+        val spoolDir = File(VireoLumaTVApp.instance.cacheDir, "test-spool").apply { deleteRecursively() }
+        val spool = BlobSpool.open(spoolDir).apply { write("hello".toByteArray()) }
         val download = Download().apply {
             incognito = true
             cancelled = true
             filepath = path.absolutePath
-            base64BlobData = "data:text/plain;base64,aGVsbG8="
+            stream = spool.finish()
         }
-        BlobTransfer(download, download.base64BlobData!!, callback).run()
+        StreamTransfer(download, download.stream!!, callback).run()
         assertEquals(Download.SIZE_CANCELLED, download.size)
         assertFalse(path.exists())
-        assertNull(download.base64BlobData)
+        assertNull(download.stream)
+        assertEquals(0, spoolDir.listFiles()!!.size)
     }
 
-    @Test fun blobDecodesAcrossBufferBoundariesAndReportsTheExactSize() {
-        val bytes = ByteArray(40_001) { (it % 251).toByte() }
-        val encoded = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+    @Test fun spooledBlobIsWrittenWholeWithItsExactSizeAndTheSpoolIsDeleted() {
+        val bytes = ByteArray(3 * BlobTransfers.CHUNK_BYTES / 2 + 1) { (it % 251).toByte() }
         val path = File(VireoLumaTVApp.instance.cacheDir, "streamed-blob.bin")
+        val spoolDir = File(VireoLumaTVApp.instance.cacheDir, "test-spool").apply { deleteRecursively() }
+        val spool = BlobSpool.open(spoolDir)
+        bytes.asList().chunked(BlobTransfers.CHUNK_BYTES).forEach { spool.write(it.toByteArray()) }
         val download = Download().apply {
             incognito = true
             filepath = path.absolutePath
-            base64BlobData = "data:application/octet-stream;base64,$encoded"
+            stream = spool.finish()
+            size = bytes.size.toLong()
         }
-        BlobTransfer(download, download.base64BlobData!!, callback).run()
+        StreamTransfer(download, download.stream!!, callback).run()
         assertArrayEquals(bytes, path.readBytes())
         assertEquals(bytes.size.toLong(), download.bytesReceived)
         assertEquals(download.bytesReceived, download.size)
-        assertNull(download.base64BlobData)
+        assertEquals(0, spoolDir.listFiles()!!.size)
     }
 
     @Test fun privateLocalBinderServiceIsDeclaredInThePrivateProcess() {

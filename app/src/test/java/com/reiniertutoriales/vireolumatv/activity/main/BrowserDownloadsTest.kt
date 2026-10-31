@@ -50,15 +50,14 @@ class BrowserDownloadsTest {
     }
 
     @Config(sdk = [28])
-    @Test fun deniedPermissionClosesQueuedStreamsAndDropsEncodedPayloads() {
+    @Test fun deniedPermissionClosesQueuedStreams() {
         val stream = TrackedStream()
-        val info = file("stream.zip").apply { this.stream = stream; base64BlobData = "payload" }
+        val info = file("stream.zip").apply { this.stream = stream }
         downloads.request(info)
         downloads.onPermissionsResult(BrowserDownloads.REQUEST_STORAGE, intArrayOf(PackageManager.PERMISSION_DENIED))
         assertTrue(stream.closed)
         assertTrue(info.cancelled)
         assertEquals(null, info.stream)
-        assertEquals(null, info.base64BlobData)
     }
 
     @Config(sdk = [28])

@@ -79,13 +79,11 @@ class DownloadServiceTest {
                 stream = object : java.io.ByteArrayInputStream(byteArrayOf(1)) {
                     override fun close() { rejectedClosed = true; super.close() }
                 }
-                base64BlobData = "not retained"
             }
             assertFalse(service.startDownload(rejected))
             assertEquals(4, executor.queue.size)
             assertTrue(rejectedClosed)
             assertNull(rejected.stream)
-            assertNull(rejected.base64BlobData)
             val model = ScreenModels.get(RunningDownloads::class, service)
             assertEquals(4, model.runningDownloads.size)
             assertFalse(model.runningDownloads.any { it.job === rejected })

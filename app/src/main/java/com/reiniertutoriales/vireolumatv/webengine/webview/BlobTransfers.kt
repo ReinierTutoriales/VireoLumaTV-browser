@@ -1,19 +1,34 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
+import java.io.IOException
+import java.io.InputStream
+
 /**
  * Downloads of `blob:` addresses, which only the page can read. A press opens one transfer and
- * hands the page a single-use token; the page then reports the size (refused above
- * [MAX_BYTES], before any encoding) and hands over the bytes as a base64 `data:` URL. A transfer
- * expires after [TIMEOUT_MS]; only one is open at a time. Called from the JavaBridge thread.
+ * hands the page a single-use token; the page reports the size (refused above [MAX_BYTES]) and then
+ * sends the bytes in order, a chunk at a time, into a [BlobSink]. Only one chunk is in flight, so the
+ * memory a transfer holds is one chunk whatever the file size. A transfer expires [TIMEOUT_MS] after
+ * its last accepted step; only one is open at a time. Callers serialize all calls on one thread.
  */
-internal class BlobTransfers(private val clock: () -> Long, private val newToken: () -> String) {
-    /** An open transfer; [page] is the page address it was opened from. */
-    class Ticket(val token: String, val url: String, val fileName: String?, val page: String, val expires: Long) {
+internal class BlobTransfers(
+    private val clock: () -> Long,
+    private val newToken: () -> String,
+    private val openSink: () -> BlobSink,
+) {
+    /** An open transfer; [page] is the document key it was opened from. */
+    class Ticket(val token: String, val url: String, val fileName: String?, val page: String, internal var expires: Long) {
         var mimeType = ""
             internal set
-        var sized = false
+        /** The declared size, 0 until accepted. */
+        var size = 0L
             internal set
+        var received = 0L
+            internal set
+        internal var sink: BlobSink? = null
     }
+
+    /** A finished transfer: its ticket and the bytes, to be read once and closed. */
+    class Completed(val ticket: Ticket, val bytes: InputStream)
 
     private var open: Ticket? = null
 
@@ -25,51 +40,80 @@ internal class BlobTransfers(private val clock: () -> Long, private val newToken
         return newToken().also { open = Ticket(it, url, fileName, page, now + TIMEOUT_MS) }
     }
 
-    /** False closes the transfer: no size, or one above [MAX_BYTES]. */
+    /** False closes the transfer: no size, one above [MAX_BYTES], a second size or no place to write. */
     @Synchronized
     fun accept(token: String, size: Long, mimeType: String): Boolean {
-        val ticket = live(clock())?.takeIf { it.token == token } ?: return false
-        if (size !in 1..MAX_BYTES) {
-            open = null
-            return false
-        }
+        val now = clock()
+        val ticket = live(now)?.takeIf { it.token == token } ?: return false
+        if (size !in 1..MAX_BYTES || ticket.sink != null) return close(false)
+        ticket.sink = try { openSink() } catch (_: IOException) { return close(false) }
         ticket.mimeType = mimeType
-        ticket.sized = true
+        ticket.size = size
+        ticket.expires = now + TIMEOUT_MS
         return true
+    }
+
+    /**
+     * Writes the chunk that starts at [offset]; returns the bytes received so far, or -1 after closing
+     * the transfer: wrong token, out of order, empty, above the declared size, or a write error.
+     */
+    @Synchronized
+    fun append(token: String, offset: Long, chunk: ByteArray): Long {
+        val now = clock()
+        val ticket = live(now)?.takeIf { it.token == token } ?: return -1
+        val sink = ticket.sink
+        if (sink == null || offset != ticket.received || chunk.isEmpty() || chunk.size > CHUNK_BYTES ||
+            ticket.received + chunk.size > ticket.size) return closeLong()
+        try { sink.write(chunk) } catch (_: IOException) { return closeLong() }
+        ticket.received += chunk.size
+        ticket.expires = now + TIMEOUT_MS
+        return ticket.received
+    }
+
+    /** Closes the transfer and returns its bytes when all declared bytes arrived for the same address and page. */
+    @Synchronized
+    fun finish(token: String, url: String, page: String): Completed? {
+        val ticket = live(clock())?.takeIf { it.token == token } ?: return null
+        val sink = ticket.sink
+        if (sink == null || ticket.received != ticket.size || ticket.url != url || ticket.page != page) return close(null)
+        open = null
+        return try { Completed(ticket, sink.finish()) } catch (_: IOException) { sink.abort(); null }
     }
 
     @Synchronized
     fun cancel(token: String) {
-        if (open?.token == token) open = null
-    }
-
-    /** Closes the transfer and returns it when the bytes match it: same address, same page, accepted size. */
-    @Synchronized
-    fun take(token: String, url: String, page: String, dataUrl: String): Ticket? {
-        val ticket = live(clock())?.takeIf { it.token == token } ?: return null
-        open = null
-        return ticket.takeIf { it.sized && it.url == url && it.page == page && fits(dataUrl) }
+        if (open?.token == token) close(Unit)
     }
 
     /** The open transfer, closing it first if it has expired. */
     private fun live(now: Long): Ticket? {
         val ticket = open ?: return null
         if (ticket.expires > now) return ticket
-        open = null
-        return null
+        return close(null)
     }
 
-    /** A base64 `data:` URL whose payload cannot decode to more than [MAX_BYTES]. */
-    private fun fits(dataUrl: String): Boolean {
-        val comma = dataUrl.indexOf(',')
-        if (!dataUrl.startsWith("data:", ignoreCase = true) || comma <= 0 || comma == dataUrl.lastIndex) return false
-        if (!dataUrl.substring(0, comma).contains(";base64", ignoreCase = true)) return false
-        return dataUrl.length - comma - 1 <= (MAX_BYTES + 2) / 3 * 4
+    private fun <T> close(result: T): T {
+        open?.sink?.abort()
+        open = null
+        return result
     }
+
+    private fun closeLong(): Long = close(-1L)
 
     companion object {
-        /** Covers the read and encoding of the largest accepted blob on a slow TV chip. */
+        /** Covers the slowest single step (reading or writing one chunk) on a slow TV chip. */
         const val TIMEOUT_MS = 30_000L
         const val MAX_BYTES = 32L * 1024 * 1024
+        /** The largest decoded chunk accepted; generic_injects.js sends chunks of exactly this size. */
+        const val CHUNK_BYTES = 512 * 1024
     }
+}
+
+/** Where a transfer's bytes go while they arrive. */
+internal interface BlobSink {
+    @Throws(IOException::class) fun write(bytes: ByteArray)
+    /** Ends writing; the stream reads the bytes and releases them when closed. */
+    @Throws(IOException::class) fun finish(): InputStream
+    /** Ends writing and releases the bytes; never throws. */
+    fun abort()
 }

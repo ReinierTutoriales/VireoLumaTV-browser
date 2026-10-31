@@ -39,7 +39,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     private var pointerBeforeFullscreen = true
     /** Pending Android permission requests: code to "is it the location request". */
     private val permissionRequests = HashMap<Int, Pair<Boolean, Long>>()
-    internal val bridge = PageBridge(this)
+    /** Certificate approval and blob downloads; [BrowserWebView] decides which channel reaches them. */
+    internal val privileged = PrivilegedPageActions(this)
 
     private val adblockEnabled get() = tab.adblock ?: AppContext.config.adBlockEnabled
 

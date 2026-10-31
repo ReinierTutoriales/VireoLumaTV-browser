@@ -50,7 +50,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     private val mediaPolicy by lazy { MediaPolicyController(this, config) }
     private var pointerMode = true
     private var pageScript: String? = null
-    internal val usesOriginAwareCertificateBridge = WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)
+    internal val usesWebMessageBridge =WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)
 
     /** The address the browser asked for, before redirects; the base for ad and home page rules. */
     @Volatile var currentOriginalUrl: Uri? = null
@@ -77,14 +77,27 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
             // Blob downloads are read by the injected script; everything else goes to the download service.
             if (!url.startsWith("blob:")) window?.onPageDownload(url, userAgent, contentDisposition, mimetype, contentLength)
         }
-        addJavascriptInterface(engine.bridge, JS_INTERFACE_NAME)
-        if (usesOriginAwareCertificateBridge) {
+        // Filters stay synchronous for every frame; privileged calls join them only where no
+        // WebMessage listener can tell the main frame from an embedded one.
+        addJavascriptInterface(if (usesWebMessageBridge) FilterBridge(engine) else LegacyPrivilegedBridge(engine),
+            JS_INTERFACE_NAME)
+        if (usesWebMessageBridge) {
             // Top-level warning only. An embedded frame cannot approve another site's certificate.
             WebViewCompat.addWebMessageListener(this, "VireoCertificate", setOf("*")) {
                     _, message, _, isMainFrame, _ ->
                 if (mayApproveCertificateMessage(isMainFrame, message.data, url, ASSET_BASE,
                         shownCertificateError() != null)) {
-                    engine.bridge.approveCertificateFromVerifiedFrame()
+                    engine.privileged.approveCertificate()
+                }
+            }
+            // Blob downloads of the visible page's own main frame; see DownloadMessage.
+            WebViewCompat.addWebMessageListener(this, "VireoDownload", setOf("*")) {
+                    _, message, sourceOrigin, isMainFrame, reply ->
+                val document = downloadMessageDocument(isMainFrame, sourceOrigin, url?.toUri())
+                    ?: return@addWebMessageListener
+                val request = DownloadMessage.parse(message.data) ?: return@addWebMessageListener
+                engine.privileged.onDownloadMessage(request, document, { webOrigin(url?.toUri()) }) {
+                    reply.postMessage(it)
                 }
             }
         }

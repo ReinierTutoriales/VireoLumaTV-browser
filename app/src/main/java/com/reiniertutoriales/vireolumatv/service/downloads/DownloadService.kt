@@ -111,7 +111,6 @@ open class DownloadService : Service() {
         }
         download.time = System.currentTimeMillis()
         val task = when {
-            download.base64BlobData != null -> BlobTransfer(download, download.base64BlobData!!, transferListener)
             download.stream != null -> StreamTransfer(download, download.stream!!, transferListener)
             else -> FileTransfer(download, download.userAgent, transferListener)
         }
