@@ -817,6 +817,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             vb.controlsRow.isEditingAddress -> vb.controlsRow.cancelAddressInput()
             overlayVisible -> closeCapsule()
             pointer.canGoBackInPage() -> pointer.consumeBack()
+            shouldNavigateYouTubeHistory(tabStore.currentTab.value?.engine?.url, tabStore.currentTab.value?.engine?.canGoBack == true) ->
+                tabStore.currentTab.value?.engine?.back()
             else -> {
                 tabStore.currentTab.value?.engine?.setPointerMode(true)
                 backPresses.holdBGoesBack = false
@@ -936,4 +938,15 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         // Pop-up and dialog spam must not stack notices on a slow TV.
         const val BLOCKED_NOTICE_INTERVAL_MS = 3000L
     }
+}
+
+/** Remote Back on a YouTube watch page should return through its in-site history. */
+internal fun shouldNavigateYouTubeHistory(url: String?, hasBackEntry: Boolean): Boolean {
+    if (!hasBackEntry || url.isNullOrEmpty()) return false
+    val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return false
+    val host = uri.host?.lowercase() ?: return false
+    return uri.scheme.equals("https", ignoreCase = true) &&
+        host in setOf("youtube.com", "www.youtube.com", "m.youtube.com") &&
+        (uri.path == "/watch" || uri.path == "/playlist" ||
+            uri.path?.startsWith("/shorts/") == true)
 }
