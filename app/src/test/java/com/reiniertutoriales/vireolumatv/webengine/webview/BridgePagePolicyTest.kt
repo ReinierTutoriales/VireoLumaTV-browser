@@ -12,6 +12,15 @@ import org.robolectric.annotation.Config as RoboConfig
 @RunWith(RobolectricTestRunner::class)
 @RoboConfig(application = Application::class, sdk = [28])
 class BridgePagePolicyTest {
+    @Test fun certificateMessagesAreAcceptedOnlyFromVisibleMainFrameWarning() {
+        val warning = "file:///android_asset/"
+        assertTrue(mayApproveCertificateMessage(true, "trustCertificateOnce", warning, warning, true))
+        assertFalse(mayApproveCertificateMessage(false, "trustCertificateOnce", warning, warning, true))
+        assertFalse(mayApproveCertificateMessage(true, "trustCertificateOnce", "https://host.test/", warning, true))
+        assertFalse(mayApproveCertificateMessage(true, "other", warning, warning, true))
+        assertFalse(mayApproveCertificateMessage(true, "trustCertificateOnce", warning, warning, false))
+    }
+
     @Test fun staticHomeIsIsolatedWithoutExcludingYouTubeOrOtherWebPages() {
         assertTrue(BridgePagePolicy.isPackagedHomePage(Uri.parse(Config.HOME_PAGE_URL)))
         assertTrue(BridgePagePolicy.isPackagedHomePage(Uri.parse(Config.HOME_PAGE_URL + "index.html")))

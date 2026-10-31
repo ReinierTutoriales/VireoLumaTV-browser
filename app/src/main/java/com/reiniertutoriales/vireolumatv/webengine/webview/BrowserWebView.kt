@@ -21,6 +21,7 @@ import android.webkit.WebView
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
@@ -49,6 +50,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     private val mediaPolicy by lazy { MediaPolicyController(this, config) }
     private var pointerMode = true
     private var pageScript: String? = null
+    internal val usesOriginAwareCertificateBridge = WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)
 
     /** The address the browser asked for, before redirects; the base for ad and home page rules. */
     @Volatile var currentOriginalUrl: Uri? = null
@@ -76,6 +78,16 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
             if (!url.startsWith("blob:")) window?.onPageDownload(url, userAgent, contentDisposition, mimetype, contentLength)
         }
         addJavascriptInterface(engine.bridge, JS_INTERFACE_NAME)
+        if (usesOriginAwareCertificateBridge) {
+            // Top-level warning only. An embedded frame cannot approve another site's certificate.
+            WebViewCompat.addWebMessageListener(this, "VireoCertificate", setOf("*")) {
+                    _, message, _, isMainFrame, _ ->
+                if (mayApproveCertificateMessage(isMainFrame, message.data, url, ASSET_BASE,
+                        shownCertificateError() != null)) {
+                    engine.bridge.approveCertificateFromVerifiedFrame()
+                }
+            }
+        }
         // Before the first navigation, so the first page already sees the codec policy.
         mediaPolicy.refresh()
     }
@@ -271,3 +283,13 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         private const val PREVIEW_MAX_SIDE = 480f
     }
 }
+
+/** One-way gate for privileged warning-page messages, never trust a web subframe. */
+internal fun mayApproveCertificateMessage(
+    isMainFrame: Boolean,
+    command: String?,
+    documentUrl: String?,
+    warningPageUrl: String,
+    warningActive: Boolean,
+): Boolean = isMainFrame && command == "trustCertificateOnce" &&
+    documentUrl == warningPageUrl && warningActive

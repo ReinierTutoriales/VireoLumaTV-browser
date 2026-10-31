@@ -42,6 +42,12 @@ internal class PageBridge(private val engine: WebViewPageEngine) {
     /** The warning page's "proceed": trusts the shown certificate error once and loads the site. */
     @JavascriptInterface
     fun trustCertificateOnce() {
+        // A WebMessage-capable provider must reject the untrusted all-frames JS interface.
+        if (page?.usesOriginAwareCertificateBridge == true) return
+        approveCertificateFromVerifiedFrame()
+    }
+
+    internal fun approveCertificateFromVerifiedFrame() {
         val error = page?.shownCertificateError() ?: return
         // An embedded script must never approve a certificate error without a real TV
         // remote or touch activation. This check does not identify the calling frame.
