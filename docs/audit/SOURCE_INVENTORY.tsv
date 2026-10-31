@@ -359,6 +359,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorLayo
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorMenuFocusTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorPointerMouseTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/DownloadMessagesTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/FullscreenDetachTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageNetworkTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicyTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridgeSurfaceTest.kt	PROPIO
