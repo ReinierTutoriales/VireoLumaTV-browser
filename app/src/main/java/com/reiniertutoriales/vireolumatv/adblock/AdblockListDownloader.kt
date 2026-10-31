@@ -26,11 +26,23 @@ internal object AdblockListDownloader {
         }
     }
 
+    /** Disallow cross-protocol redirects and redirects to cleartext from HTTPS sources. */
+    private fun openVerifiedConnection(url: String): HttpURLConnection {
+        val parsed = URL(url)
+        require(parsed.protocol == "https" || isTestLoopback(parsed)) { "Filter endpoint must use HTTPS" }
+        return (parsed.openConnection() as HttpURLConnection).apply {
+            instanceFollowRedirects = false
+        }
+    }
+
+    private fun isTestLoopback(url: URL): Boolean =
+        url.protocol == "http" && url.host in setOf("127.0.0.1", "localhost", "::1")
+
     fun fetch(urls: List<String>, requiresAdblockHeader: Boolean, cached: Validators?): Result {
         var failure: Exception? = null
         for (url in urls.distinct()) {
             try {
-                val connection = URL(url).openConnection() as HttpURLConnection
+                val connection = openVerifiedConnection(url)
                 connection.connectTimeout = 10_000
                 connection.readTimeout = 20_000
                 connection.useCaches = false
@@ -45,6 +57,9 @@ internal object AdblockListDownloader {
                 }
                 try {
                     val code = connection.responseCode
+                    if (code in 300..399 && code != HttpURLConnection.HTTP_NOT_MODIFIED) {
+                        throw IOException("Filter endpoint redirected; use its canonical HTTPS URL")
+                    }
                     if (code == HttpURLConnection.HTTP_NOT_MODIFIED && conditional) return Result.NotModified
                     if (code !in 200..299) {
                         throw IOException("Filter server returned HTTP $code")

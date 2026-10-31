@@ -7,6 +7,29 @@ import java.net.InetSocketAddress
 import java.util.concurrent.atomic.AtomicInteger
 
 class AdblockListDownloaderTest {
+    @Test fun redirectsCannotSilentlyChangeFilterListEndpoint() {
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/redirect") { exchange ->
+            exchange.responseHeaders.add("Location", "http://untrusted.test/list")
+            exchange.sendResponseHeaders(302, -1)
+            exchange.close()
+        }
+        server.start()
+        try {
+            val url = "http://127.0.0.1:${server.address.port}/redirect"
+            val error = assertThrows(java.io.IOException::class.java) {
+                AdblockListDownloader.download(listOf(url), true)
+            }
+            assertTrue(error.message!!.contains("No usable filter list endpoint"))
+        } finally { server.stop(0) }
+    }
+
+    @Test fun externalCleartextFilterEndpointsAreRejected() {
+        assertThrows(java.io.IOException::class.java) {
+            AdblockListDownloader.download(listOf("http://example.test/list.txt"), true)
+        }
+    }
+
     @Test fun deniedOrInvalidPrimaryUsesValidatedMirrorWithIdentifiedUserAgent() {
         val primaryCalls = AtomicInteger()
         val mirrorCalls = AtomicInteger()
