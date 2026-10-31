@@ -131,7 +131,10 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     }
 
     override fun detach(destroyView: Boolean) {
+        // Detaching a popup opener must also notify Chromium that fullscreen ended.
+        // Keep browser controls untouched while the tab is being switched.
         exitFullscreen(restoreBrowserControls = false)
+        webView?.hideCustomView()
         pause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
         window = null
