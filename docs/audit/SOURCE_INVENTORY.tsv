@@ -464,3 +464,4 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/adblock/BundledFilterLists.k
 app/src/test/java/com/reiniertutoriales/vireolumatv/adblock/BundledFilterListsTest.kt	PROPIO
 scripts/refresh-bundled-filters.py	PROPIO
 app/src/main/res/color/blocker_icon.xml	PROPIO
+app/src/main/res/xml/data_extraction_rules.xml	PROPIO
