@@ -36,15 +36,11 @@ class IncognitoDownloadTest {
         override fun onDone(task: Transfer) { DownloadHistory.update(task.job) }
     }
 
-    @Test fun privateStreamAndBlobDownloadsWriteFilesButLeaveNoHistory() = runBlocking {
+    @Test fun privateStreamDownloadsWriteFilesButLeaveNoHistory() = runBlocking {
         val stream = download(true)
         StreamTransfer(stream, "hello".byteInputStream(), callback).run()
         assertEquals("hello", File(stream.filepath).readText())
         assertEquals(0L, stream.id)
-        val blob = download(true)
-        BlobTransfer(blob, "data:text/plain;base64,d29ybGQ=", callback).run()
-        assertEquals("world", File(blob.filepath).readText())
-        assertEquals(0L, blob.id)
         assertTrue(AppDatabase.db.downloadDao().getAll().isEmpty())
     }
 

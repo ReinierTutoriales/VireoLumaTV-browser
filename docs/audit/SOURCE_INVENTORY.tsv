@@ -111,7 +111,6 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/FavoriteDao.kt	REE
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/SiteSettingsDao.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/TabDao.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/VisitDao.kt	REESCRITO
-app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/BlobPayloadInputStream.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadHistory.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRetryPolicy.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadService.kt	REESCRITO
@@ -144,6 +143,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/Engines.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/PageEngine.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/PageWindow.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/AdblockPageController.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobSpool.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobTransfers.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlockedResponses.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicy.kt	PROPIO
@@ -152,6 +152,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserWeb
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserWebViewClient.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateTrust.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateWarningPage.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/DownloadMessages.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicy.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridge.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissions.kt	PROPIO
@@ -348,6 +349,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ReservedKeysTest.kt	PR
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/SameLocalDayTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveModelsRetentionTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/observable/LiveValueTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobSpoolTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobTransfersTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MeaningfulBackHistoryTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicyTest.kt	PROPIO
@@ -355,6 +357,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/Certificat
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorLayoutRecoveryTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorMenuFocusTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorPointerMouseTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/DownloadMessagesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageNetworkTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicyTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridgeSurfaceTest.kt	PROPIO
