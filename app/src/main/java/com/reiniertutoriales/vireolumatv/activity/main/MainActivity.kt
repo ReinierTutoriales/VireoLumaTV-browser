@@ -947,5 +947,6 @@ internal fun shouldNavigateYouTubeHistory(url: String?, hasBackEntry: Boolean): 
     val host = uri.host?.lowercase() ?: return false
     return uri.scheme.equals("https", ignoreCase = true) &&
         host in setOf("youtube.com", "www.youtube.com", "m.youtube.com") &&
-        uri.path in setOf("/watch", "/shorts", "/playlist")
+        (uri.path == "/watch" || uri.path == "/playlist" ||
+            uri.path?.startsWith("/shorts/") == true)
 }
