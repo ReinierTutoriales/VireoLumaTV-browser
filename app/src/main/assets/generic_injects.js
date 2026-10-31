@@ -18,6 +18,7 @@
             handler(parts[2]);
         });
     }
+    var CHUNK_BYTES = 512 * 1024;
     var transfer = channel() && replies ? {
         begin: function (address, name, done) {
             replies['begin\n' + address] = function (token) { done(token); };
@@ -27,17 +28,46 @@
             replies['size\n' + token] = function (accepted) { done(accepted === '1'); };
             channel().postMessage('size\n' + token + '\n' + size + '\n' + type);
         },
-        cancel: function (token) { channel().postMessage('cancel\n' + token); },
-        data: function (token, data, address) { channel().postMessage('data\n' + token + '\n' + address + '\n' + data); }
+        // Answered with the bytes received so far, or -1 once the browser closed the transfer.
+        chunk: function (token, offset, base64, done) {
+            replies['chunk\n' + token] = function (received) { done(Number(received)); };
+            channel().postMessage('chunk\n' + token + '\n' + offset + '\n' + base64);
+        },
+        done: function (token, address) { channel().postMessage('done\n' + token + '\n' + address); },
+        cancel: function (token) { channel().postMessage('cancel\n' + token); }
     } : null;
 
     // Native activation grants one token. Neither this listener nor a page script grants access.
+    // The blob is read and sent one chunk at a time, the next only after the browser stored the
+    // previous one, so neither side ever holds the whole file as text.
     function receiveBlob(address, token) {
         var settled = false;
         function cancel() {
             if (settled) return;
             settled = true;
             transfer.cancel(token);
+        }
+        function send(payload, offset) {
+            if (settled) return;
+            if (offset >= payload.size) {
+                settled = true;
+                transfer.done(token, address);
+                return;
+            }
+            var conversion = new FileReader();
+            conversion.onerror = conversion.onabort = cancel;
+            conversion.onload = function () {
+                if (settled) return;
+                var result = conversion.result, comma = typeof result === 'string' ? result.indexOf(',') : -1;
+                if (comma < 0 || comma === result.length - 1) { cancel(); return; }
+                transfer.chunk(token, offset, result.substring(comma + 1), function (received) {
+                    if (settled) return;
+                    if (received < 0) { settled = true; return; }
+                    if (received <= offset) { cancel(); return; }
+                    try { send(payload, received); } catch (_) { cancel(); }
+                });
+            };
+            conversion.readAsDataURL(payload.slice(offset, Math.min(payload.size, offset + CHUNK_BYTES)));
         }
         try {
             var request = new XMLHttpRequest();
@@ -48,23 +78,11 @@
                 if (settled) return;
                 try {
                     var payload = request.response;
-                    if (request.status !== 200 || !payload) { cancel(); return; }
+                    if (request.status !== 200 || !payload || typeof payload.slice !== 'function') { cancel(); return; }
                     transfer.size(token, payload.size || 0, payload.type || '', function (accepted) {
                         if (settled) return;
                         if (!accepted) { cancel(); return; }
-                        try {
-                            var conversion = new FileReader();
-                            conversion.onerror = conversion.onabort = cancel;
-                            conversion.onload = function () {
-                                if (settled) return;
-                                if (typeof conversion.result !== 'string') { cancel(); return; }
-                                try {
-                                    transfer.data(token, conversion.result, address);
-                                    settled = true;
-                                } catch (_) { cancel(); }
-                            };
-                            conversion.readAsDataURL(payload);
-                        } catch (_) { cancel(); }
+                        try { send(payload, 0); } catch (_) { cancel(); }
                     });
                 } catch (_) { cancel(); }
             };

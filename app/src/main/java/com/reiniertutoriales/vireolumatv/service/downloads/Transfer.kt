@@ -4,8 +4,6 @@ import android.content.ContentValues
 import android.os.Build
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream
 import android.provider.MediaStore
-import android.util.Base64
-import android.util.Base64InputStream
 import android.util.Log
 import android.webkit.CookieManager
 import androidx.annotation.RequiresApi
@@ -172,22 +170,6 @@ class FileTransfer(job: Download, private val userAgent: String?, callback: Call
     private companion object {
         val REDIRECTS = setOf(301, 302, 303, 307, 308)
         val WEB_SCHEMES = setOf("http", "https")
-    }
-}
-
-/** Decodes a page blob handed over as a base64 data URL, without holding a second decoded copy. */
-class BlobTransfer(job: Download, blobBase64Data: String, callback: Callback) :
-    Transfer(job, callback) {
-    private var encoded: String? = blobBase64Data
-
-    override fun transfer(): Outcome =
-        Base64InputStream(BlobPayloadInputStream(requireNotNull(encoded)), Base64.DEFAULT).use {
-            if (save(it)) Outcome.Complete else Outcome.Cancelled
-        }
-
-    override fun release() {
-        encoded = null
-        job.base64BlobData = null
     }
 }
 

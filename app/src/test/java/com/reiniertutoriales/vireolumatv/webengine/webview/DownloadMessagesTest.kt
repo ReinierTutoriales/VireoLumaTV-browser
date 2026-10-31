@@ -44,19 +44,23 @@ class DownloadMessagesTest {
             DownloadMessage.parse("begin\nblob:https://site.test/id\n"))
         assertEquals(DownloadMessage.Size("t", 3, "text/plain"), DownloadMessage.parse("size\nt\n3\ntext/plain"))
         assertEquals(DownloadMessage.Cancel("t"), DownloadMessage.parse("cancel\nt"))
-        val data = DownloadMessage.parse("data\nt\nblob:https://site.test/id\ndata:text/plain;base64,YWJj") as DownloadMessage.Data
-        assertEquals(listOf("t", "blob:https://site.test/id", "data:text/plain;base64,YWJj"), listOf(data.token, data.url, data.dataUrl))
+        val chunk = DownloadMessage.parse("chunk\nt\n524288\nYWJj") as DownloadMessage.Chunk
+        assertEquals(listOf("t", 524288L, "YWJj"), listOf(chunk.token, chunk.offset, chunk.base64))
+        assertEquals(DownloadMessage.Done("t", "blob:https://site.test/id"), DownloadMessage.parse("done\nt\nblob:https://site.test/id"))
     }
 
     @Test fun malformedRequestsAreIgnored() {
-        listOf(null, "", "begin", "begin\n\nname", "size\nt\nlots\ntype", "size\nt\n3", "cancel\n", "data\nt\nurl",
-            "data\n\nurl\ndata:", "data\nt\n\ndata:", "other\nt", "begin\n" + "x".repeat(5000) + "\nname",
-        ).forEach { assertNull(it, DownloadMessage.parse(it)) }
+        val oversizedChunk = "chunk\nt\n0\n" + "A".repeat((BlobTransfers.CHUNK_BYTES + 2) / 3 * 4 + 9000)
+        listOf(null, "", "begin", "begin\n\nname", "size\nt\nlots\ntype", "size\nt\n3", "cancel\n", "chunk\nt\n0",
+            "chunk\n\n0\nYWJj", "chunk\nt\n-1\nYWJj", "chunk\nt\nx\nYWJj", "chunk\nt\n0\n", oversizedChunk,
+            "done\nt", "done\nt\n", "data\nt\nurl\ndata:", "other\nt", "begin\n" + "x".repeat(5000) + "\nname",
+        ).forEach { assertNull(it?.take(40), DownloadMessage.parse(it)) }
     }
 
     @Test fun repliesMatchTheScriptProtocol() {
         assertEquals("begin\nblob:https://site.test/id\nt", DownloadMessage.beginReply("blob:https://site.test/id", "t"))
         assertEquals("size\nt\n1", DownloadMessage.sizeReply("t", true))
         assertEquals("size\nt\n0", DownloadMessage.sizeReply("t", false))
+        assertEquals("chunk\nt\n-1", DownloadMessage.chunkReply("t", -1))
     }
 }

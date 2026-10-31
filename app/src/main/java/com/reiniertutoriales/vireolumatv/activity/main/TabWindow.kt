@@ -67,7 +67,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
     }
 
     private fun startDownload(url: String, name: String, mimeType: String?, userAgent: String?, length: Long) =
-        download(Download(url, name, null, Download.AfterDownload.NOP, mimeType, tab.url, userAgent, null, null, length))
+        download(Download(url, name, null, Download.AfterDownload.NOP, mimeType, tab.url, userAgent, null, length))
 
     // Page state
 

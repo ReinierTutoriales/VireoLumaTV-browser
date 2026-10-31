@@ -95,17 +95,9 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
                     _, message, sourceOrigin, isMainFrame, reply ->
                 val document = downloadMessageDocument(isMainFrame, sourceOrigin, url?.toUri())
                     ?: return@addWebMessageListener
-                val actions = engine.privileged
-                when (val request = DownloadMessage.parse(message.data)) {
-                    is DownloadMessage.Begin -> reply.postMessage(DownloadMessage.beginReply(request.url,
-                        actions.beginBlob(request.url, request.fileName, document)))
-                    is DownloadMessage.Size -> reply.postMessage(DownloadMessage.sizeReply(request.token,
-                        actions.acceptBlob(request.token, request.bytes, request.mimeType)))
-                    is DownloadMessage.Cancel -> actions.cancelBlob(request.token)
-                    is DownloadMessage.Data -> actions.takeBlob(request.token, request.url, request.dataUrl, document) {
-                        webOrigin(url?.toUri())
-                    }
-                    null -> Unit
+                val request = DownloadMessage.parse(message.data) ?: return@addWebMessageListener
+                engine.privileged.onDownloadMessage(request, document, { webOrigin(url?.toUri()) }) {
+                    reply.postMessage(it)
                 }
             }
         }

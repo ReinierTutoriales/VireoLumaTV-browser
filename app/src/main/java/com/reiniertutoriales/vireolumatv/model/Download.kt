@@ -35,14 +35,12 @@ class Download() {
     @Ignore var mimeType: String? = null
     @Ignore var referer: String? = null
     @Ignore var userAgent: String? = null
-    /** A page blob handed over as a base64 data URL; released once written. */
-    @Ignore var base64BlobData: String? = null
     /** Content the page already opened; closed once written. */
     @Ignore var stream: InputStream? = null
 
     constructor(
         url: String, filename: String, filepath: String?, afterDownload: AfterDownload,
-        mimeType: String?, referer: String?, userAgent: String?, base64BlobData: String?,
+        mimeType: String?, referer: String?, userAgent: String?,
         stream: InputStream?, size: Long = 0L,
     ) : this() {
         this.url = url
@@ -52,7 +50,6 @@ class Download() {
         this.mimeType = mimeType
         this.referer = referer
         this.userAgent = userAgent
-        this.base64BlobData = base64BlobData
         this.stream = stream
         this.size = size
     }
@@ -61,7 +58,6 @@ class Download() {
     internal fun discardPayload() {
         try { stream?.close() } catch (_: java.io.IOException) { }
         stream = null
-        base64BlobData = null
     }
 
     /** The same download: the same object, or the same stored row (a history copy of a running one). */
