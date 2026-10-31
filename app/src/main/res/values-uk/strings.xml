@@ -47,8 +47,11 @@
     <string name="link_copy">Копіювати адресу</string>
     <string name="link_copied">Адресу скопійовано</string>
     <string name="link_share">Поділитися</string>
-    <string name="permission_request">Ця сторінка хоче використовувати:\n\n%s</string>
+    <string name="permission_request">%1$s запитує доступ до:\n\n%2$s</string>
     <string name="permission_location">Ваше місцезнаходження</string>
+    <string name="permission_camera">Камера</string>
+    <string name="permission_microphone">Мікрофон</string>
+    <string name="permission_protected_media">Захищений вміст (DRM)</string>
     <string name="error_no_file_picker">На пристрої немає застосунку для вибору файлів</string>
     <string name="external_open_title">Відкрити в іншому застосунку?</string>
     <string name="external_open_message">Ця сторінка хоче відкрити адресу, яку обробляє інший застосунок:</string>

@@ -47,8 +47,11 @@
     <string name="link_copy">کپی نشانی</string>
     <string name="link_copied">نشانی کپی شد</string>
     <string name="link_share">اشتراک‌گذاری</string>
-    <string name="permission_request">این صفحه می‌خواهد از این‌ها استفاده کند:\n\n%s</string>
+    <string name="permission_request">%1$s می‌خواهد از این‌ها استفاده کند:\n\n%2$s</string>
     <string name="permission_location">موقعیت مکانی شما</string>
+    <string name="permission_camera">دوربین</string>
+    <string name="permission_microphone">میکروفون</string>
+    <string name="permission_protected_media">محتوای محافظت‌شده (DRM)</string>
     <string name="error_no_file_picker">هیچ برنامه‌ای در این دستگاه نمی‌تواند فایل انتخاب کند</string>
     <string name="external_open_title">در برنامهٔ دیگری باز شود؟</string>
     <string name="external_open_message">این صفحه می‌خواهد نشانی‌ای را باز کند که برنامهٔ دیگری آن را مدیریت می‌کند:</string>

@@ -47,8 +47,11 @@
     <string name="link_copy">Kopiuj adres</string>
     <string name="link_copied">Skopiowano adres</string>
     <string name="link_share">Udostępnij</string>
-    <string name="permission_request">Ta strona chce używać:\n\n%s</string>
+    <string name="permission_request">%1$s chce używać:\n\n%2$s</string>
     <string name="permission_location">Twoja lokalizacja</string>
+    <string name="permission_camera">Aparat</string>
+    <string name="permission_microphone">Mikrofon</string>
+    <string name="permission_protected_media">Treści chronione (DRM)</string>
     <string name="error_no_file_picker">Żadna aplikacja na tym urządzeniu nie może wybierać plików</string>
     <string name="external_open_title">Otworzyć w innej aplikacji?</string>
     <string name="external_open_message">Ta strona chce otworzyć adres obsługiwany przez inną aplikację:</string>

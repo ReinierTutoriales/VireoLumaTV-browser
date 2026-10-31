@@ -153,6 +153,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserWeb
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateTrust.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateWarningPage.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/DownloadMessages.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/LegacyLocationGrants.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicy.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridge.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissions.kt	PROPIO
@@ -361,6 +362,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorPoin
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/DownloadMessagesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/FullscreenDetachTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageNetworkTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/LegacyLocationGrantsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicyTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridgeSurfaceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissionsTest.kt	PROPIO

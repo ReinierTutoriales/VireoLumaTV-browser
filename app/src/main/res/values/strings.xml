@@ -50,8 +50,11 @@
     <string name="link_copy">Copy address</string>
     <string name="link_copied">Address copied</string>
     <string name="link_share">Share</string>
-    <string name="permission_request">This page wants to use:\n\n%s</string>
+    <string name="permission_request">%1$s wants to use:\n\n%2$s</string>
     <string name="permission_location">Your location</string>
+    <string name="permission_camera">Camera</string>
+    <string name="permission_microphone">Microphone</string>
+    <string name="permission_protected_media">Protected content (DRM)</string>
     <string name="error_no_file_picker">No app on this device can pick files</string>
     <string name="external_open_title">Open in another app?</string>
     <string name="external_open_message">This page wants to open an address handled by another app:</string>

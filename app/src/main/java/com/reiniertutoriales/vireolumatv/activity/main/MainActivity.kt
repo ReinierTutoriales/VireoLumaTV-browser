@@ -2,11 +2,13 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Application
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -22,6 +24,7 @@ import android.view.animation.AnimationUtils
 import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.webkit.CookieManager
+import android.webkit.GeolocationPermissions
 import android.webkit.WebStorage
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,6 +63,7 @@ import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.Engines
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
+import com.reiniertutoriales.vireolumatv.webengine.webview.LegacyLocationGrants
 import com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import com.reiniertutoriales.vireolumatv.widgets.ToastBar
@@ -526,9 +530,14 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         }
         // The provider is ready once a WebView exists; registering earlier could fail before the dialog above.
         ServiceWorkerFilter.install(this)
+        LegacyLocationGrants.clearOnce(config.prefs, webViewProfile()) { GeolocationPermissions.getInstance().clearAll() }
         config.userAgentOverride.value?.let { tab.engine.userAgent = it }
         return view
     }
+
+    /** The WebView profile of this process: private mode runs in its own process and data directory. */
+    private fun webViewProfile(): String =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) Application.getProcessName() else packageName
 
     private fun showNoWebViewDialog() {
         val dialog = AlertDialog.Builder(this)

@@ -47,8 +47,11 @@
     <string name="link_copy">Copia indirizzo</string>
     <string name="link_copied">Indirizzo copiato</string>
     <string name="link_share">Condividi</string>
-    <string name="permission_request">Questa pagina vuole usare:\n\n%s</string>
+    <string name="permission_request">%1$s vuole usare:\n\n%2$s</string>
     <string name="permission_location">La tua posizione</string>
+    <string name="permission_camera">Fotocamera</string>
+    <string name="permission_microphone">Microfono</string>
+    <string name="permission_protected_media">Contenuti protetti (DRM)</string>
     <string name="error_no_file_picker">Nessuna app su questo dispositivo può scegliere file</string>
     <string name="external_open_title">Aprire in un\'altra app?</string>
     <string name="external_open_message">Questa pagina vuole aprire un indirizzo gestito da un\'altra app:</string>
