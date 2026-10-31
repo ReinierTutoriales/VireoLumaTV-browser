@@ -5,6 +5,25 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class MeaningfulBackHistoryTest {
+    @Test fun youtubeSinglePageNavigationReturnsToPreviousSection() {
+        val urls = listOf(
+            "https://m.youtube.com/",
+            "https://m.youtube.com/results?search_query=music",
+            "https://m.youtube.com/watch?v=video",
+            "https://m.youtube.com/watch?v=video",
+        )
+        assertEquals(-2, meaningfulBackOffset(urls, 3))
+        assertEquals(-1, meaningfulBackOffset(urls, 1))
+    }
+
+    @Test fun youtubeWatchToWatchPreservesDistinctVideoHistory() {
+        val urls = listOf(
+            "https://m.youtube.com/watch?v=first",
+            "https://m.youtube.com/watch?v=second",
+        )
+        assertEquals(-1, meaningfulBackOffset(urls, 1))
+    }
+
     @Test fun reloadsDoNotTrapBackOnSamePage() {
         val urls = listOf("https://site.test/list", "https://site.test/video", "https://site.test/video", "https://site.test/video")
         assertEquals(-3, meaningfulBackOffset(urls, 3))
