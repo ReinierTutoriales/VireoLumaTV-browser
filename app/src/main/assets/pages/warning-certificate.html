@@ -35,7 +35,7 @@ button:focus { outline: none; border-color: #dadada; }
 </dl>
 <div class="actions">
 <button id="back" autofocus onclick="history.back()">{{back}}</button>
-<button id="proceed" onclick="VireoLumaTVApp.trustCertificateOnce()">{{proceed}}</button>
+<button id="proceed" onclick="if (window.VireoCertificate) VireoCertificate.postMessage(&quot;trustCertificateOnce&quot;); else VireoLumaTVApp.trustCertificateOnce()">{{proceed}}</button>
 </div>
 </main>
 </body>
