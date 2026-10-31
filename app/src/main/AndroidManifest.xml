@@ -56,10 +56,11 @@
         </intent>
     </queries>
 
+    <!-- Private browsing data, cookies and sessions must not enter Android cloud/device backups. -->
     <!-- Cleartext: plain http:// sites must open. Legacy storage: public Downloads on Android 10. -->
     <application
         android:name=".VireoLumaTVApp"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
