@@ -11,7 +11,7 @@ import android.util.Log
 import android.view.View
 import android.view.KeyEvent
 import android.view.Gravity
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.FrameLayout
 import android.view.ViewGroup
@@ -44,7 +44,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     private var fullscreenView: View? = null
     private var mediaControls: LinearLayout? = null
     private val controlHandler = Handler(Looper.getMainLooper())
-    private val dismissControls = Runnable { mediaControls?.visibility = View.GONE; fullscreenView?.requestFocus() }
+    private val dismissControls = Runnable { hideMediaControls() }
     /** The page's pointer mode before fullscreen, restored after it (D-pad mode stays D-pad mode). */
     private var pointerBeforeFullscreen = true
     /** Pending Android permission requests: code to "is it the location request". */
@@ -163,26 +163,61 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         webView = null
     }
 
-    /** First navigation press reveals the OSD, without passing the press to the player. */
+    /** Consume remote navigation while the OSD is open so the hidden WebView cannot steal it. */
     fun handleMediaOverlayKey(event: KeyEvent): Boolean {
         val fullscreen = fullscreenView != null
-        if (!fullscreen && !tab.mediaStarted) return false
         val controls = mediaControls ?: return false
-        if (event.keyCode != KeyEvent.KEYCODE_MENU &&
-            (!fullscreen || event.keyCode !in setOf(KeyEvent.KEYCODE_DPAD_UP,
-                KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT))) return false
-        if (controls.visibility == View.VISIBLE) {
-            controlHandler.removeCallbacks(dismissControls)
-            controlHandler.postDelayed(dismissControls, 6000L)
-            return false
+        val host = webView?.currentOriginalUrl?.host.orEmpty().lowercase()
+        val youtube = host == "youtube.com" || host == "www.youtube.com" || host == "m.youtube.com"
+        if (!fullscreen && !tab.mediaStarted && !youtube) return false
+        val key = event.keyCode
+        val openKey = key == KeyEvent.KEYCODE_MENU ||
+            (!fullscreen && tab.mediaStarted && key == KeyEvent.KEYCODE_DPAD_UP) ||
+            (fullscreen && key in setOf(KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT))
+        if (controls.visibility != View.VISIBLE) {
+            if (!openKey) return false
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                controls.visibility = View.VISIBLE
+                controls.getChildAt(1)?.requestFocus()
+                scheduleControlsHide()
+            }
+            return true
         }
+        if (key in setOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_ESCAPE, KeyEvent.KEYCODE_BUTTON_B)) {
+            if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) hideMediaControls()
+            return true
+        }
+        if (key !in setOf(KeyEvent.KEYCODE_MENU, KeyEvent.KEYCODE_DPAD_LEFT,
+                KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER)) return false
         if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-            controls.visibility = View.VISIBLE
-            controls.getChildAt(1)?.requestFocus()
-            controlHandler.removeCallbacks(dismissControls)
-            controlHandler.postDelayed(dismissControls, 6000L)
+            when (key) {
+                KeyEvent.KEYCODE_MENU -> hideMediaControls()
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    val focused = controls.findFocus()
+                    val index = (0 until controls.childCount).indexOfFirst { controls.getChildAt(it) === focused }
+                    val target = (index + if (key == KeyEvent.KEYCODE_DPAD_LEFT) -1 else 1)
+                        .coerceIn(0, controls.childCount - 1)
+                    controls.getChildAt(target).requestFocus()
+                }
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_NUMPAD_ENTER -> controls.findFocus()?.performClick()
+            }
+            scheduleControlsHide()
         }
         return true
+    }
+
+    private fun scheduleControlsHide() {
+        controlHandler.removeCallbacks(dismissControls)
+        controlHandler.postDelayed(dismissControls, 6000L)
+    }
+
+    private fun hideMediaControls() {
+        mediaControls?.visibility = View.GONE
+        (fullscreenView ?: webView)?.requestFocus()
     }
 
     private fun addMediaControls(context: Context) {
@@ -192,25 +227,38 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
             gravity = Gravity.CENTER
             setBackgroundColor(0xDD000000.toInt())
         }
-        fun add(label: String, action: () -> Unit) {
-            row.addView(Button(context).apply {
-                text = label
+        fun add(icon: Int, description: String, action: () -> Unit) {
+            row.addView(ImageButton(context).apply {
+                setImageResource(icon)
+                setColorFilter(android.graphics.Color.WHITE)
+                setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF34343C.toInt()))
+                contentDescription = description
+                isFocusable = true
+                val density = resources.displayMetrics.density
+                layoutParams = LinearLayout.LayoutParams((64 * density).toInt(), (52 * density).toInt()).apply {
+                    marginStart = (4 * density).toInt()
+                    marginEnd = (4 * density).toInt()
+                }
                 setOnClickListener {
                     action()
-                    controlHandler.removeCallbacks(dismissControls)
-                    controlHandler.postDelayed(dismissControls, 6000L)
+                    if (mediaControls != null) scheduleControlsHide()
                 }
+                setOnFocusChangeListener { _, focused -> if (focused) scheduleControlsHide() }
             })
         }
-        add("-10s") { media(MediaCommand.REWIND) }
-        add("Pausa") { media(MediaCommand.PLAY_PAUSE) }
-        add("+10s") { media(MediaCommand.FAST_FORWARD) }
-        add("Siguiente") { nextYouTubeVideo() }
-        if (fullscreenView != null) add("⛶ Minimizar") { closeFullscreen() }
-        else add("⛶ Maximizar") { maximizeWebVideo() }
+        add(android.R.drawable.ic_media_rew, "Retroceder 10 segundos") { media(MediaCommand.REWIND) }
+        add(android.R.drawable.ic_media_pause, "Reproducir o pausar") { media(MediaCommand.PLAY_PAUSE) }
+        add(android.R.drawable.ic_media_ff, "Adelantar 10 segundos") { media(MediaCommand.FAST_FORWARD) }
+        add(android.R.drawable.ic_media_next, "Siguiente vídeo") { nextYouTubeVideo() }
+        if (fullscreenView != null) {
+            add(android.R.drawable.ic_menu_revert, "Volver a pantalla normal") { closeFullscreen() }
+        } else {
+            add(android.R.drawable.ic_menu_view, "Maximizar vídeo") { maximizeWebVideo() }
+        }
         row.visibility = View.GONE
         container?.addView(row, FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM))
+            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+            Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL))
         mediaControls = row
     }
 
