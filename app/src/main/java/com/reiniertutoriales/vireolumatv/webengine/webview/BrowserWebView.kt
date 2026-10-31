@@ -82,8 +82,8 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
             // Top-level warning only. An embedded frame cannot approve another site's certificate.
             WebViewCompat.addWebMessageListener(this, "VireoCertificate", setOf("*")) {
                     _, message, _, isMainFrame, _ ->
-                if (isMainFrame && message.data == "trustCertificateOnce" &&
-                    url == ASSET_BASE && shownCertificateError() != null) {
+                if (mayApproveCertificateMessage(isMainFrame, message.data, url, ASSET_BASE,
+                        shownCertificateError() != null)) {
                     engine.bridge.approveCertificateFromVerifiedFrame()
                 }
             }
@@ -283,3 +283,13 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         private const val PREVIEW_MAX_SIDE = 480f
     }
 }
+
+/** One-way gate for privileged warning-page messages, never trust a web subframe. */
+internal fun mayApproveCertificateMessage(
+    isMainFrame: Boolean,
+    command: String?,
+    documentUrl: String?,
+    warningPageUrl: String,
+    warningActive: Boolean,
+): Boolean = isMainFrame && command == "trustCertificateOnce" &&
+    documentUrl == warningPageUrl && warningActive
