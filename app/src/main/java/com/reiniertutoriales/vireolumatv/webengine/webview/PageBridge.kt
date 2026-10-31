@@ -43,6 +43,9 @@ internal class PageBridge(private val engine: WebViewPageEngine) {
     @JavascriptInterface
     fun trustCertificateOnce() {
         val error = page?.shownCertificateError() ?: return
+        // An embedded script must never approve a certificate error without a real TV
+        // remote or touch activation. This check does not identify the calling frame.
+        if (!UserActivation.consume()) return
         main.post {
             val view = page ?: return@post
             if (view.shownCertificateError() !== error) return@post
