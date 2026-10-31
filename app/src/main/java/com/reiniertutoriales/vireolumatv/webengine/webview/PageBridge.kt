@@ -44,10 +44,11 @@ internal open class FilterBridge(protected val engine: WebViewPageEngine) {
 }
 
 /**
- * The filter bridge plus the privileged calls, registered instead of [FilterBridge] only on WebView
- * providers without WebMessage listeners. There a call cannot be traced to its frame, so the checks
- * rest on the shown page and a fresh physical press. Modern providers reach the same
- * [PrivilegedPageActions] from main-frame-checked messages and never expose these methods.
+ * The filter bridge plus certificate trust, registered instead of [FilterBridge] only on WebView
+ * providers without WebMessage listeners. There a call cannot be traced to its frame: trust is
+ * honored only from the packaged warning page, which loads no frames, after a fresh physical press.
+ * Blob downloads need a frame's identity, so these providers get none (generic_injects.js leaves
+ * blob links to WebView).
  */
 internal class LegacyPrivilegedBridge(engine: WebViewPageEngine) : FilterBridge(engine) {
     private val page get() = engine.view as? BrowserWebView
@@ -59,30 +60,11 @@ internal class LegacyPrivilegedBridge(engine: WebViewPageEngine) : FilterBridge(
         if (page?.usesWebMessageBridge == true) return
         engine.privileged.approveCertificate()
     }
-
-    /** Legacy WebView cannot identify the calling frame; fail closed for blob downloads. */
-    @JavascriptInterface
-    fun beginBlobDownload(url: String, fileName: String?): String = ""
-
-    /** Called before the page encodes the blob, so an oversized one is never encoded. */
-    @JavascriptInterface
-    fun acceptBlobSize(token: String, size: Long, mimeType: String?): Boolean = false
-
-    @JavascriptInterface
-    fun cancelBlobDownload(token: String) = Unit
-
-    /** The blob's bytes; the string already exists here, the size check only spares decoding and writing it. */
-    @JavascriptInterface
-    fun takeBlobDownloadData(token: String, base64BlobData: String, url: String) {
-        // No verifiable frame identity on legacy providers: reject privileged blob data.
-    }
-
-    private fun webPage(): String? = page?.currentOriginalUrl?.takeIf(BridgePagePolicy::isNormalWebPage)?.toString()
 }
 
 /**
- * Certificate approval and blob downloads, shared by main-frame-checked WebMessages and, on old
- * providers, [LegacyPrivilegedBridge]. A transfer completes only for the document key it began from.
+ * Certificate approval for both channels, and blob downloads for main-frame-checked WebMessages.
+ * A transfer completes only for the document key it began from.
  */
 internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
     private val main = Handler(Looper.getMainLooper())

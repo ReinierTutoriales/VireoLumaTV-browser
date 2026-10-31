@@ -19,12 +19,8 @@ class PageBridgeSurfaceTest {
     }
 
     @Test
-    fun legacyBridgeAddsOnlyThePrivilegedCallsOldProvidersNeed() {
-        assertEquals(
-            filters + setOf(
-                "trustCertificateOnce", "beginBlobDownload", "acceptBlobSize", "cancelBlobDownload", "takeBlobDownloadData",
-            ),
-            exposed(LegacyPrivilegedBridge::class.java),
-        )
+    fun legacyBridgeAddsOnlyCertificateTrustAndNoBlobDownloads() {
+        // Old providers cannot name the calling frame, so no blob download method exists there.
+        assertEquals(filters + "trustCertificateOnce", exposed(LegacyPrivilegedBridge::class.java))
     }
 }

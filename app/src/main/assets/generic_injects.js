@@ -1,8 +1,8 @@
 (function (page) {
     'use strict';
 
-    // Blob downloads reach the browser as main-frame WebMessages (VireoDownload) where the WebView
-    // supports them, otherwise through the legacy bridge. Replies of the former arrive asynchronously.
+    // Blob downloads reach the browser only as main-frame WebMessages (VireoDownload), whose replies
+    // arrive asynchronously. Without that channel the frame cannot be identified: links stay WebView's.
     var replies = page.vireoLumaTVDownloadReplies;
     function channel() {
         var target = page.VireoDownload;
@@ -29,12 +29,7 @@
         },
         cancel: function (token) { channel().postMessage('cancel\n' + token); },
         data: function (token, data, address) { channel().postMessage('data\n' + token + '\n' + address + '\n' + data); }
-    } : {
-        begin: function (address, name, done) { done(page.VireoLumaTVApp.beginBlobDownload(address, name)); },
-        size: function (token, size, type, done) { done(page.VireoLumaTVApp.acceptBlobSize(token, size, type)); },
-        cancel: function (token) { page.VireoLumaTVApp.cancelBlobDownload(token); },
-        data: function (token, data, address) { page.VireoLumaTVApp.takeBlobDownloadData(token, data, address); }
-    };
+    } : null;
 
     // Native activation grants one token. Neither this listener nor a page script grants access.
     function receiveBlob(address, token) {
@@ -83,7 +78,7 @@
             var anchor = event.target && typeof event.target.closest === 'function'
                 ? event.target.closest('a[href]') : null;
             var address = anchor && anchor.getAttribute('href');
-            if (!address || !/^blob:/i.test(address)) return;
+            if (!transfer || !address || !/^blob:/i.test(address)) return;
             transfer.begin(address, anchor.download || null, function (token) {
                 if (token) receiveBlob(address, token);
             });
