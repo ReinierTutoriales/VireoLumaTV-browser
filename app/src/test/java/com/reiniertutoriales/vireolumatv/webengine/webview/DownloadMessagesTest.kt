@@ -1,0 +1,62 @@
+package com.reiniertutoriales.vireolumatv.webengine.webview
+
+import android.app.Application
+import android.net.Uri
+import com.reiniertutoriales.vireolumatv.Config
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config as RoboConfig
+
+@RunWith(RobolectricTestRunner::class)
+@RoboConfig(application = Application::class, sdk = [28])
+class DownloadMessagesTest {
+    private val page = Uri.parse("https://site.test/watch?v=1")
+
+    @Test fun mainFrameOfTheVisiblePageActsForItsOrigin() {
+        assertEquals("https://site.test", downloadMessageDocument(true, Uri.parse("https://site.test"), page))
+        assertEquals("https://site.test", downloadMessageDocument(true, Uri.parse("https://SITE.test:443"), page))
+        assertEquals("http://site.test:8080",
+            downloadMessageDocument(true, Uri.parse("http://site.test:8080"), Uri.parse("http://site.test:8080/a")))
+    }
+
+    @Test fun iframesOtherOriginsAndInternalPagesAreRejected() {
+        // An embedded frame, even one of the same site, never reaches downloads.
+        assertNull(downloadMessageDocument(false, Uri.parse("https://site.test"), page))
+        assertNull(downloadMessageDocument(false, Uri.parse("https://ads.example"), page))
+        assertNull(downloadMessageDocument(true, Uri.parse("https://ads.example"), page))
+        assertNull(downloadMessageDocument(true, Uri.parse("http://site.test"), page))
+        assertNull(downloadMessageDocument(true, Uri.parse("https://site.test:8443"), page))
+        assertNull(downloadMessageDocument(true, Uri.parse("null"), page))
+        assertNull(downloadMessageDocument(true, null, page))
+        assertNull(downloadMessageDocument(true, Uri.parse("https://site.test"), null))
+        val home = Uri.parse(Config.HOME_PAGE_URL)
+        assertNull(downloadMessageDocument(true, Uri.parse(webOrigin(home) ?: "https://x"), home))
+        assertNull(downloadMessageDocument(true, Uri.parse("file://"), Uri.parse("file:///android_asset/")))
+    }
+
+    @Test fun requestsParseWithBoundedFieldsAndFreeFormLastField() {
+        assertEquals(DownloadMessage.Begin("blob:https://site.test/id", "a\nb.txt"),
+            DownloadMessage.parse("begin\nblob:https://site.test/id\na\nb.txt"))
+        assertEquals(DownloadMessage.Begin("blob:https://site.test/id", null),
+            DownloadMessage.parse("begin\nblob:https://site.test/id\n"))
+        assertEquals(DownloadMessage.Size("t", 3, "text/plain"), DownloadMessage.parse("size\nt\n3\ntext/plain"))
+        assertEquals(DownloadMessage.Cancel("t"), DownloadMessage.parse("cancel\nt"))
+        val data = DownloadMessage.parse("data\nt\nblob:https://site.test/id\ndata:text/plain;base64,YWJj") as DownloadMessage.Data
+        assertEquals(listOf("t", "blob:https://site.test/id", "data:text/plain;base64,YWJj"), listOf(data.token, data.url, data.dataUrl))
+    }
+
+    @Test fun malformedRequestsAreIgnored() {
+        listOf(null, "", "begin", "begin\n\nname", "size\nt\nlots\ntype", "size\nt\n3", "cancel\n", "data\nt\nurl",
+            "data\n\nurl\ndata:", "data\nt\n\ndata:", "other\nt", "begin\n" + "x".repeat(5000) + "\nname",
+        ).forEach { assertNull(it, DownloadMessage.parse(it)) }
+    }
+
+    @Test fun repliesMatchTheScriptProtocol() {
+        assertEquals("begin\nblob:https://site.test/id\nt", DownloadMessage.beginReply("blob:https://site.test/id", "t"))
+        assertEquals("size\nt\n1", DownloadMessage.sizeReply("t", true))
+        assertEquals("size\nt\n0", DownloadMessage.sizeReply("t", false))
+    }
+}

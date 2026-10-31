@@ -4,20 +4,27 @@ import android.webkit.JavascriptInterface
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-/** Every bridge method is callable by any page; the set must be exactly what the packaged scripts call. */
+/** Every bridge method is callable by any frame; each set must be exactly what the packaged scripts call. */
 class PageBridgeSurfaceTest {
+    private fun exposed(type: Class<*>) = type.methods
+        .filter { it.isAnnotationPresent(JavascriptInterface::class.java) }
+        .map { it.name }
+        .toSet()
+
+    private val filters = setOf("pageFilters", "hiddenSelectors", "mediaStarted")
+
     @Test
-    fun bridgeExposesOnlyMethodsThePackagedPagesCall() {
-        val exposed = PageBridge::class.java.methods
-            .filter { it.isAnnotationPresent(JavascriptInterface::class.java) }
-            .map { it.name }
-            .toSet()
+    fun modernBridgeIsReadOnly() {
+        assertEquals(filters, exposed(FilterBridge::class.java))
+    }
+
+    @Test
+    fun legacyBridgeAddsOnlyThePrivilegedCallsOldProvidersNeed() {
         assertEquals(
-            setOf(
-                "pageFilters", "hiddenSelectors", "mediaStarted", "trustCertificateOnce",
-                "beginBlobDownload", "acceptBlobSize", "cancelBlobDownload", "takeBlobDownloadData",
+            filters + setOf(
+                "trustCertificateOnce", "beginBlobDownload", "acceptBlobSize", "cancelBlobDownload", "takeBlobDownloadData",
             ),
-            exposed,
+            exposed(LegacyPrivilegedBridge::class.java),
         )
     }
 }

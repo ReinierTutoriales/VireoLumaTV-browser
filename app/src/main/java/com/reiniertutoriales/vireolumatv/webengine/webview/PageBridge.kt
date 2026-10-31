@@ -10,17 +10,12 @@ import com.reiniertutoriales.vireolumatv.utils.FileNames
 import java.security.SecureRandom
 
 /**
- * The browser's JavaScript bridge. Any page can call these methods, so each one checks what page
- * it is serving: filters for web frames only, certificate trust only from the warning page, blob
- * downloads only from a web page and only after a fresh press. Calls arrive on the JavaBridge thread.
+ * The read-only JavaScript bridge, registered as `VireoLumaTVApp` on every WebView. Any frame of
+ * any page can call it, synchronously, so it only hands out filter data and records playback:
+ * page_filters.js needs its answers at document start, before the page's own scripts run.
+ * Calls arrive on the JavaBridge thread.
  */
-internal class PageBridge(private val engine: WebViewPageEngine) {
-    private val main = Handler(Looper.getMainLooper())
-    private val random = SecureRandom()
-    private val blobs = BlobTransfers(SystemClock::uptimeMillis, ::newToken)
-    private val page get() = engine.view as? BrowserWebView
-    private val webPage get() = page?.currentOriginalUrl?.takeIf(BridgePagePolicy::isNormalWebPage)
-
+internal open class FilterBridge(protected val engine: WebViewPageEngine) {
     /** Element hiding and scriptlets for a frame (see page_filters.js). */
     @JavascriptInterface
     fun pageFilters(url: String?): String = if (isFrameUrl(url)) engine.pageFilters(url!!) else ""
@@ -39,15 +34,65 @@ internal class PageBridge(private val engine: WebViewPageEngine) {
         engine.tab.mediaStarted = true
     }
 
+    private fun isFrameUrl(url: String?) =
+        url != null && url.length <= MAX_URL && (url.startsWith("http://") || url.startsWith("https://"))
+
+    private companion object {
+        const val MAX_URL = 4096
+        const val MAX_SELECTOR_INPUT = 64 * 1024
+    }
+}
+
+/**
+ * The filter bridge plus the privileged calls, registered instead of [FilterBridge] only on WebView
+ * providers without WebMessage listeners. There a call cannot be traced to its frame, so the checks
+ * rest on the shown page and a fresh physical press. Modern providers reach the same
+ * [PrivilegedPageActions] from main-frame-checked messages and never expose these methods.
+ */
+internal class LegacyPrivilegedBridge(engine: WebViewPageEngine) : FilterBridge(engine) {
+    private val page get() = engine.view as? BrowserWebView
+
     /** The warning page's "proceed": trusts the shown certificate error once and loads the site. */
     @JavascriptInterface
     fun trustCertificateOnce() {
         // A WebMessage-capable provider must reject the untrusted all-frames JS interface.
-        if (page?.usesOriginAwareCertificateBridge == true) return
-        approveCertificateFromVerifiedFrame()
+        if (page?.usesWebMessageBridge == true) return
+        engine.privileged.approveCertificate()
     }
 
-    internal fun approveCertificateFromVerifiedFrame() {
+    /** Opens a blob download for a fresh press (which it consumes); returns its token or "". */
+    @JavascriptInterface
+    fun beginBlobDownload(url: String, fileName: String?): String =
+        engine.privileged.beginBlob(url, fileName, webPage() ?: return "")
+
+    /** Called before the page encodes the blob, so an oversized one is never encoded. */
+    @JavascriptInterface
+    fun acceptBlobSize(token: String, size: Long, mimeType: String?): Boolean =
+        engine.privileged.acceptBlob(token, size, mimeType.orEmpty())
+
+    @JavascriptInterface
+    fun cancelBlobDownload(token: String) = engine.privileged.cancelBlob(token)
+
+    /** The blob's bytes; the string already exists here, the size check only spares decoding and writing it. */
+    @JavascriptInterface
+    fun takeBlobDownloadData(token: String, base64BlobData: String, url: String) {
+        engine.privileged.takeBlob(token, url, base64BlobData, webPage() ?: return, ::webPage)
+    }
+
+    private fun webPage(): String? = page?.currentOriginalUrl?.takeIf(BridgePagePolicy::isNormalWebPage)?.toString()
+}
+
+/**
+ * Certificate approval and blob downloads, shared by main-frame-checked WebMessages and, on old
+ * providers, [LegacyPrivilegedBridge]. A transfer completes only for the document key it began from.
+ */
+internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
+    private val main = Handler(Looper.getMainLooper())
+    private val random = SecureRandom()
+    private val blobs = BlobTransfers(SystemClock::uptimeMillis, ::newToken)
+    private val page get() = engine.view as? BrowserWebView
+
+    fun approveCertificate() {
         val error = page?.shownCertificateError() ?: return
         // An embedded script must never approve a certificate error without a real TV
         // remote or touch activation. This check does not identify the calling frame.
@@ -60,42 +105,26 @@ internal class PageBridge(private val engine: WebViewPageEngine) {
         }
     }
 
-    /** Opens a blob download for a fresh press (which it consumes); returns its token or "". */
-    @JavascriptInterface
-    fun beginBlobDownload(url: String, fileName: String?): String {
-        val source = webPage ?: return ""
+    fun beginBlob(url: String, fileName: String?, document: String): String {
         if (!url.startsWith("blob:", ignoreCase = true)) return ""
-        return blobs.begin(url, fileName, source.toString(), UserActivation::consume)
+        return blobs.begin(url, fileName, document, UserActivation::consume)
     }
 
-    /** Called before the page encodes the blob, so an oversized one is never encoded. */
-    @JavascriptInterface
-    fun acceptBlobSize(token: String, size: Long, mimeType: String?): Boolean = blobs.accept(token, size, mimeType.orEmpty())
+    fun acceptBlob(token: String, size: Long, mimeType: String): Boolean = blobs.accept(token, size, mimeType)
 
-    @JavascriptInterface
-    fun cancelBlobDownload(token: String) = blobs.cancel(token)
+    fun cancelBlob(token: String) = blobs.cancel(token)
 
-    /** The blob's bytes; the string already exists here, the size check only spares decoding and writing it. */
-    @JavascriptInterface
-    fun takeBlobDownloadData(token: String, base64BlobData: String, url: String) {
-        val source = webPage?.toString() ?: return
-        val ticket = blobs.take(token, url, source, base64BlobData) ?: return
+    /** Queues the bytes when the main thread still shows the same [document] (read by [currentDocument]). */
+    fun takeBlob(token: String, url: String, dataUrl: String, document: String, currentDocument: () -> String?) {
+        val ticket = blobs.take(token, url, document, dataUrl) ?: return
         val name = FileNames.sanitizeFileName(ticket.fileName) ?: FileNames.guessFileName(url, null, ticket.mimeType)
         main.post {
-            if (webPage?.toString() != ticket.page) return@post
+            if (currentDocument() != ticket.page) return@post
             engine.window?.download(Download(url, name, null, Download.AfterDownload.NOP, ticket.mimeType,
-                null, null, base64BlobData, null))
+                null, null, dataUrl, null))
         }
     }
 
-    private fun isFrameUrl(url: String?) =
-        url != null && url.length <= MAX_URL && (url.startsWith("http://") || url.startsWith("https://"))
-
     private fun newToken(): String = ByteArray(24).also(random::nextBytes)
         .let { Base64.encodeToString(it, Base64.NO_WRAP or Base64.NO_PADDING or Base64.URL_SAFE) }
-
-    private companion object {
-        const val MAX_URL = 4096
-        const val MAX_SELECTOR_INPUT = 64 * 1024
-    }
 }

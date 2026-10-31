@@ -1,13 +1,48 @@
 (function (page) {
     'use strict';
 
+    // Blob downloads reach the browser as main-frame WebMessages (VireoDownload) where the WebView
+    // supports them, otherwise through the legacy bridge. Replies of the former arrive asynchronously.
+    var replies = page.vireoLumaTVDownloadReplies;
+    function channel() {
+        var target = page.VireoDownload;
+        return target && typeof target.postMessage === 'function' ? target : null;
+    }
+    if (!replies && channel() && typeof channel().addEventListener === 'function') {
+        replies = page.vireoLumaTVDownloadReplies = {};
+        channel().addEventListener('message', function (event) {
+            var parts = String(event && event.data).split('\n');
+            var key = parts[0] + '\n' + parts[1], handler = replies[key];
+            if (!handler || parts.length !== 3) return;
+            delete replies[key];
+            handler(parts[2]);
+        });
+    }
+    var transfer = channel() && replies ? {
+        begin: function (address, name, done) {
+            replies['begin\n' + address] = function (token) { done(token); };
+            channel().postMessage('begin\n' + address + '\n' + (name || ''));
+        },
+        size: function (token, size, type, done) {
+            replies['size\n' + token] = function (accepted) { done(accepted === '1'); };
+            channel().postMessage('size\n' + token + '\n' + size + '\n' + type);
+        },
+        cancel: function (token) { channel().postMessage('cancel\n' + token); },
+        data: function (token, data, address) { channel().postMessage('data\n' + token + '\n' + address + '\n' + data); }
+    } : {
+        begin: function (address, name, done) { done(page.VireoLumaTVApp.beginBlobDownload(address, name)); },
+        size: function (token, size, type, done) { done(page.VireoLumaTVApp.acceptBlobSize(token, size, type)); },
+        cancel: function (token) { page.VireoLumaTVApp.cancelBlobDownload(token); },
+        data: function (token, data, address) { page.VireoLumaTVApp.takeBlobDownloadData(token, data, address); }
+    };
+
     // Native activation grants one token. Neither this listener nor a page script grants access.
     function receiveBlob(address, token) {
         var settled = false;
         function cancel() {
             if (settled) return;
             settled = true;
-            page.VireoLumaTVApp.cancelBlobDownload(token);
+            transfer.cancel(token);
         }
         try {
             var request = new XMLHttpRequest();
@@ -18,22 +53,24 @@
                 if (settled) return;
                 try {
                     var payload = request.response;
-                    if (request.status !== 200 || !payload ||
-                        !page.VireoLumaTVApp.acceptBlobSize(token, payload.size || 0, payload.type || '')) {
-                        cancel();
-                        return;
-                    }
-                    var conversion = new FileReader();
-                    conversion.onerror = conversion.onabort = cancel;
-                    conversion.onload = function () {
+                    if (request.status !== 200 || !payload) { cancel(); return; }
+                    transfer.size(token, payload.size || 0, payload.type || '', function (accepted) {
                         if (settled) return;
-                        if (typeof conversion.result !== 'string') { cancel(); return; }
+                        if (!accepted) { cancel(); return; }
                         try {
-                            page.VireoLumaTVApp.takeBlobDownloadData(token, conversion.result, address);
-                            settled = true;
+                            var conversion = new FileReader();
+                            conversion.onerror = conversion.onabort = cancel;
+                            conversion.onload = function () {
+                                if (settled) return;
+                                if (typeof conversion.result !== 'string') { cancel(); return; }
+                                try {
+                                    transfer.data(token, conversion.result, address);
+                                    settled = true;
+                                } catch (_) { cancel(); }
+                            };
+                            conversion.readAsDataURL(payload);
                         } catch (_) { cancel(); }
-                    };
-                    conversion.readAsDataURL(payload);
+                    });
                 } catch (_) { cancel(); }
             };
             request.send();
@@ -47,10 +84,11 @@
                 ? event.target.closest('a[href]') : null;
             var address = anchor && anchor.getAttribute('href');
             if (!address || !/^blob:/i.test(address)) return;
-            var token = page.VireoLumaTVApp.beginBlobDownload(address, anchor.download || null);
+            transfer.begin(address, anchor.download || null, function (token) {
+                if (token) receiveBlob(address, token);
+            });
             event.preventDefault();
             event.stopPropagation();
-            if (token) receiveBlob(address, token);
         };
         document.addEventListener('click', page.vireoLumaTVClicksListener);
     }
