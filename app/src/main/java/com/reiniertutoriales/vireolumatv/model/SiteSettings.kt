@@ -21,3 +21,9 @@ class SiteSettings(@ColumnInfo(name = "host_name") val hostName: String) {
         const val DEFAULT_POPUP_POLICY = POPUPS_BLOCK_AUTOMATIC
     }
 }
+
+/**
+ * What the database said about [host] at [generation] (see SiteSettingsDao.generation): its row,
+ * or null for "looked up, no row", which is different from never having looked.
+ */
+class SiteSettingsLookup(val host: String, val settings: SiteSettings?, val generation: Long)
