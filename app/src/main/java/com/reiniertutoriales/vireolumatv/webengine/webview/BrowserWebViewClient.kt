@@ -29,10 +29,10 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
     private val window get() = view.window
     private val engine get() = view.engine
     private val authPrompts = HttpAuthPrompts { this.view.context }
-    /** The page on screen, from its commit. */
-    @Volatile private var shownPage: Uri? = null
-    /** The top-level address being loaded and not yet shown; requests run off the UI thread. */
-    @Volatile private var loadingPage: Uri? = null
+    private val topLevel = TopLevelLoad()
+
+    /** The top-level load became a download: no page will be shown for it. */
+    fun onTopLevelLoadEnded() = topLevel.ended()
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         if (request.isForMainFrame) {
@@ -42,14 +42,14 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
             if (engine.isTabUnderAd(request.url)) return true
         }
         val handled = window?.interceptNavigation(request.url.toString()) == true
-        if (!handled && request.isForMainFrame) loadingPage = request.url
+        if (!handled && request.isForMainFrame) topLevel.requested(request.url)
         return handled
     }
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
         // window.open(url) loads its first document without shouldOverrideUrlLoading.
         if (request.isForMainFrame && engine.onPopupNavigation(request.url)) return BlockedResponses.blocked()
-        if (request.isForMainFrame) loadingPage = request.url
+        if (request.isForMainFrame) topLevel.requested(request.url)
         val page = this.view.currentOriginalUrl
         if (page != null && page.toString().startsWith(Config.HOME_PAGE_URL, ignoreCase = true)) {
             StartPageAssets.shouldInterceptRequest(request)?.let { return it }
@@ -80,8 +80,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
-        shownPage = url.toUri()
-        loadingPage = null
+        topLevel.committed(url.toUri())
         this.view.onDocumentStarted(url)
         engine.onPageStarted(url)
         this.view.onDocumentStartReported(url)
@@ -96,6 +95,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
 
     override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
         logStream(request.url) { "transport=${error.errorCode}" }
+        if (request.isForMainFrame) topLevel.ended()
         super.onReceivedError(view, request, error)
     }
 
@@ -143,7 +143,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
 
     override fun onReceivedHttpAuthRequest(view: WebView?, handler: HttpAuthHandler?, host: String?, realm: String?) {
         handler ?: return
-        authPrompts.request(host, realm, shownPage, loadingPage, object : HttpAuthPrompts.Answer {
+        authPrompts.request(host, realm, topLevel.shown, topLevel.loading, object : HttpAuthPrompts.Answer {
             override fun proceed(user: String, password: String) = handler.proceed(user, password)
             override fun cancel() = handler.cancel()
         })

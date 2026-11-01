@@ -110,4 +110,26 @@ class HttpAuthPromptsTest {
         assertFalse(later.cancelled)
         assertFalse(open === dialog())
     }
+
+    @Test fun aLoadThatEndsWithoutAPageNoLongerLetsOtherHostsAsk() {
+        val load = TopLevelLoad()
+        load.committed(shown("https://bank.test/"))
+        load.requested(shown("https://slow.test/file.zip"))
+        assertEquals("While it loads, another host is asked with a warning", "slow.test",
+            HttpAuthPrompts.scope("evil.test", load.shown, load.loading)?.otherThan)
+        // It became a download or failed: the bank page is still the one on screen.
+        load.ended()
+        assertNull(HttpAuthPrompts.scope("evil.test", load.shown, load.loading))
+        assertEquals(HttpAuthPrompts.Scope("bank.test", cleartext = false, otherThan = null),
+            HttpAuthPrompts.scope("bank.test", load.shown, load.loading))
+    }
+
+    @Test fun aShownPageEndsTheLoadAndBecomesTheReference() {
+        val load = TopLevelLoad()
+        load.requested(shown("http://intranet.test/"))
+        load.committed(shown("http://intranet.test/home"))
+        assertNull(load.loading)
+        assertNull(HttpAuthPrompts.scope("cdn.test", load.shown, load.loading))
+        assertEquals(true, HttpAuthPrompts.scope("intranet.test", load.shown, load.loading)?.cleartext)
+    }
 }

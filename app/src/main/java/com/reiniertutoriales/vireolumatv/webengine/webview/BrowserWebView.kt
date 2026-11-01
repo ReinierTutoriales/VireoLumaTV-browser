@@ -77,8 +77,10 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         // A long press opens the pointer menu instead of WebView's own selection.
         setOnLongClickListener { true }
         webChromeClient = chromeClient
-        webViewClient = BrowserWebViewClient(this)
+        val pageClient = BrowserWebViewClient(this)
+        webViewClient = pageClient
         setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+            pageClient.onTopLevelLoadEnded()
             // Blob downloads are read by the injected script; everything else goes to the download service.
             if (!url.startsWith("blob:")) window?.onPageDownload(url, userAgent, contentDisposition, mimetype, contentLength)
         }

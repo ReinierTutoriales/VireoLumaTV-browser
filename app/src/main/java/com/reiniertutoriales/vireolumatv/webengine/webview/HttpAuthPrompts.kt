@@ -114,3 +114,25 @@ internal class HttpAuthPrompts(private val context: () -> Context) {
         private fun isCleartext(page: Uri) = page.scheme.equals("http", ignoreCase = true)
     }
 }
+
+/**
+ * The page on screen and the top-level address being loaded, for [HttpAuthPrompts]. A load that
+ * ends without showing a page (a download, a network error) must end here too: otherwise any host
+ * would keep being asked as if a redirected login were still under way. Written from WebView's
+ * request thread and the UI thread.
+ */
+internal class TopLevelLoad {
+    @Volatile var shown: Uri? = null
+        private set
+    @Volatile var loading: Uri? = null
+        private set
+
+    fun requested(url: Uri) { loading = url }
+
+    fun committed(url: Uri) {
+        shown = url
+        loading = null
+    }
+
+    fun ended() { loading = null }
+}
