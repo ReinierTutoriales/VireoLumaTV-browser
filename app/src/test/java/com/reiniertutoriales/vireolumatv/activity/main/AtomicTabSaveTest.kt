@@ -50,7 +50,7 @@ class AtomicTabSaveTest {
         try {
             val dao = db.tabDao()
             val original = dao.save(BrowserTab(url = "https://original.test", selected = true))
-            db.openHelper.writableDatabase.execSQL("CREATE TRIGGER reject_insert BEFORE INSERT ON tabs BEGIN SELECT RAISE(ABORT, 'test failure'); END")
+            db.openHelper.writableDatabase.execSQL("CREATE TRIGGER reject_insert BEFORE INSERT ON open_tabs BEGIN SELECT RAISE(ABORT, 'test failure'); END")
             var failed = false
             try { dao.save(BrowserTab(url = "https://failed.test", selected = true)) }
             catch (_: Exception) { failed = true }

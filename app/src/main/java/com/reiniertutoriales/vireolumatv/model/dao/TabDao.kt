@@ -12,7 +12,7 @@ import com.reiniertutoriales.vireolumatv.model.BrowserTab
 /** Open tabs; normal and private tabs are stored apart by their incognito flag. */
 @Dao
 interface TabDao {
-    @Query("SELECT * FROM tabs WHERE incognito=:incognito ORDER BY position ASC")
+    @Query("SELECT * FROM open_tabs WHERE is_private = :incognito ORDER BY sort_order ASC")
     suspend fun getAll(incognito: Boolean = false): List<BrowserTab>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -24,13 +24,13 @@ interface TabDao {
     @Delete
     suspend fun delete(item: BrowserTab)
 
-    @Query("DELETE FROM tabs WHERE incognito = :incognito")
+    @Query("DELETE FROM open_tabs WHERE is_private = :incognito")
     suspend fun deleteAll(incognito: Boolean = false)
 
-    @Query("UPDATE tabs SET selected = 0 WHERE incognito = :incognito")
+    @Query("UPDATE open_tabs SET is_shown = 0 WHERE is_private = :incognito")
     suspend fun unselectAll(incognito: Boolean = false)
 
-    @Query("UPDATE tabs SET position = :position WHERE id = :id")
+    @Query("UPDATE open_tabs SET sort_order = :position WHERE id = :id")
     suspend fun updatePosition(position: Int, id: Long)
 
     /**

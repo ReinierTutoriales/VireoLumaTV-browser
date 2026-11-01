@@ -8,23 +8,23 @@ import androidx.room.PrimaryKey
 import java.io.InputStream
 
 /**
- * One download. The stored columns are the "downloads" table of schema 19; the other fields only
+ * One download. The stored columns are the "download_entries" table; the other fields only
  * live while the download runs or while a list shows it. [size] is the byte total once known, or
  * [SIZE_FAILED] / [SIZE_CANCELLED] after a failure or cancellation.
  */
 @Entity(
-    tableName = "downloads",
-    indices = [Index(value = ["time"], name = "downloads_time_idx"), Index(value = ["filename"], name = "downloads_filename_idx")],
+    tableName = "download_entries",
+    indices = [Index(value = ["started_at"], name = "download_entries_started_idx")],
 )
 class Download {
     @PrimaryKey(autoGenerate = true) var id: Long = 0
-    @ColumnInfo(name = "time") var time: Long = 0
-    @ColumnInfo(name = "filename") var filename: String = ""
+    @ColumnInfo(name = "started_at") var time: Long = 0
+    @ColumnInfo(name = "file_name") var filename: String = ""
     /** A file path before Android 11, a MediaStore URI from Android 11. */
-    @ColumnInfo(name = "filepath") var filepath: String = ""
-    @ColumnInfo(name = "url") var url: String = ""
-    @Volatile @ColumnInfo(name = "size") var size: Long = 0
-    @Volatile @ColumnInfo(name = "bytes_received") var bytesReceived: Long = 0
+    @ColumnInfo(name = "location") var filepath: String = ""
+    @ColumnInfo(name = "address") var url: String = ""
+    @Volatile @ColumnInfo(name = "total_bytes") var size: Long = 0
+    @Volatile @ColumnInfo(name = "received_bytes") var bytesReceived: Long = 0
 
     @Ignore var afterDownload = AfterDownload.NOP
     @Ignore @Volatile var cancelled = false

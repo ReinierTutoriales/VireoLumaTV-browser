@@ -32,7 +32,6 @@ class TabFavoritesTest {
         assertEquals(1, saved.size)
         assertEquals("Noticias", saved[0].title)
         assertEquals("https://news.test/today", saved[0].url)
-        assertEquals(0L, saved[0].parent)
     }
 
     @Test fun anUntitledPageIsNamedAfterItsHost() = withDatabase { db ->
@@ -48,13 +47,12 @@ class TabFavoritesTest {
         assertEquals(0, db.favoriteDao().getAll().size)
     }
 
-    @Test fun existingRowsAreKeptAndHiddenLegacyRowsDoNotBlockAVisibleOne() = withDatabase { db ->
+    @Test fun anExistingBookmarkIsKeptWithItsOwnName() = withDatabase { db ->
         val favorites = db.favoriteDao()
         favorites.insert(Favorite().apply { title = "Mine"; url = "https://kept.test/" })
-        favorites.insert(Favorite().apply { title = "Old home tile"; url = "https://legacy.test/"; homePageBookmark = true })
         assertEquals(TabFavorites.Result.ALREADY_SAVED, TabFavorites.add(favorites, "New name", "https://kept.test/"))
         assertEquals("Mine", favorites.getAll().single { it.url == "https://kept.test/" }.title)
-        assertEquals(TabFavorites.Result.ADDED, TabFavorites.add(favorites, "Legacy", "https://legacy.test/"))
+        assertEquals(TabFavorites.Result.ADDED, TabFavorites.add(favorites, "Other", "https://other.test/"))
         assertEquals(2, favorites.getAll().size)
     }
 }

@@ -24,6 +24,7 @@ app/.gitignore	PROPIO
 app/build.gradle.kts	REESCRITO
 app/proguard-rules.pro	REESCRITO
 app/schemas/com.reiniertutoriales.vireolumatv.singleton.AppDatabase/19.json	PROPIO
+app/schemas/com.reiniertutoriales.vireolumatv.singleton.AppDatabase/20.json	PROPIO
 app/src/main/AndroidManifest.xml	REESCRITO
 app/src/main/assets/adblock/noop-0.1s.mp3	PROPIO
 app/src/main/assets/adblock/noop-1s.mp4	PROPIO
@@ -119,6 +120,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/IncognitoD
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/Transfer.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/AppDatabase.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/Favicons.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/SchemaMigrations.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/RemoteShortcut.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/Shortcuts.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ApkInstaller.kt	PROPIO
