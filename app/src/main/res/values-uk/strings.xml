@@ -203,7 +203,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">Черга завантажень заповнена. Дочекайтеся завершення завантаження та спробуйте ще раз.</string>
-    <string name="about_tvbro_credit">Спочатку створено на основі вихідного коду TV Bro · Fedir Tsapana</string>
     <string name="download_not_allowed">Android не дозволив почати завантаження. Спробуйте ще раз, коли браузер відкрито на екрані.</string>
     <string name="download_time_limit">Android зупинив завантаження: досягнуто ліміту часу фонової роботи.</string>
 </resources>

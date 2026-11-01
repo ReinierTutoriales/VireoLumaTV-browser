@@ -69,10 +69,6 @@ class Config(val prefs: SharedPreferences) {
     var blockListRetryAt by time("adblock_list_next_retry")
 
     init {
-        // Migrate before the first page is created, even when Settings is never opened.
-        if (userAgentOverride.value?.contains("TV Bro/1.0 ") == true) {
-            userAgentOverride.value = null
-        }
         // DuckDuckGo became the default search once; later choices are kept.
         if (!prefs.getBoolean(DDG_DEFAULT_APPLIED_KEY, false)) {
             searchAddress.value = DUCKDUCKGO_SEARCH_URL

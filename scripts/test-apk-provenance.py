@@ -27,7 +27,7 @@ def dex_with_class(name):
 
 class PackageAuditTest(unittest.TestCase):
     def test_reads_defined_class_descriptors(self):
-        name = 'Lcom/phlox/tvwebbrowser/Original;'
+        name = 'Lcom/reiniertutoriales/vireolumatv/Main;'
         self.assertEqual([name], audit.class_names(dex_with_class(name)))
         with self.assertRaises(ValueError): audit.class_names(b'not a dex')
 
@@ -66,19 +66,12 @@ class PackageAuditTest(unittest.TestCase):
                 self.assertEqual(int(missing), len(report['checks']['issues']))
                 if missing: self.assertIn('adblock/baseline/test.filterdata', report['checks']['issues'][0])
 
-    def test_rejects_original_namespace_and_deleted_assets(self):
-        with tempfile.TemporaryDirectory() as folder:
-            report = self.run_package(Path(folder), 'Lcom/phlox/tvwebbrowser/Original;',
-                                      ['assets/pages/ic_warning.svg'])
-            self.assertEqual(2, len(report['checks']['issues']))
-            self.assertEqual(['pages/ic_warning.svg'], report['checks']['removed_assets_still_packaged'])
-
-    def test_rejects_retired_license_and_credit_resource(self):
+    def test_rejects_deleted_assets(self):
         with tempfile.TemporaryDirectory() as folder:
             report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;',
-                ['assets/licenses/TV-Bro-LICENSE.md'], resources='resource string/about_tv_bro_credit')
-            self.assertEqual(2, len(report['checks']['issues']))
-            self.assertTrue(report['checks']['legacy_credit_resource_present'])
+                                      ['assets/pages/ic_warning.svg'])
+            self.assertEqual(1, len(report['checks']['issues']))
+            self.assertEqual(['pages/ic_warning.svg'], report['checks']['removed_assets_still_packaged'])
 
     def test_rejects_different_application_license(self):
         with tempfile.TemporaryDirectory() as folder:

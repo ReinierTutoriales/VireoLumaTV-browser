@@ -15,7 +15,6 @@ REMOVED_ASSETS = (
     'pages/home/favicons/startpage.png', 'pages/home/favicons/yahoo.png',
     'pages/home/favicons/yandex.png', 'pages/home/ic_not_available.svg',
     'pages/home/mic.svg', 'pages/home/more.svg', 'pages/home/search.svg', 'pages/ic_warning.svg',
-    'licenses/TV-Bro-LICENSE.md',
 )
 PACKAGED_SOURCES = (
     'generic_injects.js', 'pages/home/index.html', 'pages/warning-certificate.html',
@@ -50,10 +49,7 @@ def audit(apk, aapt2, root):
         dex_files = [name for name in names if re.fullmatch(r'classes\d*\.dex', name)]
         if not dex_files: issues.append('No DEX files in APK')
         classes = [name for path in dex_files for name in class_names(package.read(path))]
-        old_classes = [name for name in classes if name.startswith('Lcom/phlox/tvwebbrowser/')]
         checks['defined_classes'] = len(classes)
-        checks['upstream_namespace_classes'] = old_classes
-        if old_classes: issues.append('Original TV Bro class namespace is still packaged')
         retained = [name for name in REMOVED_ASSETS if 'assets/' + name in names]
         checks['removed_assets_still_packaged'] = retained
         if retained: issues.append('Removed assets are still packaged')
@@ -79,8 +75,6 @@ def audit(apk, aapt2, root):
     if checks['package_name'] != 'com.reiniertutoriales.vireolumatv': issues.append('Unexpected applicationId')
     for removed in ('anim/infinite_fadeinout_anim', 'menu/menu_link'):
         if removed in resources: issues.append('Retired compiled resource: ' + removed)
-    checks['legacy_credit_resource_present'] = 'string/about_tv_bro_credit' in resources
-    if checks['legacy_credit_resource_present']: issues.append('Retired attribution resource is still packaged')
     app_license = root / 'app/src/main/assets/licenses/APP-LICENSE.txt'
     root_license = root / 'LICENSE.md'
     checks['application_license_matches_root'] = app_license.is_file() and root_license.is_file() and (

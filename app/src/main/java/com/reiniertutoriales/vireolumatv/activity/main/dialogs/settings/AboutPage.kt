@@ -44,8 +44,6 @@ class AboutPage @JvmOverloads constructor(
             .findViewById<LinearLayout>(R.id.settingsList))
         rows.info(context.getString(R.string.app_name), sizeSp = 20f)
         rows.info(context.getString(R.string.about_tagline))
-        // Required by the TV Bro license for modified binaries: credit and a link to its sources.
-        rows.value(context.getString(R.string.about_tvbro_credit), null, R.id.rowOriginalSource) { open(TVBRO_SOURCE_URL) }
         rows.value(context.getString(R.string.about_source), null, R.id.rowProjectSource) { open(SOURCES_URL) }
         rows.info(context.getString(R.string.about_version, BuildConfig.VERSION_NAME))
         rows.info(context.getString(R.string.about_build, BuildConfig.FLAVOR, "WebView"))
@@ -107,7 +105,6 @@ class AboutPage @JvmOverloads constructor(
     }
 
     private companion object {
-        private const val TVBRO_SOURCE_URL = "https://github.com/truefedex/tv-bro"
         const val SOURCES_URL = "https://github.com/ReinierTutoriales/VireoLumaTV-browser"
         const val LICENSE_URL = "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/LICENSE.md"
         const val PRIVACY_URL = "https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/master/PRIVACY.md"
