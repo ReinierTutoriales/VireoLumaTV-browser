@@ -76,6 +76,37 @@ class MainSettingsFocusTest {
         }
     }
 
+    @Test fun turningDebuggingOffClosesItForPagesAlreadyOpen() {
+        val model = AdBlocker(autoLoad = false)
+        val restoreModel = ScreenModels.replaceForTest(AdBlocker::class, model)
+        val calls = mutableListOf<Boolean>()
+        val restoreEngine = com.reiniertutoriales.vireolumatv.webengine.Engines.replaceForTest(object :
+            com.reiniertutoriales.vireolumatv.webengine.EngineBackend {
+            override fun create(tab: com.reiniertutoriales.vireolumatv.model.BrowserTab) = error("unused")
+            override suspend fun clearCache(context: android.content.Context) {}
+            override val version = "test"
+            override fun setPageDebugging(enabled: Boolean) { calls += enabled }
+        })
+        val previous = model.config.pageDebugging
+        val controller = Robolectric.buildActivity(FragmentActivity::class.java)
+        controller.get().setTheme(R.style.AppTheme)
+        controller.setup()
+        try {
+            model.config.pageDebugging = true
+            val settings = GeneralPage(controller.get())
+            controller.get().setContentView(settings)
+            settings.findViewById<View>(R.id.llWebEngineDebug).performClick()
+            assertFalse(model.config.pageDebugging)
+            assertEquals(listOf(false), calls)
+        } finally {
+            model.config.pageDebugging = previous
+            controller.pause().stop().destroy()
+            restoreEngine()
+            restoreModel()
+            model.clear()
+        }
+    }
+
     private fun walk(page: ViewGroup, direction: Int, start: View? = null): List<String> {
         val finder = FocusFinder.getInstance()
         val visited = mutableListOf<String>()

@@ -16,8 +16,8 @@ object FileNames {
      * contradicts a specific [mimeType] is replaced by that type's extension.
      */
     fun guessFileName(url: String, contentDisposition: String?, mimeType: String?): String {
-        val name = contentDisposition?.let(::dispositionName)?.substringAfterLast('/')
-            ?: nameFromUrl(url)
+        val name = sanitizeFileName(contentDisposition?.let(::dispositionName))
+            ?: sanitizeFileName(nameFromUrl(url))
             ?: GENERIC_NAME
         val firstDot = name.indexOf('.')
         if (firstDot < 0) return name + extensionFor(mimeType)
@@ -141,7 +141,12 @@ object FileNames {
         return String(bytes.toByteArray(), charset)
     }
 
-    private val UNSAFE_FILE_NAME_CHARS = Regex("[\\x00-\\x1F\\x7F:*?\"<>|]")
+    /**
+     * Control and reserved characters, and invisible format characters (Unicode Cf) such as the
+     * bidi overrides that make "x\u202Efdp.apk" read as "xapk.pdf". The joiners U+200C and U+200D
+     * stay: scripts such as Persian need them inside words.
+     */
+    private val UNSAFE_FILE_NAME_CHARS = Regex("[\\x00-\\x1F\\x7F:*?\"<>|]|[\\p{Cf}&&[^\\u200C\\u200D]]")
 
     /**
      * Makes a file name from a page or server safe as one path segment: drops any directory part,

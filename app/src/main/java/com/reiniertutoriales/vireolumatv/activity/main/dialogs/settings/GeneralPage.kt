@@ -156,6 +156,8 @@ class GeneralPage @JvmOverloads constructor(
         rows.toggle(R.string.settings_debugging, R.id.llWebEngineDebug, config.pageDebugging) { switch, on ->
             if (!on) {
                 config.pageDebugging = false
+                // Closes remote debugging of the pages already open, not only of later ones.
+                Engines.setPageDebugging(false)
                 return@toggle
             }
             AlertDialog.Builder(context)

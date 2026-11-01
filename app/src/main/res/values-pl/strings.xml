@@ -61,6 +61,7 @@
     <string name="http_auth_user">Nazwa użytkownika</string>
     <string name="http_auth_password">Hasło</string>
     <string name="error_no_webview">To urządzenie nie ma działającego WebView. Zainstaluj lub zaktualizuj Android System WebView.</string>
+    <string name="webview_outdated">Silnik stron (Android System WebView) nie był aktualizowany od ponad sześciu miesięcy, więc brakuje w nim poprawek bezpieczeństwa. Zaktualizuj go w sklepie lub w aktualizacjach systemu.</string>
     <string name="cert_title">To połączenie nie jest prywatne</string>
     <string name="cert_site">Witryna</string>
     <string name="cert_problem">Problem</string>

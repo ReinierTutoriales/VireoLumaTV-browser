@@ -9,6 +9,8 @@ interface EngineBackend {
     fun create(tab: BrowserTab): PageEngine
     suspend fun clearCache(context: Context)
     val version: String
+    /** Remote debugging of every page view in this process; settings call it as the switch changes. */
+    fun setPageDebugging(enabled: Boolean) {}
 }
 
 /** The installed [EngineBackend]. The app installs Android WebView's at start-up; tests may swap it. */
@@ -34,4 +36,6 @@ object Engines {
     suspend fun clearCache(context: Context) = installed.clearCache(context)
 
     val version: String get() = installed.version
+
+    fun setPageDebugging(enabled: Boolean) = installed.setPageDebugging(enabled)
 }

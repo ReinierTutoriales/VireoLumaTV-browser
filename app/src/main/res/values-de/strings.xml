@@ -61,6 +61,7 @@
     <string name="http_auth_user">Benutzername</string>
     <string name="http_auth_password">Passwort</string>
     <string name="error_no_webview">Auf diesem Gerät ist kein nutzbares WebView vorhanden. Installiere oder aktualisiere Android System WebView.</string>
+    <string name="webview_outdated">Die Seiten-Engine (Android System WebView) wurde seit über sechs Monaten nicht aktualisiert und es fehlen ihr Sicherheitskorrekturen. Aktualisiere sie im Store oder über die Systemupdates.</string>
     <string name="cert_title">Diese Verbindung ist nicht privat</string>
     <string name="cert_site">Website</string>
     <string name="cert_problem">Problem</string>

@@ -61,6 +61,7 @@
     <string name="http_auth_user">Имя пользователя</string>
     <string name="http_auth_password">Пароль</string>
     <string name="error_no_webview">На устройстве нет рабочего WebView. Установите или обновите Android System WebView.</string>
+    <string name="webview_outdated">Движок страниц (Android System WebView) не обновлялся более шести месяцев, и в нём нет исправлений безопасности. Обновите его в магазине или через обновления системы.</string>
     <string name="cert_title">Это подключение не защищено</string>
     <string name="cert_site">Сайт</string>
     <string name="cert_problem">Проблема</string>

@@ -303,6 +303,12 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
                 }
             }
 
+            override fun setPageDebugging(enabled: Boolean) {
+                // Loading the provider can fail on a device without a usable WebView; nothing is open then.
+                runCatching { WebView.setWebContentsDebuggingEnabled(enabled) }
+                    .onFailure { Log.w(TAG, "Page debugging could not be changed", it) }
+            }
+
             override val version: String
                 get() {
                     val webViewPackage = WebViewCompat.getCurrentWebViewPackage(AppContext.context)

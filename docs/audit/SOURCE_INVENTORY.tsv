@@ -162,6 +162,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/ServiceWor
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StartPageAssets.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnostics.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActivation.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewFreshness.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewPageEngine.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockController.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/ToastBar.kt	REESCRITO
@@ -291,6 +292,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserNavigat
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserUiSnapshotTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/DarkInterfaceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ExitPersistenceTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ExternalAppsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ExternalWebNavigationTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/IncognitoSessionTabsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/LinkActionTest.kt	PROPIO
@@ -373,6 +375,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/ServiceWor
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnosticsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/UserActivationTrackerTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/VirtualCursorPointerTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewFreshnessTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewUserAgentTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockControllerTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/widgets/NotificationViewTest.kt	PROPIO

@@ -61,6 +61,7 @@
     <string name="http_auth_user">用户名</string>
     <string name="http_auth_password">密码</string>
     <string name="error_no_webview">此设备没有可用的 WebView。请安装或更新 Android System WebView。</string>
+    <string name="webview_outdated">网页引擎 (Android System WebView) 已超过六个月未更新，缺少安全修复。请通过应用商店或系统更新进行更新。</string>
     <string name="cert_title">此连接不是私密连接</string>
     <string name="cert_site">网站</string>
     <string name="cert_problem">问题</string>

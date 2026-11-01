@@ -42,9 +42,12 @@ internal class ExternalApps(private val activity: Activity) {
         askToOpen(url, intent)
     }
 
-    /** Asks before opening [url], a non-web address a page navigated to, in the app that handles it. */
-    fun askToOpenInApp(url: String) =
-        askToOpen(url, Intent(Intent.ACTION_VIEW, url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    /**
+     * Asks before opening [url], a non-web address a page navigated to, in the app that handles it.
+     * Only activities that declare themselves browsable can be reached, as with `intent:` addresses.
+     */
+    fun askToOpenInApp(url: String) = askToOpen(url, Intent(Intent.ACTION_VIEW, url.toUri())
+        .addCategory(Intent.CATEGORY_BROWSABLE).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 
     /** The link menu's "open in another app": the user chose it, so no question. */
     fun openInApp(url: String) {
