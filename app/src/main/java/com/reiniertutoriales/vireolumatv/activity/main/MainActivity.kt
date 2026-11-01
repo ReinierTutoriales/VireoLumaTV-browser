@@ -597,7 +597,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal fun updateAdblockStatus(tab: BrowserTab) {
         val state = getString(blockerStatusLabel(tab))
         vb.controlsRow.showBlockerEnabled(tab.adblock ?: config.adBlockEnabled)
-        vb.controlsRow.adBlockButton.contentDescription = getString(R.string.blocker_summary, state, tab.blockedAds)
+        vb.controlsRow.adBlockButton.contentDescription = resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds)
         vb.controlsRow.adBlockButton.isActivated =
             (tab.adblock ?: config.adBlockEnabled) && ::adBlocker.isInitialized && adBlocker.hasActiveRules
     }
@@ -607,7 +607,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val state = getString(blockerStatusLabel(tab))
         // A dialog message would hide the list, so the status is the title.
         AlertDialog.Builder(this)
-            .setTitle(getString(R.string.blocker_summary, state, tab.blockedAds))
+            .setTitle(resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds))
             .setItems(arrayOf(
                 getString(R.string.blocker_toggle),
                 getString(R.string.popups_title, tab.blockedPopups.toString()),

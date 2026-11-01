@@ -79,7 +79,12 @@
     <string name="blocker_state_partial">Часть правил</string>
     <string name="blocker_state_saved">Сохранённые правила</string>
     <string name="blocker_state_none">Нет правил</string>
-    <string name="blocker_summary">Блокировка рекламы: %1$s. Заблокировано на странице: %2$d.</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">Блокировка рекламы: %1$s. Заблокировано на странице: %2$d.</item>
+        <item quantity="few">Блокировка рекламы: %1$s. Заблокировано на странице: %2$d.</item>
+        <item quantity="many">Блокировка рекламы: %1$s. Заблокировано на странице: %2$d.</item>
+        <item quantity="other">Блокировка рекламы: %1$s. Заблокировано на странице: %2$d.</item>
+    </plurals>
     <string name="popups_title">Всплывающие окна: %s</string>
     <string name="popups_dialog_blocked">Диалог этой страницы заблокирован</string>
     <string name="popups_window_blocked">Всплывающее окно заблокировано</string>
@@ -100,7 +105,12 @@
     <string name="history_delete_selected">Удалить выбранные страницы из истории?</string>
     <string name="history_delete_all">Удалить всю историю?</string>
     <string name="download_started">Загрузка добавлена. Будет сохранена в:\n%s</string>
-    <string name="nav_menu_downloads">Меню. Идёт загрузок: %1$d</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">Меню. Идёт загрузок: %1$d</item>
+        <item quantity="few">Меню. Идёт загрузок: %1$d</item>
+        <item quantity="many">Меню. Идёт загрузок: %1$d</item>
+        <item quantity="other">Меню. Идёт загрузок: %1$d</item>
+    </plurals>
     <string name="downloads_empty">Загрузок пока нет</string>
     <string name="download_cancelled">Отменена</string>
     <string name="download_file_missing">Файла больше нет</string>

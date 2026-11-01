@@ -79,7 +79,11 @@
     <string name="blocker_state_partial">Regole parziali</string>
     <string name="blocker_state_saved">Regole salvate</string>
     <string name="blocker_state_none">Nessuna regola</string>
-    <string name="blocker_summary">Blocco annunci: %1$s. %2$d bloccati in questa pagina.</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">Blocco annunci: %1$s. %2$d bloccato in questa pagina.</item>
+        <item quantity="many">Blocco annunci: %1$s. %2$d bloccati in questa pagina.</item>
+        <item quantity="other">Blocco annunci: %1$s. %2$d bloccati in questa pagina.</item>
+    </plurals>
     <string name="popups_title">Pop-up: %s</string>
     <string name="popups_dialog_blocked">Una finestra di dialogo di questa pagina è stata bloccata</string>
     <string name="popups_window_blocked">Una finestra pop-up è stata bloccata</string>
@@ -100,7 +104,11 @@
     <string name="history_delete_selected">Eliminare dalla cronologia le pagine selezionate?</string>
     <string name="history_delete_all">Cancellare tutta la cronologia?</string>
     <string name="download_started">Download aggiunto. Verrà salvato in:\n%s</string>
-    <string name="nav_menu_downloads">Menu. %1$d download in corso</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">Menu. %1$d download in corso</item>
+        <item quantity="many">Menu. %1$d download in corso</item>
+        <item quantity="other">Menu. %1$d download in corso</item>
+    </plurals>
     <string name="downloads_empty">Ancora nessun download</string>
     <string name="download_cancelled">Annullato</string>
     <string name="download_file_missing">Il file non c\'è più</string>

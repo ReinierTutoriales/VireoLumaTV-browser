@@ -353,7 +353,7 @@ class BrowserNavigationTest {
         f.activity.consumeBack()
         val shield = f.vb.controlsRow.adBlockButton
         val unavailable = f.host.get().getString(R.string.blocker_state_none)
-        assertEquals(f.host.get().getString(R.string.blocker_summary, unavailable, 0),
+        assertEquals(f.host.get().resources.getQuantityString(R.plurals.blocker_summary, 0, unavailable, 0),
             shield.contentDescription)
         // The shield is one focus stop: Right reaches the menu, Down reaches the tab strip.
         assertSame(f.vb.controlsRow.findViewById<View>(R.id.menu_button), shield.focusSearch(View.FOCUS_RIGHT))
@@ -361,7 +361,7 @@ class BrowserNavigationTest {
         assertTrue(shield.requestFocus())
         shield.performClick()
         assertEquals(false, f.tab.adblock)
-        assertEquals(f.host.get().getString(R.string.blocker_summary,
+        assertEquals(f.host.get().resources.getQuantityString(R.plurals.blocker_summary, 0,
             f.host.get().getString(R.string.blocker_state_paused), 0), shield.contentDescription)
         assertEquals(1, f.refreshed)
         assertTrue("Long press must open the blocker details", shield.performLongClick())

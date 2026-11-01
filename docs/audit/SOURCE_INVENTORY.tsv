@@ -297,6 +297,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/LinkActionTest
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/MainSettingsFocusTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/MainSettingsLifecycleTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/MinimalHomeConfigTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/PluralStringsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/PreviewResourceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/RendererRecoveryTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModelTest.kt	PROPIO

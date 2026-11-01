@@ -81,7 +81,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                 val count = it.size
                 ui.menuButton.setImageResource(if (count == 0) R.drawable.ic_more else R.drawable.ic_menu_downloads)
                 ui.menuButton.contentDescription = if (count == 0) context.getString(R.string.nav_menu)
-                    else context.getString(R.string.nav_menu_downloads, count)
+                    else context.resources.getQuantityString(R.plurals.nav_menu_downloads, count, count)
             }
         }
     }

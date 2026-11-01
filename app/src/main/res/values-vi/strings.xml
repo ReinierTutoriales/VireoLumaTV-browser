@@ -79,7 +79,9 @@
     <string name="blocker_state_partial">Một phần quy tắc</string>
     <string name="blocker_state_saved">Quy tắc đã lưu</string>
     <string name="blocker_state_none">Không có quy tắc</string>
-    <string name="blocker_summary">Chặn quảng cáo: %1$s. Đã chặn %2$d trên trang này.</string>
+    <plurals name="blocker_summary">
+        <item quantity="other">Chặn quảng cáo: %1$s. Đã chặn %2$d trên trang này.</item>
+    </plurals>
     <string name="popups_title">Cửa sổ bật lên: %s</string>
     <string name="popups_dialog_blocked">Đã chặn một hộp thoại của trang này</string>
     <string name="popups_window_blocked">Đã chặn một cửa sổ bật lên</string>
@@ -100,7 +102,9 @@
     <string name="history_delete_selected">Xóa các trang đã chọn khỏi lịch sử?</string>
     <string name="history_delete_all">Xóa toàn bộ lịch sử?</string>
     <string name="download_started">Đã thêm tệp tải xuống. Sẽ lưu vào:\n%s</string>
-    <string name="nav_menu_downloads">Menu. %1$d tệp đang tải xuống</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="other">Menu. %1$d tệp đang tải xuống</item>
+    </plurals>
     <string name="downloads_empty">Chưa có tệp tải xuống</string>
     <string name="download_cancelled">Đã hủy</string>
     <string name="download_file_missing">Tệp không còn nữa</string>

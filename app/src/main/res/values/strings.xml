@@ -82,7 +82,10 @@
     <string name="blocker_state_partial">Some rules</string>
     <string name="blocker_state_saved">Saved rules</string>
     <string name="blocker_state_none">No rules</string>
-    <string name="blocker_summary">Ad blocking: %1$s. %2$d blocked on this page.</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">Ad blocking: %1$s. %2$d blocked on this page.</item>
+        <item quantity="other">Ad blocking: %1$s. %2$d blocked on this page.</item>
+    </plurals>
     <string name="popups_title">Pop-ups: %s</string>
     <string name="popups_dialog_blocked">A dialog from this page was blocked</string>
     <string name="popups_window_blocked">A pop-up window was blocked</string>
@@ -103,7 +106,10 @@
     <string name="history_delete_selected">Delete the selected pages from history?</string>
     <string name="history_delete_all">Delete all history?</string>
     <string name="download_started">Download added. It will be saved to:\n%s</string>
-    <string name="nav_menu_downloads">Menu. %1$d downloads in progress</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">Menu. %1$d download in progress</item>
+        <item quantity="other">Menu. %1$d downloads in progress</item>
+    </plurals>
     <string name="downloads_empty">No downloads yet</string>
     <string name="download_cancelled">Cancelled</string>
     <string name="download_file_missing">The file is no longer there</string>

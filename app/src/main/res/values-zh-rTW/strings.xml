@@ -79,7 +79,9 @@
     <string name="blocker_state_partial">部分規則</string>
     <string name="blocker_state_saved">已儲存的規則</string>
     <string name="blocker_state_none">沒有規則</string>
-    <string name="blocker_summary">廣告封鎖：%1$s。本頁已封鎖 %2$d 個。</string>
+    <plurals name="blocker_summary">
+        <item quantity="other">廣告封鎖：%1$s。本頁已封鎖 %2$d 個。</item>
+    </plurals>
     <string name="popups_title">彈出式視窗：%s</string>
     <string name="popups_dialog_blocked">已封鎖這個網頁的對話方塊</string>
     <string name="popups_window_blocked">已封鎖一個彈出式視窗</string>
@@ -100,7 +102,9 @@
     <string name="history_delete_selected">要從瀏覽記錄中刪除所選網頁嗎？</string>
     <string name="history_delete_all">要刪除所有瀏覽記錄嗎？</string>
     <string name="download_started">已加入下載。將儲存至：\n%s</string>
-    <string name="nav_menu_downloads">選單。%1$d 個下載進行中</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="other">選單。%1$d 個下載進行中</item>
+    </plurals>
     <string name="downloads_empty">尚無下載項目</string>
     <string name="download_cancelled">已取消</string>
     <string name="download_file_missing">檔案已不存在</string>

@@ -79,7 +79,11 @@
     <string name="blocker_state_partial">חלק מהכללים</string>
     <string name="blocker_state_saved">כללים שמורים</string>
     <string name="blocker_state_none">אין כללים</string>
-    <string name="blocker_summary">חסימת פרסומות: %1$s. נחסמו בדף הזה: %2$d.</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">חסימת פרסומות: %1$s. נחסמו בדף הזה: %2$d.</item>
+        <item quantity="two">חסימת פרסומות: %1$s. נחסמו בדף הזה: %2$d.</item>
+        <item quantity="other">חסימת פרסומות: %1$s. נחסמו בדף הזה: %2$d.</item>
+    </plurals>
     <string name="popups_title">חלונות קופצים: %s</string>
     <string name="popups_dialog_blocked">נחסמה תיבת דו-שיח מהדף הזה</string>
     <string name="popups_window_blocked">נחסם חלון קופץ</string>
@@ -100,7 +104,11 @@
     <string name="history_delete_selected">למחוק את הדפים שנבחרו מההיסטוריה?</string>
     <string name="history_delete_all">למחוק את כל ההיסטוריה?</string>
     <string name="download_started">ההורדה נוספה. תישמר ב:\n%s</string>
-    <string name="nav_menu_downloads">תפריט. %1$d הורדות פעילות</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">תפריט. %1$d הורדה פעילה</item>
+        <item quantity="two">תפריט. %1$d הורדות פעילות</item>
+        <item quantity="other">תפריט. %1$d הורדות פעילות</item>
+    </plurals>
     <string name="downloads_empty">אין עדיין הורדות</string>
     <string name="download_cancelled">בוטל</string>
     <string name="download_file_missing">הקובץ כבר לא נמצא</string>

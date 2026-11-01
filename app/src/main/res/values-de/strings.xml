@@ -79,7 +79,10 @@
     <string name="blocker_state_partial">Teilweise</string>
     <string name="blocker_state_saved">Gespeicherte Regeln</string>
     <string name="blocker_state_none">Keine Regeln</string>
-    <string name="blocker_summary">Werbeblocker: %1$s. %2$d auf dieser Seite blockiert.</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">Werbeblocker: %1$s. %2$d auf dieser Seite blockiert.</item>
+        <item quantity="other">Werbeblocker: %1$s. %2$d auf dieser Seite blockiert.</item>
+    </plurals>
     <string name="popups_title">Pop-ups: %s</string>
     <string name="popups_dialog_blocked">Ein Dialog dieser Seite wurde blockiert</string>
     <string name="popups_window_blocked">Ein Pop-up-Fenster wurde blockiert</string>
@@ -100,7 +103,10 @@
     <string name="history_delete_selected">Ausgewählte Seiten aus dem Verlauf löschen?</string>
     <string name="history_delete_all">Gesamten Verlauf löschen?</string>
     <string name="download_started">Download hinzugefügt. Speicherort:\n%s</string>
-    <string name="nav_menu_downloads">Menü. %1$d Downloads laufen</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">Menü. %1$d Download läuft</item>
+        <item quantity="other">Menü. %1$d Downloads laufen</item>
+    </plurals>
     <string name="downloads_empty">Noch keine Downloads</string>
     <string name="download_cancelled">Abgebrochen</string>
     <string name="download_file_missing">Die Datei ist nicht mehr vorhanden</string>
