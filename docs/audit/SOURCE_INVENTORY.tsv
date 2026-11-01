@@ -1,4 +1,3 @@
-ruta	clasificacion
 .agents/skills/agent-governance/SKILL.md	PROPIO
 .agents/skills/code-quality/SKILL.md	PROPIO
 .agents/skills/precise-coding/SKILL.md	PROPIO
@@ -54,7 +53,6 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadH
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadRows.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadsActivity.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/IncognitoDownloadsActivity.kt	PROPIO
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/RunningDownloads.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryActivity.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryPages.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryRows.kt	REESCRITO
@@ -113,7 +111,6 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/FavoriteDao.kt	REE
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/SiteSettingsDao.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/TabDao.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/VisitDao.kt	REESCRITO
-app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadHistory.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRetryPolicy.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadService.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/IncognitoDownloadService.kt	PROPIO
@@ -500,3 +497,9 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/adblock/BundledFilterListsTe
 scripts/refresh-bundled-filters.py	PROPIO
 app/src/main/res/color/blocker_icon.xml	PROPIO
 app/src/main/res/xml/data_extraction_rules.xml	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadState.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/TransferBoard.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRecords.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadFiles.kt	PROPIO
+app/src/main/res/drawable/ic_stat_download.xml	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadStateTest.kt	PROPIO
