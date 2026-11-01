@@ -8,9 +8,8 @@
 - #138: permite guardar una pestaña en favoritos y editar o eliminar accesos de Inicio, incluido YouTube.
 - #139: solicita persistencia de cookies al pasar a segundo plano sin bloquear la interfaz; mantiene la política de incógnito.
 
-## Validación pendiente
-- Confirmar CI de la integración y de esta rama de release, incluida compilación release y lint.
-- Comprobar en Android TV real los controles del vídeo, los diálogos de Inicio y la sesión después de apagar y encender.
+## Limitaciones conocidas
+- Pendiente de validación en Android TV real: controles del vídeo, diálogos de Inicio y persistencia de la sesión después de apagar y encender.
 - La sesión depende de la política del servidor y del proveedor WebView; no se garantiza permanencia.
 
 ## Distribución
