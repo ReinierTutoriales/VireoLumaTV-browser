@@ -47,8 +47,11 @@
     <string name="link_copy">העתקת כתובת</string>
     <string name="link_copied">הכתובת הועתקה</string>
     <string name="link_share">שיתוף</string>
-    <string name="permission_request">הדף הזה מבקש להשתמש ב:\n\n%s</string>
+    <string name="permission_request">%1$s מבקש להשתמש ב:\n\n%2$s</string>
     <string name="permission_location">המיקום שלך</string>
+    <string name="permission_camera">מצלמה</string>
+    <string name="permission_microphone">מיקרופון</string>
+    <string name="permission_protected_media">תוכן מוגן (DRM)</string>
     <string name="error_no_file_picker">אין במכשיר אפליקציה לבחירת קבצים</string>
     <string name="external_open_title">לפתוח באפליקציה אחרת?</string>
     <string name="external_open_message">הדף מבקש לפתוח כתובת שמטופלת על ידי אפליקציה אחרת:</string>

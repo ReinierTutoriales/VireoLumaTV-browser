@@ -47,8 +47,11 @@
     <string name="link_copy">复制地址</string>
     <string name="link_copied">已复制地址</string>
     <string name="link_share">分享</string>
-    <string name="permission_request">此网页想要使用：\n\n%s</string>
+    <string name="permission_request">%1$s 想要使用：\n\n%2$s</string>
     <string name="permission_location">您的位置</string>
+    <string name="permission_camera">摄像头</string>
+    <string name="permission_microphone">麦克风</string>
+    <string name="permission_protected_media">受保护的内容 (DRM)</string>
     <string name="error_no_file_picker">此设备上没有可选择文件的应用</string>
     <string name="external_open_title">要在其他应用中打开吗？</string>
     <string name="external_open_message">此网页想要打开由其他应用处理的地址：</string>

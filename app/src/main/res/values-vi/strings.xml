@@ -47,8 +47,11 @@
     <string name="link_copy">Sao chép địa chỉ</string>
     <string name="link_copied">Đã sao chép địa chỉ</string>
     <string name="link_share">Chia sẻ</string>
-    <string name="permission_request">Trang này muốn dùng:\n\n%s</string>
+    <string name="permission_request">%1$s muốn sử dụng:\n\n%2$s</string>
     <string name="permission_location">Vị trí của bạn</string>
+    <string name="permission_camera">Máy ảnh</string>
+    <string name="permission_microphone">Micrô</string>
+    <string name="permission_protected_media">Nội dung được bảo vệ (DRM)</string>
     <string name="error_no_file_picker">Không có ứng dụng nào trên thiết bị có thể chọn tệp</string>
     <string name="external_open_title">Mở bằng ứng dụng khác?</string>
     <string name="external_open_message">Trang này muốn mở một địa chỉ do ứng dụng khác xử lý:</string>

@@ -4,18 +4,23 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.media.MediaDrm
+import android.net.Uri
 import android.webkit.GeolocationPermissions
 import android.webkit.PermissionRequest
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.core.text.BidiFormatter
 import com.reiniertutoriales.vireolumatv.R
 import java.util.UUID
 
 /**
  * A page's requests for camera, microphone, location and protected media. The user is asked
- * first; Android permissions the app lacks are then requested through [requestAndroid], whose
+ * first, told which origin asks (an embedded frame can differ from the page) and for what;
+ * Android permissions the app lacks are then requested through [requestAndroid], whose
  * answer comes back in [onAndroidPermissionsResult]. Only the newest request can be granted: a
  * new one denies and forgets the previous one, so a late answer never reaches the wrong page.
+ * Location is answered for this request only and never remembered by WebView.
  */
 internal class PagePermissions(
     private val activity: () -> Activity?,
@@ -46,7 +51,8 @@ internal class PagePermissions(
         val activity = activity() ?: return newRequest.deny()
         request = newRequest
         dialog = AlertDialog.Builder(activity)
-            .setMessage(activity.getString(R.string.permission_request, newRequest.resources.joinToString("\n")))
+            .setMessage(prompt(activity, newRequest.origin, newRequest.resources.mapNotNull(LABELS::get).distinct()
+                .map(activity::getString)))
             .setCancelable(false)
             .setNegativeButton(R.string.action_deny) { _, _ ->
                 request?.deny()
@@ -98,7 +104,7 @@ internal class PagePermissions(
         locationOrigin = origin
         locationCallback = callback
         dialog = AlertDialog.Builder(activity)
-            .setMessage(activity.getString(R.string.permission_request, activity.getString(R.string.permission_location)))
+            .setMessage(prompt(activity, origin.toUri(), listOf(activity.getString(R.string.permission_location))))
             .setCancelable(false)
             .setNegativeButton(R.string.action_deny) { _, _ ->
                 answerLocation(false)
@@ -141,7 +147,8 @@ internal class PagePermissions(
     }
 
     private fun answerLocation(allow: Boolean) {
-        locationCallback?.invoke(locationOrigin, allow, allow)
+        // retain = false: WebView must not keep the answer for the origin beyond this request.
+        locationCallback?.invoke(locationOrigin, allow, false)
         locationCallback = null
         locationOrigin = null
     }
@@ -163,9 +170,25 @@ internal class PagePermissions(
         waitingForAndroid = null
     }
 
-    private companion object {
-        val WIDEVINE = UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L)
-        val ANDROID_PERMISSION = mapOf(
+    private fun prompt(activity: Activity, origin: Uri?, wanted: List<String>): String =
+        activity.getString(R.string.permission_request,
+            BidiFormatter.getInstance().unicodeWrap(originLabel(origin)), wanted.joinToString("\n"))
+
+    internal companion object {
+        /** `scheme://host[:port]` of the requesting content; its whole address when it has no host. */
+        fun originLabel(origin: Uri?): String {
+            val host = origin?.host?.takeIf { it.isNotEmpty() } ?: return origin?.toString().orEmpty()
+            val port = if (origin.port != -1) ":${origin.port}" else ""
+            return "${origin.scheme}://$host$port"
+        }
+
+        private val LABELS = mapOf(
+            PermissionRequest.RESOURCE_VIDEO_CAPTURE to R.string.permission_camera,
+            PermissionRequest.RESOURCE_AUDIO_CAPTURE to R.string.permission_microphone,
+            PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID to R.string.permission_protected_media,
+        )
+        private val WIDEVINE = UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L)
+        private val ANDROID_PERMISSION = mapOf(
             PermissionRequest.RESOURCE_VIDEO_CAPTURE to Manifest.permission.CAMERA,
             PermissionRequest.RESOURCE_AUDIO_CAPTURE to Manifest.permission.RECORD_AUDIO,
         )

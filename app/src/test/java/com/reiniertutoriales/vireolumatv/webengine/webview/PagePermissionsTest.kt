@@ -23,10 +23,10 @@ import org.robolectric.shadows.ShadowLooper
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class PagePermissionsTest {
-    private class Request(private val wanted: Array<String>) : PermissionRequest() {
+    private class Request(private val wanted: Array<String>, private val from: String = "https://page.test") : PermissionRequest() {
         var granted: List<String>? = null
         var denied = false
-        override fun getOrigin(): Uri = Uri.parse("https://page.test")
+        override fun getOrigin(): Uri = Uri.parse(from)
         override fun getResources(): Array<String> = wanted
         override fun grant(resources: Array<String>) { granted = resources.toList() }
         override fun deny() { denied = true }
@@ -40,6 +40,52 @@ class PagePermissionsTest {
     private fun allow() {
         (ShadowDialog.getLatestDialog() as AlertDialog).getButton(DialogInterface.BUTTON_POSITIVE).performClick()
         ShadowLooper.idleMainLooper()
+    }
+
+    private fun deny() {
+        (ShadowDialog.getLatestDialog() as AlertDialog).getButton(DialogInterface.BUTTON_NEGATIVE).performClick()
+        ShadowLooper.idleMainLooper()
+    }
+
+    private fun shownMessage(): String =
+        (ShadowDialog.getLatestDialog() as AlertDialog).findViewById<android.widget.TextView>(android.R.id.message)!!.text.toString()
+
+    @Test fun thePromptNamesTheRequestingOriginAndReadableResourcesOnly() {
+        // An embedded frame asks: its own origin is shown, not the page's, with readable names.
+        val request = Request(arrayOf(PermissionRequest.RESOURCE_AUDIO_CAPTURE, PermissionRequest.RESOURCE_VIDEO_CAPTURE,
+            "android.webkit.resource.FUTURE_CAPABILITY"), "https://ads.example:8443/frame.html")
+        permissions.onRequest(request)
+        val message = shownMessage()
+        assertTrue(message, message.contains("https://ads.example:8443"))
+        assertFalse(message, message.contains("frame.html"))
+        assertTrue(message, message.contains(activity.getString(R.string.permission_microphone)))
+        assertTrue(message, message.contains(activity.getString(R.string.permission_camera)))
+        assertFalse("Internal identifiers stay internal", message.contains("android.webkit.resource"))
+        deny()
+        assertTrue(request.denied)
+        assertNull(request.granted)
+    }
+
+    @Test fun locationIsAnsweredForThisRequestOnlyAndShowsItsOrigin() {
+        val answers = mutableListOf<Triple<String, Boolean, Boolean>>()
+        val callback = android.webkit.GeolocationPermissions.Callback { origin, allowed, retain -> answers += Triple(origin, allowed, retain) }
+        shadowOf(activity.application as Application).grantPermissions(Manifest.permission.ACCESS_COARSE_LOCATION)
+        permissions.onLocationPrompt("https://maps.example/", callback)
+        val message = shownMessage()
+        assertTrue(message, message.contains("https://maps.example"))
+        assertTrue(message, message.contains(activity.getString(R.string.permission_location)))
+        allow()
+        assertEquals(listOf(Triple("https://maps.example/", true, false)), answers)
+        permissions.onLocationPrompt("https://maps.example/", callback)
+        deny()
+        assertEquals("A denial is not remembered either", Triple("https://maps.example/", false, false), answers.last())
+    }
+
+    @Test fun originLabelsKeepSchemeHostAndPortOnly() {
+        assertEquals("https://page.test", PagePermissions.originLabel(Uri.parse("https://page.test/path?q=1")))
+        assertEquals("http://page.test:8080", PagePermissions.originLabel(Uri.parse("http://page.test:8080/")))
+        assertEquals("file:///android_asset/", PagePermissions.originLabel(Uri.parse("file:///android_asset/")))
+        assertEquals("", PagePermissions.originLabel(null))
     }
 
     @Test fun withoutAWindowARequestIsDenied() {
