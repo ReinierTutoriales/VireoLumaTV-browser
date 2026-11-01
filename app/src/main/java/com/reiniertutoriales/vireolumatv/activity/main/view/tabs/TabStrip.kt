@@ -75,6 +75,7 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
                 if (index < 0) return@setItems
                 when (option) {
                     OPEN_NEW -> listener?.openInNewTab(browserSettings.homePage, index + 1)
+                    ADD_FAVORITE -> listener?.addTabToFavorites(tab)
                     CLOSE -> listener?.closeTab(tab)
                     CLOSE_ALL -> {
                         tabStore.onCloseOthers()
@@ -123,5 +124,6 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         const val CLOSE_ALL = 2
         const val MOVE_LEFT = 3
         const val MOVE_RIGHT = 4
+        const val ADD_FAVORITE = 5
     }
 }
