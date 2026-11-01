@@ -203,4 +203,5 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">Черга завантажень заповнена. Дочекайтеся завершення завантаження та спробуйте ще раз.</string>
+    <string name="about_tvbro_credit">Спочатку створено на основі вихідного коду TV Bro · Fedir Tsapana</string>
 </resources>

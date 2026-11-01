@@ -199,4 +199,5 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">Die Download-Warteschlange ist voll. Warte, bis ein Download abgeschlossen ist, und versuche es erneut.</string>
+    <string name="about_tvbro_credit">Ursprünglich auf dem Quellcode von TV Bro basierend · Fedir Tsapana</string>
 </resources>

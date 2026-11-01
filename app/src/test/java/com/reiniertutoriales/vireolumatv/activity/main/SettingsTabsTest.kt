@@ -76,8 +76,12 @@ class SettingsTabsTest {
         val license = list.findViewById<ViewGroup>(R.id.rowLicense)
         assertTrue((license.getChildAt(0) as TextView).text.toString().contains("MIT"))
         assertEquals(View.VISIBLE, license.visibility)
+        // The TV Bro license asks modified binaries to credit and link its sources in an About window.
+        val original = list.findViewById<ViewGroup>(R.id.rowOriginalSource)
+        assertTrue((original.getChildAt(0) as TextView).text.toString().contains("TV Bro"))
+        assertEquals(View.VISIBLE, original.visibility)
         val names = downOrder(list).map { list.resources.getResourceEntryName(it.id) }
-        assertEquals(listOf("rowProjectSource", "rowLicense", "rowPrivacyPolicy", "btnCheckUpdate"), names)
+        assertEquals(listOf("rowOriginalSource", "rowProjectSource", "rowLicense", "rowPrivacyPolicy", "btnCheckUpdate"), names)
     } }
 
     @Config(sdk = [25])

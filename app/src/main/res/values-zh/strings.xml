@@ -197,4 +197,5 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">下载队列已满。请等待一个下载完成后重试。</string>
+    <string name="about_tvbro_credit">最初基于 TV Bro 的源代码 · Fedir Tsapana</string>
 </resources>

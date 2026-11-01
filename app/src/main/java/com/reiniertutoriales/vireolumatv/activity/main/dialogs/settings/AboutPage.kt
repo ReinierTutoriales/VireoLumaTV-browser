@@ -44,7 +44,8 @@ class AboutPage @JvmOverloads constructor(
             .findViewById<LinearLayout>(R.id.settingsList))
         rows.info(context.getString(R.string.app_name), sizeSp = 20f)
         rows.info(context.getString(R.string.about_tagline))
-        rows.value(context.getString(R.string.about_tvbro_credit), null) { open(TVBRO_SOURCE_URL) }
+        // Required by the TV Bro license for modified binaries: credit and a link to its sources.
+        rows.value(context.getString(R.string.about_tvbro_credit), null, R.id.rowOriginalSource) { open(TVBRO_SOURCE_URL) }
         rows.value(context.getString(R.string.about_source), null, R.id.rowProjectSource) { open(SOURCES_URL) }
         rows.info(context.getString(R.string.about_version, BuildConfig.VERSION_NAME))
         rows.info(context.getString(R.string.about_build, BuildConfig.FLAVOR, "WebView"))
