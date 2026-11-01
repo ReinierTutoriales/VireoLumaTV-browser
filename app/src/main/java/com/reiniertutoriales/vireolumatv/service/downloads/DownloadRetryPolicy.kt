@@ -22,7 +22,14 @@ internal object DownloadRetryPolicy {
             val position = ParsePosition(0)
             val date = parser.parse(value, position)
             if (date == null || position.index != value.length) return backoff
-            (date.time - nowMillis).coerceAtLeast(0)
+            // Compare against the deadline instead of subtracting timestamps:
+            // subtraction can overflow for malformed or extreme HTTP dates.
+            val deadline = date.time
+            when {
+                deadline <= nowMillis -> 0L
+                nowMillis < 0L && deadline > Long.MAX_VALUE + nowMillis -> return null
+                else -> deadline - nowMillis
+            }
         }
         return maxOf(backoff, serverDelay).takeIf { it <= 60_000L }
     }
