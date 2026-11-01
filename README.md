@@ -3,6 +3,12 @@
 Navegador para Android TV, Google TV y TV boxes compatibles, desarrollado y mantenido por **ReinierTutoriales**.
 Utiliza Android System WebView y funciona con mando o gamepad desde Android 7.0 (API 24).
 
+## Versión 2.0.13
+
+Android TV, Google TV y TV boxes compatibles (Android 7.0+). Esta versión consolida navegación con mando, puntero, pestañas, idiomas, descargas, instalación y privacidad.
+
+La publicación de APKs firmados se verifica en [Releases](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases). La existencia de código en una rama no significa que los APKs ya estén publicados.
+
 ## Descargar e instalar
 
 **[Descargar la última versión](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/latest)**
@@ -36,6 +42,10 @@ Desinstalar para cambiar de firma borra los datos de la aplicación.
 El comportamiento de las webs y del vídeo depende también del proveedor WebView,
 el servidor, la conexión y el hardware. Las pruebas automáticas no sustituyen la
 validación física de mando, reproducción y memoria del build actual.
+
+## Calidad y validación
+
+La integración automatizada verifica compilación, pruebas y Android Lint. El rendimiento, la reproducción y la interacción con mando requieren pruebas adicionales en hardware real. Las licencias de las dependencias se documentan por separado.
 
 ## Proyecto y documentación
 
