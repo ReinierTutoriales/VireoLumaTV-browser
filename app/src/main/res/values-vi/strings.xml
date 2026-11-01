@@ -61,6 +61,7 @@
     <string name="http_auth_user">Tên người dùng</string>
     <string name="http_auth_password">Mật khẩu</string>
     <string name="error_no_webview">Thiết bị này không có WebView dùng được. Hãy cài đặt hoặc cập nhật Android System WebView.</string>
+    <string name="webview_outdated">Công cụ hiển thị trang (Android System WebView) đã hơn sáu tháng chưa được cập nhật nên thiếu các bản vá bảo mật. Hãy cập nhật từ cửa hàng hoặc bản cập nhật hệ thống.</string>
     <string name="cert_title">Kết nối này không riêng tư</string>
     <string name="cert_site">Trang web</string>
     <string name="cert_problem">Vấn đề</string>

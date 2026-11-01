@@ -61,6 +61,7 @@
     <string name="http_auth_user">نام کاربری</string>
     <string name="http_auth_password">گذرواژه</string>
     <string name="error_no_webview">این دستگاه WebView قابل‌استفاده ندارد. Android System WebView را نصب یا به‌روز کنید.</string>
+    <string name="webview_outdated">موتور صفحه (Android System WebView) بیش از شش ماه به‌روز نشده و اصلاحیه‌های امنیتی را ندارد. آن را از فروشگاه یا به‌روزرسانی‌های سیستم به‌روز کنید.</string>
     <string name="cert_title">این اتصال خصوصی نیست</string>
     <string name="cert_site">سایت</string>
     <string name="cert_problem">مشکل</string>

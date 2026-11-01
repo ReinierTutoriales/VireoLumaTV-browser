@@ -163,6 +163,26 @@ class BrowserNavigationTest {
         }
     }
 
+    @Test fun anotherAppCannotReplaceTheShownPage() = Fixture().use { f ->
+        // The extra older versions honoured from any sender; no app may load into the shown tab.
+        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW,
+            android.net.Uri.parse("https://phishing.test/login"))
+            .putExtra("com.reiniertutoriales.vireolumatv.EXTRA_OPEN_IN_SAME_TAB", true)
+        val restore = com.reiniertutoriales.vireolumatv.webengine.Engines.replaceForTest(object :
+            com.reiniertutoriales.vireolumatv.webengine.EngineBackend {
+            override fun create(tab: BrowserTab): PageEngine = f.engine
+            override suspend fun clearCache(context: android.content.Context) {}
+            override val version = "test"
+        })
+        try {
+            f.activity.handleIntent(intent)
+        } finally { restore() }
+        assertEquals("https://example.test", f.tab.url)
+        assertEquals(2, f.tabs.openTabs.size)
+        assertEquals("https://phishing.test/login", f.tabs.openTabs[1].url)
+        assertNotSame(f.tab, f.tabs.currentTab.value)
+    }
+
     private class Fixture : AutoCloseable {
         val host = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
             get().setTheme(R.style.AppTheme)

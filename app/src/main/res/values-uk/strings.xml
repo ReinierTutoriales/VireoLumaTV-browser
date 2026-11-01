@@ -61,6 +61,7 @@
     <string name="http_auth_user">Ім\'я користувача</string>
     <string name="http_auth_password">Пароль</string>
     <string name="error_no_webview">На пристрої немає робочого WebView. Установіть або оновіть Android System WebView.</string>
+    <string name="webview_outdated">Рушій сторінок (Android System WebView) не оновлювався понад шість місяців, тому в ньому бракує виправлень безпеки. Оновіть його в магазині або через оновлення системи.</string>
     <string name="cert_title">Це з\'єднання не захищене</string>
     <string name="cert_site">Сайт</string>
     <string name="cert_problem">Проблема</string>

@@ -26,6 +26,15 @@ class DownloadUtilsGuessFileNameTest {
     private fun guess(url: String, disposition: String? = null, mime: String? = null) =
         FileNames.guessFileName(url, disposition, mime)
 
+    @Test fun theGuessedNameIsAlreadySafeForTheQueueAndTheNotice() {
+        // Shown before the service reserves a file and kept as the MediaStore name without a header.
+        assertEquals("invoice_fdp.apk", guess("https://example.test/invoice%E2%80%AEfdp.apk"))
+        assertEquals("invoice_fdp.zip", guess("https://example.test/x",
+            "attachment; filename*=UTF-8''invoice%E2%80%AEfdp.zip", "application/zip"))
+        assertEquals("a_b.txt", guess("https://example.test/a:b.txt"))
+        assertEquals("evil.zip", guess("https://example.test/x", "attachment; filename=\"..\\\\evil.zip\""))
+    }
+
     @Test fun nameComesFromTheAddressWithoutQuery() {
         assertEquals("report.pdf", guess("https://example.test/files/report.pdf?token=1"))
         assertEquals("a b.mp4", guess("https://example.test/a%20b.mp4"))
@@ -41,7 +50,8 @@ class DownloadUtilsGuessFileNameTest {
     @Test fun dispositionNameWinsOverTheAddress() {
         assertEquals("plain.pdf", guess("https://example.test/x", "attachment; filename=plain.pdf"))
         assertEquals("quoted name.pdf", guess("https://example.test/x", "attachment; filename=\"quoted name.pdf\""))
-        assertEquals("esc\"aped.pdf", guess("https://example.test/x", "attachment; filename=\"esc\\\"aped.pdf\""))
+        // The escaped quote is unescaped, then replaced: a quote is not allowed in a file name.
+        assertEquals("esc_aped.pdf", guess("https://example.test/x", "attachment; filename=\"esc\\\"aped.pdf\""))
         assertEquals("inline.pdf", guess("https://example.test/x", "INLINE;FILENAME=inline.pdf"))
         assertEquals("evil.pdf", guess("https://example.test/x", "attachment; filename=\"../../evil.pdf\""))
     }

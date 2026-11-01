@@ -61,6 +61,7 @@
     <string name="http_auth_user">שם משתמש</string>
     <string name="http_auth_password">סיסמה</string>
     <string name="error_no_webview">אין במכשיר WebView שמיש. יש להתקין או לעדכן את Android System WebView.</string>
+    <string name="webview_outdated">מנוע הדפים (Android System WebView) לא עודכן יותר משישה חודשים, ולכן חסרים בו תיקוני אבטחה. יש לעדכן אותו מהחנות או מעדכוני המערכת.</string>
     <string name="cert_title">החיבור הזה אינו פרטי</string>
     <string name="cert_site">אתר</string>
     <string name="cert_problem">בעיה</string>

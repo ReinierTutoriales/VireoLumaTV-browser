@@ -134,7 +134,8 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         setSupportMultipleWindows(true)
         setNeedInitialFocus(false)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) safeBrowsingEnabled = true
-        if (config.pageDebugging) setWebContentsDebuggingEnabled(true)
+        // Process-wide: every new page view follows the current choice, so turning it off sticks.
+        setWebContentsDebuggingEnabled(config.pageDebugging)
         // The interface is always dark, so the setting alone decides whether pages are darkened.
         val darken = config.darkenPages
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

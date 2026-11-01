@@ -38,6 +38,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.webkit.WebViewCompat
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.PrivateBrowserActivity
@@ -65,6 +66,7 @@ import com.reiniertutoriales.vireolumatv.webengine.Engines
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import com.reiniertutoriales.vireolumatv.webengine.webview.LegacyLocationGrants
 import com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter
+import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewFreshness
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import com.reiniertutoriales.vireolumatv.widgets.ToastBar
 import kotlinx.coroutines.Dispatchers
@@ -183,19 +185,17 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             (!config.adBlockEnabled || adBlocker.initialRulesReady.isCompleted)) handleIntent(intent)
     }
 
-    /** An address from another app opens in a new tab, or in the current one when the intent asks for it. */
-    private fun handleIntent(intent: Intent) {
+    /**
+     * An address from another app always opens in a new tab: no extra lets a sender replace the page
+     * the user is looking at, which would show the sender's content under the trusted tab.
+     */
+    internal fun handleIntent(intent: Intent) {
         val uri = intent.data
         if (!ExternalWebNavigation.isAllowed(uri)) {
             Log.w(TAG, "Rejected external navigation with scheme ${uri?.scheme}")
             return
         }
-        if (intent.getBooleanExtra(EXTRA_OPEN_IN_SAME_TAB, false) && tabStore.openTabs.isNotEmpty()) {
-            if (tabStore.currentTab.value == null) changeTab(tabStore.openTabs[0])
-            navigate(uri.toString())
-        } else {
-            openInNewTab(uri.toString(), tabStore.openTabs.size, closeCapsuleAfter = true, navigateImmediately = true)
-        }
+        openInNewTab(uri.toString(), tabStore.openTabs.size, closeCapsuleAfter = true, navigateImmediately = true)
     }
 
     override fun onStart() {
@@ -533,6 +533,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         // The provider is ready once a WebView exists; registering earlier could fail before the dialog above.
         ServiceWorkerFilter.install(this)
         LegacyLocationGrants.clearOnce(config.prefs, webViewProfile()) { GeolocationPermissions.getInstance().clearAll() }
+        warnIfWebViewIsStale()
         config.userAgentOverride.value?.let { tab.engine.userAgent = it }
         return view
     }
@@ -547,14 +548,36 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             .setCancelable(false)
             .setMessage(R.string.error_no_webview)
             .setNegativeButton(R.string.action_exit) { _, _ -> finish() }
-        val store = Intent(Intent.ACTION_VIEW, "market://details?id=$WEBVIEW_PACKAGE".toUri())
-        if (packageManager.queryIntentActivities(store, 0).isNotEmpty()) {
+        storeIntent(WEBVIEW_PACKAGE)?.let { store ->
             dialog.setPositiveButton(R.string.action_open_store) { _, _ ->
-                runCatching { startActivity(store) }.onFailure { Log.w(TAG, "Opening the app store failed", it) }
+                openStore(store)
                 finish()
             }
         }
         dialog.show()
+    }
+
+    /** Once per provider version, when the installed WebView has not been updated for a long time. */
+    private fun warnIfWebViewIsStale() {
+        val provider = runCatching { WebViewCompat.getCurrentWebViewPackage(this) }.getOrNull() ?: return
+        val notice = WebViewFreshness.pendingNotice(config.prefs, provider, System.currentTimeMillis()) ?: return
+        WebViewFreshness.noticeShown(config.prefs, notice)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.warning_title)
+            .setMessage(R.string.webview_outdated)
+            .setNegativeButton(android.R.string.ok, null)
+        storeIntent(provider.packageName)?.let { store ->
+            dialog.setPositiveButton(R.string.action_open_store) { _, _ -> openStore(store) }
+        }
+        dialog.show()
+    }
+
+    private fun storeIntent(packageName: String): Intent? =
+        Intent(Intent.ACTION_VIEW, "market://details?id=$packageName".toUri())
+            .takeIf { packageManager.queryIntentActivities(it, 0).isNotEmpty() }
+
+    private fun openStore(store: Intent) {
+        runCatching { startActivity(store) }.onFailure { Log.w(TAG, "Opening the app store failed", it) }
     }
 
     /** The capsule follows the shown tab: Back and Forward availability and the blocker shield. */
@@ -951,7 +974,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     private companion object {
         const val TAG = "MainActivity"
-        const val EXTRA_OPEN_IN_SAME_TAB = "com.reiniertutoriales.vireolumatv.EXTRA_OPEN_IN_SAME_TAB"
         const val WEBVIEW_PACKAGE = "com.google.android.webview"
         /** Codes for page permission requests, above the download queue's. */
         const val PAGE_PERMISSION_REQUESTS_START = 10100
