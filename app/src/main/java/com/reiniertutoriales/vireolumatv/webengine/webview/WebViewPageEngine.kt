@@ -265,7 +265,11 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         window?.onEnterFullscreen()
         webView?.visibility = View.GONE
         webView?.usePointer(false)
-        container?.pointerEnabled = false
+        // Fullscreen players such as YouTube Music often render touch controls without
+        // Android-focusable descendants. Keep the remote pointer available over the
+        // custom view so OK can send real taps to those controls without exiting video.
+        container?.pointerEnabled = pointerBeforeFullscreen
+        if (pointerBeforeFullscreen) container?.pointerController?.fadeIn()
         (view.parent as? ViewGroup)?.removeView(view)
         container?.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         fullscreenView = view
