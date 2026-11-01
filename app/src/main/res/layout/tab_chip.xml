@@ -44,7 +44,8 @@
         style="@style/Widget.Vireo.IconButton"
         android:layout_width="@dimen/control_size"
         android:layout_height="@dimen/control_size"
-        android:padding="10dp"
+        android:background="@drawable/bg_tab_close"
+        android:padding="15dp"
         android:contentDescription="@string/menu_close_tab"
         android:nextFocusUp="@id/address_field"
         android:src="@drawable/ic_tab_close" />

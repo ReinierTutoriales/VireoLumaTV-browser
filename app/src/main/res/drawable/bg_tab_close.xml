@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The tab's close control: the 48 dp touch and focus target stays, while the disc shown on
+     focus is 32 dp, so it sits inside the chip instead of filling its whole height. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="8dp">
+    <selector>
+        <item android:state_focused="true" android:state_pressed="true">
+            <shape android:shape="oval"><solid android:color="@color/on_surface_variant" /></shape>
+        </item>
+        <item android:state_focused="true">
+            <shape android:shape="oval"><solid android:color="@color/inverse_surface" /></shape>
+        </item>
+        <item>
+            <shape android:shape="oval"><solid android:color="@android:color/transparent" /></shape>
+        </item>
+    </selector>
+</inset>

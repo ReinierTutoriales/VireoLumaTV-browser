@@ -124,6 +124,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
         if (trusted != null && CertificateTrust.mayProceed(trusted, error)) {
             owner.trustedCertificate = null
             owner.lastSSLError = null
+            owner.onCertificateProceeded(error.url)
             handler.proceed()
             return
         }

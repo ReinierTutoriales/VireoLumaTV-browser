@@ -18,6 +18,7 @@ import android.view.View
 import android.webkit.WebBackForwardList
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.annotation.VisibleForTesting
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.webkit.WebSettingsCompat
@@ -62,6 +63,25 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
      * of another host, so an unused approval can never be spent later or elsewhere.
      */
     @Volatile internal var trustedCertificate: CertificateTrust.Approval? = null
+    /**
+     * The address whose certificate error WebView now lets through by itself: after proceed() it
+     * remembers that host and error for the whole process, which on a TV can mean days. The visit
+     * ends on a page of another host or when the view goes, and then that memory is cleared.
+     */
+    private var proceededUrl: String? = null
+    @VisibleForTesting internal var forgetProceededCertificates: () -> Unit = { clearSslPreferences() }
+
+    /** WebView was told to proceed past the certificate error of [url]. */
+    internal fun onCertificateProceeded(url: String?) {
+        proceededUrl = url
+    }
+
+    private fun endCertificateVisit(next: String?) {
+        val proceeded = proceededUrl ?: return
+        if (next != null && CertificateTrust.sameHost(proceeded, next)) return
+        proceededUrl = null
+        forgetProceededCertificates()
+    }
     @Volatile var certificateErrorPageUrl: String? = null
         private set
 
@@ -225,6 +245,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
             certificateErrorPageUrl = null
             // A page committed: the approval was used for it or is no longer needed.
             trustedCertificate = null
+            endCertificateVisit(url)
         }
     }
 
@@ -287,6 +308,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     }
 
     override fun destroy() {
+        endCertificateVisit(null)
         permissions.destroy()
         ui.removeCallbacks(reportBlockedAds)
         youtubeAdblock.destroy()

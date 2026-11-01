@@ -192,6 +192,7 @@ app/src/main/res/drawable/bg_list_item.xml	PROPIO
 app/src/main/res/drawable/bg_panel.xml	PROPIO
 app/src/main/res/drawable/bg_row.xml	PROPIO
 app/src/main/res/drawable/bg_scrim_top.xml	PROPIO
+app/src/main/res/drawable/bg_tab_close.xml	PROPIO
 app/src/main/res/drawable/bg_toast.xml	PROPIO
 app/src/main/res/drawable/cursor_menu_bg.xml	PROPIO
 app/src/main/res/drawable/ic_add.xml	PROPIO
