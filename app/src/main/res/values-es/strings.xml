@@ -201,4 +201,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">La cola de descargas está llena. Espera a que termine una descarga e inténtalo de nuevo.</string>
+    <string name="download_not_allowed">Android no permitió iniciar la descarga ahora. Vuelve a intentarlo con el navegador en pantalla.</string>
+    <string name="download_time_limit">Android detuvo las descargas: se alcanzó el límite de tiempo en segundo plano.</string>
 </resources>

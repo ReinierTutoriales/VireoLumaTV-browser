@@ -201,4 +201,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">La coda dei download è piena. Attendi il completamento di un download e riprova.</string>
+    <string name="download_not_allowed">Android non ha consentito di avviare il download ora. Riprova con il browser in primo piano.</string>
+    <string name="download_time_limit">Android ha interrotto i download: è stato raggiunto il limite di tempo in background.</string>
 </resources>

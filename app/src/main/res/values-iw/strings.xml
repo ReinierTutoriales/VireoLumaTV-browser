@@ -201,4 +201,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">תור ההורדות מלא. יש להמתין לסיום הורדה ולנסות שוב.</string>
+    <string name="download_not_allowed">Android לא איפשרה להתחיל את ההורדה כעת. יש לנסות שוב כשהדפדפן מוצג על המסך.</string>
+    <string name="download_time_limit">Android עצרה את ההורדות: הושגה מגבלת הזמן ברקע.</string>
 </resources>

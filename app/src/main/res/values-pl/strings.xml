@@ -203,4 +203,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">Kolejka pobierania jest pełna. Poczekaj na zakończenie pobierania i spróbuj ponownie.</string>
+    <string name="download_not_allowed">Android nie pozwolił teraz rozpocząć pobierania. Spróbuj ponownie, gdy przeglądarka jest na ekranie.</string>
+    <string name="download_time_limit">Android zatrzymał pobieranie: osiągnięto limit czasu działania w tle.</string>
 </resources>

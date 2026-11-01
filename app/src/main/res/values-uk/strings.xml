@@ -203,4 +203,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">Черга завантажень заповнена. Дочекайтеся завершення завантаження та спробуйте ще раз.</string>
+    <string name="download_not_allowed">Android зараз не дозволив почати завантаження. Спробуйте ще раз, коли браузер відкрито на екрані.</string>
+    <string name="download_time_limit">Android зупинив завантаження: досягнуто ліміт часу роботи у фоні.</string>
 </resources>

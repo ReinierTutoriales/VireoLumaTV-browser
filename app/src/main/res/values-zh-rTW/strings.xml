@@ -197,4 +197,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">下載佇列已滿。請等待一個下載完成後再試。</string>
+    <string name="download_not_allowed">Android 目前不允許開始下載。請在瀏覽器顯示於螢幕上時再試一次。</string>
+    <string name="download_time_limit">Android 已停止下載：已達到背景執行時間上限。</string>
 </resources>
