@@ -202,4 +202,5 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">Download queue is full. Wait for a download to finish and try again.</string>
+    <string name="about_tvbro_credit">Originally based on TV Bro source code · Fedir Tsapana</string>
 </resources>
