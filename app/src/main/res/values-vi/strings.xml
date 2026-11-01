@@ -161,12 +161,16 @@
     <string name="media_stop">Dừng phát</string>
     <string name="media_rewind">Lùi 10 giây</string>
     <string name="media_fast_forward">Tiến 10 giây</string>
+    <string name="favorite_added">Đã thêm vào mục yêu thích</string>
+    <string name="favorite_exists">Đã có trong mục yêu thích</string>
+    <string name="favorite_not_web">Chỉ có thể lưu trang web vào mục yêu thích</string>
     <string-array name="tabs_actions">
         <item>Thẻ mới</item>
         <item>Đóng</item>
         <item>Đóng tất cả</item>
         <item>Chuyển sang trái</item>
         <item>Chuyển sang phải</item>
+        <item>Thêm vào mục yêu thích</item>
     </string-array>
     <string-array name="popups_levels">
         <item>Cho phép tất cả</item>

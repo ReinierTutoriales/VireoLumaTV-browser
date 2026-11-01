@@ -161,12 +161,16 @@
     <string name="media_stop">停止播放</string>
     <string name="media_rewind">倒轉 10 秒</string>
     <string name="media_fast_forward">快轉 10 秒</string>
+    <string name="favorite_added">已加入我的最愛</string>
+    <string name="favorite_exists">已在我的最愛中</string>
+    <string name="favorite_not_web">只有網頁可以加入我的最愛</string>
     <string-array name="tabs_actions">
         <item>新分頁</item>
         <item>關閉</item>
         <item>全部關閉</item>
         <item>向左移</item>
         <item>向右移</item>
+        <item>加入我的最愛</item>
     </string-array>
     <string-array name="popups_levels">
         <item>全部允許</item>

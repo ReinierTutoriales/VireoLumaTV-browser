@@ -45,6 +45,7 @@ import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesPanel
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
 import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
 import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabChips
@@ -59,6 +60,7 @@ import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.utils.NetworkWatcher
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
+import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.Engines
@@ -361,6 +363,30 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         closeCapsule()
     }
 
+    /**
+     * Saves [tab] itself, with its title and address read now, wherever it has moved meanwhile. Only
+     * this explicit choice saves it; private mode keeps favorites, as its explanation tells the user.
+     */
+    internal fun addTabToFavorites(tab: BrowserTab) {
+        if (tab.closed || tabStore.openTabs.indexOf(tab) < 0) return
+        val title = tab.title
+        val url = tab.url
+        lifecycleScope.launch {
+            val result = try {
+                TabFavorites.add(AppDatabase.db.favoriteDao(), title, url)
+            } catch (error: Exception) {
+                if (error is kotlinx.coroutines.CancellationException) throw error
+                Log.w(TAG, "Saving the tab as a favorite failed", error)
+                return@launch toast(R.string.error)
+            }
+            toast(when (result) {
+                TabFavorites.Result.ADDED -> R.string.favorite_added
+                TabFavorites.Result.ALREADY_SAVED -> R.string.favorite_exists
+                TabFavorites.Result.NOT_A_WEB_PAGE -> R.string.favorite_not_web
+            })
+        }
+    }
+
     fun showFavorites() {
         val shown = tabStore.currentTab.value
         FavoritesPanel(this, lifecycleScope, shown?.title, shown?.url) { item -> item.url?.let(::navigate) }.show()
@@ -465,12 +491,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             openInNewTab(browserSettings.homePage, tabStore.openTabs.size, navigateImmediately = true)
         }
 
-        override fun addTabToFavorites(tab: BrowserTab) {
-            if (config.privateBrowsing || tab.closed || tabStore.openTabs.indexOf(tab) < 0) return
-            FavoritesPanel(this@MainActivity, lifecycleScope, tab.title, tab.url) { item ->
-                item.url?.let(::navigate)
-            }.show()
-        }
+        override fun addTabToFavorites(tab: BrowserTab) = this@MainActivity.addTabToFavorites(tab)
 
         override fun closeTab(tabState: BrowserTab?) = this@MainActivity.closeTab(tabState)
 

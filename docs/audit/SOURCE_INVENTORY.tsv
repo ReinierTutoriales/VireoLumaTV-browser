@@ -77,6 +77,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/Shortc
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditor.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteRows.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesPanel.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/TabFavorites.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/AboutPage.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/GeneralPage.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/settings/SettingsPages.kt	PROPIO
@@ -310,10 +311,12 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModelT
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsTabsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SingleLiveTabTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SiteSettingsCacheTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabActionsLocalesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabRestoreFallbackTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabStripKeysTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ToolbarStateTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/VisitHistoryTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/TabFavoritesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteDraftTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialogTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesListAdapterTest.kt	PROPIO

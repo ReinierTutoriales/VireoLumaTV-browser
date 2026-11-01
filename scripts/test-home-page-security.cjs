@@ -16,9 +16,10 @@ assert.equal(attribute(input, 'enterkeyhint'), 'search');
 assert.ok(/\brequired\b/.test(input));
 assert.equal(tags('button').length, 3);
 assert.equal(attribute(tags('button')[1], 'type'), 'button');
-assert.equal(attribute(tags('button')[1], 'id'), 'edit-bookmarks');
+assert.equal(attribute(tags('button')[1], 'id'), 'add-bookmark');
+// Edit comes last, after the saved shortcuts and the add control it acts on.
 assert.equal(attribute(tags('button')[2], 'type'), 'button');
-assert.equal(attribute(tags('button')[2], 'id'), 'add-bookmark');
+assert.equal(attribute(tags('button')[2], 'id'), 'edit-bookmarks');
 assert.equal(attribute(tags('button')[0], 'type'), 'submit');
 assert.equal(tags('a').length, 1);
 assert.equal(attribute(tags('a')[0], 'href'), 'https://m.youtube.com/');
@@ -123,3 +124,103 @@ assert.equal(home.input.value, 'televisión & música');
 for (let i = 0; i < 30; i++) home.add('https://example.com/' + i);
 assert.equal(home.nodes.length, 24);
 console.log('Home shortcuts passed: safe URLs, duplicates, icon fallback, reload, bounded storage and query trimming');
+
+// Editing: the same code with the edit control and the built-in YouTube shortcut present.
+function editable({store = {}, failWrite = false, failRead = false} = {}) {
+  const nodes = [];
+  let focused = null;
+  function node() {
+    const classes = new Set();
+    return {events: {}, children: [], attrs: {}, style: {}, hidden: false, textContent: '',
+      classList: {toggle(name, on) { if (on) classes.add(name); else classes.delete(name); }, contains: name => classes.has(name)},
+      addEventListener(k, f) { this.events[k] = f; }, removeEventListener(k) { delete this.events[k]; },
+      setAttribute(k, v) { this.attrs[k] = v; }, appendChild(child) { this.children.push(child); },
+      focus() { focused = this; }};
+  }
+  const list = node(), add = node(), input = node(), form = node(), edit = node(), youtube = node();
+  input.setCustomValidity = () => {};
+  list.querySelectorAll = () => nodes.slice();
+  list.removeChild = n => nodes.splice(nodes.indexOf(n), 1);
+  list.insertBefore = n => nodes.push(n);
+  const answers = {prompt: [], confirm: []}, alerts = [];
+  const localStorage = {
+    getItem(k) { if (failRead) throw Error('blocked'); return k in store ? store[k] : null; },
+    setItem(k, v) { if (failWrite) throw Error('full'); store[k] = v; },
+    removeItem(k) { if (failWrite) throw Error('full'); delete store[k]; },
+  };
+  vm.runInNewContext(source, {URL, encodeURIComponent, localStorage, document: {
+    getElementById: id => ({bookmarks: list, 'add-bookmark': add, 'search-input': input,
+      'edit-bookmarks': edit, 'default-youtube': youtube})[id],
+    createElement: () => node(), querySelector: () => form,
+  }, prompt: () => answers.prompt.shift(), confirm: () => answers.confirm.shift(), alert: m => alerts.push(m)});
+  const click = target => { let prevented = false; target.events.click({preventDefault() { prevented = true; }}); return prevented; };
+  return {nodes, store, alerts, edit, youtube, list, add, answers, click, focused: () => focused,
+    saved: () => JSON.parse(store['vireo.home.shortcuts.v1'] || '[]')};
+}
+const two = JSON.stringify(['https://a.test/', 'https://b.test/']);
+const page = editable({store: {'vireo.home.shortcuts.v1': two}});
+assert.equal(page.store['vireo.home.shortcuts.v1'], two, 'Loading never rewrites what earlier versions stored');
+assert.equal(page.click(page.nodes[0]), false, 'Outside edit mode a shortcut opens normally');
+assert.equal(page.click(page.youtube), false);
+page.click(page.edit);
+assert.equal(page.edit.textContent, 'Listo');
+assert.equal(page.edit.attrs['aria-pressed'], 'true');
+assert.ok(page.list.classList.contains('editing'));
+page.answers.prompt.push('c.test');
+assert.equal(page.click(page.nodes[0]), true);
+assert.deepEqual(page.saved(), ['https://c.test/', 'https://b.test/'], 'Edited in place, order kept');
+assert.equal(page.focused(), page.nodes[0], 'The remote stays on the edited shortcut');
+page.answers.prompt.push('https://b.test/'); page.click(page.nodes[0]);
+assert.deepEqual(page.saved(), ['https://c.test/', 'https://b.test/'], 'No duplicate by editing');
+page.answers.prompt.push('javascript:alert(1)'); page.click(page.nodes[0]);
+assert.deepEqual(page.saved(), ['https://c.test/', 'https://b.test/'], 'Only web addresses');
+page.answers.prompt.push(null); page.click(page.nodes[0]);
+assert.deepEqual(page.saved(), ['https://c.test/', 'https://b.test/'], 'Cancel changes nothing');
+page.answers.prompt.push(''); page.answers.confirm.push(false); page.click(page.nodes[1]);
+assert.equal(page.saved().length, 2, 'Removal needs a confirmation');
+page.answers.prompt.push(' '); page.answers.confirm.push(true); page.click(page.nodes[1]);
+assert.deepEqual(page.saved(), ['https://c.test/']);
+assert.equal(page.focused(), page.nodes[0], 'Focus moves to the nearest remaining shortcut');
+// The built-in YouTube shortcut: removed, kept removed after a restart, shown dimmed while editing, restored.
+page.answers.confirm.push(false);
+page.click(page.youtube);
+assert.ok(!('vireo.home.youtube.hidden.v1' in page.store), 'Removing YouTube needs a confirmation');
+page.answers.confirm.push(true);
+assert.equal(page.click(page.youtube), true);
+assert.equal(page.store['vireo.home.youtube.hidden.v1'], '1');
+assert.equal(page.youtube.hidden, false, 'While editing it stays visible so it can be restored');
+assert.ok(page.youtube.classList.contains('removed'));
+page.click(page.edit);
+assert.equal(page.youtube.hidden, true);
+assert.equal(page.youtube.style.display, 'none');
+const reloaded = editable({store: page.store});
+assert.equal(reloaded.youtube.hidden, true, 'Removal survives a restart');
+assert.deepEqual(reloaded.saved(), ['https://c.test/']);
+reloaded.click(reloaded.edit);
+reloaded.answers.confirm.push(true);
+reloaded.click(reloaded.youtube);
+assert.ok(!('vireo.home.youtube.hidden.v1' in reloaded.store));
+reloaded.click(reloaded.edit);
+assert.equal(reloaded.youtube.hidden, false);
+assert.equal(reloaded.youtube.attrs['aria-label'], 'YouTube');
+// Adding YouTube by address brings the built-in shortcut back instead of saving a copy.
+const hiddenYoutube = editable({store: {'vireo.home.youtube.hidden.v1': '1'}});
+hiddenYoutube.answers.prompt.push('www.youtube.com');
+hiddenYoutube.click(hiddenYoutube.add);
+assert.equal(hiddenYoutube.youtube.hidden, false);
+assert.deepEqual(hiddenYoutube.saved(), []);
+// A store that refuses writes leaves everything as it was and says so.
+const readOnly = editable({store: {'vireo.home.shortcuts.v1': two}, failWrite: true});
+readOnly.click(readOnly.edit);
+readOnly.answers.prompt.push('c.test');
+readOnly.click(readOnly.nodes[0]);
+readOnly.answers.confirm.push(true);
+readOnly.click(readOnly.youtube);
+assert.equal(readOnly.alerts.length, 2);
+assert.equal(readOnly.nodes[0].href, 'https://a.test/');
+assert.ok(!readOnly.youtube.classList.contains('removed'));
+// A store that cannot be read still shows YouTube, search and the controls.
+const blocked = editable({failRead: true});
+assert.equal(blocked.youtube.hidden, false);
+assert.equal(blocked.nodes.length, 0);
+console.log('Home editing passed: edit in place, confirmed removal, YouTube removal and restore across restarts, old data untouched, storage failures');

@@ -196,6 +196,28 @@ class BrowserNavigationTest {
         assertEquals("Online, then back after the loss", 2, f.restoredNetwork)
     }
 
+    @Test fun addToFavoritesInATabsOptionsActsOnThatTabEvenAfterItMoved() = Fixture().use { f ->
+        val other = BrowserTab(url = "https://other.test/page", title = "Other")
+        f.tabs.openTabs.add(other)
+        val chosen = mutableListOf<BrowserTab>()
+        f.vb.tabStrip.listener = object : com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabChips.Listener {
+            override fun onTitleChanged(index: Int) {}
+            override fun onTitleSelected(index: Int) {}
+            override fun onAddNewTabSelected() {}
+            override fun addTabToFavorites(tab: BrowserTab) { chosen += tab }
+            override fun closeTab(tabState: BrowserTab?) {}
+            override fun openInNewTab(url: String, tabIndex: Int) {}
+        }
+        f.vb.tabStrip.showTabOptions(other)
+        // The tab moves before the user picks the option.
+        f.tabs.openTabs.swap(0, 1)
+        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
+        val items = f.host.get().resources.getStringArray(R.array.tabs_actions)
+        val position = items.indexOf("Add to favorites")
+        dialog.listView.performItemClick(null, position, position.toLong())
+        assertEquals(listOf(other), chosen)
+    }
+
     private class Fixture : AutoCloseable {
         val host = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
             get().setTheme(R.style.AppTheme)

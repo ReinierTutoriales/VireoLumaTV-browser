@@ -29,6 +29,7 @@ class TabRowsTest {
             override fun onTitleChanged(index: Int) {}
             override fun onTitleSelected(index: Int) { fail("Close must not activate the title") }
             override fun onAddNewTabSelected() {}
+            override fun addTabToFavorites(tab: BrowserTab) {}
             override fun openInNewTab(url: String, tabIndex: Int) {}
             override fun closeTab(tabState: BrowserTab?) { closed += tabState }
         }
@@ -88,6 +89,7 @@ class TabRowsTest {
             override fun onTitleChanged(index: Int) {}
             override fun onTitleSelected(index: Int) {}
             override fun onAddNewTabSelected() {}
+            override fun addTabToFavorites(tab: BrowserTab) {}
             override fun openInNewTab(url: String, tabIndex: Int) {}
             override fun closeTab(tabState: BrowserTab?) { closed += tabState }
         }

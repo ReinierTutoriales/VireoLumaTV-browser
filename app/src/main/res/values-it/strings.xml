@@ -165,12 +165,16 @@
     <string name="media_stop">Interrompi riproduzione</string>
     <string name="media_rewind">Indietro di 10 secondi</string>
     <string name="media_fast_forward">Avanti di 10 secondi</string>
+    <string name="favorite_added">Aggiunta ai preferiti</string>
+    <string name="favorite_exists">Già nei preferiti</string>
+    <string name="favorite_not_web">Solo le pagine web possono essere salvate nei preferiti</string>
     <string-array name="tabs_actions">
         <item>Nuova scheda</item>
         <item>Chiudi</item>
         <item>Chiudi tutte</item>
         <item>Sposta a sinistra</item>
         <item>Sposta a destra</item>
+        <item>Aggiungi ai preferiti</item>
     </string-array>
     <string-array name="popups_levels">
         <item>Consenti tutto</item>

@@ -167,12 +167,16 @@
     <string name="media_stop">Зупинити відтворення</string>
     <string name="media_rewind">Назад на 10 секунд</string>
     <string name="media_fast_forward">Уперед на 10 секунд</string>
+    <string name="favorite_added">Додано до вибраного</string>
+    <string name="favorite_exists">Уже є у вибраному</string>
+    <string name="favorite_not_web">До вибраного можна зберегти лише вебсторінки</string>
     <string-array name="tabs_actions">
         <item>Нова вкладка</item>
         <item>Закрити</item>
         <item>Закрити всі</item>
         <item>Посунути ліворуч</item>
         <item>Посунути праворуч</item>
+        <item>Додати до вибраного</item>
     </string-array>
     <string-array name="popups_levels">
         <item>Дозволяти все</item>
