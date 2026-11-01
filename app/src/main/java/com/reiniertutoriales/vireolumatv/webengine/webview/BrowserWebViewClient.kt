@@ -108,13 +108,15 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
 
     /**
      * A certificate error stops the load. Only the certificate the user accepted on the warning page,
-     * and only once, may proceed. Errors of other hosts' resources are not shown as a page warning.
+     * for that same host and only once, may proceed. Errors of other hosts' resources are not shown
+     * as a page warning.
      */
     override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
         Log.e(BrowserWebView.TAG, "Certificate error for ${error.url}")
         val owner = this.view
-        if (owner.trustSsl && CertificateTrust.isSameCertificate(owner.lastSSLError?.certificate, error.certificate)) {
-            owner.trustSsl = false
+        val trusted = owner.trustedCertificate
+        if (trusted != null && CertificateTrust.mayProceed(trusted, error)) {
+            owner.trustedCertificate = null
             owner.lastSSLError = null
             handler.proceed()
             return

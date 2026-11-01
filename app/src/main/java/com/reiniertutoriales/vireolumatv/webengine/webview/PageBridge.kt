@@ -88,7 +88,7 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
         main.post {
             val view = page ?: return@post
             if (view.shownCertificateError() !== error) return@post
-            view.trustSsl = true
+            view.trustedCertificate = CertificateTrust.Approval(error.url, error.certificate)
             engine.load(error.url)
         }
     }

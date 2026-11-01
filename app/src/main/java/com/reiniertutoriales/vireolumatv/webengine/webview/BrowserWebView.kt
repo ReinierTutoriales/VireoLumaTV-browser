@@ -54,9 +54,14 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
 
     /** The address the browser asked for, before redirects; the base for ad and home page rules. */
     @Volatile var currentOriginalUrl: Uri? = null
-    /** The certificate error shown on the warning page, and whether the user chose to trust it once. */
+    /** The certificate error shown on the warning page. */
     @Volatile var lastSSLError: SslError? = null
-    var trustSsl = false
+    /**
+     * The certificate error the user chose to trust once on the warning page: it lets exactly that
+     * certificate through for its own host, and is dropped by the next committed page or by a load
+     * of another host, so an unused approval can never be spent later or elsewhere.
+     */
+    @Volatile internal var trustedCertificate: CertificateTrust.Approval? = null
     @Volatile var certificateErrorPageUrl: String? = null
         private set
 
@@ -148,6 +153,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
      */
     override fun loadUrl(url: String) {
         if (url != certificateErrorPageUrl) certificateErrorPageUrl = null
+        trustedCertificate?.let { if (!CertificateTrust.sameHost(it.url, url)) trustedCertificate = null }
         when {
             url == Config.HOME_URL_ALIAS -> loadHome()
             url.startsWith(APP_SCHEME) -> loadInternal(url.toUri())
@@ -212,7 +218,11 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         // cannot inject the previous document policy on older WebView providers.
         mediaPolicy.refresh()
         mediaPolicy.onPageStarted()
-        if (url != ASSET_BASE) certificateErrorPageUrl = null
+        if (url != ASSET_BASE) {
+            certificateErrorPageUrl = null
+            // A page committed: the approval was used for it or is no longer needed.
+            trustedCertificate = null
+        }
     }
 
     internal fun onDocumentStartReported(url: String) = youtubeAdblock.onPage(url)

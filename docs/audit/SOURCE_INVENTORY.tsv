@@ -355,6 +355,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobSpoolT
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobTransfersTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MeaningfulBackHistoryTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicyTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateTrustScopeTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateWarningPageTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorLayoutRecoveryTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorMenuFocusTest.kt	PROPIO
