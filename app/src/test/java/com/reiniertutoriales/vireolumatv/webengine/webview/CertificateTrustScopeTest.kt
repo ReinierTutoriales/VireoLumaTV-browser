@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -45,6 +46,32 @@ class CertificateTrustScopeTest {
             page.trustedCertificate = approved
             page.onDocumentStarted("file:///android_asset/")
             assertNotNull("The warning page itself does not spend it", page.trustedCertificate)
+        } finally { engine.detach(destroyView = true) }
+    }
+
+    @Test fun webViewForgetsAnAcceptedCertificateWhenTheVisitEnds() {
+        val app = RuntimeEnvironment.getApplication()
+        val engine = WebViewPageEngine(BrowserTab())
+        var forgotten = 0
+        try {
+            val page = engine.createView(app) as BrowserWebView
+            page.forgetProceededCertificates = { forgotten++ }
+            page.onDocumentStarted("https://other.test/")
+            assertEquals("Nothing accepted, nothing to forget", 0, forgotten)
+
+            page.onCertificateProceeded("https://self-signed.test/login")
+            page.onDocumentStarted("https://self-signed.test/login")
+            page.onDocumentStarted("https://SELF-SIGNED.test/account")
+            page.onDocumentStarted("file:///android_asset/")
+            assertEquals("Pages of the same host and the warning page keep it", 0, forgotten)
+            page.onDocumentStarted("https://bank.test/")
+            assertEquals("Another host ends the visit", 1, forgotten)
+            page.onDocumentStarted("https://self-signed.test/")
+            assertEquals("Once", 1, forgotten)
+
+            page.onCertificateProceeded("https://self-signed.test/")
+            engine.detach(destroyView = true)
+            assertEquals("Closing the tab ends the visit", 2, forgotten)
         } finally { engine.detach(destroyView = true) }
     }
 }

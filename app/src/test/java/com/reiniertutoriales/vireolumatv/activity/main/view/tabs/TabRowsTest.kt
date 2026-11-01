@@ -46,6 +46,11 @@ class TabRowsTest {
             val close = row.findViewById<android.view.View>(R.id.close_tab_button)
             val target = parent.resources.getDimensionPixelSize(R.dimen.control_size)
             assertTrue(close.width >= target && close.height >= target)
+            // Inside that target the X is drawn at 18 dp and its focus disc at 32 dp, not the chip's height.
+            val dp = parent.resources.displayMetrics.density
+            assertEquals((18 * dp).toInt(), close.width - close.paddingLeft - close.paddingRight)
+            val disc = android.graphics.Rect().also { close.background.getPadding(it) }
+            assertEquals((32 * dp).toInt(), close.width - disc.left - disc.right)
             fun key(view: android.view.View, code: Int) {
                 view.dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, code))
                 view.dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, code))
