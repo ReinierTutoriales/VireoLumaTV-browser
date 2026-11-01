@@ -507,6 +507,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val current = tabStore.currentTab.value
         vb.tabStrip.current = tabs.indexOf(current).coerceAtLeast(0)
         if (keepCapsule) {
+            // Showing the neighbour focused its page behind the capsule; keys must stay in the strip.
+            vb.tabStrip.requestFocus()
             previewGeneration++
             mainThread.removeCallbacks(showFocusedPreview)
             focusedPreviewTab = null
@@ -561,6 +563,15 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
         vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
         updateAdblockStatus(tab)
+    }
+
+    /** Puts the strip back on the shown tab; with no shown tab left, the strip's choice is opened instead. */
+    private fun cancelStripSelection() {
+        val shown = tabStore.currentTab.value
+        val index = tabStore.openTabs.indexOf(shown)
+        if (shown == null || index < 0) return commitStripSelection()
+        vb.tabStrip.current = index
+        vb.controlsRow.showAddress(shown.url)
     }
 
     /** Commits the tab the strip shows as selected, or opens one when the strip points past the tabs. */
@@ -813,7 +824,10 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         return true
     }
 
-    /** Back closes the innermost thing open: pointer menu, fullscreen, typing, capsule, grab mode; else opens the capsule. */
+    /**
+     * Back closes the innermost thing open: pointer menu, fullscreen, typing, capsule, grab mode,
+     * D-pad mode (before any web history, as its help promises); else opens the capsule.
+     */
     @VisibleForTesting
     internal fun consumeBack() {
         val pointer = vb.pageContainer.pointerController
@@ -823,13 +837,14 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             vb.controlsRow.isEditingAddress -> vb.controlsRow.cancelAddressInput()
             overlayVisible -> closeCapsule()
             pointer.canGoBackInPage() -> pointer.consumeBack()
-            shouldNavigateYouTubeHistory(tabStore.currentTab.value?.engine?.url, tabStore.currentTab.value?.engine?.canGoBack == true) ->
-                tabStore.currentTab.value?.engine?.back()
-            else -> {
+            !vb.pageContainer.pointerEnabled -> {
+                // Leaving D-pad mode returns to the pointer on the same page; nothing else happens.
                 tabStore.currentTab.value?.engine?.setPointerMode(true)
                 backPresses.holdBGoesBack = false
-                openCapsule()
             }
+            shouldNavigateYouTubeHistory(tabStore.currentTab.value?.engine?.url, tabStore.currentTab.value?.engine?.canGoBack == true) ->
+                tabStore.currentTab.value?.engine?.back()
+            else -> openCapsule()
         }
     }
 
@@ -905,7 +920,11 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.tabPreview.setImageBitmap(picture)
     }
 
-    /** Closes the capsule at once (it stops owning focus even if an animation was cut) and returns to the page. */
+    /**
+     * Closes the capsule at once (it stops owning focus even if an animation was cut) and returns to
+     * the shown page. A tab only previewed in the strip is not opened: OK on it does that
+     * (onTitleSelected); Back, Down or a touch return to the tab that was shown.
+     */
     @VisibleForTesting
     internal fun closeCapsule() {
         val wasVisible = overlayVisible
@@ -923,7 +942,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.controlsOverlay.alpha = 1f
         vb.tabPreview.translationY = 0f
         showPicture(null, placeholder = false)
-        if (wasVisible) commitStripSelection()
+        if (wasVisible) cancelStripSelection()
         if (!vb.pointerMenu.isVisible) {
             vb.pageContainer.visibility = View.VISIBLE
             tabStore.currentTab.value?.engine?.view?.requestFocus()
