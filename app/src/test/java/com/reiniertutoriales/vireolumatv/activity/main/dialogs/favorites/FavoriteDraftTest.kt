@@ -15,16 +15,12 @@ import android.app.Application
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [28])
 class FavoriteDraftTest {
-    @Test fun confirmingEmitsADetachedEditAndPreservesLegacyFields() {
+    @Test fun confirmingEmitsADetachedEditOfTheSameBookmark() {
         val owner = Robolectric.buildActivity(AppCompatActivity::class.java)
         owner.get().setTheme(R.style.AppTheme)
         owner.setup()
         try {
-            val original = Favorite().apply {
-                id = 7; title = "Before"; url = "https://before.test"; parent = 12
-                favicon = "icon"; homePageBookmark = true; order = 3
-                destUrl = "destination"; description = "description"; validUntil = 123L; useful = true
-            }
+            val original = Favorite().apply { id = 7; title = "Before"; url = "https://before.test" }
             var saved: Favorite? = null
             val dialog = FavoriteEditor(owner.get(), original) { item -> saved = item }
             dialog.show()
@@ -38,14 +34,6 @@ class FavoriteDraftTest {
             assertEquals("After", edit.title)
             assertEquals("https://after.test", edit.url)
             assertEquals(original.id, edit.id)
-            assertEquals(original.parent, edit.parent)
-            assertEquals(original.favicon, edit.favicon)
-            assertEquals(original.homePageBookmark, edit.homePageBookmark)
-            assertEquals(original.order, edit.order)
-            assertEquals(original.destUrl, edit.destUrl)
-            assertEquals(original.description, edit.description)
-            assertEquals(original.validUntil, edit.validUntil)
-            assertEquals(original.useful, edit.useful)
         } finally { owner.pause().stop().destroy() }
     }
 

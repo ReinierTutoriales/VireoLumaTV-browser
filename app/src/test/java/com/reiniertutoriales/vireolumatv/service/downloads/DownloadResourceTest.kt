@@ -94,7 +94,7 @@ class DownloadResourceTest {
     @Test fun failedHistoryInsertStillClosesInputDeletesReservationAndReportsFailure() {
         val db = com.reiniertutoriales.vireolumatv.singleton.AppDatabase.db
         val sql = db.openHelper.writableDatabase
-        sql.execSQL("CREATE TRIGGER reject_test_insert BEFORE INSERT ON downloads BEGIN SELECT RAISE(ABORT, 'history unavailable'); END")
+        sql.execSQL("CREATE TRIGGER reject_test_insert BEFORE INSERT ON download_entries BEGIN SELECT RAISE(ABORT, 'history unavailable'); END")
         val executor = java.util.concurrent.Executors.newSingleThreadExecutor()
         val reserved = File(VireoLumaTVApp.instance.cacheDir, "history-failure.bin").apply { createNewFile() }
         var closed = false
@@ -132,7 +132,7 @@ class DownloadResourceTest {
         val info = Download().apply { filename = "metadata-test.bin" }
         try {
             executor.submit { DownloadHistory.insert(info) }.get(5, java.util.concurrent.TimeUnit.SECONDS)
-            sql.execSQL("CREATE TRIGGER reject_test_update BEFORE UPDATE ON downloads BEGIN SELECT RAISE(ABORT, 'history unavailable'); END")
+            sql.execSQL("CREATE TRIGGER reject_test_update BEFORE UPDATE ON download_entries BEGIN SELECT RAISE(ABORT, 'history unavailable'); END")
             info.size = 42
             executor.submit { DownloadHistory.update(info) }.get(5, java.util.concurrent.TimeUnit.SECONDS)
             assertEquals(42L, info.size)

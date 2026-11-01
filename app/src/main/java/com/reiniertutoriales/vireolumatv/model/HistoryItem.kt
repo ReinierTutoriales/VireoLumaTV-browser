@@ -6,23 +6,21 @@ import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-/** One visited page, the "history" table of schema 19. */
+/** One visited page, the "visits" table; private visits are never stored. */
 @Entity(
-    tableName = "history",
+    tableName = "visits",
     indices = [
-        Index(value = ["time"], name = "history_time_idx"),
-        Index(value = ["title"], name = "history_title_idx"),
-        Index(value = ["url"], name = "history_url_idx"),
+        Index(value = ["visited_at"], name = "visits_time_idx"),
+        Index(value = ["title"], name = "visits_title_idx"),
+        Index(value = ["address"], name = "visits_address_idx"),
     ],
 )
 class HistoryItem {
     @PrimaryKey(autoGenerate = true) var id: Long = 0
-    @ColumnInfo(name = "time") var time: Long = 0
+    @ColumnInfo(name = "visited_at") var time: Long = 0
     @ColumnInfo(name = "title") var title: String = ""
-    @ColumnInfo(name = "url") var url: String = ""
-    @ColumnInfo(name = "favicon") var favicon: String? = null
-    /** A column of schema 19 that is no longer written; private visits are never stored. */
-    @ColumnInfo(name = "incognito") var incognito: Boolean? = null
+    @ColumnInfo(name = "address") var url: String = ""
+    @ColumnInfo(name = "icon") var favicon: String? = null
 
     /** A day heading row in the history list, not a visit. */
     @Ignore var isDayHeader = false

@@ -5,13 +5,13 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-/** Per-site choices, the "hosts" table of schema 19; one row per host name. */
-@Entity(tableName = "hosts", indices = [Index(value = ["host_name"], name = "hosts_name_idx", unique = true)])
-class SiteSettings(@ColumnInfo(name = "host_name") val hostName: String) {
+/** Per-site choices, the "site_settings" table; one row per host name. */
+@Entity(tableName = "site_settings", indices = [Index(value = ["host"], name = "site_settings_host_idx", unique = true)])
+class SiteSettings(@ColumnInfo(name = "host") val hostName: String) {
     @PrimaryKey(autoGenerate = true) var id: Long = 0
     /** One of the POPUP_BLOCK_* levels; null means [DEFAULT_POPUP_POLICY]. */
-    @ColumnInfo(name = "popup_block_level") var popupBlockLevel: Int? = null
-    @ColumnInfo(name = "favicon") var favicon: String? = null
+    @ColumnInfo(name = "popup_policy") var popupBlockLevel: Int? = null
+    @ColumnInfo(name = "icon") var favicon: String? = null
 
     companion object {
         const val POPUPS_ALLOWED = 0

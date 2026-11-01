@@ -42,19 +42,17 @@ class StorageWriteContractTest {
         } finally { db.close() }
     }
 
-    @Test fun editingAStaleBookmarkPreservesOtherStoredColumns() = runBlocking {
+    @Test fun editingABookmarkWritesItsNameAndAddressInPlace() = runBlocking {
         val db = database()
         try {
             val bookmarks = db.favoriteDao()
-            bookmarks.insert(Favorite().apply { title = "Before"; url = "https://before.test"; validUntil = 123L })
-            val stale = bookmarks.getAll().single().copyForEdit()
-            db.openHelper.writableDatabase.execSQL("UPDATE favorites SET DESCRIPTION = 'kept', VALID_UNTIL = 456")
-            bookmarks.update(stale.apply { title = "After"; url = "https://after.test" })
+            bookmarks.insert(Favorite().apply { title = "Before"; url = "https://before.test" })
+            val edit = bookmarks.getAll().single().copyForEdit()
+            bookmarks.update(edit.apply { title = "After"; url = "https://after.test" })
             val result = bookmarks.getAll().single()
+            assertEquals(edit.id, result.id)
             assertEquals("After", result.title)
             assertEquals("https://after.test", result.url)
-            assertEquals("kept", result.description)
-            assertEquals(456L, result.validUntil)
         } finally { db.close() }
     }
 

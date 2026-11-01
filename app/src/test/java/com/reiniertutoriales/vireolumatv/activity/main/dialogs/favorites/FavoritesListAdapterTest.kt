@@ -79,7 +79,7 @@ class FavoritesListAdapterTest {
         }
     }
 
-    @Test fun aFolderIsNotOpenedAsAPage() = withList(listOf(bookmark(3, "Carpeta", null))) { list, _ ->
+    @Test fun aBookmarkWithoutAddressIsNotOpened() = withList(listOf(bookmark(3, "Sin dirección", null))) { list, _ ->
         list.row(0).findViewById<View>(R.id.row_body).performClick()
         assertTrue(opened.isEmpty())
     }

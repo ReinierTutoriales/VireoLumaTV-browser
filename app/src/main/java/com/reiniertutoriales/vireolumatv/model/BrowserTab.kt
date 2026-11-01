@@ -21,7 +21,7 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * One open tab, the "tabs" table of schema 19. The stored part says what the tab shows; the
+ * One open tab, the "open_tabs" table. The stored part says what the tab shows; the
  * engine and the fields marked @Ignore exist only while the browser runs. Navigation history
  * lives in a state file under [HISTORY_DIR] named by [wvStateFileName], and the preview in
  * [PREVIEW_DIR].
@@ -30,22 +30,20 @@ import java.util.concurrent.atomic.AtomicLong
  * lookups and removals never mistake one for another. [copy] makes a detached snapshot for saving.
  * Every stored field names its column, so renaming a property can never change the schema.
  */
-@Entity(tableName = "tabs")
+@Entity(tableName = "open_tabs")
 data class BrowserTab(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
-    @ColumnInfo(name = "url") var url: String = "",
+    @ColumnInfo(name = "address") var url: String = "",
     @ColumnInfo(name = "title") var title: String = "",
-    @ColumnInfo(name = "selected") var selected: Boolean = false,
-    @ColumnInfo(name = "thumbnailHash") var thumbnailHash: String? = null,
-    @ColumnInfo(name = "faviconHash") var faviconHash: String? = null,
-    @ColumnInfo(name = "incognito") var incognito: Boolean = false,
-    @ColumnInfo(name = "position") var position: Int = 0,
-    /** A column of schema 19 that is no longer read; state lives in a file. */
-    @ColumnInfo(name = "wv_state", typeAffinity = ColumnInfo.BLOB) var wvState: ByteArray? = null,
-    @ColumnInfo(name = "wv_state_file") var wvStateFileName: String? = null,
+    @ColumnInfo(name = "is_shown") var selected: Boolean = false,
+    @ColumnInfo(name = "preview_key") var thumbnailHash: String? = null,
+    @ColumnInfo(name = "icon_key") var faviconHash: String? = null,
+    @ColumnInfo(name = "is_private") var incognito: Boolean = false,
+    @ColumnInfo(name = "sort_order") var position: Int = 0,
+    @ColumnInfo(name = "state_file") var wvStateFileName: String? = null,
     /** This tab's ad blocking, or null to follow the setting. */
-    @ColumnInfo(name = "adblock") var adblock: Boolean? = null,
-    @ColumnInfo(name = "scale") var scale: Float? = null,
+    @ColumnInfo(name = "blocks_ads") var adblock: Boolean? = null,
+    @ColumnInfo(name = "zoom") var scale: Float? = null,
 ) {
     @Ignore var thumbnail: Bitmap? = null
     /** Engine state taken when the tab was last paused, kept until it is written to its file. */

@@ -16,13 +16,13 @@ import com.reiniertutoriales.vireolumatv.model.dao.SiteSettingsDao
 import com.reiniertutoriales.vireolumatv.model.dao.TabDao
 
 /**
- * The browser's database, "main.db". Every install of this application ID was created at
- * version 19 (app/schemas/.../19.json), so there is no older version to migrate from. A future
- * schema change must raise the version and add its migration here, tested against 19.json.
+ * The browser's database, "main.db", at schema 20 (app/schemas/.../20.json). Installs from before
+ * 2.0.13 are at schema 19 and move to 20 through [SchemaMigrations.FROM_19_TO_20], keeping their rows.
+ * A later schema change raises the version and adds its migration, tested against the exported JSON.
  */
 @Database(
     entities = [Download::class, Favorite::class, HistoryItem::class, BrowserTab::class, SiteSettings::class],
-    version = 19,
+    version = 20,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -36,7 +36,9 @@ abstract class AppDatabase : RoomDatabase() {
         const val FILE_NAME = "main.db"
 
         val db: AppDatabase by lazy {
-            Room.databaseBuilder(VireoLumaTVApp.instance, AppDatabase::class.java, FILE_NAME).build()
+            Room.databaseBuilder(VireoLumaTVApp.instance, AppDatabase::class.java, FILE_NAME)
+                .addMigrations(SchemaMigrations.FROM_19_TO_20)
+                .build()
         }
     }
 }

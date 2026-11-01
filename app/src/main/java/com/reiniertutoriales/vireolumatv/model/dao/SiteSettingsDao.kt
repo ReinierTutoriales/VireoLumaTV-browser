@@ -18,19 +18,19 @@ abstract class SiteSettingsDao {
     /** The number of finished writes; a lookup is current while this has not moved since it began. */
     fun generation(): Long = writes.get()
 
-    @Query("SELECT * FROM hosts WHERE host_name = :name LIMIT 1")
+    @Query("SELECT * FROM site_settings WHERE host = :name LIMIT 1")
     abstract fun findByHostName(name: String): SiteSettings?
 
-    @Query("SELECT * FROM hosts WHERE host_name = :name LIMIT 1")
+    @Query("SELECT * FROM site_settings WHERE host = :name LIMIT 1")
     protected abstract suspend fun load(name: String): SiteSettings
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     protected abstract suspend fun addIfMissing(item: SiteSettings): Long
 
-    @Query("UPDATE hosts SET favicon = :favicon WHERE host_name = :host")
+    @Query("UPDATE site_settings SET icon = :favicon WHERE host = :host")
     protected abstract suspend fun writeFavicon(host: String, favicon: String?)
 
-    @Query("UPDATE hosts SET popup_block_level = :level WHERE host_name = :host")
+    @Query("UPDATE site_settings SET popup_policy = :level WHERE host = :host")
     protected abstract suspend fun writePopupLevel(host: String, level: Int)
 
     @Transaction

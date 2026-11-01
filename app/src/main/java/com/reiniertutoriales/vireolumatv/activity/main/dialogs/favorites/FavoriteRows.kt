@@ -55,7 +55,7 @@ class FavoriteRows(
             url.text = item.url
             icon.bind(item.url)
             delete.visibility = if (editMode) View.VISIBLE else View.GONE
-            content.setOnClickListener { if (editMode) onEdit(item) else if (!item.isFolder) onOpen(item) }
+            content.setOnClickListener { if (editMode) onEdit(item) else if (item.url != null) onOpen(item) }
             delete.setOnClickListener { onDelete(item) }
         }
     }
