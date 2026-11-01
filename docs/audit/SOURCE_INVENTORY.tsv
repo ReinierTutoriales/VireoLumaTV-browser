@@ -125,6 +125,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BackPresses.kt	REESCRI
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BoundedReader.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BundleBytes.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/Connectivity.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/CookiePersistence.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/Dates.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/Extensions.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/FileNames.kt	REESCRITO
@@ -348,6 +349,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ApkInstallerTest.kt	PR
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapterTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BoundedReaderTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BundleBytesTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/CookiePersistenceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtilsDataUrlTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtilsGuessFileNameTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtilsSanitizeFileNameTest.kt	PROPIO

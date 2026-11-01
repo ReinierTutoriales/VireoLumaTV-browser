@@ -196,6 +196,30 @@ class BrowserNavigationTest {
         assertEquals("Online, then back after the loss", 2, f.restoredNetwork)
     }
 
+    @Test fun leavingTheScreenAsksToKeepTheSessionExceptInPrivateMode() {
+        // Robolectric's service binding needs a component to report; the browser ignores a foreign binder.
+        org.robolectric.Shadows.shadowOf(org.robolectric.RuntimeEnvironment.getApplication())
+            .setComponentNameAndServiceForBindService(
+                android.content.ComponentName("test", "Downloads"), android.os.Binder())
+        val controller = Robolectric.buildActivity(MainActivity::class.java)
+        val activity = controller.get()
+        val modes = mutableListOf<Boolean>()
+        activity.cookies = com.reiniertutoriales.vireolumatv.utils.CookiePersistence({ it.run() }, { modes += true })
+        val wasPrivate = activity.config.privateBrowsing
+        try {
+            controller.setup()
+            controller.pause().stop()
+            assertEquals("One write when the browser leaves the screen", 1, modes.size)
+            controller.start().resume()
+            activity.config.privateBrowsing = true
+            controller.pause().stop()
+            assertEquals("Private sessions are not written to keep", 1, modes.size)
+        } finally {
+            activity.config.privateBrowsing = wasPrivate
+            controller.destroy()
+        }
+    }
+
     private class Fixture : AutoCloseable {
         val host = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
             get().setTheme(R.style.AppTheme)
