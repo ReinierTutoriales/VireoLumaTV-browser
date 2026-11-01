@@ -201,4 +201,5 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">La coda dei download è piena. Attendi il completamento di un download e riprova.</string>
+    <string name="about_tvbro_credit">Basato in origine sul codice sorgente di TV Bro · Fedir Tsapana</string>
 </resources>
