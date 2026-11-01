@@ -44,3 +44,12 @@ Each published release includes RELEASE_SOURCE.txt, identifying the exact applic
 source commit, and SIGNING.txt, identifying its APK certificate. SHA256SUMS.txt and
 its signature authenticate the release files. Consult the source and notices of the
 specific release you distribute.
+
+## TV Bro source attribution
+
+VireoLumaTV originated from source code of TV Bro, copyright (c) 2019 Fedir Tsapana.
+TV Bro source: https://github.com/truefedex/tv-bro
+The TV Bro source license and its redistribution conditions remain applicable to
+any portions of that source retained in this application. The MIT license for
+original VireoLumaTV contributions does not supersede those conditions.
+Full TV Bro license: https://github.com/truefedex/tv-bro/blob/master/LICENSE.md
