@@ -14,3 +14,7 @@ local.properties
 *.jks
 *.keystore
 *.hprof
+
+# Generated Python bytecode
+__pycache__/
+*.pyc
