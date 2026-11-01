@@ -186,7 +186,8 @@
         <item>Página en blanco</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>Automática</item>
+        <item>Automática (lo mejor que decodifica la TV)</item>
+        <item>Sin límite</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>

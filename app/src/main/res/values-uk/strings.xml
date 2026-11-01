@@ -188,7 +188,8 @@
         <item>Порожня сторінка</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>Автоматично</item>
+        <item>Автоматично (найкраще, що декодує ТБ)</item>
+        <item>Без обмежень</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>

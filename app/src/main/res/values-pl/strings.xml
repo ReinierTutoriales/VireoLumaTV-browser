@@ -188,7 +188,8 @@
         <item>Pusta strona</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>Automatyczna</item>
+        <item>Automatyczna (najlepsza, jaką dekoduje telewizor)</item>
+        <item>Bez limitu</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>

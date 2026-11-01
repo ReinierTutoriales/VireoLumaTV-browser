@@ -184,7 +184,8 @@
         <item>صفحهٔ خالی</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>خودکار</item>
+        <item>خودکار (بهترین کیفیتی که تلویزیون رمزگشایی می‌کند)</item>
+        <item>بدون محدودیت</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>

@@ -182,7 +182,8 @@
         <item>空白页</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>自动</item>
+        <item>自动（电视可解码的最佳画质）</item>
+        <item>不限制</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>

@@ -1,6 +1,7 @@
-// Media decoding policy for low-end TVs. Runs at document start in every frame. It only answers
-// capability queries (MediaSource/canPlayType/mediaCapabilities) so sites pick a stream the TV
-// decodes in hardware; it never touches network requests or playback state.
+// Media decoding policy for TVs. Runs at document start in every frame. It only answers capability
+// queries (MediaSource/canPlayType/mediaCapabilities) so sites pick the best stream the TV decodes
+// in hardware: up to the size, frame rate and bit depth its decoders handle, and not above, where
+// WebView would fall back to software decoding. It never touches network requests or playback.
 (function (config) {
     'use strict';
     if (!config || window.__vireoMediaPolicy) return;
@@ -10,6 +11,8 @@
     var blockAv1 = config.block.indexOf('av1') !== -1;
     var maxHeight = config.maxHeight | 0;
     var maxWidth = Math.round(maxHeight * 16 / 9);
+    // Per codec family: highest height decoded in hardware at 30 and 60 fps, and 10-bit support.
+    var hw = config.hw || {};
 
     function codecsOf(type) {
         var match = /codecs\s*=\s*"?([^";]*)"?/.exec(type);
@@ -35,10 +38,46 @@
         if (width && height) return width * height > maxWidth * maxHeight;
         return height > maxHeight || width > maxWidth;
     }
+    function familyOf(codecs) {
+        if (/(^|[\s,])(avc1|avc3)\./.test(codecs)) return 'avc';
+        if (/(^|[\s,])(hev1|hvc1)\./.test(codecs)) return 'hevc';
+        if (/(^|[\s,])vp0?9(\.|,|\s|$)/.test(codecs)) return 'vp9';
+        if (/(^|[\s,])vp0?8(\.|,|\s|$)/.test(codecs)) return 'vp8';
+        if (/(^|[\s,])av01\./.test(codecs)) return 'av1';
+        return '';
+    }
+    // 10-bit (HDR) streams, from the codec string: VP9 profile 2/3 or depth 10+, AV1 depth 10+,
+    // HEVC Main 10 (profile idc 2).
+    function tenBit(family, codecs) {
+        var m;
+        if (family === 'vp9' && (m = /vp09\.(\d\d)\.\d\d\.(\d\d)/.exec(codecs))) return +m[1] >= 2 || +m[2] >= 10;
+        if (family === 'av1' && (m = /av01\.\d\.\d\d[mh]\.(\d\d)/.exec(codecs))) return +m[1] >= 10;
+        if (family === 'hevc' && (m = /(hev1|hvc1)\.[abc]?(\d+)/.exec(codecs))) return +m[2] === 2;
+        return false;
+    }
+    // Above what the hardware decoders handle for this codec. Sizes are compared on their short
+    // and long sides, so portrait videos get the same limit as landscape ones.
+    function overHardware(codecs, width, height, fps) {
+        var family = familyOf(codecs);
+        var limits = family && hw[family];
+        if (!limits) return false;
+        if (tenBit(family, codecs) && !limits.ten) return true;
+        if (!width && !height) return false;
+        var limit = fps > 30 ? limits.h60 : limits.h30;
+        if (!limit) return true;
+        var short = Math.min(width || height, height || width), long = Math.max(width, height);
+        return short > limit || long > Math.round(limit * 16 / 9);
+    }
+    function withinHardware(codecs) {
+        var family = familyOf(codecs);
+        return !!(family && hw[family]);
+    }
     function rejectedType(type) {
-        return blockedCodec(type) ||
-            (typeof type === 'string' && overCap(numberParam(type.toLowerCase(), 'width'),
-                numberParam(type.toLowerCase(), 'height')));
+        if (typeof type !== 'string') return false;
+        var lower = type.toLowerCase();
+        var width = numberParam(lower, 'width'), height = numberParam(lower, 'height');
+        return blockedCodec(type) || overCap(width, height) ||
+            overHardware(codecsOf(lower), width, height, numberParam(lower, 'framerate'));
     }
 
     function wrapIsTypeSupported(owner) {
@@ -59,7 +98,8 @@
         var originalCanPlay = mediaProto.canPlayType;
         try {
             mediaProto.canPlayType = function (type) {
-                return blockedCodec(type) ? '' : originalCanPlay.call(this, type);
+                return blockedCodec(type) || (typeof type === 'string' && overHardware(codecsOf(type.toLowerCase()), 0, 0, 0)) ?
+                    '' : originalCanPlay.call(this, type);
             };
         } catch (_) {}
     }
@@ -70,11 +110,23 @@
         try {
             capabilities.decodingInfo = function (configuration) {
                 var video = configuration && configuration.video;
-                if (video && (blockedCodec(video.contentType) || overCap(video.width | 0, video.height | 0))) {
+                var codecs = video && typeof video.contentType === 'string' ? codecsOf(video.contentType.toLowerCase()) : '';
+                if (video && (blockedCodec(video.contentType) || overCap(video.width | 0, video.height | 0) ||
+                        overHardware(codecs, video.width | 0, video.height | 0, +video.framerate || 0))) {
                     return Promise.resolve({supported: false, smooth: false, powerEfficient: false,
                         configuration: configuration});
                 }
-                return originalDecodingInfo.apply(this, arguments);
+                var answer = originalDecodingInfo.apply(this, arguments);
+                if (!video || !withinHardware(codecs) || !answer || typeof answer.then !== 'function') return answer;
+                // Within the hardware decoder's stated range: playback is smooth and power efficient.
+                return answer.then(function (result) {
+                    if (!result || !result.supported) return result;
+                    var copy = {};
+                    for (var key in result) copy[key] = result[key];
+                    copy.smooth = true;
+                    copy.powerEfficient = true;
+                    return copy;
+                });
             };
         } catch (_) {}
     }
