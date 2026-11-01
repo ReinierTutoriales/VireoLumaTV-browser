@@ -156,6 +156,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/BrowserWeb
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateTrust.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateWarningPage.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/DownloadMessages.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomeFavorites.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HttpAuthPrompts.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/LegacyLocationGrants.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicy.kt	PROPIO
@@ -368,6 +369,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/utils/activemodel/ActiveMode
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/observable/LiveValueTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobSpoolTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobTransfersTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomeFavoritesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HttpAuthPromptsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MeaningfulBackHistoryTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BridgePagePolicyTest.kt	PROPIO

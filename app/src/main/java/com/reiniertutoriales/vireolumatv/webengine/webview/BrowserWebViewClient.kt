@@ -72,6 +72,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
     /** The packaged home page is served from assets/pages/home under its own https address. */
     private fun homePageAsset(address: String): WebResourceResponse? {
         val relative = safeHomeAssetPath(address) ?: return null
+        if (relative == HomeFavorites.PATH) return HomeFavorites.response()
         val path = "pages/home/$relative"
         return try {
             WebResourceResponse(URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream", "UTF-8", resourceContext.assets.open(path))

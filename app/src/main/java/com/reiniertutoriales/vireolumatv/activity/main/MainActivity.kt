@@ -393,7 +393,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     fun showFavorites() {
         val shown = tabStore.currentTab.value
-        FavoritesPanel(this, lifecycleScope, shown?.title, shown?.url) { item -> item.url?.let(::navigate) }.show()
+        // "Add this page" offers only a web page; on the start page it starts with empty fields.
+        val page = TabFavorites.webAddress(shown?.url)
+        FavoritesPanel(this, lifecycleScope, shown?.title.takeIf { page != null }, page) { item -> item.url?.let(::navigate) }.show()
         closeCapsule()
     }
 

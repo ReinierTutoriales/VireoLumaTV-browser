@@ -37,6 +37,23 @@
         });
     } catch (_) { /* A blocked or damaged store must not disable search or YouTube. */ }
 
+    // The browser's favorites, read from this page's own favorites.json; empty until they arrive.
+    var favorites = [];
+    var FAVORITES_MAX = 48;
+
+    function readFavorites(data) {
+        var result = [];
+        if (!Array.isArray(data)) return result;
+        data.forEach(function (entry) {
+            if (result.length >= FAVORITES_MAX || !entry || typeof entry !== 'object') return;
+            var url = address(entry.url);
+            if (!url || result.some(function (known) { return known.url.href === url.href; })) return;
+            var title = typeof entry.title === 'string' ? entry.title.trim().slice(0, 200) : '';
+            result.push({url: url, title: title});
+        });
+        return result;
+    }
+
     var youtubeHidden = false;
     try { youtubeHidden = localStorage.getItem(DEFAULT_KEY) === '1'; } catch (_) { /* YouTube stays shown. */ }
 
@@ -78,6 +95,32 @@
         if (saveList(next)) render(position);
     }
 
+    /**
+     * One shortcut before the add control: the site's icon when the browser has it cached, or a
+     * globe, and a short name, so shortcuts stay distinguishable without their icons.
+     */
+    function tile(url, label, name) {
+        var link = document.createElement('a');
+        link.href = url.href;
+        link.setAttribute('aria-label', label);
+        link.setAttribute('data-saved', 'true');
+        var icon = document.createElement('img');
+        icon.width = icon.height = 40;
+        icon.alt = '';
+        // The browser serves only cached icons; showing a shortcut does not contact that site.
+        icon.addEventListener('error', function fallbackIcon() {
+            icon.removeEventListener('error', fallbackIcon);
+            icon.src = fallback;
+        });
+        icon.src = 'favicon://' + url.hostname;
+        link.appendChild(icon);
+        var caption = document.createElement('span');
+        caption.textContent = name || url.hostname.replace(/^www\./, '');
+        link.appendChild(caption);
+        list.insertBefore(link, add);
+        return link;
+    }
+
     function render(focusIndex) {
         if (list.classList) list.classList.toggle('editing', editing);
         if (edit) {
@@ -93,29 +136,28 @@
             defaultLink.setAttribute('aria-label', youtubeHidden ? 'YouTube (eliminado, pulsa para restaurarlo)' : 'YouTube');
         }
         Array.prototype.forEach.call(list.querySelectorAll('[data-saved]'), function (node) { list.removeChild(node); });
+        var shown = [];
+        // Favorites first, as the browser's Favorites list has them; they are managed there.
+        favorites.forEach(function (favorite) {
+            var link = tile(favorite.url, favorite.title || favorite.url.hostname, favorite.title);
+            link.setAttribute('data-favorite', 'true');
+            link.addEventListener('click', function (event) {
+                if (!editing) return;
+                event.preventDefault();
+                alert('Este acceso es un favorito. Edítalo o elimínalo desde Menú › Favoritos.');
+            });
+            shown.push(favorite.url.href);
+        });
         var links = [];
         saved.forEach(function (value) {
+            if (shown.indexOf(value) !== -1) return;
             var url = address(value);
-            var link = document.createElement('a');
-            link.href = url.href;
-            link.setAttribute('aria-label', editing ? 'Editar ' + url.hostname : url.hostname);
-            link.setAttribute('data-saved', 'true');
-            var icon = document.createElement('img');
-            icon.width = icon.height = 40;
-            icon.alt = '';
-            // The browser serves only cached icons; adding a bookmark does not contact that site.
-            icon.addEventListener('error', function fallbackIcon() {
-                icon.removeEventListener('error', fallbackIcon);
-                icon.src = fallback;
-            });
-            icon.src = 'favicon://' + url.hostname;
-            link.appendChild(icon);
+            var link = tile(url, editing ? 'Editar ' + url.hostname : url.hostname, '');
             link.addEventListener('click', function (event) {
                 if (!editing) return;
                 event.preventDefault();
                 editSaved(value);
             });
-            list.insertBefore(link, add);
             links.push(link);
         });
         // After a change the remote stays where it was, or on the nearest remaining shortcut.
@@ -159,4 +201,13 @@
         }
     });
     render();
+    if (typeof fetch === 'function') {
+        fetch('favorites.json', {cache: 'no-store'})
+            .then(function (response) { return response.ok ? response.json() : []; })
+            .then(function (data) {
+                favorites = readFavorites(data);
+                if (favorites.length) render();
+            })
+            .catch(function () { /* Without favorites the page still has search and its shortcuts. */ });
+    }
 })();

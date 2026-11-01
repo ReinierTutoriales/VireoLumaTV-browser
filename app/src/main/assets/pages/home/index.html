@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'self'; img-src data: favicon:; form-action https://duckduckgo.com; base-uri 'none'; object-src 'none'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'self'; connect-src 'self'; img-src data: favicon:; form-action https://duckduckgo.com; base-uri 'none'; object-src 'none'">
     <link rel="icon" href="data:,">
     <title>VireoLumaTV: Home</title>
     <style>
@@ -18,8 +18,9 @@
         input { min-width: 0; flex: 1; padding: 16px; background: #141414; color: inherit; }
         button { padding: 12px 24px; background: #141414; color: inherit; cursor: pointer; }
         nav { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 24px; }
-        nav a, nav button { display: inline-flex; align-items: center; justify-content: center; width: 80px; height: 72px; margin: 8px; padding: 16px; background: #141414; color: inherit; text-decoration: none; }
+        nav a, nav button { display: inline-flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; width: 120px; height: 96px; margin: 8px; padding: 8px; background: #141414; color: inherit; text-decoration: none; }
         nav img { width: 40px; height: 40px; object-fit: contain; }
+        nav span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; }
         svg { width: 40px; height: 32px; }
         input:focus, button:focus, a:focus { outline: 3px solid #dadada; outline-offset: 4px; }
         input::placeholder { color: #b3b3b3; opacity: 1; }

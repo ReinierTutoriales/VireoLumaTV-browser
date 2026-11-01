@@ -42,6 +42,8 @@ assert.ok(tags('link').every(tag => attribute(tag, 'href')?.startsWith('data:'))
 const csp = tags('meta').find(tag => attribute(tag, 'http-equiv') === 'Content-Security-Policy');
 assert.ok(attribute(csp, 'content').includes("default-src 'none'"));
 assert.ok(attribute(csp, 'content').includes('form-action https://duckduckgo.com'));
+// The page may read only its own files (favorites.json): no other site can be contacted by script.
+assert.deepEqual(attribute(csp, 'content').match(/connect-src [^;]*/g), ["connect-src 'self'"]);
 assert.ok(/input:focus, button:focus, a:focus/.test(html));
 // App-owned pages remain dark even with a light system setting. Verify actual CSS
 // foreground/backdrop pairs rather than relying on a color-scheme declaration alone.
@@ -126,7 +128,7 @@ assert.equal(home.nodes.length, 24);
 console.log('Home shortcuts passed: safe URLs, duplicates, icon fallback, reload, bounded storage and query trimming');
 
 // Editing: the same code with the edit control and the built-in YouTube shortcut present.
-function editable({store = {}, failWrite = false, failRead = false} = {}) {
+function editable({store = {}, failWrite = false, failRead = false, favorites} = {}) {
   const nodes = [];
   let focused = null;
   function node() {
@@ -148,13 +150,20 @@ function editable({store = {}, failWrite = false, failRead = false} = {}) {
     setItem(k, v) { if (failWrite) throw Error('full'); store[k] = v; },
     removeItem(k) { if (failWrite) throw Error('full'); delete store[k]; },
   };
-  vm.runInNewContext(source, {URL, encodeURIComponent, localStorage, document: {
+  const requests = [];
+  // The browser's favorites.json: an array, a failed answer (null) or a network error ('error').
+  const fetch = favorites === undefined ? undefined : (path, options) => {
+    requests.push([path, options && options.cache]);
+    if (favorites === 'error') return Promise.reject(Error('offline'));
+    return Promise.resolve({ok: favorites !== null, json: () => Promise.resolve(favorites)});
+  };
+  vm.runInNewContext(source, {URL, encodeURIComponent, localStorage, fetch, Promise, document: {
     getElementById: id => ({bookmarks: list, 'add-bookmark': add, 'search-input': input,
       'edit-bookmarks': edit, 'default-youtube': youtube})[id],
     createElement: () => node(), querySelector: () => form,
   }, prompt: () => answers.prompt.shift(), confirm: () => answers.confirm.shift(), alert: m => alerts.push(m)});
   const click = target => { let prevented = false; target.events.click({preventDefault() { prevented = true; }}); return prevented; };
-  return {nodes, store, alerts, edit, youtube, list, add, answers, click, focused: () => focused,
+  return {nodes, store, alerts, edit, youtube, list, add, answers, click, requests, focused: () => focused,
     saved: () => JSON.parse(store['vireo.home.shortcuts.v1'] || '[]')};
 }
 const two = JSON.stringify(['https://a.test/', 'https://b.test/']);
@@ -224,3 +233,48 @@ const blocked = editable({failRead: true});
 assert.equal(blocked.youtube.hidden, false);
 assert.equal(blocked.nodes.length, 0);
 console.log('Home editing passed: edit in place, confirmed removal, YouTube removal and restore across restarts, old data untouched, storage failures');
+
+// Favorites saved in the browser appear on the home page, before the page's own shortcuts.
+(async () => {
+  const settle = () => new Promise(resolve => setImmediate(resolve));
+  const withFavorites = editable({
+    store: {'vireo.home.shortcuts.v1': JSON.stringify(['https://own.test/', 'https://news.test/today'])},
+    favorites: [
+      {title: 'Noticias', url: 'https://news.test/today'},
+      {title: 'Música', url: 'music.test'},
+      {title: 'Script', url: 'javascript:alert(1)'},
+      {title: 'Repetido', url: 'https://music.test/'},
+      {url: 'https://untitled.test/'},
+      'not an object', null,
+    ],
+  });
+  assert.deepEqual(withFavorites.requests, [['favorites.json', 'no-store']]);
+  await settle();
+  const labels = withFavorites.nodes.map(n => n.attrs['aria-label']);
+  assert.deepEqual(labels, ['Noticias', 'Música', 'untitled.test', 'own.test'],
+    'Favorites first, web addresses only, once each; a shortcut that is also a favorite shows once');
+  assert.equal(withFavorites.nodes[0].href, 'https://news.test/today');
+  assert.equal(withFavorites.nodes[0].attrs['data-favorite'], 'true');
+  assert.equal(withFavorites.nodes[0].children[0].src, 'favicon://news.test');
+  assert.deepEqual(withFavorites.nodes.map(n => n.children[1].textContent), ['Noticias', 'Música', 'untitled.test', 'own.test'],
+    'Each shortcut is named, so they stay apart when the icons are not cached');
+  assert.equal(withFavorites.click(withFavorites.nodes[0]), false, 'A favorite opens like any shortcut');
+  assert.deepEqual(JSON.parse(withFavorites.store['vireo.home.shortcuts.v1']), ['https://own.test/', 'https://news.test/today'],
+    'Showing favorites never rewrites the page\'s own shortcuts');
+  // While editing, a favorite is not changed from the page: the Favorites panel manages it.
+  withFavorites.click(withFavorites.edit);
+  assert.equal(withFavorites.click(withFavorites.nodes[0]), true);
+  assert.equal(withFavorites.alerts.length, 1);
+  assert.equal(withFavorites.nodes.length, 4);
+  // Many favorites are bounded; no favorites, a failed answer or no network leave the page as it was.
+  const many = editable({favorites: Array.from({length: 60}, (_, i) => ({title: 't' + i, url: 'https://s' + i + '.test/'}))});
+  await settle();
+  assert.equal(many.nodes.length, 48);
+  for (const answer of [[], null, 'error', {not: 'a list'}]) {
+    const page = editable({store: {'vireo.home.shortcuts.v1': JSON.stringify(['https://own.test/'])}, favorites: answer});
+    await settle();
+    assert.deepEqual(page.nodes.map(n => n.attrs['aria-label']), ['own.test']);
+    assert.equal(page.youtube.hidden, false);
+  }
+  console.log('Home favorites passed: browser favorites shown first and bounded, no duplicates, managed in the Favorites panel, failures harmless');
+})().catch(error => { console.error(error); process.exit(1); });
