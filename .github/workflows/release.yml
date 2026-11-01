@@ -2,6 +2,9 @@ name: Release
 
 on:
   create:
+  push:
+    branches:
+      - 'release/2.0.12'
   workflow_dispatch:
     inputs:
       version:
@@ -25,7 +28,7 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
@@ -44,7 +47,7 @@ jobs:
             echo 'Release already exists; refusing to replace it.'
             exit 1
           fi
-          if [[ "$GITHUB_EVENT_NAME" == create ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == create || "$GITHUB_EVENT_NAME" == push ]]; then
             [[ "$GITHUB_REF" == "refs/heads/release/$VERSION" ]]
           fi
           if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
@@ -180,7 +183,7 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: VireoLumaTV ${{ env.VERSION }}
           body_path: RELEASE_NOTES.md
-          prerelease: ${{ inputs.prerelease == 'pre-release' }}
+          prerelease: ${{ github.event_name == 'push' || inputs.prerelease == 'pre-release' }}
           fail_on_unmatched_files: true
           files: dist/*
       - name: Remove completed publication branch
