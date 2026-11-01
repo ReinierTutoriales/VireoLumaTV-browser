@@ -150,6 +150,12 @@
     <string name="settings_debugging_warning">Mit Debugging kann jeder mit Debug-Zugriff auf dieses Gerät Seiteninhalte, Cookies und Sitzungsdaten lesen. Nur auf einem vertrauenswürdigen Gerät und nur zur Fehlersuche aktivieren.</string>
     <string name="settings_restart_needed">Starte VireoLumaTV neu, um das zu übernehmen</string>
     <string name="settings_clear_cache">Zwischengespeicherte Webdaten löschen</string>
+    <string name="settings_section_browsing">Surfen</string>
+    <string name="settings_section_protection">Schutz</string>
+    <string name="settings_section_display">Video und Anzeige</string>
+    <string name="settings_section_remote">Fernbedienung und Zeiger</string>
+    <string name="settings_section_advanced">Erweitert</string>
+    <string name="settings_filter_list">Adresse der Filterliste</string>
     <string name="warning_title">Warnung</string>
     <string name="private_explained">Beim privaten Surfen werden Verlauf, Cookies, Websitedaten und Formulareingaben nach dem Beenden nicht gespeichert.\n\nDownloads und Favoriten bleiben erhalten. Besuchte Websites, dein Netzwerk und dein Internetanbieter können deine Aktivität weiterhin sehen.</string>
     <string name="shortcut_unassigned">Nicht zugewiesen</string>

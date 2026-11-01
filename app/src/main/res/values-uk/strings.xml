@@ -154,6 +154,12 @@
     <string name="settings_debugging_warning">Налагодження дозволяє будь-кому з доступом налагодження до пристрою читати вміст сторінок, cookie та дані сеансів. Вмикайте його лише на довіреному пристрої й лише для пошуку проблем.</string>
     <string name="settings_restart_needed">Перезапустіть VireoLumaTV, щоб застосувати</string>
     <string name="settings_clear_cache">Очистити кеш вебданих</string>
+    <string name="settings_section_browsing">Перегляд</string>
+    <string name="settings_section_protection">Захист</string>
+    <string name="settings_section_display">Відео й екран</string>
+    <string name="settings_section_remote">Пульт і вказівник</string>
+    <string name="settings_section_advanced">Додатково</string>
+    <string name="settings_filter_list">Адреса списку фільтрів</string>
     <string name="warning_title">Увага</string>
     <string name="private_explained">Приватний режим не зберігає історію, cookie, дані сайтів і введене у форми після виходу з нього.\n\nЗавантаження та вибране зберігаються. Відвідані сайти, ваша мережа й інтернет-провайдер усе одно бачать вашу активність.</string>
     <string name="shortcut_unassigned">Не призначено</string>

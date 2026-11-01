@@ -152,6 +152,12 @@
     <string name="settings_debugging_warning">ניפוי באגים מאפשר לכל מי שיש לו גישת ניפוי באגים למכשיר לקרוא תוכן דפים, קובצי Cookie ונתוני הפעלה. יש להפעיל רק במכשיר מהימן ובזמן פתרון בעיות.</string>
     <string name="settings_restart_needed">יש להפעיל מחדש את VireoLumaTV כדי להחיל</string>
     <string name="settings_clear_cache">ניקוי נתוני אינטרנט שמורים</string>
+    <string name="settings_section_browsing">גלישה</string>
+    <string name="settings_section_protection">הגנה</string>
+    <string name="settings_section_display">וידאו ותצוגה</string>
+    <string name="settings_section_remote">שלט וסמן</string>
+    <string name="settings_section_advanced">מתקדם</string>
+    <string name="settings_filter_list">כתובת רשימת המסננים</string>
     <string name="warning_title">אזהרה</string>
     <string name="private_explained">גלישה פרטית לא שומרת היסטוריה, קובצי Cookie, נתוני אתרים או מה שהוזן בטפסים לאחר היציאה ממנה.\n\nהורדות ומועדפים נשמרים. האתרים שבהם ביקרת, הרשת וספק האינטרנט עדיין יכולים לראות את הפעילות שלך.</string>
     <string name="shortcut_unassigned">לא הוקצה</string>

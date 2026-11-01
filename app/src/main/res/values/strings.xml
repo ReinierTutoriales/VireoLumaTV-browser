@@ -153,6 +153,12 @@
     <string name="settings_debugging_warning">Debugging lets anyone with debug access to this device read page content, cookies and session data. Turn it on only on a trusted device, while troubleshooting.</string>
     <string name="settings_restart_needed">Restart VireoLumaTV to apply this</string>
     <string name="settings_clear_cache">Clear cached web data</string>
+    <string name="settings_section_browsing">Browsing</string>
+    <string name="settings_section_protection">Protection</string>
+    <string name="settings_section_display">Video and display</string>
+    <string name="settings_section_remote">Remote and pointer</string>
+    <string name="settings_section_advanced">Advanced</string>
+    <string name="settings_filter_list">Filter list address</string>
     <string name="warning_title">Warning</string>
     <string name="private_explained">Private browsing doesn\'t keep your history, cookies, site data or form entries after you leave it.\n\nDownloads and favorites are kept. The sites you visit, your network and your internet provider can still see your activity.</string>
     <string name="shortcut_unassigned">Not assigned</string>

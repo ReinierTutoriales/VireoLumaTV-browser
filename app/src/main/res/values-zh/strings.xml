@@ -148,6 +148,12 @@
     <string name="settings_debugging_warning">调试会让任何拥有此设备调试权限的人读取网页内容、Cookie 和会话数据。仅在受信任的设备上、排查问题时开启。</string>
     <string name="settings_restart_needed">重启 VireoLumaTV 后生效</string>
     <string name="settings_clear_cache">清除网页缓存</string>
+    <string name="settings_section_browsing">浏览</string>
+    <string name="settings_section_protection">防护</string>
+    <string name="settings_section_display">视频与显示</string>
+    <string name="settings_section_remote">遥控器与指针</string>
+    <string name="settings_section_advanced">高级</string>
+    <string name="settings_filter_list">过滤列表地址</string>
     <string name="warning_title">警告</string>
     <string name="private_explained">无痕浏览在退出后不会保留历史记录、Cookie、网站数据和表单内容。\n\n下载内容和收藏会保留。您访问的网站、所在网络和互联网服务提供商仍可看到您的活动。</string>
     <string name="shortcut_unassigned">未分配</string>

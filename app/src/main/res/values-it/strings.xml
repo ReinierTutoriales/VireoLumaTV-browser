@@ -152,6 +152,12 @@
     <string name="settings_debugging_warning">Il debug consente a chiunque abbia accesso di debug a questo dispositivo di leggere contenuti delle pagine, cookie e dati di sessione. Attivalo solo su un dispositivo attendibile e durante la risoluzione dei problemi.</string>
     <string name="settings_restart_needed">Riavvia VireoLumaTV per applicarlo</string>
     <string name="settings_clear_cache">Cancella i dati web in cache</string>
+    <string name="settings_section_browsing">Navigazione</string>
+    <string name="settings_section_protection">Protezione</string>
+    <string name="settings_section_display">Video e schermo</string>
+    <string name="settings_section_remote">Telecomando e puntatore</string>
+    <string name="settings_section_advanced">Avanzate</string>
+    <string name="settings_filter_list">Indirizzo dell\'elenco filtri</string>
     <string name="warning_title">Attenzione</string>
     <string name="private_explained">La navigazione privata non conserva cronologia, cookie, dati dei siti e dati dei moduli quando ne esci.\n\nI download e i preferiti vengono mantenuti. I siti visitati, la tua rete e il tuo provider possono comunque vedere la tua attività.</string>
     <string name="shortcut_unassigned">Non assegnata</string>

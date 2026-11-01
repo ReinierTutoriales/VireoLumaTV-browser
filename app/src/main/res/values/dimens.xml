@@ -9,8 +9,10 @@
     <dimen name="control_icon_padding">12dp</dimen>
     <dimen name="control_gap">8dp</dimen>
     <dimen name="row_height">56dp</dimen>
-    <dimen name="corner_small">12dp</dimen>
-    <dimen name="corner_large">20dp</dimen>
+    <dimen name="corner_small">14dp</dimen>
+    <!-- Half the 48 dp control height: buttons, tabs and fields are full pills. -->
+    <dimen name="corner_large">24dp</dimen>
+    <dimen name="corner_panel">28dp</dimen>
 
     <!-- Four tabs and the new-tab control fit between the safe margins (960 - 2 x 48 dp). -->
     <dimen name="tab_width">188dp</dimen>

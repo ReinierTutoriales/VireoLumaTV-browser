@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The side panel of right-to-left layouts, which opens on the left: corners and edge mirrored. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <solid android:color="@color/outline" />
+            <corners android:topRightRadius="@dimen/corner_panel" android:bottomRightRadius="@dimen/corner_panel"
+                android:topLeftRadius="0dp" android:bottomLeftRadius="0dp" />
+        </shape>
+    </item>
+    <item android:right="1dp">
+        <shape>
+            <solid android:color="@color/surface" />
+            <corners android:topRightRadius="@dimen/corner_panel" android:bottomRightRadius="@dimen/corner_panel"
+                android:topLeftRadius="0dp" android:bottomLeftRadius="0dp" />
+        </shape>
+    </item>
+</layer-list>

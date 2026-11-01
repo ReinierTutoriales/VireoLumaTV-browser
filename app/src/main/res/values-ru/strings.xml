@@ -154,6 +154,12 @@
     <string name="settings_debugging_warning">Отладка позволяет любому с отладочным доступом к устройству читать содержимое страниц, cookie и данные сеансов. Включайте её только на доверенном устройстве и только для поиска проблем.</string>
     <string name="settings_restart_needed">Перезапустите VireoLumaTV, чтобы применить</string>
     <string name="settings_clear_cache">Очистить кеш веб-данных</string>
+    <string name="settings_section_browsing">Просмотр</string>
+    <string name="settings_section_protection">Защита</string>
+    <string name="settings_section_display">Видео и экран</string>
+    <string name="settings_section_remote">Пульт и указатель</string>
+    <string name="settings_section_advanced">Дополнительно</string>
+    <string name="settings_filter_list">Адрес списка фильтров</string>
     <string name="warning_title">Внимание</string>
     <string name="private_explained">Приватный режим не сохраняет историю, cookie, данные сайтов и введённое в формы после выхода из него.\n\nЗагрузки и избранное сохраняются. Посещаемые сайты, ваша сеть и интернет-провайдер по-прежнему видят вашу активность.</string>
     <string name="shortcut_unassigned">Не назначено</string>
