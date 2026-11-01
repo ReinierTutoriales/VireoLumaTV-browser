@@ -1,15 +1,31 @@
-# VireoLumaTV 2.0.7
+# VireoLumaTV 2.0.10
 
-## Cambios
-- OSD multimedia nativo tanto para vídeo en fullscreen como en modo normal, con retroceso/avance, pausa y botón contextual Maximizar o Minimizar.
-- Intento de Siguiente para YouTube mediante el control expuesto por su interfaz web; puede no estar disponible en todos los estados del reproductor.
-- Navegación Atrás más eficiente: consulta incremental del historial sin crear listas temporales.
-- Descargas de actualización restringidas a HTTPS también después de redirecciones, manteniendo firma y hashes.
-- Política de códecs cacheada por proceso para evitar recalcular listas en cada navegación.
-- Skills de seguridad y verificación de versiones mejoradas.
+**Android versionName:** `2.0.10`  
+**Android versionCode:** `104`
 
-## Compatibilidad
-Versión 2.0.7; versionCode 101. Se conservan applicationId, firma, datos, motor WebView y política de resolución de 2.0.6. No se ha forzado una reducción de calidad; YouTube conserva sus controles originales y el bloqueo de anuncios.
+This release consolidates security hardening, browser navigation fixes, and targeted efficiency improvements since 2.0.9.
 
-## Validación
-Los cambios individuales superaron CI. La versión conjunta exige pruebas, lint y compilación release antes de su publicación. La CI no certifica fluidez, calidad 4K/HDR, ni funcionamiento del OSD en hardware físico. El botón Siguiente/Maximizar depende del DOM del reproductor web y requiere prueba con YouTube actual.
+## Security and privacy
+- Hardened list transport, certificate and backup handling (#114–#119).
+- Replaced the privileged blob-download JavaScript bridge with origin-aware WebMessage transport and bounded 512 KiB chunks (#121).
+- Camera, microphone and location prompts identify the requesting origin, including third-party frames. Location permission is no longer retained; previously stored geolocation grants are cleared (#126).
+- One-time certificate-error approval is bound to the approved host and certificate; unused approvals are cleared on navigation or completed page loads (#127). WebView may still remember an accepted SSL decision internally for the same host during the session.
+
+## Navigation and playback
+- Fixed fullscreen cleanup when a tab is detached (#125).
+- Remote-control navigation now distinguishes exiting fullscreen with Back/Menu from exiting via the player, exits D-pad mode before YouTube history navigation, previews tabs without committing until OK, and keeps focus in the tab strip when closing the active tab (#129).
+
+## Performance and reliability
+- Added Gradle wrapper download retries (#122).
+- Reused a single adblock verdict per request and cached bounded verdicts (#123).
+- Avoided repeated missing-site-settings database lookups while keeping cache invalidation correct (#124).
+- Corrected singular/plural wording for blocked items and active downloads in 12 languages (#128).
+
+## Compatibility and known trade-offs
+- Blob downloads are intentionally unavailable on older WebView implementations without `WEB_MESSAGE_LISTENER`, where the requesting frame cannot be reliably verified.
+- Sites requesting location will prompt again rather than relying on a persistent permission.
+- The existing hidden-WebView memory-management policy was not changed. Chunked blob downloads reduce peak transfer-buffer requirements; no overall RAM, CPU, latency or playback improvement percentage is claimed.
+- Automated tests and CI do not substitute for validation on physical Android TV devices. Media codec, DRM, HLS and DASH support remain dependent on Android, the WebView provider and device capabilities.
+
+## Distribution and verification
+Release APKs are built separately for `arm64-v8a`, `armeabi-v7a`, and `x86_64`. Verify the release signature and SHA-256 checksums using the accompanying `SIGNING.txt`, `SHA256SUMS.txt` and signature file before installing.
