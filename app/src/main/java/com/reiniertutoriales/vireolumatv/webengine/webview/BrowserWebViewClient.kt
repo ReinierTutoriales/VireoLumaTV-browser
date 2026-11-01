@@ -49,7 +49,10 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
         // window.open(url) loads its first document without shouldOverrideUrlLoading.
         if (request.isForMainFrame && engine.onPopupNavigation(request.url)) return BlockedResponses.blocked()
-        if (request.isForMainFrame) topLevel.requested(request.url)
+        if (request.isForMainFrame) {
+            topLevel.requested(request.url)
+            engine.networkFailure.requested()
+        }
         val page = this.view.currentOriginalUrl
         if (page != null && page.toString().startsWith(Config.HOME_PAGE_URL, ignoreCase = true)) {
             StartPageAssets.shouldInterceptRequest(request)?.let { return it }
@@ -95,7 +98,10 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
 
     override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
         logStream(request.url) { "transport=${error.errorCode}" }
-        if (request.isForMainFrame) topLevel.ended()
+        if (request.isForMainFrame) {
+            topLevel.ended()
+            engine.networkFailure.failed(request.url.toString(), error.errorCode)
+        }
         super.onReceivedError(view, request, error)
     }
 

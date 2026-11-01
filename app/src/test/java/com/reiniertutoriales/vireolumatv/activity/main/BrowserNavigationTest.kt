@@ -183,6 +183,19 @@ class BrowserNavigationTest {
         assertNotSame(f.tab, f.tabs.currentTab.value)
     }
 
+    @Test fun theNetworkComingBackReachesTheShownPageOnlyWhenRestored() = Fixture().use { f ->
+        f.activity.adBlocker = AdBlocker(autoLoad = false).apply { listLoading.value = true } // no list fetch
+        val watcher = MainActivity::class.java.getDeclaredField("networkCallback").apply { isAccessible = true }
+            .get(f.activity) as com.reiniertutoriales.vireolumatv.utils.NetworkWatcher
+        watcher.update("wifi", online = true, validated = false)
+        watcher.update("wifi", online = true, validated = false)
+        watcher.lost("wifi")
+        watcher.update("wifi", online = true, validated = true)
+        org.robolectric.shadows.ShadowLooper.idleMainLooper()
+        assertEquals(listOf(true, false, true), f.online)
+        assertEquals("Online, then back after the loss", 2, f.restoredNetwork)
+    }
+
     private class Fixture : AutoCloseable {
         val host = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
             get().setTheme(R.style.AppTheme)
@@ -197,6 +210,8 @@ class BrowserNavigationTest {
         var hideFullscreen: (() -> Unit)? = null
         var wentBack = 0
         var refreshed = 0
+        var restoredNetwork = 0
+        val online = mutableListOf<Boolean>()
         var thumbnailRenders = 0
         var loadedUrl: String? = null
         var pageUrl: String? = null
@@ -218,6 +233,8 @@ class BrowserNavigationTest {
                 "closeFullscreen" -> { exitedFullscreen++; hideFullscreen?.invoke(); null }
                 "back" -> { wentBack++; null }
                 "reload" -> { refreshed++; null }
+                "onNetworkRestored" -> { restoredNetwork++; null }
+                "setOnline" -> { online += args!![0] as Boolean; null }
                 "load" -> { loadedUrl = args!![0] as String; null }
                 "preview" -> { thumbnailRenders++; thumbnail }
                 else -> null

@@ -131,6 +131,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/utils/FileNames.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/FileUtils.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/IconFinder.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/IncognitoWebViewData.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/NetworkWatcher.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdater.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/RemoteInput.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/Toasts.kt	PROPIO
@@ -156,6 +157,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/DownloadMe
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HttpAuthPrompts.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/LegacyLocationGrants.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicy.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/NetworkFailure.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridge.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissions.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageScripts.kt	REESCRITO
@@ -350,6 +352,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/utils/DownloadUtilsSanitizeF
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/FileUtilsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/IconFinderTest.kt	REESCRITO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/IncognitoWebViewSessionTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/NetworkWatcherTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdaterTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ReservedKeysTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/SameLocalDayTest.kt	PROPIO
@@ -370,6 +373,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/Fullscreen
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageNetworkTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/LegacyLocationGrantsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicyTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/NetworkFailureTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridgeSurfaceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissionsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/RemoteInputContractTest.kt	PROPIO
