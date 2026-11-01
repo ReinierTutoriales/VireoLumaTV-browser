@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.service.downloads
 
 import android.content.pm.ServiceInfo
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
+import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import org.junit.Assert.*
@@ -49,13 +49,13 @@ class DownloadServiceTest {
     @Test fun foregroundTimeoutCancelsDownloadsAndStopsTheService() {
         val controller = Robolectric.buildService(DownloadService::class.java).create()
         val service = controller.get()
-        val model = ScreenModels.get(RunningDownloads::class, service)
+        val model = ScreenModels.get(TransferBoard::class, service)
         val info = Download().apply { incognito = true }
-        model.runningDownloads.add(StreamTransfer(info, "x".byteInputStream(), service.transferListener))
+        model.transfers.add(StreamTransfer(info, "x".byteInputStream(), service.transferListener))
         service.onTimeout(1, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         assertTrue("A running download must be cancelled", info.cancelled)
         assertTrue("The service must stop itself within the timeout", shadowOf(service).isStoppedBySelf)
-        model.runningDownloads.clear()
+        model.transfers.clear()
         controller.destroy()
     }
     @Test fun saturatedWorkersRejectOverflowWithoutLeakingItsStreamOrReportingItStarted() {
@@ -84,9 +84,9 @@ class DownloadServiceTest {
             assertEquals(4, executor.queue.size)
             assertTrue(rejectedClosed)
             assertNull(rejected.stream)
-            val model = ScreenModels.get(RunningDownloads::class, service)
-            assertEquals(4, model.runningDownloads.size)
-            assertFalse(model.runningDownloads.any { it.job === rejected })
+            val model = ScreenModels.get(TransferBoard::class, service)
+            assertEquals(4, model.transfers.size)
+            assertFalse(model.transfers.any { it.job === rejected })
         } finally {
             controller.destroy() // Marks accepted queued tasks cancelled before they can create output.
             release.countDown()

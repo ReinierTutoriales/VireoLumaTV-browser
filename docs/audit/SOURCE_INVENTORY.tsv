@@ -51,9 +51,10 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/VireoLumaTVApp.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/PrivateBrowserActivity.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadHistoryPages.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadRows.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadState.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadsActivity.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/IncognitoDownloadsActivity.kt	PROPIO
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/RunningDownloads.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/downloads/TransferBoard.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryActivity.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryPages.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryRows.kt	REESCRITO
@@ -112,9 +113,10 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/FavoriteDao.kt	REE
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/SiteSettingsDao.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/TabDao.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/model/dao/VisitDao.kt	REESCRITO
-app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadHistory.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRecords.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRetryPolicy.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadService.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadFiles.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/IncognitoDownloadService.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/Transfer.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/AppDatabase.kt	REESCRITO
@@ -282,6 +284,7 @@ app/src/main/res/xml/file_provider_paths.xml	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/ConfigTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/PrivateSessionNoticeTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadListAdapterTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadStateTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryAdapterTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/history/HistoryRequestTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/history/HistorySearchTest.kt	PROPIO

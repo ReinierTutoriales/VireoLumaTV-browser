@@ -50,4 +50,11 @@ class HistorySelectionTest {
         activity.onBackPressedDispatcher.onBackPressed()
         assertTrue("A second Back closes the screen", activity.isFinishing)
     }
+
+    @Test fun thePickedAddressComesBackOnlyWithAnOkResult() {
+        val answer = HistoryActivity.PickAddress.answer("https://picked.test/")
+        assertEquals("https://picked.test/", HistoryActivity.PickAddress.parseResult(android.app.Activity.RESULT_OK, answer))
+        assertEquals(null, HistoryActivity.PickAddress.parseResult(android.app.Activity.RESULT_CANCELED, answer))
+        assertEquals(null, HistoryActivity.PickAddress.parseResult(android.app.Activity.RESULT_OK, null))
+    }
 }

@@ -17,7 +17,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
+import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
 import com.reiniertutoriales.vireolumatv.utils.FileNames
@@ -30,11 +30,11 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Runs downloads on two worker threads while the browser is bound to it, as a dataSync foreground
- * service with one ongoing notification for all of them. Results reach [RunningDownloads] on the
+ * service with one ongoing notification for all of them. Results reach [TransferBoard] on the
  * main thread; progress is passed on at most every [PROGRESS_INTERVAL_MS].
  */
 open class DownloadService : Service() {
-    private lateinit var model: RunningDownloads
+    private lateinit var board: TransferBoard
     private lateinit var notifications: NotificationManager
     private val executor = ThreadPoolExecutor(2, 2, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue<Runnable>(4))
     private val main = Handler(Looper.getMainLooper())
@@ -53,38 +53,32 @@ open class DownloadService : Service() {
             if (now - lastProgress < PROGRESS_INTERVAL_MS) return
             lastProgress = now
             main.post {
-                model.reportProgress(task)
-                if (model.runningDownloads.isNotEmpty()) notifications.notify(DOWNLOAD_NOTIFICATION, buildNotification())
+                board.publish(task)
+                if (board.transfers.isNotEmpty()) notifications.notify(DOWNLOAD_NOTIFICATION, buildNotification())
             }
         }
 
         override fun onError(task: Transfer, responseCode: Int, responseMessage: String) {
-            DownloadHistory.update(task.job)
-            main.post {
-                model.reportError(task, responseCode, responseMessage)
-                onTransferEnded(task)
-            }
+            DownloadRecords.save(task.job)
+            main.post { onTransferEnded(task) }
         }
 
         override fun onDone(task: Transfer) {
-            DownloadHistory.update(task.job)
-            main.post {
-                model.reportProgress(task)
-                onTransferEnded(task)
-            }
+            DownloadRecords.save(task.job)
+            main.post { onTransferEnded(task) }
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        model = ScreenModels.get(RunningDownloads::class, this)
+        board = ScreenModels.get(TransferBoard::class, this)
         notifications = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
     override fun onDestroy() {
         cancelAll()
         executor.shutdown()
-        ScreenModels.discard(model, this)
+        ScreenModels.discard(board, this)
         super.onDestroy()
     }
 
@@ -97,14 +91,14 @@ open class DownloadService : Service() {
      * within seconds. The downloads are cancelled so their partial files are removed, not orphaned.
      */
     override fun onTimeout(startId: Int, fgsType: Int) {
-        Log.w(TAG, "Foreground time limit reached; cancelling ${model.runningDownloads.size} downloads")
+        Log.w(TAG, "Foreground time limit reached; cancelling ${board.transfers.size} downloads")
         cancelAll()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
     fun startDownload(download: Download): Boolean {
-        if (model.runningDownloads.size >= MAX_OUTSTANDING) return reject(download)
+        if (board.transfers.size >= MAX_OUTSTANDING) return reject(download)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !reserveLegacyFile(download)) {
             download.discardPayload()
             return false
@@ -114,11 +108,11 @@ open class DownloadService : Service() {
             download.stream != null -> StreamTransfer(download, download.stream!!, transferListener)
             else -> FileTransfer(download, download.userAgent, transferListener)
         }
-        model.runningDownloads.add(task)
+        board.transfers.add(task)
         try {
             executor.execute(task)
         } catch (_: RejectedExecutionException) {
-            model.runningDownloads.remove(task)
+            board.transfers.remove(task)
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) File(download.filepath).delete()
             return reject(download)
         }
@@ -158,7 +152,7 @@ open class DownloadService : Service() {
         return true
     }
 
-    private fun cancelAll() = model.runningDownloads.forEach { it.job.cancelled = true }
+    private fun cancelAll() = board.transfers.forEach { it.job.cancelled = true }
 
     private fun onTransferEnded(task: Transfer) {
         val info = task.job
@@ -166,15 +160,15 @@ open class DownloadService : Service() {
             info.afterDownload == Download.AfterDownload.INSTALL && ApkInstaller.canInstall(this)) {
             ApkInstaller.launch(this, info)
         }
-        model.onDownloadEnded(task)
-        if (model.runningDownloads.isEmpty()) {
+        board.end(task)
+        if (board.transfers.isEmpty()) {
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
     }
 
     private fun buildNotification(): Notification {
-        val infos = model.runningDownloads.map { it.job }
+        val infos = board.transfers.map { it.job }
         val received = infos.sumOf { it.bytesReceived }
         val sizeKnown = infos.isNotEmpty() && infos.all { it.size > 0 }
         val total = if (sizeKnown) infos.sumOf { it.size } else 0L

@@ -1,7 +1,6 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.graphics.Bitmap
@@ -104,9 +103,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal val filePickerResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         tabStore.currentTab.value?.engine?.onFilePicked(result.resultCode, result.data)
     }
-    private val historyResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
-        result.data?.getStringExtra(HistoryActivity.KEY_URL)?.let(::navigate)
+    private val historyPick = registerForActivityResult(HistoryActivity.PickAddress) { address ->
+        if (address == null) return@registerForActivityResult
+        navigate(address)
         closeCapsule()
     }
     private var nextPermissionRequest = PAGE_PERMISSION_REQUESTS_START
@@ -363,7 +362,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (config.privateBrowsing) IncognitoDownloadsActivity::class.java else DownloadsActivity::class.java))
 
     fun showHistory() {
-        historyResult.launch(Intent(this, HistoryActivity::class.java))
+        historyPick.launch(Unit)
         closeCapsule()
     }
 
