@@ -5,9 +5,7 @@ Utiliza Android System WebView y funciona con mando o gamepad desde Android 7.0 
 
 ## Versión 2.0.13
 
-Android TV, Google TV y TV boxes compatibles (Android 7.0+). Esta versión consolida navegación con mando, puntero, pestañas, idiomas, descargas, instalación y privacidad.
-
-La publicación de APKs firmados se verifica en [Releases](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases). La existencia de código en una rama no significa que los APKs ya estén publicados.
+Añade el ajuste «Idioma de la app», renueva la interfaz y los favoritos en Inicio, hace más fiables las descargas y la instalación de APK, y migra los datos a un esquema propio. Detalles en [RELEASE_NOTES.md](RELEASE_NOTES.md).
 
 ## Descargar e instalar
 
@@ -45,7 +43,7 @@ validación física de mando, reproducción y memoria del build actual.
 
 ## Calidad y validación
 
-La integración automatizada verifica compilación, pruebas y Android Lint. El rendimiento, la reproducción y la interacción con mando requieren pruebas adicionales en hardware real. Las licencias de las dependencias se documentan por separado.
+La integración automatizada verifica compilación, pruebas y Android Lint. El rendimiento, la reproducción y la interacción con mando requieren pruebas adicionales en hardware real. Las licencias de los componentes de terceros están en [NOTICE.md](NOTICE.md).
 
 ## Proyecto y documentación
 
