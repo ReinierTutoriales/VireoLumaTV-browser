@@ -199,7 +199,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">Die Download-Warteschlange ist voll. Warte, bis ein Download abgeschlossen ist, und versuche es erneut.</string>
-    <string name="about_tvbro_credit">Ursprünglich auf dem Quellcode von TV Bro basierend · Fedir Tsapana</string>
     <string name="download_not_allowed">Android hat den Start des Downloads gerade nicht erlaubt. Versuche es erneut, während der Browser angezeigt wird.</string>
     <string name="download_time_limit">Android hat die Downloads gestoppt: Das Zeitlimit im Hintergrund wurde erreicht.</string>
 </resources>

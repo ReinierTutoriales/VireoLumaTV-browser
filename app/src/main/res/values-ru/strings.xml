@@ -203,7 +203,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">Очередь загрузок заполнена. Дождитесь завершения загрузки и повторите попытку.</string>
-    <string name="about_tvbro_credit">Изначально основан на исходном коде TV Bro · Fedir Tsapana</string>
     <string name="download_not_allowed">Android не разрешил начать загрузку. Повторите попытку, когда браузер открыт на экране.</string>
     <string name="download_time_limit">Android остановил загрузки: достигнут лимит времени фоновой работы.</string>
 </resources>

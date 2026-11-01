@@ -199,7 +199,6 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">صف بارگیری پر است. منتظر بمانید تا یک بارگیری تمام شود و دوباره تلاش کنید.</string>
-    <string name="about_tvbro_credit">در اصل بر پایهٔ کد منبع TV Bro · Fedir Tsapana</string>
     <string name="download_not_allowed">اندروید اکنون اجازه شروع بارگیری را نداد. با باز بودن مرورگر روی صفحه دوباره تلاش کنید.</string>
     <string name="download_time_limit">اندروید بارگیری‌ها را متوقف کرد: محدودیت زمانی پس‌زمینه به پایان رسید.</string>
 </resources>
