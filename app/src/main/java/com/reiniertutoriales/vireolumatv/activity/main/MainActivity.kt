@@ -465,6 +465,13 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             openInNewTab(browserSettings.homePage, tabStore.openTabs.size, navigateImmediately = true)
         }
 
+        override fun addTabToFavorites(tab: BrowserTab) {
+            if (config.privateBrowsing || tab.closed || tabStore.openTabs.indexOf(tab) < 0) return
+            FavoritesPanel(this@MainActivity, lifecycleScope, tab.title, tab.url) { item ->
+                item.url?.let(::navigate)
+            }.show()
+        }
+
         override fun closeTab(tabState: BrowserTab?) = this@MainActivity.closeTab(tabState)
 
         override fun openInNewTab(url: String, tabIndex: Int) {
