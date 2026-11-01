@@ -31,11 +31,8 @@ class AboutPage @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : ScrollView(context, attrs, defStyleAttr) {
 
-    interface Callback {
-        fun onSettingsDone()
-    }
-
-    var callback: Callback? = null
+    /** Closes the settings; called before a link opens in a browser tab. */
+    var onDone: (() -> Unit)? = null
     private var updateButton: Button? = null
     private var pendingUpdate: File? = null
 
@@ -57,7 +54,7 @@ class AboutPage @JvmOverloads constructor(
 
     /** Opens [url] in a browser tab of the current mode, closing the settings first. */
     private fun open(url: String) {
-        callback?.onSettingsDone()
+        onDone?.invoke()
         val target = if (AppContext.config.privateBrowsing)
             PrivateBrowserActivity::class.java else MainActivity::class.java
         activity?.startActivity(Intent(activity, target).setData(url.toUri()))
