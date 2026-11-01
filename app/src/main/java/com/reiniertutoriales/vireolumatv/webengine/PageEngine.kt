@@ -45,6 +45,8 @@ interface PageEngine {
     /** One zoom step, [closer] or farther. */
     fun zoom(closer: Boolean)
     fun setOnline(online: Boolean)
+    /** The network is back: a page whose own load failed for lack of network loads again. */
+    fun onNetworkRestored()
     fun resume()
     fun pause()
 

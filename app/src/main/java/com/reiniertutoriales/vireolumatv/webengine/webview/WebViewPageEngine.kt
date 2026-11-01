@@ -82,6 +82,11 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
     override fun forward() { webView?.goForward() }
     override fun zoom(closer: Boolean) { webView?.run { if (closer) zoomIn() else zoomOut() } }
     override fun setOnline(online: Boolean) { webView?.setNetworkAvailable(online) }
+    internal val networkFailure = NetworkFailure()
+    override fun onNetworkRestored() {
+        val view = webView ?: return
+        if (networkFailure.takeReload(view.url)) view.reload()
+    }
     override fun onFilePicked(resultCode: Int, data: Intent?) { webView?.onFilePicked(resultCode, data) }
     override fun setAdBlocking(enabled: Boolean) { webView?.onBlockerToggled(enabled) }
     override suspend fun preview(reuse: Bitmap?): Bitmap? = webView?.drawPreview(reuse)

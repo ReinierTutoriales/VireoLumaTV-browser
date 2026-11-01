@@ -6,7 +6,6 @@ import android.app.Application
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.ConnectivityManager
-import android.net.Network
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -58,7 +57,7 @@ import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcuts
 import com.reiniertutoriales.vireolumatv.utils.BackPresses
 import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
-import com.reiniertutoriales.vireolumatv.utils.hasInternet
+import com.reiniertutoriales.vireolumatv.utils.NetworkWatcher
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
 import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
@@ -212,6 +211,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         super.onResume()
         if (!networkCallbackRegistered) {
             try {
+                // The callback reports the current network at once; it then counts as restored.
+                networkCallback.reset()
                 getSystemService<ConnectivityManager>()?.registerDefaultNetworkCallback(networkCallback)
                 networkCallbackRegistered = true
             } catch (error: RuntimeException) {
@@ -300,18 +301,16 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     private var networkCallbackRegistered = false
     // Replaces the CONNECTIVITY_ACTION broadcast; callbacks arrive on a binder thread.
-    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) = postNetworkState()
-        override fun onLost(network: Network) = postNetworkState()
-    }
-
-    private fun postNetworkState() {
+    private val networkCallback = NetworkWatcher { online, restored ->
         mainThread.post {
             if (isDestroyed) return@post
-            val connected = hasInternet()
-            tabStore.currentTab.value?.engine?.setOnline(connected)
+            val engine = tabStore.currentTab.value?.engine
+            engine?.setOnline(online)
+            if (!restored) return@post
+            // A page that failed for lack of network loads again by itself.
+            engine?.onNetworkRestored()
             // A TV often starts before Wi-Fi: fetch the filter lists as soon as it connects.
-            if (connected) adBlocker.updateIfDue(networkRestored = true)
+            adBlocker.updateIfDue(networkRestored = true)
         }
     }
 
