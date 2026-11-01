@@ -1,31 +1,24 @@
-# VireoLumaTV 2.0.10
+# VireoLumaTV 2.0.11
 
-**Android versionName:** `2.0.10`  
-**Android versionCode:** `104`
+**Android versionName:** `2.0.11`  
+**Android versionCode:** `105`
 
-This release consolidates security hardening, browser navigation fixes, and targeted efficiency improvements since 2.0.9.
+## Seguridad y privacidad
+- #131: evita que aplicaciones externas sustituyan la pestaña activa; limita la apertura de aplicaciones externas a actividades BROWSABLE; sanea los caracteres Unicode invisibles de nombres de descarga; desactiva la depuración WebView al cambiar el ajuste; avisa de proveedores WebView potencialmente desactualizados.
+- #132: diálogos HTTP Auth con host y realm identificados, advertencias de conexiones HTTP no cifradas, rechazo de solicitudes de credenciales de recursos de otros hosts bajo páginas ya mostradas y un único diálogo activo. Las cargas que terminan como descarga o error de red dejan de considerarse navegaciones pendientes.
+- #135: al terminar una visita con una excepción de certificado SSL aceptada, o al destruir la vista, se borran las preferencias SSL de WebView. **Alcance:** WebView borra las excepciones del perfil, no únicamente las de la pestaña.
 
-## Security and privacy
-- Hardened list transport, certificate and backup handling (#114–#119).
-- Replaced the privileged blob-download JavaScript bridge with origin-aware WebMessage transport and bounded 512 KiB chunks (#121).
-- Camera, microphone and location prompts identify the requesting origin, including third-party frames. Location permission is no longer retained; previously stored geolocation grants are cleared (#126).
-- One-time certificate-error approval is bound to the approved host and certificate; unused approvals are cleared on navigation or completed page loads (#127). WebView may still remember an accepted SSL decision internally for the same host during the session.
+## Red y descargas
+- #133: observa cambios de capacidades de la red predeterminada y recupera una sola vez las páginas principales que fallaron por errores transitorios de conexión, sin recargar tras errores SSL.
+- #134: reintentos limitados y reanudación HTTP con Range e If-Range cuando existe un validador de contenido apropiado; comprueba las respuestas parciales, reinicia transferencias incompatibles y detecta cuerpos incompletos.
 
-## Navigation and playback
-- Fixed fullscreen cleanup when a tab is detached (#125).
-- Remote-control navigation now distinguishes exiting fullscreen with Back/Menu from exiting via the player, exits D-pad mode before YouTube history navigation, previews tabs without committing until OK, and keeps focus in the tab strip when closing the active tab (#129).
+## Interfaz
+- #135: icono visible de cierre de pestaña de 18 dp con objetivo de interacción de 48 dp; conserva navegación con mando y pulsación.
 
-## Performance and reliability
-- Added Gradle wrapper download retries (#122).
-- Reused a single adblock verdict per request and cached bounded verdicts (#123).
-- Avoided repeated missing-site-settings database lookups while keeping cache invalidation correct (#124).
-- Corrected singular/plural wording for blocked items and active downloads in 12 languages (#128).
+## Verificación y limitaciones
+- Los PR #131–#135 superaron sus CI individuales. La CI de esta versión debe verificar la integración completa antes de publicar.
+- No se ha validado físicamente el comportamiento de reconexión en todos los firmwares Android TV, la reanudación de descargas MediaStore en Android 11+ ni una sesión DevTools abierta al desactivar la depuración.
+- El proveedor Android System WebView, sus códecs y la compatibilidad DRM siguen dependiendo del dispositivo y sus actualizaciones.
 
-## Compatibility and known trade-offs
-- Blob downloads are intentionally unavailable on older WebView implementations without `WEB_MESSAGE_LISTENER`, where the requesting frame cannot be reliably verified.
-- Sites requesting location will prompt again rather than relying on a persistent permission.
-- The existing hidden-WebView memory-management policy was not changed. Chunked blob downloads reduce peak transfer-buffer requirements; no overall RAM, CPU, latency or playback improvement percentage is claimed.
-- Automated tests and CI do not substitute for validation on physical Android TV devices. Media codec, DRM, HLS and DASH support remain dependent on Android, the WebView provider and device capabilities.
-
-## Distribution and verification
-Release APKs are built separately for `arm64-v8a`, `armeabi-v7a`, and `x86_64`. Verify the release signature and SHA-256 checksums using the accompanying `SIGNING.txt`, `SHA256SUMS.txt` and signature file before installing.
+## Distribución
+Se generan APKs firmados para `arm64-v8a`, `armeabi-v7a` y `x86_64`. Verifique `SHA256SUMS.txt`, su firma y `SIGNING.txt` antes de instalar.
