@@ -12,6 +12,7 @@ ruta	clasificacion
 .github/workflows/apply-patch-queue.yml	PROPIO
 .github/workflows/ci.yml	PROPIO
 .github/workflows/release.yml	REESCRITO
+.github/workflows/baseline-profile.yml	PROPIO
 .gitignore	REESCRITO
 AGENTS.md	PROPIO
 CLAUDE.md	PROPIO
@@ -124,6 +125,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/RemoteSh
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/Shortcuts.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ApkInstaller.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/AppLanguages.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/FrameStats.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BackPresses.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BoundedReader.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BundleBytes.kt	PROPIO
@@ -361,6 +363,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/IncognitoFaviconTe
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/ShortcutMgrTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ApkInstallerTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/AppLanguagesTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/FrameStatsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapterTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BoundedReaderTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BundleBytesTest.kt	PROPIO
@@ -513,3 +516,5 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRe
 app/src/main/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadFiles.kt	PROPIO
 app/src/main/res/drawable/ic_stat_download.xml	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadStateTest.kt	PROPIO
+baselineprofile/build.gradle.kts	PROPIO
+baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/BaselineProfileGenerator.kt	PROPIO

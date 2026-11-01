@@ -232,4 +232,5 @@
     <string name="home_limit">Досягнуто ліміту ярликів (%d).</string>
     <string name="home_add_prompt">Адреса ярлика (https://…)</string>
     <string name="home_empty_search">Введіть запит.</string>
+    <string name="settings_slow_frames">Повільні кадри від запуску застосунку: %1$s</string>
 </resources>

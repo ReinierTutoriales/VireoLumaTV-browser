@@ -230,4 +230,5 @@
     <string name="home_limit">הגעת למגבלת קיצורי הדרך (%d).</string>
     <string name="home_add_prompt">כתובת קיצור הדרך (https://…)</string>
     <string name="home_empty_search">יש להקליד מה לחפש.</string>
+    <string name="settings_slow_frames">פריימים איטיים מאז הפעלת האפליקציה: %1$s</string>
 </resources>

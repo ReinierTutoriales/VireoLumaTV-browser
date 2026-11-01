@@ -232,4 +232,5 @@
     <string name="home_limit">Достигнут предел ярлыков (%d).</string>
     <string name="home_add_prompt">Адрес ярлыка (https://…)</string>
     <string name="home_empty_search">Введите запрос.</string>
+    <string name="settings_slow_frames">Медленные кадры с запуска приложения: %1$s</string>
 </resources>

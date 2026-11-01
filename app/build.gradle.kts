@@ -5,6 +5,7 @@ import org.gradle.process.ExecOperations
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.baselineprofile)
 }
 
 /** ABIs shipped with the Rust adblock engine. 32-bit x86 Android TV hardware does not exist. */
@@ -146,6 +147,13 @@ android {
     testOptions.unitTests.isIncludeAndroidResources = true
 }
 
+// The profile is generated on demand (Baseline profile workflow) into src/main/generated and
+// shipped in every APK; profileinstaller compiles it on the TV, which a sideloaded app needs.
+baselineProfile {
+    mergeIntoMain = true
+    automaticGenerationDuringBuild = false
+}
+
 // Room's processor: the exported schemas in schemas/ are how schema changes are caught.
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
@@ -157,10 +165,14 @@ dependencies {
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    // Installs the bundled baseline profile so Android compiles startup and common paths ahead of time.
+    implementation(libs.androidx.profileinstaller)
+    implementation(libs.androidx.metrics.performance)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    baselineProfile(project(":baselineprofile"))
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)

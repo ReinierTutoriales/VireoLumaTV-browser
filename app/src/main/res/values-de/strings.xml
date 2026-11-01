@@ -228,4 +228,5 @@
     <string name="home_limit">Verknüpfungslimit erreicht (%d).</string>
     <string name="home_add_prompt">Adresse der Verknüpfung (https://…)</string>
     <string name="home_empty_search">Gib einen Suchbegriff ein.</string>
+    <string name="settings_slow_frames">Langsame Frames seit App-Start: %1$s</string>
 </resources>

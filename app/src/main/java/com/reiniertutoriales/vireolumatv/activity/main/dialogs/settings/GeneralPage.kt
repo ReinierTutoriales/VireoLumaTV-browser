@@ -20,6 +20,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.BrowserSettings
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsRows.Companion.reveal
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.utils.AppLanguages
+import com.reiniertutoriales.vireolumatv.utils.FrameStats
 import com.reiniertutoriales.vireolumatv.utils.activity
 import com.reiniertutoriales.vireolumatv.webengine.Engines
 import kotlinx.coroutines.launch
@@ -67,6 +68,7 @@ class GeneralPage @JvmOverloads constructor(
         adBlockListUrl = rows.field(R.string.settings_filter_list, R.string.field_address, id = R.id.etAdBlockerListUrl)
         adBlockListUrl.setText(config.blockListUrl.value)
         addDebugging()
+        FrameStats.summary(AppLanguages.localeOf(context))?.let { rows.info(context.getString(R.string.settings_slow_frames, it)) }
         rows.button(R.string.settings_clear_cache, R.id.btnClearWebCache) {
             (activity as MainActivity).lifecycleScope.launch {
                 Engines.clearCache(context)

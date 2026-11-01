@@ -230,4 +230,5 @@
     <string name="home_limit">Límite de accesos alcanzado (%d).</string>
     <string name="home_add_prompt">Dirección del acceso (https://…)</string>
     <string name="home_empty_search">Escribe una búsqueda.</string>
+    <string name="settings_slow_frames">Fotogramas lentos desde que se abrió la app: %1$s</string>
 </resources>

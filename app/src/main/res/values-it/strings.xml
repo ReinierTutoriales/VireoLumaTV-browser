@@ -230,4 +230,5 @@
     <string name="home_limit">Limite di collegamenti raggiunto (%d).</string>
     <string name="home_add_prompt">Indirizzo del collegamento (https://…)</string>
     <string name="home_empty_search">Scrivi qualcosa da cercare.</string>
+    <string name="settings_slow_frames">Fotogrammi lenti dall\'avvio dell\'app: %1$s</string>
 </resources>

@@ -228,4 +228,5 @@
     <string name="home_limit">به سقف میان‌برها رسیدید (%d).</string>
     <string name="home_add_prompt">نشانی میان‌بر (https://…)</string>
     <string name="home_empty_search">چیزی برای جست‌وجو بنویسید.</string>
+    <string name="settings_slow_frames">فریم‌های کند از زمان باز شدن برنامه: %1$s</string>
 </resources>

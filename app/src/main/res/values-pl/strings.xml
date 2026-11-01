@@ -232,4 +232,5 @@
     <string name="home_limit">Osiągnięto limit skrótów (%d).</string>
     <string name="home_add_prompt">Adres skrótu (https://…)</string>
     <string name="home_empty_search">Wpisz, czego szukasz.</string>
+    <string name="settings_slow_frames">Wolne klatki od uruchomienia aplikacji: %1$s</string>
 </resources>

@@ -224,4 +224,5 @@
     <string name="home_limit">已達捷徑上限（%d）。</string>
     <string name="home_add_prompt">捷徑網址（https://…）</string>
     <string name="home_empty_search">請輸入要搜尋的內容。</string>
+    <string name="settings_slow_frames">應用程式啟動後的慢速影格：%1$s</string>
 </resources>
