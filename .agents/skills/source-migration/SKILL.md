@@ -27,9 +27,11 @@ description: Use when replacing existing code, layouts, assets or text in VireoL
    with the measured method and SHA. Separate still present routes from actual
    retained expression; never extrapolate a whole-project percentage from a
    single module.
-6. Keep existing source and binary notices while derived material ships.
-   Audit packaged APK resources and obtain the required license review before
-   removing upstream notices. Detaching the GitHub fork is a separate step.
+6. The migration is closed (see `docs/audit/README.md`): upstream notices were
+   removed by the owner's decision once only platform-required lines remained,
+   and the repository is no longer a GitHub fork. Do not reintroduce upstream
+   code, text or notices; new code follows the replacement criteria in
+   `code-quality`.
 
 Use `precise-coding` for implementation, `testing-discipline` for evidence,
 and `agent-governance` for commits; this skill only covers migration provenance.
