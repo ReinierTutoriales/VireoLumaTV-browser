@@ -172,6 +172,7 @@
         <item>Close all</item>
         <item>Move left</item>
         <item>Move right</item>
+        <item>Add to favorites</item>
     </string-array>
     <string-array name="popups_levels">
         <item>Allow all</item>
