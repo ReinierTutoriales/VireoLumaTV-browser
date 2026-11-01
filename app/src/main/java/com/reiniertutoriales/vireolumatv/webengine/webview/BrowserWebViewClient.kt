@@ -3,7 +3,6 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
-import android.text.InputType
 import android.util.Log
 import android.webkit.HttpAuthHandler
 import android.webkit.RenderProcessGoneDetail
@@ -13,9 +12,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.EditText
-import android.widget.LinearLayout
-import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
@@ -25,13 +21,18 @@ import java.net.URLConnection
 
 /**
  * Navigation and loading of one page: popup and tab-under guards, the packaged home page,
- * ad blocking, page lifecycle, certificate errors and HTTP authentication.
+ * ad blocking, page lifecycle, certificate errors and HTTP authentication ([HttpAuthPrompts]).
  */
 internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewClient() {
     // Capture on construction; request interception runs off the WebView UI thread.
     private val resourceContext = view.context.applicationContext
     private val window get() = view.window
     private val engine get() = view.engine
+    private val authPrompts = HttpAuthPrompts { this.view.context }
+    /** The page on screen, from its commit. */
+    @Volatile private var shownPage: Uri? = null
+    /** The top-level address being loaded and not yet shown; requests run off the UI thread. */
+    @Volatile private var loadingPage: Uri? = null
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         if (request.isForMainFrame) {
@@ -40,12 +41,15 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
             // Links, scripts and redirects only: loadUrl() from the address bar never comes here.
             if (engine.isTabUnderAd(request.url)) return true
         }
-        return window?.interceptNavigation(request.url.toString()) == true
+        val handled = window?.interceptNavigation(request.url.toString()) == true
+        if (!handled && request.isForMainFrame) loadingPage = request.url
+        return handled
     }
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
         // window.open(url) loads its first document without shouldOverrideUrlLoading.
         if (request.isForMainFrame && engine.onPopupNavigation(request.url)) return BlockedResponses.blocked()
+        if (request.isForMainFrame) loadingPage = request.url
         val page = this.view.currentOriginalUrl
         if (page != null && page.toString().startsWith(Config.HOME_PAGE_URL, ignoreCase = true)) {
             StartPageAssets.shouldInterceptRequest(request)?.let { return it }
@@ -76,6 +80,8 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
+        shownPage = url.toUri()
+        loadingPage = null
         this.view.onDocumentStarted(url)
         engine.onPageStarted(url)
         this.view.onDocumentStartReported(url)
@@ -136,27 +142,11 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
     }
 
     override fun onReceivedHttpAuthRequest(view: WebView?, handler: HttpAuthHandler?, host: String?, realm: String?) {
-        val context = this.view.context
-        val user = EditText(context).apply {
-            setHint(R.string.http_auth_user)
-            isSingleLine = true
-        }
-        val password = EditText(context).apply {
-            setHint(R.string.http_auth_password)
-            isSingleLine = true
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-        }
-        AlertDialog.Builder(context)
-            .setTitle(R.string.http_auth_title)
-            .setCancelable(false)
-            .setView(LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                addView(user)
-                addView(password)
-            })
-            .setPositiveButton(android.R.string.ok) { _, _ -> handler?.proceed(user.text.toString(), password.text.toString()) }
-            .setNegativeButton(android.R.string.cancel) { _, _ -> handler?.cancel() }
-            .show()
+        handler ?: return
+        authPrompts.request(host, realm, shownPage, loadingPage, object : HttpAuthPrompts.Answer {
+            override fun proceed(user: String, password: String) = handler.proceed(user, password)
+            override fun cancel() = handler.cancel()
+        })
     }
 }
 

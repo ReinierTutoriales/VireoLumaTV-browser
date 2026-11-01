@@ -57,6 +57,10 @@
     <string name="external_open_message">Trang này muốn mở một địa chỉ do ứng dụng khác xử lý:</string>
     <string name="external_no_app">Không có ứng dụng nào trên thiết bị mở được địa chỉ này</string>
     <string name="error_no_app">Không có ứng dụng nào mở được</string>
+    <string name="http_auth_message">%1$s yêu cầu tên người dùng và mật khẩu.</string>
+    <string name="http_auth_realm">Thông điệp của trang: %1$s</string>
+    <string name="http_auth_cleartext">Kết nối này không được mã hóa: tên người dùng và mật khẩu sẽ được gửi dưới dạng văn bản thường.</string>
+    <string name="http_auth_other_site">Yêu cầu đến từ một trang khác, không phải %1$s, địa chỉ đang mở. Chỉ đăng nhập nếu bạn tin cậy trang đó.</string>
     <string name="http_auth_title">Đăng nhập vào trang này</string>
     <string name="http_auth_user">Tên người dùng</string>
     <string name="http_auth_password">Mật khẩu</string>

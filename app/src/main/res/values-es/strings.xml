@@ -57,6 +57,10 @@
     <string name="external_open_message">Esta página quiere abrir una dirección que gestiona otra aplicación:</string>
     <string name="external_no_app">Ninguna aplicación de este dispositivo puede abrir esta dirección</string>
     <string name="error_no_app">Ninguna aplicación puede abrir esto</string>
+    <string name="http_auth_message">%1$s pide un nombre de usuario y una contraseña.</string>
+    <string name="http_auth_realm">Mensaje del sitio: %1$s</string>
+    <string name="http_auth_cleartext">Esta conexión no está cifrada: el usuario y la contraseña se enviarán como texto sin cifrar.</string>
+    <string name="http_auth_other_site">Lo pide otro sitio, no %1$s, la dirección que se está abriendo. Inicia sesión solo si confías en él.</string>
     <string name="http_auth_title">Inicia sesión en este sitio</string>
     <string name="http_auth_user">Usuario</string>
     <string name="http_auth_password">Contraseña</string>

@@ -57,6 +57,10 @@
     <string name="external_open_message">این صفحه می‌خواهد نشانی‌ای را باز کند که برنامهٔ دیگری آن را مدیریت می‌کند:</string>
     <string name="external_no_app">هیچ برنامه‌ای در این دستگاه نمی‌تواند این نشانی را باز کند</string>
     <string name="error_no_app">هیچ برنامه‌ای نمی‌تواند این را باز کند</string>
+    <string name="http_auth_message">%1$s نام کاربری و گذرواژه می‌خواهد.</string>
+    <string name="http_auth_realm">پیام سایت: %1$s</string>
+    <string name="http_auth_cleartext">این اتصال رمزگذاری نشده است: نام کاربری و گذرواژه به‌صورت متن ساده ارسال می‌شوند.</string>
+    <string name="http_auth_other_site">سایت دیگری درخواست می‌کند، نه %1$s که در حال باز شدن است. فقط اگر به آن اعتماد دارید وارد شوید.</string>
     <string name="http_auth_title">ورود به این سایت</string>
     <string name="http_auth_user">نام کاربری</string>
     <string name="http_auth_password">گذرواژه</string>

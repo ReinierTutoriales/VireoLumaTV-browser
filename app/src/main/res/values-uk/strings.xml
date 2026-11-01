@@ -57,6 +57,10 @@
     <string name="external_open_message">Ця сторінка хоче відкрити адресу, яку обробляє інший застосунок:</string>
     <string name="external_no_app">На пристрої немає застосунку, який відкриє цю адресу</string>
     <string name="error_no_app">Немає застосунку, щоб це відкрити</string>
+    <string name="http_auth_message">%1$s запитує ім\'я користувача та пароль.</string>
+    <string name="http_auth_realm">Повідомлення сайту: %1$s</string>
+    <string name="http_auth_cleartext">Це з\'єднання не зашифроване: ім\'я користувача та пароль буде надіслано відкритим текстом.</string>
+    <string name="http_auth_other_site">Запитує інший сайт, а не %1$s — адреса, що відкривається. Входьте, лише якщо довіряєте йому.</string>
     <string name="http_auth_title">Вхід на цей сайт</string>
     <string name="http_auth_user">Ім\'я користувача</string>
     <string name="http_auth_password">Пароль</string>

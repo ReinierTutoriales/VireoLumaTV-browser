@@ -57,6 +57,10 @@
     <string name="external_open_message">Эта страница хочет открыть адрес, который обрабатывает другое приложение:</string>
     <string name="external_no_app">На устройстве нет приложения, которое откроет этот адрес</string>
     <string name="error_no_app">Нет приложения, чтобы это открыть</string>
+    <string name="http_auth_message">%1$s запрашивает имя пользователя и пароль.</string>
+    <string name="http_auth_realm">Сообщение сайта: %1$s</string>
+    <string name="http_auth_cleartext">Это соединение не зашифровано: имя пользователя и пароль будут отправлены открытым текстом.</string>
+    <string name="http_auth_other_site">Запрашивает другой сайт, а не %1$s — открываемый адрес. Входите, только если доверяете ему.</string>
     <string name="http_auth_title">Вход на этот сайт</string>
     <string name="http_auth_user">Имя пользователя</string>
     <string name="http_auth_password">Пароль</string>
