@@ -488,6 +488,7 @@ class BrowserNavigationTest {
         // The player leaves fullscreen while OK is still held.
         engine.onPageLeftFullscreen()
         assertEquals(listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_CANCEL), player.touches)
+        assertFalse("No finger is left down to be lifted on the page", f.vb.pageContainer.pointerController.isSelectionPressed)
         f.vb.pageContainer.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
         assertEquals("The release reaches nobody", 2, player.touches.size)
         assertTrue(f.vb.pageContainer.pointerEnabled)
