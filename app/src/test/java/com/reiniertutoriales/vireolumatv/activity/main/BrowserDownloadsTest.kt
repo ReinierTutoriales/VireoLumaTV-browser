@@ -72,8 +72,8 @@ class BrowserDownloadsTest {
             assertTrue(downloads.waitingForPermission)
             assertEquals(1, downloads.pending.size)
             val model = com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels.get(
-                com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads::class, controller.get())
-            assertTrue("No transfer may start before the permission answer", model.runningDownloads.isEmpty())
+                com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard::class, controller.get())
+            assertTrue("No transfer may start before the permission answer", model.transfers.isEmpty())
         } finally { downloads.unbind(); controller.destroy() }
     }
 

@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.service.downloads
 
 import android.content.pm.ServiceInfo
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
+import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import org.junit.Assert.*
@@ -49,13 +49,13 @@ class DownloadServiceTest {
     @Test fun foregroundTimeoutCancelsDownloadsAndStopsTheService() {
         val controller = Robolectric.buildService(DownloadService::class.java).create()
         val service = controller.get()
-        val model = ScreenModels.get(RunningDownloads::class, service)
+        val model = ScreenModels.get(TransferBoard::class, service)
         val info = Download().apply { incognito = true }
-        model.runningDownloads.add(StreamTransfer(info, "x".byteInputStream(), service.transferListener))
+        model.transfers.add(StreamTransfer(info, "x".byteInputStream(), service.transferListener))
         service.onTimeout(1, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         assertTrue("A running download must be cancelled", info.cancelled)
         assertTrue("The service must stop itself within the timeout", shadowOf(service).isStoppedBySelf)
-        model.runningDownloads.clear()
+        model.transfers.clear()
         controller.destroy()
     }
     @Test fun saturatedWorkersRejectOverflowWithoutLeakingItsStreamOrReportingItStarted() {
@@ -84,9 +84,9 @@ class DownloadServiceTest {
             assertEquals(4, executor.queue.size)
             assertTrue(rejectedClosed)
             assertNull(rejected.stream)
-            val model = ScreenModels.get(RunningDownloads::class, service)
-            assertEquals(4, model.runningDownloads.size)
-            assertFalse(model.runningDownloads.any { it.job === rejected })
+            val model = ScreenModels.get(TransferBoard::class, service)
+            assertEquals(4, model.transfers.size)
+            assertFalse(model.transfers.any { it.job === rejected })
         } finally {
             controller.destroy() // Marks accepted queued tasks cancelled before they can create output.
             release.countDown()
@@ -94,4 +94,60 @@ class DownloadServiceTest {
         }
     }
 
+    /** Behaves as Android 12+ does for a foreground start from the background. */
+    class RefusedService : DownloadService() {
+        var attempts = 0
+        override fun enterForeground(jobs: List<Download>): Boolean {
+            attempts++
+            return false
+        }
+    }
+
+    @Test fun aRefusedForegroundStartRunsNothingAndKeepsNoReservation() {
+        val controller = Robolectric.buildService(RefusedService::class.java).create()
+        val service = controller.get()
+        var closed = false
+        val download = Download().apply {
+            incognito = true
+            filename = "refused.bin"
+            stream = object : java.io.ByteArrayInputStream(byteArrayOf(1)) {
+                override fun close() { closed = true; super.close() }
+            }
+        }
+        assertFalse(service.startDownload(download))
+        assertEquals(1, service.attempts)
+        assertTrue(download.cancelled)
+        assertTrue("The payload is released", closed)
+        assertTrue(ScreenModels.get(TransferBoard::class, service).transfers.isEmpty())
+        val executor = DownloadService::class.java.getDeclaredField("executor").apply { isAccessible = true }
+            .get(service) as java.util.concurrent.ThreadPoolExecutor
+        assertEquals("No worker received the task", 0L, executor.taskCount)
+        controller.destroy()
+    }
+
+    @Test fun anAcceptedDownloadRunsAsADataSyncForegroundServiceWithItsOwnIcon() {
+        val controller = Robolectric.buildService(DownloadService::class.java).create()
+        val service = controller.get()
+        assertTrue(service.startDownload(Download().apply {
+            incognito = true; filename = "ok.bin"; stream = byteArrayOf(1).inputStream()
+        }))
+        val shadow = shadowOf(service)
+        assertEquals(DownloadService.DOWNLOAD_NOTIFICATION, shadow.lastForegroundNotificationId)
+        assertEquals(com.reiniertutoriales.vireolumatv.R.drawable.ic_stat_download,
+            shadow.lastForegroundNotification.smallIcon.resId)
+        assertEquals(ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC, service.foregroundServiceType)
+        controller.destroy()
+    }
+
+    @Test fun theTimeLimitLeavesANoticeThatTheDownloadsStopped() {
+        val controller = Robolectric.buildService(DownloadService::class.java).create()
+        val service = controller.get()
+        service.onTimeout(1, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        val manager = service.getSystemService(android.app.NotificationManager::class.java)
+        val texts = shadowOf(manager).allNotifications.map {
+            it.extras.getCharSequence(android.app.Notification.EXTRA_TEXT).toString()
+        }
+        assertTrue(texts.contains(service.getString(com.reiniertutoriales.vireolumatv.R.string.download_time_limit)))
+        controller.destroy()
+    }
 }

@@ -56,7 +56,7 @@ sealed class Transfer(var job: Download, private val callback: Callback) : Runna
 
     final override fun run() {
         val outcome = try {
-            DownloadHistory.insert(job)
+            DownloadRecords.open(job)
             if (job.cancelled) Outcome.Cancelled else transfer()
         } catch (error: Exception) {
             if (job.cancelled) Outcome.Cancelled else Outcome.Failed(0, error.toString())
@@ -313,7 +313,7 @@ private fun openOutput(job: Download): FileOutputStream {
     val uri = resolver.insert(MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
         buildDownloadDetails(job)) ?: throw IOException("Could not create the download entry")
     job.filepath = uri.toString()
-    DownloadHistory.update(job)
+    DownloadRecords.save(job)
     val descriptor = resolver.openFileDescriptor(uri, "w", null) ?: throw IOException("Could not open the download output")
     return AutoCloseOutputStream(descriptor)
 }

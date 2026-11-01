@@ -14,7 +14,7 @@ import androidx.core.widget.doAfterTextChanged
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
+import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.databinding.BrowserControlsBinding
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 
@@ -77,7 +77,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                 }
             }
             val owner = context as AppCompatActivity
-            ScreenModels.get(RunningDownloads::class, context).runningDownloads.observe(owner) {
+            ScreenModels.get(TransferBoard::class, context).transfers.observe(owner) {
                 val count = it.size
                 ui.menuButton.setImageResource(if (count == 0) R.drawable.ic_more else R.drawable.ic_menu_downloads)
                 ui.menuButton.contentDescription = if (count == 0) context.getString(R.string.nav_menu)

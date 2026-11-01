@@ -32,8 +32,8 @@ class IncognitoDownloadTest {
 
     private val callback = object : Transfer.Callback {
         override fun onProgress(task: Transfer) {}
-        override fun onError(task: Transfer, responseCode: Int, responseMessage: String) { DownloadHistory.update(task.job) }
-        override fun onDone(task: Transfer) { DownloadHistory.update(task.job) }
+        override fun onError(task: Transfer, responseCode: Int, responseMessage: String) { DownloadRecords.save(task.job) }
+        override fun onDone(task: Transfer) { DownloadRecords.save(task.job) }
     }
 
     @Test fun privateStreamDownloadsWriteFilesButLeaveNoHistory() = runBlocking {
