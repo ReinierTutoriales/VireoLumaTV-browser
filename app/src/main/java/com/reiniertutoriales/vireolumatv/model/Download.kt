@@ -16,14 +16,14 @@ import java.io.InputStream
     tableName = "downloads",
     indices = [Index(value = ["time"], name = "downloads_time_idx"), Index(value = ["filename"], name = "downloads_filename_idx")],
 )
-class Download() {
+class Download {
     @PrimaryKey(autoGenerate = true) var id: Long = 0
-    var time: Long = 0
-    var filename: String = ""
+    @ColumnInfo(name = "time") var time: Long = 0
+    @ColumnInfo(name = "filename") var filename: String = ""
     /** A file path before Android 11, a MediaStore URI from Android 11. */
-    var filepath: String = ""
-    var url: String = ""
-    @Volatile var size: Long = 0
+    @ColumnInfo(name = "filepath") var filepath: String = ""
+    @ColumnInfo(name = "url") var url: String = ""
+    @Volatile @ColumnInfo(name = "size") var size: Long = 0
     @Volatile @ColumnInfo(name = "bytes_received") var bytesReceived: Long = 0
 
     @Ignore var afterDownload = AfterDownload.NOP
@@ -38,11 +38,15 @@ class Download() {
     /** Content the page already opened; closed once written. */
     @Ignore var stream: InputStream? = null
 
-    constructor(
+    /** Room builds rows from stored columns only. */
+    constructor()
+
+    /** A new download asked for by a page or the browser; nothing about it is stored yet. */
+    @Ignore constructor(
         url: String, filename: String, filepath: String?, afterDownload: AfterDownload,
         mimeType: String?, referer: String?, userAgent: String?,
         stream: InputStream?, size: Long = 0L,
-    ) : this() {
+    ) {
         this.url = url
         this.filename = filename
         this.filepath = filepath.orEmpty()

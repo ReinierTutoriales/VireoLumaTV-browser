@@ -1,5 +1,6 @@
 package com.reiniertutoriales.vireolumatv.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.Index
@@ -16,12 +17,12 @@ import androidx.room.PrimaryKey
 )
 class HistoryItem {
     @PrimaryKey(autoGenerate = true) var id: Long = 0
-    var time: Long = 0
-    var title: String = ""
-    var url: String = ""
-    var favicon: String? = null
+    @ColumnInfo(name = "time") var time: Long = 0
+    @ColumnInfo(name = "title") var title: String = ""
+    @ColumnInfo(name = "url") var url: String = ""
+    @ColumnInfo(name = "favicon") var favicon: String? = null
     /** A column of schema 19 that is no longer written; private visits are never stored. */
-    var incognito: Boolean? = null
+    @ColumnInfo(name = "incognito") var incognito: Boolean? = null
 
     /** A day heading row in the history list, not a visit. */
     @Ignore var isDayHeader = false

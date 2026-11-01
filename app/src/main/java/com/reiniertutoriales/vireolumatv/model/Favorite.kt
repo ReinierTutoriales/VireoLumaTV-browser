@@ -22,7 +22,7 @@ class Favorite {
     @ColumnInfo(name = "TITLE") var title: String? = null
     @ColumnInfo(name = "URL") var url: String? = null
     @ColumnInfo(name = "PARENT") var parent: Long? = 0
-    var favicon: String? = null
+    @ColumnInfo(name = "favicon") var favicon: String? = null
     @ColumnInfo(name = "HOME_PAGE_BOOKMARK") var homePageBookmark = false
     @ColumnInfo(name = "I_ORDER") var order = 0
     @ColumnInfo(name = "DEST_URL") var destUrl: String? = null
