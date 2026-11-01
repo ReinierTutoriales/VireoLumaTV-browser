@@ -19,6 +19,7 @@ import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import com.reiniertutoriales.vireolumatv.R
 
@@ -117,6 +118,14 @@ internal class SettingsRows(private val parent: ViewGroup) {
     }
 
     /** Read-only text between rows; never a focus stop. */
+    /** A heading that groups the rows after it; it is read as a heading and skipped by the D-pad. */
+    fun section(@StringRes title: Int) {
+        val heading = row(R.layout.view_setting_section) as TextView
+        heading.setText(title)
+        // Announced as a heading on every supported Android version, not only from API 28.
+        ViewCompat.setAccessibilityHeading(heading, true)
+    }
+
     fun info(text: CharSequence, sizeSp: Float = 16f) {
         (row(R.layout.view_setting_info) as TextView).apply {
             this.text = text

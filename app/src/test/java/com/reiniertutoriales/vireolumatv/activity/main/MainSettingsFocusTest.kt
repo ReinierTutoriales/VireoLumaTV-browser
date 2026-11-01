@@ -49,13 +49,22 @@ class MainSettingsFocusTest {
             page.layout(0, 0, 960, page.measuredHeight)
             assertFalse(page.isInTouchMode)
 
+            // Grouped as Browsing, Protection, Video and display, Remote and pointer, Advanced; the
+            // section headings are not focus stops.
             val expected = listOf(
-                "spEngine", "spHomePage", "spTitles", "llAdblock", "etAdBlockerListUrl",
-                "btnAdBlockerUpdate", "llWebViewAlgorithmicDarkening",
-                "llAllowAutoplayMedia", "spVideoMaxQuality", "llWebEngineDebug", "llKeepScreenOn",
-                "llNavigateWithJoystickAxes", "sbCursorMaxSpeed", "sbCursorAcceleration", "btnClearWebCache",
+                "spEngine", "spHomePage", "spTitles",
+                "llAdblock", "btnAdBlockerUpdate",
+                "llWebViewAlgorithmicDarkening", "llAllowAutoplayMedia", "spVideoMaxQuality", "llKeepScreenOn",
+                "llNavigateWithJoystickAxes", "sbCursorMaxSpeed", "sbCursorAcceleration",
+                "etAdBlockerListUrl", "llWebEngineDebug", "btnClearWebCache",
             )
             assertEquals(expected, walk(page, View.FOCUS_DOWN))
+            val headings = (0 until page.childCount).map { page.getChildAt(it) }
+                .filter { it is android.widget.TextView && it.isAccessibilityHeading }
+                .map { (it as android.widget.TextView).text.toString() }
+            assertEquals(listOf(R.string.settings_section_browsing, R.string.settings_section_protection,
+                R.string.settings_section_display, R.string.settings_section_remote, R.string.settings_section_advanced)
+                .map(activity::getString), headings)
             assertEquals(expected.reversed(), walk(page, View.FOCUS_UP, page.findViewById(R.id.btnClearWebCache)))
 
             // Activating a row flips its switch and stores the setting at once.

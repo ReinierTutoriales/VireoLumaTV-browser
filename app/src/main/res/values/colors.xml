@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One fixed palette: black backdrops, readable text and distinct remote focus states. -->
+<!-- One fixed dark palette: an opaque black backdrop (the same as pages loading behind it), layered
+     blue-grey surfaces with hairline edges, readable text and distinct remote focus states
+     (focus inverts, as on Google TV). -->
 <resources>
     <color name="background">#000000</color>
-    <color name="surface">#000000</color>
-    <color name="surface_variant">#141414</color>
-    <color name="surface_high">#242424</color>
-    <color name="on_surface">#E6E6E6</color>
-    <color name="on_surface_variant">#B3B3B3</color>
-    <color name="inverse_surface">#DADADA</color>
-    <color name="inverse_on_surface">#141414</color>
+    <color name="surface">#0D1117</color>
+    <color name="surface_variant">#1A2029</color>
+    <color name="surface_high">#262D38</color>
+    <color name="outline">#333B49</color>
+    <color name="on_surface">#E8ECF2</color>
+    <color name="on_surface_variant">#A9B2C0</color>
+    <color name="inverse_surface">#E8ECF2</color>
+    <color name="inverse_on_surface">#10141B</color>
     <color name="brand">#7BD88F</color>
-    <color name="brand_container">#1E3826</color>
+    <color name="brand_container">#1B3D2A</color>
     <color name="error">#FF8A80</color>
     <color name="scrim_strong">#F2000000</color>
     <color name="scrim_clear">#00000000</color>

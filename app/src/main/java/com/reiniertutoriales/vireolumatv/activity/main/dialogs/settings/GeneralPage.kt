@@ -45,12 +45,25 @@ class GeneralPage @JvmOverloads constructor(
     private lateinit var adBlockStatus: SettingsRows.Status
 
     init {
+        rows.section(R.string.settings_section_browsing)
         addSearchEngine()
         addHomePage()
         addUserAgent()
+        rows.section(R.string.settings_section_protection)
         addAdBlock()
+        rows.section(R.string.settings_section_display)
         addAppearanceAndPlayback()
+        rows.section(R.string.settings_section_remote)
         addInput()
+        rows.section(R.string.settings_section_advanced)
+        addAdvanced()
+    }
+
+    /** What most people never change: where the filter list comes from, debugging and the cache. */
+    private fun addAdvanced() {
+        adBlockListUrl = rows.field(R.string.settings_filter_list, R.string.field_address, id = R.id.etAdBlockerListUrl)
+        adBlockListUrl.setText(config.blockListUrl.value)
+        addDebugging()
         rows.button(R.string.settings_clear_cache, R.id.btnClearWebCache) {
             (activity as MainActivity).lifecycleScope.launch {
                 Engines.clearCache(context)
@@ -128,7 +141,6 @@ class GeneralPage @JvmOverloads constructor(
             details.visibility = if (enabled) View.VISIBLE else View.GONE
         }
         details = rows.group(config.adBlockEnabled) {
-            adBlockListUrl = field(null, R.string.field_address, id = R.id.etAdBlockerListUrl)
             adBlockStatus = status(R.id.tvAdBlockerListInfo, R.id.btnAdBlockerUpdate,
                 R.drawable.ic_refresh, R.string.blocker_update_lists) {
                 if (!adBlocker.listLoading.value) {
@@ -137,7 +149,6 @@ class GeneralPage @JvmOverloads constructor(
                 }
             }
         }
-        adBlockListUrl.setText(config.blockListUrl.value)
         showBlockerState()
     }
 
@@ -153,6 +164,12 @@ class GeneralPage @JvmOverloads constructor(
         val heights = intArrayOf(0, 1080, 720, 480)
         rows.choice(R.string.settings_video_quality, R.id.spVideoMaxQuality, resources.getStringArray(R.array.settings_video_qualities),
             heights.indexOf(config.videoMaxHeight).coerceAtLeast(0)) { config.videoMaxHeight = heights[it] }
+        rows.toggle(R.string.settings_keep_screen_on, R.id.llKeepScreenOn, browserSettings.keepScreenOn.value) { _, on ->
+            browserSettings.keepScreenOn.value = on
+        }
+    }
+
+    private fun addDebugging() {
         rows.toggle(R.string.settings_debugging, R.id.llWebEngineDebug, config.pageDebugging) { switch, on ->
             if (!on) {
                 config.pageDebugging = false
@@ -174,9 +191,6 @@ class GeneralPage @JvmOverloads constructor(
     }
 
     private fun addInput() {
-        rows.toggle(R.string.settings_keep_screen_on, R.id.llKeepScreenOn, browserSettings.keepScreenOn.value) { _, on ->
-            browserSettings.keepScreenOn.value = on
-        }
         rows.toggle(R.string.settings_stick_moves_pointer, R.id.llNavigateWithJoystickAxes,
             !config.ignoreStickAxes) { _, on -> config.ignoreStickAxes = !on }
         val percent = { value: Int -> context.getString(R.string.settings_percent_of_default, value) }

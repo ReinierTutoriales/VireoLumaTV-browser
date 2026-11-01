@@ -150,6 +150,12 @@
     <string name="settings_debugging_warning">اشکال‌زدایی به هر کسی که به این دستگاه دسترسی اشکال‌زدایی دارد اجازه می‌دهد محتوای صفحه، کوکی‌ها و داده‌های نشست را بخواند. فقط روی دستگاه مورد اعتماد و هنگام رفع اشکال روشنش کنید.</string>
     <string name="settings_restart_needed">برای اعمال، VireoLumaTV را دوباره راه‌اندازی کنید</string>
     <string name="settings_clear_cache">پاک کردن دادهٔ وب ذخیره‌شده</string>
+    <string name="settings_section_browsing">مرور</string>
+    <string name="settings_section_protection">محافظت</string>
+    <string name="settings_section_display">ویدیو و نمایش</string>
+    <string name="settings_section_remote">کنترل و نشانگر</string>
+    <string name="settings_section_advanced">پیشرفته</string>
+    <string name="settings_filter_list">نشانی فهرست فیلتر</string>
     <string name="warning_title">هشدار</string>
     <string name="private_explained">مرور خصوصی پس از خروج، تاریخچه، کوکی‌ها، داده‌های سایت و ورودی‌های فرم را نگه نمی‌دارد.\n\nبارگیری‌ها و علاقه‌مندی‌ها حفظ می‌شوند. سایت‌هایی که بازدید می‌کنید، شبکهٔ شما و ارائه‌دهندهٔ اینترنت همچنان فعالیت شما را می‌بینند.</string>
     <string name="shortcut_unassigned">تعیین نشده</string>

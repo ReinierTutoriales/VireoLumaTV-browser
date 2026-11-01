@@ -184,6 +184,7 @@ app/src/main/res/color/on_control_variant.xml	PROPIO
 app/src/main/res/color/on_list_item.xml	PROPIO
 app/src/main/res/color/on_list_item_accent.xml	PROPIO
 app/src/main/res/drawable-hdpi/ic_launcher.png	PROPIO
+app/src/main/res/drawable-ldrtl/bg_side_panel.xml	PROPIO
 app/src/main/res/drawable-mdpi/ic_launcher.png	PROPIO
 app/src/main/res/drawable-xhdpi/ic_launcher.png	PROPIO
 app/src/main/res/drawable-xxhdpi/ic_launcher.png	PROPIO
@@ -197,6 +198,7 @@ app/src/main/res/drawable/bg_list_item.xml	PROPIO
 app/src/main/res/drawable/bg_panel.xml	PROPIO
 app/src/main/res/drawable/bg_row.xml	PROPIO
 app/src/main/res/drawable/bg_scrim_top.xml	PROPIO
+app/src/main/res/drawable/bg_side_panel.xml	PROPIO
 app/src/main/res/drawable/bg_tab_close.xml	PROPIO
 app/src/main/res/drawable/bg_toast.xml	PROPIO
 app/src/main/res/drawable/cursor_menu_bg.xml	PROPIO
@@ -252,6 +254,7 @@ app/src/main/res/layout/view_setting_button.xml	PROPIO
 app/src/main/res/layout/view_setting_choice.xml	PROPIO
 app/src/main/res/layout/view_setting_field.xml	PROPIO
 app/src/main/res/layout/view_setting_info.xml	PROPIO
+app/src/main/res/layout/view_setting_section.xml	PROPIO
 app/src/main/res/layout/view_setting_slider.xml	PROPIO
 app/src/main/res/layout/view_setting_status.xml	PROPIO
 app/src/main/res/layout/view_setting_toggle.xml	PROPIO

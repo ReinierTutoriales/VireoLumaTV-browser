@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Side panel at the end edge: a raised surface with rounded inner corners and a hairline edge
+     towards the page. Right-to-left layouts use drawable-ldrtl, where the panel opens on the left. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <solid android:color="@color/outline" />
+            <corners android:topLeftRadius="@dimen/corner_panel" android:bottomLeftRadius="@dimen/corner_panel"
+                android:topRightRadius="0dp" android:bottomRightRadius="0dp" />
+        </shape>
+    </item>
+    <item android:left="1dp">
+        <shape>
+            <solid android:color="@color/surface" />
+            <corners android:topLeftRadius="@dimen/corner_panel" android:bottomLeftRadius="@dimen/corner_panel"
+                android:topRightRadius="0dp" android:bottomRightRadius="0dp" />
+        </shape>
+    </item>
+</layer-list>

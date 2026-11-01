@@ -154,6 +154,12 @@
     <string name="settings_debugging_warning">Debugowanie pozwala każdemu z dostępem debugowania do tego urządzenia odczytać treść stron, pliki cookie i dane sesji. Włączaj je tylko na zaufanym urządzeniu i tylko do rozwiązywania problemów.</string>
     <string name="settings_restart_needed">Uruchom ponownie VireoLumaTV, aby zastosować</string>
     <string name="settings_clear_cache">Wyczyść dane stron w pamięci podręcznej</string>
+    <string name="settings_section_browsing">Przeglądanie</string>
+    <string name="settings_section_protection">Ochrona</string>
+    <string name="settings_section_display">Wideo i ekran</string>
+    <string name="settings_section_remote">Pilot i wskaźnik</string>
+    <string name="settings_section_advanced">Zaawansowane</string>
+    <string name="settings_filter_list">Adres listy filtrów</string>
     <string name="warning_title">Ostrzeżenie</string>
     <string name="private_explained">Przeglądanie prywatne nie zachowuje historii, plików cookie, danych witryn ani wpisów w formularzach po jego zakończeniu.\n\nPobrane pliki i ulubione zostają. Odwiedzane witryny, Twoja sieć i dostawca internetu nadal widzą Twoją aktywność.</string>
     <string name="shortcut_unassigned">Nie przypisano</string>

@@ -152,6 +152,12 @@
     <string name="settings_debugging_warning">La depuración permite que cualquiera con acceso de depuración a este dispositivo lea el contenido de las páginas, las cookies y los datos de sesión. Actívala solo en un dispositivo de confianza y mientras resuelves un problema.</string>
     <string name="settings_restart_needed">Reinicia VireoLumaTV para aplicarlo</string>
     <string name="settings_clear_cache">Borrar los datos web en caché</string>
+    <string name="settings_section_browsing">Navegación</string>
+    <string name="settings_section_protection">Protección</string>
+    <string name="settings_section_display">Vídeo y pantalla</string>
+    <string name="settings_section_remote">Mando y puntero</string>
+    <string name="settings_section_advanced">Avanzado</string>
+    <string name="settings_filter_list">Dirección de la lista de filtros</string>
     <string name="warning_title">Advertencia</string>
     <string name="private_explained">La navegación privada no guarda el historial, las cookies, los datos de sitios ni lo que escribes en formularios cuando sales de ella.\n\nLas descargas y los favoritos sí se conservan. Los sitios que visitas, tu red y tu proveedor de internet pueden seguir viendo tu actividad.</string>
     <string name="shortcut_unassigned">Sin asignar</string>

@@ -148,6 +148,12 @@
     <string name="settings_debugging_warning">Gỡ lỗi cho phép bất kỳ ai có quyền gỡ lỗi trên thiết bị này đọc nội dung trang, cookie và dữ liệu phiên. Chỉ bật trên thiết bị tin cậy và khi đang khắc phục sự cố.</string>
     <string name="settings_restart_needed">Khởi động lại VireoLumaTV để áp dụng</string>
     <string name="settings_clear_cache">Xóa dữ liệu web đã lưu</string>
+    <string name="settings_section_browsing">Duyệt web</string>
+    <string name="settings_section_protection">Bảo vệ</string>
+    <string name="settings_section_display">Video và hiển thị</string>
+    <string name="settings_section_remote">Điều khiển và con trỏ</string>
+    <string name="settings_section_advanced">Nâng cao</string>
+    <string name="settings_filter_list">Địa chỉ danh sách bộ lọc</string>
     <string name="warning_title">Cảnh báo</string>
     <string name="private_explained">Duyệt web riêng tư không giữ lịch sử, cookie, dữ liệu trang web hay nội dung biểu mẫu sau khi bạn thoát.\n\nTệp tải xuống và mục yêu thích vẫn được giữ. Các trang web bạn truy cập, mạng và nhà cung cấp internet vẫn có thể thấy hoạt động của bạn.</string>
     <string name="shortcut_unassigned">Chưa gán</string>

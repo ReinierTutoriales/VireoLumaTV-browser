@@ -148,6 +148,12 @@
     <string name="settings_debugging_warning">偵錯會讓任何擁有這部裝置偵錯權限的人讀取網頁內容、Cookie 和工作階段資料。請只在受信任的裝置上、排解問題時開啟。</string>
     <string name="settings_restart_needed">重新啟動 VireoLumaTV 後生效</string>
     <string name="settings_clear_cache">清除網頁快取</string>
+    <string name="settings_section_browsing">瀏覽</string>
+    <string name="settings_section_protection">防護</string>
+    <string name="settings_section_display">影片與顯示</string>
+    <string name="settings_section_remote">遙控器與指標</string>
+    <string name="settings_section_advanced">進階</string>
+    <string name="settings_filter_list">篩選清單網址</string>
     <string name="warning_title">警告</string>
     <string name="private_explained">無痕瀏覽在離開後不會保留瀏覽記錄、Cookie、網站資料和表單內容。\n\n下載項目和我的最愛會保留。您造訪的網站、所在網路和網路服務供應商仍可看到您的活動。</string>
     <string name="shortcut_unassigned">未指派</string>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pill for tabs, text buttons and choices: the selected one is tinted with the brand color,
-     the focused one inverts. -->
+<!-- Pill for tabs, text buttons and choices: a hairline edge at rest, the selected one tinted and
+     edged with the brand color, the focused one inverted. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true" android:state_pressed="true">
         <shape><corners android:radius="@dimen/corner_large" /><solid android:color="@color/on_surface_variant" /></shape>
@@ -9,15 +9,18 @@
         <shape><corners android:radius="@dimen/corner_large" /><solid android:color="@color/inverse_surface" /></shape>
     </item>
     <item android:state_selected="true">
-        <shape><corners android:radius="@dimen/corner_large" /><solid android:color="@color/brand_container" /></shape>
+        <shape><corners android:radius="@dimen/corner_large" /><solid android:color="@color/brand_container" />
+            <stroke android:width="1dp" android:color="@color/brand" /></shape>
     </item>
     <item android:state_checked="true">
-        <shape><corners android:radius="@dimen/corner_large" /><solid android:color="@color/brand_container" /></shape>
+        <shape><corners android:radius="@dimen/corner_large" /><solid android:color="@color/brand_container" />
+            <stroke android:width="1dp" android:color="@color/brand" /></shape>
     </item>
     <item android:state_enabled="false">
         <shape><corners android:radius="@dimen/corner_large" /><solid android:color="@color/surface" /></shape>
     </item>
     <item>
-        <shape><corners android:radius="@dimen/corner_large" /><solid android:color="@color/surface_variant" /></shape>
+        <shape><corners android:radius="@dimen/corner_large" /><solid android:color="@color/surface_variant" />
+            <stroke android:width="1dp" android:color="@color/outline" /></shape>
     </item>
 </selector>
