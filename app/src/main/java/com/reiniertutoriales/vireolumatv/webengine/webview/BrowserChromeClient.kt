@@ -51,8 +51,9 @@ internal class BrowserChromeClient(private val view: BrowserWebView) : WebChrome
         engine.enterFullscreen(view)
     }
 
+    /** Chromium ends fullscreen: the page's own doing, unless the remote already closed it. */
     override fun onHideCustomView() {
-        engine.exitFullscreen(restoreBrowserControls = true)
+        engine.onPageLeftFullscreen()
         fullscreen?.onCustomViewHidden()
         fullscreen = null
     }

@@ -155,9 +155,23 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         webView = null
     }
 
+    /**
+     * The remote closes the video: the window brings back its controls. Chromium is told after the
+     * view is gone, so its own end-of-fullscreen report finds nothing left to restore.
+     */
     override fun closeFullscreen() {
-        webView?.hideCustomView()
         if (fullscreenView != null) exitFullscreen(restoreBrowserControls = true)
+        webView?.hideCustomView()
+    }
+
+    /**
+     * The page left fullscreen by itself (its player's button pressed with the pointer, or the video
+     * ended): back to the page as it was, without opening the browser's controls.
+     */
+    internal fun onPageLeftFullscreen() {
+        val wasShown = fullscreenView != null
+        exitFullscreen(restoreBrowserControls = false)
+        if (wasShown) webView?.requestFocus()
     }
 
     override fun setPointerMode(enabled: Boolean) {
