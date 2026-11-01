@@ -11,7 +11,7 @@ class SiteSettings(@ColumnInfo(name = "host_name") val hostName: String) {
     @PrimaryKey(autoGenerate = true) var id: Long = 0
     /** One of the POPUP_BLOCK_* levels; null means [DEFAULT_POPUP_POLICY]. */
     @ColumnInfo(name = "popup_block_level") var popupBlockLevel: Int? = null
-    var favicon: String? = null
+    @ColumnInfo(name = "favicon") var favicon: String? = null
 
     companion object {
         const val POPUPS_ALLOWED = 0

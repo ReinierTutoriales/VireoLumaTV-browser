@@ -28,23 +28,24 @@ import java.util.concurrent.atomic.AtomicLong
  *
  * A tab is equal only to itself: two tabs on the same address are still two tabs, so list
  * lookups and removals never mistake one for another. [copy] makes a detached snapshot for saving.
+ * Every stored field names its column, so renaming a property can never change the schema.
  */
 @Entity(tableName = "tabs")
 data class BrowserTab(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
-    var url: String = "",
-    var title: String = "",
-    var selected: Boolean = false,
-    var thumbnailHash: String? = null,
-    var faviconHash: String? = null,
-    var incognito: Boolean = false,
-    var position: Int = 0,
+    @ColumnInfo(name = "url") var url: String = "",
+    @ColumnInfo(name = "title") var title: String = "",
+    @ColumnInfo(name = "selected") var selected: Boolean = false,
+    @ColumnInfo(name = "thumbnailHash") var thumbnailHash: String? = null,
+    @ColumnInfo(name = "faviconHash") var faviconHash: String? = null,
+    @ColumnInfo(name = "incognito") var incognito: Boolean = false,
+    @ColumnInfo(name = "position") var position: Int = 0,
     /** A column of schema 19 that is no longer read; state lives in a file. */
     @ColumnInfo(name = "wv_state", typeAffinity = ColumnInfo.BLOB) var wvState: ByteArray? = null,
     @ColumnInfo(name = "wv_state_file") var wvStateFileName: String? = null,
     /** This tab's ad blocking, or null to follow the setting. */
-    var adblock: Boolean? = null,
-    var scale: Float? = null,
+    @ColumnInfo(name = "adblock") var adblock: Boolean? = null,
+    @ColumnInfo(name = "scale") var scale: Float? = null,
 ) {
     @Ignore var thumbnail: Bitmap? = null
     /** Engine state taken when the tab was last paused, kept until it is written to its file. */

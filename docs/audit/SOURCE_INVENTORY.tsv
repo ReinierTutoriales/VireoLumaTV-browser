@@ -164,6 +164,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/NetworkFai
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridge.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissions.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageScripts.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageSettings.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/ServiceWorkerFilter.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StartPageAssets.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnostics.kt	PROPIO
@@ -389,6 +390,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolic
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/NetworkFailureTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageBridgeSurfaceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PagePermissionsTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/PageSettingsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/RemoteInputContractTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/ServiceWorkerFilterTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/StreamDiagnosticsTest.kt	PROPIO

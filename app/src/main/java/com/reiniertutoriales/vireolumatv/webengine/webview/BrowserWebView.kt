@@ -93,7 +93,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     }
 
     init {
-        configure(settings)
+        PageSettings.apply(settings, config)
         // A long press opens the pointer menu instead of WebView's own selection.
         setOnLongClickListener { true }
         webChromeClient = chromeClient
@@ -132,44 +132,6 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         mediaPolicy.refresh()
     }
 
-    private fun configure(settings: WebSettings) = with(settings) {
-        javaScriptEnabled = true
-        domStorageEnabled = true
-        useWideViewPort = true
-        loadWithOverviewMode = true
-        setSupportZoom(true)
-        builtInZoomControls = true
-        displayZoomControls = false
-        allowContentAccess = false
-        allowFileAccess = false
-        allowFileAccessFromFileURLs = false
-        allowUniversalAccessFromFileURLs = false
-        cacheMode = WebSettings.LOAD_DEFAULT
-        // Visible rows already load icons through ViewFaviconLoader with their own bounded cache.
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOWNLOAD_FAVICONS_ENABLED)) {
-            WebSettingsCompat.setDownloadFaviconsEnabled(this, false)
-        }
-        mediaPlaybackRequiresUserGesture = !config.allowAutoplayMedia
-        setGeolocationEnabled(true)
-        // New windows only through onCreateWindow, where the pop-up rules apply.
-        javaScriptCanOpenWindowsAutomatically = false
-        setSupportMultipleWindows(true)
-        setNeedInitialFocus(false)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) safeBrowsingEnabled = true
-        // Process-wide: every new page view follows the current choice, so turning it off sticks.
-        setWebContentsDebuggingEnabled(config.pageDebugging)
-        // The interface is always dark, so the setting alone decides whether pages are darkened.
-        val darken = config.darkenPages
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
-                WebSettingsCompat.setAlgorithmicDarkeningAllowed(this, darken)
-            }
-        } else if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-            @Suppress("DEPRECATION")
-            WebSettingsCompat.setForceDark(this, if (darken) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF)
-        }
-    }
-
     /**
      * Loads [url]: "about:home" opens the home page the settings choose, internal warning pages
      * come from assets, anything else is loaded as it is.
@@ -177,31 +139,20 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     override fun loadUrl(url: String) {
         if (url != certificateErrorPageUrl) certificateErrorPageUrl = null
         trustedCertificate?.let { if (!CertificateTrust.sameHost(it.url, url)) trustedCertificate = null }
-        when {
-            url == Config.HOME_URL_ALIAS -> loadHome()
-            url.startsWith(APP_SCHEME) -> loadInternal(url.toUri())
-            else -> {
-                currentOriginalUrl = url.toUri()
-                super.loadUrl(url)
-            }
-        }
+        if (url.startsWith(APP_SCHEME)) return loadInternal(url.toUri())
+        val target = if (url == Config.HOME_URL_ALIAS) homeAddress() else url
+        if (target == null) return loadBlank()
+        // The address asked for, before any redirect: the base for ad and home page rules.
+        currentOriginalUrl = target.toUri()
+        super.loadUrl(target)
     }
 
-    private fun loadHome() {
-        when (config.homePageMode) {
-            Config.HomePageMode.BLANK -> loadBlank()
-            Config.HomePageMode.HOME_PAGE -> {
-                currentOriginalUrl = Config.HOME_PAGE_URL.toUri()
-                super.loadUrl(Config.HOME_PAGE_URL)
-            }
-            Config.HomePageMode.CUSTOM, Config.HomePageMode.SEARCH_ENGINE -> try {
-                currentOriginalUrl = config.homePage.toUri()
-                super.loadUrl(config.homePage)
-            } catch (error: Exception) {
-                Log.e(TAG, "Home page failed to load", error)
-                loadBlank()
-            }
-        }
+    /** Where "about:home" leads with the current settings; null for a blank page. */
+    private fun homeAddress(): String? = when (config.homePageMode) {
+        Config.HomePageMode.BLANK -> null
+        Config.HomePageMode.HOME_PAGE -> Config.HOME_PAGE_URL
+        Config.HomePageMode.CUSTOM, Config.HomePageMode.SEARCH_ENGINE ->
+            config.homePage.takeIf { it.isNotBlank() } ?: Config.HOME_PAGE_URL
     }
 
     private fun loadBlank() = loadDataWithBaseURL(null, "", "text/html", "UTF-8", null)
