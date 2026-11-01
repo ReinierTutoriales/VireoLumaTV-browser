@@ -333,6 +333,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/model/dao/StablePaginationTe
 app/src/test/java/com/reiniertutoriales/vireolumatv/model/dao/StorageWriteContractTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadBackoffCancellationTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadResourceTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadResumeTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadRetryPolicyTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadServiceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/service/downloads/DownloadTransferTest.kt	PROPIO
