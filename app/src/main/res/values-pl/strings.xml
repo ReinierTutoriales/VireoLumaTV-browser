@@ -57,6 +57,10 @@
     <string name="external_open_message">Ta strona chce otworzyć adres obsługiwany przez inną aplikację:</string>
     <string name="external_no_app">Żadna aplikacja na tym urządzeniu nie otworzy tego adresu</string>
     <string name="error_no_app">Żadna aplikacja nie może tego otworzyć</string>
+    <string name="http_auth_message">%1$s prosi o nazwę użytkownika i hasło.</string>
+    <string name="http_auth_realm">Wiadomość od witryny: %1$s</string>
+    <string name="http_auth_cleartext">To połączenie nie jest szyfrowane: nazwa użytkownika i hasło zostaną wysłane jawnym tekstem.</string>
+    <string name="http_auth_other_site">Prosi inna witryna, nie %1$s, czyli otwierany adres. Zaloguj się tylko, jeśli jej ufasz.</string>
     <string name="http_auth_title">Zaloguj się w tej witrynie</string>
     <string name="http_auth_user">Nazwa użytkownika</string>
     <string name="http_auth_password">Hasło</string>

@@ -60,6 +60,10 @@
     <string name="external_open_message">This page wants to open an address handled by another app:</string>
     <string name="external_no_app">No app on this device can open this address</string>
     <string name="error_no_app">No app can open this</string>
+    <string name="http_auth_message">%1$s asks for a user name and password.</string>
+    <string name="http_auth_realm">Message from the site: %1$s</string>
+    <string name="http_auth_cleartext">This connection is not encrypted: the user name and password will be sent in plain text.</string>
+    <string name="http_auth_other_site">Another site is asking, not %1$s, the address being opened. Only sign in if you trust it.</string>
     <string name="http_auth_title">Sign in to this site</string>
     <string name="http_auth_user">User name</string>
     <string name="http_auth_password">Password</string>

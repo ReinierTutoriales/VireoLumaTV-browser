@@ -57,6 +57,10 @@
     <string name="external_open_message">Diese Seite möchte eine Adresse öffnen, die eine andere App verarbeitet:</string>
     <string name="external_no_app">Keine App auf diesem Gerät kann diese Adresse öffnen</string>
     <string name="error_no_app">Keine App kann das öffnen</string>
+    <string name="http_auth_message">%1$s fragt nach Benutzername und Passwort.</string>
+    <string name="http_auth_realm">Nachricht der Website: %1$s</string>
+    <string name="http_auth_cleartext">Diese Verbindung ist nicht verschlüsselt: Benutzername und Passwort werden im Klartext gesendet.</string>
+    <string name="http_auth_other_site">Eine andere Website fragt, nicht %1$s, die gerade geöffnete Adresse. Melde dich nur an, wenn du ihr vertraust.</string>
     <string name="http_auth_title">Bei dieser Website anmelden</string>
     <string name="http_auth_user">Benutzername</string>
     <string name="http_auth_password">Passwort</string>

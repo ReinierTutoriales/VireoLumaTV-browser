@@ -57,6 +57,10 @@
     <string name="external_open_message">הדף מבקש לפתוח כתובת שמטופלת על ידי אפליקציה אחרת:</string>
     <string name="external_no_app">אין במכשיר אפליקציה שיכולה לפתוח את הכתובת הזו</string>
     <string name="error_no_app">אין אפליקציה שיכולה לפתוח את זה</string>
+    <string name="http_auth_message">%1$s מבקש שם משתמש וסיסמה.</string>
+    <string name="http_auth_realm">הודעה מהאתר: %1$s</string>
+    <string name="http_auth_cleartext">החיבור הזה אינו מוצפן: שם המשתמש והסיסמה יישלחו כטקסט גלוי.</string>
+    <string name="http_auth_other_site">הבקשה מגיעה מאתר אחר, לא מ-%1$s, הכתובת שנפתחת. יש להתחבר רק אם הוא מהימן.</string>
     <string name="http_auth_title">התחברות לאתר הזה</string>
     <string name="http_auth_user">שם משתמש</string>
     <string name="http_auth_password">סיסמה</string>

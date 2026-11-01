@@ -57,6 +57,10 @@
     <string name="external_open_message">此网页想要打开由其他应用处理的地址：</string>
     <string name="external_no_app">此设备上没有可打开此地址的应用</string>
     <string name="error_no_app">没有可打开此内容的应用</string>
+    <string name="http_auth_message">%1$s 要求输入用户名和密码。</string>
+    <string name="http_auth_realm">网站消息：%1$s</string>
+    <string name="http_auth_cleartext">此连接未加密：用户名和密码将以明文发送。</string>
+    <string name="http_auth_other_site">发出请求的是其他网站，而不是正在打开的 %1$s。仅在信任它时才登录。</string>
     <string name="http_auth_title">登录此网站</string>
     <string name="http_auth_user">用户名</string>
     <string name="http_auth_password">密码</string>
