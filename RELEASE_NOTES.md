@@ -1,16 +1,27 @@
-# VireoLumaTV 2.0.12
+# VireoLumaTV 2.0.13
 
-**Android versionName:** `2.0.12`  
-**Android versionCode:** `106`
+**Android versionName:** `2.0.13`  
+**Android versionCode:** `107`
 
-## Cambios
-- #137: conserva el modo de puntero o D-pad durante pantalla completa y restaura el estado de navegación al salir.
-- #138: permite guardar una pestaña en favoritos y editar o eliminar accesos de Inicio, incluido YouTube.
-- #139: solicita persistencia de cookies al pasar a segundo plano sin bloquear la interfaz; mantiene la política de incógnito.
+## Cambios desde 2.0.12
+
+- Navegación con mando, puntero y pestañas: simplificación de callbacks y contratos de interacción.
+- Idiomas: selección nativa de idioma por aplicación y traducciones actualizadas.
+- Instalación: gestión de APK mediante sesiones de PackageInstaller.
+- Privacidad: confirmación del borrado de cookies y preservación de incógnito.
+- Descargas: integración de historial con Room v20 y correcciones de servicio y progreso.
+- Ajustes: simplificación de callbacks y operaciones de descarga.
+- Limpieza y documentación de migración consolidadas.
+
+## Validación
+
+La CI comprueba compilación, pruebas automatizadas y Android Lint. La reproducción, la navegación con mando y la recuperación de sesión deben comprobarse también en hardware real. Los APKs publicados requieren firma de release y verificación de SHA-256.
 
 ## Limitaciones conocidas
-- Pendiente de validación en Android TV real: controles del vídeo, diálogos de Inicio y persistencia de la sesión después de apagar y encender.
-- La sesión depende de la política del servidor y del proveedor WebView; no se garantiza permanencia.
+
+- Pendiente de comprobación en Android TV físico: controles de vídeo, recuperación de sesión y persistencia tras reinicio.
+- El comportamiento de páginas y vídeos también depende del proveedor WebView y del servidor.
 
 ## Distribución
-La publicación requiere APKs firmados para `arm64-v8a`, `armeabi-v7a` y `x86_64`, y verificación de firma y hashes.
+
+APKs firmados para `arm64-v8a`, `armeabi-v7a` y `x86_64`, con verificación de certificado y hashes.
