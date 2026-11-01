@@ -269,7 +269,13 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         (view.parent as? ViewGroup)?.removeView(view)
         container?.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         fullscreenView = view
-        view.requestFocus()
+        // Chromium's custom fullscreen view is often a container with no focus target.
+        // Give its focusable descendants first chance to receive D-pad events, then
+        // fall back to the fullscreen root rather than leaving focus on the hidden WebView.
+        view.isFocusableInTouchMode = true
+        if (!view.hasFocus()) {
+            if (!view.requestFocus(View.FOCUS_DOWN)) view.requestFocus()
+        }
     }
 
     /**
