@@ -79,7 +79,12 @@
     <string name="blocker_state_partial">Część reguł</string>
     <string name="blocker_state_saved">Zapisane reguły</string>
     <string name="blocker_state_none">Brak reguł</string>
-    <string name="blocker_summary">Blokowanie reklam: %1$s. Zablokowano na tej stronie: %2$d.</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">Blokowanie reklam: %1$s. Zablokowano na tej stronie: %2$d.</item>
+        <item quantity="few">Blokowanie reklam: %1$s. Zablokowano na tej stronie: %2$d.</item>
+        <item quantity="many">Blokowanie reklam: %1$s. Zablokowano na tej stronie: %2$d.</item>
+        <item quantity="other">Blokowanie reklam: %1$s. Zablokowano na tej stronie: %2$d.</item>
+    </plurals>
     <string name="popups_title">Wyskakujące okna: %s</string>
     <string name="popups_dialog_blocked">Zablokowano okno dialogowe tej strony</string>
     <string name="popups_window_blocked">Zablokowano wyskakujące okno</string>
@@ -100,7 +105,12 @@
     <string name="history_delete_selected">Usunąć zaznaczone strony z historii?</string>
     <string name="history_delete_all">Usunąć całą historię?</string>
     <string name="download_started">Dodano pobieranie. Zapis do:\n%s</string>
-    <string name="nav_menu_downloads">Menu. Trwa pobieranie: %1$d</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">Menu. Trwa pobieranie: %1$d</item>
+        <item quantity="few">Menu. Trwa pobieranie: %1$d</item>
+        <item quantity="many">Menu. Trwa pobieranie: %1$d</item>
+        <item quantity="other">Menu. Trwa pobieranie: %1$d</item>
+    </plurals>
     <string name="downloads_empty">Brak pobranych plików</string>
     <string name="download_cancelled">Anulowano</string>
     <string name="download_file_missing">Pliku już nie ma</string>

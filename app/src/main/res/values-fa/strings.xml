@@ -79,7 +79,10 @@
     <string name="blocker_state_partial">برخی قوانین</string>
     <string name="blocker_state_saved">قوانین ذخیره‌شده</string>
     <string name="blocker_state_none">بدون قانون</string>
-    <string name="blocker_summary">مسدودسازی تبلیغات: %1$s. %2$d مورد در این صفحه مسدود شد.</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">مسدودسازی تبلیغات: %1$s. %2$d مورد در این صفحه مسدود شد.</item>
+        <item quantity="other">مسدودسازی تبلیغات: %1$s. %2$d مورد در این صفحه مسدود شد.</item>
+    </plurals>
     <string name="popups_title">پنجره‌های بازشو: %s</string>
     <string name="popups_dialog_blocked">یک پنجرهٔ گفتگوی این صفحه مسدود شد</string>
     <string name="popups_window_blocked">یک پنجرهٔ بازشو مسدود شد</string>
@@ -100,7 +103,10 @@
     <string name="history_delete_selected">صفحه‌های انتخاب‌شده از تاریخچه حذف شوند؟</string>
     <string name="history_delete_all">کل تاریخچه پاک شود؟</string>
     <string name="download_started">بارگیری اضافه شد. محل ذخیره:\n%s</string>
-    <string name="nav_menu_downloads">منو. %1$d بارگیری در جریان است</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">منو. %1$d بارگیری در جریان است</item>
+        <item quantity="other">منو. %1$d بارگیری در جریان است</item>
+    </plurals>
     <string name="downloads_empty">هنوز بارگیری‌ای نیست</string>
     <string name="download_cancelled">لغو شد</string>
     <string name="download_file_missing">فایل دیگر وجود ندارد</string>

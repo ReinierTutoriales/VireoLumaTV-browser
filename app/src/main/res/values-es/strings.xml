@@ -79,7 +79,11 @@
     <string name="blocker_state_partial">Reglas parciales</string>
     <string name="blocker_state_saved">Reglas guardadas</string>
     <string name="blocker_state_none">Sin reglas</string>
-    <string name="blocker_summary">Bloqueo de anuncios: %1$s. %2$d bloqueados en esta página.</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">Bloqueo de anuncios: %1$s. %2$d bloqueado en esta página.</item>
+        <item quantity="many">Bloqueo de anuncios: %1$s. %2$d bloqueados en esta página.</item>
+        <item quantity="other">Bloqueo de anuncios: %1$s. %2$d bloqueados en esta página.</item>
+    </plurals>
     <string name="popups_title">Ventanas emergentes: %s</string>
     <string name="popups_dialog_blocked">Se bloqueó un diálogo de esta página</string>
     <string name="popups_window_blocked">Se bloqueó una ventana emergente</string>
@@ -100,7 +104,11 @@
     <string name="history_delete_selected">¿Eliminar del historial las páginas seleccionadas?</string>
     <string name="history_delete_all">¿Borrar todo el historial?</string>
     <string name="download_started">Descarga añadida. Se guardará en:\n%s</string>
-    <string name="nav_menu_downloads">Menú. %1$d descargas en curso</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">Menú. %1$d descarga en curso</item>
+        <item quantity="many">Menú. %1$d descargas en curso</item>
+        <item quantity="other">Menú. %1$d descargas en curso</item>
+    </plurals>
     <string name="downloads_empty">Aún no hay descargas</string>
     <string name="download_cancelled">Cancelada</string>
     <string name="download_file_missing">El archivo ya no está</string>
