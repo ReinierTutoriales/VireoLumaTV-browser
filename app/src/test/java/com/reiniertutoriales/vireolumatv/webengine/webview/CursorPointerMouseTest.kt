@@ -44,8 +44,8 @@ class CursorPointerMouseTest {
         surface.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
         surface.layout(0, 0, 960, 540)
-        val delegate = PointerController(controller.get(), surface).apply { init() }
-        delegate.cursorPosition.set(480f, 270f)
+        val delegate = PointerController(controller.get(), surface)
+        delegate.position.set(480f, 270f)
         delegate.fadeIn()
         val update = PointerController::class.java.getDeclaredField("pointerTick")
             .apply { isAccessible = true }.get(delegate) as Runnable
@@ -62,14 +62,14 @@ class CursorPointerMouseTest {
 
     private fun key(delegate: PointerController, action: Int, code: Int) {
         val now = SystemClock.uptimeMillis()
-        assertTrue(delegate.dispatchKeyEvent(KeyEvent(now, now, action, code, 0)))
+        assertTrue(delegate.onKey(KeyEvent(now, now, action, code, 0)))
     }
 
     private val MotionEvent.isMouse get() =
         source == InputDevice.SOURCE_MOUSE && getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE
 
     @Test fun pushingAgainstTheBottomEdgeScrollsDownWithTheWheelAndNoFinger() = withCursor { delegate, surface, frame ->
-        delegate.cursorPosition.set(480f, 530f)
+        delegate.position.set(480f, 530f)
         key(delegate, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN)
         repeat(20) { frame() }
         key(delegate, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN)
@@ -79,7 +79,7 @@ class CursorPointerMouseTest {
             assertTrue(it.isMouse)
             assertTrue("Down scrolls with negative VSCROLL", it.getAxisValue(MotionEvent.AXIS_VSCROLL) < 0f)
             assertEquals(0f, it.getAxisValue(MotionEvent.AXIS_HSCROLL), 0f)
-            assertEquals("Wheel at the pointer", delegate.cursorPosition.x, it.x, 0.5f)
+            assertEquals("Wheel at the pointer", delegate.position.x, it.x, 0.5f)
         }
         assertTrue("Scrolling must not fake a finger", surface.touch.isEmpty())
     }
@@ -92,7 +92,7 @@ class CursorPointerMouseTest {
         assertEquals(MotionEvent.ACTION_HOVER_ENTER, actions.first())
         assertTrue(actions.drop(1).all { it == MotionEvent.ACTION_HOVER_MOVE })
         assertTrue(surface.mouse.all { it.isMouse })
-        assertEquals(delegate.cursorPosition.x, surface.mouse.last().x, 0.5f)
+        assertEquals(delegate.position.x, surface.mouse.last().x, 0.5f)
         delegate.resetInput()
         assertEquals(MotionEvent.ACTION_HOVER_EXIT, surface.mouse.last().actionMasked)
         assertTrue(surface.touch.isEmpty())
@@ -114,14 +114,14 @@ class CursorPointerMouseTest {
     private fun stickDistance(deflection: Float, frames: Int): Float {
         var distance = 0f
         withCursor { delegate, _, frame ->
-            delegate.cursorPosition.set(100f, 270f)
+            delegate.position.set(100f, 270f)
             delegate.onStick(deflection, 0f)
             repeat(frames) { frame() }
-            distance = delegate.cursorPosition.x - 100f
+            distance = delegate.position.x - 100f
             delegate.onStick(0f, 0f)
-            val stopped = delegate.cursorPosition.x
+            val stopped = delegate.position.x
             repeat(5) { frame() }
-            assertEquals("A centred stick stops the pointer", stopped, delegate.cursorPosition.x, 0f)
+            assertEquals("A centred stick stops the pointer", stopped, delegate.position.x, 0f)
         }
         return distance
     }

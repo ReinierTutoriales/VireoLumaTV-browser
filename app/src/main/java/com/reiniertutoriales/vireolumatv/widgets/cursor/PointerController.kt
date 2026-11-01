@@ -25,22 +25,21 @@ import kotlin.math.abs
  * react to it as to a mouse.
  */
 class PointerController(val context: Context, val surface: View) {
-    val cursorPosition = PointF(0f, 0f)
-    var callback: Callback? = null
+    /** Where the pointer is, in [surface] coordinates. */
+    val position = PointF(0f, 0f)
+    /** Called with the pointer position when OK is held without moving. */
+    var onHold: ((x: Int, y: Int) -> Unit)? = null
     val isSelectionPressed: Boolean get() = pressed
 
-    interface Callback {
-        fun onLongPress(x: Int, y: Int)
-    }
-
     // Sizes scale with the display width so the pointer looks the same on 720p and 4K panels.
-    private var radius = 0f
-    private var pressedRadius = 0f
-    private var strokeWidth = 0f
-    private var speedBaseline = 0f
-    private var edgeZone = 0
+    private val radius: Float
+    private val pressedRadius: Float
+    private val speedBaseline: Float
+    private val edgeZone: Int
     private var appearScale = 1f
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    // Two prepared paints: a frame draws the pointer without changing paint state.
+    private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; color = Color.GRAY }
 
     // Movement. Keys give a direction that accelerates; the stick gives a speed fraction.
     private var keyDirX = 0
@@ -73,22 +72,20 @@ class PointerController(val context: Context, val surface: View) {
         val configuration = ViewConfiguration.get(context)
         wheelUnitX = ViewConfigurationCompat.getScaledHorizontalScrollFactor(configuration, context)
         wheelUnitY = ViewConfigurationCompat.getScaledVerticalScrollFactor(configuration, context)
-    }
-
-    private val hidden: Boolean get() = SystemClock.uptimeMillis() - lastMove > HIDE_AFTER_MS
-
-    fun init() {
         val metrics = context.resources.displayMetrics
         val width = metrics.widthPixels.toFloat()
         radius = width / 100f
         pressedRadius = radius - 5f * metrics.density
-        strokeWidth = width / 400f
+        ring.strokeWidth = width / 400f
         speedBaseline = width / 25f
         edgeZone = (width / 15f).toInt()
     }
 
-    fun onSizeChanged(w: Int, h: Int, ow: Int, oh: Int) {
-        cursorPosition.set(w / 2f, h / 2f)
+    private val hidden: Boolean get() = SystemClock.uptimeMillis() - lastMove > HIDE_AFTER_MS
+
+    /** The surface got a new size: the pointer starts again from its centre. */
+    fun resize(width: Int, height: Int) {
+        position.set(width / 2f, height / 2f)
         scheduleHide()
     }
 
@@ -98,7 +95,8 @@ class PointerController(val context: Context, val surface: View) {
         if (dragScroll) stopDragging()
     }
 
-    fun dispatchKeyEvent(event: KeyEvent): Boolean {
+    /** Handles direction and selection keys; any other key is left to the surface. */
+    fun onKey(event: KeyEvent): Boolean {
         val (dx, dy) = DIRECTIONS[event.keyCode] ?: return if (event.keyCode in SELECTION_KEYS) {
             onSelection(event)
             true
@@ -168,7 +166,7 @@ class PointerController(val context: Context, val surface: View) {
             if (!hidden && !pressed) {
                 pressed = true
                 touch(MotionEvent.ACTION_DOWN)
-                surface.postInvalidate()
+                surface.invalidate()
                 surface.postDelayed(holdTimeout, LONG_PRESS_MS)
             }
         } else if (event.action == KeyEvent.ACTION_UP) {
@@ -185,7 +183,7 @@ class PointerController(val context: Context, val surface: View) {
                     pressed = false
                 }
             }
-            surface.postInvalidate()
+            surface.invalidate()
         }
     }
 
@@ -197,7 +195,7 @@ class PointerController(val context: Context, val surface: View) {
         }
         surface.keyDispatcherState.reset(this)
         dragScroll = false
-        callback?.onLongPress(cursorPosition.x.toInt(), cursorPosition.y.toInt())
+        onHold?.invoke(position.x.toInt(), position.y.toInt())
     }
 
     /** One display frame of movement; reschedules itself until the pointer is at rest. */
@@ -226,15 +224,15 @@ class PointerController(val context: Context, val surface: View) {
                 scheduleHide()
                 return
             }
-            val oldX = cursorPosition.x
-            val oldY = cursorPosition.y
-            cursorPosition.x = (oldX + speedX * frames).coerceIn(0f, surface.width - 1f)
-            cursorPosition.y = (oldY + speedY * frames).coerceIn(0f, surface.height - 1f)
-            val moved = oldX != cursorPosition.x || oldY != cursorPosition.y
+            val oldX = position.x
+            val oldY = position.y
+            position.x = (oldX + speedX * frames).coerceIn(0f, surface.width - 1f)
+            position.y = (oldY + speedY * frames).coerceIn(0f, surface.height - 1f)
+            val moved = oldX != position.x || oldY != position.y
             if (moved) surface.removeCallbacks(holdTimeout)
             when {
                 pressed -> if (moved) touch(MotionEvent.ACTION_MOVE) // Drag the held finger.
-                dragScroll -> if (moved) dragPage(cursorPosition.x - oldX, cursorPosition.y - oldY)
+                dragScroll -> if (moved) dragPage(position.x - oldX, position.y - oldY)
                 else -> {
                     if (moved) hover()
                     scrollAtEdge(frames)
@@ -248,8 +246,8 @@ class PointerController(val context: Context, val surface: View) {
 
     /** Pushing against an edge scrolls whatever is under the pointer, like a mouse wheel. */
     private fun scrollAtEdge(frames: Float) {
-        val x = cursorPosition.x
-        val y = cursorPosition.y
+        val x = position.x
+        val y = position.y
         val dx = when {
             speedX > 0 && x > surface.width - edgeZone -> speedX * frames
             speedX < 0 && x < edgeZone -> speedX * frames
@@ -292,8 +290,8 @@ class PointerController(val context: Context, val surface: View) {
         val now = SystemClock.uptimeMillis()
         val properties = MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_MOUSE }
         val coords = MotionEvent.PointerCoords().apply {
-            x = cursorPosition.x
-            y = cursorPosition.y
+            x = position.x
+            y = position.y
             axes()
         }
         val event = MotionEvent.obtain(now, now, action, 1, arrayOf(properties), arrayOf(coords),
@@ -307,8 +305,8 @@ class PointerController(val context: Context, val surface: View) {
         if (action == MotionEvent.ACTION_DOWN) touchDownTime = now
         val properties = MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_FINGER }
         val coords = MotionEvent.PointerCoords().apply {
-            x = cursorPosition.x
-            y = cursorPosition.y
+            x = position.x
+            y = position.y
             pressure = 1f
             size = 1f
         }
@@ -317,34 +315,30 @@ class PointerController(val context: Context, val surface: View) {
         try { surface.dispatchTouchEvent(event) } finally { event.recycle() }
     }
 
-    fun dispatchDraw(canvas: Canvas) {
+    fun draw(canvas: Canvas) {
         if (!dragScroll && hidden) return
-        val x = cursorPosition.x
-        val y = cursorPosition.y
+        val x = position.x
+        val y = position.y
         val r = if (pressed) pressedRadius else radius * appearScale
-        paint.style = Paint.Style.FILL
-        paint.color = if (dragScroll) GRAB_FILL else FILL
-        canvas.drawCircle(x, y, r, paint)
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = strokeWidth
-        paint.color = Color.GRAY
-        canvas.drawCircle(x, y, r, paint)
+        fill.color = if (dragScroll) GRAB_FILL else FILL
+        canvas.drawCircle(x, y, r, fill)
+        canvas.drawCircle(x, y, r, ring)
         if (dragScroll) { // A cross marks that moving now drags the page.
-            canvas.drawLine(x - r / 2, y, x + r / 2, y, paint)
-            canvas.drawLine(x, y - r / 2, x, y + r / 2, paint)
+            canvas.drawLine(x - r / 2, y, x + r / 2, y, ring)
+            canvas.drawLine(x, y - r / 2, x, y + r / 2, ring)
         }
     }
 
     fun startDragging() {
         dragScroll = true
-        surface.postInvalidate()
+        surface.invalidate()
     }
 
     fun stopDragging() {
         touch(MotionEvent.ACTION_UP)
         pressed = false
         dragScroll = false
-        surface.postInvalidate()
+        surface.invalidate()
     }
 
     fun fadeIn() {
@@ -354,7 +348,7 @@ class PointerController(val context: Context, val surface: View) {
             duration = APPEAR_MS
             addUpdateListener {
                 appearScale = it.animatedValue as Float
-                surface.postInvalidate()
+                surface.invalidate()
             }
             start()
         }
@@ -382,7 +376,7 @@ class PointerController(val context: Context, val surface: View) {
     fun hideCursor() {
         resetInput()
         lastMove = SystemClock.uptimeMillis() - HIDE_AFTER_MS - 1L
-        surface.postInvalidate()
+        surface.invalidate()
     }
 
     private fun scheduleHide() {

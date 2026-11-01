@@ -18,11 +18,7 @@ class SettingsScreen(context: Context, val model: BrowserSettings) : AppCompatDi
             when (page) {
                 R.id.general_page_tab -> GeneralPage(context).also { general = it }
                 R.id.shortcuts_page_tab -> ShortcutsPage(context)
-                R.id.about_page_tab -> AboutPage(context).apply {
-                    callback = object : AboutPage.Callback {
-                        override fun onSettingsDone() = dismiss()
-                    }
-                }
+                R.id.about_page_tab -> AboutPage(context).apply { onDone = ::dismiss }
                 else -> error("Unknown settings page: $page")
             }
         }

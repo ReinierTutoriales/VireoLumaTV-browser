@@ -83,7 +83,7 @@ class FavoritesPanel(
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                context.toast(R.string.error)
+                context.toast(R.string.favorites_update_failed)
             } finally {
                 busy = false
                 renderBusy()

@@ -6,7 +6,6 @@
     <string name="about_build">Bản dựng: %1$s · %2$s</string>
     <string name="about_license">Giấy phép · MIT</string>
     <string name="about_privacy">Chính sách quyền riêng tư</string>
-    <string name="error">Lỗi</string>
     <string name="action_allow">Cho phép</string>
     <string name="action_deny">Không cho phép</string>
     <string name="action_edit">Chỉnh sửa</string>
@@ -170,19 +169,11 @@
     <string name="favorite_added">Đã thêm vào mục yêu thích</string>
     <string name="favorite_exists">Đã có trong mục yêu thích</string>
     <string name="favorite_not_web">Chỉ có thể lưu trang web vào mục yêu thích</string>
-    <string-array name="tabs_actions">
-        <item>Thẻ mới</item>
-        <item>Đóng</item>
-        <item>Đóng tất cả</item>
-        <item>Chuyển sang trái</item>
-        <item>Chuyển sang phải</item>
-        <item>Thêm vào mục yêu thích</item>
-    </string-array>
     <string-array name="popups_levels">
-        <item>Cho phép tất cả</item>
-        <item>Chặn hộp thoại</item>
-        <item>Chặn hộp thoại và cửa sổ do script mở</item>
-        <item>Chặn mọi cửa sổ mới</item>
+        <item>Cho phép thông báo và cửa sổ mới</item>
+        <item>Chặn thông báo của trang</item>
+        <item>Chặn thông báo và cửa sổ mở khi chưa bấm</item>
+        <item>Chặn thông báo và mọi cửa sổ mới</item>
     </string-array>
     <string-array name="settings_home_page_modes">
         <item>Trang khởi động VireoLumaTV</item>
@@ -199,4 +190,20 @@
     <string name="download_queue_full">Hàng đợi tải xuống đã đầy. Hãy chờ một lượt tải hoàn tất rồi thử lại.</string>
     <string name="download_not_allowed">Android không cho phép bắt đầu tải xuống lúc này. Hãy thử lại khi trình duyệt đang hiển thị.</string>
     <string name="download_time_limit">Android đã dừng tải xuống vì đã đạt giới hạn thời gian chạy nền.</string>
+    <string name="tab_action_new">Thẻ mới bên cạnh</string>
+    <string name="tab_action_close">Đóng thẻ này</string>
+    <string name="tab_action_close_all">Đóng mọi thẻ</string>
+    <string name="tab_action_move_left">Di chuyển thẻ sang trái</string>
+    <string name="tab_action_move_right">Di chuyển thẻ sang phải</string>
+    <string name="tab_action_favorite">Thêm thẻ vào mục yêu thích</string>
+    <string name="download_failed">Thất bại</string>
+    <string name="system_settings_unavailable">Không mở được phần cài đặt Android.</string>
+    <string name="favorite_save_failed">Không lưu được mục yêu thích.</string>
+    <string name="favorites_update_failed">Không cập nhật được mục yêu thích.</string>
+    <string name="favorite_address_required">Hãy nhập địa chỉ.</string>
+    <string name="install_open_failed">Không mở được trình cài đặt.</string>
+    <string name="webview_missing_title">Không có WebView</string>
+    <string name="settings_language">Ngôn ngữ ứng dụng</string>
+    <string name="language_system">Ngôn ngữ hệ thống</string>
+    <string name="install_failed">Không cài đặt được ứng dụng.</string>
 </resources>

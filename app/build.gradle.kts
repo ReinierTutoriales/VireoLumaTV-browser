@@ -69,7 +69,11 @@ android {
     }
     ndkVersion = libs.versions.android.ndk.get()
     // Keep gzip payloads opaque to AssetManager and avoid a second APK compression layer.
-    androidResources { noCompress += "filterdata" }
+    androidResources {
+        noCompress += "filterdata"
+        // Lists the bundled translations to Android 13+, which then offers them as per-app languages.
+        generateLocaleConfig = true
+    }
 
     defaultConfig {
         applicationId = "com.reiniertutoriales.vireolumatv"

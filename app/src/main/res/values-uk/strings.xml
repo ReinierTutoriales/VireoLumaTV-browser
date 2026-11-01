@@ -6,7 +6,6 @@
     <string name="about_build">Збірка: %1$s · %2$s</string>
     <string name="about_license">Ліцензія · MIT</string>
     <string name="about_privacy">Політика конфіденційності</string>
-    <string name="error">Помилка</string>
     <string name="action_allow">Дозволити</string>
     <string name="action_deny">Заборонити</string>
     <string name="action_edit">Змінити</string>
@@ -176,19 +175,11 @@
     <string name="favorite_added">Додано до вибраного</string>
     <string name="favorite_exists">Уже є у вибраному</string>
     <string name="favorite_not_web">До вибраного можна зберегти лише вебсторінки</string>
-    <string-array name="tabs_actions">
-        <item>Нова вкладка</item>
-        <item>Закрити</item>
-        <item>Закрити всі</item>
-        <item>Посунути ліворуч</item>
-        <item>Посунути праворуч</item>
-        <item>Додати до вибраного</item>
-    </string-array>
     <string-array name="popups_levels">
-        <item>Дозволяти все</item>
-        <item>Блокувати діалоги</item>
-        <item>Блокувати діалоги й вікна, відкриті скриптами</item>
-        <item>Блокувати всі нові вікна</item>
+        <item>Дозволяти повідомлення й нові вікна</item>
+        <item>Блокувати повідомлення сторінки</item>
+        <item>Блокувати повідомлення й вікна, відкриті без натискання</item>
+        <item>Блокувати повідомлення й усі нові вікна</item>
     </string-array>
     <string-array name="settings_home_page_modes">
         <item>Стартова сторінка VireoLumaTV</item>
@@ -205,4 +196,20 @@
     <string name="download_queue_full">Черга завантажень заповнена. Дочекайтеся завершення завантаження та спробуйте ще раз.</string>
     <string name="download_not_allowed">Android не дозволив почати завантаження. Спробуйте ще раз, коли браузер відкрито на екрані.</string>
     <string name="download_time_limit">Android зупинив завантаження: досягнуто ліміту часу фонової роботи.</string>
+    <string name="tab_action_new">Нова вкладка поруч</string>
+    <string name="tab_action_close">Закрити цю вкладку</string>
+    <string name="tab_action_close_all">Закрити всі вкладки</string>
+    <string name="tab_action_move_left">Перемістити вкладку ліворуч</string>
+    <string name="tab_action_move_right">Перемістити вкладку праворуч</string>
+    <string name="tab_action_favorite">Додати вкладку до вибраного</string>
+    <string name="download_failed">Не вдалося</string>
+    <string name="system_settings_unavailable">Не вдалося відкрити налаштування Android.</string>
+    <string name="favorite_save_failed">Не вдалося зберегти закладку.</string>
+    <string name="favorites_update_failed">Не вдалося оновити вибране.</string>
+    <string name="favorite_address_required">Введіть адресу.</string>
+    <string name="install_open_failed">Не вдалося відкрити інсталятор.</string>
+    <string name="webview_missing_title">WebView недоступний</string>
+    <string name="settings_language">Мова застосунку</string>
+    <string name="language_system">Мова системи</string>
+    <string name="install_failed">Не вдалося встановити застосунок.</string>
 </resources>

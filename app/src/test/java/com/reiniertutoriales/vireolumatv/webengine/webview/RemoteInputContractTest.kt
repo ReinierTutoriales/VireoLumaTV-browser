@@ -47,7 +47,7 @@ class RemoteInputContractTest {
                 View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
             layout.layout(0, 0, 960, 540)
             // Start away from the edges: these tests are about movement, not edge scrolling.
-            layout.pointerController.cursorPosition.set(480f, 270f)
+            layout.pointerController.position.set(480f, 270f)
             frameStep = PointerController::class.java.getDeclaredField("pointerTick")
                 .apply { isAccessible = true }.get(layout.pointerController) as Runnable
             test(layout)
@@ -58,8 +58,8 @@ class RemoteInputContractTest {
         }
     }
 
-    private val PointerLayout.pointerX get() = pointerController.cursorPosition.x
-    private val PointerLayout.pointerY get() = pointerController.cursorPosition.y
+    private val PointerLayout.pointerX get() = pointerController.position.x
+    private val PointerLayout.pointerY get() = pointerController.position.y
 
     private var frameStep: Runnable? = null
 

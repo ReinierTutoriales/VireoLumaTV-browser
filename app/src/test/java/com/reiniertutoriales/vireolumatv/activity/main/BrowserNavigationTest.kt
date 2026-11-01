@@ -200,20 +200,14 @@ class BrowserNavigationTest {
         val other = BrowserTab(url = "https://other.test/page", title = "Other")
         f.tabs.openTabs.add(other)
         val chosen = mutableListOf<BrowserTab>()
-        f.vb.tabStrip.listener = object : com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabChips.Listener {
-            override fun onTitleChanged(index: Int) {}
-            override fun onTitleSelected(index: Int) {}
-            override fun onAddNewTabSelected() {}
-            override fun addTabToFavorites(tab: BrowserTab) { chosen += tab }
-            override fun closeTab(tabState: BrowserTab?) {}
-            override fun openInNewTab(url: String, tabIndex: Int) {}
+        f.vb.tabStrip.onCommand = {
+            if (it is com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Favorite) chosen += it.tab
         }
         f.vb.tabStrip.showTabOptions(other)
         // The tab moves before the user picks the option.
         f.tabs.openTabs.swap(0, 1)
         val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
-        val items = f.host.get().resources.getStringArray(R.array.tabs_actions)
-        val position = items.indexOf("Add to favorites")
+        val position = com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabStrip.TabAction.FAVORITE.ordinal
         dialog.listView.performItemClick(null, position, position.toLong())
         assertEquals(listOf(other), chosen)
     }
@@ -520,7 +514,7 @@ class BrowserNavigationTest {
         val engine = fullscreenEngine(f)
         val player = Player(f.host.get())
         engine.enterFullscreen(player)
-        engine.onLongPress(10, 10)
+        engine.openPointerMenuAt(10, 10)
         assertNotEquals(View.VISIBLE, f.vb.pointerMenu.visibility)
         assertTrue(player.hasFocus())
         engine.closeFullscreen()
@@ -714,9 +708,10 @@ class BrowserNavigationTest {
         assertSame("Leaving downwards does not open the previewed tab either", f.tab, f.tabs.currentTab.value)
         f.backPress()
         f.vb.tabStrip.current = 1
-        // The strip's real listener, as onCreate installs it.
-        (MainActivity::class.java.getDeclaredField("tabStrip").apply { isAccessible = true }
-            .get(f.activity) as com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabChips.Listener).onTitleSelected(1)
+        // The strip's real handler, as onCreate installs it.
+        MainActivity::class.java.getDeclaredMethod("onTabCommand", com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand::class.java)
+            .apply { isAccessible = true }
+            .invoke(f.activity, com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Show(1))
         assertSame("OK on the previewed tab opens it", second, f.tabs.currentTab.value)
         assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
     }

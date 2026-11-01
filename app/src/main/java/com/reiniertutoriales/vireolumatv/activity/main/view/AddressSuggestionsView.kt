@@ -28,11 +28,11 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
     LinearLayout(context, attrs) {
 
     var onPick: ((AddressSuggestion) -> Unit)? = null
-    internal val pointerController by lazy { PointerController(context, this).apply { init() } }
+    internal val pointerController by lazy { PointerController(context, this) }
     private var pointerMode = false
     private val remote = RemoteInput(
         target = object : RemoteInput.Target {
-            override fun onKey(event: KeyEvent) = pointerController.dispatchKeyEvent(event)
+            override fun onKey(event: KeyEvent) = pointerController.onKey(event)
             override fun onStick(x: Float, y: Float) = pointerController.onStick(x, y)
         },
         stickEnabled = { !AppContext.config.ignoreStickAxes },
@@ -105,13 +105,13 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        if (!isInEditMode) pointerController.onSizeChanged(w, h, oldw, oldh)
+        if (!isInEditMode) pointerController.resize(w, h)
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (pointerMode && hasFocus()) {
             if (event.keyCode == KeyEvent.KEYCODE_DPAD_UP && event.action == KeyEvent.ACTION_DOWN &&
-                event.repeatCount == 0 && pointerController.cursorPosition.y <= 12 * resources.displayMetrics.density) {
+                event.repeatCount == 0 && pointerController.position.y <= 12 * resources.displayMetrics.density) {
                 stopPointer()
                 rootView.findViewById<View>(R.id.address_field)?.requestFocus()
                 return true
@@ -126,7 +126,7 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
 
     override fun dispatchDraw(canvas: Canvas) {
         super.dispatchDraw(canvas)
-        if (pointerMode && hasFocus()) pointerController.dispatchDraw(canvas)
+        if (pointerMode && hasFocus()) pointerController.draw(canvas)
     }
 
     override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {

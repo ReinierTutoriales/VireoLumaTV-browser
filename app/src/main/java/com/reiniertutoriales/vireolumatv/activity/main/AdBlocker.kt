@@ -166,7 +166,6 @@ class AdBlocker @JvmOverloads constructor(
         else now >= config.blockListUpdatedAt + BLOCK_LIST_REFRESH_MINUTES * 60_000L
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     fun loadBlockList(forceReload: Boolean): Job = workScope.launch {
         if (listLoading.value) return@launch
         val configuredUrl = config.blockListUrl.value

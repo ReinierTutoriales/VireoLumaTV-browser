@@ -18,13 +18,20 @@ description: Use when replacing existing code, layouts, assets or text in VireoL
 4. Compare old and new behavior with affected unit tests, neighboring suites,
    lint and minified release CI on the exact SHA. List any WebView, remote,
    renderer or memory behavior requiring a physical TV check.
-5. Update the affected inventory rows and `docs/audit/README.md`
+5. Measure with `python3 scripts/measure-inherited-lines.py --rev <SHA>`
+   (per-line `git blame -w -C`; blank, bracket, import and comment lines are
+   not counted) and report its numbers with the SHA, never an estimate. Lines
+   Android requires as written (`super.onCreate`, `setContentView`,
+   `android:exported`, `layout_width`) are not rewrite targets.
+   Update the affected inventory rows and `docs/audit/README.md`
    with the measured method and SHA. Separate still present routes from actual
    retained expression; never extrapolate a whole-project percentage from a
    single module.
-6. Keep existing source and binary notices while derived material ships.
-   Audit packaged APK resources and obtain the required license review before
-   removing upstream notices. Detaching the GitHub fork is a separate step.
+6. The migration is closed (see `docs/audit/README.md`): upstream notices were
+   removed by the owner's decision once only platform-required lines remained,
+   and the repository is no longer a GitHub fork. Do not reintroduce upstream
+   code, text or notices; new code follows the replacement criteria in
+   `code-quality`.
 
 Use `precise-coding` for implementation, `testing-discipline` for evidence,
 and `agent-governance` for commits; this skill only covers migration provenance.

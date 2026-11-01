@@ -6,7 +6,6 @@
     <string name="about_build">ساخت: %1$s · %2$s</string>
     <string name="about_license">مجوز · MIT</string>
     <string name="about_privacy">سیاست حریم خصوصی</string>
-    <string name="error">خطا</string>
     <string name="action_allow">اجازه</string>
     <string name="action_deny">اجازه نده</string>
     <string name="action_edit">ویرایش</string>
@@ -172,19 +171,11 @@
     <string name="favorite_added">به علاقه‌مندی‌ها افزوده شد</string>
     <string name="favorite_exists">از قبل در علاقه‌مندی‌ها است</string>
     <string name="favorite_not_web">فقط صفحه‌های وب را می‌توان در علاقه‌مندی‌ها ذخیره کرد</string>
-    <string-array name="tabs_actions">
-        <item>زبانهٔ جدید</item>
-        <item>بستن</item>
-        <item>بستن همه</item>
-        <item>انتقال به چپ</item>
-        <item>انتقال به راست</item>
-        <item>افزودن به علاقه‌مندی‌ها</item>
-    </string-array>
     <string-array name="popups_levels">
-        <item>اجازه به همه</item>
-        <item>مسدود کردن پنجره‌های گفتگو</item>
-        <item>مسدود کردن پنجره‌های گفتگو و پنجره‌هایی که اسکریپت‌ها باز می‌کنند</item>
-        <item>مسدود کردن همهٔ پنجره‌های جدید</item>
+        <item>اجازه به هشدارها و پنجره‌های جدید</item>
+        <item>مسدود کردن هشدارهای صفحه</item>
+        <item>مسدود کردن هشدارها و پنجره‌هایی که بدون کلیک باز می‌شوند</item>
+        <item>مسدود کردن هشدارها و همهٔ پنجره‌های جدید</item>
     </string-array>
     <string-array name="settings_home_page_modes">
         <item>صفحهٔ آغاز VireoLumaTV</item>
@@ -201,4 +192,20 @@
     <string name="download_queue_full">صف بارگیری پر است. منتظر بمانید تا یک بارگیری تمام شود و دوباره تلاش کنید.</string>
     <string name="download_not_allowed">اندروید اکنون اجازه شروع بارگیری را نداد. با باز بودن مرورگر روی صفحه دوباره تلاش کنید.</string>
     <string name="download_time_limit">اندروید بارگیری‌ها را متوقف کرد: محدودیت زمانی پس‌زمینه به پایان رسید.</string>
+    <string name="tab_action_new">زبانهٔ جدید در کنار آن</string>
+    <string name="tab_action_close">بستن این زبانه</string>
+    <string name="tab_action_close_all">بستن همهٔ زبانه‌ها</string>
+    <string name="tab_action_move_left">جابه‌جایی زبانه به چپ</string>
+    <string name="tab_action_move_right">جابه‌جایی زبانه به راست</string>
+    <string name="tab_action_favorite">افزودن زبانه به علاقه‌مندی‌ها</string>
+    <string name="download_failed">ناموفق</string>
+    <string name="system_settings_unavailable">تنظیمات Android باز نشد.</string>
+    <string name="favorite_save_failed">علاقه‌مندی ذخیره نشد.</string>
+    <string name="favorites_update_failed">علاقه‌مندی‌ها به‌روز نشد.</string>
+    <string name="favorite_address_required">یک نشانی وارد کنید.</string>
+    <string name="install_open_failed">نصب‌کننده باز نشد.</string>
+    <string name="webview_missing_title">WebView در دسترس نیست</string>
+    <string name="settings_language">زبان برنامه</string>
+    <string name="language_system">زبان سیستم</string>
+    <string name="install_failed">برنامه نصب نشد.</string>
 </resources>

@@ -9,7 +9,6 @@
     <string name="about_build">Build: %1$s · %2$s</string>
     <string name="about_license">License · MIT</string>
     <string name="about_privacy">Privacy policy</string>
-    <string name="error">Error</string>
     <string name="action_allow">Allow</string>
     <string name="action_deny">Don\'t allow</string>
     <string name="action_edit">Edit</string>
@@ -175,19 +174,11 @@
     <string name="favorite_added">Added to favorites</string>
     <string name="favorite_exists">Already in favorites</string>
     <string name="favorite_not_web">Only web pages can be saved to favorites</string>
-    <string-array name="tabs_actions">
-        <item>New tab</item>
-        <item>Close</item>
-        <item>Close all</item>
-        <item>Move left</item>
-        <item>Move right</item>
-        <item>Add to favorites</item>
-    </string-array>
     <string-array name="popups_levels">
-        <item>Allow all</item>
-        <item>Block dialogs</item>
-        <item>Block dialogs and windows opened by scripts</item>
-        <item>Block every new window</item>
+        <item>Allow alerts and new windows</item>
+        <item>Block page alerts</item>
+        <item>Block alerts and windows opened without a click</item>
+        <item>Block alerts and every new window</item>
     </string-array>
     <string-array name="settings_home_page_modes">
         <item>VireoLumaTV start page</item>
@@ -204,4 +195,20 @@
     <string name="download_queue_full">Download queue is full. Wait for a download to finish and try again.</string>
     <string name="download_not_allowed">Android did not allow the download to start now. Try again with the browser on screen.</string>
     <string name="download_time_limit">Android stopped the downloads: the background time limit was reached.</string>
+    <string name="tab_action_new">New tab next to this one</string>
+    <string name="tab_action_close">Close this tab</string>
+    <string name="tab_action_close_all">Close all tabs</string>
+    <string name="tab_action_move_left">Move tab left</string>
+    <string name="tab_action_move_right">Move tab right</string>
+    <string name="tab_action_favorite">Add tab to favorites</string>
+    <string name="download_failed">Failed</string>
+    <string name="system_settings_unavailable">Android settings could not be opened.</string>
+    <string name="favorite_save_failed">The favorite could not be saved.</string>
+    <string name="favorites_update_failed">Favorites could not be updated.</string>
+    <string name="favorite_address_required">Enter an address.</string>
+    <string name="install_open_failed">The installer could not be opened.</string>
+    <string name="webview_missing_title">WebView not available</string>
+    <string name="settings_language">App language</string>
+    <string name="language_system">System language</string>
+    <string name="install_failed">The app could not be installed.</string>
 </resources>

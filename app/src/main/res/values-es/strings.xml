@@ -6,7 +6,6 @@
     <string name="about_build">Compilación: %1$s · %2$s</string>
     <string name="about_license">Licencia · MIT</string>
     <string name="about_privacy">Política de privacidad</string>
-    <string name="error">Error</string>
     <string name="action_allow">Permitir</string>
     <string name="action_deny">No permitir</string>
     <string name="action_edit">Editar</string>
@@ -174,19 +173,11 @@
     <string name="favorite_added">Añadida a favoritos</string>
     <string name="favorite_exists">Ya está en favoritos</string>
     <string name="favorite_not_web">Solo se pueden guardar páginas web en favoritos</string>
-    <string-array name="tabs_actions">
-        <item>Nueva pestaña</item>
-        <item>Cerrar</item>
-        <item>Cerrar todas</item>
-        <item>Mover a la izquierda</item>
-        <item>Mover a la derecha</item>
-        <item>Añadir a favoritos</item>
-    </string-array>
     <string-array name="popups_levels">
-        <item>Permitir todo</item>
-        <item>Bloquear diálogos</item>
-        <item>Bloquear diálogos y ventanas abiertas por scripts</item>
-        <item>Bloquear toda ventana nueva</item>
+        <item>Permitir avisos y ventanas nuevas</item>
+        <item>Bloquear avisos de la página</item>
+        <item>Bloquear avisos y ventanas abiertas sin pulsar</item>
+        <item>Bloquear avisos y toda ventana nueva</item>
     </string-array>
     <string-array name="settings_home_page_modes">
         <item>Página de inicio de VireoLumaTV</item>
@@ -203,4 +194,20 @@
     <string name="download_queue_full">La cola de descargas está llena. Espera a que termine una descarga e inténtalo de nuevo.</string>
     <string name="download_not_allowed">Android no permitió iniciar la descarga ahora. Vuelve a intentarlo con el navegador en pantalla.</string>
     <string name="download_time_limit">Android detuvo las descargas: se alcanzó el límite de tiempo en segundo plano.</string>
+    <string name="tab_action_new">Nueva pestaña al lado</string>
+    <string name="tab_action_close">Cerrar esta pestaña</string>
+    <string name="tab_action_close_all">Cerrar todas las pestañas</string>
+    <string name="tab_action_move_left">Mover pestaña a la izquierda</string>
+    <string name="tab_action_move_right">Mover pestaña a la derecha</string>
+    <string name="tab_action_favorite">Añadir la pestaña a favoritos</string>
+    <string name="download_failed">Falló</string>
+    <string name="system_settings_unavailable">No se pudieron abrir los ajustes de Android.</string>
+    <string name="favorite_save_failed">No se pudo guardar el favorito.</string>
+    <string name="favorites_update_failed">No se pudieron actualizar los favoritos.</string>
+    <string name="favorite_address_required">Escribe una dirección.</string>
+    <string name="install_open_failed">No se pudo abrir el instalador.</string>
+    <string name="webview_missing_title">WebView no disponible</string>
+    <string name="settings_language">Idioma de la app</string>
+    <string name="language_system">Idioma del sistema</string>
+    <string name="install_failed">No se pudo instalar la aplicación.</string>
 </resources>

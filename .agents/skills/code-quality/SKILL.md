@@ -15,6 +15,24 @@ description: Use when optimizing, cleaning, or reviewing code. Prioritizes simpl
 - Note any remaining need for real Android TV device validation.
 - Follow agent-governance rules on branches and authorship.
 
+## Replacing older code
+
+Replace an implementation only when the alternative improves security,
+correctness, performance, maintainability or compatibility from minSdk to
+targetSdk, and say which. Check the current official Android/AndroidX
+reference first, then keep the replacement inside the project's dependencies:
+
+- Foreground services: `ServiceCompat.startForeground` with the declared
+  type, before the work starts; handle refusal (Android 12+ background start,
+  Android 14+ type permission, Android 15+ dataSync time limit and `onTimeout`).
+- Notifications: monochrome small icon, `NotificationCompat`, a category.
+- Activity results: an `ActivityResultContract`, not request codes or raw extras.
+- Callbacks: a Kotlin function type or a sealed command type instead of
+  multi-method listener interfaces that callers implement with empty bodies.
+- Main-thread drawing: `invalidate()`; `postInvalidate()` only off the main thread.
+
+Renaming, reformatting or moving code to change `git blame` is not a replacement.
+
 ## Avoid repeating failed optimization choices
 
 - Trace network requests, script injection, service workers and per-site choices

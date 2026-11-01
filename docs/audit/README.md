@@ -12,6 +12,21 @@ and minified release builds, lint, Room schema verification and APK content audi
 The application license bundled in the APK must match the root MIT license.
 Physical validation of the current APK remains a separate check.
 
+## Source migration status
+
+Closed on 2026-11-01 at `66459a60`, measured with
+`python3 scripts/measure-inherited-lines.py --rev 66459a60`: 878 of 14 310 counted
+lines in `app/src/main` are still attributed by `git blame -w -C` to commits made
+before this project. Breakdown: layouts 362, Kotlin 309, manifest and other XML 133,
+values 56, HTML 18, JavaScript 0.
+
+Those lines are the forms the Android platform requires (`super.onCreate`,
+`setContentView`, Room annotations, `<intent-filter>`, `android:exported`,
+`layout_width`, document boilerplate). They carry no upstream design, text or
+identity. Upstream translations, names, credits, notices, data layout and the
+pointer, tab, download, history and database designs have been replaced.
+Rewriting the remaining lines would only alter `git blame`, so it is not pursued.
+
 ## Device and regression evidence
 
 Dated reports describe their own recorded builds. Preserve measurements and traces;

@@ -40,7 +40,7 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
 
     private val remoteInput = RemoteInput(
         target = object : RemoteInput.Target {
-            override fun onKey(event: KeyEvent) = pointerController.dispatchKeyEvent(event)
+            override fun onKey(event: KeyEvent) = pointerController.onKey(event)
             override fun onStick(x: Float, y: Float) = pointerController.onStick(x, y)
         },
         stickEnabled = { !AppContext.config.ignoreStickAxes },
@@ -51,7 +51,7 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
     init {
         if (!isInEditMode) {
             setWillNotDraw(false)
-            pointerController = PointerController(context, this).apply { init() }
+            pointerController = PointerController(context, this)
         }
     }
 
@@ -74,7 +74,7 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        if (!isInEditMode) pointerController.onSizeChanged(w, h, oldw, oldh)
+        if (!isInEditMode) pointerController.resize(w, h)
     }
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
@@ -101,6 +101,6 @@ class PointerLayout @JvmOverloads constructor(context: Context, attrs: Attribute
 
     override fun dispatchDraw(canvas: Canvas) {
         super.dispatchDraw(canvas)
-        if (!isInEditMode && pointerActive && !isTextInputActive()) pointerController.dispatchDraw(canvas)
+        if (!isInEditMode && pointerActive && !isTextInputActive()) pointerController.draw(canvas)
     }
 }

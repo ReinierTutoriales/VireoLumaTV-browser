@@ -20,16 +20,7 @@ import com.reiniertutoriales.vireolumatv.utils.ViewFaviconLoader
  */
 class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Adapter<TabChips.Row>() {
 
-    interface Listener {
-        fun onTitleChanged(index: Int)
-        fun onTitleSelected(index: Int)
-        fun onAddNewTabSelected()
-        fun addTabToFavorites(tab: BrowserTab)
-        fun closeTab(tabState: BrowserTab?)
-        fun openInNewTab(url: String, tabIndex: Int)
-    }
-
-    var listener: Listener? = null
+    var onCommand: ((TabCommand) -> Unit)? = null
     var tabStore: TabStore? = null
         set(value) {
             field = value
@@ -96,7 +87,7 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
             itemView.tag = tab
             itemView.isSelected = isCurrent
             close.setOnClickListener {
-                if (this.tab === tab && shown.any { it === tab }) listener?.closeTab(tab)
+                if (this.tab === tab && shown.any { it === tab }) onCommand?.invoke(TabCommand.Close(tab))
             }
             title.text = tab.title
             favicon.bind(tab.url)
@@ -104,7 +95,7 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
                 val index = positionOf(tab)
                 if (focused && index != RecyclerView.NO_POSITION && index != selected) {
                     current = index
-                    listener?.onTitleChanged(index)
+                    onCommand?.invoke(TabCommand.Focus(index))
                 }
             }
             itemView.onFocusChangeListener = focus
@@ -123,7 +114,7 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
             }
             close.setOnLongClickListener { itemView.performLongClick() }
             itemView.setOnClickListener {
-                positionOf(tab).takeIf { it != RecyclerView.NO_POSITION }?.let { listener?.onTitleSelected(it) }
+                positionOf(tab).takeIf { it != RecyclerView.NO_POSITION }?.let { onCommand?.invoke(TabCommand.Show(it)) }
             }
             itemView.setOnLongClickListener {
                 (positionOf(tab) != RecyclerView.NO_POSITION).also { if (it) onLongPress(tab) }

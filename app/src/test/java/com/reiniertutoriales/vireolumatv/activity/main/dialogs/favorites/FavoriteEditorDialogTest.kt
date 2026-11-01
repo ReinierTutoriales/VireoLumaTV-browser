@@ -30,7 +30,7 @@ class FavoriteEditorDialogTest {
         dialog.findViewById<Button>(R.id.done_button)!!.performClick()
 
         assertNull(saved)
-        assertEquals(dialog.context.getString(R.string.error), ShadowToast.getTextOfLatestToast())
+        assertEquals(dialog.context.getString(R.string.favorite_address_required), ShadowToast.getTextOfLatestToast())
     }
 
     @Test fun urlWithoutSchemeIsSavedWithHttps() {

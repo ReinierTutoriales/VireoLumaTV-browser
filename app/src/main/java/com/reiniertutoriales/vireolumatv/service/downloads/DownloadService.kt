@@ -66,12 +66,12 @@ open class DownloadService : Service() {
             }
         }
 
-        override fun onError(task: Transfer, responseCode: Int, responseMessage: String) {
-            DownloadRecords.save(task.job)
-            main.post { onTransferEnded(task) }
-        }
+        // The final size already says how it ended; both outcomes are saved and reported alike.
+        override fun onError(task: Transfer, responseCode: Int, responseMessage: String) = ended(task)
 
-        override fun onDone(task: Transfer) {
+        override fun onDone(task: Transfer) = ended(task)
+
+        private fun ended(task: Transfer) {
             DownloadRecords.save(task.job)
             main.post { onTransferEnded(task) }
         }

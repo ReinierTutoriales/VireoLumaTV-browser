@@ -21,7 +21,6 @@ import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
-import android.webkit.CookieManager
 import android.webkit.GeolocationPermissions
 import android.webkit.WebStorage
 import androidx.activity.OnBackPressedCallback
@@ -47,7 +46,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.Favorit
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
 import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
-import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabChips
+import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
 import com.reiniertutoriales.vireolumatv.model.Favorite
 import com.reiniertutoriales.vireolumatv.model.SiteSettings
@@ -64,6 +63,7 @@ import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.Engines
+import com.reiniertutoriales.vireolumatv.webengine.webview.CookieJar
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import com.reiniertutoriales.vireolumatv.webengine.webview.LegacyLocationGrants
 import com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter
@@ -136,7 +136,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.tabPreview.visibility = View.INVISIBLE
         vb.controlsOverlay.visibility = View.INVISIBLE
         vb.loadProgress.visibility = View.GONE
-        vb.tabStrip.listener = tabStrip
+        vb.tabStrip.onCommand = ::onTabCommand
         configureBrowserControls()
         observeModels()
         onBackPressedDispatcher.addCallback(onBackPressedCallback)
@@ -380,7 +380,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             } catch (error: Exception) {
                 if (error is kotlinx.coroutines.CancellationException) throw error
                 Log.w(TAG, "Saving the tab as a favorite failed", error)
-                return@launch toast(R.string.error)
+                return@launch toast(R.string.favorite_save_failed)
             }
             toast(when (result) {
                 TabFavorites.Result.ADDED -> R.string.favorite_added
@@ -476,33 +476,26 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     // Tabs
 
-    private val tabStrip = object : TabChips.Listener {
-        /** Focus moved to another tab: show its address and, a moment later, its preview. */
-        override fun onTitleChanged(index: Int) {
-            val tab = tabAt(index)
-            vb.controlsRow.showAddress(tab?.url.orEmpty())
-            previewGeneration++
-            mainThread.removeCallbacks(showFocusedPreview)
-            focusedPreviewTab = tab
-            mainThread.postDelayed(showFocusedPreview, PREVIEW_FOCUS_DELAY_MS)
-        }
-
-        override fun onTitleSelected(index: Int) {
+    private fun onTabCommand(command: TabCommand) = when (command) {
+        is TabCommand.Focus -> previewFocusedTab(tabAt(command.index))
+        is TabCommand.Show -> {
             commitStripSelection()
             closeCapsule()
         }
+        TabCommand.Add -> openInNewTab(browserSettings.homePage, tabStore.openTabs.size, navigateImmediately = true)
+        is TabCommand.AddAt ->
+            openInNewTab(browserSettings.homePage, command.index, closeCapsuleAfter = false, navigateImmediately = true)
+        is TabCommand.Favorite -> addTabToFavorites(command.tab)
+        is TabCommand.Close -> closeTab(command.tab)
+    }
 
-        override fun onAddNewTabSelected() {
-            openInNewTab(browserSettings.homePage, tabStore.openTabs.size, navigateImmediately = true)
-        }
-
-        override fun addTabToFavorites(tab: BrowserTab) = this@MainActivity.addTabToFavorites(tab)
-
-        override fun closeTab(tabState: BrowserTab?) = this@MainActivity.closeTab(tabState)
-
-        override fun openInNewTab(url: String, tabIndex: Int) {
-            this@MainActivity.openInNewTab(url, tabIndex, closeCapsuleAfter = false, navigateImmediately = true)
-        }
+    /** Focus moved to another tab: show its address and, a moment later, its preview. */
+    private fun previewFocusedTab(tab: BrowserTab?) {
+        vb.controlsRow.showAddress(tab?.url.orEmpty())
+        previewGeneration++
+        mainThread.removeCallbacks(showFocusedPreview)
+        focusedPreviewTab = tab
+        mainThread.postDelayed(showFocusedPreview, PREVIEW_FOCUS_DELAY_MS)
     }
 
     private fun tabAt(index: Int) = tabStore.openTabs.getOrNull(index)
@@ -576,7 +569,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     private fun showNoWebViewDialog() {
         val dialog = AlertDialog.Builder(this)
-            .setTitle(R.string.error)
+            .setTitle(R.string.webview_missing_title)
             .setCancelable(false)
             .setMessage(R.string.error_no_webview)
             .setNegativeButton(R.string.action_exit) { _, _ -> finish() }
@@ -776,11 +769,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val entering = !config.privateBrowsing
         vb.startupSpinner.visibility = View.VISIBLE
         if (!entering) {
-            withContext(Dispatchers.IO) {
-                WebStorage.getInstance().deleteAllData()
-                CookieManager.getInstance().removeAllCookies(null)
-                CookieManager.getInstance().flush()
-            }
+            WebStorage.getInstance().deleteAllData()
+            CookieJar.clear()
             Engines.clearCache(this@MainActivity)
             tabStore.onCloseOthers().join()
             tabStore.currentTab.value = null
