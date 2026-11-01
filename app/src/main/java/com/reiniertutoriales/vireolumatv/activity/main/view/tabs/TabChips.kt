@@ -24,6 +24,7 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
         fun onTitleChanged(index: Int)
         fun onTitleSelected(index: Int)
         fun onAddNewTabSelected()
+        fun addTabToFavorites(tab: BrowserTab)
         fun closeTab(tabState: BrowserTab?)
         fun openInNewTab(url: String, tabIndex: Int)
     }

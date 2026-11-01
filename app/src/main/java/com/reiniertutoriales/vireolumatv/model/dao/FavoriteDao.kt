@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import com.reiniertutoriales.vireolumatv.model.Favorite
 
 @Dao
@@ -23,4 +24,16 @@ abstract class FavoriteDao {
 
     @Delete
     abstract suspend fun delete(item: Favorite)
+
+    @Query("SELECT COUNT(*) FROM favorites WHERE URL = :url AND parent=0 AND home_page_bookmark=0")
+    protected abstract suspend fun countVisible(url: String): Int
+
+    /** Adds [item] unless a visible bookmark already has its address; true when it was added. */
+    @Transaction
+    open suspend fun insertIfAbsent(item: Favorite): Boolean {
+        val url = item.url ?: return false
+        if (countVisible(url) > 0) return false
+        insert(item)
+        return true
+    }
 }

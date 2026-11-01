@@ -163,12 +163,16 @@
     <string name="media_stop">توقف پخش</string>
     <string name="media_rewind">۱۰ ثانیه عقب</string>
     <string name="media_fast_forward">۱۰ ثانیه جلو</string>
+    <string name="favorite_added">به علاقه‌مندی‌ها افزوده شد</string>
+    <string name="favorite_exists">از قبل در علاقه‌مندی‌ها است</string>
+    <string name="favorite_not_web">فقط صفحه‌های وب را می‌توان در علاقه‌مندی‌ها ذخیره کرد</string>
     <string-array name="tabs_actions">
         <item>زبانهٔ جدید</item>
         <item>بستن</item>
         <item>بستن همه</item>
         <item>انتقال به چپ</item>
         <item>انتقال به راست</item>
+        <item>افزودن به علاقه‌مندی‌ها</item>
     </string-array>
     <string-array name="popups_levels">
         <item>اجازه به همه</item>

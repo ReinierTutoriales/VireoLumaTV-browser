@@ -166,12 +166,16 @@
     <string name="media_stop">Stop playback</string>
     <string name="media_rewind">Back 10 seconds</string>
     <string name="media_fast_forward">Forward 10 seconds</string>
+    <string name="favorite_added">Added to favorites</string>
+    <string name="favorite_exists">Already in favorites</string>
+    <string name="favorite_not_web">Only web pages can be saved to favorites</string>
     <string-array name="tabs_actions">
         <item>New tab</item>
         <item>Close</item>
         <item>Close all</item>
         <item>Move left</item>
         <item>Move right</item>
+        <item>Add to favorites</item>
     </string-array>
     <string-array name="popups_levels">
         <item>Allow all</item>

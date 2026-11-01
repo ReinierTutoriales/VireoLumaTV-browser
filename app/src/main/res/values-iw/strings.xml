@@ -165,12 +165,16 @@
     <string name="media_stop">עצירת ההפעלה</string>
     <string name="media_rewind">10 שניות אחורה</string>
     <string name="media_fast_forward">10 שניות קדימה</string>
+    <string name="favorite_added">נוסף למועדפים</string>
+    <string name="favorite_exists">כבר נמצא במועדפים</string>
+    <string name="favorite_not_web">אפשר לשמור במועדפים רק דפי אינטרנט</string>
     <string-array name="tabs_actions">
         <item>כרטיסייה חדשה</item>
         <item>סגירה</item>
         <item>סגירת הכול</item>
         <item>הזזה שמאלה</item>
         <item>הזזה ימינה</item>
+        <item>הוספה למועדפים</item>
     </string-array>
     <string-array name="popups_levels">
         <item>לאפשר הכול</item>

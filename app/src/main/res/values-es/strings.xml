@@ -165,12 +165,16 @@
     <string name="media_stop">Detener reproducción</string>
     <string name="media_rewind">Retroceder 10 segundos</string>
     <string name="media_fast_forward">Avanzar 10 segundos</string>
+    <string name="favorite_added">Añadida a favoritos</string>
+    <string name="favorite_exists">Ya está en favoritos</string>
+    <string name="favorite_not_web">Solo se pueden guardar páginas web en favoritos</string>
     <string-array name="tabs_actions">
         <item>Nueva pestaña</item>
         <item>Cerrar</item>
         <item>Cerrar todas</item>
         <item>Mover a la izquierda</item>
         <item>Mover a la derecha</item>
+        <item>Añadir a favoritos</item>
     </string-array>
     <string-array name="popups_levels">
         <item>Permitir todo</item>

@@ -163,12 +163,16 @@
     <string name="media_stop">Wiedergabe stoppen</string>
     <string name="media_rewind">10 Sekunden zurück</string>
     <string name="media_fast_forward">10 Sekunden vor</string>
+    <string name="favorite_added">Zu Favoriten hinzugefügt</string>
+    <string name="favorite_exists">Bereits in den Favoriten</string>
+    <string name="favorite_not_web">Nur Webseiten können als Favorit gespeichert werden</string>
     <string-array name="tabs_actions">
         <item>Neuer Tab</item>
         <item>Schließen</item>
         <item>Alle schließen</item>
         <item>Nach links</item>
         <item>Nach rechts</item>
+        <item>Zu Favoriten hinzufügen</item>
     </string-array>
     <string-array name="popups_levels">
         <item>Alle zulassen</item>
