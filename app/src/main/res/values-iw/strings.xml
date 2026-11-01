@@ -209,4 +209,5 @@
     <string name="webview_missing_title">WebView אינו זמין</string>
     <string name="settings_language">שפת האפליקציה</string>
     <string name="language_system">שפת המערכת</string>
+    <string name="install_failed">לא ניתן היה להתקין את האפליקציה.</string>
 </resources>

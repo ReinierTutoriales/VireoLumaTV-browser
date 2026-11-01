@@ -156,6 +156,11 @@
         <meta-data
             android:name="android.webkit.WebView.MetricsOptOut"
             android:value="true" />
+        <!-- Outcome of an APK install session; only the system's PackageInstaller sends it. -->
+        <receiver
+            android:name=".utils.ApkInstaller$Result"
+            android:exported="false" />
+
         <!-- Android 12 and older: AppCompat stores the language chosen in Settings itself. -->
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"

@@ -207,4 +207,5 @@
     <string name="webview_missing_title">WebView در دسترس نیست</string>
     <string name="settings_language">زبان برنامه</string>
     <string name="language_system">زبان سیستم</string>
+    <string name="install_failed">برنامه نصب نشد.</string>
 </resources>

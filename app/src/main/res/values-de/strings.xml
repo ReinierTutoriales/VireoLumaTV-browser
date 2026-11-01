@@ -207,4 +207,5 @@
     <string name="webview_missing_title">WebView nicht verfügbar</string>
     <string name="settings_language">App-Sprache</string>
     <string name="language_system">Systemsprache</string>
+    <string name="install_failed">Die App konnte nicht installiert werden.</string>
 </resources>

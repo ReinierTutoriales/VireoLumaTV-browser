@@ -205,4 +205,5 @@
     <string name="webview_missing_title">WebView 不可用</string>
     <string name="settings_language">应用语言</string>
     <string name="language_system">跟随系统</string>
+    <string name="install_failed">无法安装此应用。</string>
 </resources>

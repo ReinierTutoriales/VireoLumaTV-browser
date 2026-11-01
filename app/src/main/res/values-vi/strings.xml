@@ -205,4 +205,5 @@
     <string name="webview_missing_title">Không có WebView</string>
     <string name="settings_language">Ngôn ngữ ứng dụng</string>
     <string name="language_system">Ngôn ngữ hệ thống</string>
+    <string name="install_failed">Không cài đặt được ứng dụng.</string>
 </resources>

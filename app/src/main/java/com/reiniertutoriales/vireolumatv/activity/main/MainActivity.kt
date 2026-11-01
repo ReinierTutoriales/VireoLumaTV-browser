@@ -21,7 +21,6 @@ import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
-import android.webkit.CookieManager
 import android.webkit.GeolocationPermissions
 import android.webkit.WebStorage
 import androidx.activity.OnBackPressedCallback
@@ -64,6 +63,7 @@ import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.Engines
+import com.reiniertutoriales.vireolumatv.webengine.webview.CookieJar
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import com.reiniertutoriales.vireolumatv.webengine.webview.LegacyLocationGrants
 import com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter
@@ -769,11 +769,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val entering = !config.privateBrowsing
         vb.startupSpinner.visibility = View.VISIBLE
         if (!entering) {
-            withContext(Dispatchers.IO) {
-                WebStorage.getInstance().deleteAllData()
-                CookieManager.getInstance().removeAllCookies(null)
-                CookieManager.getInstance().flush()
-            }
+            WebStorage.getInstance().deleteAllData()
+            CookieJar.clear()
             Engines.clearCache(this@MainActivity)
             tabStore.onCloseOthers().join()
             tabStore.currentTab.value = null
