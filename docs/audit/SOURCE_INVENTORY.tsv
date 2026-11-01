@@ -89,6 +89,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/AddressSu
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/BrowserControls.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/PointerMenu.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabChips.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabCommand.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabStrip.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/adblock/AdblockCache.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/adblock/AdblockFilterListValidator.kt	PROPIO
