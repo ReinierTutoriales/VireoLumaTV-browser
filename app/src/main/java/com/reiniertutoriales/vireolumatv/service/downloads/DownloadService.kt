@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
@@ -15,9 +16,11 @@ import android.text.format.Formatter
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
+import androidx.core.content.getSystemService
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
+import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
 import com.reiniertutoriales.vireolumatv.utils.FileNames
@@ -30,19 +33,24 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Runs downloads on two worker threads while the browser is bound to it, as a dataSync foreground
- * service with one ongoing notification for all of them. Results reach [RunningDownloads] on the
- * main thread; progress is passed on at most every [PROGRESS_INTERVAL_MS].
+ * service with one ongoing notification for all of them. A download is handed to a worker only
+ * after the service is in the foreground; when Android refuses that, nothing has started and the
+ * download is dropped. Results reach [TransferBoard] on the main thread; progress is passed on at
+ * most every [PROGRESS_INTERVAL_MS].
  */
 open class DownloadService : Service() {
-    private lateinit var model: RunningDownloads
+    private lateinit var board: TransferBoard
     private lateinit var notifications: NotificationManager
     private val executor = ThreadPoolExecutor(2, 2, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue<Runnable>(4))
     private val main = Handler(Looper.getMainLooper())
     private val notification by lazy {
         NotificationCompat.Builder(this, VireoLumaTVApp.DOWNLOAD_CHANNEL)
-            .setSmallIcon(R.drawable.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_download)
+            .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
+            // Android 12+ may otherwise hold back a foreground notification for up to ten seconds.
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
     }
 
     internal val transferListener = object : Transfer.Callback {
@@ -53,38 +61,32 @@ open class DownloadService : Service() {
             if (now - lastProgress < PROGRESS_INTERVAL_MS) return
             lastProgress = now
             main.post {
-                model.reportProgress(task)
-                if (model.runningDownloads.isNotEmpty()) notifications.notify(DOWNLOAD_NOTIFICATION, buildNotification())
+                board.publish(task)
+                if (board.transfers.isNotEmpty()) notifications.notify(DOWNLOAD_NOTIFICATION, buildNotification())
             }
         }
 
         override fun onError(task: Transfer, responseCode: Int, responseMessage: String) {
-            DownloadHistory.update(task.job)
-            main.post {
-                model.reportError(task, responseCode, responseMessage)
-                onTransferEnded(task)
-            }
+            DownloadRecords.save(task.job)
+            main.post { onTransferEnded(task) }
         }
 
         override fun onDone(task: Transfer) {
-            DownloadHistory.update(task.job)
-            main.post {
-                model.reportProgress(task)
-                onTransferEnded(task)
-            }
+            DownloadRecords.save(task.job)
+            main.post { onTransferEnded(task) }
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        model = ScreenModels.get(RunningDownloads::class, this)
-        notifications = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        board = ScreenModels.get(TransferBoard::class, this)
+        notifications = getSystemService<NotificationManager>()!!
     }
 
     override fun onDestroy() {
         cancelAll()
         executor.shutdown()
-        ScreenModels.discard(model, this)
+        ScreenModels.discard(board, this)
         super.onDestroy()
     }
 
@@ -97,16 +99,31 @@ open class DownloadService : Service() {
      * within seconds. The downloads are cancelled so their partial files are removed, not orphaned.
      */
     override fun onTimeout(startId: Int, fgsType: Int) {
-        Log.w(TAG, "Foreground time limit reached; cancelling ${model.runningDownloads.size} downloads")
+        Log.w(TAG, "Foreground time limit reached; cancelling ${board.transfers.size} downloads")
         cancelAll()
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+        leaveForeground()
+        // The ongoing notification is gone; this one tells why the downloads stopped.
+        notifications.notify(TIME_LIMIT_NOTIFICATION, NotificationCompat.Builder(this, VireoLumaTVApp.DOWNLOAD_CHANNEL)
+            .setSmallIcon(R.drawable.ic_stat_download)
+            .setContentTitle(getString(R.string.menu_downloads))
+            .setContentText(getString(R.string.download_time_limit))
+            .setAutoCancel(true)
+            .build())
     }
 
+    /**
+     * Order matters: admission, foreground, output file, then the worker. Each step that fails
+     * undoes the earlier ones, so a refused download never writes, never leaves a reserved file and
+     * never keeps the service in the foreground on its own.
+     */
     fun startDownload(download: Download): Boolean {
-        if (model.runningDownloads.size >= MAX_OUTSTANDING) return reject(download)
+        if (board.transfers.size >= MAX_OUTSTANDING) return reject(download, R.string.download_queue_full)
+        if (!enterForeground(board.transfers.map { it.job } + download)) {
+            return reject(download, R.string.download_not_allowed)
+        }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !reserveLegacyFile(download)) {
             download.discardPayload()
+            leaveForegroundIfIdle()
             return false
         }
         download.time = System.currentTimeMillis()
@@ -114,23 +131,51 @@ open class DownloadService : Service() {
             download.stream != null -> StreamTransfer(download, download.stream!!, transferListener)
             else -> FileTransfer(download, download.userAgent, transferListener)
         }
-        model.runningDownloads.add(task)
+        board.transfers.add(task)
         try {
             executor.execute(task)
         } catch (_: RejectedExecutionException) {
-            model.runningDownloads.remove(task)
+            board.transfers.remove(task)
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) File(download.filepath).delete()
-            return reject(download)
+            leaveForegroundIfIdle()
+            return reject(download, R.string.download_queue_full)
         }
-        startService(Intent(this, javaClass))
-        startForeground(DOWNLOAD_NOTIFICATION, buildNotification())
         return true
     }
 
-    private fun reject(download: Download): Boolean {
+    /**
+     * Starts this service, so it outlives the browser's binding, and puts it in the foreground with
+     * the notification for [jobs]. Android 12+ refuses this from the background, Android 14+ without
+     * the dataSync permission, and Android 15+ once the dataSync time is used up; any refusal
+     * returns false with the service back to bound-only.
+     */
+    protected open fun enterForeground(jobs: List<Download>): Boolean = try {
+        startService(Intent(this, javaClass))
+        ServiceCompat.startForeground(this, DOWNLOAD_NOTIFICATION, buildNotification(jobs), FOREGROUND_TYPE)
+        true
+    } catch (refused: IllegalStateException) { // Includes ForegroundServiceStartNotAllowedException.
+        Log.w(TAG, "Foreground start refused", refused)
+        leaveForegroundIfIdle()
+        false
+    } catch (refused: SecurityException) {
+        Log.w(TAG, "Foreground start refused", refused)
+        leaveForegroundIfIdle()
+        false
+    }
+
+    private fun leaveForeground() {
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
+    private fun leaveForegroundIfIdle() {
+        if (board.transfers.isEmpty()) leaveForeground()
+    }
+
+    private fun reject(download: Download, reason: Int): Boolean {
         download.cancelled = true
         download.discardPayload()
-        Toast.makeText(this, R.string.download_queue_full, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, reason, Toast.LENGTH_SHORT).show()
         return false
     }
 
@@ -158,7 +203,7 @@ open class DownloadService : Service() {
         return true
     }
 
-    private fun cancelAll() = model.runningDownloads.forEach { it.job.cancelled = true }
+    private fun cancelAll() = board.transfers.forEach { it.job.cancelled = true }
 
     private fun onTransferEnded(task: Transfer) {
         val info = task.job
@@ -166,15 +211,11 @@ open class DownloadService : Service() {
             info.afterDownload == Download.AfterDownload.INSTALL && ApkInstaller.canInstall(this)) {
             ApkInstaller.launch(this, info)
         }
-        model.onDownloadEnded(task)
-        if (model.runningDownloads.isEmpty()) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            stopSelf()
-        }
+        board.end(task)
+        leaveForegroundIfIdle()
     }
 
-    private fun buildNotification(): Notification {
-        val infos = model.runningDownloads.map { it.job }
+    private fun buildNotification(infos: List<Download> = board.transfers.map { it.job }): Notification {
         val received = infos.sumOf { it.bytesReceived }
         val sizeKnown = infos.isNotEmpty() && infos.all { it.size > 0 }
         val total = if (sizeKnown) infos.sumOf { it.size } else 0L
@@ -198,6 +239,9 @@ open class DownloadService : Service() {
         internal const val MAX_OUTSTANDING = 6
         const val TAG = "DownloadService"
         const val DOWNLOAD_NOTIFICATION = 101101
+        private const val TIME_LIMIT_NOTIFICATION = 101102
+        private val FOREGROUND_TYPE =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0
         private const val PROGRESS_INTERVAL_MS = 100L
 
         fun intent(context: Context, incognito: Boolean): Intent = Intent(context,

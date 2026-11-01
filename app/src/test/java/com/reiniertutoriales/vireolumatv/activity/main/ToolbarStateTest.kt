@@ -5,7 +5,7 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
+import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import org.junit.Assert.*

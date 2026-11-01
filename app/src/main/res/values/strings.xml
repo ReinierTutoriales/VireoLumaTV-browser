@@ -203,4 +203,6 @@
     </string-array>
     <string name="download_queue_full">Download queue is full. Wait for a download to finish and try again.</string>
     <string name="about_tvbro_credit">Originally based on TV Bro source code · Fedir Tsapana</string>
+    <string name="download_not_allowed">Android did not allow the download to start now. Try again with the browser on screen.</string>
+    <string name="download_time_limit">Android stopped the downloads: the background time limit was reached.</string>
 </resources>

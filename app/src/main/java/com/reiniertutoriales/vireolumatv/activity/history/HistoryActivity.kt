@@ -1,8 +1,10 @@
 package com.reiniertutoriales.vireolumatv.activity.history
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -17,7 +19,7 @@ import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import kotlinx.coroutines.launch
 
 /**
- * Visited pages, newest first. OK returns the address to the browser through [KEY_URL]. A long
+ * Visited pages, newest first. OK hands the address back through [PickAddress]. A long
  * press starts selecting rows; "Delete" then removes the selection and Back leaves selection mode.
  */
 class HistoryActivity : AppCompatActivity() {
@@ -71,7 +73,7 @@ class HistoryActivity : AppCompatActivity() {
             adapter.toggleSelection(item)
             updateCommands()
         } else {
-            setResult(RESULT_OK, Intent().putExtra(KEY_URL, item.url))
+            setResult(RESULT_OK, PickAddress.answer(item.url))
             finish()
         }
     }
@@ -114,7 +116,15 @@ class HistoryActivity : AppCompatActivity() {
             .show()
     }
 
-    companion object {
-        const val KEY_URL = "url"
+    /** Opens the history and returns the address picked there, or null when it was left without one. */
+    object PickAddress : ActivityResultContract<Unit, String?>() {
+        private const val ADDRESS = "address"
+
+        override fun createIntent(context: Context, input: Unit) = Intent(context, HistoryActivity::class.java)
+
+        override fun parseResult(resultCode: Int, intent: Intent?): String? =
+            intent?.getStringExtra(ADDRESS)?.takeIf { resultCode == RESULT_OK }
+
+        internal fun answer(address: String) = Intent().putExtra(ADDRESS, address)
     }
 }
