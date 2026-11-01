@@ -3,7 +3,7 @@ package com.reiniertutoriales.vireolumatv.service.downloads
 import android.content.ComponentName
 import android.os.Build
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
-import com.reiniertutoriales.vireolumatv.activity.downloads.RunningDownloads
+import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.webengine.webview.BlobSpool
 import com.reiniertutoriales.vireolumatv.webengine.webview.BlobTransfers
@@ -26,10 +26,10 @@ class DownloadResourceTest {
     @Test fun cancellingOnePrivateDownloadDoesNotCancelAnotherWithTheSameZeroId() {
         val first = Download().apply { incognito = true }
         val second = Download().apply { incognito = true }
-        val model = RunningDownloads()
-        model.runningDownloads.add(StreamTransfer(first, "one".byteInputStream(), callback))
-        model.runningDownloads.add(StreamTransfer(second, "two".byteInputStream(), callback))
-        model.cancelDownload(second)
+        val model = TransferBoard()
+        model.transfers.add(StreamTransfer(first, "one".byteInputStream(), callback))
+        model.transfers.add(StreamTransfer(second, "two".byteInputStream(), callback))
+        model.cancel(second)
         assertFalse(first.cancelled)
         assertTrue(second.cancelled)
     }
@@ -37,9 +37,9 @@ class DownloadResourceTest {
     @Test fun normalHistoryCopyCanStillCancelItsActiveTaskByNonzeroId() {
         val live = Download().apply { id = 42 }
         val historyRow = Download().apply { id = 42 }
-        val model = RunningDownloads()
-        model.runningDownloads.add(StreamTransfer(live, "data".byteInputStream(), callback))
-        model.cancelDownload(historyRow)
+        val model = TransferBoard()
+        model.transfers.add(StreamTransfer(live, "data".byteInputStream(), callback))
+        model.cancel(historyRow)
         assertTrue(live.cancelled)
         assertFalse(Download().matches(Download()))
     }
@@ -131,10 +131,10 @@ class DownloadResourceTest {
         val executor = java.util.concurrent.Executors.newSingleThreadExecutor()
         val info = Download().apply { filename = "metadata-test.bin" }
         try {
-            executor.submit { DownloadHistory.insert(info) }.get(5, java.util.concurrent.TimeUnit.SECONDS)
+            executor.submit { DownloadRecords.open(info) }.get(5, java.util.concurrent.TimeUnit.SECONDS)
             sql.execSQL("CREATE TRIGGER reject_test_update BEFORE UPDATE ON download_entries BEGIN SELECT RAISE(ABORT, 'history unavailable'); END")
             info.size = 42
-            executor.submit { DownloadHistory.update(info) }.get(5, java.util.concurrent.TimeUnit.SECONDS)
+            executor.submit { DownloadRecords.save(info) }.get(5, java.util.concurrent.TimeUnit.SECONDS)
             assertEquals(42L, info.size)
         } finally {
             sql.execSQL("DROP TRIGGER IF EXISTS reject_test_update")
