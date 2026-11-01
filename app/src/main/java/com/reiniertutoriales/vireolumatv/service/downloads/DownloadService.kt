@@ -219,10 +219,17 @@ open class DownloadService : Service() {
         val received = infos.sumOf { it.bytesReceived }
         val sizeKnown = infos.isNotEmpty() && infos.all { it.size > 0 }
         val total = if (sizeKnown) infos.sumOf { it.size } else 0L
+        // Avoid Long overflow when reporting progress for very large transfers.
+        val percent = if (total > 0L) {
+            ((received.coerceIn(0L, total).toDouble() / total.toDouble()) * 100.0)
+                .toInt().coerceIn(0, 100)
+        } else {
+            0
+        }
         return notification
             .setContentTitle(infos.joinToString(", ") { it.filename })
             .setContentText(progressText(received, total))
-            .setProgress(100, if (total > 0) (received * 100 / total).toInt() else 0, total == 0L)
+            .setProgress(100, percent, total == 0L)
             .build()
     }
 
