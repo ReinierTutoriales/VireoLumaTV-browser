@@ -18,7 +18,12 @@ description: Use when replacing existing code, layouts, assets or text in VireoL
 4. Compare old and new behavior with affected unit tests, neighboring suites,
    lint and minified release CI on the exact SHA. List any WebView, remote,
    renderer or memory behavior requiring a physical TV check.
-5. Update the affected inventory rows and `docs/audit/README.md`
+5. Measure with `python3 scripts/measure-inherited-lines.py --rev <SHA>`
+   (per-line `git blame -w -C`; blank, bracket, import and comment lines are
+   not counted) and report its numbers with the SHA, never an estimate. Lines
+   Android requires as written (`super.onCreate`, `setContentView`,
+   `android:exported`, `layout_width`) are not rewrite targets.
+   Update the affected inventory rows and `docs/audit/README.md`
    with the measured method and SHA. Separate still present routes from actual
    retained expression; never extrapolate a whole-project percentage from a
    single module.
