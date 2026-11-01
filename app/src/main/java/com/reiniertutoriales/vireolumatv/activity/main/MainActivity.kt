@@ -47,7 +47,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.Favorit
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
 import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
-import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabChips
+import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
 import com.reiniertutoriales.vireolumatv.model.Favorite
 import com.reiniertutoriales.vireolumatv.model.SiteSettings
@@ -136,7 +136,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.tabPreview.visibility = View.INVISIBLE
         vb.controlsOverlay.visibility = View.INVISIBLE
         vb.loadProgress.visibility = View.GONE
-        vb.tabStrip.listener = tabStrip
+        vb.tabStrip.onCommand = ::onTabCommand
         configureBrowserControls()
         observeModels()
         onBackPressedDispatcher.addCallback(onBackPressedCallback)
@@ -476,33 +476,26 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     // Tabs
 
-    private val tabStrip = object : TabChips.Listener {
-        /** Focus moved to another tab: show its address and, a moment later, its preview. */
-        override fun onTitleChanged(index: Int) {
-            val tab = tabAt(index)
-            vb.controlsRow.showAddress(tab?.url.orEmpty())
-            previewGeneration++
-            mainThread.removeCallbacks(showFocusedPreview)
-            focusedPreviewTab = tab
-            mainThread.postDelayed(showFocusedPreview, PREVIEW_FOCUS_DELAY_MS)
-        }
-
-        override fun onTitleSelected(index: Int) {
+    private fun onTabCommand(command: TabCommand) = when (command) {
+        is TabCommand.Focus -> previewFocusedTab(tabAt(command.index))
+        is TabCommand.Show -> {
             commitStripSelection()
             closeCapsule()
         }
+        TabCommand.Add -> openInNewTab(browserSettings.homePage, tabStore.openTabs.size, navigateImmediately = true)
+        is TabCommand.AddAt ->
+            openInNewTab(browserSettings.homePage, command.index, closeCapsuleAfter = false, navigateImmediately = true)
+        is TabCommand.Favorite -> addTabToFavorites(command.tab)
+        is TabCommand.Close -> closeTab(command.tab)
+    }
 
-        override fun onAddNewTabSelected() {
-            openInNewTab(browserSettings.homePage, tabStore.openTabs.size, navigateImmediately = true)
-        }
-
-        override fun addTabToFavorites(tab: BrowserTab) = this@MainActivity.addTabToFavorites(tab)
-
-        override fun closeTab(tabState: BrowserTab?) = this@MainActivity.closeTab(tabState)
-
-        override fun openInNewTab(url: String, tabIndex: Int) {
-            this@MainActivity.openInNewTab(url, tabIndex, closeCapsuleAfter = false, navigateImmediately = true)
-        }
+    /** Focus moved to another tab: show its address and, a moment later, its preview. */
+    private fun previewFocusedTab(tab: BrowserTab?) {
+        vb.controlsRow.showAddress(tab?.url.orEmpty())
+        previewGeneration++
+        mainThread.removeCallbacks(showFocusedPreview)
+        focusedPreviewTab = tab
+        mainThread.postDelayed(showFocusedPreview, PREVIEW_FOCUS_DELAY_MS)
     }
 
     private fun tabAt(index: Int) = tabStore.openTabs.getOrNull(index)

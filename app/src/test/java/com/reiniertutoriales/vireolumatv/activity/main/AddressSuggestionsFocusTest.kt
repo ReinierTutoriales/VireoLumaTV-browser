@@ -70,7 +70,7 @@ class AddressSuggestionsFocusTest {
             assertTrue("The native list must own the pointer", suggestions.isFocused)
             assertTrue("Entering suggestions preserves the query", bar.isEditingAddress)
             val second = suggestions.row(1)!!
-            suggestions.pointerController.cursorPosition.set(100f, second.top + second.height / 2f)
+            suggestions.pointerController.position.set(100f, second.top + second.height / 2f)
             press(suggestions, KeyEvent.KEYCODE_DPAD_CENTER)
             ShadowLooper.idleMainLooper()
             assertEquals(listOf("https://other.test"), searched)
@@ -90,7 +90,7 @@ class AddressSuggestionsFocusTest {
             activity.setContentView(LinearLayout(activity).apply { addView(address); addView(suggestions) })
             suggestions.show(listOf(AddressSuggestion("News", "https://news.test", false)))
             assertTrue(suggestions.focusPointer())
-            suggestions.pointerController.cursorPosition.y = 0f
+            suggestions.pointerController.position.y = 0f
             suggestions.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
             assertTrue(address.hasFocus())
         } finally { controller.pause().stop().destroy() }

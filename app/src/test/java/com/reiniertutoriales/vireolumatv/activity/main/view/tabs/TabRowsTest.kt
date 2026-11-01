@@ -25,13 +25,9 @@ class TabRowsTest {
         val options = mutableListOf<BrowserTab>()
         val closed = mutableListOf<BrowserTab?>()
         val adapter = TabChips { options += it }.apply { tabStore = model }
-        adapter.listener = object : TabChips.Listener {
-            override fun onTitleChanged(index: Int) {}
-            override fun onTitleSelected(index: Int) { fail("Close must not activate the title") }
-            override fun onAddNewTabSelected() {}
-            override fun addTabToFavorites(tab: BrowserTab) {}
-            override fun openInNewTab(url: String, tabIndex: Int) {}
-            override fun closeTab(tabState: BrowserTab?) { closed += tabState }
+        adapter.onCommand = { command ->
+            if (command is TabCommand.Show) fail("Close must not activate the title")
+            if (command is TabCommand.Close) closed += command.tab
         }
         val owner = org.robolectric.Robolectric.buildActivity(android.app.Activity::class.java).setup()
         val list = androidx.recyclerview.widget.RecyclerView(parent.context).apply {
@@ -85,14 +81,7 @@ class TabRowsTest {
         model.openTabs.add(tab)
         adapter.onTabsChanged()
         val closed = mutableListOf<BrowserTab?>()
-        adapter.listener = object : TabChips.Listener {
-            override fun onTitleChanged(index: Int) {}
-            override fun onTitleSelected(index: Int) {}
-            override fun onAddNewTabSelected() {}
-            override fun addTabToFavorites(tab: BrowserTab) {}
-            override fun openInNewTab(url: String, tabIndex: Int) {}
-            override fun closeTab(tabState: BrowserTab?) { closed += tabState }
-        }
+        adapter.onCommand = { if (it is TabCommand.Close) closed += it.tab }
         val holder = adapter.onCreateViewHolder(parent, 0)
         adapter.bindViewHolder(holder, 0)
         val close = holder.itemView.findViewById<android.view.View>(R.id.close_tab_button)

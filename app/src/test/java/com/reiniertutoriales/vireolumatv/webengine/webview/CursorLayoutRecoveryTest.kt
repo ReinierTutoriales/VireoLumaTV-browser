@@ -57,7 +57,7 @@ class CursorLayoutRecoveryTest {
             assertSame(page, layout.findFocus())
             assertTrue(page.onCheckIsTextEditor())
             assertFalse("Dismissed web keyboard must release the remote", layout.isTextInputActive())
-            layout.pointerController.cursorPosition.set(520f, 420f)
+            layout.pointerController.position.set(520f, 420f)
             layout.pointerController.fadeIn()
             for (action in listOf(KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP)) {
                 assertTrue(layout.dispatchKeyEvent(KeyEvent(action, KeyEvent.KEYCODE_DPAD_CENTER)))
@@ -171,7 +171,7 @@ class CursorLayoutRecoveryTest {
             assertTrue(layout.pointerEnabled)
             layout.pointerEnabled = false
             resize(1000)
-            assertEquals(500f, layout.pointerController.cursorPosition.x, 0f)
+            assertEquals(500f, layout.pointerController.position.x, 0f)
             layout.pointerEnabled = true
             layout.pointerController.fadeIn()
             assertTrue(key(KeyEvent.ACTION_DOWN))

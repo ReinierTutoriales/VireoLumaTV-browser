@@ -30,7 +30,7 @@ import org.json.JSONTokener
  * link between the page and the browser [window] it is shown in, which is null while detached.
  * Page fullscreen (video) replaces the WebView in the window and is always undone on detach.
  */
-class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Callback {
+class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
     private var webView: BrowserWebView? = null
     /** The window the tab is shown in; JavaScript bridge calls use it as well. */
     internal var window: PageWindow? = null
@@ -130,7 +130,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         view.usePointer(true)
         view.isFocusableInTouchMode = true
         view.requestFocus()
-        cursor.pointerController.callback = this
+        cursor.pointerController.onHold = ::openPointerMenuAt
         cursor.pointerController.fadeIn()
         resume()
     }
@@ -143,7 +143,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         pause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
         window = null
-        container?.pointerController?.callback = null
+        container?.pointerController?.onHold = null
         container = null
         if (destroyView) {
             permissionRequests.clear()
@@ -191,8 +191,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         return true
     }
 
-    /** Pointer long press: asks the page for the link under it, then opens the pointer menu there. */
-    override fun onLongPress(x: Int, y: Int) {
+    /** OK held on the page: asks the page for the link under it, then opens the pointer menu there. */
+    internal fun openPointerMenuAt(x: Int, y: Int) {
         // Over the video there is no link to act on, and the menu would hand focus back to the
         // hidden page when it closes.
         if (fullscreenView != null) return

@@ -9,7 +9,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.activity.main.BrowserSettings
 import com.reiniertutoriales.vireolumatv.activity.main.TabStore
 import com.reiniertutoriales.vireolumatv.databinding.TabStripBinding
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
@@ -26,18 +25,16 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     private val vb = TabStripBinding.inflate(LayoutInflater.from(context), this)
     private val adapter = TabChips(::showTabOptions)
     private lateinit var tabStore: TabStore
-    private lateinit var browserSettings: BrowserSettings
 
     var current: Int by adapter::current
-    var listener: TabChips.Listener? by adapter::listener
+    var onCommand: ((TabCommand) -> Unit)? by adapter::onCommand
 
     init {
         if (!isInEditMode) {
             tabStore = ScreenModels.get(TabStore::class, context)
-            browserSettings = ScreenModels.get(BrowserSettings::class, context)
             adapter.tabStore = tabStore
             vb.tabList.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-            vb.addButton.setOnClickListener { listener?.onAddNewTabSelected() }
+            vb.addButton.setOnClickListener { onCommand?.invoke(TabCommand.Add) }
         }
     }
 
@@ -74,12 +71,12 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
                 val index = tabs.indexOf(tab)
                 if (index < 0) return@setItems
                 when (option) {
-                    OPEN_NEW -> listener?.openInNewTab(browserSettings.homePage, index + 1)
-                    ADD_FAVORITE -> listener?.addTabToFavorites(tab)
-                    CLOSE -> listener?.closeTab(tab)
+                    OPEN_NEW -> onCommand?.invoke(TabCommand.AddAt(index + 1))
+                    ADD_FAVORITE -> onCommand?.invoke(TabCommand.Favorite(tab))
+                    CLOSE -> onCommand?.invoke(TabCommand.Close(tab))
                     CLOSE_ALL -> {
                         tabStore.onCloseOthers()
-                        listener?.openInNewTab(browserSettings.homePage, 0)
+                        onCommand?.invoke(TabCommand.AddAt(0))
                     }
                     MOVE_LEFT -> if (index > 0) tabs.swap(index, index - 1)
                     MOVE_RIGHT -> if (index < tabs.lastIndex) tabs.swap(index, index + 1)
