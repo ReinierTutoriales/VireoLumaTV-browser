@@ -136,7 +136,7 @@ class DownloadRows(
             when {
                 download.size == Download.SIZE_CANCELLED -> sizeText.setText(R.string.download_cancelled)
                 download.size == Download.SIZE_FAILED -> {
-                    sizeText.setText(R.string.error)
+                    sizeText.setText(R.string.download_failed)
                     sizeText.setTextColor(ContextCompat.getColor(context, R.color.error))
                 }
                 download.size <= 0L -> {

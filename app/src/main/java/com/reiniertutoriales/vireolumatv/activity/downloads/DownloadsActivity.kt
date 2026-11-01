@@ -119,7 +119,7 @@ open class DownloadsActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(R.string.app_name)
             .setMessage(explanation)
-            .setPositiveButton(android.R.string.ok) { _, _ -> launch(ApkInstaller.permissionSettings(this), R.string.error) }
+            .setPositiveButton(android.R.string.ok) { _, _ -> launch(ApkInstaller.permissionSettings(this), R.string.system_settings_unavailable) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }

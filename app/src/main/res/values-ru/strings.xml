@@ -6,7 +6,6 @@
     <string name="about_build">Сборка: %1$s · %2$s</string>
     <string name="about_license">Лицензия · MIT</string>
     <string name="about_privacy">Политика конфиденциальности</string>
-    <string name="error">Ошибка</string>
     <string name="action_allow">Разрешить</string>
     <string name="action_deny">Запретить</string>
     <string name="action_edit">Изменить</string>
@@ -170,25 +169,17 @@
     <string name="shortcut_reserved">Эта клавиша нужна для перемещения по браузеру и не может быть назначена</string>
     <string name="shortcut_long_press">Удержание</string>
     <string name="media_play_pause">Воспроизведение / пауза</string>
-    <string name="media_stop">Остановить воспроизведение</string>
+    <string name="media_stop">Остановка воспроизведения</string>
     <string name="media_rewind">Назад на 10 секунд</string>
     <string name="media_fast_forward">Вперёд на 10 секунд</string>
     <string name="favorite_added">Добавлено в избранное</string>
     <string name="favorite_exists">Уже в избранном</string>
     <string name="favorite_not_web">В избранное можно сохранить только веб-страницы</string>
-    <string-array name="tabs_actions">
-        <item>Новая вкладка</item>
-        <item>Закрыть</item>
-        <item>Закрыть все</item>
-        <item>Сдвинуть влево</item>
-        <item>Сдвинуть вправо</item>
-        <item>Добавить в избранное</item>
-    </string-array>
     <string-array name="popups_levels">
-        <item>Разрешать все</item>
-        <item>Блокировать диалоги</item>
-        <item>Блокировать диалоги и окна, открытые скриптами</item>
-        <item>Блокировать все новые окна</item>
+        <item>Разрешать сообщения и новые окна</item>
+        <item>Блокировать сообщения страницы</item>
+        <item>Блокировать сообщения и окна, открытые без нажатия</item>
+        <item>Блокировать сообщения и все новые окна</item>
     </string-array>
     <string-array name="settings_home_page_modes">
         <item>Стартовая страница VireoLumaTV</item>
@@ -205,4 +196,19 @@
     <string name="download_queue_full">Очередь загрузок заполнена. Дождитесь завершения загрузки и повторите попытку.</string>
     <string name="download_not_allowed">Android не разрешил начать загрузку. Повторите попытку, когда браузер открыт на экране.</string>
     <string name="download_time_limit">Android остановил загрузки: достигнут лимит времени фоновой работы.</string>
+    <string name="tab_action_new">Новая вкладка рядом</string>
+    <string name="tab_action_close">Закрыть эту вкладку</string>
+    <string name="tab_action_close_all">Закрыть все вкладки</string>
+    <string name="tab_action_move_left">Переместить вкладку влево</string>
+    <string name="tab_action_move_right">Переместить вкладку вправо</string>
+    <string name="tab_action_favorite">Добавить вкладку в избранное</string>
+    <string name="download_failed">Не удалось</string>
+    <string name="system_settings_unavailable">Не удалось открыть настройки Android.</string>
+    <string name="favorite_save_failed">Не удалось сохранить закладку.</string>
+    <string name="favorites_update_failed">Не удалось обновить избранное.</string>
+    <string name="favorite_address_required">Введите адрес.</string>
+    <string name="install_open_failed">Не удалось открыть установщик.</string>
+    <string name="webview_missing_title">WebView недоступен</string>
+    <string name="settings_language">Язык приложения</string>
+    <string name="language_system">Язык системы</string>
 </resources>

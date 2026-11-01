@@ -6,7 +6,6 @@
     <string name="about_build">גרסת בנייה: %1$s · %2$s</string>
     <string name="about_license">רישיון · MIT</string>
     <string name="about_privacy">מדיניות פרטיות</string>
-    <string name="error">שגיאה</string>
     <string name="action_allow">אפשר</string>
     <string name="action_deny">אל תאפשר</string>
     <string name="action_edit">עריכה</string>
@@ -174,19 +173,11 @@
     <string name="favorite_added">נוסף למועדפים</string>
     <string name="favorite_exists">כבר נמצא במועדפים</string>
     <string name="favorite_not_web">אפשר לשמור במועדפים רק דפי אינטרנט</string>
-    <string-array name="tabs_actions">
-        <item>כרטיסייה חדשה</item>
-        <item>סגירה</item>
-        <item>סגירת הכול</item>
-        <item>הזזה שמאלה</item>
-        <item>הזזה ימינה</item>
-        <item>הוספה למועדפים</item>
-    </string-array>
     <string-array name="popups_levels">
-        <item>לאפשר הכול</item>
-        <item>חסימת תיבות דו-שיח</item>
-        <item>חסימת תיבות דו-שיח וחלונות שנפתחו על ידי סקריפטים</item>
-        <item>חסימת כל חלון חדש</item>
+        <item>התרת התראות וחלונות חדשים</item>
+        <item>חסימת התראות של הדף</item>
+        <item>חסימת התראות וחלונות שנפתחו בלי לחיצה</item>
+        <item>חסימת התראות וכל חלון חדש</item>
     </string-array>
     <string-array name="settings_home_page_modes">
         <item>דף הפתיחה של VireoLumaTV</item>
@@ -203,4 +194,19 @@
     <string name="download_queue_full">תור ההורדות מלא. יש להמתין לסיום הורדה ולנסות שוב.</string>
     <string name="download_not_allowed">Android לא איפשרה להתחיל את ההורדה כעת. יש לנסות שוב כשהדפדפן מוצג על המסך.</string>
     <string name="download_time_limit">Android עצרה את ההורדות: הושגה מגבלת הזמן ברקע.</string>
+    <string name="tab_action_new">כרטיסייה חדשה לצדה</string>
+    <string name="tab_action_close">סגירת הכרטיסייה הזו</string>
+    <string name="tab_action_close_all">סגירת כל הכרטיסיות</string>
+    <string name="tab_action_move_left">העברת הכרטיסייה שמאלה</string>
+    <string name="tab_action_move_right">העברת הכרטיסייה ימינה</string>
+    <string name="tab_action_favorite">הוספת הכרטיסייה למועדפים</string>
+    <string name="download_failed">נכשל</string>
+    <string name="system_settings_unavailable">לא ניתן היה לפתוח את הגדרות Android.</string>
+    <string name="favorite_save_failed">לא ניתן היה לשמור את המועדף.</string>
+    <string name="favorites_update_failed">לא ניתן היה לעדכן את המועדפים.</string>
+    <string name="favorite_address_required">יש להזין כתובת.</string>
+    <string name="install_open_failed">לא ניתן היה לפתוח את תוכנית ההתקנה.</string>
+    <string name="webview_missing_title">WebView אינו זמין</string>
+    <string name="settings_language">שפת האפליקציה</string>
+    <string name="language_system">שפת המערכת</string>
 </resources>

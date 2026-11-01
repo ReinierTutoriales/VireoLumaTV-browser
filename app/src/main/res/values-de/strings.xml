@@ -6,7 +6,6 @@
     <string name="about_build">Build: %1$s · %2$s</string>
     <string name="about_license">Lizenz · MIT</string>
     <string name="about_privacy">Datenschutzerklärung</string>
-    <string name="error">Fehler</string>
     <string name="action_allow">Zulassen</string>
     <string name="action_deny">Nicht zulassen</string>
     <string name="action_edit">Bearbeiten</string>
@@ -172,19 +171,11 @@
     <string name="favorite_added">Zu Favoriten hinzugefügt</string>
     <string name="favorite_exists">Bereits in den Favoriten</string>
     <string name="favorite_not_web">Nur Webseiten können als Favorit gespeichert werden</string>
-    <string-array name="tabs_actions">
-        <item>Neuer Tab</item>
-        <item>Schließen</item>
-        <item>Alle schließen</item>
-        <item>Nach links</item>
-        <item>Nach rechts</item>
-        <item>Zu Favoriten hinzufügen</item>
-    </string-array>
     <string-array name="popups_levels">
-        <item>Alle zulassen</item>
-        <item>Dialoge blockieren</item>
-        <item>Dialoge und von Skripten geöffnete Fenster blockieren</item>
-        <item>Jedes neue Fenster blockieren</item>
+        <item>Hinweise und neue Fenster erlauben</item>
+        <item>Hinweise der Seite blockieren</item>
+        <item>Hinweise und ohne Klick geöffnete Fenster blockieren</item>
+        <item>Hinweise und jedes neue Fenster blockieren</item>
     </string-array>
     <string-array name="settings_home_page_modes">
         <item>VireoLumaTV-Startseite</item>
@@ -201,4 +192,19 @@
     <string name="download_queue_full">Die Download-Warteschlange ist voll. Warte, bis ein Download abgeschlossen ist, und versuche es erneut.</string>
     <string name="download_not_allowed">Android hat den Start des Downloads gerade nicht erlaubt. Versuche es erneut, während der Browser angezeigt wird.</string>
     <string name="download_time_limit">Android hat die Downloads gestoppt: Das Zeitlimit im Hintergrund wurde erreicht.</string>
+    <string name="tab_action_new">Neuer Tab daneben</string>
+    <string name="tab_action_close">Diesen Tab schließen</string>
+    <string name="tab_action_close_all">Alle Tabs schließen</string>
+    <string name="tab_action_move_left">Tab nach links verschieben</string>
+    <string name="tab_action_move_right">Tab nach rechts verschieben</string>
+    <string name="tab_action_favorite">Tab zu Favoriten hinzufügen</string>
+    <string name="download_failed">Fehlgeschlagen</string>
+    <string name="system_settings_unavailable">Die Android-Einstellungen konnten nicht geöffnet werden.</string>
+    <string name="favorite_save_failed">Der Favorit konnte nicht gespeichert werden.</string>
+    <string name="favorites_update_failed">Die Favoriten konnten nicht aktualisiert werden.</string>
+    <string name="favorite_address_required">Gib eine Adresse ein.</string>
+    <string name="install_open_failed">Das Installationsprogramm konnte nicht geöffnet werden.</string>
+    <string name="webview_missing_title">WebView nicht verfügbar</string>
+    <string name="settings_language">App-Sprache</string>
+    <string name="language_system">Systemsprache</string>
 </resources>

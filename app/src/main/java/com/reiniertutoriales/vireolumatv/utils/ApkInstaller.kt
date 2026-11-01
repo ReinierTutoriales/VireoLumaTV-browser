@@ -46,10 +46,10 @@ object ApkInstaller {
             install.setDataAndType(apkUri, APK_MIME_TYPE)
             context.startActivity(install)
         } catch (e: ActivityNotFoundException) {
-            Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.install_open_failed, Toast.LENGTH_SHORT).show()
         } catch (e: IllegalArgumentException) {
             // The file is outside the FileProvider paths.
-            Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.install_open_failed, Toast.LENGTH_SHORT).show()
         }
     }
 }

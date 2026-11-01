@@ -6,7 +6,6 @@
     <string name="about_build">建置：%1$s · %2$s</string>
     <string name="about_license">授權條款 · MIT</string>
     <string name="about_privacy">隱私權政策</string>
-    <string name="error">錯誤</string>
     <string name="action_allow">允許</string>
     <string name="action_deny">不允許</string>
     <string name="action_edit">編輯</string>
@@ -170,19 +169,11 @@
     <string name="favorite_added">已加入我的最愛</string>
     <string name="favorite_exists">已在我的最愛中</string>
     <string name="favorite_not_web">只有網頁可以加入我的最愛</string>
-    <string-array name="tabs_actions">
-        <item>新分頁</item>
-        <item>關閉</item>
-        <item>全部關閉</item>
-        <item>向左移</item>
-        <item>向右移</item>
-        <item>加入我的最愛</item>
-    </string-array>
     <string-array name="popups_levels">
-        <item>全部允許</item>
-        <item>封鎖對話方塊</item>
-        <item>封鎖對話方塊和指令碼開啟的視窗</item>
-        <item>封鎖所有新視窗</item>
+        <item>允許提示框和新視窗</item>
+        <item>封鎖網頁提示框</item>
+        <item>封鎖提示框和未經點按開啟的視窗</item>
+        <item>封鎖提示框和所有新視窗</item>
     </string-array>
     <string-array name="settings_home_page_modes">
         <item>VireoLumaTV 起始頁</item>
@@ -197,4 +188,19 @@
         <item>480p</item>
     </string-array>
     <string name="download_queue_full">下載佇列已滿。請等待一個下載完成後再試。</string>
+    <string name="tab_action_new">在旁邊開新分頁</string>
+    <string name="tab_action_close">關閉此分頁</string>
+    <string name="tab_action_close_all">關閉所有分頁</string>
+    <string name="tab_action_move_left">將分頁向左移動</string>
+    <string name="tab_action_move_right">將分頁向右移動</string>
+    <string name="tab_action_favorite">將分頁加入我的最愛</string>
+    <string name="download_failed">失敗</string>
+    <string name="system_settings_unavailable">無法開啟 Android 設定。</string>
+    <string name="favorite_save_failed">無法儲存最愛。</string>
+    <string name="favorites_update_failed">無法更新我的最愛。</string>
+    <string name="favorite_address_required">請輸入網址。</string>
+    <string name="install_open_failed">無法開啟安裝程式。</string>
+    <string name="webview_missing_title">WebView 無法使用</string>
+    <string name="settings_language">應用程式語言</string>
+    <string name="language_system">跟隨系統</string>
 </resources>

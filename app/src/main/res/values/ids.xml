@@ -23,4 +23,5 @@
     <item name="rowLicense" type="id" />
     <item name="rowPrivacyPolicy" type="id" />
     <item name="btnCheckUpdate" type="id" />
+    <item name="spAppLanguage" type="id" />
 </resources>

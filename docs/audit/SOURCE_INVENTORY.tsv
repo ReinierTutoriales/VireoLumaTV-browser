@@ -123,6 +123,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/SchemaMigrations.k
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/RemoteShortcut.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/singleton/shortcuts/Shortcuts.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ApkInstaller.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/AppLanguages.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BackPresses.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BoundedReader.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/BundleBytes.kt	PROPIO
@@ -177,6 +178,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/ToastBar.kt	REESCRIT
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/cursor/PointerController.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/widgets/cursor/PointerLayout.kt	REESCRITO
 app/src/main/res/anim/panel_enter.xml	PROPIO
+app/src/main/res/resources.properties	PROPIO
 app/src/main/res/anim/panel_exit.xml	PROPIO
 app/src/main/res/animator/focus_scale_chip.xml	PROPIO
 app/src/main/res/animator/focus_scale_control.xml	PROPIO
@@ -356,6 +358,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/FaviconResourceTes
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/IncognitoFaviconTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/singleton/ShortcutMgrTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ApkInstallerTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/AppLanguagesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BackNavigationEventsAdapterTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BoundedReaderTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/BundleBytesTest.kt	PROPIO

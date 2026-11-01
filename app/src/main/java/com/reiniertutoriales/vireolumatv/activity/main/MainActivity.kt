@@ -380,7 +380,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             } catch (error: Exception) {
                 if (error is kotlinx.coroutines.CancellationException) throw error
                 Log.w(TAG, "Saving the tab as a favorite failed", error)
-                return@launch toast(R.string.error)
+                return@launch toast(R.string.favorite_save_failed)
             }
             toast(when (result) {
                 TabFavorites.Result.ADDED -> R.string.favorite_added
@@ -569,7 +569,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     private fun showNoWebViewDialog() {
         val dialog = AlertDialog.Builder(this)
-            .setTitle(R.string.error)
+            .setTitle(R.string.webview_missing_title)
             .setCancelable(false)
             .setMessage(R.string.error_no_webview)
             .setNegativeButton(R.string.action_exit) { _, _ -> finish() }

@@ -207,8 +207,7 @@ class BrowserNavigationTest {
         // The tab moves before the user picks the option.
         f.tabs.openTabs.swap(0, 1)
         val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
-        val items = f.host.get().resources.getStringArray(R.array.tabs_actions)
-        val position = items.indexOf("Add to favorites")
+        val position = com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabStrip.TabAction.FAVORITE.ordinal
         dialog.listView.performItemClick(null, position, position.toLong())
         assertEquals(listOf(other), chosen)
     }

@@ -19,6 +19,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.BrowserSettings
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsRows.Companion.reveal
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 import com.reiniertutoriales.vireolumatv.utils.activity
 import com.reiniertutoriales.vireolumatv.webengine.Engines
 import kotlinx.coroutines.launch
@@ -52,6 +53,8 @@ class GeneralPage @JvmOverloads constructor(
         rows.section(R.string.settings_section_protection)
         addAdBlock()
         rows.section(R.string.settings_section_display)
+        rows.choice(R.string.settings_language, R.id.spAppLanguage,
+            AppLanguages.names(context.getString(R.string.language_system)), AppLanguages.chosen()) { AppLanguages.choose(it) }
         addAppearanceAndPlayback()
         rows.section(R.string.settings_section_remote)
         addInput()

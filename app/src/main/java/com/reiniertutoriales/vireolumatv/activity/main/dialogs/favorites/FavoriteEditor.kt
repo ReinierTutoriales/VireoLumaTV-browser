@@ -26,7 +26,7 @@ class FavoriteEditor(context: Context, item: Favorite, private val onSave: (Favo
         findViewById<Button>(R.id.done_button)?.setOnClickListener {
             val url = address.text.toString().trim()
             if (url.isEmpty()) { // An empty address is not a bookmark: keep the dialog open.
-                context.toast(R.string.error)
+                context.toast(R.string.favorite_address_required)
                 return@setOnClickListener
             }
             draft.title = title.text.toString()
