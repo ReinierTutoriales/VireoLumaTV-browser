@@ -307,6 +307,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/MinimalHomeCon
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/PluralStringsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/PreviewResourceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/RendererRecoveryTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SessionCookiesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsModelTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SettingsTabsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/SingleLiveTabTest.kt	PROPIO
