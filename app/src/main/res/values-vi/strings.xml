@@ -198,4 +198,5 @@
     </string-array>
     <string name="download_queue_full">Hàng đợi tải xuống đã đầy. Hãy chờ một lượt tải hoàn tất rồi thử lại.</string>
     <string name="about_tvbro_credit">Ban đầu dựa trên mã nguồn của TV Bro · Fedir Tsapana</string>
+    <string name="download_not_allowed">Android không cho phép bắt đầu tải xuống lúc này. Hãy thử lại khi trình duyệt đang hiển thị.</string>
 </resources>
