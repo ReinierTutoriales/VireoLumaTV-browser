@@ -193,6 +193,9 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
 
     /** Pointer long press: asks the page for the link under it, then opens the pointer menu there. */
     override fun onLongPress(x: Int, y: Int) {
+        // Over the video there is no link to act on, and the menu would hand focus back to the
+        // hidden page when it closes.
+        if (fullscreenView != null) return
         val view = webView ?: return
         view.evaluateJavascript(PageScripts.HOLD_SCRIPT) { json ->
             if (webView !== view || container == null) return@evaluateJavascript
@@ -262,24 +265,24 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
             return
         }
         pointerBeforeFullscreen = container?.pointerEnabled ?: true
+        // A press, hover or held direction on the page ends here: its release must not reach the video.
+        container?.resetInput()
         window?.onEnterFullscreen()
         webView?.visibility = View.GONE
         webView?.usePointer(false)
-        // Fullscreen players such as YouTube Music often render touch controls without
-        // Android-focusable descendants. Keep the remote pointer available over the
-        // custom view so OK can send real taps to those controls without exiting video.
+        // The user's mode carries into the video. With the pointer, OK taps the player's own controls,
+        // which players such as YouTube draw without Android focus targets; the pointer is drawn above
+        // the fullscreen view and its taps reach it, the top child under the pointer. In D-pad mode
+        // the keys go to the fullscreen view, for players that handle arrow keys.
         container?.pointerEnabled = pointerBeforeFullscreen
-        if (pointerBeforeFullscreen) container?.pointerController?.fadeIn()
         (view.parent as? ViewGroup)?.removeView(view)
         container?.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         fullscreenView = view
-        // Chromium's custom fullscreen view is often a container with no focus target.
-        // Give its focusable descendants first chance to receive D-pad events, then
-        // fall back to the fullscreen root rather than leaving focus on the hidden WebView.
+        if (pointerBeforeFullscreen) container?.pointerController?.fadeIn()
+        // Chromium's fullscreen view may be a container without a focus target of its own: its
+        // focusable descendants come first, then the view itself, never the hidden page.
         view.isFocusableInTouchMode = true
-        if (!view.hasFocus()) {
-            if (!view.requestFocus(View.FOCUS_DOWN)) view.requestFocus()
-        }
+        if (!view.hasFocus() && !view.requestFocus(View.FOCUS_DOWN)) view.requestFocus()
     }
 
     /**
@@ -290,6 +293,9 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine, PointerController.Cal
         // Idempotent: WebView may report the end of fullscreen after the browser already closed it.
         val shown = fullscreenView ?: return
         fullscreenView = null
+        // Nothing pressed over the video may be released on the page: the mode can be unchanged,
+        // so the reset that a mode change performs cannot be relied on.
+        container?.resetInput()
         (shown.parent as? ViewGroup)?.removeView(shown)
         webView?.visibility = View.VISIBLE
         webView?.usePointer(pointerBeforeFullscreen)

@@ -424,7 +424,7 @@ class BrowserNavigationTest {
             .set(engine, f.vb.pageContainer)
         val video = View(f.host.get()).apply { isFocusableInTouchMode = true }
         engine.enterFullscreen(video)
-        assertFalse(f.vb.pageContainer.pointerEnabled)
+        assertTrue("The pointer stays available over the player's controls", f.vb.pageContainer.pointerEnabled)
         assertTrue(video.hasFocus())
         f.hideFullscreen = { engine.closeFullscreen() }
         f.virtualCursor = false
@@ -438,6 +438,86 @@ class BrowserNavigationTest {
         assertEquals("Back must close the existing menu, not reopen bars in an unknown state",
             View.INVISIBLE, f.vb.controlsOverlay.visibility)
         assertTrue(f.page.hasFocus())
+    }
+
+    /** A player view that records the touches the pointer sends it. */
+    private class Player(context: android.content.Context) : View(context) {
+        val touches = mutableListOf<Int>()
+        init { isFocusableInTouchMode = true }
+        override fun onTouchEvent(event: MotionEvent): Boolean { touches += event.actionMasked; return true }
+    }
+
+    private fun fullscreenEngine(f: Fixture): WebViewPageEngine {
+        val engine = WebViewPageEngine(f.tab).apply { window = TabWindow(f.activity, f.tab) }
+        WebViewPageEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
+            .set(engine, f.vb.pageContainer)
+        return engine
+    }
+
+    private fun relayout(f: Fixture) {
+        f.vb.root.measure(View.MeasureSpec.makeMeasureSpec(1280, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY))
+        f.vb.root.layout(0, 0, 1280, 720)
+    }
+
+    @Test fun okOverAFullscreenPlayerTapsItsControlsOncePerPress() = Fixture().use { f ->
+        val engine = fullscreenEngine(f)
+        val player = Player(f.host.get())
+        engine.enterFullscreen(player)
+        relayout(f)
+        f.vb.pageContainer.pointerController.fadeIn()
+        f.key(f.vb.pageContainer, KeyEvent.KEYCODE_DPAD_CENTER)
+        assertEquals("One OK is one tap on the player, not on the hidden page",
+            listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP), player.touches)
+        // Enter and gamepad A arriving for the same press still make a single tap.
+        f.vb.pageContainer.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER))
+        f.vb.pageContainer.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER).let {
+            KeyEvent.changeTimeRepeat(it, it.eventTime, 1) })
+        f.vb.pageContainer.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+        assertEquals(4, player.touches.size)
+        engine.closeFullscreen()
+    }
+
+    @Test fun aPressHeldAcrossFullscreenIsCancelledNotReleasedElsewhere() = Fixture().use { f ->
+        val engine = fullscreenEngine(f)
+        val player = Player(f.host.get())
+        engine.enterFullscreen(player)
+        relayout(f)
+        f.vb.pageContainer.pointerController.fadeIn()
+        f.vb.pageContainer.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER))
+        // The player leaves fullscreen while OK is still held.
+        engine.onPageLeftFullscreen()
+        assertEquals(listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_CANCEL), player.touches)
+        f.vb.pageContainer.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+        assertEquals("The release reaches nobody", 2, player.touches.size)
+        assertTrue(f.vb.pageContainer.pointerEnabled)
+    }
+
+    @Test fun aLongPressOverTheVideoOpensNoPageMenu() = Fixture().use { f ->
+        val engine = fullscreenEngine(f)
+        val player = Player(f.host.get())
+        engine.enterFullscreen(player)
+        engine.onLongPress(10, 10)
+        assertNotEquals(View.VISIBLE, f.vb.pointerMenu.visibility)
+        assertTrue(player.hasFocus())
+        engine.closeFullscreen()
+    }
+
+    @Test fun inDpadModeTheFullscreenPlayerGetsTheKeys() = Fixture().use { f ->
+        val engine = fullscreenEngine(f)
+        engine.setPointerMode(false)
+        val keys = mutableListOf<Int>()
+        val player = object : View(f.host.get()) {
+            init { isFocusableInTouchMode = true }
+            override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean { keys += keyCode; return true }
+        }
+        engine.enterFullscreen(player)
+        relayout(f)
+        assertFalse(f.vb.pageContainer.pointerEnabled)
+        f.key(f.vb.pageContainer, KeyEvent.KEYCODE_DPAD_RIGHT)
+        f.key(f.vb.pageContainer, KeyEvent.KEYCODE_DPAD_CENTER)
+        assertEquals(listOf(KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_CENTER), keys)
+        engine.closeFullscreen()
     }
 
     @Test fun fullscreenExitKeepsDirectDpadNavigation() = Fixture().use { f ->
