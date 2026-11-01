@@ -58,6 +58,7 @@ import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcuts
 import com.reiniertutoriales.vireolumatv.utils.BackPresses
 import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
+import com.reiniertutoriales.vireolumatv.utils.CookiePersistence
 import com.reiniertutoriales.vireolumatv.utils.NetworkWatcher
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
@@ -207,6 +208,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     override fun onStop() {
         super.onStop()
         downloads.unbind()
+        // Home, another app or standby: keep the signed-in sessions in case the power goes next.
+        cookies.onLeftScreen(config.privateBrowsing)
     }
 
     override fun onResume() {
@@ -302,6 +305,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     // Network
 
     private var networkCallbackRegistered = false
+    @VisibleForTesting internal var cookies = CookiePersistence()
     // Replaces the CONNECTIVITY_ACTION broadcast; callbacks arrive on a binder thread.
     private val networkCallback = NetworkWatcher { online, restored ->
         mainThread.post {
