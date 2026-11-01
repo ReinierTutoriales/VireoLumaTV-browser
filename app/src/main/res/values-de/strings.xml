@@ -208,4 +208,24 @@
     <string name="settings_language">App-Sprache</string>
     <string name="language_system">Systemsprache</string>
     <string name="install_failed">Die App konnte nicht installiert werden.</string>
+    <string name="home_title">Startseite</string>
+    <string name="home_search">Mit DuckDuckGo suchen</string>
+    <string name="home_shortcuts">Verknüpfungen</string>
+    <string name="home_add">Verknüpfung hinzufügen</string>
+    <string name="home_edit">Bearbeiten</string>
+    <string name="home_edit_label">Verknüpfungen bearbeiten</string>
+    <string name="home_done">Fertig</string>
+    <string name="home_save_failed">Speichern nicht möglich.</string>
+    <string name="home_edit_prompt">Adresse bearbeiten. Leer lassen, um die Verknüpfung zu entfernen.</string>
+    <string name="home_remove_confirm">Diese Verknüpfung von der Startseite entfernen?</string>
+    <string name="home_invalid">Ungültige Adresse. Verwende http:// oder https:// ohne Benutzername und Passwort.</string>
+    <string name="home_duplicate">Diese Verknüpfung ist schon auf der Startseite.</string>
+    <string name="home_youtube_removed">YouTube (entfernt, zum Wiederherstellen drücken)</string>
+    <string name="home_favorite_managed">Diese Verknüpfung ist ein Favorit. Bearbeite oder entferne sie unter %s.</string>
+    <string name="home_edit_item" formatted="false">%s bearbeiten</string>
+    <string name="home_youtube_restore">YouTube wieder auf der Startseite anzeigen?</string>
+    <string name="home_youtube_remove">YouTube von der Startseite entfernen?</string>
+    <string name="home_limit">Verknüpfungslimit erreicht (%d).</string>
+    <string name="home_add_prompt">Adresse der Verknüpfung (https://…)</string>
+    <string name="home_empty_search">Gib einen Suchbegriff ein.</string>
 </resources>

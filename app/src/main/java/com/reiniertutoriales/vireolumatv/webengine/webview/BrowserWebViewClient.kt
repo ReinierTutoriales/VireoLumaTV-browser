@@ -1,5 +1,6 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
@@ -74,6 +75,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
         val relative = safeHomeAssetPath(address) ?: return null
         if (relative == HomeFavorites.PATH) return HomeFavorites.response()
         val path = "pages/home/$relative"
+        if (relative == HomePage.FILE) return HomePage.response(AppLanguages.localized(resourceContext), path)
         return try {
             WebResourceResponse(URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream", "UTF-8", resourceContext.assets.open(path))
         } catch (_: IOException) {

@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{lang}}" dir="{{dir}}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'self'; connect-src 'self'; img-src data: favicon:; form-action https://duckduckgo.com; base-uri 'none'; object-src 'none'">
     <link rel="icon" href="data:,">
-    <title>VireoLumaTV: Home</title>
+    <meta name="vireo-strings" content="{{strings}}">
+    <title>VireoLumaTV · {{title}}</title>
     <style>
         :root { color-scheme: dark; }
         * { box-sizing: border-box; }
@@ -42,17 +43,17 @@
         <div style="flex: 1; min-width: 0;">
             <label for="search-input">DuckDuckGo</label>
             <div style="display: flex; gap: 12px;">
-                <input id="search-input" name="q" type="search" placeholder="DuckDuckGo" aria-label="Search DuckDuckGo" enterkeyhint="search" autocomplete="off" spellcheck="false" required>
-                <button type="submit" aria-label="Search DuckDuckGo"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15 L21 21" stroke="currentColor" stroke-width="2"/></svg></button>
+                <input id="search-input" name="q" type="search" placeholder="DuckDuckGo" aria-label="{{search}}" enterkeyhint="search" autocomplete="off" spellcheck="false" required>
+                <button type="submit" aria-label="{{search}}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15 L21 21" stroke="currentColor" stroke-width="2"/></svg></button>
             </div>
         </div>
     </form>
-    <nav id="bookmarks" aria-label="Marcadores">
+    <nav id="bookmarks" aria-label="{{shortcuts}}">
     <a id="default-youtube" href="https://m.youtube.com/" aria-label="YouTube">
         <svg viewBox="0 0 24 20" aria-hidden="true" focusable="false"><rect x="1" y="2" width="22" height="16" rx="5" fill="#f03"/><path d="M10 6 L16 10 L10 14 Z" fill="#fff"/></svg>
     </a>
-    <button id="add-bookmark" type="button" aria-label="Agregar marcador"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
-    <button id="edit-bookmarks" type="button" aria-label="Editar accesos" aria-pressed="false">Editar</button>
+    <button id="add-bookmark" type="button" aria-label="{{add}}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+    <button id="edit-bookmarks" type="button" aria-label="{{editLabel}}" aria-pressed="false">{{edit}}</button>
     </nav>
 </main>
 <script src="home.js" defer></script>

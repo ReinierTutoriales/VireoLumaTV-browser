@@ -3,10 +3,9 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 import android.content.Context
 import android.net.http.SslError
 import android.text.TextUtils
-import android.view.View
 import androidx.core.net.toUri
 import com.reiniertutoriales.vireolumatv.R
-import java.util.Locale
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 
 /**
  * The page shown instead of a site whose certificate failed. The asset is a template; the text,
@@ -17,10 +16,10 @@ internal object CertificateWarningPage {
 
     /** The page for a [primaryError] at [url]; [details] describes the certificate. */
     fun render(context: Context, template: String, url: String, primaryError: Int, details: String): String {
-        val locale = Locale.getDefault()
+        val locale = AppLanguages.localeOf(context)
         val values = mapOf(
             "lang" to locale.toLanguageTag(),
-            "dir" to if (TextUtils.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL) "rtl" else "ltr",
+            "dir" to if (AppLanguages.isRtl(locale)) "rtl" else "ltr",
             "title" to context.getString(R.string.cert_title),
             "hostLabel" to context.getString(R.string.cert_site),
             "host" to runCatching { url.toUri().host }.getOrNull().orEmpty(),

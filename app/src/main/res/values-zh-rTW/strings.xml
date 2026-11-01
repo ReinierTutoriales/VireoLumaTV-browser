@@ -204,4 +204,24 @@
     <string name="settings_language">應用程式語言</string>
     <string name="language_system">跟隨系統</string>
     <string name="install_failed">無法安裝此應用程式。</string>
+    <string name="home_title">首頁</string>
+    <string name="home_search">以 DuckDuckGo 搜尋</string>
+    <string name="home_shortcuts">捷徑</string>
+    <string name="home_add">新增捷徑</string>
+    <string name="home_edit">編輯</string>
+    <string name="home_edit_label">編輯捷徑</string>
+    <string name="home_done">完成</string>
+    <string name="home_save_failed">無法儲存。</string>
+    <string name="home_edit_prompt">編輯網址。留空即可移除此捷徑。</string>
+    <string name="home_remove_confirm">要從首頁移除此捷徑嗎？</string>
+    <string name="home_invalid">網址無效。請使用 http:// 或 https://，且不含使用者名稱或密碼。</string>
+    <string name="home_duplicate">此捷徑已在首頁上。</string>
+    <string name="home_youtube_removed">YouTube（已移除，按下即可還原）</string>
+    <string name="home_favorite_managed">此捷徑是最愛項目。請在「%s」中編輯或移除。</string>
+    <string name="home_edit_item" formatted="false">編輯 %s</string>
+    <string name="home_youtube_restore">要在首頁重新顯示 YouTube 嗎？</string>
+    <string name="home_youtube_remove">要從首頁移除 YouTube 嗎？</string>
+    <string name="home_limit">已達捷徑上限（%d）。</string>
+    <string name="home_add_prompt">捷徑網址（https://…）</string>
+    <string name="home_empty_search">請輸入要搜尋的內容。</string>
 </resources>

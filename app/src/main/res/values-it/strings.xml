@@ -210,4 +210,24 @@
     <string name="settings_language">Lingua dell\'app</string>
     <string name="language_system">Lingua di sistema</string>
     <string name="install_failed">Impossibile installare l\'app.</string>
+    <string name="home_title">Home</string>
+    <string name="home_search">Cerca con DuckDuckGo</string>
+    <string name="home_shortcuts">Collegamenti</string>
+    <string name="home_add">Aggiungi collegamento</string>
+    <string name="home_edit">Modifica</string>
+    <string name="home_edit_label">Modifica collegamenti</string>
+    <string name="home_done">Fine</string>
+    <string name="home_save_failed">Impossibile salvare.</string>
+    <string name="home_edit_prompt">Modifica l\'indirizzo. Lascialo vuoto per rimuovere il collegamento.</string>
+    <string name="home_remove_confirm">Rimuovere questo collegamento dalla Home?</string>
+    <string name="home_invalid">Indirizzo non valido. Usa http:// o https:// senza nome utente né password.</string>
+    <string name="home_duplicate">Questo collegamento è già nella Home.</string>
+    <string name="home_youtube_removed">YouTube (rimosso, premi per ripristinarlo)</string>
+    <string name="home_favorite_managed">Questo collegamento è un preferito. Modificalo o rimuovilo in %s.</string>
+    <string name="home_edit_item" formatted="false">Modifica %s</string>
+    <string name="home_youtube_restore">Mostrare di nuovo YouTube nella Home?</string>
+    <string name="home_youtube_remove">Rimuovere YouTube dalla Home?</string>
+    <string name="home_limit">Limite di collegamenti raggiunto (%d).</string>
+    <string name="home_add_prompt">Indirizzo del collegamento (https://…)</string>
+    <string name="home_empty_search">Scrivi qualcosa da cercare.</string>
 </resources>

@@ -210,4 +210,24 @@
     <string name="settings_language">Idioma de la app</string>
     <string name="language_system">Idioma del sistema</string>
     <string name="install_failed">No se pudo instalar la aplicación.</string>
+    <string name="home_title">Inicio</string>
+    <string name="home_search">Buscar en DuckDuckGo</string>
+    <string name="home_shortcuts">Accesos</string>
+    <string name="home_add">Añadir acceso</string>
+    <string name="home_edit">Editar</string>
+    <string name="home_edit_label">Editar accesos</string>
+    <string name="home_done">Listo</string>
+    <string name="home_save_failed">No se pudo guardar.</string>
+    <string name="home_edit_prompt">Edita la dirección. Déjala vacía para eliminar el acceso.</string>
+    <string name="home_remove_confirm">¿Eliminar este acceso del inicio?</string>
+    <string name="home_invalid">Dirección no válida. Usa http:// o https:// sin usuario ni contraseña.</string>
+    <string name="home_duplicate">Ese acceso ya está en el inicio.</string>
+    <string name="home_youtube_removed">YouTube (eliminado, pulsa para restaurarlo)</string>
+    <string name="home_favorite_managed">Este acceso es un favorito. Edítalo o elimínalo en %s.</string>
+    <string name="home_edit_item" formatted="false">Editar %s</string>
+    <string name="home_youtube_restore">¿Volver a mostrar YouTube en el inicio?</string>
+    <string name="home_youtube_remove">¿Eliminar YouTube del inicio?</string>
+    <string name="home_limit">Límite de accesos alcanzado (%d).</string>
+    <string name="home_add_prompt">Dirección del acceso (https://…)</string>
+    <string name="home_empty_search">Escribe una búsqueda.</string>
 </resources>

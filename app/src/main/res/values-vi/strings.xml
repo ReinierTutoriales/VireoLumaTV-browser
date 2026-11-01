@@ -206,4 +206,24 @@
     <string name="settings_language">Ngôn ngữ ứng dụng</string>
     <string name="language_system">Ngôn ngữ hệ thống</string>
     <string name="install_failed">Không cài đặt được ứng dụng.</string>
+    <string name="home_title">Trang chủ</string>
+    <string name="home_search">Tìm trên DuckDuckGo</string>
+    <string name="home_shortcuts">Lối tắt</string>
+    <string name="home_add">Thêm lối tắt</string>
+    <string name="home_edit">Sửa</string>
+    <string name="home_edit_label">Sửa lối tắt</string>
+    <string name="home_done">Xong</string>
+    <string name="home_save_failed">Không lưu được.</string>
+    <string name="home_edit_prompt">Sửa địa chỉ. Để trống để xóa lối tắt.</string>
+    <string name="home_remove_confirm">Xóa lối tắt này khỏi trang chủ?</string>
+    <string name="home_invalid">Địa chỉ không hợp lệ. Dùng http:// hoặc https:// và không kèm tên người dùng hay mật khẩu.</string>
+    <string name="home_duplicate">Lối tắt này đã có trên trang chủ.</string>
+    <string name="home_youtube_removed">YouTube (đã xóa, nhấn để khôi phục)</string>
+    <string name="home_favorite_managed">Lối tắt này là mục yêu thích. Sửa hoặc xóa trong %s.</string>
+    <string name="home_edit_item" formatted="false">Sửa %s</string>
+    <string name="home_youtube_restore">Hiện lại YouTube trên trang chủ?</string>
+    <string name="home_youtube_remove">Xóa YouTube khỏi trang chủ?</string>
+    <string name="home_limit">Đã đạt giới hạn lối tắt (%d).</string>
+    <string name="home_add_prompt">Địa chỉ lối tắt (https://…)</string>
+    <string name="home_empty_search">Hãy nhập nội dung cần tìm.</string>
 </resources>

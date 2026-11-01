@@ -1,5 +1,6 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -162,7 +163,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         if (uri.authority != WARNING_HOST || uri.getQueryParameter("type") != WARNING_CERT_PATH) return
         val error = lastSSLError ?: return
         val template = context.assets.open(CERTIFICATE_WARNING_ASSET).bufferedReader().use { it.readText() }
-        loadDataWithBaseURL(ASSET_BASE, CertificateWarningPage.render(context, template, error.url, error.primaryError,
+        loadDataWithBaseURL(ASSET_BASE, CertificateWarningPage.render(AppLanguages.localized(context), template, error.url, error.primaryError,
             error.certificate?.toString().orEmpty()), "text/html", "UTF-8",
             uri.getQueryParameter("url"))
     }

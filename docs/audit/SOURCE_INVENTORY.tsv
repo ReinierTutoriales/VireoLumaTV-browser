@@ -159,6 +159,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/Certificat
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/CertificateWarningPage.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/DownloadMessages.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomeFavorites.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePage.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/HttpAuthPrompts.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/LegacyLocationGrants.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/webengine/webview/MediaPolicy.kt	PROPIO
@@ -405,6 +406,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewFre
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewUserAgentTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockControllerTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CookieJarTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/widgets/NotificationViewTest.kt	PROPIO
 art/vireolumatv-banner.png	PROPIO
 art/vireolumatv-icon-master.png	PROPIO

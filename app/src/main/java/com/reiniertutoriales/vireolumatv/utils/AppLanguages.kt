@@ -1,7 +1,13 @@
 package com.reiniertutoriales.vireolumatv.utils
 
+import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
+import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.ConfigurationCompat
 import androidx.core.os.LocaleListCompat
+import androidx.core.text.layoutDirection
 import java.util.Locale
 
 /**
@@ -33,6 +39,26 @@ object AppLanguages {
             if (position == 0) LocaleListCompat.getEmptyLocaleList()
             else LocaleListCompat.forLanguageTags(TAGS[position - 1]))
     }
+
+    /**
+     * [base] with the chosen language. Android 13+ applies it to every context itself; before that
+     * AppCompat applies it only to its activities, so services, receivers and the application
+     * context need this to show text in the same language as the screens.
+     */
+    fun localized(base: Context): Context {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return base
+        val chosen = AppCompatDelegate.getApplicationLocales()
+        if (chosen.isEmpty) return base
+        val config = Configuration(base.resources.configuration)
+        ConfigurationCompat.setLocales(config, chosen)
+        return base.createConfigurationContext(config)
+    }
+
+    /** The language [context] shows text in, for pages that need lang and dir attributes. */
+    fun localeOf(context: Context): Locale =
+        ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.getDefault()
+
+    fun isRtl(locale: Locale) = locale.layoutDirection == View.LAYOUT_DIRECTION_RTL
 
     private fun same(a: Locale, b: Locale) =
         a.toLanguageTag() == b.toLanguageTag() || (a.language == b.language && a.country.isEmpty())

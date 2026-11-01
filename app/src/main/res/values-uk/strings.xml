@@ -212,4 +212,24 @@
     <string name="settings_language">Мова застосунку</string>
     <string name="language_system">Мова системи</string>
     <string name="install_failed">Не вдалося встановити застосунок.</string>
+    <string name="home_title">Головна</string>
+    <string name="home_search">Шукати в DuckDuckGo</string>
+    <string name="home_shortcuts">Ярлики</string>
+    <string name="home_add">Додати ярлик</string>
+    <string name="home_edit">Змінити</string>
+    <string name="home_edit_label">Змінити ярлики</string>
+    <string name="home_done">Готово</string>
+    <string name="home_save_failed">Не вдалося зберегти.</string>
+    <string name="home_edit_prompt">Змініть адресу. Залиште поле порожнім, щоб видалити ярлик.</string>
+    <string name="home_remove_confirm">Видалити цей ярлик із головної?</string>
+    <string name="home_invalid">Неправильна адреса. Використовуйте http:// або https:// без імені користувача й пароля.</string>
+    <string name="home_duplicate">Цей ярлик уже є на головній.</string>
+    <string name="home_youtube_removed">YouTube (видалено, натисніть, щоб повернути)</string>
+    <string name="home_favorite_managed">Цей ярлик — закладка. Змініть або видаліть її в розділі «%s».</string>
+    <string name="home_edit_item" formatted="false">Змінити %s</string>
+    <string name="home_youtube_restore">Знову показувати YouTube на головній?</string>
+    <string name="home_youtube_remove">Прибрати YouTube із головної?</string>
+    <string name="home_limit">Досягнуто ліміту ярликів (%d).</string>
+    <string name="home_add_prompt">Адреса ярлика (https://…)</string>
+    <string name="home_empty_search">Введіть запит.</string>
 </resources>

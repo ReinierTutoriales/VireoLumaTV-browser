@@ -13,6 +13,13 @@
     var defaultLink = document.getElementById('default-youtube');
     var edit = document.getElementById('edit-bookmarks');
     var editing = false;
+    // Messages in the app's language, filled in by the app when it serves the page.
+    var TEXT = {};
+    try {
+        var meta = document.querySelector && document.querySelector('meta[name="vireo-strings"]');
+        if (meta) TEXT = JSON.parse(meta.getAttribute('content')) || {};
+    } catch (_) { /* Without them the keys show; search and shortcuts keep working. */ }
+    function t(key) { return typeof TEXT[key] === 'string' ? TEXT[key] : key; }
     var fallback = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="#718096" stroke-width="3"/><path d="M4 20h32M20 4c-10 10-10 22 0 32M20 4c10 10 10 22 0 32" fill="none" stroke="#718096" stroke-width="2"/></svg>');
 
     function address(value) {
@@ -62,32 +69,32 @@
         try {
             if (hidden) localStorage.setItem(DEFAULT_KEY, '1');
             else localStorage.removeItem(DEFAULT_KEY);
-        } catch (_) { alert('No se pudo guardar.'); return false; }
+        } catch (_) { alert(t('saveFailed')); return false; }
         youtubeHidden = hidden;
         return true;
     }
 
     function saveList(next) {
-        try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (_) { alert('No se pudo guardar.'); return false; }
+        try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (_) { alert(t('saveFailed')); return false; }
         saved = next;
         return true;
     }
 
     /** Edits one saved shortcut: a new address replaces it, an empty one removes it after a question. */
     function editSaved(value) {
-        var replacement = prompt('Editar dirección. Déjala vacía para eliminar el acceso.', value);
+        var replacement = prompt(t('editPrompt'), value);
         if (replacement === null) return;
         var next = saved.slice();
         var position = next.indexOf(value);
         if (position < 0) return;
         if (!replacement.trim()) {
-            if (!confirm('¿Eliminar este acceso del inicio?')) return;
+            if (!confirm(t('removeConfirm'))) return;
             next.splice(position, 1);
         } else {
             var valid = address(replacement);
-            if (!valid) { alert('Dirección no válida. Usa http:// o https:// sin usuario ni contraseña.'); return; }
+            if (!valid) { alert(t('invalid')); return; }
             if (next.some(function (entry, i) { return i !== position && entry === valid.href; })) {
-                alert('Ese acceso ya está en el inicio.');
+                alert(t('duplicate'));
                 return;
             }
             next[position] = valid.href;
@@ -125,7 +132,7 @@
         if (list.classList) list.classList.toggle('editing', editing);
         if (edit) {
             edit.setAttribute('aria-pressed', String(editing));
-            edit.textContent = editing ? 'Listo' : 'Editar';
+            edit.textContent = editing ? t('done') : t('edit');
         }
         if (defaultLink) {
             // While editing, a removed YouTube stays visible, dimmed, so it can be brought back.
@@ -133,7 +140,7 @@
             defaultLink.hidden = !shown;
             defaultLink.style.display = shown ? '' : 'none';
             if (defaultLink.classList) defaultLink.classList.toggle('removed', youtubeHidden);
-            defaultLink.setAttribute('aria-label', youtubeHidden ? 'YouTube (eliminado, pulsa para restaurarlo)' : 'YouTube');
+            defaultLink.setAttribute('aria-label', youtubeHidden ? t('youtubeRemoved') : 'YouTube');
         }
         Array.prototype.forEach.call(list.querySelectorAll('[data-saved]'), function (node) { list.removeChild(node); });
         var shown = [];
@@ -144,7 +151,7 @@
             link.addEventListener('click', function (event) {
                 if (!editing) return;
                 event.preventDefault();
-                alert('Este acceso es un favorito. Edítalo o elimínalo desde Menú › Favoritos.');
+                alert(t('favoriteManaged'));
             });
             shown.push(favorite.url.href);
         });
@@ -152,7 +159,7 @@
         saved.forEach(function (value) {
             if (shown.indexOf(value) !== -1) return;
             var url = address(value);
-            var link = tile(url, editing ? 'Editar ' + url.hostname : url.hostname, '');
+            var link = tile(url, editing ? t('editItem').replace('%s', url.hostname) : url.hostname, '');
             link.addEventListener('click', function (event) {
                 if (!editing) return;
                 event.preventDefault();
@@ -172,16 +179,16 @@
         if (!editing) return;
         event.preventDefault();
         if (youtubeHidden) {
-            if (confirm('¿Volver a mostrar YouTube en el inicio?') && setYoutubeHidden(false)) render();
-        } else if (confirm('¿Eliminar YouTube del inicio?') && setYoutubeHidden(true)) render();
+            if (confirm(t('youtubeRestore')) && setYoutubeHidden(false)) render();
+        } else if (confirm(t('youtubeRemove')) && setYoutubeHidden(true)) render();
     });
 
     add.addEventListener('click', function () {
-        if (saved.length >= MAX) { alert('Máximo de 24 marcadores.'); return; }
-        var value = prompt('Dirección del marcador (https://…)');
+        if (saved.length >= MAX) { alert(t('limit')); return; }
+        var value = prompt(t('addPrompt'));
         if (value === null) return;
         var url = address(value);
-        if (!url) { alert('Dirección no válida. Usa http:// o https:// sin usuario ni contraseña.'); return; }
+        if (!url) { alert(t('invalid')); return; }
         if (YOUTUBE.indexOf(url.href) !== -1) {
             // YouTube has its own shortcut: adding it brings that one back instead of a copy.
             if (youtubeHidden && defaultLink && setYoutubeHidden(false)) render();
@@ -196,7 +203,7 @@
         input.value = input.value.trim();
         if (!input.value) {
             event.preventDefault();
-            input.setCustomValidity('Escribe una búsqueda.');
+            input.setCustomValidity(t('emptySearch'));
             if (typeof input.reportValidity === 'function') input.reportValidity();
         }
     });
