@@ -7,8 +7,9 @@ y `native/adblock-jni/Cargo.lock`. No se conserva una cola de cambios del fork.
 ## Estado comprobado
 
 - GitHub identifica este repositorio como independiente.
-- La versión publicada que se conserva es 2.0.14. El código de `master` puede
-  incluir correcciones posteriores que todavía no se han publicado.
+- La versión publicada y sus APK firmados se consultan en
+  [Releases](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases).
+  El código de `master` puede incluir correcciones todavía no publicadas.
 - CI comprueba inventario, pruebas, esquemas Room, compilaciones debug/release,
   lint y correspondencia entre los assets del APK y sus fuentes.
 - Las licencias y el icono de Inicio se copian durante el build desde sus fuentes
