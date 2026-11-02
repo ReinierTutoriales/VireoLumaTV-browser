@@ -234,6 +234,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
         request.url,
         AdblockRequestClassifier.classify(request.url, request.requestHeaders, request.isForMainFrame),
         AdblockRequestClassifier.pageContext(request.url, page, request.isForMainFrame),
+        request.method ?: "GET",
     ) ?: AdVerdict.ALLOW
 
     internal fun onCreateWindow(dialog: Boolean, userGesture: Boolean): BrowserWebView? =

@@ -98,6 +98,17 @@ class RustAdBlockEngineTest {
         } finally { blocker.release(); file.delete() }
     }
 
+    @Test fun methodRulesMatchTheRequestMethodThroughTheBridge() {
+        val blocker = engine.compile("||probe.example^${'$'}xhr,method=head,redirect=noopjs\n||api.example/log${'$'}xhr,method=post")!!
+        try {
+            fun verdict(url: String, method: String) = blocker.verdict(Uri.parse(url), "xhr", page, method)
+            assertTrue(verdict("https://probe.example/ad.js", "HEAD").redirect!!.startsWith("data:"))
+            assertFalse(verdict("https://probe.example/ad.js", "GET").blocked)
+            assertTrue(verdict("https://api.example/log", "POST").blocked)
+            assertFalse("Callers without a method keep GET", blocker.verdict(Uri.parse("https://api.example/log"), "xhr", page).blocked)
+        } finally { blocker.release() }
+    }
+
     @Test fun oneVerdictCarriesBlockRedirectAndExceptionsLikeCheck() {
         val blocker = engine.compile(rules)!!
         try {

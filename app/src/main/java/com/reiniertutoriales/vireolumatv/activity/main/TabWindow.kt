@@ -168,7 +168,8 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     // Ads, dialogs and pop-ups
 
-    override fun adVerdict(url: Uri, requestType: String?, page: Uri): AdVerdict = browser.adBlocker.verdict(url, requestType, page)
+    override fun adVerdict(url: Uri, requestType: String?, page: Uri, method: String): AdVerdict =
+        browser.adBlocker.verdict(url, requestType, page, method)
 
     override val blocksAds: Boolean get() = tab.adblock ?: browser.config.adBlockEnabled
 

@@ -176,8 +176,9 @@ fn options(trusted: bool) -> ParseOptions {
     ParseOptions { permissions: if trusted { TRUSTED } else { PermissionMask::default() }, ..ParseOptions::default() }
 }
 
-fn request(url: &str, source: &str, kind: &str) -> Option<Request> {
-    Request::new(url, source, kind, "GET").ok()
+/// [method] is the HTTP method ("GET", "POST", "HEAD"...): rules with `$method=` match on it.
+fn request(url: &str, source: &str, kind: &str, method: &str) -> Option<Request> {
+    Request::new(url, source, kind, method).ok()
 }
 
 #[unsafe(no_mangle)]
@@ -261,7 +262,7 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
         .with_env(|env| -> jni::errors::Result<jint> {
             let Some(engine) = engine(handle) else { return Ok(ALLOW) };
             let (url, source, kind) = (text(env, &url)?, text(env, &source)?, text(env, &kind)?);
-            let Some(request) = request(&url, &source, &kind) else { return Ok(ALLOW) };
+            let Some(request) = request(&url, &source, &kind, "GET") else { return Ok(ALLOW) };
             let result = engine.check(&request, &source);
             Ok(if !result.should_block() {
                 ALLOW
@@ -276,8 +277,8 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
 
 /// One network match for a request: "" to allow it, [`VERDICT_BLOCK`] to block it, or the `data:`
 /// URL of its `$redirect` resource. Callers never need a second match for the replacement.
-fn verdict(engine: &Blocker, url: &str, source: &str, kind: &str) -> String {
-    let Some(request) = request(url, source, kind) else { return String::new() };
+fn verdict(engine: &Blocker, url: &str, source: &str, kind: &str, method: &str) -> String {
+    let Some(request) = request(url, source, kind, method) else { return String::new() };
     let result = engine.check(&request, source);
     if !result.should_block() {
         String::new()
@@ -294,11 +295,12 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
     url: JString<'caller>,
     source: JString<'caller>,
     kind: JString<'caller>,
+    method: JString<'caller>,
 ) -> JString<'caller> {
     unowned
         .with_env(|env| -> jni::errors::Result<JString<'caller>> {
             let answer = match engine(handle) {
-                Some(engine) => verdict(engine, &text(env, &url)?, &text(env, &source)?, &text(env, &kind)?),
+                Some(engine) => verdict(engine, &text(env, &url)?, &text(env, &source)?, &text(env, &kind)?, &text(env, &method)?),
                 None => String::new(),
             };
             env.new_string(answer)
@@ -387,12 +389,12 @@ mod tests {
     fn one_match_answers_allow_block_or_redirect() {
         let engine = engine_for("||ads.test^\n@@||ads.test/allowed^\n||cdn.test/ads/*$script,redirect=noopjs");
         let page = "https://page.test/";
-        assert_eq!(verdict(&engine, "https://page.test/app.js", page, "script"), "");
-        assert_eq!(verdict(&engine, "https://ads.test/banner.js", page, "script"), VERDICT_BLOCK);
-        assert_eq!(verdict(&engine, "https://ads.test/allowed", page, "script"), "");
-        let redirect = verdict(&engine, "https://cdn.test/ads/loader.js", page, "script");
+        assert_eq!(verdict(&engine, "https://page.test/app.js", page, "script", "GET"), "");
+        assert_eq!(verdict(&engine, "https://ads.test/banner.js", page, "script", "GET"), VERDICT_BLOCK);
+        assert_eq!(verdict(&engine, "https://ads.test/allowed", page, "script", "GET"), "");
+        let redirect = verdict(&engine, "https://cdn.test/ads/loader.js", page, "script", "GET");
         assert!(redirect.starts_with("data:application/javascript;base64,"), "{redirect}");
-        assert_eq!(verdict(&engine, "not a url", page, "script"), "");
+        assert_eq!(verdict(&engine, "not a url", page, "script", "GET"), "");
     }
 
     #[test]
@@ -433,9 +435,9 @@ mod tests {
             let blocker = engine_for(&format!("{normal}{rules}"));
             let restored = Blocker::deserialize(&blocker.serialize(), NOOPJS).unwrap();
             for engine in [&blocker, &restored] {
-                assert_eq!(verdict(engine, "https://ads.test/a.js", "https://site.test/", "script") == VERDICT_BLOCK,
+                assert_eq!(verdict(engine, "https://ads.test/a.js", "https://site.test/", "script", "GET") == VERDICT_BLOCK,
                     blocked, "{rules}");
-                assert_eq!(verdict(engine, "https://elsewhere.test/a.js", "https://other.test/", "script"), "");
+                assert_eq!(verdict(engine, "https://elsewhere.test/a.js", "https://other.test/", "script", "GET"), "");
             }
         }
     }
@@ -454,7 +456,7 @@ mod tests {
         let blocker = engine_for(rules);
         let restored = Blocker::deserialize(&blocker.serialize(), NOOPJS).unwrap();
         for engine in [&blocker, &restored] {
-            let v = |url: &str, page: &str, kind: &str| verdict(engine, url, page, kind) == VERDICT_BLOCK;
+            let v = |url: &str, page: &str, kind: &str| verdict(engine, url, page, kind, "GET") == VERDICT_BLOCK;
             // denyallow: every third-party script on site.test except the listed hosts and subdomains.
             assert!(v("https://ads.example/a.js", "https://site.test/", "script"));
             assert!(!v("https://cdn.jsdelivr.net/x.js", "https://site.test/", "script"));
@@ -492,8 +494,21 @@ mod tests {
             let restored = Blocker::deserialize(&blocker.serialize(), NOOPJS).unwrap();
             for engine in [&blocker, &restored] {
                 let page = if rules.contains("site.test") { "https://site.test/" } else { "https://any.test/" };
-                assert_eq!(verdict(engine, "https://ok.track.test/ads/x", page, "xhr"), VERDICT_BLOCK, "{rules}");
+                assert_eq!(verdict(engine, "https://ok.track.test/ads/x", page, "xhr", "GET"), VERDICT_BLOCK, "{rules}");
             }
         }
+    }
+
+    #[test]
+    fn method_rules_match_the_request_method() {
+        // From the bundled lists: HEAD probes answered by a redirect, and GET-only rules.
+        let engine = engine_for("||ads.test^$xhr,method=head,redirect=noopjs\n||cdn.test/v/$xhr,method=get\n||api.test/log$xhr,method=post");
+        let page = "https://page.test/";
+        assert!(verdict(&engine, "https://ads.test/probe", page, "xmlhttprequest", "HEAD").starts_with("data:"));
+        assert_eq!(verdict(&engine, "https://ads.test/probe", page, "xmlhttprequest", "GET"), "");
+        assert_eq!(verdict(&engine, "https://cdn.test/v/1", page, "xmlhttprequest", "GET"), VERDICT_BLOCK);
+        assert_eq!(verdict(&engine, "https://cdn.test/v/1", page, "xmlhttprequest", "POST"), "");
+        assert_eq!(verdict(&engine, "https://api.test/log", page, "xmlhttprequest", "post"), VERDICT_BLOCK);
+        assert_eq!(verdict(&engine, "https://api.test/log", page, "xmlhttprequest", "GET"), "");
     }
 }

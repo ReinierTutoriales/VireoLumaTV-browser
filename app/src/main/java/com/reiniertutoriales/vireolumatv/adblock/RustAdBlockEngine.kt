@@ -49,9 +49,9 @@ private class RustContentBlocker(private var handle: Long) : ContentBlocker {
         else RustAdblock.nativeCheck(handle, url.toString(), page.toString(), requestType(type))
     }
 
-    override fun verdict(url: Uri, type: String?, page: Uri): AdVerdict = lifecycle.read {
+    override fun verdict(url: Uri, type: String?, page: Uri, method: String): AdVerdict = lifecycle.read {
         if (handle == 0L) return@read AdVerdict.ALLOW
-        when (val answer = RustAdblock.nativeVerdict(handle, url.toString(), page.toString(), requestType(type))) {
+        when (val answer = RustAdblock.nativeVerdict(handle, url.toString(), page.toString(), requestType(type), method)) {
             "" -> AdVerdict.ALLOW
             BLOCK_ANSWER -> AdVerdict.BLOCK
             else -> AdVerdict.redirect(answer)

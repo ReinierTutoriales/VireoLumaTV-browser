@@ -54,7 +54,7 @@ class AdblockDecisionCacheTest {
         var matches = 0
         override val isConcurrent get() = true
         override fun shouldBlock(url: Uri, type: String?, baseHost: String) = error("matched through verdict only")
-        override fun verdict(url: Uri, type: String?, page: Uri): AdVerdict {
+        override fun verdict(url: Uri, type: String?, page: Uri, method: String): AdVerdict {
             matches++
             return verdicts[url.host] ?: AdVerdict.ALLOW
         }
@@ -85,6 +85,10 @@ class AdblockDecisionCacheTest {
             model.verdict(redirected, "xhr", page)
             model.verdict(redirected, "script", Uri.parse("https://other.test"))
             assertEquals(5, blocker.matches)
+            // So is the method: a HEAD probe is not answered with the cached GET verdict.
+            model.verdict(redirected, "script", page, "HEAD")
+            model.verdict(redirected, "script", page, "HEAD")
+            assertEquals(6, blocker.matches)
             // New rules are a new generation: nothing cached under the old ones is reused.
             val updated = VerdictBlocker(emptyMap())
             install(model, updated)

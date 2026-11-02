@@ -22,8 +22,11 @@ interface ContentBlocker {
     fun check(url: Uri, type: String?, page: Uri): Int =
         if (shouldBlock(url, type, page.host ?: "")) BLOCK else ALLOW
 
-    /** The whole answer for a request in one match, including any `$redirect` replacement. */
-    fun verdict(url: Uri, type: String?, page: Uri): AdVerdict =
+    /**
+     * The whole answer for a request in one match, including any `$redirect` replacement.
+     * [method] is the request's HTTP method, which `$method=` rules match on.
+     */
+    fun verdict(url: Uri, type: String?, page: Uri, method: String = "GET"): AdVerdict =
         if (check(url, type, page) == ALLOW) AdVerdict.ALLOW else AdVerdict.BLOCK
 
     /** Element hiding and scriptlets for a document URL as JSON (see adblock-jni), or "". */

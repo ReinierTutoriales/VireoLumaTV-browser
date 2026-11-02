@@ -259,7 +259,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     @VisibleForTesting
     internal val serviceWorkerPolicy = object : ServiceWorkerFilter.Policy {
         override fun blocksAds(site: Uri): Boolean = shownSite.blocks(site, config.adBlockEnabled)
-        override fun verdict(url: Uri, type: String?, site: Uri) = adBlocker.verdict(url, type, site)
+        override fun verdict(url: Uri, type: String?, site: Uri, method: String) = adBlocker.verdict(url, type, site, method)
     }
 
     override fun onDestroy() {
