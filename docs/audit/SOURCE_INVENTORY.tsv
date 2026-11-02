@@ -10,6 +10,7 @@ ruta	clasificacion
 .github/ISSUE_TEMPLATE/feature_request.md	REESCRITO
 .github/pull_request_template.md	PROPIO
 .github/workflows/ci.yml	PROPIO
+.github/workflows/startup-diagnosis.yml	PROPIO
 .github/workflows/release.yml	REESCRITO
 .github/workflows/baseline-profile.yml	PROPIO
 .gitignore	REESCRITO
