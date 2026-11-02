@@ -213,6 +213,7 @@ val copyDuplicatedAssets = tasks.register<Copy>("copyDuplicatedAssets") {
 }
 
 android.sourceSets.getByName("main").assets.srcDir(files(duplicatedAssetsDir).builtBy(copyDuplicatedAssets))
+tasks.named("preBuild").configure { dependsOn(copyDuplicatedAssets) }
 
 androidComponents {
     onVariants { variant ->
