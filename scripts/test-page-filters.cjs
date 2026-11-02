@@ -305,6 +305,30 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.deepEqual(Object.keys(window).filter(function (key) { return key.indexOf('__vireo') === 0; }), []);
     `, bypass);
 
+    // Inserting a real DocumentFragment consumes its children before appendChild returns.
+    const fragmentBypass = page({script: call('trusted-prevent-dom-bypass', 'Node.prototype.appendChild', 'fetch')},
+        'stream.example', `
+        function Node() {}
+        Node.prototype.appendChild = function (node) {
+            if (node.nodeType === 11) node.children = [];
+            return node;
+        };
+        var pristine = function () {};
+        var blankFrame = {nodeType: 1, nodeName: 'IFRAME', contentWindow: {
+            location: {href: 'about:blank'}, fetch: pristine}};
+        var pageFrame = {nodeType: 1, nodeName: 'IFRAME', contentWindow: {
+            location: {href: 'https://stream.example/chat'}, fetch: pristine}};
+        var foreignFrame = {nodeType: 1, nodeName: 'IFRAME', get contentWindow() { throw Error('cross-origin'); }};
+        var fragment = {nodeType: 11, children: [blankFrame, pageFrame, foreignFrame],
+            querySelectorAll(selector) { assert.equal(selector, 'iframe'); return this.children.slice(); }};
+    `);
+    vm.runInContext(`
+        assert.equal(new Node().appendChild(fragment), fragment);
+        assert.equal(fragment.children.length, 0);
+        assert.equal(blankFrame.contentWindow.fetch, window.fetch, 'protect frames moved out of a consumed fragment');
+        assert.equal(pageFrame.contentWindow.fetch, pristine, 'keep a legitimate frame independent');
+    `, fragmentBypass);
+
     // json-edit queries taken from the bundled uBlock filters. Untrusted names only remove.
     let edit = page({ script: call('json-edit', '..nodes.*[?.sponsored_data]') + call('json-edit', '.showAds=false') +
         call('trusted-json-edit', '[?.type=="ads"].visibility.status="hidden"') +

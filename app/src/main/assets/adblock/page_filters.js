@@ -1474,8 +1474,23 @@
             }
         }
         wrapFunction(target.owner, target.name, function (fn, self, args) {
+            // Insertion empties a DocumentFragment. Keep its frame references while they are
+            // still in the fragment, then access their windows only after insertion.
+            var fragmentFrames;
+            for (var i = 0; i < args.length; i++) {
+                var node = args[i];
+                if (!node || node.nodeType !== 11 || typeof node.querySelectorAll !== 'function') continue;
+                try {
+                    var frames = node.querySelectorAll('iframe');
+                    for (var j = 0; j < frames.length; j++) {
+                        if (!fragmentFrames) fragmentFrames = [];
+                        fragmentFrames.push(frames[j]);
+                    }
+                } catch (_) {}
+            }
             var result = Reflect_.apply(fn, self, args);
             for (var i = 0; i < args.length; i++) visit(args[i]);
+            if (fragmentFrames) fragmentFrames.forEach(share);
             return result;
         });
     };
