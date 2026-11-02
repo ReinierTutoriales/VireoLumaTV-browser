@@ -31,7 +31,7 @@ class PackageAuditTest(unittest.TestCase):
         self.assertEqual([name], audit.class_names(dex_with_class(name)))
         with self.assertRaises(ValueError): audit.class_names(b'not a dex')
 
-    def run_package(self, root, class_name, extras=(), resources='resource string/about_license', root_license=b'reviewed source', baseline=False, missing_baseline=False):
+    def run_package(self, root, class_name, extras=(), resources='resource string/about_license', root_license=b'reviewed source', baseline=False, missing_baseline=False, manifest='androidx.profileinstaller.ProfileInstallerInitializer'):
         package = root / 'example.apk'
         (root / 'LICENSE.md').write_bytes(root_license)
         with zipfile.ZipFile(package, 'w') as apk:
@@ -54,6 +54,7 @@ class PackageAuditTest(unittest.TestCase):
             for name in extras: apk.writestr(name, b'retired')
         def dump(args, **kwargs):
             if args[2] == 'badging': return "package: name='com.reiniertutoriales.vireolumatv'"
+            if args[2] == 'xmltree': return manifest
             return resources
         with patch.object(audit.subprocess, 'check_output', side_effect=dump):
             return audit.audit(package, Path('aapt2'), root)
@@ -74,6 +75,16 @@ class PackageAuditTest(unittest.TestCase):
                                           baseline=True, missing_baseline=missing)
                 self.assertEqual(int(missing), len(report['checks']['issues']))
                 if missing: self.assertIn('adblock/baseline/test.filterdata', report['checks']['issues'][0])
+
+    def test_rejects_downloadable_emoji_startup_and_preserves_profile_installation(self):
+        marker = 'androidx.emoji2.text.EmojiCompatInitializer'
+        profile = 'androidx.profileinstaller.ProfileInstallerInitializer'
+        with tempfile.TemporaryDirectory() as folder:
+            report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;', manifest=profile + ' ' + marker)
+            self.assertEqual(['Automatic downloadable emoji startup must be disabled'], report['checks']['issues'])
+        with tempfile.TemporaryDirectory() as folder:
+            report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;', manifest='')
+            self.assertEqual(['Profile installer initializer missing'], report['checks']['issues'])
 
     def test_rejects_deleted_assets(self):
         with tempfile.TemporaryDirectory() as folder:
