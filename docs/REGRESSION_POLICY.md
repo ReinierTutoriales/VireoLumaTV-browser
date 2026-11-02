@@ -79,6 +79,7 @@ Nada sale del dispositivo. Pendiente de validación en Android TV con varios tec
 
 **Cierre y escudo (2026-10-30, petición del propietario):** la X tiene un objetivo de 48 dp;
 Derecha desde el título la enfoca y la Izquierda vuelve al título. OK cierra esa pestaña;
+en diseños RTL se invierten esas direcciones para seguir la posición visual del cierre.
 la pulsación larga en título o cierre conserva las opciones. Al cerrar con la cápsula abierta,
 esta permanece abierta; cerrar una pestaña de fondo conserva la página activa y un cierre
 repetido de una pestaña retirada no actúa. El escudo es verde habilitado y rojo pausado,

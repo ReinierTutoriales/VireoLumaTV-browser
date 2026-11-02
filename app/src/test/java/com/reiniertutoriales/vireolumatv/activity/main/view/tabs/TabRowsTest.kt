@@ -19,6 +19,24 @@ import org.robolectric.annotation.Config as RobolectricConfig
 @RunWith(RobolectricTestRunner::class)
 @RobolectricConfig(application = Application::class, sdk = [28])
 class TabRowsTest {
+    @Test fun rtlCloseTargetIsReachedOnTheLeftAndReturnsOnTheRight() = withAdapter { adapter, model, parent ->
+        model.openTabs.add(BrowserTab(url = Config.HOME_PAGE_URL))
+        adapter.onTabsChanged()
+        val holder = adapter.onCreateViewHolder(parent, 0)
+        adapter.bindViewHolder(holder, 0)
+        val owner = org.robolectric.Robolectric.buildActivity(android.app.Activity::class.java).setup()
+        try {
+            val row = holder.itemView.apply { layoutDirection = android.view.View.LAYOUT_DIRECTION_RTL }
+            owner.get().setContentView(row)
+            val close = row.findViewById<android.view.View>(R.id.close_tab_button)
+            assertTrue(row.requestFocus())
+            row.dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_LEFT))
+            assertTrue(close.hasFocus())
+            close.dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_RIGHT))
+            assertTrue(row.isFocused)
+        } finally { owner.pause().stop().destroy() }
+    }
+
     @Test fun selectingATabDoesNotResetItsAlreadyDisplayedIcon() = withAdapter { adapter, model, parent ->
         model.openTabs.add(BrowserTab(url = Config.HOME_PAGE_URL))
         model.openTabs.add(BrowserTab(url = Config.HOME_PAGE_URL))

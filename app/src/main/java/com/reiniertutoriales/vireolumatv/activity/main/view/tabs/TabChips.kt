@@ -109,13 +109,17 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
             itemView.onFocusChangeListener = focus
             close.onFocusChangeListener = focus
             itemView.setOnKeyListener { _, code, event ->
-                if (code != KeyEvent.KEYCODE_DPAD_RIGHT) false else {
+                val towardsClose = if (itemView.layoutDirection == View.LAYOUT_DIRECTION_RTL)
+                    KeyEvent.KEYCODE_DPAD_LEFT else KeyEvent.KEYCODE_DPAD_RIGHT
+                if (code != towardsClose) false else {
                     if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) close.requestFocus()
                     true
                 }
             }
             close.setOnKeyListener { _, code, event ->
-                if (code != KeyEvent.KEYCODE_DPAD_LEFT) false else {
+                val towardsTitle = if (itemView.layoutDirection == View.LAYOUT_DIRECTION_RTL)
+                    KeyEvent.KEYCODE_DPAD_RIGHT else KeyEvent.KEYCODE_DPAD_LEFT
+                if (code != towardsTitle) false else {
                     if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) itemView.requestFocus()
                     true
                 }

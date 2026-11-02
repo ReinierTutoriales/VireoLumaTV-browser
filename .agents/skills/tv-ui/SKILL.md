@@ -28,3 +28,5 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
   replace it with an embedded player merely to expose another control API.
 - Dynamic list refreshes must preserve the focused item by identity when it
   remains available; selection-only updates must not restart content loaders.
+- Check horizontal commands in both LTR and RTL layouts; D-pad directions follow
+  the visual order, including nested tab-close controls.

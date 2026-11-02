@@ -160,7 +160,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
             val current = focusRow.indexOfFirst { it.hasFocus() }
             if (current >= 0) {
                 if (event.action == KeyEvent.ACTION_DOWN) {
-                    val step = if (event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1
+                    val towardsEnd = (event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) != (layoutDirection == LAYOUT_DIRECTION_RTL)
+                    val step = if (towardsEnd) 1 else -1
                     var next = current + step
                     while (next in focusRow.indices) {
                         val target = focusRow[next]
