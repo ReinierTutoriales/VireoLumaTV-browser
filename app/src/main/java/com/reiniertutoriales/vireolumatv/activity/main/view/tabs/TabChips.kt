@@ -58,9 +58,9 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
         if (selected != previous && selected in shown.indices) notifyItemChanged(selected)
     }
 
-    fun refresh(tab: BrowserTab) {
+    fun refresh(tab: BrowserTab, iconChanged: Boolean = false) {
         val index = shown.indexOfFirst { it === tab }
-        if (index >= 0) notifyItemChanged(index)
+        if (index >= 0) notifyItemChanged(index, if (iconChanged) IconChanged else TitleChanged)
     }
 
     override fun getItemCount() = shown.size
@@ -71,12 +71,16 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
     override fun onBindViewHolder(holder: Row, position: Int) = holder.bind(shown[position], position == selected)
 
     override fun onBindViewHolder(holder: Row, position: Int, payloads: MutableList<Any>) {
-        if (payloads.isNotEmpty() && payloads.all { it === SelectionChanged } && holder.tab === shown[position]) {
+        if (payloads.isNotEmpty() && payloads.all { it === SelectionChanged || it === TitleChanged || it === IconChanged } && holder.tab === shown[position]) {
             holder.itemView.isSelected = position == selected
+            if (payloads.any { it === TitleChanged }) holder.updateTitle(shown[position])
+            if (payloads.any { it === IconChanged }) holder.updateIcon(shown[position], force = true)
         } else holder.bind(shown[position], position == selected)
     }
 
     private object SelectionChanged
+    private object TitleChanged
+    private object IconChanged
 
     override fun onViewRecycled(holder: Row) {
         holder.unbind()
@@ -87,6 +91,7 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
         private val close: View = view.findViewById(R.id.close_tab_button)
         private val title: TextView = view.findViewById(R.id.title_text)
         private val favicon = ViewFaviconLoader(view, view.findViewById<ImageView>(R.id.site_icon))
+        private var iconAddress: String? = null
 
         /** The tab this row shows, or null once recycled. */
         val tab: BrowserTab? get() = itemView.tag as? BrowserTab
@@ -97,8 +102,7 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
             close.setOnClickListener {
                 if (this.tab === tab && shown.any { it === tab }) onCommand?.invoke(TabCommand.Close(tab))
             }
-            title.text = tab.title
-            favicon.bind(tab.url)
+            updateTitle(tab)
             val focus = View.OnFocusChangeListener { _, focused ->
                 val index = positionOf(tab)
                 if (focused && index != RecyclerView.NO_POSITION && index != selected) {
@@ -135,8 +139,21 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
 
         fun unbind() {
             favicon.clear()
+            iconAddress = null
             itemView.tag = null
             itemView.isSelected = false
+        }
+
+        fun updateTitle(tab: BrowserTab) {
+            if (title.text.toString() != tab.title) title.text = tab.title
+            updateIcon(tab)
+        }
+
+        fun updateIcon(tab: BrowserTab, force: Boolean = false) {
+            if (force || iconAddress != tab.url) {
+                iconAddress = tab.url
+                favicon.bind(tab.url)
+            }
         }
 
         /** This row's position, if it still shows [tab]; a stale callback must not act on another tab. */

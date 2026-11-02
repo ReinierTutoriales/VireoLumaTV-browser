@@ -60,8 +60,15 @@ class TabRowsTest {
         adapter.onBindViewHolder(holder, 0, payloads)
         assertSame("Focus movement must not clear an existing favicon", displayed, image.drawable)
         assertFalse(holder.itemView.isSelected)
+        val tab = model.openTabs[0]
+        tab.title = "Updated title"
         adapter.onBindViewHolder(holder, 0, mutableListOf())
-        assertNotSame("A full content refresh must still reload the icon", displayed, image.drawable)
+        assertSame("Rebinding the same URL must keep its displayed icon", displayed, image.drawable)
+        assertEquals("Updated title", holder.itemView.findViewById<android.widget.TextView>(R.id.title_text).text.toString())
+        payloads.clear()
+        adapter.refresh(tab, iconChanged = true)
+        adapter.onBindViewHolder(holder, 0, payloads)
+        assertNotSame("An explicit favicon update must still reload the icon", displayed, image.drawable)
     }
 
     @Test fun remoteReachesTheLargeCloseTargetAndLongPressStillOpensOptions() = withAdapter { _, model, parent ->

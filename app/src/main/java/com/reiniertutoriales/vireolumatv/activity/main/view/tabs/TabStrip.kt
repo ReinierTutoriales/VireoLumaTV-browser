@@ -61,7 +61,7 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     fun onTabTitle(tab: BrowserTab) = adapter.refresh(tab)
 
-    fun onFavIconUpdated(tab: BrowserTab) = adapter.refresh(tab)
+    fun onFavIconUpdated(tab: BrowserTab) = adapter.refresh(tab, iconChanged = true)
 
     /** Options for [tab]; each acts on that tab, wherever it has moved meanwhile. */
     fun showTabOptions(tab: BrowserTab) {
