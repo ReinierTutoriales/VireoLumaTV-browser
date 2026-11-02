@@ -53,7 +53,9 @@ with sqlite3.connect(sys.argv[1]) as db:
     db.execute('PRAGMA wal_checkpoint(TRUNCATE)')
 PY
 adb shell rm -f "/data/data/$package/databases/main.db-wal" "/data/data/$package/databases/main.db-shm"
+database_uid=$(adb shell stat -c %u "/data/data/$package/databases/main.db" | tr -d '\r')
 adb push "$report/before/main.db" "/data/data/$package/databases/main.db" >/dev/null
+adb shell chown "$database_uid:$database_uid" "/data/data/$package/databases/main.db"
 scenario=upgrade
 adb install -r "$candidate"
 launch
