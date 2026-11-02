@@ -9,7 +9,6 @@ ruta	clasificacion
 .github/ISSUE_TEMPLATE/bug_report.md	REESCRITO
 .github/ISSUE_TEMPLATE/feature_request.md	REESCRITO
 .github/pull_request_template.md	PROPIO
-.github/workflows/apply-patch-queue.yml	PROPIO
 .github/workflows/ci.yml	PROPIO
 .github/workflows/release.yml	REESCRITO
 .github/workflows/baseline-profile.yml	PROPIO
@@ -416,7 +415,6 @@ docs/PRIVACY_POLICY_EVIDENCE.md	PROPIO
 docs/REGRESSION_POLICY.md	PROPIO
 docs/ROADMAP.md	PROPIO
 docs/SINGLE_LIVE_TAB.md	PROPIO
-docs/W2_MEASUREMENT.md	PROPIO
 docs/audit/ADBLOCK_OFF_DEVICE_20261007.md	PROPIO
 docs/audit/ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md	PROPIO
 docs/audit/CONSOLIDATED_AUDIT_20261007.md	PROPIO
@@ -424,7 +422,6 @@ docs/audit/HLS_TIMEOUT_AUDIT_20261005.md	PROPIO
 docs/audit/NETWORK_AUDIT_20261005.md	PROPIO
 docs/audit/OFF_DEVICE_FIXES_20261007.md	PROPIO
 docs/audit/README.md	PROPIO
-docs/audit/REPOSITORY_CLEANUP_20261005.json	PROPIO
 docs/audit/SOURCE_INVENTORY.tsv	PROPIO
 docs/audit/TV_CONTROL_ROW_SPEC_20261027.md	PROPIO
 docs/audit/TV_UI_FOCUS_20261005.md	PROPIO
@@ -432,15 +429,6 @@ docs/audit/TV_UI_REFRESH_20261007.md	PROPIO
 docs/audit/UI_RESOURCE_AUDIT_20261005.md	PROPIO
 docs/audit/WEBVIEW_VIDEO_POINTER_AUDIT_20261005.md	PROPIO
 docs/audit/YOUTUBE_ADBLOCK_20261005.md	PROPIO
-docs/audit/archive-2026-10-07/ROADMAP_PRE_CONSOLIDATION.md	PROPIO
-docs/audit/assets/AFTER_browser-day-large-text.png	PROPIO
-docs/audit/assets/AFTER_browser-day.png	PROPIO
-docs/audit/assets/AFTER_browser-night.png	PROPIO
-docs/audit/assets/AFTER_browser-states-day.png	PROPIO
-docs/audit/assets/AFTER_browser-states-night.png	PROPIO
-docs/audit/assets/BEFORE_browser-day.png	PROPIO
-docs/audit/assets/BEFORE_browser-night.png	PROPIO
-docs/audit/assets/UI_PROPOSAL_20261007.svg	PROPIO
 gradle.properties	REESCRITO
 gradle/gradle-daemon-jvm.properties	PROPIO
 gradle/libs.versions.toml	REESCRITO

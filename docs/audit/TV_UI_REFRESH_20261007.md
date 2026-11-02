@@ -5,7 +5,7 @@ rama `fixes/consolidated-audit-20261007`.
 
 ## Propuesta y alcance
 
-[Propuesta visual](assets/UI_PROPOSAL_20261007.svg): campo de dirección con
+[Propuesta visual](https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/3f192054b8df4addaaa8f443276ef86c0e11ce66/docs/audit/assets/UI_PROPOSAL_20261007.svg): campo de dirección con
 superficie propia, controles uniformes, pestañas legibles y estados de foco
 claros. Es una especificación de diseño; las capturas Android se generan desde
 el XML real mediante `BrowserUiSnapshotTest` y se publican en el artefacto
@@ -29,18 +29,18 @@ Capturas Android revisadas antes/después, con el mismo fixture de contenido:
 
 | Tema | Antes | Después |
 | --- | --- | --- |
-| Claro | ![Antes claro](assets/BEFORE_browser-day.png) | ![Después claro](assets/AFTER_browser-day.png) |
-| Oscuro | ![Antes oscuro](assets/BEFORE_browser-night.png) | ![Después oscuro](assets/AFTER_browser-night.png) |
+| Claro | ![Antes claro](https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/3f192054b8df4addaaa8f443276ef86c0e11ce66/docs/audit/assets/BEFORE_browser-day.png) | ![Después claro](https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/3f192054b8df4addaaa8f443276ef86c0e11ce66/docs/audit/assets/AFTER_browser-day.png) |
+| Oscuro | ![Antes oscuro](https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/3f192054b8df4addaaa8f443276ef86c0e11ce66/docs/audit/assets/BEFORE_browser-night.png) | ![Después oscuro](https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/3f192054b8df4addaaa8f443276ef86c0e11ce66/docs/audit/assets/AFTER_browser-night.png) |
 
 Texto al 150 % (URL completa disponible mediante edición/desplazamiento;
 la captura muestra la parte que cabe horizontalmente):
 
-![Texto ampliado](assets/AFTER_browser-day-large-text.png)
+![Texto ampliado](https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/3f192054b8df4addaaa8f443276ef86c0e11ce66/docs/audit/assets/AFTER_browser-day-large-text.png)
 
 Matriz de fondos de estado, dibujada con los mismos recursos Android:
 
-![Estados claros](assets/AFTER_browser-states-day.png)
-![Estados oscuros](assets/AFTER_browser-states-night.png)
+![Estados claros](https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/3f192054b8df4addaaa8f443276ef86c0e11ce66/docs/audit/assets/AFTER_browser-states-day.png)
+![Estados oscuros](https://github.com/ReinierTutoriales/VireoLumaTV-browser/blob/3f192054b8df4addaaa8f443276ef86c0e11ce66/docs/audit/assets/AFTER_browser-states-night.png)
 
 Las capturas posteriores proceden del código `1e931f5`:
 [CI 37624791673](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/37624791673),

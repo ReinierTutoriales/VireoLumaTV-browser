@@ -20,11 +20,11 @@ HTTP icon size bounds, cache and private-mode persistence rules remain intact.
 Automated regression coverage: allocation/destruction ordering, captured history,
 restoration without URL reload, normal/private tabs, same-tab selection and
 caller-owned initial navigation. Existing privacy, atomic-save and renderer-loss
-tests remain relevant. W2_MEASUREMENT.md describes the older two-WebView baseline;
-it is not a measurement of this change.
+tests remain relevant. The older two-WebView measurement protocol is retained
+in Git history and the repository backup; it does not measure this implementation.
 
 Physical validation on the 2 GB, 32-bit onn device is still required: open four
 heavy tabs, alternate among them, use back/forward, open a JavaScript popup,
 switch during a popup, play video/fullscreen, confirm background playback stops,
-and record browser/renderer PSS before comparing against W2. Do not infer measured
+and record browser/renderer PSS against a reproducible baseline. Do not infer measured
 RAM savings from the automated lifetime checks.

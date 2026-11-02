@@ -3,8 +3,8 @@
 Commit SHAs in these audit documents refer to the history before the current root
 commit (`927249bb`, followed by `212bcdab` on `master`). Those commits are not in
 `master`; they are kept only in the private backup taken before the rewrite.
-CI run IDs, artifact IDs and dated branch names in these files are not commits and
-remain valid references to GitHub records.
+CI run IDs, artifact IDs and dated branch names are not commit SHAs.
+Historical artifacts may expire; their recorded identifiers do not guarantee availability.
 
 The current application identity and license are documented in the repository's
 `README.md`, `LICENSE.md`, `NOTICE.md` and `docs/BRAND_STANDARD.md`.
@@ -13,12 +13,13 @@ record the existing inventory and do not establish exclusive authorship.
 
 ## Current verification
 
-For 2.0.1, PR #82 head `0021a43e` passed CI run `40754020489`: unit tests, debug
-and minified release builds, lint, Room schema verification and APK content audits.
-The application license bundled in the APK must match the root MIT license.
-Physical validation of the current APK remains a separate check.
+The current CI definition is `.github/workflows/ci.yml`. It checks the source
+inventory, unit tests, debug and minified release builds, lint, Room schemas and
+APK contents. Use the successful run for the exact source SHA being reviewed.
+Generated APK licenses are compared with the canonical root license files.
+Physical validation is deferred by the owner; CI does not establish device performance.
 
-## Source migration status
+## Historical source migration record
 
 Closed on 2026-11-01 at `66459a60`, measured with
 `python3 scripts/measure-inherited-lines.py --rev 66459a60`: 878 of 14 310 counted
