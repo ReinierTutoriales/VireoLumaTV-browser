@@ -1,0 +1,26 @@
+name: Inspect startup termination
+on:
+  pull_request:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: release-startup-api-34
+          path: report
+          run-id: 41532332815
+          github-token: ${{ github.token }}
+      - name: Examine process termination
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          lines = Path('report/cold-logcat.txt').read_text(errors='replace').splitlines()
+          terms = ('5391', 'vireolumatv', 'FontsProvider', 'force stop', 'Force stopping', 'Killing', 'died', 'died because')
+          for line in lines:
+              if any(term.lower() in line.lower() for term in terms):
+                  print(line[:1000])
+          PY
