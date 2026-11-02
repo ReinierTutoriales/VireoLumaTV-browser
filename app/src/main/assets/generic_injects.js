@@ -119,13 +119,21 @@
         var scope = fullscreen && typeof fullscreen.querySelectorAll === 'function' ? fullscreen : document;
         var candidates = scope.querySelectorAll('video, audio');
         var best = null, bestScore = -1;
+        var viewportWidth = page.innerWidth, viewportHeight = page.innerHeight;
         for (var index = 0; index < candidates.length; index++) {
             var element = candidates[index];
             var video = String(element.tagName || element.tag || '').toLowerCase() === 'video';
             var area = 0;
-            if (typeof element.getBoundingClientRect === 'function') {
+            // Audio need not have a visual box. For video, rank only the part on screen.
+            if (video && typeof element.getBoundingClientRect === 'function') {
                 var rect = element.getBoundingClientRect();
-                area = Math.max(0, rect.width) * Math.max(0, rect.height);
+                var width = rect.width, height = rect.height;
+                if (viewportWidth > 0 && viewportHeight > 0 &&
+                        typeof rect.left === 'number' && typeof rect.top === 'number') {
+                    width = Math.min(viewportWidth, rect.left + rect.width) - Math.max(0, rect.left);
+                    height = Math.min(viewportHeight, rect.top + rect.height) - Math.max(0, rect.top);
+                }
+                area = Math.max(0, width) * Math.max(0, height);
                 if (area === 0) continue;
             }
             var score = (video ? 1e12 : 0) + (playing(element) ? 1e9 : 0) + Math.min(area, 1e8);
