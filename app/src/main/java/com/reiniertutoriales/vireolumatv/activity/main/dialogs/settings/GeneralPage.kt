@@ -20,8 +20,10 @@ import com.reiniertutoriales.vireolumatv.activity.main.BrowserSettings
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsRows.Companion.reveal
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.utils.AppLanguages
+import com.reiniertutoriales.vireolumatv.utils.FrameStats
 import com.reiniertutoriales.vireolumatv.utils.activity
 import com.reiniertutoriales.vireolumatv.webengine.Engines
+import com.reiniertutoriales.vireolumatv.webengine.webview.MediaPolicy
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -67,6 +69,7 @@ class GeneralPage @JvmOverloads constructor(
         adBlockListUrl = rows.field(R.string.settings_filter_list, R.string.field_address, id = R.id.etAdBlockerListUrl)
         adBlockListUrl.setText(config.blockListUrl.value)
         addDebugging()
+        FrameStats.summary(AppLanguages.localeOf(context))?.let { rows.info(context.getString(R.string.settings_slow_frames, it)) }
         rows.button(R.string.settings_clear_cache, R.id.btnClearWebCache) {
             (activity as MainActivity).lifecycleScope.launch {
                 Engines.clearCache(context)
@@ -163,8 +166,9 @@ class GeneralPage @JvmOverloads constructor(
         rows.toggle(R.string.settings_autoplay, R.id.llAllowAutoplayMedia, config.allowAutoplayMedia) { _, on ->
             config.allowAutoplayMedia = on
         }
-        // Read by the document-start script from the next page load; codecs follow the hardware decoders.
-        val heights = intArrayOf(0, 1080, 720, 480)
+        // Read by the document-start script from the next page load. Automatic follows what the
+        // hardware decoders handle; no limit keeps only the codecs the TV has no decoder for out.
+        val heights = intArrayOf(0, MediaPolicy.NO_LIMIT, 1080, 720, 480)
         rows.choice(R.string.settings_video_quality, R.id.spVideoMaxQuality, resources.getStringArray(R.array.settings_video_qualities),
             heights.indexOf(config.videoMaxHeight).coerceAtLeast(0)) { config.videoMaxHeight = heights[it] }
         rows.toggle(R.string.settings_keep_screen_on, R.id.llKeepScreenOn, browserSettings.keepScreenOn.value) { _, on ->

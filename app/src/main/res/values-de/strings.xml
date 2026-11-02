@@ -184,7 +184,8 @@
         <item>Leere Seite</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>Automatisch</item>
+        <item>Automatisch (das Beste, was der Fernseher dekodiert)</item>
+        <item>Ohne Begrenzung</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>
@@ -228,4 +229,5 @@
     <string name="home_limit">Verknüpfungslimit erreicht (%d).</string>
     <string name="home_add_prompt">Adresse der Verknüpfung (https://…)</string>
     <string name="home_empty_search">Gib einen Suchbegriff ein.</string>
+    <string name="settings_slow_frames">Langsame Frames seit App-Start: %1$s</string>
 </resources>

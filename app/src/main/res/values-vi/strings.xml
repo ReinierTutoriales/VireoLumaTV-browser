@@ -182,7 +182,8 @@
         <item>Trang trống</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>Tự động</item>
+        <item>Tự động (tốt nhất TV giải mã được)</item>
+        <item>Không giới hạn</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>
@@ -226,4 +227,5 @@
     <string name="home_limit">Đã đạt giới hạn lối tắt (%d).</string>
     <string name="home_add_prompt">Địa chỉ lối tắt (https://…)</string>
     <string name="home_empty_search">Hãy nhập nội dung cần tìm.</string>
+    <string name="settings_slow_frames">Khung hình chậm từ khi mở ứng dụng: %1$s</string>
 </resources>

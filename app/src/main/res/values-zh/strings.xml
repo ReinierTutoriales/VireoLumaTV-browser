@@ -182,7 +182,8 @@
         <item>空白页</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>自动</item>
+        <item>自动（电视可解码的最佳画质）</item>
+        <item>不限制</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>
@@ -226,4 +227,5 @@
     <string name="home_limit">已达到快捷方式上限（%d）。</string>
     <string name="home_add_prompt">快捷方式地址（https://…）</string>
     <string name="home_empty_search">请输入要搜索的内容。</string>
+    <string name="settings_slow_frames">应用启动以来的慢帧：%1$s</string>
 </resources>

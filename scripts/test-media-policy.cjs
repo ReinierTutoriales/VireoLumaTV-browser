@@ -97,5 +97,30 @@ function page(config, host = 'www.youtube.com') {
     vm.runInContext(template.replace('__VIREO_MEDIA_POLICY__', JSON.stringify({block: ['vp9'], maxHeight: 0})), c);
     vm.runInContext(`assert.equal(MediaSource.isTypeSupported, before);`, c);
 
-    console.log('Media policy passed: VP9/VP8/AV1 rejection, audio kept, hardware-aware mode, resolution cap, YouTube cap, single injection');
+    // Automatic on a TV whose hardware decodes VP9 to 4K at 30 fps but 1080p at 60, without 10-bit,
+    // and HEVC to 4K60 with 10-bit; AV1 has no hardware decoder and is blocked.
+    c = page({block: ['av1'], maxHeight: 0, hw: {vp9: {h30: 2160, h60: 1080, ten: false},
+        hevc: {h30: 2160, h60: 2160, ten: true}}}, 'example.com');
+    vm.runInContext(`
+        var ok = t => MediaSource.isTypeSupported(t);
+        assert.equal(ok('video/webm; codecs="vp09.00.51.08"; width=3840; height=2160; framerate=30'), true, '4K30 in hardware');
+        assert.equal(ok('video/webm; codecs="vp09.00.51.08"; width=3840; height=2160; framerate=60'), false, '4K60 would be software');
+        assert.equal(ok('video/webm; codecs="vp09.00.41.08"; width=1920; height=1080; framerate=60'), true);
+        assert.equal(ok('video/webm; codecs="vp09.00.51.08"; width=2160; height=3840; framerate=30'), true, 'portrait 4K');
+        assert.equal(ok('video/webm; codecs="vp09.02.51.10"; width=1920; height=1080'), false, 'no 10-bit VP9');
+        assert.equal(ok('video/mp4; codecs="hvc1.2.4.L153.B0"; width=3840; height=2160; framerate=60'), true, 'HEVC Main 10 4K60');
+        assert.equal(ok('video/mp4; codecs="avc1.640033"; width=3840; height=2160'), true, 'no AVC entry: WebView decides');
+        assert.equal(ok('video/webm; codecs="vp9"'), true, 'no size: the codec alone is fine');
+        var media = new HTMLMediaElement();
+        assert.equal(media.canPlayType('video/webm; codecs="vp09.02.10.10"'), '', '10-bit refused without size too');
+        assert.equal(media.canPlayType('video/webm; codecs="vp09.00.10.08"'), 'probably');
+    `, c);
+    info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/webm; codecs="vp09.00.51.08"', width: 3840, height: 2160, framerate: 60}})`, c);
+    assert.equal(info.supported, false);
+    info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/webm; codecs="vp09.00.41.08"', width: 1920, height: 1080, framerate: 60}})`, c);
+    assert.deepEqual([info.supported, info.smooth, info.powerEfficient], [true, true, true], 'hardware range is smooth and efficient');
+    info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/mp4; codecs="avc1.640028"', width: 1920, height: 1080}})`, c);
+    assert.equal(info.smooth, undefined, 'outside known hardware the WebView answer is untouched');
+
+    console.log('Media policy passed: VP9/VP8/AV1 rejection, audio kept, hardware-aware mode, hardware size/rate/10-bit limits, resolution cap, YouTube cap, single injection');
 })().catch(error => { console.error(error); process.exit(1); });

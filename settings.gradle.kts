@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "VireoLumaTV-browser"
 include(":app")
+include(":baselineprofile")
