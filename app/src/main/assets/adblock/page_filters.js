@@ -1453,6 +1453,77 @@
         });
     };
 
+    /** uBO patterns where the regex flags matter ("g" replaces every match): /re/flags or text. */
+    function flaggedRegex(arg) {
+        var match = /^\/(.+)\/([gimsu]*)$/.exec(String(arg));
+        if (!match) return new RegExp(escapeRegex(String(arg)));
+        try { return new RegExp(match[1], match[2]); } catch (_) { return null; }
+    }
+
+    /** Rewrites the string returned by [path], optionally base64-decoded and only on [condition]. */
+    scriptlets['trusted-replace-outbound-text'] = function (path, pattern, replacement) {
+        var target = path && resolveMethod(path);
+        if (!target || pattern === undefined || pattern === '') return;
+        var re = flaggedRegex(pattern), named = namedArgs([].slice.call(arguments, 3));
+        var condition = named.condition ? flaggedRegex(named.condition) : null;
+        var base64 = named.encoding === 'base64';
+        var value = replacement === undefined ? '' : String(replacement);
+        if (value.indexOf('json:') === 0) { try { value = parseJson(value.slice(5)); } catch (_) { return; } }
+        if (!re || (named.condition && !condition)) return;
+        wrapFunction(target.owner, target.name, function (fn, self, args) {
+            var result = Reflect_.apply(fn, self, args);
+            if (typeof result !== 'string') return result;
+            var text = result;
+            if (base64) { try { text = atob(result); } catch (_) { return result; } }
+            if (condition) { condition.lastIndex = 0; if (!condition.test(text)) return result; }
+            re.lastIndex = 0;
+            var replaced = text.replace(re, value);
+            if (replaced === text) return result;
+            if (!base64) return replaced;
+            try { return btoa(replaced); } catch (_) { return result; }
+        });
+    };
+
+    /** Drops clipboard writes whose text matches (pasted-command lures); excludeMatches spares some. */
+    scriptlets['prevent-clipboard-write'] = function (pattern) {
+        var proto = window.Clipboard && Clipboard.prototype;
+        if (!proto) return;
+        var test = matcher(pattern || '');
+        var exclude = namedArgs([].slice.call(arguments, 1)).excludeMatches;
+        var spare = exclude ? matcher(exclude) : null;
+        wrapFunction(proto, 'writeText', function (fn, self, args) {
+            var text = String(args[0]);
+            if (test(text) && !(spare && spare(text))) return Promise.resolve();
+            return Reflect_.apply(fn, self, args);
+        });
+    };
+
+    /** Cancels script-initiated navigations to matching URLs ("location.href": this page). */
+    scriptlets['prevent-navigation'] = function (pattern) {
+        var navigation = window.navigation;
+        if (!pattern || !navigation || typeof navigation.addEventListener !== 'function') return;
+        var test = matcher(pattern === 'location.href' ? escapeRegexLiteral(href) : pattern);
+        navigation.addEventListener('navigate', function (event) {
+            if (event.userInitiated || !event.cancelable || !event.destination) return;
+            if (test(String(event.destination.url))) event.preventDefault();
+        });
+    };
+    function escapeRegexLiteral(text) { return '/^' + escapeRegex(text) + '$/'; }
+
+    /** multiup.*: download buttons carry their target in a "link" attribute instead of a form action. */
+    scriptlets['multiup'] = function () {
+        document.addEventListener('click', function (event) {
+            var button = event.target;
+            if (!button || typeof button.matches !== 'function' || !button.matches('button[link]')) return;
+            var form = button.closest('form');
+            var link = String(button.getAttribute('link') || '').trim();
+            if (!form || form !== button.parentElement || !link) return;
+            event.preventDefault();
+            event.stopPropagation();
+            location.href = link;
+        }, true);
+    };
+
     /** Computed-style answers for elements that pages probe to detect hidden ads. */
     scriptlets['spoof-css'] = function (selector) {
         if (!selector || typeof window.getComputedStyle !== 'function' || !Proxy_) return;

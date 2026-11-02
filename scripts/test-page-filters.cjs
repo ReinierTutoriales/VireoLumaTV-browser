@@ -331,10 +331,26 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.equal(lines[1].node.a.__typename, 'Story');
     `, responses);
 
-    // Inbound copies and setters with v2 regex keys.
+    // Inbound copies, setters with v2 regex keys, outbound text, navigation and clipboard.
     let misc = page({ script: call('trusted-edit-inbound-object', 'JSON.stringify', '0',
             '[?.attestationRequest][?.context.client.userAgent=/yahi|instream/]+={"params":"YAHI"}') +
-        call('edit-object-on-setter', 'flashvars', 'v2:$./^adv_/') });
+        call('edit-object-on-setter', 'flashvars', 'v2:$./^adv_/') +
+        call('trusted-replace-outbound-text', 'makeText', '/ad/g', 'x', 'condition', 'keep') +
+        call('trusted-replace-outbound-text', 'encoded', 'ad', 'ok', 'encoding', 'base64') +
+        call('prevent-navigation', '/werbeblocker/i') + call('prevent-clipboard-write', '/^powershell /') +
+        call('multiup') }, 'stream.example', `
+        btoa = function (s) { return { 'ad here': 'YWQgaGVyZQ==', 'ok here': 'b2sgaGVyZQ==' }[s]; };
+        window.makeText = function () { return this.text; };
+        window.encoded = function () { return btoa('ad here'); };
+        var navigation = { addEventListener(type, fn) { this.handler = fn; } };
+        window.navigation = navigation;
+        var copied = [];
+        function Clipboard() {}
+        Clipboard.prototype.writeText = function (text) { copied.push(text); return Promise.resolve(); };
+        window.Clipboard = Clipboard;
+        var clickHandler = null;
+        document.addEventListener = function (type, fn) { if (type === 'click') clickHandler = fn; };
+    `);
     vm.runInContext(`
         var request = { attestationRequest: 1, context: { client: { userAgent: 'x-yahi' } } };
         var sent = JSON.parse(JSON.stringify(request));
@@ -343,11 +359,32 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.equal(JSON.parse(JSON.stringify({ attestationRequest: 1, context: { client: { userAgent: 'web' } } })).params, undefined);
         window.flashvars = { adv_pre: 'u', adv_post: 'v', video: 'w' };
         assert.deepEqual(Object.keys(flashvars), ['video']);
+        assert.equal(makeText.call({ text: 'keep ad ad' }), 'keep x x');
+        assert.equal(makeText.call({ text: 'other ad' }), 'other ad');
+        assert.equal(atob(encoded()), 'ok here');
+        var event = { userInitiated: false, cancelable: true, destination: { url: 'https://s.example/Werbeblocker' },
+            preventDefault() { this.prevented = true; } };
+        navigation.handler(event);
+        assert.equal(event.prevented, true);
+        var clicked = { userInitiated: true, cancelable: true, destination: { url: 'https://s.example/werbeblocker' },
+            preventDefault() { this.prevented = true; } };
+        navigation.handler(clicked);
+        assert.equal(clicked.prevented, undefined);
+        new Clipboard().writeText('powershell -w hidden');
+        new Clipboard().writeText('hello');
+        assert.deepEqual(copied, ['hello']);
+        var form = {};
+        var button = { parentElement: form, matches(s) { return s === 'button[link]'; }, closest() { return form; },
+            getAttribute() { return ' https://multiup.example/file '; } };
+        var stopped = 0;
+        clickHandler({ target: button, preventDefault() { stopped++; }, stopPropagation() { stopped++; } });
+        assert.equal(location.href, 'https://multiup.example/file');
+        assert.equal(stopped, 2);
     `, misc);
 
     // Single injection per frame.
     vm.runInContext(source, c);
     vm.runInContext(`assert.equal(document.adoptedStyleSheets.length, 1);`, c);
 
-    console.log('Page filters passed: trusted values/storage/arguments, constructed stylesheet, procedural/action filters, media report, DOM bypass, toString masking, json-edit queries/responses/JSONL, inbound/setter edits, hidden markers, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
+    console.log('Page filters passed: trusted values/storage/arguments, constructed stylesheet, procedural/action filters, media report, DOM bypass, toString masking, json-edit queries/responses/JSONL, inbound/setter edits, outbound text, navigation, clipboard, multiup, hidden markers, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
 })().catch((error) => { console.error(error); process.exit(1); });
