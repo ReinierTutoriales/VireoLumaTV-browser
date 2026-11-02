@@ -504,3 +504,5 @@ baselineprofile/build.gradle.kts	PROPIO
 baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/BaselineProfileGenerator.kt	PROPIO
 scripts/diagnose-published-startup.sh	ELIMINADO
 scripts/test-release-startup.sh	PROPIO
+
+.github/workflows/startup-log-review.yml	PROPIO

@@ -1,0 +1,31 @@
+name: Inspect captured startup failure
+on:
+  create:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    if: github.event.ref_type == 'branch' && github.event.ref == 'diagnose/startup-cold'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: release-startup-api-34
+          run-id: 41521793805
+          github-token: ${{ github.token }}
+          path: evidence
+      - name: Read cold-start termination evidence
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, xml.etree.ElementTree as ET
+          root = Path('evidence')
+          for f in root.rglob('cold-window.xml'):
+              print('COLD WINDOW', [(n.get('text'), n.get('content-desc')) for n in ET.parse(f).getroot().iter('node') if n.get('text') or n.get('content-desc')])
+          for f in root.rglob('cold-logcat.txt'):
+              lines = f.read_text(errors='replace').splitlines()
+              selected = [line for line in lines if re.search(r'5550|Killing|am_kill|lmkd|lowmemory|ANR|timed out|has died|Process.*died|FATAL EXCEPTION|Fatal signal', line)]
+              print('\n'.join(selected[-300:]))
+          PY
