@@ -69,6 +69,7 @@ object AdblockResources {
         "trusted-replace-argument" to emptyList(),
         "trusted-suppress-native-method" to emptyList(),
         "trusted-override-element-method" to emptyList(),
+        "trusted-prevent-dom-bypass" to emptyList(),
         "spoof-css" to emptyList(),
         "trusted-click-element" to emptyList(),
         "trusted-create-html" to emptyList()

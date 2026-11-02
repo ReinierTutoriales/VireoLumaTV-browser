@@ -126,7 +126,8 @@
         style.disabled = !enabled;
         document.documentElement.appendChild(style);
     }
-    window.__vireoYouTubeAdblock = {
+    // Not enumerable: detectors that list window keys must not see the browser's own handle.
+    try { Object.defineProperty(window, '__vireoYouTubeAdblock', { configurable: true, value: {
         setEnabled: function (next) {
             enabled = next === true;
             if (style) style.disabled = !enabled;
@@ -136,7 +137,7 @@
                 installStyle();
             }
         }
-    };
+    } }); } catch (_) {}
     installStyle();
     document.addEventListener('DOMContentLoaded', installStyle, {once: true});
 })();

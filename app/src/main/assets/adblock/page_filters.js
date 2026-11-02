@@ -8,6 +8,10 @@
 (function applyPageFilters(attempt) {
     'use strict';
     if (window.__vireoPageFilters || window.__vireoPageFiltersWaiting) return;
+    // Browser markers are not enumerable, so detectors that list window keys do not see them.
+    function mark(name, value) {
+        try { Object.defineProperty(window, name, { value: value, writable: true, configurable: true }); } catch (_) {}
+    }
     var bridge = window.VireoLumaTVApp;
     if (!bridge || typeof bridge.pageFilters !== 'function') return;
     var href = String(location.href);
@@ -16,7 +20,7 @@
     // not replace the player. Muted autoplay (ads, previews) and short clips do not count. Media
     // events do not bubble, so listen in the capture phase.
     if (!window.__vireoMediaTracking && typeof bridge.mediaStarted === 'function' && typeof document.addEventListener === 'function') {
-        window.__vireoMediaTracking = true;
+        mark('__vireoMediaTracking', true);
         var onMedia = function (event) {
             var media = event && event.target;
             if (!media || media.paused || media.muted || media.volume === 0) return;
@@ -36,15 +40,15 @@
         // Only an explicit pending response is retried. One timer per document, bounded
         // to twelve retries (about 36 s); a valid empty result is final.
         if (attempt < 12) {
-            window.__vireoPageFiltersWaiting = true;
+            mark('__vireoPageFiltersWaiting', true);
             setTimeout(function () {
-                window.__vireoPageFiltersWaiting = false;
+                mark('__vireoPageFiltersWaiting', false);
                 applyPageFilters(attempt + 1);
             }, Math.min(100 * Math.pow(2, attempt), 5000));
         }
         return;
     }
-    window.__vireoPageFilters = true;
+    mark('__vireoPageFilters', true);
     var Reflect_ = window.Reflect, Proxy_ = window.Proxy;
     var defineProperty = Object.defineProperty, getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
     var magic = 'vireo' + Math.floor(Math.random() * 1e9).toString(36);
@@ -72,10 +76,28 @@
         return function (text) { return re.test(String(text)) !== not; };
     }
 
+    // V8 prints a Proxy as "function () { [native code] }": Function.prototype.toString answers
+    // the wrapped original's text instead, so detectors comparing it see the native method.
+    var masks = typeof WeakMap === 'function' ? new WeakMap() : null, toStringMasked = false;
+    function cloak(proxy, of) {
+        if (!masks) return proxy;
+        try { masks.set(proxy, Function.prototype.toString.call(of)); } catch (_) {}
+        if (!toStringMasked) {
+            toStringMasked = true;
+            var toString = Function.prototype.toString;
+            try {
+                Function.prototype.toString = cloak(new Proxy_(toString, { apply: function (target, self, args) {
+                    return masks.has(self) ? masks.get(self) : Reflect_.apply(target, self, args);
+                } }), toString);
+            } catch (_) {}
+        }
+        return proxy;
+    }
+
     function wrapFunction(owner, name, handler) {
         var original = owner && owner[name];
         if (typeof original !== 'function' || !Proxy_ || !Reflect_) return;
-        try { owner[name] = new Proxy_(original, { apply: handler }); } catch (_) {}
+        try { owner[name] = cloak(new Proxy_(original, { apply: handler }), original); } catch (_) {}
     }
 
     function stringOf(value) {
@@ -1055,6 +1077,44 @@
             if (disposition === 'throw') abort();
             var parsed = disposition ? trustedValue(disposition) : null;
             return parsed ? parsed.value : undefined;
+        });
+    };
+
+    /**
+     * Detectors take pristine functions from a new same-origin frame (about:blank has no
+     * document-start script) to escape the scriptlets. After [methodPath] inserts nodes, every
+     * inserted frame gets this window's [property] (a dotted path such as "JSON.parse").
+     */
+    scriptlets['trusted-prevent-dom-bypass'] = function (methodPath, property) {
+        var target = methodPath && resolveMethod(methodPath);
+        var parts = normalizeChain(property).split('.');
+        if (!target || !parts[0]) return;
+        // A constructor's prototype is read-only: "XMLHttpRequest.prototype" shares the constructor.
+        if (parts.length > 1 && parts[parts.length - 1] === 'prototype') parts.pop();
+        var leaf = parts.pop();
+        function share(frame) {
+            try {
+                var child = frame.contentWindow, from = window, to = child;
+                if (!child || child === window) return;
+                for (var i = 0; i < parts.length; i++) {
+                    from = from[parts[i]]; to = to[parts[i]];
+                    if (!isObjectLike(from) || !isObjectLike(to)) return;
+                }
+                if (leaf in from && to[leaf] !== from[leaf]) to[leaf] = from[leaf];
+            } catch (_) {} // Cross-origin frame: not reachable, and not a bypass of this page.
+        }
+        function visit(node) {
+            if (!node || typeof node !== 'object' || typeof node.nodeType !== 'number') return;
+            if (node.nodeName === 'IFRAME') share(node);
+            if (typeof node.querySelectorAll === 'function') {
+                var frames = node.querySelectorAll('iframe');
+                for (var i = 0; i < frames.length; i++) share(frames[i]);
+            }
+        }
+        wrapFunction(target.owner, target.name, function (fn, self, args) {
+            var result = Reflect_.apply(fn, self, args);
+            for (var i = 0; i < args.length; i++) visit(args[i]);
+            return result;
         });
     };
 
