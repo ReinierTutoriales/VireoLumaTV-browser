@@ -7,9 +7,10 @@ import java.security.MessageDigest
 internal object AdblockCache {
     /**
      * Bump when the filter lists, their preprocessing or their compile options change: compiled
-     * rules are not revalidated. v4: per-list permission for `trusted-*` scriptlets.
+     * rules are not revalidated. v4: per-list permission for `trusted-*` scriptlets; v5: native
+     * container with the `$to=`/`$denyallow=` rules.
      */
-    const val REVISION = "v4"
+    const val REVISION = "v5"
 
     fun sourceKey(url: String): String = MessageDigest.getInstance("SHA-256")
         .digest(url.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
