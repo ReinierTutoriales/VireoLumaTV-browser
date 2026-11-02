@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Only for disposable, rootable CI emulators; never run against a user's device.
-set -euxo pipefail
+set -Eeuxo pipefail
 candidate=$1
 baseline=$2
 package=com.reiniertutoriales.vireolumatv
@@ -26,6 +26,7 @@ launch() {
   adb logcat -c
   timeout 30s adb shell am start -W -n "$package/.activity.main.MainActivity" -d https://vireolumatv.invalid/appcontent/home/ > "$report/$scenario-launch.txt" || true
   app_pid=$(adb shell pidof "$package" | tr -d '\r') || { capture; return 1; }
+  local notice_dismissed=0
   for attempt in $(seq 1 12); do
     sleep 3
     if ! adb shell pidof "$package" >/dev/null; then
@@ -38,6 +39,26 @@ launch() {
     adb shell rm -f /sdcard/startup-window.xml
     timeout 20s adb shell uiautomator dump /sdcard/startup-window.xml > "$report/$scenario-uiautomator.txt" 2>&1 || echo "UI dumper exited: $?"
     if ! adb pull /sdcard/startup-window.xml "$report/$scenario-window.xml"; then continue; fi
+    # Old emulator images show the app's existing first-run provider notice.
+    notice=$(python - "$report/$scenario-window.xml" <<'PYNOTICE'
+import re, sys, xml.etree.ElementTree as ET
+nodes = list(ET.parse(sys.argv[1]).getroot().iter('node'))
+if any(n.get('text', '').startswith('The page engine (Android System WebView) has not been updated') for n in nodes):
+    for n in nodes:
+        if n.get('resource-id') == 'android:id/button2' and n.get('text') == 'OK' and n.get('package') == 'com.reiniertutoriales.vireolumatv':
+            m = re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', n.get('bounds', ''))
+            if m:
+                x1, y1, x2, y2 = map(int, m.groups())
+                print((x1 + x2) // 2, (y1 + y2) // 2)
+PYNOTICE
+    )
+    if [ -n "$notice" ] && [ "$notice_dismissed" = 0 ]; then
+      adb exec-out screencap -p > "$report/$scenario-provider-notice.png"
+      read -r tap_x tap_y <<< "$notice"
+      adb shell input tap "$tap_x" "$tap_y"
+      notice_dismissed=1
+      continue
+    fi
     if python - "$report/$scenario-window.xml" <<'PYXML'
 import sys, xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
