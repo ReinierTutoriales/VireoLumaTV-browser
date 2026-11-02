@@ -45,6 +45,8 @@ class MediaPolicyTest {
         assertEquals("{\"block\":[\"av1\"],\"maxHeight\":0,\"hw\":{\"vp9\":{\"h30\":2160,\"h60\":1080,\"ten\":true}}}",
             MediaPolicy.configJson(listOf("av1"), 0, hw))
         assertNull("No limit and no missing decoder: nothing to inject", MediaPolicy.configJson(emptyList(), MediaPolicy.NO_LIMIT, emptyMap()))
+        assertNull("No limit must not block codecs without a hardware decoder",
+            MediaPolicy.configJson(listOf("vp9", "av1"), MediaPolicy.NO_LIMIT, hw))
         assertTrue(MediaPolicy.hardwareLimits(MediaPolicy.NO_LIMIT).isEmpty())
     }
 }
