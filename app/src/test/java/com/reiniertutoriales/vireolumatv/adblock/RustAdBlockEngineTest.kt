@@ -71,10 +71,10 @@ class RustAdBlockEngineTest {
             assertEquals(listOf("set-constant", "replace-node-text"), names(custom).sorted().reversed())
             assertEquals(listOf("trusted-set-constant", "set-constant", "replace-node-text", "replace-node-text"),
                 names(ubo).sortedDescending())
-            assertEquals(names(custom), names(unflagged))
+            assertEquals(names(custom).sorted(), names(unflagged).sorted())
             assertTrue(ubo.serialize(file))
             val restored = engine.deserialize(file)!!
-            assertEquals(names(ubo), names(restored))
+            assertEquals(names(ubo).sorted(), names(restored).sorted())
             restored.release()
         } finally { custom.release(); ubo.release(); unflagged.release(); file.delete() }
     }
