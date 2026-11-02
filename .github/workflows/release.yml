@@ -112,7 +112,7 @@ jobs:
           done
           printf '\nFirma: certificado de release vigente desde 1.2.1 (clave nueva); APK release con R8.\n' >> dist/SIGNING.txt
           printf 'Application source: https://github.com/%s/tree/%s\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > dist/RELEASE_SOURCE.txt
-          cp LICENSE.md NOTICE.md app/src/main/assets/licenses/GPL-3.0.txt dist/
+          cp LICENSE.md NOTICE.md dist/
           cp licenses/*.txt dist/
           cp app/src/main/assets/licenses/SOURCES.txt dist/
           (cd dist && sha256sum * > SHA256SUMS.txt)

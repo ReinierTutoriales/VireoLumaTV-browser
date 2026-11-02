@@ -5,7 +5,7 @@ Utiliza Android System WebView y funciona con mando o gamepad desde Android 7.0 
 
 ## Versión 2.0.15
 
-Consolida las mejoras de la 2.0.14 sobre el historial independiente del proyecto. Conserva las funciones de idioma, favoritos, descargas, navegación y reproducción de vídeo. Detalles en [RELEASE_NOTES.md](RELEASE_NOTES.md).
+Reúne las correcciones de mando y controles multimedia, amplía las reglas y scriptlets del bloqueador y actualiza sus dependencias. Conserva las funciones de idioma, favoritos, descargas, navegación y reproducción de vídeo. Detalles y validaciones pendientes en [RELEASE_NOTES.md](RELEASE_NOTES.md).
 
 ## Descargar e instalar
 
