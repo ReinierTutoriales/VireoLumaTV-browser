@@ -33,7 +33,7 @@ jobs:
         with:
           workspaces: native/adblock-jni
 
-      - uses: gradle/actions/setup-gradle@v6.4.0
+      - uses: gradle/actions/setup-gradle@v6.4.1
         with:
           # open-source (MIT) cache provider; v6 defaults to the commercial "enhanced" one
           cache-provider: basic

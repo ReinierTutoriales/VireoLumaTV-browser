@@ -60,7 +60,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2.9.3
         with:
           workspaces: native/adblock-jni
-      - uses: gradle/actions/setup-gradle@v6.4.0
+      - uses: gradle/actions/setup-gradle@v6.4.1
         with:
           cache-provider: basic
       - name: Decode release keystore
