@@ -66,6 +66,12 @@ assert any(node.get('text') == 'DuckDuckGo' for node in root.iter('node'))
 PYXML
     then
       test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid"
+      if [ "$scenario" = cold ]; then
+        # A provider restart must not terminate the browser through a font dependency.
+        adb shell am force-stop com.google.android.gms
+        sleep 3
+        test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid"
+      fi
       capture
       if grep -q 'FATAL EXCEPTION\|Fatal signal' "$report/$scenario-crash.txt"; then return 1; fi
       return 0

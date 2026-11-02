@@ -7,6 +7,7 @@
 
 - Corrige un cierre al cargar Inicio y el aviso de certificado: Android requiere escapar las llaves de cierre literales en las expresiones regulares. El defecto se reprodujo con los APK publicados de 2.0.14 y 2.0.15.
 - Conserva el escape HTML de los textos y todos los cambios funcionales de 2.0.15, incluidas las reglas del bloqueador y Room 3.0.3. La base de datos sigue siendo `main.db`, con esquema 20.
+- Los controles usan los emoji incluidos en Android. Se retira la carga automática de una fuente EmojiCompat descargable: una parada de Google Play Services ya no debe cerrar el navegador por esa dependencia. La auditoría del APK conserva el inicializador de perfiles y rechaza que vuelva la carga automática de emojis.
 - La corrección no añade bibliotecas ni cambia la firma o el identificador de la aplicación.
 
 ## Verificación

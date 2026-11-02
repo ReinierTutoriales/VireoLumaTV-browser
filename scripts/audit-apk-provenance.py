@@ -77,6 +77,11 @@ def audit(apk, aapt2, root):
                 if not stored: issues.append('Baseline data is compressed twice: ' + path)
     badging = subprocess.check_output([str(aapt2), 'dump', 'badging', str(apk)], text=True)
     resources = subprocess.check_output([str(aapt2), 'dump', 'resources', str(apk)], text=True)
+    manifest = subprocess.check_output([str(aapt2), 'dump', 'xmltree', '--file', 'AndroidManifest.xml', str(apk)], text=True)
+    checks['downloadable_emoji_startup'] = 'androidx.emoji2.text.EmojiCompatInitializer' in manifest
+    if checks['downloadable_emoji_startup']: issues.append('Automatic downloadable emoji startup must be disabled')
+    checks['profile_installer_initializer_present'] = 'androidx.profileinstaller.ProfileInstallerInitializer' in manifest
+    if not checks['profile_installer_initializer_present']: issues.append('Profile installer initializer missing')
     checks['package_name'] = re.search(r"package: name='([^']+)'", badging).group(1)
     if checks['package_name'] != 'com.reiniertutoriales.vireolumatv': issues.append('Unexpected applicationId')
     for removed in ('anim/infinite_fadeinout_anim', 'menu/menu_link'):
