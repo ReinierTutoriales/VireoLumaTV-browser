@@ -5,20 +5,27 @@ candidate=$1
 baseline=$2
 package=com.reiniertutoriales.vireolumatv
 report=startup-report
+app_pid=
 mkdir -p "$report"
 adb root
 adb wait-for-device
 capture() {
   adb logcat -d > "$report/$scenario-logcat.txt"
-  adb logcat -d -b crash > "$report/$scenario-crash.txt"
+  if [ -n "$app_pid" ]; then
+    adb logcat -d -b crash --pid="$app_pid" > "$report/$scenario-crash.txt"
+  else
+    adb logcat -d -b crash > "$report/$scenario-crash.txt"
+  fi
   adb shell dumpsys activity activities > "$report/$scenario-activities.txt"
   adb exec-out screencap -p > "$report/$scenario.png"
 }
 trap 'capture' ERR
 launch() {
+  app_pid=
   adb shell am force-stop "$package"
   adb logcat -c
   timeout 30s adb shell am start -W -n "$package/.activity.main.MainActivity" -d https://vireolumatv.invalid/appcontent/home/ > "$report/$scenario-launch.txt" || true
+  app_pid=$(adb shell pidof "$package" | tr -d '\r') || { capture; return 1; }
   for attempt in $(seq 1 12); do
     sleep 3
     if ! adb shell pidof "$package" >/dev/null; then
@@ -26,9 +33,18 @@ launch() {
       cat "$report/$scenario-crash.txt"
       return 1
     fi
-    timeout 20s adb shell uiautomator dump /sdcard/startup-window.xml > "$report/$scenario-uiautomator.txt" 2>&1 || { capture; cat "$report/$scenario-uiautomator.txt"; return 1; }
-    adb pull /sdcard/startup-window.xml "$report/$scenario-window.xml" >/dev/null
-    if grep -q 'text="DuckDuckGo"' "$report/$scenario-window.xml"; then
+    # The platform dumper can crash during shutdown after writing a valid hierarchy.
+    # Require a fresh parsed dump and the original app process, not its exit status.
+    adb shell rm -f /sdcard/startup-window.xml
+    timeout 20s adb shell uiautomator dump /sdcard/startup-window.xml > "$report/$scenario-uiautomator.txt" 2>&1 || echo "UI dumper exited: $?"
+    if ! adb pull /sdcard/startup-window.xml "$report/$scenario-window.xml"; then continue; fi
+    if python - "$report/$scenario-window.xml" <<'PYXML'
+import sys, xml.etree.ElementTree as ET
+root = ET.parse(sys.argv[1]).getroot()
+assert any(node.get('text') == 'DuckDuckGo' for node in root.iter('node'))
+PYXML
+    then
+      test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid"
       capture
       if grep -q 'FATAL EXCEPTION\|Fatal signal' "$report/$scenario-crash.txt"; then return 1; fi
       return 0
