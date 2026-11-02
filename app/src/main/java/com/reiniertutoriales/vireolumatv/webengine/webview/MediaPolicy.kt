@@ -46,7 +46,7 @@ internal object MediaPolicy {
     private const val MIME_VP8 = MediaFormat.MIMETYPE_VIDEO_VP8
     private const val MIME_VP9 = "video/x-vnd.on2.vp9"
     private const val MIME_AV1 = "video/av01"
-    /** [Config.videoMaxHeight] value that lifts every limit except decoders the TV does not have. */
+    /** [Config.videoMaxHeight] value that leaves codec and quality decisions to WebView. */
     const val NO_LIMIT = -1
 
     /** Codec family as media_policy.js names it, with its decoder MIME type. */
@@ -134,7 +134,7 @@ internal object MediaPolicy {
 
     /** Script argument; null when the policy changes nothing. */
     fun configJson(blocked: List<String>, maxHeight: Int, hardware: Map<String, HardwareVideo> = emptyMap()): String? {
-        if (blocked.isEmpty() && maxHeight <= 0 && hardware.isEmpty()) return null
+        if (maxHeight == NO_LIMIT || (blocked.isEmpty() && maxHeight <= 0 && hardware.isEmpty())) return null
         val hw = hardware.entries.joinToString(",") { (family, v) ->
             "\"$family\":{\"h30\":${v.maxHeight30},\"h60\":${v.maxHeight60},\"ten\":${v.tenBit}}"
         }
