@@ -83,6 +83,29 @@ jobs:
           python scripts/refresh-bundled-filters.py
           for test in scripts/test-*.cjs; do node "$test"; done
           ./gradlew testGenericDebugUnitTest assembleGenericRelease lintGenericRelease --stacktrace
+      - name: Prepare startup upgrade baseline
+        run: |
+          curl --fail --location --retry 3 https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/download/v2.0.15/VireoLumaTV-2.0.15-x86_64.apk -o baseline.apk
+          echo '3ea7c782a163605d42863f278e8529dcb7469a5d73209e1b2461d71baa10e73a  baseline.apk' | sha256sum -c
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Verify signed release startup before publication
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: bash scripts/test-release-startup.sh "$(find app/build/outputs/apk/generic/release -name '*x86_64*.apk' -type f)" baseline.apk
+      - name: Upload signed startup evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: signed-release-startup
+          path: startup-report/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Verify APKs and prepare release files
         run: |
           mkdir -p dist

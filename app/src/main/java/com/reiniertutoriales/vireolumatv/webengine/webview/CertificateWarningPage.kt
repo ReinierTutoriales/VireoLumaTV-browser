@@ -12,7 +12,7 @@ import com.reiniertutoriales.vireolumatv.utils.AppLanguages
  * the site and the error are filled in here, HTML-escaped, so the page needs no bridge to read them.
  */
 internal object CertificateWarningPage {
-    private val PLACEHOLDER = Regex("""\{\{(\w+)}}""")
+    private val PLACEHOLDER = Regex("""\{\{(\w+)\}\}""")
 
     /** The page for a [primaryError] at [url]; [details] describes the certificate. */
     fun render(context: Context, template: String, url: String, primaryError: Int, details: String): String {
