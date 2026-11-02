@@ -202,6 +202,18 @@ val buildRustAdblockHost = tasks.register<BuildRustAdblock>("buildRustAdblockHos
     outputDir.set(layout.buildDirectory.dir("rust/host"))
 }
 
+// Single source for copies shipped inside the APK: the root license files and the launcher icon.
+val duplicatedAssetsDir = layout.buildDirectory.dir("generated/duplicatedAssets")
+val copyDuplicatedAssets = tasks.register<Copy>("copyDuplicatedAssets") {
+    into(duplicatedAssetsDir)
+    from(rootProject.file("LICENSE.md")) { into("licenses"); rename { "APP-LICENSE.txt" } }
+    from(rootProject.file("NOTICE.md")) { into("licenses") }
+    from(rootProject.file("licenses")) { include("Apache-2.0.txt", "MPL-2.0.txt", "GPL-3.0.txt"); into("licenses") }
+    from(layout.projectDirectory.file("src/main/res/drawable-xxxhdpi/ic_launcher.png")) { into("pages/home"); rename { "logo.png" } }
+}
+
+android.sourceSets.getByName("main").assets.srcDir(files(duplicatedAssetsDir).builtBy(copyDuplicatedAssets))
+
 androidComponents {
     onVariants { variant ->
         variant.sources.jniLibs?.addGeneratedSourceDirectory(buildRustAdblock, BuildRustAdblock::outputDir)
