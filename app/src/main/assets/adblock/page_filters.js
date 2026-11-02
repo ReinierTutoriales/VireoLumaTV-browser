@@ -200,6 +200,10 @@
         else fn();
     }
 
+    // Most frames (ads, embeds, ordinary pages) get no scriptlet. The library below is only
+    // built (about 70 closures and their state) when the engine sent at least one call; its body
+    // keeps the enclosing indentation so the history of each scriptlet stays readable.
+    function installScriptlets() {
     // ---- scriptlets ----------------------------------------------------------------------
 
     var scriptlets = {};
@@ -1624,6 +1628,9 @@
         });
     };
 
+    return scriptlets;
+    }
+
     // ---- procedural and action filters (uBO "##sel:has-text(..)", ":remove()", ":style()") --
 
     function textMatcher(arg) {
@@ -1877,12 +1884,14 @@
         });
     }
 
+    var scriptlets = null;
     var script = typeof data.script === 'string' ? data.script : '';
     var marker = /\/\*@VIREO@\*\/(\[[\s\S]*?\])\/\*@END@\*\//g, found;
     while ((found = marker.exec(script)) !== null) {
         try {
             var call = JSON.parse(found[1]);
             // Own entries only: a name such as "constructor" must not reach Object.prototype members.
+            if (!scriptlets) scriptlets = installScriptlets();
             if (!Object.prototype.hasOwnProperty.call(scriptlets, call[0])) continue;
             var fn = scriptlets[call[0]];
             if (typeof fn !== 'function') continue;
