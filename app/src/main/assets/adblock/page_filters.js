@@ -1536,6 +1536,16 @@
             text = text.trim();
             return test(text) && !(spare && spare(text));
         }
+        function selectedText() {
+            var control = document.activeElement;
+            if (control && (control.localName === 'input' || control.localName === 'textarea')) {
+                var start = control.selectionStart, end = control.selectionEnd;
+                if (typeof control.value === 'string' && typeof start === 'number' && typeof end === 'number')
+                    return control.value.slice(start, end);
+            }
+            var selection = typeof document.getSelection === 'function' ? document.getSelection() : null;
+            return selection ? String(selection) : null;
+        }
         // The async Clipboard API and the legacy copy/cut command, which copies the selection.
         var proto = window.Clipboard && Clipboard.prototype;
         if (proto) {
@@ -1547,8 +1557,7 @@
         wrapFunction(document, 'execCommand', function (fn, self, args) {
             var command = String(args[0]).toLowerCase();
             if (command === 'copy' || command === 'cut') {
-                var selection = typeof document.getSelection === 'function' ? document.getSelection() : null;
-                if (selection && blocked(String(selection))) return true;
+                if (blocked(selectedText())) return true;
             }
             return Reflect_.apply(fn, self, args);
         });

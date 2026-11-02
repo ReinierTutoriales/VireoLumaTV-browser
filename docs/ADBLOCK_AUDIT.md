@@ -43,3 +43,14 @@ adblock-rust): `$replace` (77 rules), `##^` HTML filters (397), `$header=` (42),
 Known limits: a `$redirect-rule` among the `$to=`/`$denyallow=` rules only replaces requests
 those rules block, not requests blocked by the main lists. On YouTube, list scriptlets are
 skipped; `youtube_adblock.js` handles that site.
+
+## DOM regression coverage
+
+`scripts/test-page-filters.cjs` covers frames moved out of a consumed `DocumentFragment`,
+preserving legitimate same-origin frames and skipping inaccessible cross-origin frames.
+Clipboard copy/cut checks the selected substring of a focused input or textarea, with
+document selection as fallback; partial selections and `excludeMatches` remain covered.
+These are deterministic fixtures, not physical WebView validation.
+
+DOM behavior: https://dom.spec.whatwg.org/#concept-node-insert
+Text selections: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#textFieldSelection

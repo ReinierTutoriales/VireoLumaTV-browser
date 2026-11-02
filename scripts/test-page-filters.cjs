@@ -455,6 +455,40 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.equal(stopped, 2);
     `, misc);
 
+    // A text control's selected value is independent of Document.getSelection().
+    const controlClipboard = page({script: call('prevent-clipboard-write', '/^powershell /',
+        'excludeMatches', 'allowed')}, 'stream.example', `
+        var copiedCommands = [], selected = '';
+        document.execCommand = function (command) { copiedCommands.push(command); return true; };
+        document.getSelection = function () { return {toString() { return selected; }}; };
+        document.activeElement = null;
+    `);
+    vm.runInContext(`
+        var value = 'prefix powershell blocked suffix';
+        for (var localName of ['input', 'textarea']) {
+            document.activeElement = {localName: localName, value: value,
+                selectionStart: 7, selectionEnd: 25};
+            assert.equal(document.execCommand('copy'), true);
+            assert.equal(document.execCommand('cut'), true);
+        }
+        assert.deepEqual(copiedCommands, [], 'block matching selected text from inputs and textareas');
+        // Copy only the selected slice, never test the entire value or a stale page selection.
+        document.activeElement.selectionStart = 0;
+        document.activeElement.selectionEnd = 6;
+        selected = 'powershell blocked';
+        document.execCommand('copy');
+        document.activeElement = {localName: 'input', value: 'powershell allowed', selectionStart: 0, selectionEnd: 18};
+        document.execCommand('copy');
+        document.activeElement = {localName: 'input', value: 'plain', selectionStart: null, selectionEnd: null};
+        selected = 'plain';
+        document.execCommand('copy');
+        document.execCommand('bold');
+        document.activeElement = {localName: 'div'};
+        selected = 'powershell blocked';
+        document.execCommand('copy');
+        assert.deepEqual(copiedCommands, ['copy', 'copy', 'copy', 'bold']);
+    `, controlClipboard);
+
     // Single injection per frame.
     vm.runInContext(source, c);
     vm.runInContext(`assert.equal(document.adoptedStyleSheets.length, 1);`, c);
