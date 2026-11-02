@@ -39,6 +39,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     val homeButton: ImageButton get() = ui.homeButton
     val adBlockButton: ImageButton get() = ui.blockerButton
     private val commands = listOf(ui.backButton, ui.forwardButton, ui.reloadButton, ui.homeButton, ui.blockerButton, ui.menuButton)
+    private val focusRow = listOf<View>(ui.addressField) + commands
     private var pageAddress = ""
     private var editing = false
     private var enteringSuggestions = false
@@ -156,14 +157,13 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (!editing && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
-            val row = listOf<View>(ui.addressField) + commands
-            val current = row.indexOfFirst { it.hasFocus() }
+            val current = focusRow.indexOfFirst { it.hasFocus() }
             if (current >= 0) {
                 if (event.action == KeyEvent.ACTION_DOWN) {
                     val step = if (event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1
                     var next = current + step
-                    while (next in row.indices) {
-                        val target = row[next]
+                    while (next in focusRow.indices) {
+                        val target = focusRow[next]
                         if (target.isEnabled && target.visibility == VISIBLE && target.isFocusable) {
                             target.requestFocus()
                             break

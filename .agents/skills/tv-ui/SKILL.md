@@ -26,3 +26,5 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
   evidence is available and label static review as static review.
 - Preserve the requested YouTube mobile browsing path and its filters. Do not
   replace it with an embedded player merely to expose another control API.
+- Dynamic list refreshes must preserve the focused item by identity when it
+  remains available; selection-only updates must not restart content loaders.

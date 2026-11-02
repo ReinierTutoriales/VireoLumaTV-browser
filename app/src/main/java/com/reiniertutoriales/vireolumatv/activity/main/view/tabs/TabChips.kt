@@ -38,8 +38,8 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
             if (selected == value) return
             val previous = selected
             selected = value
-            if (previous in shown.indices) notifyItemChanged(previous)
-            if (value in shown.indices) notifyItemChanged(value)
+            if (previous in shown.indices) notifyItemChanged(previous, SelectionChanged)
+            if (value in shown.indices) notifyItemChanged(value, SelectionChanged)
         }
 
     /** Re-reads the model's tabs; the selected tab keeps its selection when tabs move. */
@@ -69,6 +69,14 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
         Row(LayoutInflater.from(parent.context).inflate(R.layout.tab_chip, parent, false))
 
     override fun onBindViewHolder(holder: Row, position: Int) = holder.bind(shown[position], position == selected)
+
+    override fun onBindViewHolder(holder: Row, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isNotEmpty() && payloads.all { it === SelectionChanged } && holder.tab === shown[position]) {
+            holder.itemView.isSelected = position == selected
+        } else holder.bind(shown[position], position == selected)
+    }
+
+    private object SelectionChanged
 
     override fun onViewRecycled(holder: Row) {
         holder.unbind()

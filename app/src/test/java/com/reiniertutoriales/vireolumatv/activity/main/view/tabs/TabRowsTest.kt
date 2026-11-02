@@ -19,6 +19,30 @@ import org.robolectric.annotation.Config as RobolectricConfig
 @RunWith(RobolectricTestRunner::class)
 @RobolectricConfig(application = Application::class, sdk = [28])
 class TabRowsTest {
+    @Test fun selectingATabDoesNotResetItsAlreadyDisplayedIcon() = withAdapter { adapter, model, parent ->
+        model.openTabs.add(BrowserTab(url = Config.HOME_PAGE_URL))
+        model.openTabs.add(BrowserTab(url = Config.HOME_PAGE_URL))
+        adapter.onTabsChanged()
+        val holder = adapter.onCreateViewHolder(parent, 0)
+        adapter.bindViewHolder(holder, 0)
+        val image = holder.itemView.findViewById<android.widget.ImageView>(R.id.site_icon)
+        val displayed = android.graphics.drawable.ColorDrawable(android.graphics.Color.GREEN)
+        image.setImageDrawable(displayed)
+        val payloads = mutableListOf<Any>()
+        adapter.registerAdapterDataObserver(object : androidx.recyclerview.widget.RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeChanged(start: Int, count: Int, payload: Any?) {
+                if (start == 0 && payload != null) payloads += payload
+            }
+        })
+        adapter.current = 1
+        assertTrue("Selection must support a partial row update", payloads.isNotEmpty())
+        adapter.onBindViewHolder(holder, 0, payloads)
+        assertSame("Focus movement must not clear an existing favicon", displayed, image.drawable)
+        assertFalse(holder.itemView.isSelected)
+        adapter.onBindViewHolder(holder, 0, mutableListOf())
+        assertNotSame("A full content refresh must still reload the icon", displayed, image.drawable)
+    }
+
     @Test fun remoteReachesTheLargeCloseTargetAndLongPressStillOpensOptions() = withAdapter { _, model, parent ->
         val tab = BrowserTab(url = Config.HOME_PAGE_URL)
         model.openTabs.add(tab)
