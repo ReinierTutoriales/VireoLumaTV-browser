@@ -3,7 +3,7 @@
 Navegador para Android TV, Google TV y TV boxes compatibles, desarrollado y mantenido por **ReinierTutoriales**.
 Utiliza Android System WebView y funciona con mando o gamepad desde Android 7.0 (API 24).
 
-## Versión 2.0.13
+## Versión 2.0.14
 
 Añade el ajuste «Idioma de la app», renueva la interfaz y los favoritos en Inicio, hace más fiables las descargas y la instalación de APK, y migra los datos a un esquema propio. Detalles en [RELEASE_NOTES.md](RELEASE_NOTES.md).
 
