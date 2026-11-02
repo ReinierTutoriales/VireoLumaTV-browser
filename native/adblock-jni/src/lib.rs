@@ -419,6 +419,28 @@ mod tests {
     }
 
     #[test]
+    fn scoped_important_rules_override_main_exceptions_and_other_groups() {
+        let normal = "||ads.test^$script\n@@||ads.test^$script\n";
+        let scoped = [
+            ("||ads.test^$script,to=test,important", true),
+            ("||ads.test^$script,to=test", false),
+            ("||ads.test^$script,to=org,important", false),
+            ("||ads.test^$script,to=test\n*$script,to=test,domain=site.test,important", true),
+            ("||ads.test^$script,to=test\n||ads.test^$script,to=test|~allowed.test,important", true),
+            ("||ads.test^$script,to=test\n||ads.test^$script,to=~allowed.test,important", true),
+        ];
+        for (rules, blocked) in scoped {
+            let blocker = engine_for(&format!("{normal}{rules}"));
+            let restored = Blocker::deserialize(&blocker.serialize(), NOOPJS).unwrap();
+            for engine in [&blocker, &restored] {
+                assert_eq!(verdict(engine, "https://ads.test/a.js", "https://site.test/", "script") == VERDICT_BLOCK,
+                    blocked, "{rules}");
+                assert_eq!(verdict(engine, "https://elsewhere.test/a.js", "https://other.test/", "script"), "");
+            }
+        }
+    }
+
+    #[test]
     fn to_and_denyallow_limit_the_request_hostname_and_survive_the_cache() {
         let rules = "*$script,3p,denyallow=cdn.jsdelivr.net|cloudflare.com,domain=site.test\n\
             ||track.test^$xhr,to=~ok.track.test\n\
