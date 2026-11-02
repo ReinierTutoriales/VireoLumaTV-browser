@@ -24,7 +24,7 @@ internal class ServiceWorkerFilter(context: Context, private val policy: () -> P
         /** Whether ads are blocked for the site at this address. Called off the main thread. */
         fun blocksAds(site: Uri): Boolean
         /** Whether the request is blocked, with its `$redirect` resource if the lists name one. */
-        fun verdict(url: Uri, type: String?, site: Uri): AdVerdict
+        fun verdict(url: Uri, type: String?, site: Uri, method: String = "GET"): AdVerdict
     }
 
     /**
@@ -52,7 +52,7 @@ internal class ServiceWorkerFilter(context: Context, private val policy: () -> P
         val site = AdblockRequestClassifier.serviceWorkerContext(headers) ?: return null
         if (!rules.blocksAds(site)) return null
         val type = AdblockRequestClassifier.classify(url, headers, mainFrame = false)
-        val verdict = rules.verdict(url, type, site)
+        val verdict = rules.verdict(url, type, site, request.method ?: "GET")
         if (!verdict.blocked) return null
         verdict.redirect?.let { BlockedResponses.dataUrl(it, headers) }?.let { return it }
         return AdblockSurrogates.responseFor(appContext, url, headers) ?: BlockedResponses.blocked()

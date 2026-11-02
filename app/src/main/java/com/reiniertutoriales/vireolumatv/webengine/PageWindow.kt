@@ -46,7 +46,7 @@ interface PageWindow {
     val blocksAds: Boolean
     val blocksDialogs: Boolean
     /** Whether a request is blocked, with the filter lists' `$redirect` resource if they name one. */
-    fun adVerdict(url: Uri, requestType: String?, page: Uri): AdVerdict
+    fun adVerdict(url: Uri, requestType: String?, page: Uri, method: String = "GET"): AdVerdict
     /** A page-initiated navigation of this tab to a popunder network; true cancels it. */
     fun isTabUnderAd(url: Uri, page: Uri?): Boolean
     fun onAdsBlocked(count: Int)

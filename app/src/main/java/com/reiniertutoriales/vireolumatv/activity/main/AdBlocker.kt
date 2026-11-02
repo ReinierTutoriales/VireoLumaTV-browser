@@ -89,7 +89,7 @@ class AdBlocker @JvmOverloads constructor(
         val source: FilterListSource
     )
 
-    private data class DecisionKey(val url: String, val type: String?, val baseHost: String)
+    private data class DecisionKey(val url: String, val type: String?, val baseHost: String, val method: String)
     private class InstalledClient(val blocker: ContentBlocker, val source: String) {
         val lock = Any()
         // A broken native matcher can fail for every resource on a busy page.
@@ -99,7 +99,8 @@ class AdBlocker @JvmOverloads constructor(
         // The key is everything the match depends on; the rules' generation is this client itself.
         val decisions = object : LruCache<DecisionKey, AdVerdict>(256 * 1024) {
             override fun sizeOf(key: DecisionKey, value: AdVerdict): Int =
-                64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length + (value.redirect?.length ?: 0))
+                64 + 2 * (key.url.length + (key.type?.length ?: 0) + key.baseHost.length + key.method.length +
+                    (value.redirect?.length ?: 0))
         }
         // Page filters of recent frame URLs (ad iframes and reloads repeat them): ~1 MiB of text.
         val pageFilters = object : LruCache<String, String>(512 * 1024) {
@@ -637,20 +638,22 @@ class AdBlocker @JvmOverloads constructor(
      * Whether a request is blocked and, when the lists name one, the `data:` URL of its `$redirect`
      * resource (uBO `noopjs`, `1x1.gif`, empty VAST...), so the page sees a harmless answer instead of
      * an error it can detect. One native match for a new request, none for a cached one.
+     * [method] is the request's HTTP method: `$method=` rules (HEAD probes, GET-only media) use it.
      */
-    fun verdict(url: Uri, type: String?, baseUri: Uri): AdVerdict {
+    fun verdict(url: Uri, type: String?, baseUri: Uri, method: String = "GET"): AdVerdict {
         val baseHost = baseUri.host ?: return AdVerdict.ALLOW
         val current = installedClient ?: return AdVerdict.ALLOW
         val text = url.toString()
-        val key = if (text.length <= 2048 && baseHost.length <= 255)
-            DecisionKey(text, type, baseHost) else null
+        // Methods are short tokens; anything else is not cached.
+        val key = if (text.length <= 2048 && baseHost.length <= 255 && method.length <= 16)
+            DecisionKey(text, type, baseHost, method) else null
         // LruCache is internally synchronized: cached answers never wait for a native match that
         // another WebView thread is running.
         key?.let { current.decisions.get(it) }?.let { return it }
         val result = try {
             // adblock-rust is Sync: WebView worker threads match in parallel.
-            if (current.blocker.isConcurrent) current.blocker.verdict(url, type, baseUri)
-            else synchronized(current.lock) { current.blocker.verdict(url, type, baseUri) }
+            if (current.blocker.isConcurrent) current.blocker.verdict(url, type, baseUri, method)
+            else synchronized(current.lock) { current.blocker.verdict(url, type, baseUri, method) }
         } catch (e: Exception) {
             if (current.failureLogged.compareAndSet(false, true)) {
                 Log.e(TAG, "Adblock matcher failed; later requests can retry", e)

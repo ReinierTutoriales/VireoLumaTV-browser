@@ -29,7 +29,7 @@ class ServiceWorkerFilterTest {
         val asked = mutableListOf<Triple<String, String?, String>>()
         val sites = mutableListOf<String>()
         override fun blocksAds(site: Uri): Boolean = enabled.also { sites += site.toString() }
-        override fun verdict(url: Uri, type: String?, site: Uri): AdVerdict {
+        override fun verdict(url: Uri, type: String?, site: Uri, method: String): AdVerdict {
             asked += Triple(url.toString(), type, site.toString())
             return when (url.host) {
                 "ads.example" -> AdVerdict.BLOCK
@@ -82,7 +82,7 @@ class ServiceWorkerFilterTest {
         try {
             val rules = object : ServiceWorkerFilter.Policy {
                 override fun blocksAds(site: Uri) = true
-                override fun verdict(url: Uri, type: String?, site: Uri) = blocker.verdict(url, type, site)
+                override fun verdict(url: Uri, type: String?, site: Uri, method: String) = blocker.verdict(url, type, site, method)
             }
             val sw = filter(rules)
             assertNotNull("Third-party tracker fetched by another site's worker",
