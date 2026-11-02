@@ -57,6 +57,28 @@ class RustAdBlockEngineTest {
         } finally { blocker.release() }
     }
 
+    @Test fun trustedScriptletsRunOnlyFromTrustedListsAndSurviveTheCache() {
+        val list = "site.test##+js(trusted-set-constant, adsOff, 1)\nsite.test##+js(trusted-rpnt, script, ad, x)\n" +
+            "site.test##+js(set, canRunAds, true)\nsite.test##+js(rpnt, script, ad, y)"
+        fun names(blocker: ContentBlocker) = Regex("""/\*@VIREO@\*/\["([^"]+)"""")
+            .findAll(JSONObject(blocker.pageFilters("https://site.test/")).optString("script")).map { it.groupValues[1] }.toList()
+        val custom = engine.compile(listOf(list), listOf(false))!!
+        val ubo = engine.compile(listOf(list), listOf(true))!!
+        val unflagged = engine.compile(list)!!
+        val file = File.createTempFile("trusted", ".dat")
+        try {
+            // A custom subscription keeps the plain scriptlets but cannot reach trusted-* ones.
+            assertEquals(listOf("set-constant", "replace-node-text"), names(custom).sorted().reversed())
+            assertEquals(listOf("trusted-set-constant", "set-constant", "replace-node-text", "replace-node-text"),
+                names(ubo).sortedDescending())
+            assertEquals(names(custom).sorted(), names(unflagged).sorted())
+            assertTrue(ubo.serialize(file))
+            val restored = engine.deserialize(file)!!
+            assertEquals(names(ubo).sorted(), names(restored).sorted())
+            restored.release()
+        } finally { custom.release(); ubo.release(); unflagged.release(); file.delete() }
+    }
+
     @Test fun oneVerdictCarriesBlockRedirectAndExceptionsLikeCheck() {
         val blocker = engine.compile(rules)!!
         try {

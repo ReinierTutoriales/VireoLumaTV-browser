@@ -71,7 +71,10 @@ class AdBlocker @JvmOverloads constructor(
         val mirrors: List<String> = emptyList(),
         /** uBlock Origin lists: required "! Title:" prefix and `!#include` sub-lists to fetch. */
         val uboTitle: String? = null
-    )
+    ) {
+        /** uBlock Origin's own lists may use `trusted-*` scriptlets; other lists, as in uBO, may not. */
+        val isTrusted: Boolean get() = uboTitle != null
+    }
 
     private enum class FilterListSource {
         DOWNLOAD,
@@ -226,7 +229,7 @@ class AdBlocker @JvmOverloads constructor(
                             }
                             Log.w(TAG, "Serialized adblock list unavailable; compiling saved filter list text")
                         }
-                        val freshClient = engine.compile(filterTexts(resolvedLists))
+                        val freshClient = engine.compile(filterTexts(resolvedLists), resolvedLists.map { it.filterList.isTrusted })
                         if (freshClient != null) {
                             val cacheWritten = AdblockCache.write(cachedList, freshClient)
                             if (!cacheWritten) Log.w(TAG, "Compiled rules active but cache write failed; will retry")
@@ -305,10 +308,10 @@ class AdBlocker @JvmOverloads constructor(
     ): ContentBlocker? {
         var loadedClient: ContentBlocker? = null
         // The same text serves network and popup recovery; do not read/decompress it twice.
-        val savedTexts by lazy {
+        val savedLists by lazy {
             filterLists.mapNotNull { list ->
                 val file = File(filesDir, list.cacheFileName)
-                readCachedFilterList(list, file) ?: if (configuredUrl == Config.DEFAULT_ADBLOCK_LIST_URL) {
+                val text = readCachedFilterList(list, file) ?: if (configuredUrl == Config.DEFAULT_ADBLOCK_LIST_URL) {
                     try {
                         bundledList(list.cacheFileName)?.takeIf { isValidFilterList(list, it) }?.also {
                             AdblockCache.writeText(file, it)
@@ -318,8 +321,10 @@ class AdBlocker @JvmOverloads constructor(
                         null
                     }
                 } else null
+                text?.let { list to it }
             }
         }
+        val savedTexts by lazy { savedLists.map { it.second } }
         // Protect initial page requests while expired lists download in the background.
         // A refresh of an already active blocker does not allocate another cached native client.
         if (!hasCurrentClient(configuredUrl)) {
@@ -337,7 +342,7 @@ class AdBlocker @JvmOverloads constructor(
             if (saved.isNotEmpty()) {
                 require(saved.sumOf { it.length.toLong() } <= 16L * 1024 * 1024)
                 loadedClient = try {
-                    engine.compile(saved)
+                    engine.compile(saved, savedLists.map { it.first.isTrusted })
                 } catch (error: CancellationException) {
                     throw error
                 } catch (error: Exception) {

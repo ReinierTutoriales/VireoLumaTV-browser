@@ -61,6 +61,12 @@ interface ContentBlockerEngine {
 
     fun compile(filterText: String): ContentBlocker? = compile(listOf(filterText))
 
+    /**
+     * Like [compile]; [trustedLists] (same order) marks the lists that may use `trusted-*`
+     * scriptlets. Engines without that distinction ignore it.
+     */
+    fun compile(filterLists: List<String>, trustedLists: List<Boolean>): ContentBlocker? = compile(filterLists)
+
     /** Restores rules previously written by [ContentBlocker.serialize]; returns null if unusable. */
     fun deserialize(file: File): ContentBlocker?
 }

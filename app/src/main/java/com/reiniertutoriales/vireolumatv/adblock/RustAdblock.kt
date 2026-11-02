@@ -20,7 +20,8 @@ internal object RustAdblock {
         }
     }
 
-    @JvmStatic external fun nativeCompile(lists: Array<String>, resources: String): Long
+    /** [trusted] (same order as [lists]) marks the lists allowed to use `trusted-*` scriptlets. */
+    @JvmStatic external fun nativeCompile(lists: Array<String>, trusted: BooleanArray, resources: String): Long
     @JvmStatic external fun nativeDeserialize(data: ByteArray, resources: String): Long
     @JvmStatic external fun nativeSerialize(handle: Long): ByteArray
     @JvmStatic external fun nativeDestroy(handle: Long)

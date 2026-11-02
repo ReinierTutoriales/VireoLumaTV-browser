@@ -19,9 +19,12 @@ import androidx.core.net.toUri
 class RustAdBlockEngine(private val resources: () -> String) : ContentBlockerEngine {
     override val cacheFileName: String = "adblock_rust.dat"
 
-    override fun compile(filterLists: List<String>): ContentBlocker? {
+    override fun compile(filterLists: List<String>): ContentBlocker? = compile(filterLists, emptyList())
+
+    override fun compile(filterLists: List<String>, trustedLists: List<Boolean>): ContentBlocker? {
         if (!RustAdblock.isAvailable) return null
-        val handle = RustAdblock.nativeCompile(filterLists.toTypedArray(), resources())
+        val trusted = BooleanArray(filterLists.size) { trustedLists.getOrElse(it) { false } }
+        val handle = RustAdblock.nativeCompile(filterLists.toTypedArray(), trusted, resources())
         return if (handle == 0L) null else RustContentBlocker(handle)
     }
 

@@ -88,6 +88,9 @@ object AdblockResources {
         "trusted-create-html" to emptyList()
     )
 
+    /** Must match `TRUSTED` in native/adblock-jni/src/lib.rs. */
+    internal const val TRUSTED_PERMISSION = 1
+
     private const val GIF_1X1 = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
     private const val PNG_2X2 = "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAC0lEQVR42mNgQAcAABIAAeRVjecAAAAASUVORK5CYII="
     private const val PNG_3X2 = "iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAC0lEQVR42mNgwAUAABoAAS+Yl6YAAAAASUVORK5CYII="
@@ -151,7 +154,15 @@ object AdblockResources {
             val placeholders = (1..9).joinToString(",") { "\"{{$it}}\"" }
             val template = "/*@VIREO@*/[\"$name\",[$placeholders]]/*@END@*/"
             val names = (listOf(name) + aliases).flatMap { listOf(it, "$it.js") }.distinct()
-            list.put(resource("$name.js", names.filter { it != "$name.js" }, "template", base64(template.toByteArray())))
+            // trusted-* names need the permission that only uBlock Origin's own lists receive
+            // (native TRUSTED); their plain aliases keep working from every list.
+            val (trusted, plain) = names.partition { it.startsWith("trusted-") }
+            for ((group, permission) in listOf(plain to 0, trusted to TRUSTED_PERMISSION)) {
+                if (group.isEmpty()) continue
+                val primary = if ("$name.js" in group) "$name.js" else group.first { it.endsWith(".js") }
+                list.put(resource(primary, group.filter { it != primary }, "template", base64(template.toByteArray()))
+                    .put("permission", permission))
+            }
         }
         return list.toString()
     }

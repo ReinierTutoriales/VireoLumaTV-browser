@@ -6,10 +6,10 @@
 
 use adblock::lists::{FilterSet, ParseOptions};
 use adblock::request::Request;
-use adblock::resources::Resource;
+use adblock::resources::{PermissionMask, Resource};
 use adblock::Engine;
 use jni::errors::ThrowRuntimeExAndDefault;
-use jni::objects::{JByteArray, JClass, JObjectArray, JString};
+use jni::objects::{JBooleanArray, JByteArray, JClass, JObjectArray, JString};
 use std::collections::HashSet;
 use jni::sys::{jint, jlong};
 use jni::{Env, EnvUnowned};
@@ -22,6 +22,9 @@ const BLOCK: jint = 1;
 const BLOCK_REDIRECT: jint = 2;
 /// `nativeVerdict` answer for a request blocked without a `$redirect` resource.
 const VERDICT_BLOCK: &str = "!";
+/// Permission of `trusted-*` scriptlet resources (see AdblockResources) and of the lists that
+/// may use them. Other lists, including a custom subscription, cannot inject those scriptlets.
+const TRUSTED: PermissionMask = PermissionMask::from_bits(1);
 
 fn text(env: &Env, value: &JString) -> jni::errors::Result<String> {
     value.try_to_string(env)
@@ -79,6 +82,10 @@ fn without_unknown_redirects(list: String, known: &HashSet<&str>) -> String {
     out
 }
 
+fn options(trusted: bool) -> ParseOptions {
+    ParseOptions { permissions: if trusted { TRUSTED } else { PermissionMask::default() }, ..ParseOptions::default() }
+}
+
 fn request(url: &str, source: &str, kind: &str) -> Option<Request> {
     Request::new(url, source, kind, "GET").ok()
 }
@@ -88,6 +95,7 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
     mut unowned: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     lists: JObjectArray<'caller, JString<'caller>>,
+    trusted: JBooleanArray<'caller>,
     resources: JString<'caller>,
 ) -> jlong {
     unowned
@@ -97,12 +105,17 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
                 .iter()
                 .flat_map(|r| std::iter::once(r.name.as_str()).chain(r.aliases.iter().map(String::as_str)))
                 .collect();
+            let count = lists.len(env)?;
+            let mut flags = vec![false; count];
+            if trusted.len(env)? == count {
+                trusted.get_region(env, 0, &mut flags)?;
+            }
             let mut set = FilterSet::new(false);
             // One list at a time: no combined copy of several megabytes of filter text.
-            for index in 0..lists.len(env)? {
+            for (index, trusted) in flags.into_iter().enumerate() {
                 let list = lists.get_element(env, index)?;
                 let list = text(env, &list)?;
-                set.add_filter_list(without_unknown_redirects(list, &known), ParseOptions::default());
+                set.add_filter_list(without_unknown_redirects(list, &known), options(trusted));
             }
             let mut engine = Engine::new_with_filter_set(set);
             engine.use_resources(resources);
@@ -303,5 +316,28 @@ mod tests {
         let redirect = verdict(&engine, "https://cdn.test/ads/loader.js", page, "script");
         assert!(redirect.starts_with("data:application/javascript;base64,"), "{redirect}");
         assert_eq!(verdict(&engine, "not a url", page, "script"), "");
+    }
+
+    #[test]
+    fn trusted_scriptlets_only_run_from_trusted_lists_and_survive_the_cache() {
+        // Templates as AdblockResources builds them: base64 of the marker, trusted-* with permission 1.
+        let resources = r#"[{"name":"trusted-set.js","aliases":[],"kind":"template","content":"VFJVU1RFRA==","permission":1},
+            {"name":"set.js","aliases":[],"kind":"template","content":"UExBSU4=","permission":0}]"#;
+        let compile = |trusted: bool| {
+            let mut filters = FilterSet::new(false);
+            filters.add_filter_list("site.test##+js(trusted-set)\nsite.test##+js(set)".to_owned(), options(trusted));
+            let mut engine = Engine::new_with_filter_set(filters);
+            load_resources(&mut engine, resources);
+            engine
+        };
+        let script = |engine: &Engine| engine.url_cosmetic_resources("https://site.test/").injected_script;
+        let custom = script(&compile(false));
+        assert!(custom.contains("PLAIN") && !custom.contains("TRUSTED"), "{custom}");
+        let ubo = compile(true);
+        assert!(script(&ubo).contains("TRUSTED") && script(&ubo).contains("PLAIN"));
+        let mut restored = Engine::default();
+        restored.deserialize(&ubo.serialize()).unwrap();
+        load_resources(&mut restored, resources);
+        assert!(script(&restored).contains("TRUSTED"));
     }
 }
