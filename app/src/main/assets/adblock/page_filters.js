@@ -1509,14 +1509,28 @@
 
     /** Drops clipboard writes whose text matches (pasted-command lures); excludeMatches spares some. */
     scriptlets['prevent-clipboard-write'] = function (pattern) {
-        var proto = window.Clipboard && Clipboard.prototype;
-        if (!proto) return;
         var test = matcher(pattern || '');
         var exclude = namedArgs([].slice.call(arguments, 1)).excludeMatches;
         var spare = exclude ? matcher(exclude) : null;
-        wrapFunction(proto, 'writeText', function (fn, self, args) {
-            var text = String(args[0]);
-            if (test(text) && !(spare && spare(text))) return Promise.resolve();
+        function blocked(text) {
+            if (typeof text !== 'string') return false;
+            text = text.trim();
+            return test(text) && !(spare && spare(text));
+        }
+        // The async Clipboard API and the legacy copy/cut command, which copies the selection.
+        var proto = window.Clipboard && Clipboard.prototype;
+        if (proto) {
+            wrapFunction(proto, 'writeText', function (fn, self, args) {
+                if (blocked(String(args[0]))) return Promise.resolve();
+                return Reflect_.apply(fn, self, args);
+            });
+        }
+        wrapFunction(document, 'execCommand', function (fn, self, args) {
+            var command = String(args[0]).toLowerCase();
+            if (command === 'copy' || command === 'cut') {
+                var selection = typeof document.getSelection === 'function' ? document.getSelection() : null;
+                if (selection && blocked(String(selection))) return true;
+            }
             return Reflect_.apply(fn, self, args);
         });
     };

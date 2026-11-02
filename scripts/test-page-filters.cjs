@@ -386,6 +386,9 @@ function page(filters, host = 'stream.example', setup = '') {
         function Clipboard() {}
         Clipboard.prototype.writeText = function (text) { copied.push(text); return Promise.resolve(); };
         window.Clipboard = Clipboard;
+        var commands = [], selected = '';
+        document.execCommand = function execCommand(command) { commands.push(command); return true; };
+        document.getSelection = function () { return { toString() { return selected; } }; };
         var clickHandler = null;
         document.addEventListener = function (type, fn) { if (type === 'click') clickHandler = fn; };
     `);
@@ -410,7 +413,15 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.equal(clicked.prevented, undefined);
         new Clipboard().writeText('powershell -w hidden');
         new Clipboard().writeText('hello');
+        new Clipboard().writeText('  powershell -enc AAA  ');
         assert.deepEqual(copied, ['hello']);
+        // The legacy copy command copies the selection: a matching lure is dropped, others copy.
+        selected = '   powershell -w hidden -c iwr  ';
+        assert.equal(document.execCommand('copy'), true);
+        selected = 'plain text';
+        document.execCommand('copy');
+        document.execCommand('bold');
+        assert.deepEqual(commands, ['copy', 'bold']);
         var form = {};
         var button = { parentElement: form, matches(s) { return s === 'button[link]'; }, closest() { return form; },
             getAttribute() { return ' https://multiup.example/file '; } };
