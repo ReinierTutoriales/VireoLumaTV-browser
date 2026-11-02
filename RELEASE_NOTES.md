@@ -1,23 +1,21 @@
-# VireoLumaTV 2.0.14
+# VireoLumaTV 2.0.15
 
-**Android versionName:** `2.0.14`  
-**Android versionCode:** `108`
+**Android versionName:** `2.0.15`  
+**Android versionCode:** `109`
 
-## Novedades desde 2.0.13
+## Cambios desde 2.0.14
 
-- **Idiomas:** Inicio y textos que aparecen fuera de las pantallas de ajustes respetan el idioma seleccionado en la aplicación (#157).
-- **Rendimiento:** instrumentación de fotogramas lentos y preparación de perfiles de arranque para medir y mejorar la fluidez (#158). La generación del perfil de referencia requiere una ejecución validada por separado.
-- **Vídeo:** selección de calidad máxima de acuerdo con las capacidades de decodificación de hardware que comunica el dispositivo (#159). La resolución efectiva también depende del sitio, el códec, WebView y el reproductor.
+- Publicación desde el historial independiente actual de `master`, sin alterar las funciones de navegación, bloqueo, idiomas ni vídeo.
+- Actualización de dependencias y mantenimiento del motor de almacenamiento existentes en `master`, incluido Room 3.0.3.
+- Conserva el nombre de la base de datos `main.db` y el esquema 20. La compatibilidad de actualización desde 2.0.14 debe verificarse en un dispositivo real.
 
-## Validación
+## Validación y precauciones
 
-Las pruebas automatizadas de los cambios individuales finalizaron correctamente. La integración y los APK de esta versión requieren CI, firma y comprobación de hashes. No se afirma que se hayan medido mejoras de rendimiento en un dispositivo físico sin una medición reproducible.
-
-## Limitaciones conocidas
-
-- Pendiente de validar en hardware real el comportamiento de reproducción, el rendimiento y la actualización conservando datos de la versión anterior.
-- El perfil de referencia debe generarse y verificarse antes de atribuirle mejoras de arranque.
+- Exigir CI verde, compilación de las tres arquitecturas, firma de APK, comprobación de checksums y procedencia del código antes de publicar.
+- **Pendiente:** instalar la APK 2.0.15 firmada sobre la 2.0.14 con datos reales y verificar favoritos, historial, pestañas y ajustes.
+- No desinstalar la versión anterior para probar la migración: desinstalar elimina los datos.
+- La publicación de esta versión no elimina por sí sola las referencias históricas de GitHub ni modifica obligaciones de licencias de terceros.
 
 ## Distribución
 
-APKs firmados para `arm64-v8a`, `armeabi-v7a` y `x86_64`, con certificado y SHA-256 verificados.
+APKs firmados para `arm64-v8a`, `armeabi-v7a` y `x86_64`, con verificación de firma y SHA-256.
