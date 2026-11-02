@@ -254,9 +254,42 @@ function page(filters, host = 'stream.example', setup = '') {
     batched.flush();
     vm.runInContext(`assert.equal(lookups.length, 2); assert.equal(lookups[1].classes, 'new-ad');`, batched);
 
+    // Frames inserted by the named method get this window's wrapped functions (fetch, and
+    // XMLHttpRequest for ".prototype"); cross-origin frames and other nodes are left alone.
+    let bypass = page({ script: call('trusted-prevent-dom-bypass', 'Node.prototype.appendChild', 'fetch') +
+        call('trusted-prevent-dom-bypass', 'Node.prototype.appendChild', 'XMLHttpRequest.prototype') +
+        call('no-fetch-if', 'ads') }, 'stream.example', `
+        function Node() {}
+        Node.prototype.appendChild = function appendChild(node) { return node; };
+        window.XMLHttpRequest = function XMLHttpRequest() {};
+        var fetchText = Function.prototype.toString.call(window.fetch);
+        var pristine = function () { return Promise.resolve('pristine'); };
+        var frame = { nodeType: 1, nodeName: 'IFRAME', contentWindow: { fetch: pristine, XMLHttpRequest: function () {} } };
+        var nested = { nodeType: 1, nodeName: 'IFRAME', contentWindow: { fetch: pristine } };
+        var box = { nodeType: 1, nodeName: 'DIV', querySelectorAll() { return [nested]; } };
+        var foreign = { nodeType: 1, nodeName: 'IFRAME', get contentWindow() { throw new Error('cross-origin'); } };
+    `);
+    vm.runInContext(`
+        var parent = new Node();
+        assert.equal(parent.appendChild(frame), frame);
+        assert.equal(frame.contentWindow.fetch, window.fetch);
+        assert.notEqual(window.fetch, pristine);
+        assert.equal(frame.contentWindow.XMLHttpRequest, window.XMLHttpRequest);
+        parent.appendChild(box);
+        assert.equal(nested.contentWindow.fetch, window.fetch);
+        assert.equal(parent.appendChild(foreign), foreign);
+        // Wrapped functions print as the original, and so does the masked toString itself.
+        assert.equal(Function.prototype.toString.call(window.fetch), fetchText);
+        assert.equal(Function.prototype.toString.call(Node.prototype.appendChild), 'function appendChild(node) { return node; }');
+        assert.equal(Function.prototype.toString.call(Function.prototype.toString), 'function toString() { [native code] }');
+        // Browser markers are readable by the browser but not listed among window keys.
+        assert.equal(window.__vireoPageFilters, true);
+        assert.deepEqual(Object.keys(window).filter(function (key) { return key.indexOf('__vireo') === 0; }), []);
+    `, bypass);
+
     // Single injection per frame.
     vm.runInContext(source, c);
     vm.runInContext(`assert.equal(document.adoptedStyleSheets.length, 1);`, c);
 
-    console.log('Page filters passed: trusted values/storage/arguments, constructed stylesheet, procedural/action filters, media report, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
+    console.log('Page filters passed: trusted values/storage/arguments, constructed stylesheet, procedural/action filters, media report, DOM bypass, toString masking, hidden markers, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
 })().catch((error) => { console.error(error); process.exit(1); });

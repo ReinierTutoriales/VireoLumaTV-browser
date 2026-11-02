@@ -1080,6 +1080,44 @@
         });
     };
 
+    /**
+     * Detectors take pristine functions from a new same-origin frame (about:blank has no
+     * document-start script) to escape the scriptlets. After [methodPath] inserts nodes, every
+     * inserted frame gets this window's [property] (a dotted path such as "JSON.parse").
+     */
+    scriptlets['trusted-prevent-dom-bypass'] = function (methodPath, property) {
+        var target = methodPath && resolveMethod(methodPath);
+        var parts = normalizeChain(property).split('.');
+        if (!target || !parts[0]) return;
+        // A constructor's prototype is read-only: "XMLHttpRequest.prototype" shares the constructor.
+        if (parts.length > 1 && parts[parts.length - 1] === 'prototype') parts.pop();
+        var leaf = parts.pop();
+        function share(frame) {
+            try {
+                var child = frame.contentWindow, from = window, to = child;
+                if (!child || child === window) return;
+                for (var i = 0; i < parts.length; i++) {
+                    from = from[parts[i]]; to = to[parts[i]];
+                    if (!isObjectLike(from) || !isObjectLike(to)) return;
+                }
+                if (leaf in from && to[leaf] !== from[leaf]) to[leaf] = from[leaf];
+            } catch (_) {} // Cross-origin frame: not reachable, and not a bypass of this page.
+        }
+        function visit(node) {
+            if (!node || typeof node !== 'object' || typeof node.nodeType !== 'number') return;
+            if (node.nodeName === 'IFRAME') share(node);
+            if (typeof node.querySelectorAll === 'function') {
+                var frames = node.querySelectorAll('iframe');
+                for (var i = 0; i < frames.length; i++) share(frames[i]);
+            }
+        }
+        wrapFunction(target.owner, target.name, function (fn, self, args) {
+            var result = Reflect_.apply(fn, self, args);
+            for (var i = 0; i < args.length; i++) visit(args[i]);
+            return result;
+        });
+    };
+
     /** Computed-style answers for elements that pages probe to detect hidden ads. */
     scriptlets['spoof-css'] = function (selector) {
         if (!selector || typeof window.getComputedStyle !== 'function' || !Proxy_) return;
