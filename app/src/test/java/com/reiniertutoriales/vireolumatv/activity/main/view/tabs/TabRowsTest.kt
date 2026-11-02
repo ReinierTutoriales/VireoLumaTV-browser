@@ -28,6 +28,9 @@ class TabRowsTest {
         try {
             val row = holder.itemView.apply { layoutDirection = android.view.View.LAYOUT_DIRECTION_RTL }
             owner.get().setContentView(row)
+            row.measure(android.view.View.MeasureSpec.makeMeasureSpec(800, android.view.View.MeasureSpec.EXACTLY),
+                android.view.View.MeasureSpec.makeMeasureSpec(100, android.view.View.MeasureSpec.EXACTLY))
+            row.layout(0, 0, 800, 100)
             val close = row.findViewById<android.view.View>(R.id.close_tab_button)
             assertTrue(row.requestFocus())
             row.dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_LEFT))
