@@ -1,30 +1,23 @@
-# VireoLumaTV 2.0.13
+# VireoLumaTV 2.0.14
 
-**Android versionName:** `2.0.13`  
-**Android versionCode:** `107`
+**Android versionName:** `2.0.14`  
+**Android versionCode:** `108`
 
-## Cambios desde 2.0.12
+## Novedades desde 2.0.13
 
-- **Inicio y favoritos:** Inicio muestra los favoritos guardados y Favoritos vuelve al menú (#142).
-- **Interfaz:** superficies y paneles renovados; Ajustes agrupados en Navegación, Protección, Vídeo y pantalla, Mando y puntero, y Avanzado (#143).
-- **Idioma de la app:** nuevo ajuste para elegir el idioma; en Android 13+ también desde los ajustes del sistema. Textos revisados en los 12 idiomas y mensajes de error concretos en lugar de «Error» (#152).
-- **Pestañas:** en hebreo y persa, «Mover a la izquierda/derecha» sigue la dirección que se ve (#152).
-- **Ventanas emergentes:** cada nivel describe lo que bloquea: avisos de la página y ventanas abiertas sin pulsar (#152).
-- **Descargas:** el servicio pasa a primer plano antes de empezar; si Android lo impide, la descarga se rechaza sin dejar archivos. En Android 15+ avisa cuando el sistema detiene las descargas por límite de tiempo. Icono propio en la notificación (#149).
-- **Instalación de APK descargados:** mediante sesión de PackageInstaller; avisa si la instalación falla (#153).
-- **Modo privado:** al salir, el almacén de cookies se guarda solo después de confirmar su borrado (#153).
-- **Base de datos:** esquema propio (versión 20). Favoritos, pestañas, historial, descargas y ajustes por sitio de 2.0.12 se migran al actualizar (#146).
-- **Código:** sustitución del código, textos y referencias heredados; medición reproducible en `scripts/measure-inherited-lines.py` (#144, #150, #151, #154, #155).
+- **Idiomas:** Inicio y textos que aparecen fuera de las pantallas de ajustes respetan el idioma seleccionado en la aplicación (#157).
+- **Rendimiento:** instrumentación de fotogramas lentos y preparación de perfiles de arranque para medir y mejorar la fluidez (#158). La generación del perfil de referencia requiere una ejecución validada por separado.
+- **Vídeo:** selección de calidad máxima de acuerdo con las capacidades de decodificación de hardware que comunica el dispositivo (#159). La resolución efectiva también depende del sitio, el códec, WebView y el reproductor.
 
 ## Validación
 
-La CI comprueba compilación, pruebas automatizadas y Android Lint. La reproducción, la navegación con mando y la recuperación de sesión deben comprobarse también en hardware real. Los APKs publicados requieren firma de release y verificación de SHA-256.
+Las pruebas automatizadas de los cambios individuales finalizaron correctamente. La integración y los APK de esta versión requieren CI, firma y comprobación de hashes. No se afirma que se hayan medido mejoras de rendimiento en un dispositivo físico sin una medición reproducible.
 
 ## Limitaciones conocidas
 
-- Pendiente de comprobación en Android TV físico: actualización desde 2.0.12 con datos (migración de la base de datos), controles de vídeo, recuperación de sesión y persistencia tras reinicio.
-- El comportamiento de páginas y vídeos también depende del proveedor WebView y del servidor.
+- Pendiente de validar en hardware real el comportamiento de reproducción, el rendimiento y la actualización conservando datos de la versión anterior.
+- El perfil de referencia debe generarse y verificarse antes de atribuirle mejoras de arranque.
 
 ## Distribución
 
-APKs firmados para `arm64-v8a`, `armeabi-v7a` y `x86_64`, con verificación de certificado y hashes.
+APKs firmados para `arm64-v8a`, `armeabi-v7a` y `x86_64`, con certificado y SHA-256 verificados.
