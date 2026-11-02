@@ -851,7 +851,7 @@
     }
 
     function own(node, key) {
-        return node[key] !== undefined || Object.prototype.hasOwnProperty.call(node, key);
+        return Object.prototype.hasOwnProperty.call(node, key);
     }
 
     /** Every {node, key} below [value] (any depth); each object is visited once. */
