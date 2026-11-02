@@ -167,7 +167,7 @@ class GeneralPage @JvmOverloads constructor(
             config.allowAutoplayMedia = on
         }
         // Read by the document-start script from the next page load. Automatic follows what the
-        // hardware decoders handle; no limit keeps only the codecs the TV has no decoder for out.
+        // hardware decoders handle; no limit leaves codec and quality decisions to WebView.
         val heights = intArrayOf(0, MediaPolicy.NO_LIMIT, 1080, 720, 480)
         rows.choice(R.string.settings_video_quality, R.id.spVideoMaxQuality, resources.getStringArray(R.array.settings_video_qualities),
             heights.indexOf(config.videoMaxHeight).coerceAtLeast(0)) { config.videoMaxHeight = heights[it] }
