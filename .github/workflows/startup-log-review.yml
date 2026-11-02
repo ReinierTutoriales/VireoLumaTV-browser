@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: f8939981a5dcc0114dafc1749f1b53ae96f68184
       - uses: actions/download-artifact@v8.0.2
         with:
           name: release-startup-api-34
@@ -24,6 +27,22 @@ jobs:
           run-id: 41521793805
           github-token: ${{ github.token }}
           path: apks
+      - name: Focused APK audit tests and old-package regression
+        run: |
+          python scripts/test-apk-provenance.py
+          aapt2=$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -n 1)
+          apk=$(find apks -name '*x86_64*.apk' -type f)
+          python - "$aapt2" "$apk" <<'PY'
+          import importlib.util, sys
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location('audit', 'scripts/audit-apk-provenance.py')
+          audit = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(audit)
+          report = audit.audit(Path(sys.argv[2]), Path(sys.argv[1]), Path.cwd())
+          assert 'Automatic downloadable emoji startup must be disabled' in report['checks']['issues']
+          assert report['checks']['profile_installer_initializer_present']
+          print('Old minified APK rejected by the new font-startup gate; ProfileInstaller retained.')
+          PY
       - name: Inspect startup initializers and provider traffic
         run: |
           aapt2=$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -n 1)
