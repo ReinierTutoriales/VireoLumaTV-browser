@@ -144,7 +144,10 @@ class AdblockUpdateTest {
             assertFalse(model.listLoading.value)
             assertEquals(AdBlocker.UpdateResult.CACHED, model.updateResult.value)
             assertEquals("||old-cache.test^", savedText.readText())
-            assertEquals("The replacement cache uses the current format", 8, cache.readBytes()[4].toInt())
+            // Current format: the bridge's "VIRO1" container (u64 length) around an adblock 0.13 v8 engine.
+            val written = cache.readBytes()
+            assertEquals("The replacement cache uses the current container", "VIRO1", String(written, 0, 5, Charsets.US_ASCII))
+            assertEquals("The replacement cache uses the current engine format", 8, written[5 + 8 + 4].toInt())
             val restored = requireNotNull(native.deserialize(cache))
             try {
                 assertEquals(ContentBlocker.BLOCK, restored.check(Uri.parse("https://old-cache.test/banner.js"),
