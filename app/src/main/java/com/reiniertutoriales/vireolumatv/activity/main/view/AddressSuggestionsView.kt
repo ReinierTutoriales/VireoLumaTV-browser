@@ -28,7 +28,8 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
     LinearLayout(context, attrs) {
 
     var onPick: ((AddressSuggestion) -> Unit)? = null
-    internal val pointerController by lazy { PointerController(context, this) }
+    private val pointer = lazy { PointerController(context, this).also { it.resize(width, height) } }
+    internal val pointerController by pointer
     private var pointerMode = false
     private val remote = RemoteInput(
         target = object : RemoteInput.Target {
@@ -52,16 +53,22 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
         val keepFocus = hasFocus()
         val focusedIndex = (0 until childCount).firstOrNull { getChildAt(it).hasFocus() } ?: 0
         val focusedUrl = shown.getOrNull(focusedIndex)?.url
+        val previous = shown
         shown = suggestions
         while (childCount > suggestions.size) removeViewAt(childCount - 1)
         val inflater = LayoutInflater.from(context)
         suggestions.forEachIndexed { index, suggestion ->
+            if (getChildAt(index) != null && previous.getOrNull(index) == suggestion) return@forEachIndexed
             val row = getChildAt(index) ?: inflater.inflate(R.layout.view_address_suggestion, this, false).also { addView(it) }
-            row.findViewById<ImageView>(R.id.ivKind).setImageResource(
-                if (suggestion.bookmark) R.drawable.ic_bookmark else R.drawable.ic_history)
-            row.findViewById<TextView>(R.id.title_text).text = suggestion.title
+            if (previous.getOrNull(index)?.bookmark != suggestion.bookmark) {
+                row.findViewById<ImageView>(R.id.ivKind).setImageResource(
+                    if (suggestion.bookmark) R.drawable.ic_bookmark else R.drawable.ic_history)
+            }
+            row.findViewById<TextView>(R.id.title_text).apply {
+                if (text.toString() != suggestion.title) text = suggestion.title
+            }
             row.findViewById<TextView>(R.id.address_text).apply {
-                text = suggestion.url
+                if (text.toString() != suggestion.url) text = suggestion.url
                 isVisible = suggestion.url != suggestion.title
             }
             row.setOnClickListener { onPick?.invoke(suggestion) }
@@ -102,13 +109,13 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
     private fun stopPointer() {
         pointerMode = false
         remote.resetState()
-        if (!isInEditMode) pointerController.resetInput()
+        if (!isInEditMode && pointer.isInitialized()) pointerController.resetInput()
         invalidate()
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        if (!isInEditMode) pointerController.resize(w, h)
+        if (!isInEditMode && pointer.isInitialized()) pointerController.resize(w, h)
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {

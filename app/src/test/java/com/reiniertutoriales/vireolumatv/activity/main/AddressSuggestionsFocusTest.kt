@@ -10,6 +10,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
@@ -29,6 +30,30 @@ import org.robolectric.shadows.ShadowLooper
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class AddressSuggestionsFocusTest {
+    @Test fun updatingOneSuggestionDoesNotRewriteTheOtherTexts() {
+        val controller = Robolectric.buildActivity(AppCompatActivity::class.java)
+        controller.get().setTheme(R.style.AppTheme)
+        controller.setup()
+        try {
+            val suggestions = AddressSuggestionsView(controller.get())
+            controller.get().setContentView(suggestions)
+            val first = AddressSuggestion("First", "https://first.test", false)
+            val second = AddressSuggestion("Second", "https://second.test", false)
+            suggestions.show(listOf(first, second))
+            val writes = IntArray(4)
+            for (index in 0..1) {
+                suggestions.row(index)!!.findViewById<android.widget.TextView>(R.id.title_text)
+                    .doAfterTextChanged { writes[index * 2]++ }
+                suggestions.row(index)!!.findViewById<android.widget.TextView>(R.id.address_text)
+                    .doAfterTextChanged { writes[index * 2 + 1]++ }
+            }
+            suggestions.show(listOf(first, second.copy(title = "Updated")))
+            assertEquals("Only the changed title needs a text update", listOf(0, 0, 1, 0), writes.toList())
+            suggestions.show(listOf(first, second.copy(title = "Updated")))
+            assertEquals(listOf(0, 0, 1, 0), writes.toList())
+        } finally { controller.pause().stop().destroy() }
+    }
+
     @Test fun rtlCommandsFollowTheirVisualDirectionAndSkipDisabledButtons() {
         val controller = Robolectric.buildActivity(AppCompatActivity::class.java)
         controller.get().setTheme(R.style.AppTheme)
