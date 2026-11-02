@@ -66,16 +66,16 @@ impl Blocker {
         Some(Blocker { engine, scoped: Scoped::build(source, options, parse_resources(resources)) })
     }
 
-    /// Main answer first; a hostname-scoped rule only blocks what the main lists did not except.
+    /// Main blocks win; exceptions lift scoped rules unless a matching rule is important.
     fn check(&self, request: &Request, source: &str) -> BlockerResult {
         let result = self.engine.check_network_request(request);
-        if result.should_block() || result.exception.is_some() {
+        if result.should_block() {
             return result;
         }
         let Some(scoped) = self.scoped.as_ref().and_then(|s| s.check(request, hostname(source))) else { return result };
         if !scoped.important {
-            let exceptions = self.engine.check_network_request_subset(request, true, false);
-            if exceptions.exception.is_some() {
+            if result.exception.is_some()
+                || self.engine.check_network_request_subset(request, true, false).exception.is_some() {
                 return result;
             }
         }

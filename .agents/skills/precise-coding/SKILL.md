@@ -27,3 +27,5 @@ Every line must be traceable to existing code or a clearly labeled minimal assum
 - Verify current versions in primary release documentation and compatibility
   requirements. Resolve conflicting dates or channels before calling a version
   latest; never infer an installed engine's capabilities from a spoofed user agent.
+- When combining rule engines, test precedence across their boundaries: a first
+  ordinary match or exception must not hide a later higher-priority rule.
