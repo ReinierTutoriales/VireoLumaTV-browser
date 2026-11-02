@@ -255,11 +255,16 @@ de sus filas y se reinicia al cerrar o perder foco. No se envían consultas de
 autocompletado a proveedores externos.
 
 Los comandos multimedia priorizan el elemento fullscreen, después vídeos
-visibles y su reproducción/tamaño, con audio como alternativa. El seek respeta
+que intersectan el viewport y su reproducción/área visible, con audio como
+alternativa aunque no tenga caja visual. El seek respeta
 los rangos DVR; en vídeo de duración finita con metadatos permite currentTime
 aunque el proveedor aún no informe rangos. No fuerza seek de un directo sin rango.
 VP8, VP9 y AV1 se comprueban por separado; no se deshabilita VP8 por faltar VP9.
 La enumeración de decodificadores se comparte una vez por proceso.
+Las consultas permitidas de `mediaCapabilities.decodingInfo` conservan la promesa
+y el resultado originales de WebView, incluidos `smooth`, `powerEfficient` y el
+acceso DRM. La presencia de un decodificador no prueba fluidez ni eficiencia;
+no sustituir esas respuestas por valores positivos ni añadir otra continuación.
 YouTube conserva el reproductor de su web móvil, con las mismas rutas de filtros,
 scriptlets y bloqueo de ventanas. Se descartan reproductores que desvíen peticiones
 fuera del bloqueador. No se añade Media3 ni un reproductor YouTube incrustado.
