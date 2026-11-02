@@ -1,9 +1,9 @@
 package com.reiniertutoriales.vireolumatv.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.Index
+import androidx.room3.PrimaryKey
 
 /** One bookmark, the "bookmarks" table: a name and a web address the user saved. */
 @Entity(tableName = "bookmarks", indices = [Index(value = ["address"], name = "bookmarks_address_idx")])

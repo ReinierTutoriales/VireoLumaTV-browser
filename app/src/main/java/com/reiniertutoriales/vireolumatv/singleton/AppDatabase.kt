@@ -1,8 +1,9 @@
 package com.reiniertutoriales.vireolumatv.singleton
 
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
+import androidx.room3.RoomDatabase
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.model.Favorite
@@ -38,7 +39,7 @@ abstract class AppDatabase : RoomDatabase() {
         val db: AppDatabase by lazy {
             Room.databaseBuilder(VireoLumaTVApp.instance, AppDatabase::class.java, FILE_NAME)
                 .addMigrations(SchemaMigrations.FROM_19_TO_20)
-                .build()
+                .setDriver(AndroidSQLiteDriver()).build()
         }
     }
 }

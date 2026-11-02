@@ -66,7 +66,7 @@ class VireoLumaTVApp : Application() {
 
     /** Site icons are stored with the site's settings row. */
     private object SiteFavicons : Favicons.Store {
-        override fun find(host: String): SiteSettings? = AppDatabase.db.siteSettingsDao().findByHostName(host)
+        override suspend fun find(host: String): SiteSettings? = AppDatabase.db.siteSettingsDao().findByHostName(host)
         override suspend fun update(row: SiteSettings) = AppDatabase.db.siteSettingsDao().storeFavicon(row.hostName, row.favicon)
         override suspend fun insert(row: SiteSettings) = AppDatabase.db.siteSettingsDao().storeFavicon(row.hostName, row.favicon)
     }

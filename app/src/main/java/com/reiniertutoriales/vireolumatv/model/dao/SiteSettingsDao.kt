@@ -1,10 +1,10 @@
 package com.reiniertutoriales.vireolumatv.model.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room3.Dao
+import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
+import androidx.room3.Query
+import androidx.room3.Transaction
 import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import java.util.concurrent.atomic.AtomicLong
 
@@ -19,7 +19,7 @@ abstract class SiteSettingsDao {
     fun generation(): Long = writes.get()
 
     @Query("SELECT * FROM site_settings WHERE host = :name LIMIT 1")
-    abstract fun findByHostName(name: String): SiteSettings?
+    abstract suspend fun findByHostName(name: String): SiteSettings?
 
     @Query("SELECT * FROM site_settings WHERE host = :name LIMIT 1")
     protected abstract suspend fun load(name: String): SiteSettings

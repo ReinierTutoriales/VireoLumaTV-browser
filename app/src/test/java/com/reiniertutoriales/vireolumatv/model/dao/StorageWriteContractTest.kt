@@ -1,7 +1,8 @@
 package com.reiniertutoriales.vireolumatv.model.dao
 
 import android.app.Application
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.model.Favorite
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
@@ -18,7 +19,7 @@ import org.robolectric.annotation.Config
 @Config(application = Application::class, sdk = [28])
 class StorageWriteContractTest {
     private fun database() = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java)
-        .allowMainThreadQueries().build()
+        .allowMainThreadQueries().setDriver(AndroidSQLiteDriver()).build()
 
     @Test fun independentHostFieldsPreserveEachOtherAndTheRowIdentity() = runBlocking {
         val db = database()

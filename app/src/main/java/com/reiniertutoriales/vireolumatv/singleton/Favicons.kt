@@ -36,7 +36,7 @@ import kotlin.math.abs
 object Favicons {
     /** Where a host's icon file is recorded (the hosts table). */
     interface Store {
-        fun find(host: String): SiteSettings? = null
+        suspend fun find(host: String): SiteSettings? = null
         suspend fun update(row: SiteSettings) {}
         suspend fun insert(row: SiteSettings) {}
     }

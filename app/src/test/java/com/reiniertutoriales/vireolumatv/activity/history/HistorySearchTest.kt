@@ -1,7 +1,8 @@
 package com.reiniertutoriales.vireolumatv.activity.history
 
 import android.app.Application
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.runBlocking
@@ -16,7 +17,7 @@ import org.robolectric.annotation.Config
 @Config(application = Application::class, sdk = [28])
 class HistorySearchTest {
     @Test fun searchFindsSubstringsAndMatchesWildcardCharactersLiterally() = runBlocking {
-        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java).build()
+        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
         try {
             val dao = db.visitDao()
             dao.insert(HistoryItem().apply { time = 1; title = "YouTube - cat videos"; url = "https://www.youtube.com/watch?v=1" })

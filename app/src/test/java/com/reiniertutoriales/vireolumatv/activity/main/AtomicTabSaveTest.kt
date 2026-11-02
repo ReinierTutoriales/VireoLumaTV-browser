@@ -1,7 +1,9 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
+import androidx.room3.support.getSupportWrapper
 import android.app.Application
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.runBlocking
@@ -17,7 +19,7 @@ import org.robolectric.annotation.Config
 class AtomicTabSaveTest {
     @Test fun switchingSelectionKeepsExactlyOneSelectedTabPerModeAndUpdatesExistingRow() = runBlocking {
         val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java)
-            .allowMainThreadQueries().build()
+            .allowMainThreadQueries().setDriver(AndroidSQLiteDriver()).build()
         try {
             val dao = db.tabDao()
             dao.save(BrowserTab(url = "https://one.test", selected = true))
@@ -46,11 +48,11 @@ class AtomicTabSaveTest {
 
     @Test fun failedInsertRollsBackUnselection() = runBlocking {
         val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java)
-            .allowMainThreadQueries().build()
+            .allowMainThreadQueries().setDriver(AndroidSQLiteDriver()).build()
         try {
             val dao = db.tabDao()
             val original = dao.save(BrowserTab(url = "https://original.test", selected = true))
-            db.openHelper.writableDatabase.execSQL("CREATE TRIGGER reject_insert BEFORE INSERT ON open_tabs BEGIN SELECT RAISE(ABORT, 'test failure'); END")
+            db.getSupportWrapper().execSQL("CREATE TRIGGER reject_insert BEFORE INSERT ON open_tabs BEGIN SELECT RAISE(ABORT, 'test failure'); END")
             var failed = false
             try { dao.save(BrowserTab(url = "https://failed.test", selected = true)) }
             catch (_: Exception) { failed = true }

@@ -6,10 +6,10 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.AtomicFile
 import android.util.Log
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.Ignore
+import androidx.room3.PrimaryKey
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 import com.reiniertutoriales.vireolumatv.utils.md5Name

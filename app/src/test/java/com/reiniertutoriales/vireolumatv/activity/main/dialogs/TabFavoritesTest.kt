@@ -1,7 +1,8 @@
 package com.reiniertutoriales.vireolumatv.activity.main.dialogs
 
 import android.app.Application
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.model.Favorite
@@ -20,7 +21,7 @@ import org.robolectric.annotation.Config as RobolectricConfig
 class TabFavoritesTest {
     private fun <T> withDatabase(test: suspend (AppDatabase) -> T) = runBlocking {
         val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java)
-            .allowMainThreadQueries().build()
+            .allowMainThreadQueries().setDriver(AndroidSQLiteDriver()).build()
         try { test(db) } finally { db.close() }
     }
 

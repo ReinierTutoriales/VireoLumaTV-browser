@@ -37,7 +37,7 @@ class HomePageNetworkTest {
         Favicons.clear()
         val previous = Favicons.store
         Favicons.store = object : Favicons.Store {
-            override fun find(host: String): SiteSettings? =
+            override suspend fun find(host: String): SiteSettings? =
                 throw AssertionError("The interceptor must never start a favicon lookup")
         }
         val view = WebView(app)

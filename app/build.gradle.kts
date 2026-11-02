@@ -170,12 +170,13 @@ dependencies {
     implementation(libs.androidx.metrics.performance)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.sqlite.framework)
     ksp(libs.androidx.room.compiler)
     baselineProfile(project(":baselineprofile"))
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.room.sqlite.wrapper)
 }
 
 val rustCrate = rootProject.layout.projectDirectory.dir("native/adblock-jni")

@@ -1,7 +1,8 @@
 package com.reiniertutoriales.vireolumatv.singleton
 
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room3.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 
 /**
  * Schema 20 is the browser's own: new tables with their own names replace the five tables every
@@ -12,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 internal object SchemaMigrations {
     val FROM_19_TO_20 = object : Migration(19, 20) {
-        override fun migrate(db: SupportSQLiteDatabase) {
+        override suspend fun migrate(db: SQLiteConnection) {
             create(db)
             db.execSQL("""INSERT INTO open_tabs (id, address, title, is_shown, preview_key, icon_key, is_private,
                 sort_order, state_file, blocks_ads, zoom)
@@ -32,7 +33,7 @@ internal object SchemaMigrations {
     }
 
     /** Schema 20 exactly as exported in app/schemas/.../20.json. */
-    private fun create(db: SupportSQLiteDatabase) {
+    private fun create(db: SQLiteConnection) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `download_entries` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
             "`started_at` INTEGER NOT NULL, `file_name` TEXT NOT NULL, `location` TEXT NOT NULL, `address` TEXT NOT NULL, " +
             "`total_bytes` INTEGER NOT NULL, `received_bytes` INTEGER NOT NULL)")

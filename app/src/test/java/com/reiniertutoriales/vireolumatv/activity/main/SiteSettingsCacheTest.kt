@@ -24,12 +24,12 @@ class SiteSettingsCacheTest {
         val rows = HashMap<String, SiteSettings>()
         var reads = 0
         var gate: CompletableDeferred<Unit>? = null
-        override fun findByHostName(name: String): SiteSettings? {
+        override suspend fun findByHostName(name: String): SiteSettings? {
             reads++
             // A query sees the table as it is when it runs; a slow one only answers late.
             val answer = rows[name]?.let { copy(it) }
             val hold = gate
-            if (hold != null) { gate = null; runBlocking { hold.await() } }
+            if (hold != null) { gate = null; hold.await() }
             return answer
         }
         override suspend fun load(name: String): SiteSettings = copy(rows.getValue(name))

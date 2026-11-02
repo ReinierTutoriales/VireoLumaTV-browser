@@ -36,7 +36,7 @@ class IncognitoFaviconTest {
         var writes = 0
         val previousDelegate = Favicons.store
         Favicons.store = object : Favicons.Store {
-            override fun find(host: String): SiteSettings? { reads++; return null }
+            override suspend fun find(host: String): SiteSettings? { reads++; return null }
             override suspend fun insert(row: SiteSettings) { writes++; if (recordFails) error("disk full") }
             override suspend fun update(row: SiteSettings) { writes++ }
         }

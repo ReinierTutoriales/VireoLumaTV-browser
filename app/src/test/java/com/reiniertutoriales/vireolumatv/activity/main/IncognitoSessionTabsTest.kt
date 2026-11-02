@@ -3,7 +3,8 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.app.Application
 import android.graphics.Bitmap
 import android.os.Bundle
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
@@ -51,7 +52,7 @@ class IncognitoSessionTabsTest {
     @Test fun clearsOldPrivateTabsProtectsSharedFilesAndPreservesCurrentSession() = runBlocking {
         val app = RuntimeEnvironment.getApplication()
         AppContext.init(app, Config(app.getSharedPreferences("tabs-test", 0)))
-        val db = Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java).allowMainThreadQueries().build()
+        val db = Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java).allowMainThreadQueries().setDriver(AndroidSQLiteDriver()).build()
         try {
             val dao = db.tabDao()
             dao.insert(BrowserTab(url = "https://normal.test", thumbnailHash = "shared", wvStateFileName = "shared-state"))

@@ -15,3 +15,6 @@
     public static int v(...);
     public static int d(...);
 }
+
+# Room locates the generated implementation through its database constructor.
+-keep class * extends androidx.room3.RoomDatabase { <init>(); }

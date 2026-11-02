@@ -1,5 +1,6 @@
 package com.reiniertutoriales.vireolumatv.service.downloads
 
+import androidx.room3.support.getSupportWrapper
 import android.content.ComponentName
 import android.os.Build
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
@@ -91,9 +92,9 @@ class DownloadResourceTest {
         assertEquals(context.packageName + ":incognito", service.processName)
         assertFalse(service.exported)
     }
-    @Test fun failedHistoryInsertStillClosesInputDeletesReservationAndReportsFailure() {
+    @Test fun failedHistoryInsertStillClosesInputDeletesReservationAndReportsFailure() = kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
         val db = com.reiniertutoriales.vireolumatv.singleton.AppDatabase.db
-        val sql = db.openHelper.writableDatabase
+        val sql = db.getSupportWrapper()
         sql.execSQL("CREATE TRIGGER reject_test_insert BEFORE INSERT ON download_entries BEGIN SELECT RAISE(ABORT, 'history unavailable'); END")
         val executor = java.util.concurrent.Executors.newSingleThreadExecutor()
         val reserved = File(VireoLumaTVApp.instance.cacheDir, "history-failure.bin").apply { createNewFile() }
@@ -125,9 +126,9 @@ class DownloadResourceTest {
         }
     }
 
-    @Test fun failedHistoryUpdateDoesNotAbortTransferCompletion() {
+    @Test fun failedHistoryUpdateDoesNotAbortTransferCompletion() = kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
         val db = com.reiniertutoriales.vireolumatv.singleton.AppDatabase.db
-        val sql = db.openHelper.writableDatabase
+        val sql = db.getSupportWrapper()
         val executor = java.util.concurrent.Executors.newSingleThreadExecutor()
         val info = Download().apply { filename = "metadata-test.bin" }
         try {

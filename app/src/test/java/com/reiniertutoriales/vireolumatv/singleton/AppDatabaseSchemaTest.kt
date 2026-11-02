@@ -1,8 +1,10 @@
 package com.reiniertutoriales.vireolumatv.singleton
 
+import androidx.room3.support.getSupportWrapper
 import android.app.Application
 import android.database.sqlite.SQLiteDatabase
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -26,8 +28,8 @@ import java.io.File
 class AppDatabaseSchemaTest {
     private val context = RuntimeEnvironment.getApplication()
 
-    private fun installedVersion19(name: String, rows: SQLiteDatabase.() -> Unit): File {
-        val schema = JSONObject(File("schemas/com.reiniertutoriales.vireolumatv.singleton.AppDatabase/19.json")
+    private fun installedVersion19(name: String, version: Int = 19, rows: SQLiteDatabase.() -> Unit): File {
+        val schema = JSONObject(File("schemas/com.reiniertutoriales.vireolumatv.singleton.AppDatabase/$version.json")
             .readText()).getJSONObject("database")
         val file = context.getDatabasePath(name).apply { parentFile?.mkdirs(); delete() }
         SQLiteDatabase.openOrCreateDatabase(file, null).use { sqlite ->
@@ -50,7 +52,24 @@ class AppDatabaseSchemaTest {
     }
 
     private fun open(file: File) = Room.databaseBuilder(context, AppDatabase::class.java, file.name)
-        .addMigrations(SchemaMigrations.FROM_19_TO_20).allowMainThreadQueries().build()
+        .addMigrations(SchemaMigrations.FROM_19_TO_20).allowMainThreadQueries().setDriver(AndroidSQLiteDriver()).build()
+
+    @Test fun anExistingSchema20InstallKeepsItsRowsWithRoom3() = runBlocking {
+        val file = installedVersion19("schema-20-room3.db", version = 20) {
+            execSQL("INSERT INTO bookmarks (id, title, address) VALUES (17, 'Existing', 'https://existing.test/')")
+            execSQL("INSERT INTO site_settings (id, host, popup_policy, icon) VALUES (8, 'existing.test', 2, 'saved.png')")
+        }
+        val db = open(file)
+        try {
+            val bookmark = db.favoriteDao().getAll().single()
+            assertEquals(17L, bookmark.id)
+            assertEquals("https://existing.test/", bookmark.url)
+            val site = requireNotNull(db.siteSettingsDao().findByHostName("existing.test"))
+            assertEquals(8L, site.id)
+            assertEquals(2, site.popupBlockLevel)
+            assertEquals("saved.png", site.favicon)
+        } finally { db.close() }
+    }
 
     @Test fun everyRowTheBrowserShowsMovesToSchema20() = runBlocking {
         val file = installedVersion19("schema-19-to-20.db") {
@@ -100,7 +119,7 @@ class AppDatabaseSchemaTest {
             assertEquals(listOf("In a folder" to "https://folder.test/", "Mine" to "https://mine.test/"),
                 db.favoriteDao().getAll().map { it.title to it.url })
 
-            val tables = db.openHelper.readableDatabase.query("SELECT name FROM sqlite_master WHERE type = 'table'").use {
+            val tables = db.getSupportWrapper().query("SELECT name FROM sqlite_master WHERE type = 'table'").use {
                 buildList { while (it.moveToNext()) add(it.getString(0)) }
             }
             for (old in listOf("tabs", "history", "downloads", "hosts", "favorites")) assertFalse(old, old in tables)

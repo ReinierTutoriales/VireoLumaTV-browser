@@ -1,7 +1,8 @@
 package com.reiniertutoriales.vireolumatv.model.dao
 
 import android.app.Application
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
@@ -19,7 +20,7 @@ import org.robolectric.annotation.Config
 @Config(application = Application::class, sdk = [28])
 class StablePaginationTest {
     @Test fun visitsWithEqualTimestampsHaveStablePagesAndSearchOrder() = runBlocking {
-        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java).build()
+        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
         try {
             val dao = db.visitDao()
             val ids = (1..102).map { n -> dao.insert(HistoryItem().apply {
@@ -42,7 +43,7 @@ class StablePaginationTest {
     }
 
     @Test fun downloadsWithEqualTimestampsKeepTheSameOrderAcrossPages() = runBlocking {
-        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java).build()
+        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), AppDatabase::class.java).setDriver(AndroidSQLiteDriver()).build()
         try {
             val dao = db.downloadDao()
             val ids = withContext(Dispatchers.IO) {

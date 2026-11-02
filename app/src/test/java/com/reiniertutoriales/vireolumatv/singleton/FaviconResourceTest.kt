@@ -29,7 +29,7 @@ class FaviconResourceTest {
         }
         var readOnMain = true
         Favicons.store = object : Favicons.Store {
-            override fun find(host: String): SiteSettings {
+            override suspend fun find(host: String): SiteSettings {
                 readOnMain = Looper.myLooper() == Looper.getMainLooper()
                 return SiteSettings(host).apply { favicon = file.name }
             }
@@ -43,7 +43,7 @@ class FaviconResourceTest {
 
     @Test fun cancellationIsPropagatedInsteadOfStartingNetworkDiscovery() = withCache {
         Favicons.store = object : Favicons.Store {
-            override fun find(host: String): SiteSettings? { throw CancellationException("row left screen") }
+            override suspend fun find(host: String): SiteSettings? { throw CancellationException("row left screen") }
         }
         var cancelled = false
         try { runBlocking { Favicons.get("https://cancelled.invalid") } }

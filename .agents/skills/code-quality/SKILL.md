@@ -14,6 +14,8 @@ description: Use when optimizing, cleaning, or reviewing code. Prioritizes simpl
 - Update documentation only when it reflects verified current behavior.
 - Note any remaining need for real Android TV device validation.
 - Follow agent-governance rules on branches and authorship.
+- An explicit request to update every dependency includes assessing and implementing
+  major-version migrations. Do not silently narrow it to the existing major versions.
 
 ## Replacing older code
 
