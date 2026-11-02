@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Only for disposable, rootable CI emulators; never run against a user's device.
-set -euo pipefail
+set -euxo pipefail
 candidate=$1
 baseline=$2
 package=com.reiniertutoriales.vireolumatv
@@ -14,6 +14,7 @@ capture() {
   adb shell dumpsys activity activities > "$report/$scenario-activities.txt"
   adb exec-out screencap -p > "$report/$scenario.png"
 }
+trap 'capture' ERR
 launch() {
   adb shell am force-stop "$package"
   adb logcat -c
@@ -25,7 +26,7 @@ launch() {
       cat "$report/$scenario-crash.txt"
       return 1
     fi
-    adb shell uiautomator dump /sdcard/startup-window.xml >/dev/null
+    timeout 20s adb shell uiautomator dump /sdcard/startup-window.xml > "$report/$scenario-uiautomator.txt" 2>&1 || { capture; cat "$report/$scenario-uiautomator.txt"; return 1; }
     adb pull /sdcard/startup-window.xml "$report/$scenario-window.xml" >/dev/null
     if grep -q 'text="DuckDuckGo"' "$report/$scenario-window.xml"; then
       capture
@@ -39,7 +40,7 @@ launch() {
 }
 # The old APK can initialize storage without rendering the broken home template.
 scenario=baseline
-adb install "$baseline"
+adb install --no-incremental "$baseline"
 adb shell am start -W -n "$package/.activity.main.MainActivity" -d https://startup.invalid/ > "$report/baseline-launch.txt" || true
 sleep 10
 adb shell am force-stop "$package"
@@ -57,7 +58,7 @@ database_uid=$(adb shell stat -c %u "/data/data/$package/databases/main.db" | tr
 adb push "$report/before/main.db" "/data/data/$package/databases/main.db" >/dev/null
 adb shell chown "$database_uid:$database_uid" "/data/data/$package/databases/main.db"
 scenario=upgrade
-adb install -r "$candidate"
+adb install --no-incremental -r "$candidate"
 launch
 adb shell am force-stop "$package"
 adb pull "/data/data/$package/databases" "$report/after" >/dev/null
@@ -69,7 +70,7 @@ with sqlite3.connect(sys.argv[1]) as db:
 PY
 scenario=fresh
 adb uninstall "$package"
-adb install "$candidate"
+adb install --no-incremental "$candidate"
 launch
 scenario=cold
 launch
