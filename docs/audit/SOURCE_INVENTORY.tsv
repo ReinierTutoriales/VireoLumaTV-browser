@@ -502,3 +502,4 @@ app/src/main/res/drawable/ic_stat_download.xml	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/downloads/DownloadStateTest.kt	PROPIO
 baselineprofile/build.gradle.kts	PROPIO
 baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/BaselineProfileGenerator.kt	PROPIO
+scripts/diagnose-published-startup.sh	PROPIO
