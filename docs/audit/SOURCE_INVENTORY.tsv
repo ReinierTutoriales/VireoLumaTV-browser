@@ -447,6 +447,7 @@ native/adblock-jni/Cargo.lock	PROPIO
 native/adblock-jni/Cargo.toml	PROPIO
 native/adblock-jni/build.sh	PROPIO
 native/adblock-jni/src/lib.rs	PROPIO
+native/adblock-jni/src/scoped.rs	PROPIO
 scripts/audit-apk-provenance.py	PROPIO
 scripts/check-source-inventory.py	PROPIO
 scripts/test-adblock-surrogates.cjs	PROPIO
