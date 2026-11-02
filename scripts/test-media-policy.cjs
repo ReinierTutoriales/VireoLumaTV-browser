@@ -16,7 +16,11 @@ function page(config, host = 'www.youtube.com') {
         MediaSource = { isTypeSupported(type) { return true; } };
         HTMLMediaElement = function () {};
         HTMLMediaElement.prototype.canPlayType = function () { return 'probably'; };
-        navigator = { mediaCapabilities: { decodingInfo(c) { return Promise.resolve({supported: true}); } } };
+        var nativeResult = {supported: true, smooth: false, powerEfficient: false};
+        var nativeAnswer;
+        navigator = { mediaCapabilities: { decodingInfo(c) {
+            return nativeAnswer = Promise.resolve(nativeResult);
+        } } };
     `, context);
     vm.runInContext(template.replace('__VIREO_MEDIA_POLICY__', JSON.stringify(config)), context);
     return context;
@@ -118,7 +122,21 @@ function page(config, host = 'www.youtube.com') {
     info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/webm; codecs="vp09.00.51.08"', width: 3840, height: 2160, framerate: 60}})`, c);
     assert.equal(info.supported, false);
     info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/webm; codecs="vp09.00.41.08"', width: 1920, height: 1080, framerate: 60}})`, c);
-    assert.deepEqual([info.supported, info.smooth, info.powerEfficient], [true, true, true], 'hardware range is smooth and efficient');
+    assert.deepEqual([info.supported, info.smooth, info.powerEfficient], [true, false, false], 'hardware presence must not override the provider assessment');
+    assert.equal(info, vm.runInContext('nativeResult', c), 'preserve the native result object');
+    vm.runInContext(`
+        var configuration = {video: {contentType: 'video/webm; codecs="vp09.00.41.08"',
+            width: 1920, height: 1080, framerate: 60}};
+        assert.equal(navigator.mediaCapabilities.decodingInfo(configuration), nativeAnswer,
+            'eligible queries must return the native promise without another continuation');
+        nativeResult = {supported: true, smooth: true, powerEfficient: true, keySystemAccess: {}};
+    `, c);
+    info = await vm.runInContext('navigator.mediaCapabilities.decodingInfo(configuration)', c);
+    assert.equal(info, vm.runInContext('nativeResult', c), 'preserve positive assessments and DRM access');
+    vm.runInContext('nativeResult = {supported: false, smooth: false, powerEfficient: false}', c);
+    info = await vm.runInContext('navigator.mediaCapabilities.decodingInfo(configuration)', c);
+    assert.equal(info.supported, false, 'a hardware entry cannot enable unsupported native configurations');
+    vm.runInContext('nativeResult = {supported: true}', c);
     info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/mp4; codecs="avc1.640028"', width: 1920, height: 1080}})`, c);
     assert.equal(info.smooth, undefined, 'outside known hardware the WebView answer is untouched');
 

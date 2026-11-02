@@ -52,6 +52,37 @@ const media = (overrides = {}) => ({tag: 'video', currentTime: 0, paused: false,
     const hidden = media({getBoundingClientRect() { return {width: 0, height: 0}; }});
     items = [hidden, backgroundAudio];
     sandbox.vireoLumaTVTogglePlayback(); assert.equal(backgroundAudio.pauses, 1); assert.equal(hidden.pauses, 0);
+    const audioOnly = media({tag: 'audio', getBoundingClientRect() { return {width: 0, height: 0}; }});
+    items = [hidden, audioOnly];
+    sandbox.vireoLumaTVTogglePlayback();
+    assert.equal(audioOnly.pauses, 1, 'audio without a visual box remains controllable');
+    sandbox.innerWidth = 1280; sandbox.innerHeight = 720;
+    const offscreen = media({getBoundingClientRect() {
+        return {left: 0, top: 800, right: 1920, bottom: 1880, width: 1920, height: 1080};
+    }});
+    const visible = media({getBoundingClientRect() {
+        return {left: 0, top: 0, right: 640, bottom: 360, width: 640, height: 360};
+    }});
+    items = [offscreen, visible, audioOnly];
+    sandbox.vireoLumaTVTogglePlayback();
+    assert.equal(visible.pauses, 1, 'an offscreen video cannot steal the visible player commands');
+    assert.equal(offscreen.pauses, 0);
+    const clipped = media({getBoundingClientRect() {
+        return {left: 0, top: 719, right: 1920, bottom: 1799, width: 1920, height: 1080};
+    }});
+    const inView = media({getBoundingClientRect() {
+        return {left: 0, top: 0, right: 640, bottom: 360, width: 640, height: 360};
+    }});
+    items = [clipped, inView];
+    sandbox.vireoLumaTVTogglePlayback();
+    assert.equal(inView.pauses, 1, 'rank by visible area rather than the full offscreen box');
+    assert.equal(clipped.pauses, 0);
+    sandbox.document.fullscreenElement = offscreen;
+    offscreen.matches = selector => selector === 'video, audio';
+    sandbox.vireoLumaTVTogglePlayback();
+    assert.equal(offscreen.pauses, 1, 'fullscreen retains priority independently of viewport coordinates');
+    delete sandbox.document.fullscreenElement;
+    delete sandbox.innerWidth; delete sandbox.innerHeight;
     const progressive = media({duration: 120, currentTime: 50, seekable: ranges([])});
     items = [progressive];
     sandbox.vireoLumaTVFastForward(); assert.equal(progressive.currentTime, 60);
