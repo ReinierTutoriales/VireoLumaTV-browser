@@ -187,7 +187,8 @@
         <item>Blank page</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>Automatic</item>
+        <item>Automatic (best the TV decodes)</item>
+        <item>No limit</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>
@@ -231,4 +232,5 @@
     <string name="home_limit">Shortcut limit reached (%d).</string>
     <string name="home_add_prompt">Shortcut address (https://…)</string>
     <string name="home_empty_search">Type something to search.</string>
+    <string name="settings_slow_frames">Slow frames since the app started: %1$s</string>
 </resources>

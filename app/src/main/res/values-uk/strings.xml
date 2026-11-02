@@ -188,7 +188,8 @@
         <item>Порожня сторінка</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>Автоматично</item>
+        <item>Автоматично (найкраще, що декодує ТБ)</item>
+        <item>Без обмежень</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>
@@ -232,4 +233,5 @@
     <string name="home_limit">Досягнуто ліміту ярликів (%d).</string>
     <string name="home_add_prompt">Адреса ярлика (https://…)</string>
     <string name="home_empty_search">Введіть запит.</string>
+    <string name="settings_slow_frames">Повільні кадри від запуску застосунку: %1$s</string>
 </resources>

@@ -11,6 +11,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.Favicons
+import com.reiniertutoriales.vireolumatv.utils.FrameStats
 import com.reiniertutoriales.vireolumatv.utils.IncognitoWebViewData
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.webengine.Engines
@@ -45,6 +46,7 @@ class VireoLumaTVApp : Application() {
         createDownloadChannel()
         ScreenModels.init(this)
         registerActivityLifecycleCallbacks(EndPrivateProcess)
+        FrameStats.install(this)
     }
 
     /**

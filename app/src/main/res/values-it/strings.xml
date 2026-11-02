@@ -186,7 +186,8 @@
         <item>Pagina vuota</item>
     </string-array>
     <string-array name="settings_video_qualities">
-        <item>Automatica</item>
+        <item>Automatica (il meglio che la TV decodifica)</item>
+        <item>Nessun limite</item>
         <item>1080p</item>
         <item>720p</item>
         <item>480p</item>
@@ -230,4 +231,5 @@
     <string name="home_limit">Limite di collegamenti raggiunto (%d).</string>
     <string name="home_add_prompt">Indirizzo del collegamento (https://…)</string>
     <string name="home_empty_search">Scrivi qualcosa da cercare.</string>
+    <string name="settings_slow_frames">Fotogrammi lenti dall\'avvio dell\'app: %1$s</string>
 </resources>
