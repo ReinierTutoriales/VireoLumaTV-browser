@@ -256,6 +256,19 @@ function page(filters, host = 'stream.example', setup = '') {
 
     // Frames inserted by the named method get this window's wrapped functions (fetch, and
     // XMLHttpRequest for ".prototype"); cross-origin frames and other nodes are left alone.
+    let multi = page({ script: call('trusted-prevent-dom-bypass', 'Node.prototype.appendChild', 'fetch JSON.parse') }, 'stream.example', `
+        function Node() {}
+        Node.prototype.appendChild = function appendChild(node) { return node; };
+        var parsePristine = function () {}, fetchPristine = function () {};
+        var frame = { nodeType: 1, nodeName: 'IFRAME', contentWindow: { location: { href: location.href },
+            fetch: fetchPristine, JSON: { parse: parsePristine } } };
+    `);
+    vm.runInContext(`
+        new Node().appendChild(frame);
+        assert.equal(frame.contentWindow.fetch, window.fetch);
+        assert.equal(frame.contentWindow.JSON.parse, JSON.parse);
+    `, multi);
+
     let bypass = page({ script: call('trusted-prevent-dom-bypass', 'Node.prototype.appendChild', 'fetch') +
         call('trusted-prevent-dom-bypass', 'Node.prototype.appendChild', 'XMLHttpRequest.prototype') +
         call('no-fetch-if', 'ads') }, 'stream.example', `
@@ -264,9 +277,12 @@ function page(filters, host = 'stream.example', setup = '') {
         window.XMLHttpRequest = function XMLHttpRequest() {};
         var fetchText = Function.prototype.toString.call(window.fetch);
         var pristine = function () { return Promise.resolve('pristine'); };
-        var frame = { nodeType: 1, nodeName: 'IFRAME', contentWindow: { fetch: pristine, XMLHttpRequest: function () {} } };
-        var nested = { nodeType: 1, nodeName: 'IFRAME', contentWindow: { fetch: pristine } };
-        var box = { nodeType: 1, nodeName: 'DIV', querySelectorAll() { return [nested]; } };
+        var blank = { href: 'about:blank' };
+        var frame = { nodeType: 1, nodeName: 'IFRAME', contentWindow: { location: blank, fetch: pristine, XMLHttpRequest: function () {} } };
+        var nested = { nodeType: 1, nodeName: 'IFRAME', contentWindow: { location: blank, fetch: pristine } };
+        var box = { nodeType: 1, nodeName: 'DIV', getElementsByTagName(tag) { return tag === 'iframe' ? [nested] : []; } };
+        // A same-origin frame showing its own page keeps its functions (URLs resolve against it).
+        var page = { nodeType: 1, nodeName: 'IFRAME', contentWindow: { location: { href: 'https://stream.example/chat' }, fetch: pristine } };
         var foreign = { nodeType: 1, nodeName: 'IFRAME', get contentWindow() { throw new Error('cross-origin'); } };
     `);
     vm.runInContext(`
@@ -278,6 +294,8 @@ function page(filters, host = 'stream.example', setup = '') {
         parent.appendChild(box);
         assert.equal(nested.contentWindow.fetch, window.fetch);
         assert.equal(parent.appendChild(foreign), foreign);
+        parent.appendChild(page);
+        assert.equal(page.contentWindow.fetch, pristine);
         // Wrapped functions print as the original, and so does the masked toString itself.
         assert.equal(Function.prototype.toString.call(window.fetch), fetchText);
         assert.equal(Function.prototype.toString.call(Node.prototype.appendChild), 'function appendChild(node) { return node; }');
