@@ -23,6 +23,11 @@ vm.runInContext(`
     assert.equal(w.location.href, 'about:blank');
     w.document.write('<p>x</p>');
     assert.match(window.open.toString(), /function open/);
+    // Detectors read the source through Function.prototype.toString and list window keys.
+    assert.equal(Function.prototype.toString.call(window.open).indexOf('function open() { calls++;'), 0);
+    assert.equal(window.open.name, 'open');
+    assert.equal(Function.prototype.toString.call(Function.prototype.toString), 'function toString() { [native code] }');
+    assert.equal(Object.keys(window).indexOf('__vireoOpenDecoy'), -1);
 `, c);
 
 // Allowed popup: the real window is returned untouched.

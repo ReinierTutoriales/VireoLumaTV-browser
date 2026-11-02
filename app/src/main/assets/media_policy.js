@@ -5,7 +5,8 @@
 (function (config) {
     'use strict';
     if (!config || window.__vireoMediaPolicy) return;
-    window.__vireoMediaPolicy = true;
+    // Not enumerable: detectors that list window keys must not see the browser's own marker.
+    try { Object.defineProperty(window, '__vireoMediaPolicy', { value: true, configurable: true }); } catch (_) { return; }
     var blockVp8 = config.block.indexOf('vp8') !== -1;
     var blockVp9 = config.block.indexOf('vp9') !== -1;
     var blockAv1 = config.block.indexOf('av1') !== -1;
