@@ -1,5 +1,11 @@
 # Repository checks
 
+Commit SHAs in these audit documents refer to the history before the current root
+commit (`927249bb`, followed by `212bcdab` on `master`). Those commits are not in
+`master`; they are kept only in the private backup taken before the rewrite.
+CI run IDs, artifact IDs and dated branch names in these files are not commits and
+remain valid references to GitHub records.
+
 The current application identity and license are documented in the repository's
 `README.md`, `LICENSE.md`, `NOTICE.md` and `docs/BRAND_STANDARD.md`.
 `SOURCE_INVENTORY.tsv` covers the files tracked in this tree. Its classifications

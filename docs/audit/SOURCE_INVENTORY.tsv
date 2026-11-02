@@ -31,14 +31,9 @@ app/src/main/assets/adblock/noop-0.1s.mp3	PROPIO
 app/src/main/assets/adblock/noop-1s.mp4	PROPIO
 app/src/main/assets/adblock/page_filters.js	PROPIO
 app/src/main/assets/generic_injects.js	REESCRITO
-app/src/main/assets/licenses/APP-LICENSE.txt	PROPIO
-app/src/main/assets/licenses/Apache-2.0.txt	PROPIO
-app/src/main/assets/licenses/MPL-2.0.txt	PROPIO
-app/src/main/assets/licenses/NOTICE.md	PROPIO
 app/src/main/assets/licenses/SOURCES.txt	PROPIO
 app/src/main/assets/media_policy.js	PROPIO
 app/src/main/assets/pages/home/index.html	REESCRITO
-app/src/main/assets/pages/home/logo.png	PROPIO
 app/src/main/assets/pages/warning-certificate.html	REESCRITO
 app/src/main/assets/surrogates/adsbygoogle.js	PROPIO
 app/src/main/assets/surrogates/analytics.js	PROPIO
@@ -503,7 +498,7 @@ app/src/main/assets/adblock/baseline/dfb1abd3d0c9c7ee2c2fd239.filterdata	REGENER
 app/src/main/assets/adblock/baseline/f02d04743997168835a20f67.filterdata	REGENERADO
 app/src/main/assets/adblock/baseline/ff02a40fad1300d0aca30a43.filterdata	REGENERADO
 app/src/main/assets/adblock/baseline/manifest.json	REGENERADO
-app/src/main/assets/licenses/GPL-3.0.txt	IDENTICO
+licenses/GPL-3.0.txt	IDENTICO
 app/src/main/java/com/reiniertutoriales/vireolumatv/adblock/BundledFilterLists.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/adblock/BundledFilterListsTest.kt	PROPIO
 scripts/refresh-bundled-filters.py	PROPIO
