@@ -7,7 +7,7 @@ android-targetSdk = "37"
 android-ndk = "30.0.16248370"
 agp = "9.5.0"
 kotlin = "2.4.21"
-ksp = "2.3.12"
+ksp = "2.3.13"
 
 appcompat = "1.8.0"
 webkit = "1.18.0"
