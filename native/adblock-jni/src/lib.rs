@@ -481,4 +481,19 @@ mod tests {
         // Old caches without the container are rejected so the lists are compiled again.
         assert!(Blocker::deserialize(&blocker.engine.serialize(), NOOPJS).is_none());
     }
+
+    #[test]
+    fn a_scoped_match_that_does_not_apply_does_not_hide_another_rule() {
+        // Both rules match the URL; only the second allows ok.track.test. Either order.
+        for rules in ["||track.test^$xhr,to=~ok.track.test\n/ads/$xhr,to=~other.test",
+                      "/ads/$xhr,to=~other.test\n||track.test^$xhr,to=~ok.track.test",
+                      "*$xhr,denyallow=ok.track.test,domain=site.test\n*$xhr,denyallow=cdn.test,domain=site.test"] {
+            let blocker = engine_for(rules);
+            let restored = Blocker::deserialize(&blocker.serialize(), NOOPJS).unwrap();
+            for engine in [&blocker, &restored] {
+                let page = if rules.contains("site.test") { "https://site.test/" } else { "https://any.test/" };
+                assert_eq!(verdict(engine, "https://ok.track.test/ads/x", page, "xhr"), VERDICT_BLOCK, "{rules}");
+            }
+        }
+    }
 }
