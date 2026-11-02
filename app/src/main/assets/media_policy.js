@@ -68,10 +68,6 @@
         var short = Math.min(width || height, height || width), long = Math.max(width, height);
         return short > limit || long > Math.round(limit * 16 / 9);
     }
-    function withinHardware(codecs) {
-        var family = familyOf(codecs);
-        return !!(family && hw[family]);
-    }
     function rejectedType(type) {
         if (typeof type !== 'string') return false;
         var lower = type.toLowerCase();
@@ -116,17 +112,9 @@
                     return Promise.resolve({supported: false, smooth: false, powerEfficient: false,
                         configuration: configuration});
                 }
-                var answer = originalDecodingInfo.apply(this, arguments);
-                if (!video || !withinHardware(codecs) || !answer || typeof answer.then !== 'function') return answer;
-                // Within the hardware decoder's stated range: playback is smooth and power efficient.
-                return answer.then(function (result) {
-                    if (!result || !result.supported) return result;
-                    var copy = {};
-                    for (var key in result) copy[key] = result[key];
-                    copy.smooth = true;
-                    copy.powerEfficient = true;
-                    return copy;
-                });
+                // Hardware availability alone cannot establish smoothness or power efficiency.
+                // Keep the provider's assessment, DRM access and original promise intact.
+                return originalDecodingInfo.apply(this, arguments);
             };
         } catch (_) {}
     }
