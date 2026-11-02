@@ -24,6 +24,47 @@ import java.time.Duration
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class CursorPointerMouseTest {
+    @Test fun cancelledOkCancelsTheFingerInsteadOfClicking() = withCursor { delegate, surface, _ ->
+        key(delegate, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER)
+        val now = SystemClock.uptimeMillis()
+        delegate.onKey(KeyEvent(now, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER,
+            0, 0, 0, 0, KeyEvent.FLAG_CANCELED))
+        assertEquals(listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_CANCEL), surface.touch)
+        assertTrue(!delegate.isSelectionPressed)
+    }
+
+    @Test fun heldDirectionWaitsForLayoutWithoutDroppingThePress() = withCursor { delegate, surface, frame ->
+        surface.layout(0, 0, 0, 0)
+        val before = delegate.position.x
+        key(delegate, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT)
+        frame()
+        assertEquals(before, delegate.position.x, 0f)
+        surface.layout(0, 0, 960, 540)
+        frame()
+        assertTrue("The held key still moves after layout becomes available", delegate.position.x > before)
+        key(delegate, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_RIGHT)
+    }
+
+    @Test fun wheelAxesDoNotLeakIntoLaterHoverEvents() = withCursor { delegate, surface, frame ->
+        delegate.position.set(480f, 530f)
+        key(delegate, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN)
+        repeat(10) { frame() }
+        key(delegate, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN)
+        val scroll = surface.mouse.first { it.actionMasked == MotionEvent.ACTION_SCROLL }
+        val wheel = scroll.getAxisValue(MotionEvent.AXIS_VSCROLL)
+        assertTrue(wheel < 0f)
+        delegate.position.set(480f, 270f)
+        key(delegate, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT)
+        frame()
+        key(delegate, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_RIGHT)
+        val hover = surface.mouse.last()
+        assertEquals(MotionEvent.ACTION_HOVER_MOVE, hover.actionMasked)
+        assertTrue(hover.isMouse)
+        assertEquals(0f, hover.getAxisValue(MotionEvent.AXIS_VSCROLL), 0f)
+        assertEquals(0f, hover.getAxisValue(MotionEvent.AXIS_HSCROLL), 0f)
+        assertEquals("Previously dispatched events retain their values", wheel, scroll.getAxisValue(MotionEvent.AXIS_VSCROLL), 0f)
+    }
+
     private class Surface(activity: Activity) : FrameLayout(activity) {
         val touch = mutableListOf<Int>()
         val mouse = mutableListOf<MotionEvent>()

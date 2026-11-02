@@ -62,6 +62,11 @@ class PointerController(val context: Context, val surface: View) {
     private var dragScroll = false
     private var touchDownTime = 0L
     private var hovering = false
+    private val mouseProperties = arrayOf(MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_MOUSE })
+    private val fingerProperties = arrayOf(MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_FINGER })
+    private val mouseCoords = arrayOf(MotionEvent.PointerCoords())
+    private val fingerCoords = arrayOf(MotionEvent.PointerCoords())
+    private var appearAnimator: ValueAnimator? = null
 
     private val wheelUnitX: Float
     private val wheelUnitY: Float
@@ -172,6 +177,12 @@ class PointerController(val context: Context, val surface: View) {
         } else if (event.action == KeyEvent.ACTION_UP) {
             surface.keyDispatcherState.handleUpEvent(event)
             surface.removeCallbacks(holdTimeout)
+            if (event.isCanceled) {
+                if (pressed) touch(MotionEvent.ACTION_CANCEL)
+                pressed = false
+                surface.invalidate()
+                return
+            }
             when {
                 dragScroll -> Unit
                 hidden -> { // The first OK after the pointer faded only shows it again.
@@ -203,6 +214,11 @@ class PointerController(val context: Context, val surface: View) {
         override fun run() {
             mainThread.removeCallbacks(redrawOnHide)
             val now = SystemClock.uptimeMillis()
+            if (surface.width <= 0 || surface.height <= 0) {
+                lastFrame = now
+                surface.postOnAnimation(this)
+                return
+            }
             // Bounded so a long GC or renderer stall does not turn into a jump.
             val elapsed = (now - lastFrame).coerceIn(1L, MAX_FRAME_MS)
             lastFrame = now
@@ -260,17 +276,11 @@ class PointerController(val context: Context, val surface: View) {
         }
         if (dx == 0f && dy == 0f) return
         // Positive VSCROLL scrolls up and positive HSCROLL scrolls right (MotionEvent axes).
-        mouse(MotionEvent.ACTION_SCROLL) {
-            setAxisValue(MotionEvent.AXIS_HSCROLL, dx / wheelUnitX)
-            setAxisValue(MotionEvent.AXIS_VSCROLL, -dy / wheelUnitY)
-        }
+        mouse(MotionEvent.ACTION_SCROLL, dx / wheelUnitX, -dy / wheelUnitY)
     }
 
     /** Grab mode: the content follows the pointer, as when dragging it with a finger. */
-    private fun dragPage(dx: Float, dy: Float) = mouse(MotionEvent.ACTION_SCROLL) {
-        setAxisValue(MotionEvent.AXIS_HSCROLL, -dx / wheelUnitX)
-        setAxisValue(MotionEvent.AXIS_VSCROLL, dy / wheelUnitY)
-    }
+    private fun dragPage(dx: Float, dy: Float) = mouse(MotionEvent.ACTION_SCROLL, -dx / wheelUnitX, dy / wheelUnitY)
 
     private fun hover() {
         if (!hovering) {
@@ -286,15 +296,16 @@ class PointerController(val context: Context, val surface: View) {
         mouse(MotionEvent.ACTION_HOVER_EXIT)
     }
 
-    private fun mouse(action: Int, axes: MotionEvent.PointerCoords.() -> Unit = {}) {
+    private fun mouse(action: Int, horizontal: Float = 0f, vertical: Float = 0f) {
         val now = SystemClock.uptimeMillis()
-        val properties = MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_MOUSE }
-        val coords = MotionEvent.PointerCoords().apply {
+        mouseCoords[0].apply {
+            clear()
             x = position.x
             y = position.y
-            axes()
+            setAxisValue(MotionEvent.AXIS_HSCROLL, horizontal)
+            setAxisValue(MotionEvent.AXIS_VSCROLL, vertical)
         }
-        val event = MotionEvent.obtain(now, now, action, 1, arrayOf(properties), arrayOf(coords),
+        val event = MotionEvent.obtain(now, now, action, 1, mouseProperties, mouseCoords,
             0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_MOUSE, 0)
         try { surface.dispatchGenericMotionEvent(event) } finally { event.recycle() }
     }
@@ -303,14 +314,14 @@ class PointerController(val context: Context, val surface: View) {
     private fun touch(action: Int) {
         val now = SystemClock.uptimeMillis()
         if (action == MotionEvent.ACTION_DOWN) touchDownTime = now
-        val properties = MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_FINGER }
-        val coords = MotionEvent.PointerCoords().apply {
+        fingerCoords[0].apply {
+            clear()
             x = position.x
             y = position.y
             pressure = 1f
             size = 1f
         }
-        val event = MotionEvent.obtain(touchDownTime, now, action, 1, arrayOf(properties), arrayOf(coords),
+        val event = MotionEvent.obtain(touchDownTime, now, action, 1, fingerProperties, fingerCoords,
             0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0)
         try { surface.dispatchTouchEvent(event) } finally { event.recycle() }
     }
@@ -344,7 +355,8 @@ class PointerController(val context: Context, val surface: View) {
     fun fadeIn() {
         lastMove = SystemClock.uptimeMillis()
         scheduleHide()
-        ValueAnimator.ofFloat(2f, 1f).apply {
+        appearAnimator?.cancel()
+        appearAnimator = ValueAnimator.ofFloat(2f, 1f).apply {
             duration = APPEAR_MS
             addUpdateListener {
                 appearScale = it.animatedValue as Float
@@ -356,6 +368,9 @@ class PointerController(val context: Context, val surface: View) {
 
     /** Stop held keys and gestures when a menu, dialog or another tab takes the input. */
     fun resetInput() {
+        appearAnimator?.cancel()
+        appearAnimator = null
+        appearScale = 1f
         surface.removeCallbacks(pointerTick)
         moving = false
         surface.removeCallbacks(holdTimeout)
