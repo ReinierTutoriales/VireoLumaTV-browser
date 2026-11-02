@@ -21,6 +21,16 @@ import java.io.File
 @RunWith(RobolectricTestRunner::class)
 @RobolectricConfig(application = Application::class, sdk = [28])
 class IncognitoSessionTabsTest {
+    @Test fun normalAndPrivateBrowsingSurviveControllerConfigurationChanges() {
+        val app = RuntimeEnvironment.getApplication()
+        val required = android.content.pm.ActivityInfo.CONFIG_KEYBOARD or
+            android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN or android.content.pm.ActivityInfo.CONFIG_NAVIGATION
+        for (activity in listOf(MainActivity::class.java, com.reiniertutoriales.vireolumatv.activity.PrivateBrowserActivity::class.java)) {
+            val info = app.packageManager.getActivityInfo(android.content.ComponentName(app, activity), 0)
+            assertEquals(activity.simpleName, required, info.configChanges and required)
+        }
+    }
+
     @Test fun newPrivatePreviewsAndSavedStatesCannotOverwriteNormalFiles() = runBlocking {
         val app = RuntimeEnvironment.getApplication()
         AppContext.init(app, Config(app.getSharedPreferences("tab-files-test", 0)))

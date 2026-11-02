@@ -70,6 +70,8 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
 
+        <property android:name="android.software.leanback.supports_touch" android:value="true" />
+
         <activity
             android:name=".activity.main.MainActivity"
             android:banner="@drawable/banner"
@@ -119,7 +121,7 @@
         <!-- Private mode. -->
         <activity
             android:name=".activity.PrivateBrowserActivity"
-            android:configChanges="uiMode"
+            android:configChanges="uiMode|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:launchMode="singleTask"
             android:process=":incognito"
