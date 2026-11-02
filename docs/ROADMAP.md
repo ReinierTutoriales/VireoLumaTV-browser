@@ -1,7 +1,8 @@
 # VireoLumaTV — trabajo unificado
 
 Base comprobada: `7a95715` (1.2.0, `master`).
-Rama de trabajo: `fixes/integrated-audit`.
+Rama de trabajo: `master`, la única activa desde 2.0.14. Las ramas citadas en estos documentos
+se retiraron; su historial sigue en las PR enlazadas y en las etiquetas de cada versión.
 
 El [registro de auditoría actual](audit/CONSOLIDATED_AUDIT_20261007.md)
 reúne los defectos comprobados, cambios, decisiones sobre ramas y verificaciones.
