@@ -287,9 +287,67 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.deepEqual(Object.keys(window).filter(function (key) { return key.indexOf('__vireo') === 0; }), []);
     `, bypass);
 
+    // json-edit queries taken from the bundled uBlock filters. Untrusted names only remove.
+    let edit = page({ script: call('json-edit', '..nodes.*[?.sponsored_data]') + call('json-edit', '.showAds=false') +
+        call('trusted-json-edit', '[?.type=="ads"].visibility.status="hidden"') +
+        call('trusted-json-edit', '.lact="${now}"') +
+        call('trusted-json-edit', '.title=repl({"regex":"Ad ","flags":"g","replacement":""})') +
+        call('json-edit', '.broken[?.x==') + call('trusted-json-edit', '.x=call(["${obj}","f"])') });
+    vm.runInContext(`
+        var feed = JSON.parse('{"data":{"nodes":[{"id":1},{"id":2,"sponsored_data":{}},{"id":3}]},"showAds":true}');
+        assert.deepEqual(feed.data.nodes.map(function (n) { return n.id; }), [1, 3]);
+        assert.equal(feed.showAds, true);
+        var cards = JSON.parse('[{"type":"ads","visibility":{"status":"shown"}},{"type":"text","visibility":{"status":"shown"}}]');
+        assert.equal(cards[0].visibility.status, 'hidden');
+        assert.equal(cards[1].visibility.status, 'shown');
+        assert.equal(JSON.parse('{"title":"Ad one Ad two"}').title, 'one two');
+        assert.equal(JSON.parse('7'), 7);
+        assert.match(JSON.parse('{"lact":"0"}').lact, /^[0-9]{13}$/);
+    `, edit);
+
+    // Responses: fetch (propsToMatch) and JSON Lines over XHR; other URLs are untouched.
+    let responses = page({ script: call('trusted-json-edit-fetch-response', '.result.PlayAds=false', 'propsToMatch', '/api/get-urls') +
+        call('jsonl-edit-xhr-response', '..node[?.*.__typename=="SponsoredData"]', 'propsToMatch', '/graphql') }, 'stream.example', `
+        Response = class { constructor(body, init) { this.body = body; this.status = init && init.status;
+            this.headers = { get(name) { return name === 'content-type' ? 'application/json' : null; } }; }
+            clone() { return this; } text() { return Promise.resolve(this.body); } };
+        window.fetch = function () { return Promise.resolve(new Response('{"result":{"PlayAds":true,"url":"v"}}', { status: 200 })); };
+        function XMLHttpRequest() { this.readyState = 4; this.responseType = ''; }
+        XMLHttpRequest.prototype.open = function () {};
+        Object.defineProperty(XMLHttpRequest.prototype, 'responseText', { configurable: true, get() { return this.body; } });
+        Object.defineProperty(XMLHttpRequest.prototype, 'response', { configurable: true, get() { return this.body; } });
+        window.XMLHttpRequest = XMLHttpRequest;
+    `);
+    const edited = await vm.runInContext(`fetch('https://stream.example/api/get-urls').then(function (r) { return r.text(); })`, responses);
+    assert.deepEqual(JSON.parse(edited), { result: { PlayAds: false, url: 'v' } });
+    const untouched = await vm.runInContext(`fetch('https://stream.example/other').then(function (r) { return r.text(); })`, responses);
+    assert.equal(untouched, '{"result":{"PlayAds":true,"url":"v"}}');
+    vm.runInContext(`
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://stream.example/api/graphql');
+        xhr.body = '{"node":{"a":{"__typename":"SponsoredData"}},"id":1}\\n{"node":{"a":{"__typename":"Story"}},"id":2}';
+        var lines = xhr.responseText.split('\\n').map(function (l) { return JSON.parse(l); });
+        assert.deepEqual(lines[0], { id: 1 });
+        assert.equal(lines[1].node.a.__typename, 'Story');
+    `, responses);
+
+    // Inbound copies and setters with v2 regex keys.
+    let misc = page({ script: call('trusted-edit-inbound-object', 'JSON.stringify', '0',
+            '[?.attestationRequest][?.context.client.userAgent=/yahi|instream/]+={"params":"YAHI"}') +
+        call('edit-object-on-setter', 'flashvars', 'v2:$./^adv_/') });
+    vm.runInContext(`
+        var request = { attestationRequest: 1, context: { client: { userAgent: 'x-yahi' } } };
+        var sent = JSON.parse(JSON.stringify(request));
+        assert.equal(sent.params, 'YAHI');
+        assert.equal(request.params, undefined);
+        assert.equal(JSON.parse(JSON.stringify({ attestationRequest: 1, context: { client: { userAgent: 'web' } } })).params, undefined);
+        window.flashvars = { adv_pre: 'u', adv_post: 'v', video: 'w' };
+        assert.deepEqual(Object.keys(flashvars), ['video']);
+    `, misc);
+
     // Single injection per frame.
     vm.runInContext(source, c);
     vm.runInContext(`assert.equal(document.adoptedStyleSheets.length, 1);`, c);
 
-    console.log('Page filters passed: trusted values/storage/arguments, constructed stylesheet, procedural/action filters, media report, DOM bypass, toString masking, hidden markers, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
+    console.log('Page filters passed: trusted values/storage/arguments, constructed stylesheet, procedural/action filters, media report, DOM bypass, toString masking, json-edit queries/responses/JSONL, inbound/setter edits, hidden markers, set-constant, aopr/acs/aopw, timers, listeners, nowoif, noeval-if, no-fetch-if, json-prune, rmnt, cookies/storage, YouTube exclusion');
 })().catch((error) => { console.error(error); process.exit(1); });
