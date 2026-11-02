@@ -37,10 +37,16 @@ class PackageAuditTest(unittest.TestCase):
         with zipfile.ZipFile(package, 'w') as apk:
             apk.writestr('classes.dex', dex_with_class(class_name))
             for path in audit.PACKAGED_SOURCES:
-                source = root / 'app/src/main/assets' / path
+                license_sources = {
+                    'licenses/APP-LICENSE.txt': 'LICENSE.md',
+                    'licenses/NOTICE.md': 'NOTICE.md',
+                    'licenses/GPL-3.0.txt': 'licenses/GPL-3.0.txt',
+                }
+                source = (root / license_sources[path] if path in license_sources
+                          else root / 'app/src/main/assets' / path)
                 source.parent.mkdir(parents=True, exist_ok=True)
-                source.write_bytes(b'reviewed source')
-                apk.writestr('assets/' + path, source.read_bytes())
+                if source != root / 'LICENSE.md': source.write_bytes(b'reviewed source')
+                apk.writestr('assets/' + path, b'reviewed source')
             if baseline:
                 source = root / 'app/src/main/assets/adblock/baseline/test.filterdata'
                 source.write_bytes(b'reviewed compressed data')
@@ -57,6 +63,9 @@ class PackageAuditTest(unittest.TestCase):
             report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;')
             self.assertEqual([], report['checks']['issues'])
             self.assertEqual(64, len(report['sha256']))
+            self.assertFalse((Path(folder) / 'app/src/main/assets/licenses/APP-LICENSE.txt').exists())
+            self.assertFalse((Path(folder) / 'app/src/main/assets/licenses/NOTICE.md').exists())
+            self.assertFalse((Path(folder) / 'app/src/main/assets/licenses/GPL-3.0.txt').exists())
 
     def test_checks_that_baseline_data_is_actually_packaged(self):
         for missing in [False, True]:
@@ -77,7 +86,9 @@ class PackageAuditTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             report = self.run_package(Path(folder), 'Lcom/reiniertutoriales/vireolumatv/Main;', root_license=b'other license')
             self.assertFalse(report['checks']['application_license_matches_root'])
-            self.assertEqual(1, len(report['checks']['issues']))
+            self.assertEqual(2, len(report['checks']['issues']))
+            self.assertIn('Packaged asset differs from reviewed source: licenses/APP-LICENSE.txt', report['checks']['issues'])
+            self.assertIn('Application license differs from root license', report['checks']['issues'])
 
 
 if __name__ == '__main__': unittest.main()

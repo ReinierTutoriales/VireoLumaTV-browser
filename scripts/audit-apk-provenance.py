@@ -21,6 +21,11 @@ PACKAGED_SOURCES = (
     'licenses/NOTICE.md', 'licenses/APP-LICENSE.txt', 'licenses/GPL-3.0.txt',
     'adblock/baseline/manifest.json',
 )
+GENERATED_SOURCES = {
+    'licenses/NOTICE.md': 'NOTICE.md',
+    'licenses/APP-LICENSE.txt': 'LICENSE.md',
+    'licenses/GPL-3.0.txt': 'licenses/GPL-3.0.txt',
+}
 
 
 def class_names(dex):
@@ -57,7 +62,8 @@ def audit(apk, aapt2, root):
         baseline = root / 'app/src/main/assets/adblock/baseline'
         sources = PACKAGED_SOURCES + tuple('adblock/baseline/' + path.name for path in sorted(baseline.glob('*.filterdata')))
         for path in sources:
-            source = root / 'app/src/main/assets' / path
+            source = (root / GENERATED_SOURCES[path] if path in GENERATED_SOURCES
+                      else root / 'app/src/main/assets' / path)
             if not source.is_file() or 'assets/' + path not in names:
                 issues.append('Required source or packaged asset missing: ' + path)
                 continue
@@ -75,10 +81,11 @@ def audit(apk, aapt2, root):
     if checks['package_name'] != 'com.reiniertutoriales.vireolumatv': issues.append('Unexpected applicationId')
     for removed in ('anim/infinite_fadeinout_anim', 'menu/menu_link'):
         if removed in resources: issues.append('Retired compiled resource: ' + removed)
-    app_license = root / 'app/src/main/assets/licenses/APP-LICENSE.txt'
     root_license = root / 'LICENSE.md'
-    checks['application_license_matches_root'] = app_license.is_file() and root_license.is_file() and (
-        app_license.read_bytes() == root_license.read_bytes())
+    with zipfile.ZipFile(apk) as package:
+        license_asset = 'assets/licenses/APP-LICENSE.txt'
+        checks['application_license_matches_root'] = root_license.is_file() and license_asset in package.namelist() and (
+            package.read(license_asset) == root_license.read_bytes())
     if not checks['application_license_matches_root']: issues.append('Application license differs from root license')
     checks['issues'] = issues
     return {'apk': apk.name, 'sha256': hashlib.sha256(apk.read_bytes()).hexdigest(),

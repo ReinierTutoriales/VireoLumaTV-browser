@@ -23,6 +23,8 @@ description: Use when changing product logic, adding features, or fixing regress
 - Classify a failed check before acting: product logic, test fixture, build,
   inventory or environment. Read its evidence; do not weaken an assertion or
   change unrelated product code merely to make the run green.
+- When assets become generated copies, compare packaged bytes with their canonical
+  source paths and test without the retired source copies.
 - Before sending a tree to CI, inspect tracked paths and the diff, verify the
   source inventory, and exclude generated caches or unrelated work. After any
   code change, require results for the new SHA rather than reusing an older green.
