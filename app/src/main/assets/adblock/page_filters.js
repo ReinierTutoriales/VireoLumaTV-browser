@@ -937,6 +937,7 @@
         var matches = runSteps(query.steps, [{ node: holder, key: '$' }], query.v2);
         if (!matches.length) return undefined;
         var done = typeof Map === 'function' ? new Map() : null;
+        var removals;
         for (var i = matches.length - 1; i >= 0; i--) {
             var node = matches[i].node, key = matches[i].key;
             if (done) {
@@ -947,7 +948,10 @@
             }
             var value = query.value;
             if (query.mode === 'remove') {
-                if (Array.isArray(node) && typeof key === 'number') node.splice(key, 1);
+                if (Array.isArray(node) && typeof key === 'number') {
+                    if (!removals) removals = [];
+                    removals.push({node: node, key: key});
+                }
                 else delete node[key];
             } else if (query.mode === 'assign') {
                 node[key] = typeof value === 'string' ? value.replace('${now}', String(Date.now())) : value;
@@ -959,6 +963,12 @@
             } else if (query.mode === 'repl' && typeof node[key] === 'string') {
                 node[key] = node[key].replace(query.re, value.replacement);
             }
+        }
+        // Query order is arbitrary. Remove higher indices first so earlier splices cannot
+        // change the identity of later matches, including repeated or negative indices.
+        if (removals) {
+            removals.sort(function (a, b) { return b.key - a.key; });
+            removals.forEach(function (entry) { entry.node.splice(entry.key, 1); });
         }
         return holder.$;
     }

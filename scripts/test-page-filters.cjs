@@ -305,6 +305,12 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.match(JSON.parse('{"lact":"0"}').lact, /^[0-9]{13}$/);
     `, edit);
 
+    // Explicit array indices may arrive unsorted or repeated; edits refer to the original array.
+    for (const [query, expected] of [['.items[2,0]', [1, 3]], ['.items[0,2]', [1, 3]],
+            ['.items[2,0,2]', [1, 3]], ['.items[-1,0]', [1, 2]]]) {
+        const arrays = page({script: call('json-edit', query)});
+        vm.runInContext(`assert.deepEqual(JSON.parse('{"items":[0,1,2,3]}').items, ${JSON.stringify(expected)});`, arrays);
+    }
     const inherited = page({script: call('json-edit', '.__proto__.vireoSentinel')}, 'stream.example', `
         Object.prototype.vireoSentinel = 'keep';
     `);
