@@ -224,12 +224,21 @@ impl Scoped {
             (result.should_block() && self.hosts.get(rule)?.iter().any(|h| h.allows(host))).then_some(result)
         };
         let suffixes = std::iter::once(0).chain(host.match_indices('.').map(|(i, _)| i + 1));
-        suffixes.filter_map(|i| self.by_host.get(&host[i..]))
-            .find_map(|group| group.direct.as_ref().and_then(direct).or_else(|| group.keyed.as_ref().and_then(&matched)))
-            .or_else(|| self.patterned.as_ref().and_then(&matched)).or_else(|| {
-            let wildcard = self.wildcard.as_ref()?;
-            if self.pages.contains(&page_host.to_ascii_lowercase()) { matched(wildcard) } else { None }
-        })
+        let engines = suffixes.filter_map(|i| self.by_host.get(&host[i..]))
+            .flat_map(|group| [(group.direct.as_ref(), false), (group.keyed.as_ref(), true)])
+            .chain([
+                (self.patterned.as_ref(), true),
+                (self.wildcard.as_ref().filter(|_| self.pages.contains(&page_host.to_ascii_lowercase())), true),
+            ]);
+        let mut first = None;
+        for (engine, keyed) in engines {
+            let Some(engine) = engine else { continue };
+            let Some(result) = (if keyed { matched(engine) } else { direct(engine) }) else { continue };
+            // A normal match in an earlier group must not hide an important rule in another.
+            if result.important { return Some(result) }
+            if first.is_none() { first = Some(result) }
+        }
+        first
     }
 }
 

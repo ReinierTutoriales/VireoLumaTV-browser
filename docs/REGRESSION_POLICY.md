@@ -204,6 +204,13 @@ El bloqueo de una petición debe dejar UI operativa y mensajes limitados; nunca
 crear un bucle de recargas, diálogos o pruebas JS que consuman CPU para «ganar»
 a la publicidad. Compatibilidad perfecta con todas las webs no es garantizable.
 
+Al combinar motores de reglas, una excepción ordinaria no anula un bloqueo
+`$important` válido y una coincidencia ordinaria en un grupo no oculta una
+importante de otro. Las condiciones `to=`/`denyallow=` siguen aplicándose tras
+restaurar la caché. `json-edit` recorre propiedades propias de los datos, sin
+alcanzar prototipos heredados; al eliminar índices de un array conserva la
+selección original, aunque venga desordenada o repetida.
+
 ## 6. Modernización del motor, UI y dependencias
 
 Evaluar APIs estables de AndroidX WebKit ya disponible: startup asíncrono,

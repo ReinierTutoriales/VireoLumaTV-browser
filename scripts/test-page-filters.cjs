@@ -305,6 +305,26 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.match(JSON.parse('{"lact":"0"}').lact, /^[0-9]{13}$/);
     `, edit);
 
+    // Explicit array indices may arrive unsorted or repeated; edits refer to the original array.
+    for (const [query, expected] of [['.items[2,0]', [1, 3]], ['.items[0,2]', [1, 3]],
+            ['.items[2,0,2]', [1, 3]], ['.items[-1,0]', [1, 2]]]) {
+        const arrays = page({script: call('json-edit', query)});
+        vm.runInContext(`assert.deepEqual(JSON.parse('{"items":[0,1,2,3]}').items, ${JSON.stringify(expected)});`, arrays);
+    }
+    const inherited = page({script: call('json-edit', '.__proto__.vireoSentinel')}, 'stream.example', `
+        Object.prototype.vireoSentinel = 'keep';
+    `);
+    vm.runInContext(`
+        assert.deepEqual(JSON.parse('{"id":1}'), {id: 1});
+        assert.equal(Object.prototype.vireoSentinel, 'keep', 'JSON edits must not traverse inherited properties');
+    `, inherited);
+    const ownProto = page({script: call('json-edit', '.__proto__.ad')});
+    vm.runInContext(`
+        var value = JSON.parse('{"__proto__":{"ad":true,"keep":1}}');
+        assert.equal(Object.hasOwn(value, '__proto__'), true);
+        assert.deepEqual(value.__proto__, {keep: 1}, 'an own JSON property named __proto__ is still data');
+    `, ownProto);
+
     // Responses: fetch (propsToMatch) and JSON Lines over XHR; other URLs are untouched.
     let responses = page({ script: call('trusted-json-edit-fetch-response', '.result.PlayAds=false', 'propsToMatch', '/api/get-urls') +
         call('jsonl-edit-xhr-response', '..node[?.*.__typename=="SponsoredData"]', 'propsToMatch', '/graphql') }, 'stream.example', `

@@ -66,16 +66,16 @@ impl Blocker {
         Some(Blocker { engine, scoped: Scoped::build(source, options, parse_resources(resources)) })
     }
 
-    /// Main answer first; a hostname-scoped rule only blocks what the main lists did not except.
+    /// Main blocks win; exceptions lift scoped rules unless a matching rule is important.
     fn check(&self, request: &Request, source: &str) -> BlockerResult {
         let result = self.engine.check_network_request(request);
-        if result.should_block() || result.exception.is_some() {
+        if result.should_block() {
             return result;
         }
         let Some(scoped) = self.scoped.as_ref().and_then(|s| s.check(request, hostname(source))) else { return result };
         if !scoped.important {
-            let exceptions = self.engine.check_network_request_subset(request, true, false);
-            if exceptions.exception.is_some() {
+            if result.exception.is_some()
+                || self.engine.check_network_request_subset(request, true, false).exception.is_some() {
                 return result;
             }
         }
@@ -416,6 +416,28 @@ mod tests {
         restored.deserialize(&ubo.serialize()).unwrap();
         load_resources(&mut restored, resources);
         assert!(script(&restored).contains("TRUSTED"));
+    }
+
+    #[test]
+    fn scoped_important_rules_override_main_exceptions_and_other_groups() {
+        let normal = "||ads.test^$script\n@@||ads.test^$script\n";
+        let scoped = [
+            ("||ads.test^$script,to=test,important", true),
+            ("||ads.test^$script,to=test", false),
+            ("||ads.test^$script,to=org,important", false),
+            ("||ads.test^$script,to=test\n*$script,to=test,domain=site.test,important", true),
+            ("||ads.test^$script,to=test\n||ads.test^$script,to=test|~allowed.test,important", true),
+            ("||ads.test^$script,to=test\n||ads.test^$script,to=~allowed.test,important", true),
+        ];
+        for (rules, blocked) in scoped {
+            let blocker = engine_for(&format!("{normal}{rules}"));
+            let restored = Blocker::deserialize(&blocker.serialize(), NOOPJS).unwrap();
+            for engine in [&blocker, &restored] {
+                assert_eq!(verdict(engine, "https://ads.test/a.js", "https://site.test/", "script") == VERDICT_BLOCK,
+                    blocked, "{rules}");
+                assert_eq!(verdict(engine, "https://elsewhere.test/a.js", "https://other.test/", "script"), "");
+            }
+        }
     }
 
     #[test]
