@@ -29,6 +29,35 @@ import org.robolectric.shadows.ShadowLooper
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class AddressSuggestionsFocusTest {
+    @Test fun refreshedSuggestionsReuseRowsAndKeepTheFocusedAddress() {
+        val controller = Robolectric.buildActivity(AppCompatActivity::class.java)
+        controller.get().setTheme(R.style.AppTheme)
+        controller.setup()
+        try {
+            val suggestions = AddressSuggestionsView(controller.get())
+            controller.get().setContentView(suggestions)
+            val first = AddressSuggestion("First", "https://first.test", false)
+            val second = AddressSuggestion("Second", "https://second.test", false)
+            suggestions.show(listOf(first, second))
+            val row = suggestions.row(0)
+            assertTrue(suggestions.row(1)!!.requestFocus())
+            suggestions.show(listOf(second.copy(title = "Updated second"), first))
+            assertSame("Updating results must reuse existing rows", row, suggestions.row(0))
+            assertTrue("Focus follows the address, not its old index", suggestions.row(0)!!.isFocused)
+            val picked = mutableListOf<String>()
+            suggestions.onPick = { picked += it.url }
+            suggestions.row(0)!!.performClick()
+            assertEquals(listOf(second.url), picked)
+            // A row that used to be last must no longer swallow Down after the list grows.
+            suggestions.show(listOf(second, first, AddressSuggestion("Third", "https://third.test", false)))
+            val formerLast = suggestions.row(1)!!
+            assertFalse(formerLast.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN)))
+            suggestions.row(2)!!.requestFocus()
+            suggestions.show(listOf(second))
+            assertTrue("Removing the focused result keeps focus inside the remaining results", suggestions.row(0)!!.isFocused)
+        } finally { controller.pause().stop().destroy() }
+    }
+
     @Test fun remotePointerCanPickASuggestionWithoutCancellingTheSearch() {
         val controller = Robolectric.buildActivity(AppCompatActivity::class.java)
         controller.get().setTheme(R.style.AppTheme)

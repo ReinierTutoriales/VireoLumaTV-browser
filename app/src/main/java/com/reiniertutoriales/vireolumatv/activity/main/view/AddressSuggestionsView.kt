@@ -50,11 +50,13 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
     fun show(suggestions: List<AddressSuggestion>) {
         if (suggestions == shown) return
         val keepFocus = hasFocus()
+        val focusedIndex = (0 until childCount).firstOrNull { getChildAt(it).hasFocus() } ?: 0
+        val focusedUrl = shown.getOrNull(focusedIndex)?.url
         shown = suggestions
-        removeAllViews()
+        while (childCount > suggestions.size) removeViewAt(childCount - 1)
         val inflater = LayoutInflater.from(context)
         suggestions.forEachIndexed { index, suggestion ->
-            val row = inflater.inflate(R.layout.view_address_suggestion, this, false)
+            val row = getChildAt(index) ?: inflater.inflate(R.layout.view_address_suggestion, this, false).also { addView(it) }
             row.findViewById<ImageView>(R.id.ivKind).setImageResource(
                 if (suggestion.bookmark) R.drawable.ic_bookmark else R.drawable.ic_history)
             row.findViewById<TextView>(R.id.title_text).text = suggestion.title
@@ -63,15 +65,16 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
                 isVisible = suggestion.url != suggestion.title
             }
             row.setOnClickListener { onPick?.invoke(suggestion) }
-            if (index == suggestions.lastIndex) {
-                row.setOnKeyListener { _, code, _ -> code == KeyEvent.KEYCODE_DPAD_DOWN }
-            }
-            addView(row)
+            row.setOnKeyListener { _, code, _ -> index == shown.lastIndex && code == KeyEvent.KEYCODE_DPAD_DOWN }
         }
         isVisible = suggestions.isNotEmpty()
         if (suggestions.isEmpty()) stopPointer()
         else if (keepFocus) {
-            if (pointerMode) requestFocus() else focusFirst()
+            if (pointerMode) requestFocus() else {
+                val target = suggestions.indexOfFirst { it.url == focusedUrl }.takeIf { it >= 0 }
+                    ?: focusedIndex.coerceAtMost(suggestions.lastIndex)
+                getChildAt(target).requestFocus()
+            }
         }
     }
 
