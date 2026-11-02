@@ -1432,27 +1432,40 @@
      */
     scriptlets['trusted-prevent-dom-bypass'] = function (methodPath, property) {
         var target = methodPath && resolveMethod(methodPath);
-        var parts = normalizeChain(property).split('.');
-        if (!target || !parts[0]) return;
-        // A constructor's prototype is read-only: "XMLHttpRequest.prototype" shares the constructor.
-        if (parts.length > 1 && parts[parts.length - 1] === 'prototype') parts.pop();
-        var leaf = parts.pop();
+        if (!target) return;
+        // Space-separated dotted paths. A constructor's prototype is read-only:
+        // "XMLHttpRequest.prototype" shares the constructor itself.
+        var paths = String(property || '').split(/\s+/).map(function (chain) {
+            var parts = normalizeChain(chain).split('.');
+            if (parts.length > 1 && parts[parts.length - 1] === 'prototype') parts.pop();
+            return parts;
+        }).filter(function (parts) { return parts[0]; });
+        if (!paths.length) return;
         function share(frame) {
             try {
-                var child = frame.contentWindow, from = window, to = child;
+                var child = frame.contentWindow;
                 if (!child || child === window) return;
-                for (var i = 0; i < parts.length; i++) {
-                    from = from[parts[i]]; to = to[parts[i]];
-                    if (!isObjectLike(from) || !isObjectLike(to)) return;
-                }
-                if (leaf in from && to[leaf] !== from[leaf]) to[leaf] = from[leaf];
+                // Only a pristine frame is a bypass (about:blank, or this page again); a
+                // same-origin frame with its own page keeps its functions, which resolve URLs
+                // and run against that frame's document.
+                var url = String(child.location.href);
+                if (url !== 'about:blank' && url !== String(location.href)) return;
+                paths.forEach(function (parts) {
+                    var from = window, to = child, leaf = parts[parts.length - 1];
+                    for (var i = 0; i < parts.length - 1; i++) {
+                        from = from[parts[i]]; to = to[parts[i]];
+                        if (!isObjectLike(from) || !isObjectLike(to)) return;
+                    }
+                    if (leaf in from && to[leaf] !== from[leaf]) to[leaf] = from[leaf];
+                });
             } catch (_) {} // Cross-origin frame: not reachable, and not a bypass of this page.
         }
         function visit(node) {
             if (!node || typeof node !== 'object' || typeof node.nodeType !== 'number') return;
             if (node.nodeName === 'IFRAME') share(node);
-            if (typeof node.querySelectorAll === 'function') {
-                var frames = node.querySelectorAll('iframe');
+            // Inserted containers (fragments, wrappers) may carry the frame inside.
+            if (typeof node.getElementsByTagName === 'function') {
+                var frames = node.getElementsByTagName('iframe');
                 for (var i = 0; i < frames.length; i++) share(frames[i]);
             }
         }
@@ -1496,14 +1509,28 @@
 
     /** Drops clipboard writes whose text matches (pasted-command lures); excludeMatches spares some. */
     scriptlets['prevent-clipboard-write'] = function (pattern) {
-        var proto = window.Clipboard && Clipboard.prototype;
-        if (!proto) return;
         var test = matcher(pattern || '');
         var exclude = namedArgs([].slice.call(arguments, 1)).excludeMatches;
         var spare = exclude ? matcher(exclude) : null;
-        wrapFunction(proto, 'writeText', function (fn, self, args) {
-            var text = String(args[0]);
-            if (test(text) && !(spare && spare(text))) return Promise.resolve();
+        function blocked(text) {
+            if (typeof text !== 'string') return false;
+            text = text.trim();
+            return test(text) && !(spare && spare(text));
+        }
+        // The async Clipboard API and the legacy copy/cut command, which copies the selection.
+        var proto = window.Clipboard && Clipboard.prototype;
+        if (proto) {
+            wrapFunction(proto, 'writeText', function (fn, self, args) {
+                if (blocked(String(args[0]))) return Promise.resolve();
+                return Reflect_.apply(fn, self, args);
+            });
+        }
+        wrapFunction(document, 'execCommand', function (fn, self, args) {
+            var command = String(args[0]).toLowerCase();
+            if (command === 'copy' || command === 'cut') {
+                var selection = typeof document.getSelection === 'function' ? document.getSelection() : null;
+                if (selection && blocked(String(selection))) return true;
+            }
             return Reflect_.apply(fn, self, args);
         });
     };
