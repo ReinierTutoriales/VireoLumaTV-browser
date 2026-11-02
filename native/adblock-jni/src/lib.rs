@@ -2,12 +2,16 @@
 //!
 //! The engine is created once per filter-list generation and shared by every WebView thread:
 //! with the "single-thread" feature disabled `adblock::Engine` is `Sync`, so checks need no lock.
-//! Handles are raw pointers to boxed engines owned by `com.reiniertutoriales.vireolumatv.adblock.RustAdblock`.
+//! Handles are raw pointers to boxed [Blocker]s owned by `com.reiniertutoriales.vireolumatv.adblock.RustAdblock`.
 
+mod scoped;
+
+use adblock::blocker::BlockerResult;
 use adblock::lists::{FilterSet, ParseOptions};
 use adblock::request::Request;
 use adblock::resources::{PermissionMask, Resource};
 use adblock::Engine;
+use scoped::Scoped;
 use jni::errors::ThrowRuntimeExAndDefault;
 use jni::objects::{JBooleanArray, JByteArray, JClass, JObjectArray, JString};
 use std::collections::HashSet;
@@ -30,17 +34,103 @@ fn text(env: &Env, value: &JString) -> jni::errors::Result<String> {
     value.try_to_string(env)
 }
 
-fn engine<'a>(handle: jlong) -> Option<&'a Engine> {
+/// The list engine and the rules it cannot apply itself (see [scoped]).
+struct Blocker {
+    engine: Engine,
+    scoped: Option<Scoped>,
+}
+
+/// Serialized [Blocker]: magic, main engine length (u64 LE), main engine, scoped rule source.
+const MAGIC: &[u8; 5] = b"VIRO1";
+
+impl Blocker {
+    fn serialize(&self) -> Vec<u8> {
+        let main = self.engine.serialize();
+        let scoped = self.scoped.as_ref().map(Scoped::source).unwrap_or("");
+        let mut out = Vec::with_capacity(MAGIC.len() + 8 + main.len() + scoped.len());
+        out.extend_from_slice(MAGIC);
+        out.extend_from_slice(&(main.len() as u64).to_le_bytes());
+        out.extend_from_slice(&main);
+        out.extend_from_slice(scoped.as_bytes());
+        out
+    }
+
+    fn deserialize(bytes: &[u8], resources: &str) -> Option<Self> {
+        let rest = bytes.strip_prefix(MAGIC.as_slice())?;
+        let length = usize::try_from(u64::from_le_bytes(rest.get(..8)?.try_into().ok()?)).ok()?;
+        let main = rest.get(8..8usize.checked_add(length)?)?;
+        let source = std::str::from_utf8(&rest[8 + length..]).ok()?.to_owned();
+        let mut engine = Engine::default();
+        engine.deserialize(main).ok()?;
+        load_resources(&mut engine, resources);
+        Some(Blocker { engine, scoped: Scoped::build(source, options, parse_resources(resources)) })
+    }
+
+    /// Main answer first; a hostname-scoped rule only blocks what the main lists did not except.
+    fn check(&self, request: &Request, source: &str) -> BlockerResult {
+        let result = self.engine.check_network_request(request);
+        if result.should_block() || result.exception.is_some() {
+            return result;
+        }
+        let Some(scoped) = self.scoped.as_ref().and_then(|s| s.check(request, hostname(source))) else { return result };
+        if !scoped.important {
+            let exceptions = self.engine.check_network_request_subset(request, true, false);
+            if exceptions.exception.is_some() {
+                return result;
+            }
+        }
+        scoped
+    }
+}
+
+/// Compiles lists one at a time into a [Blocker].
+struct Builder {
+    set: FilterSet,
+    scoped: String,
+    resources: Vec<Resource>,
+}
+
+impl Builder {
+    fn new(resources: Vec<Resource>) -> Self {
+        Builder { set: FilterSet::new(false), scoped: String::new(), resources }
+    }
+
+    fn add(&mut self, list: String, trusted: bool) {
+        let known: HashSet<&str> = self.resources.iter()
+            .flat_map(|r| std::iter::once(r.name.as_str()).chain(r.aliases.iter().map(String::as_str)))
+            .collect();
+        let list = without_unknown_redirects(list, &known);
+        scoped::collect(&list, trusted, &mut self.scoped);
+        self.set.add_filter_list(list, options(trusted));
+    }
+
+    fn finish(self) -> Blocker {
+        let scoped = Scoped::build(self.scoped, options, self.resources.clone());
+        let mut engine = Engine::new_with_filter_set(self.set);
+        engine.use_resources(self.resources);
+        Blocker { engine, scoped }
+    }
+}
+
+/// Host of an http(s) URL without user info or port ("" when there is none).
+fn hostname(url: &str) -> &str {
+    let rest = url.split_once("://").map_or("", |(_, rest)| rest);
+    let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
+    let host = authority.rsplit_once('@').map_or(authority, |(_, host)| host);
+    if host.starts_with('[') { host } else { host.split(':').next().unwrap_or("") }
+}
+
+fn engine<'a>(handle: jlong) -> Option<&'a Blocker> {
     if handle == 0 {
         None
     } else {
         // SAFETY: handles are only produced by `into_handle` and destroyed once by `nativeDestroy`.
-        Some(unsafe { &*(handle as *const Engine) })
+        Some(unsafe { &*(handle as *const Blocker) })
     }
 }
 
-fn into_handle(engine: Engine) -> jlong {
-    Box::into_raw(Box::new(engine)) as jlong
+fn into_handle(blocker: Blocker) -> jlong {
+    Box::into_raw(Box::new(blocker)) as jlong
 }
 
 fn parse_resources(resources_json: &str) -> Vec<Resource> {
@@ -100,26 +190,18 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
 ) -> jlong {
     unowned
         .with_env(|env| -> jni::errors::Result<jlong> {
-            let resources = parse_resources(&text(env, &resources)?);
-            let known: HashSet<&str> = resources
-                .iter()
-                .flat_map(|r| std::iter::once(r.name.as_str()).chain(r.aliases.iter().map(String::as_str)))
-                .collect();
+            let mut builder = Builder::new(parse_resources(&text(env, &resources)?));
             let count = lists.len(env)?;
             let mut flags = vec![false; count];
             if trusted.len(env)? == count {
                 trusted.get_region(env, 0, &mut flags)?;
             }
-            let mut set = FilterSet::new(false);
             // One list at a time: no combined copy of several megabytes of filter text.
             for (index, trusted) in flags.into_iter().enumerate() {
                 let list = lists.get_element(env, index)?;
-                let list = text(env, &list)?;
-                set.add_filter_list(without_unknown_redirects(list, &known), options(trusted));
+                builder.add(text(env, &list)?, trusted);
             }
-            let mut engine = Engine::new_with_filter_set(set);
-            engine.use_resources(resources);
-            Ok(into_handle(engine))
+            Ok(into_handle(builder.finish()))
         })
         .resolve::<ThrowRuntimeExAndDefault>()
 }
@@ -135,12 +217,7 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
         .with_env(|env| -> jni::errors::Result<jlong> {
             let bytes = env.convert_byte_array(&data)?;
             let resources = text(env, &resources)?;
-            let mut engine = Engine::default();
-            if engine.deserialize(&bytes).is_err() {
-                return Ok(0);
-            }
-            load_resources(&mut engine, &resources);
-            Ok(into_handle(engine))
+            Ok(Blocker::deserialize(&bytes, &resources).map_or(0, into_handle))
         })
         .resolve::<ThrowRuntimeExAndDefault>()
 }
@@ -167,7 +244,7 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
 ) {
     if handle != 0 {
         // SAFETY: see `engine`; Kotlin clears its copy of the handle before calling this.
-        drop(unsafe { Box::from_raw(handle as *mut Engine) });
+        drop(unsafe { Box::from_raw(handle as *mut Blocker) });
     }
 }
 
@@ -185,7 +262,7 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
             let Some(engine) = engine(handle) else { return Ok(ALLOW) };
             let (url, source, kind) = (text(env, &url)?, text(env, &source)?, text(env, &kind)?);
             let Some(request) = request(&url, &source, &kind) else { return Ok(ALLOW) };
-            let result = engine.check_network_request(&request);
+            let result = engine.check(&request, &source);
             Ok(if !result.should_block() {
                 ALLOW
             } else if result.redirect.is_some() {
@@ -199,9 +276,9 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
 
 /// One network match for a request: "" to allow it, [`VERDICT_BLOCK`] to block it, or the `data:`
 /// URL of its `$redirect` resource. Callers never need a second match for the replacement.
-fn verdict(engine: &Engine, url: &str, source: &str, kind: &str) -> String {
+fn verdict(engine: &Blocker, url: &str, source: &str, kind: &str) -> String {
     let Some(request) = request(url, source, kind) else { return String::new() };
-    let result = engine.check_network_request(&request);
+    let result = engine.check(&request, source);
     if !result.should_block() {
         String::new()
     } else {
@@ -243,7 +320,7 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
             let url = text(env, &url)?;
             let json = match engine(handle) {
                 Some(engine) => {
-                    let resources = engine.url_cosmetic_resources(&url);
+                    let resources = engine.engine.url_cosmetic_resources(&url);
                     serde_json::json!({
                         "hide": resources.hide_selectors,
                         "procedural": resources.procedural_actions,
@@ -276,11 +353,11 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
             let selectors = match engine(handle) {
                 Some(engine) => {
                     // Exceptions (`#@#.class`) and `$generichide` are per page.
-                    let page = engine.url_cosmetic_resources(&url);
+                    let page = engine.engine.url_cosmetic_resources(&url);
                     if page.generichide {
                         Vec::new()
                     } else {
-                        engine.hidden_class_id_selectors(
+                        engine.engine.hidden_class_id_selectors(
                             classes.split_ascii_whitespace(),
                             ids.split_ascii_whitespace(),
                             &page.exceptions,
@@ -298,12 +375,12 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
 mod tests {
     use super::*;
 
-    fn engine_for(rules: &str) -> Engine {
-        let mut filters = FilterSet::new(false);
-        filters.add_filter_list(rules.to_owned(), ParseOptions::default());
-        let mut engine = Engine::new_with_filter_set(filters);
-        load_resources(&mut engine, r#"[{"name":"noopjs","aliases":[],"kind":{"mime":"application/javascript"},"content":"KGZ1bmN0aW9uKCl7fSkoKQ=="}]"#);
-        engine
+    const NOOPJS: &str = r#"[{"name":"noopjs","aliases":[],"kind":{"mime":"application/javascript"},"content":"KGZ1bmN0aW9uKCl7fSkoKQ=="}]"#;
+
+    fn engine_for(rules: &str) -> Blocker {
+        let mut builder = Builder::new(parse_resources(NOOPJS));
+        builder.add(rules.to_owned(), false);
+        builder.finish()
     }
 
     #[test]
@@ -339,5 +416,47 @@ mod tests {
         restored.deserialize(&ubo.serialize()).unwrap();
         load_resources(&mut restored, resources);
         assert!(script(&restored).contains("TRUSTED"));
+    }
+
+    #[test]
+    fn to_and_denyallow_limit_the_request_hostname_and_survive_the_cache() {
+        let rules = "*$script,3p,denyallow=cdn.jsdelivr.net|cloudflare.com,domain=site.test\n\
+            ||track.test^$xhr,to=~ok.track.test\n\
+            *$script,3p,to=evil.*,domain=other.test\n\
+            @@||allowed.test^$script,domain=site.test\n\
+            *$xhr,3p,denyallow=api.test,domain=strict.test,important\n\
+            @@||bad.test^$xhr,domain=strict.test\n\
+            /^https:\\/\\/ads[0-9]\\.[a-z]+\\.(?:com|org)\\/x\\.js$/$script,to=com\n\
+            /^https:\\/\\/m[0-9]\\./$xhr,to=net|~m1.cdn.net\n\
+            *$script,3p,denyallow=a.test";
+        let blocker = engine_for(rules);
+        let restored = Blocker::deserialize(&blocker.serialize(), NOOPJS).unwrap();
+        for engine in [&blocker, &restored] {
+            let v = |url: &str, page: &str, kind: &str| verdict(engine, url, page, kind) == VERDICT_BLOCK;
+            // denyallow: every third-party script on site.test except the listed hosts and subdomains.
+            assert!(v("https://ads.example/a.js", "https://site.test/", "script"));
+            assert!(!v("https://cdn.jsdelivr.net/x.js", "https://site.test/", "script"));
+            assert!(!v("https://cdnjs.cloudflare.com/x.js", "https://site.test/", "script"));
+            assert!(!v("https://ads.example/a.js", "https://elsewhere.test/", "script"));
+            // A main-list exception still wins over a non-important scoped rule.
+            assert!(!v("https://allowed.test/a.js", "https://site.test/", "script"));
+            // to=~host on a specific pattern, and an entity in to=.
+            assert!(v("https://track.test/p", "https://any.test/", "xhr"));
+            assert!(!v("https://ok.track.test/p", "https://any.test/", "xhr"));
+            assert!(v("https://cdn.evil.co.uk/a.js", "https://other.test/", "script"));
+            assert!(!v("https://good.example/a.js", "https://other.test/", "script"));
+            // $important is not lifted by exceptions; its own denyallow still applies.
+            assert!(v("https://bad.test/x", "https://strict.test/", "xhr"));
+            assert!(!v("https://api.test/x", "https://strict.test/", "xhr"));
+            // Regex rules indexed by to= entry: without (direct) and with negated entries (keyed).
+            assert!(v("https://ads1.foo.com/x.js", "https://any.test/", "script"));
+            assert!(!v("https://ads1.foo.org/x.js", "https://any.test/", "script"));
+            assert!(v("https://m2.cdn.net/p", "https://any.test/", "xhr"));
+            assert!(!v("https://m1.cdn.net/p", "https://any.test/", "xhr"));
+            // A denyallow rule without a page would block everywhere: ignored, as uBO requires domain=.
+            assert!(!v("https://ads.example/a.js", "https://unrelated.test/", "script"));
+        }
+        // Old caches without the container are rejected so the lists are compiled again.
+        assert!(Blocker::deserialize(&blocker.engine.serialize(), NOOPJS).is_none());
     }
 }

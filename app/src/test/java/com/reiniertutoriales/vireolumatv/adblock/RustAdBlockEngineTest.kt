@@ -79,6 +79,25 @@ class RustAdBlockEngineTest {
         } finally { custom.release(); ubo.release(); unflagged.release(); file.delete() }
     }
 
+    @Test fun denyallowAndToRulesApplyThroughTheBridgeAndCache() {
+        val blocker = engine.compile("*${'$'}script,3p,denyallow=cdn.test,domain=site.test\n||track.test^${'$'}xhr,to=~ok.track.test")!!
+        val file = File.createTempFile("scoped", ".dat")
+        try {
+            assertTrue(blocker.serialize(file))
+            val restored = engine.deserialize(file)!!
+            try {
+                for (b in listOf(blocker, restored)) {
+                    val site = Uri.parse("https://www.site.test/")
+                    assertEquals(ContentBlocker.BLOCK, b.check(Uri.parse("https://ads.example/a.js"), "script", site))
+                    assertEquals(ContentBlocker.ALLOW, b.check(Uri.parse("https://x.cdn.test/a.js"), "script", site))
+                    assertEquals(ContentBlocker.ALLOW, b.check(Uri.parse("https://ads.example/a.js"), "script", page))
+                    assertTrue(b.verdict(Uri.parse("https://track.test/p"), "xhr", page).blocked)
+                    assertFalse(b.verdict(Uri.parse("https://ok.track.test/p"), "xhr", page).blocked)
+                }
+            } finally { restored.release() }
+        } finally { blocker.release(); file.delete() }
+    }
+
     @Test fun oneVerdictCarriesBlockRedirectAndExceptionsLikeCheck() {
         val blocker = engine.compile(rules)!!
         try {
