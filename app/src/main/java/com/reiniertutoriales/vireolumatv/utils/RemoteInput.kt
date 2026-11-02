@@ -35,15 +35,18 @@ class RemoteInput(
     private var stickX = 0f
     private var stickY = 0f
     private var primaryDown = false
-    private var lastKey: Triple<Long, Int, Int>? = null
+    private var lastKeyTime = Long.MIN_VALUE
+    private var lastKeyAction = -1
+    private var lastKeyCode = -1
 
     fun dispatchKeyEvent(event: KeyEvent): Boolean {
         val code = event.keyCode
         if (code !in NAVIGATION_KEYS || isTyping()) return false
         // The same KeyEvent can be dispatched twice (window callback and view tree); act once.
-        val signature = Triple(event.eventTime, event.action, code)
-        if (signature == lastKey) return true
-        lastKey = signature
+        if (event.eventTime == lastKeyTime && event.action == lastKeyAction && code == lastKeyCode) return true
+        lastKeyTime = event.eventTime
+        lastKeyAction = event.action
+        lastKeyCode = code
         if (code == heldDirection) {
             if (event.action == KeyEvent.ACTION_DOWN) {
                 heldByKey = true
@@ -78,7 +81,9 @@ class RemoteInput(
         stickX = 0f
         stickY = 0f
         primaryDown = false
-        lastKey = null
+        lastKeyTime = Long.MIN_VALUE
+        lastKeyAction = -1
+        lastKeyCode = -1
     }
 
     private fun clearHeld() {
@@ -157,15 +162,15 @@ class RemoteInput(
         private fun directionOf(x: Float, y: Float): Int {
             val dx = if (x >= HAT_PRESSED) 1 else if (x <= -HAT_PRESSED) -1 else 0
             val dy = if (y >= HAT_PRESSED) 1 else if (y <= -HAT_PRESSED) -1 else 0
-            return when (dx to dy) {
-                -1 to 0 -> KeyEvent.KEYCODE_DPAD_LEFT
-                1 to 0 -> KeyEvent.KEYCODE_DPAD_RIGHT
-                0 to -1 -> KeyEvent.KEYCODE_DPAD_UP
-                0 to 1 -> KeyEvent.KEYCODE_DPAD_DOWN
-                -1 to -1 -> KeyEvent.KEYCODE_DPAD_UP_LEFT
-                1 to -1 -> KeyEvent.KEYCODE_DPAD_UP_RIGHT
-                -1 to 1 -> KeyEvent.KEYCODE_DPAD_DOWN_LEFT
-                1 to 1 -> KeyEvent.KEYCODE_DPAD_DOWN_RIGHT
+            return when {
+                dx == -1 && dy == 0 -> KeyEvent.KEYCODE_DPAD_LEFT
+                dx == 1 && dy == 0 -> KeyEvent.KEYCODE_DPAD_RIGHT
+                dx == 0 && dy == -1 -> KeyEvent.KEYCODE_DPAD_UP
+                dx == 0 && dy == 1 -> KeyEvent.KEYCODE_DPAD_DOWN
+                dx == -1 && dy == -1 -> KeyEvent.KEYCODE_DPAD_UP_LEFT
+                dx == 1 && dy == -1 -> KeyEvent.KEYCODE_DPAD_UP_RIGHT
+                dx == -1 && dy == 1 -> KeyEvent.KEYCODE_DPAD_DOWN_LEFT
+                dx == 1 && dy == 1 -> KeyEvent.KEYCODE_DPAD_DOWN_RIGHT
                 else -> 0
             }
         }
