@@ -39,4 +39,16 @@ class AppLanguagesTest {
     @Test fun withNothingChosenTheSystemLanguageApplies() {
         assertEquals(0, AppLanguages.chosen())
     }
+
+    @Test fun beforeAndroid13ServicesAndToastsUseTheChosenLanguageToo() {
+        val app = org.robolectric.RuntimeEnvironment.getApplication()
+        try {
+            androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(androidx.core.os.LocaleListCompat.forLanguageTags("es"))
+            assertEquals("Listo", AppLanguages.localized(app).getString(com.reiniertutoriales.vireolumatv.R.string.home_done))
+            assertEquals("es", AppLanguages.localeOf(AppLanguages.localized(app)).language)
+        } finally {
+            androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(androidx.core.os.LocaleListCompat.getEmptyLocaleList())
+        }
+        assertTrue("With nothing chosen the system language stays", AppLanguages.localized(app) === app)
+    }
 }

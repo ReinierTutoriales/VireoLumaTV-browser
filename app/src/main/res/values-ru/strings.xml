@@ -212,4 +212,24 @@
     <string name="settings_language">Язык приложения</string>
     <string name="language_system">Язык системы</string>
     <string name="install_failed">Не удалось установить приложение.</string>
+    <string name="home_title">Главная</string>
+    <string name="home_search">Искать в DuckDuckGo</string>
+    <string name="home_shortcuts">Ярлыки</string>
+    <string name="home_add">Добавить ярлык</string>
+    <string name="home_edit">Изменить</string>
+    <string name="home_edit_label">Изменить ярлыки</string>
+    <string name="home_done">Готово</string>
+    <string name="home_save_failed">Не удалось сохранить.</string>
+    <string name="home_edit_prompt">Измените адрес. Оставьте поле пустым, чтобы удалить ярлык.</string>
+    <string name="home_remove_confirm">Удалить этот ярлык с главной?</string>
+    <string name="home_invalid">Неверный адрес. Используйте http:// или https:// без имени пользователя и пароля.</string>
+    <string name="home_duplicate">Этот ярлык уже есть на главной.</string>
+    <string name="home_youtube_removed">YouTube (удалён, нажмите, чтобы вернуть)</string>
+    <string name="home_favorite_managed">Этот ярлык — закладка. Измените или удалите её в разделе «%s».</string>
+    <string name="home_edit_item" formatted="false">Изменить %s</string>
+    <string name="home_youtube_restore">Снова показывать YouTube на главной?</string>
+    <string name="home_youtube_remove">Убрать YouTube с главной?</string>
+    <string name="home_limit">Достигнут предел ярлыков (%d).</string>
+    <string name="home_add_prompt">Адрес ярлыка (https://…)</string>
+    <string name="home_empty_search">Введите запрос.</string>
 </resources>

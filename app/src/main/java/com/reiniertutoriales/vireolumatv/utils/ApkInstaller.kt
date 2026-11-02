@@ -50,7 +50,7 @@ object ApkInstaller {
      * any other path is refused, as before.
      */
     fun launch(context: Context, download: Download, worker: (() -> Unit) -> Unit = { thread(name = TAG) { it() } }) {
-        val app = context.applicationContext
+        val app = AppLanguages.localized(context.applicationContext)
         val source = try {
             sourceOf(app, download)
         } catch (_: IllegalArgumentException) {
@@ -100,7 +100,8 @@ object ApkInstaller {
 
     /** Receives the session outcome: shows the system confirmation, or says why the install failed. */
     class Result : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
+        override fun onReceive(received: Context, intent: Intent) {
+            val context = AppLanguages.localized(received)
             if (!intent.hasExtra(PackageInstaller.EXTRA_STATUS)) return
             when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
                 PackageInstaller.STATUS_PENDING_USER_ACTION -> {

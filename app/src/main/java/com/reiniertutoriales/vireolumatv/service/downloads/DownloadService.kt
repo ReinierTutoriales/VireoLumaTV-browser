@@ -23,6 +23,7 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 import com.reiniertutoriales.vireolumatv.utils.FileNames
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import java.io.File
@@ -76,6 +77,9 @@ open class DownloadService : Service() {
             main.post { onTransferEnded(task) }
         }
     }
+
+    /** Notifications and messages in the language chosen for the app, also before Android 13. */
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguages.localized(newBase))
 
     override fun onCreate() {
         super.onCreate()

@@ -1,5 +1,6 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 import com.reiniertutoriales.vireolumatv.utils.BoundedReader
 import android.net.Uri
 import android.util.Log
@@ -283,7 +284,7 @@ class AdBlocker @JvmOverloads constructor(
                 else -> UpdateResult.ERROR
             }
             if (downloadAttempted && !hasCurrentClient()) {
-                Toast.makeText(VireoLumaTVApp.instance, R.string.blocker_update_failed, Toast.LENGTH_SHORT).show()
+                Toast.makeText(AppLanguages.localized(VireoLumaTVApp.instance), R.string.blocker_update_failed, Toast.LENGTH_SHORT).show()
             }
         } finally {
             initialRulesReady.complete(Unit)

@@ -208,4 +208,24 @@
     <string name="settings_language">زبان برنامه</string>
     <string name="language_system">زبان سیستم</string>
     <string name="install_failed">برنامه نصب نشد.</string>
+    <string name="home_title">خانه</string>
+    <string name="home_search">جست‌وجو در DuckDuckGo</string>
+    <string name="home_shortcuts">میان‌برها</string>
+    <string name="home_add">افزودن میان‌بر</string>
+    <string name="home_edit">ویرایش</string>
+    <string name="home_edit_label">ویرایش میان‌برها</string>
+    <string name="home_done">تمام</string>
+    <string name="home_save_failed">ذخیره نشد.</string>
+    <string name="home_edit_prompt">نشانی را ویرایش کنید. برای حذف میان‌بر، آن را خالی بگذارید.</string>
+    <string name="home_remove_confirm">این میان‌بر از خانه حذف شود؟</string>
+    <string name="home_invalid">نشانی نامعتبر است. از http:// یا https:// بدون نام کاربری و گذرواژه استفاده کنید.</string>
+    <string name="home_duplicate">این میان‌بر از قبل در خانه هست.</string>
+    <string name="home_youtube_removed">YouTube (حذف‌شده، برای بازگرداندن فشار دهید)</string>
+    <string name="home_favorite_managed">این میان‌بر یک علاقه‌مندی است. آن را در %s ویرایش یا حذف کنید.</string>
+    <string name="home_edit_item" formatted="false">ویرایش %s</string>
+    <string name="home_youtube_restore">YouTube دوباره در خانه نمایش داده شود؟</string>
+    <string name="home_youtube_remove">YouTube از خانه حذف شود؟</string>
+    <string name="home_limit">به سقف میان‌برها رسیدید (%d).</string>
+    <string name="home_add_prompt">نشانی میان‌بر (https://…)</string>
+    <string name="home_empty_search">چیزی برای جست‌وجو بنویسید.</string>
 </resources>

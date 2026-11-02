@@ -97,7 +97,10 @@ function setup(saved = '[]', failWrite = false) {
   let stored = saved, next = null;
   const context = {URL, encodeURIComponent, document: {
     getElementById(id) { return {bookmarks: list, 'add-bookmark': add, 'search-input': input}[id]; },
-    createElement: () => node(), querySelector: () => form,
+    createElement: () => node(),
+    // The app fills the page's messages into this meta element when it serves the page.
+    querySelector: selector => selector.startsWith('meta') ?
+      {getAttribute: () => JSON.stringify({done: 'Listo', edit: 'Editar'})} : form,
   }, localStorage: {getItem: () => stored, setItem(k, v) { if (failWrite) throw Error('full'); stored = v; }},
   prompt: () => next, alert() {}};
   vm.runInNewContext(source, context);
@@ -160,7 +163,10 @@ function editable({store = {}, failWrite = false, failRead = false, favorites} =
   vm.runInNewContext(source, {URL, encodeURIComponent, localStorage, fetch, Promise, document: {
     getElementById: id => ({bookmarks: list, 'add-bookmark': add, 'search-input': input,
       'edit-bookmarks': edit, 'default-youtube': youtube})[id],
-    createElement: () => node(), querySelector: () => form,
+    createElement: () => node(),
+    // The app fills the page's messages into this meta element when it serves the page.
+    querySelector: selector => selector.startsWith('meta') ?
+      {getAttribute: () => JSON.stringify({done: 'Listo', edit: 'Editar'})} : form,
   }, prompt: () => answers.prompt.shift(), confirm: () => answers.confirm.shift(), alert: m => alerts.push(m)});
   const click = target => { let prevented = false; target.events.click({preventDefault() { prevented = true; }}); return prevented; };
   return {nodes, store, alerts, edit, youtube, list, add, answers, click, requests, focused: () => focused,

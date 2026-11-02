@@ -212,4 +212,24 @@
     <string name="settings_language">Język aplikacji</string>
     <string name="language_system">Język systemu</string>
     <string name="install_failed">Nie udało się zainstalować aplikacji.</string>
+    <string name="home_title">Start</string>
+    <string name="home_search">Szukaj w DuckDuckGo</string>
+    <string name="home_shortcuts">Skróty</string>
+    <string name="home_add">Dodaj skrót</string>
+    <string name="home_edit">Edytuj</string>
+    <string name="home_edit_label">Edytuj skróty</string>
+    <string name="home_done">Gotowe</string>
+    <string name="home_save_failed">Nie udało się zapisać.</string>
+    <string name="home_edit_prompt">Edytuj adres. Zostaw pusty, aby usunąć skrót.</string>
+    <string name="home_remove_confirm">Usunąć ten skrót ze strony startowej?</string>
+    <string name="home_invalid">Nieprawidłowy adres. Użyj http:// lub https:// bez nazwy użytkownika i hasła.</string>
+    <string name="home_duplicate">Ten skrót jest już na stronie startowej.</string>
+    <string name="home_youtube_removed">YouTube (usunięty, naciśnij, aby przywrócić)</string>
+    <string name="home_favorite_managed">Ten skrót jest ulubionym. Edytuj go lub usuń w sekcji %s.</string>
+    <string name="home_edit_item" formatted="false">Edytuj %s</string>
+    <string name="home_youtube_restore">Pokazać ponownie YouTube na stronie startowej?</string>
+    <string name="home_youtube_remove">Usunąć YouTube ze strony startowej?</string>
+    <string name="home_limit">Osiągnięto limit skrótów (%d).</string>
+    <string name="home_add_prompt">Adres skrótu (https://…)</string>
+    <string name="home_empty_search">Wpisz, czego szukasz.</string>
 </resources>

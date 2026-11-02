@@ -210,4 +210,24 @@
     <string name="settings_language">שפת האפליקציה</string>
     <string name="language_system">שפת המערכת</string>
     <string name="install_failed">לא ניתן היה להתקין את האפליקציה.</string>
+    <string name="home_title">דף הבית</string>
+    <string name="home_search">חיפוש ב-DuckDuckGo</string>
+    <string name="home_shortcuts">קיצורי דרך</string>
+    <string name="home_add">הוספת קיצור דרך</string>
+    <string name="home_edit">עריכה</string>
+    <string name="home_edit_label">עריכת קיצורי הדרך</string>
+    <string name="home_done">סיום</string>
+    <string name="home_save_failed">לא ניתן היה לשמור.</string>
+    <string name="home_edit_prompt">יש לערוך את הכתובת. השארתה ריקה תסיר את קיצור הדרך.</string>
+    <string name="home_remove_confirm">להסיר את קיצור הדרך מדף הבית?</string>
+    <string name="home_invalid">כתובת לא תקינה. יש להשתמש ב-http:// או ב-https:// בלי שם משתמש וסיסמה.</string>
+    <string name="home_duplicate">קיצור הדרך הזה כבר נמצא בדף הבית.</string>
+    <string name="home_youtube_removed">YouTube (הוסר, יש ללחוץ לשחזור)</string>
+    <string name="home_favorite_managed">קיצור הדרך הזה הוא מועדף. אפשר לערוך או להסיר אותו ב%s.</string>
+    <string name="home_edit_item" formatted="false">עריכת %s</string>
+    <string name="home_youtube_restore">להציג שוב את YouTube בדף הבית?</string>
+    <string name="home_youtube_remove">להסיר את YouTube מדף הבית?</string>
+    <string name="home_limit">הגעת למגבלת קיצורי הדרך (%d).</string>
+    <string name="home_add_prompt">כתובת קיצור הדרך (https://…)</string>
+    <string name="home_empty_search">יש להקליד מה לחפש.</string>
 </resources>
