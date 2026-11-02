@@ -1474,8 +1474,23 @@
             }
         }
         wrapFunction(target.owner, target.name, function (fn, self, args) {
+            // Insertion empties a DocumentFragment. Keep its frame references while they are
+            // still in the fragment, then access their windows only after insertion.
+            var fragmentFrames;
+            for (var i = 0; i < args.length; i++) {
+                var node = args[i];
+                if (!node || node.nodeType !== 11 || typeof node.querySelectorAll !== 'function') continue;
+                try {
+                    var frames = node.querySelectorAll('iframe');
+                    for (var j = 0; j < frames.length; j++) {
+                        if (!fragmentFrames) fragmentFrames = [];
+                        fragmentFrames.push(frames[j]);
+                    }
+                } catch (_) {}
+            }
             var result = Reflect_.apply(fn, self, args);
             for (var i = 0; i < args.length; i++) visit(args[i]);
+            if (fragmentFrames) fragmentFrames.forEach(share);
             return result;
         });
     };
@@ -1521,6 +1536,16 @@
             text = text.trim();
             return test(text) && !(spare && spare(text));
         }
+        function selectedText() {
+            var control = document.activeElement;
+            if (control && (control.localName === 'input' || control.localName === 'textarea')) {
+                var start = control.selectionStart, end = control.selectionEnd;
+                if (typeof control.value === 'string' && typeof start === 'number' && typeof end === 'number')
+                    return control.value.slice(start, end);
+            }
+            var selection = typeof document.getSelection === 'function' ? document.getSelection() : null;
+            return selection ? String(selection) : null;
+        }
         // The async Clipboard API and the legacy copy/cut command, which copies the selection.
         var proto = window.Clipboard && Clipboard.prototype;
         if (proto) {
@@ -1532,8 +1557,7 @@
         wrapFunction(document, 'execCommand', function (fn, self, args) {
             var command = String(args[0]).toLowerCase();
             if (command === 'copy' || command === 'cut') {
-                var selection = typeof document.getSelection === 'function' ? document.getSelection() : null;
-                if (selection && blocked(String(selection))) return true;
+                if (blocked(selectedText())) return true;
             }
             return Reflect_.apply(fn, self, args);
         });

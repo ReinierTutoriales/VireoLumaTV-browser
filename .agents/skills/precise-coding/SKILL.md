@@ -31,3 +31,7 @@ Every line must be traceable to existing code or a clearly labeled minimal assum
   ordinary match or exception must not hide a later higher-priority rule.
 - JSON edits must target own data properties; array removals must preserve the
   original selected indices even when a query lists them out of order.
+- When wrapping DOM mutations, capture references that the mutation consumes
+  before calling it; access attachment-dependent state after it returns.
+- Read focused text-control selections through their selection APIs; document
+  selection alone does not describe text selected inside an input or textarea.

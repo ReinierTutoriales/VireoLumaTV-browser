@@ -305,6 +305,30 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.deepEqual(Object.keys(window).filter(function (key) { return key.indexOf('__vireo') === 0; }), []);
     `, bypass);
 
+    // Inserting a real DocumentFragment consumes its children before appendChild returns.
+    const fragmentBypass = page({script: call('trusted-prevent-dom-bypass', 'Node.prototype.appendChild', 'fetch')},
+        'stream.example', `
+        function Node() {}
+        Node.prototype.appendChild = function (node) {
+            if (node.nodeType === 11) node.children = [];
+            return node;
+        };
+        var pristine = function () {};
+        var blankFrame = {nodeType: 1, nodeName: 'IFRAME', contentWindow: {
+            location: {href: 'about:blank'}, fetch: pristine}};
+        var pageFrame = {nodeType: 1, nodeName: 'IFRAME', contentWindow: {
+            location: {href: 'https://stream.example/chat'}, fetch: pristine}};
+        var foreignFrame = {nodeType: 1, nodeName: 'IFRAME', get contentWindow() { throw Error('cross-origin'); }};
+        var fragment = {nodeType: 11, children: [blankFrame, pageFrame, foreignFrame],
+            querySelectorAll(selector) { assert.equal(selector, 'iframe'); return this.children.slice(); }};
+    `);
+    vm.runInContext(`
+        assert.equal(new Node().appendChild(fragment), fragment);
+        assert.equal(fragment.children.length, 0);
+        assert.equal(blankFrame.contentWindow.fetch, window.fetch, 'protect frames moved out of a consumed fragment');
+        assert.equal(pageFrame.contentWindow.fetch, pristine, 'keep a legitimate frame independent');
+    `, fragmentBypass);
+
     // json-edit queries taken from the bundled uBlock filters. Untrusted names only remove.
     let edit = page({ script: call('json-edit', '..nodes.*[?.sponsored_data]') + call('json-edit', '.showAds=false') +
         call('trusted-json-edit', '[?.type=="ads"].visibility.status="hidden"') +
@@ -430,6 +454,40 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.equal(location.href, 'https://multiup.example/file');
         assert.equal(stopped, 2);
     `, misc);
+
+    // A text control's selected value is independent of Document.getSelection().
+    const controlClipboard = page({script: call('prevent-clipboard-write', '/^powershell /',
+        'excludeMatches', 'allowed')}, 'stream.example', `
+        var copiedCommands = [], selected = '';
+        document.execCommand = function (command) { copiedCommands.push(command); return true; };
+        document.getSelection = function () { return {toString() { return selected; }}; };
+        document.activeElement = null;
+    `);
+    vm.runInContext(`
+        var value = 'prefix powershell blocked suffix';
+        for (var localName of ['input', 'textarea']) {
+            document.activeElement = {localName: localName, value: value,
+                selectionStart: 7, selectionEnd: 25};
+            assert.equal(document.execCommand('copy'), true);
+            assert.equal(document.execCommand('cut'), true);
+        }
+        assert.deepEqual(copiedCommands, [], 'block matching selected text from inputs and textareas');
+        // Copy only the selected slice, never test the entire value or a stale page selection.
+        document.activeElement.selectionStart = 0;
+        document.activeElement.selectionEnd = 6;
+        selected = 'powershell blocked';
+        document.execCommand('copy');
+        document.activeElement = {localName: 'input', value: 'powershell allowed', selectionStart: 0, selectionEnd: 18};
+        document.execCommand('copy');
+        document.activeElement = {localName: 'input', value: 'plain', selectionStart: null, selectionEnd: null};
+        selected = 'plain';
+        document.execCommand('copy');
+        document.execCommand('bold');
+        document.activeElement = {localName: 'div'};
+        selected = 'powershell blocked';
+        document.execCommand('copy');
+        assert.deepEqual(copiedCommands, ['copy', 'copy', 'copy', 'bold']);
+    `, controlClipboard);
 
     // Single injection per frame.
     vm.runInContext(source, c);
