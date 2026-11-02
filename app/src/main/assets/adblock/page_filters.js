@@ -730,6 +730,341 @@
     scriptlets['json-prune-fetch-response'] = jsonPruneResponse('fetch');
     scriptlets['json-prune-xhr-response'] = jsonPruneResponse('xhr');
 
+    // ---- json-edit: uBO JSON path queries ------------------------------------------------
+
+    // Native JSON functions, captured before any scriptlet wraps them.
+    var parseJson = JSON.parse, stringifyJson = JSON.stringify;
+
+    /**
+     * Compiles a query in the uBO "json-edit" syntax: steps ".key", "..key" (any depth), ".*",
+     * "./regex/", "[key,'key',0,-1]", "[*]" and "[?filter]" / "[?!filter]", where a filter is a
+     * path relative to the candidate, optionally compared with == != < <= > >= ^= $= *= and a
+     * JSON or 'quoted' operand, or matched with =/regex/i. The query may end with "=json"
+     * (assign), "+=json" (merge) or "=repl({...})"; without one the matches are removed.
+     * A "v2:" prefix makes filters test the children of objects, not the object itself.
+     * Returns null for malformed or unsupported queries (such as "=call(...)").
+     */
+    function compileQuery(source) {
+        var q = String(source || ''), pos = 0, v2 = false;
+        if (q.indexOf('v2:') === 0) { v2 = true; q = q.slice(3); }
+        function fail() { throw 0; }
+        function quoted(end) {
+            var out = '';
+            for (pos++; pos < q.length; pos++) {
+                var c = q.charAt(pos);
+                if (c === '\\' && q.charAt(pos + 1) === end) { out += end; pos++; continue; }
+                if (c === end) { pos++; return out; }
+                out += c;
+            }
+            fail();
+        }
+        function name() {
+            if (q.charAt(pos) === '/') {
+                try { return new RegExp(quoted('/')); } catch (_) { fail(); }
+            }
+            var match = /^(?:\*|[A-Za-z_$][\w$]*)/.exec(q.slice(pos));
+            if (!match) fail();
+            pos += match[0].length;
+            return match[0];
+        }
+        function bracket(deep) {
+            if (q.substr(pos, 2) === '[?') {
+                pos += 2;
+                var not = q.charAt(pos) === '!';
+                if (not) pos++;
+                var filter = condition();
+                if (q.charAt(pos++) !== ']') fail();
+                return { deep: deep, filter: filter, not: not };
+            }
+            if (q.substr(pos, 3) === '[*]') { pos += 3; return { deep: deep, keys: '*' }; }
+            var keys = [];
+            pos++;
+            for (;;) {
+                while (q.charAt(pos) === ' ') pos++;
+                var c = q.charAt(pos), index;
+                if (c === '"' || c === "'") keys.push(quoted(c));
+                else if ((index = /^-?\d+/.exec(q.slice(pos)))) { keys.push(parseInt(index[0], 10)); pos += index[0].length; }
+                else if (!v2 && c && c !== ']' && c !== ',') keys.push(name());
+                else fail();
+                while (q.charAt(pos) === ' ') pos++;
+                if (q.charAt(pos) === ',') { pos++; continue; }
+                if (q.charAt(pos++) !== ']') fail();
+                return { deep: deep, keys: keys.length === 1 ? keys[0] : keys };
+            }
+        }
+        function steps() {
+            var list = [];
+            if (q.charAt(pos) === '$' || q.charAt(pos) === '@') pos++;
+            for (;;) {
+                var c = q.charAt(pos);
+                if (c === '.') {
+                    var deep = q.charAt(pos + 1) === '.';
+                    pos += deep ? 2 : 1;
+                    if (q.charAt(pos) === '[') { if (!deep) fail(); list.push(bracket(true)); }
+                    else list.push({ deep: deep, keys: name() });
+                } else if (c === '[') list.push(bracket(false));
+                else return list;
+            }
+        }
+        function condition() {
+            var path = steps(), rest = q.slice(pos), match;
+            if (rest.indexOf('=/') === 0) {
+                pos += 1;
+                var pattern = quoted('/'), flags = q.charAt(pos) === 'i' ? 'i' : '';
+                if (flags) pos++;
+                try { return { path: path, op: 're', value: new RegExp(pattern, flags) }; } catch (_) { fail(); }
+            }
+            if (!(match = /^\s*([!=^$*]=|[<>]=?)\s*/.exec(rest))) return { path: path };
+            pos += match[0].length;
+            if (q.charAt(pos) === "'") return { path: path, op: match[1], value: quoted("'") };
+            var end = q.indexOf(']', pos);
+            if (end < 0) fail();
+            var value;
+            try { value = parseJson(q.slice(pos, end)); } catch (_) { fail(); }
+            pos = end;
+            return { path: path, op: match[1], value: value };
+        }
+        var compiled;
+        try {
+            compiled = { steps: steps(), v2: v2 };
+            var tail = q.slice(pos), body = null;
+            if (tail === '') compiled.mode = 'remove';
+            else if (/^=repl\(.*\)$/.test(tail)) { compiled.mode = 'repl'; body = tail.slice(6, -1); }
+            else if (tail.indexOf('+=') === 0) { compiled.mode = 'merge'; body = tail.slice(2); }
+            else if (tail.charAt(0) === '=' && !/^=[a-z]+\(/.test(tail)) { compiled.mode = 'assign'; body = tail.slice(1); }
+            else return null;
+            if (body !== null) compiled.value = parseJson(body);
+        } catch (_) { return null; }
+        // "$+={...}" edits the root itself; removing the root is meaningless.
+        if (!compiled.steps.length && compiled.mode === 'remove') return null;
+        if (compiled.mode === 'repl') {
+            var r = compiled.value;
+            try {
+                compiled.re = r && typeof r.regex === 'string' ? new RegExp(r.regex, r.flags || '')
+                    : r && typeof r.pattern === 'string' ? new RegExp(escapeRegex(r.pattern)) : null;
+            } catch (_) { compiled.re = null; }
+            if (!compiled.re || typeof r.replacement !== 'string') return null;
+        }
+        compiled.assigns = compiled.mode !== 'remove';
+        compiled.apply = function (root) { return applyQuery(compiled, root); };
+        return compiled;
+    }
+
+    function own(node, key) {
+        return node[key] !== undefined || Object.prototype.hasOwnProperty.call(node, key);
+    }
+
+    /** Every {node, key} below [value] (any depth); each object is visited once. */
+    function descendants(value) {
+        var out = [], stack = [value], seen = typeof Set === 'function' ? new Set() : null;
+        while (stack.length) {
+            var node = stack.pop();
+            if (node === null || typeof node !== 'object' || (seen && seen.has(node))) continue;
+            if (seen) seen.add(node);
+            var keys = Array.isArray(node) ? node.map(function (_, i) { return i; }) : Object.keys(node);
+            for (var i = 0; i < keys.length; i++) {
+                out.push({ node: node, key: keys[i] });
+                stack.push(node[keys[i]]);
+            }
+        }
+        return out;
+    }
+
+    function childKeys(node, keys) {
+        if (node === null || typeof node !== 'object') return [];
+        if (Array.isArray(keys)) {
+            return keys.reduce(function (all, key) { return all.concat(childKeys(node, key)); }, []);
+        }
+        if (keys === '*') return Array.isArray(node) ? node.map(function (_, i) { return i; }) : Object.keys(node);
+        if (keys instanceof RegExp) return Object.keys(node).filter(function (key) { return keys.test(key); });
+        if (typeof keys === 'number') {
+            if (!Array.isArray(node)) return [];
+            keys = keys < 0 ? node.length + keys : keys;
+        }
+        return own(node, keys) ? [keys] : [];
+    }
+
+    function passes(filter, value) {
+        var found = runSteps(filter.path, [{ node: { $: value }, key: '$' }], false);
+        if (!filter.op) return found.length > 0;
+        return found.some(function (match) {
+            var v = match.node[match.key];
+            switch (filter.op) {
+                case '==': return v === filter.value;
+                case '!=': return v !== filter.value;
+                case '<': return v < filter.value;
+                case '<=': return v <= filter.value;
+                case '>': return v > filter.value;
+                case '>=': return v >= filter.value;
+                case '^=': return String(v).indexOf(filter.value) === 0;
+                case '$=': var s = String(v), t = String(filter.value); return s.length >= t.length && s.slice(s.length - t.length) === t;
+                case '*=': return String(v).indexOf(filter.value) !== -1;
+                case 're': return filter.value.test(String(v));
+            }
+            return false;
+        });
+    }
+
+    function runSteps(list, matches, v2) {
+        for (var s = 0; s < list.length && matches.length; s++) {
+            var step = list[s], next = [];
+            matches.forEach(function (match) {
+                var value = match.node[match.key];
+                if (step.filter) {
+                    var candidates = step.deep ? descendants(value)
+                        : v2 || Array.isArray(value) ? childKeys(value, '*').map(function (key) { return { node: value, key: key }; })
+                        : value !== null && typeof value === 'object' ? [match] : [];
+                    candidates.forEach(function (candidate) {
+                        if (passes(step.filter, candidate.node[candidate.key]) !== step.not) next.push(candidate);
+                    });
+                    return;
+                }
+                childKeys(value, step.keys).forEach(function (key) { next.push({ node: value, key: key }); });
+                if (!step.deep) return;
+                descendants(value).forEach(function (entry) {
+                    var inner = entry.node[entry.key];
+                    childKeys(inner, step.keys).forEach(function (key) { next.push({ node: inner, key: key }); });
+                });
+            });
+            matches = next;
+        }
+        return matches;
+    }
+
+    /** Edits [root] in place; returns the (possibly replaced) root, or undefined without a match. */
+    function applyQuery(query, root) {
+        var holder = { $: root };
+        var matches = runSteps(query.steps, [{ node: holder, key: '$' }], query.v2);
+        if (!matches.length) return undefined;
+        var done = typeof Map === 'function' ? new Map() : null;
+        for (var i = matches.length - 1; i >= 0; i--) {
+            var node = matches[i].node, key = matches[i].key;
+            if (done) {
+                var keys = done.get(node);
+                if (!keys) done.set(node, keys = new Set());
+                if (keys.has(key)) continue;
+                keys.add(key);
+            }
+            var value = query.value;
+            if (query.mode === 'remove') {
+                if (Array.isArray(node) && typeof key === 'number') node.splice(key, 1);
+                else delete node[key];
+            } else if (query.mode === 'assign') {
+                node[key] = typeof value === 'string' ? value.replace('${now}', String(Date.now())) : value;
+            } else if (query.mode === 'merge') {
+                var target = node[key];
+                if (!isObjectLike(target) || !isObjectLike(value)) continue;
+                if (Array.isArray(target)) Array.prototype.push.apply(target, Array.isArray(value) ? value : [value]);
+                else Object.keys(value).forEach(function (k) { target[k] = value[k]; });
+            } else if (query.mode === 'repl' && typeof node[key] === 'string') {
+                node[key] = node[key].replace(query.re, value.replacement);
+            }
+        }
+        return holder.$;
+    }
+
+    /** Untrusted variants may only remove: assignments come from the trusted-* names. */
+    function jsonQuery(source, trusted) {
+        var query = compileQuery(source);
+        return query && (trusted || !query.assigns) ? query : null;
+    }
+
+    function jsonEdit(trusted) {
+        return function (source) {
+            var query = jsonQuery(source, trusted);
+            var matches = namedArgs([].slice.call(arguments, 1)).matches;
+            var test = matches ? toRegex(matches) : null;
+            if (!query) return;
+            wrapFunction(JSON, 'parse', function (target, self, args) {
+                var value = Reflect_.apply(target, self, args);
+                if (test && !test.test(String(args[0]))) return value;
+                var edited = query.apply(value);
+                return edited === undefined ? value : edited;
+            });
+        };
+    }
+    scriptlets['json-edit'] = jsonEdit(false);
+    scriptlets['trusted-json-edit'] = jsonEdit(true);
+
+    function jsonTextEditor(query) {
+        return function (text) {
+            var value;
+            try { value = parseJson(text); } catch (_) { return text; }
+            if (value === null || typeof value !== 'object') return text;
+            var edited = query.apply(value);
+            return edited === undefined ? text : stringifyJson(edited);
+        };
+    }
+    function jsonEditResponse(where, trusted) {
+        return function (source) {
+            var query = jsonQuery(source, trusted);
+            if (!query) return;
+            var props = namedArgs([].slice.call(arguments, 1)).propsToMatch;
+            addRewriter(where, requestMatcher(props), jsonTextEditor(query));
+        };
+    }
+    scriptlets['json-edit-fetch-response'] = jsonEditResponse('fetch', false);
+    scriptlets['trusted-json-edit-fetch-response'] = jsonEditResponse('fetch', true);
+    scriptlets['json-edit-xhr-response'] = jsonEditResponse('xhr', false);
+    scriptlets['trusted-json-edit-xhr-response'] = jsonEditResponse('xhr', true);
+
+    /** JSON Lines: each line (or the part captured by jsonExtract) is edited on its own. */
+    scriptlets['jsonl-edit-xhr-response'] = function (source) {
+        var query = jsonQuery(source, false);
+        if (!query) return;
+        var named = namedArgs([].slice.call(arguments, 1));
+        var extract = /^(.*)$/;
+        if (named.jsonExtract) { try { extract = new RegExp(named.jsonExtract); } catch (_) { return; } }
+        var edit = jsonTextEditor(query);
+        addRewriter('xhr', requestMatcher(named.propsToMatch), function (text) {
+            var separator = /\r\n/.test(text) ? '\r\n' : '\n';
+            return text.split(/\r?\n/).map(function (line) {
+                var match = extract.exec(line);
+                if (!match || match[1] === undefined) return line;
+                var start = line.indexOf(match[1], match.index);
+                return line.slice(0, start) + edit(match[1]) + line.slice(start + match[1].length);
+            }).join(separator);
+        });
+    };
+
+    /** Edits a copy of argument [position] before [path] runs. */
+    scriptlets['trusted-edit-inbound-object'] = function (path, position, source) {
+        var target = path && resolveMethod(path);
+        var query = jsonQuery(source, true);
+        var index = parseInt(position, 10);
+        if (!target || !query || isNaN(index)) return;
+        wrapFunction(target.owner, target.name, function (fn, self, args) {
+            var at = index < 0 ? args.length + index : index;
+            if (at >= 0 && at < args.length && args[at] !== null && typeof args[at] === 'object') {
+                var copy;
+                try { copy = parseJson(stringifyJson(args[at])); } catch (_) {}
+                var edited = copy && typeof copy === 'object' ? query.apply(copy) : undefined;
+                if (edited !== undefined) args[at] = edited;
+            }
+            return Reflect_.apply(fn, self, args);
+        });
+    };
+
+    /** Edits the object assigned to [chain] (in place), now and on every later assignment. */
+    scriptlets['edit-object-on-setter'] = function (chain, source) {
+        chain = normalizeChain(chain);
+        var query = jsonQuery(source, false);
+        if (!chain || !query) return;
+        trapChain(window, chain, function (owner, prop) {
+            var descriptor = getOwnPropertyDescriptor(owner, prop);
+            if (descriptor && descriptor.configurable === false) return;
+            var current = owner[prop];
+            if (isObjectLike(current)) query.apply(current);
+            try {
+                defineProperty(owner, prop, {
+                    configurable: true,
+                    get: function () { return current; },
+                    set: function (value) { current = value; if (isObjectLike(value)) query.apply(value); }
+                });
+            } catch (_) {}
+        });
+    };
+
     function textReplacer(pattern, replacement) {
         if (pattern === undefined || pattern === '') return null;
         var all = pattern === '*';
@@ -1116,6 +1451,77 @@
             for (var i = 0; i < args.length; i++) visit(args[i]);
             return result;
         });
+    };
+
+    /** uBO patterns where the regex flags matter ("g" replaces every match): /re/flags or text. */
+    function flaggedRegex(arg) {
+        var match = /^\/(.+)\/([gimsu]*)$/.exec(String(arg));
+        if (!match) return new RegExp(escapeRegex(String(arg)));
+        try { return new RegExp(match[1], match[2]); } catch (_) { return null; }
+    }
+
+    /** Rewrites the string returned by [path], optionally base64-decoded and only on [condition]. */
+    scriptlets['trusted-replace-outbound-text'] = function (path, pattern, replacement) {
+        var target = path && resolveMethod(path);
+        if (!target || pattern === undefined || pattern === '') return;
+        var re = flaggedRegex(pattern), named = namedArgs([].slice.call(arguments, 3));
+        var condition = named.condition ? flaggedRegex(named.condition) : null;
+        var base64 = named.encoding === 'base64';
+        var value = replacement === undefined ? '' : String(replacement);
+        if (value.indexOf('json:') === 0) { try { value = parseJson(value.slice(5)); } catch (_) { return; } }
+        if (!re || (named.condition && !condition)) return;
+        wrapFunction(target.owner, target.name, function (fn, self, args) {
+            var result = Reflect_.apply(fn, self, args);
+            if (typeof result !== 'string') return result;
+            var text = result;
+            if (base64) { try { text = atob(result); } catch (_) { return result; } }
+            if (condition) { condition.lastIndex = 0; if (!condition.test(text)) return result; }
+            re.lastIndex = 0;
+            var replaced = text.replace(re, value);
+            if (replaced === text) return result;
+            if (!base64) return replaced;
+            try { return btoa(replaced); } catch (_) { return result; }
+        });
+    };
+
+    /** Drops clipboard writes whose text matches (pasted-command lures); excludeMatches spares some. */
+    scriptlets['prevent-clipboard-write'] = function (pattern) {
+        var proto = window.Clipboard && Clipboard.prototype;
+        if (!proto) return;
+        var test = matcher(pattern || '');
+        var exclude = namedArgs([].slice.call(arguments, 1)).excludeMatches;
+        var spare = exclude ? matcher(exclude) : null;
+        wrapFunction(proto, 'writeText', function (fn, self, args) {
+            var text = String(args[0]);
+            if (test(text) && !(spare && spare(text))) return Promise.resolve();
+            return Reflect_.apply(fn, self, args);
+        });
+    };
+
+    /** Cancels script-initiated navigations to matching URLs ("location.href": this page). */
+    scriptlets['prevent-navigation'] = function (pattern) {
+        var navigation = window.navigation;
+        if (!pattern || !navigation || typeof navigation.addEventListener !== 'function') return;
+        var test = matcher(pattern === 'location.href' ? escapeRegexLiteral(href) : pattern);
+        navigation.addEventListener('navigate', function (event) {
+            if (event.userInitiated || !event.cancelable || !event.destination) return;
+            if (test(String(event.destination.url))) event.preventDefault();
+        });
+    };
+    function escapeRegexLiteral(text) { return '/^' + escapeRegex(text) + '$/'; }
+
+    /** multiup.*: download buttons carry their target in a "link" attribute instead of a form action. */
+    scriptlets['multiup'] = function () {
+        document.addEventListener('click', function (event) {
+            var button = event.target;
+            if (!button || typeof button.matches !== 'function' || !button.matches('button[link]')) return;
+            var form = button.closest('form');
+            var link = String(button.getAttribute('link') || '').trim();
+            if (!form || form !== button.parentElement || !link) return;
+            event.preventDefault();
+            event.stopPropagation();
+            location.href = link;
+        }, true);
     };
 
     /** Computed-style answers for elements that pages probe to detect hidden ads. */
