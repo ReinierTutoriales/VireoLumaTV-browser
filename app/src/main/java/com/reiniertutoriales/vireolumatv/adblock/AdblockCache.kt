@@ -5,8 +5,11 @@ import java.security.MessageDigest
 
 /** Version/source-scoped caches never reuse compiled rules from a different subscription. */
 internal object AdblockCache {
-    /** Bump when the filter lists or their preprocessing change: compiled rules are not revalidated. */
-    const val REVISION = "v3"
+    /**
+     * Bump when the filter lists, their preprocessing or their compile options change: compiled
+     * rules are not revalidated. v4: per-list permission for `trusted-*` scriptlets.
+     */
+    const val REVISION = "v4"
 
     fun sourceKey(url: String): String = MessageDigest.getInstance("SHA-256")
         .digest(url.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
