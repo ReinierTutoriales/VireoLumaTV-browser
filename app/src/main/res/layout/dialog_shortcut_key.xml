@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The action, its current key, and two buttons: record a new key or clear it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:minWidth="440dp"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/action_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textAppearance="@style/TextAppearance.Vireo.Title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@string/shortcut_current_key"
+            android:textAppearance="@style/TextAppearance.Vireo.Secondary" />
+
+        <TextView
+            android:id="@+id/key_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="@style/TextAppearance.Vireo.Label" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:clipChildren="false"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/assign_key_button"
+            style="@style/Widget.Vireo.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/control_gap"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/shortcut_assign" />
+
+        <Button
+            android:id="@+id/clear_key_button"
+            style="@style/Widget.Vireo.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="@string/action_clear" />
+    </LinearLayout>
+</LinearLayout>

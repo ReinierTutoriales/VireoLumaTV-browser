@@ -1,0 +1,193 @@
+name: Release
+
+on:
+  create:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 1.2.3)'
+        required: true
+      prerelease:
+        description: 'Release type'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - pre-release
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      VERSION: ${{ inputs.version || github.event.ref }}
+      GH_TOKEN: ${{ github.token }}
+      EXPECTED_CERT_SHA256: 7485dc06a3e9b12528679ff8c5f8d06b308300ff454fce8f9f0193e66adf051f
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Validate version and refuse existing releases
+        run: |
+          # A create event gives "release/X.Y.Z"; a manual entry may carry the full branch ref.
+          VERSION="${VERSION#refs/heads/}"
+          VERSION="${VERSION#release/}"
+          [[ "$VERSION" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]
+          printf 'VERSION=%s\n' "$VERSION" >> "$GITHUB_ENV"
+          grep -Fq "versionName = \"$VERSION\"" app/build.gradle.kts
+          if gh api "repos/$GITHUB_REPOSITORY/releases/tags/v$VERSION" >/dev/null 2>&1; then
+            echo 'Release already exists; refusing to replace it.'
+            exit 1
+          fi
+          if [[ "$GITHUB_EVENT_NAME" == create ]]; then
+            [[ "$GITHUB_REF" == "refs/heads/release/$VERSION" ]]
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo 'Tag already exists; refusing to move it.'
+            exit 1
+          fi
+      - uses: actions/setup-java@v6.1.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - uses: Swatinem/rust-cache@v2.9.3
+        with:
+          workspaces: native/adblock-jni
+      - uses: gradle/actions/setup-gradle@v6.4.0
+        with:
+          cache-provider: basic
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          test -n "$KEYSTORE_BASE64"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS"
+      - name: Run tests and build release APKs
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          python scripts/check-source-inventory.py
+          python scripts/refresh-bundled-filters.py
+          for test in scripts/test-*.cjs; do node "$test"; done
+          ./gradlew testGenericDebugUnitTest assembleGenericRelease lintGenericRelease --stacktrace
+      - name: Verify APKs and prepare release files
+        run: |
+          mkdir -p dist
+          python - <<'PY'
+          import json, os, shutil
+          from pathlib import Path
+          root = Path('app/build/outputs/apk/generic/release')
+          metadata = json.loads((root / 'output-metadata.json').read_text())
+          elements = metadata['elements']
+          expected = {'arm64-v8a', 'armeabi-v7a', 'x86_64'}
+          actual = set()
+          for element in elements:
+              assert element['versionName'] == os.environ['VERSION']
+              abi = next(f['value'] for f in element['filters'] if f['filterType'] == 'ABI')
+              assert abi in expected and abi not in actual
+              actual.add(abi)
+              shutil.copy2(root / element['outputFile'], Path('dist') / f"VireoLumaTV-{os.environ['VERSION']}-{abi}.apk")
+          assert actual == expected
+          PY
+          build_tools=$(find "$ANDROID_HOME/build-tools" -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n 1)
+          for apk in dist/*.apk; do
+            python scripts/audit-apk-provenance.py "$apk" --aapt2 "$build_tools/aapt2" --output "$RUNNER_TEMP/$(basename "$apk").audit.json"
+            "$build_tools/apksigner" verify --verbose --print-certs "$apk" > "$RUNNER_TEMP/signature.txt"
+            grep -q "certificate SHA-256 digest: $EXPECTED_CERT_SHA256" "$RUNNER_TEMP/signature.txt"
+            printf '\n%s\n' "$apk" >> dist/SIGNING.txt
+            cat "$RUNNER_TEMP/signature.txt" >> dist/SIGNING.txt
+          done
+          printf '\nFirma: certificado de release vigente desde 1.2.1 (clave nueva); APK release con R8.\n' >> dist/SIGNING.txt
+          printf 'Application source: https://github.com/%s/tree/%s\n' "$GITHUB_REPOSITORY" "$GITHUB_SHA" > dist/RELEASE_SOURCE.txt
+          cp LICENSE.md NOTICE.md app/src/main/assets/licenses/GPL-3.0.txt dist/
+          cp licenses/*.txt dist/
+          cp app/src/main/assets/licenses/SOURCES.txt dist/
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+      - name: Sign checksums
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+        run: |
+          test -n "$RELEASE_SIGNING_KEY" || { echo 'RELEASE_SIGNING_KEY secret is required to publish a verifiable release'; exit 1; }
+          key="$RUNNER_TEMP/release-signing-key.pem"
+          printf '%s\n' "$RELEASE_SIGNING_KEY" > "$key"
+          openssl dgst -sha256 -sign "$key" -out dist/SHA256SUMS.txt.sig dist/SHA256SUMS.txt
+          python - <<'PY'
+          import os, re
+          from pathlib import Path
+          source = Path('app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdater.kt').read_text()
+          match = re.search(r'RELEASE_PUBLIC_KEY_PEM = """(-----BEGIN PUBLIC KEY-----.*?-----END PUBLIC KEY-----)"""', source, re.S)
+          if match is None:
+              raise SystemExit('Pinned release public key is missing')
+          Path(os.environ['RUNNER_TEMP'], 'release-public.pem').write_text(match.group(1) + '\n')
+          PY
+          openssl dgst -sha256 -verify "$RUNNER_TEMP/release-public.pem" -signature dist/SHA256SUMS.txt.sig dist/SHA256SUMS.txt
+          rm -f "$key"
+      - name: Archive earlier releases
+        run: |
+          mkdir -p previous-releases
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" > previous-releases/releases.json
+          gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/heads" > previous-releases/branches.json
+          gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags" > previous-releases/tags.json
+          python - <<'PY' > previous-releases/tags.txt
+          import json, os, re
+          from pathlib import Path
+          version = tuple(map(int, os.environ['VERSION'].split('.')))
+          for release in json.loads(Path('previous-releases/releases.json').read_text()):
+              match = re.fullmatch(r'v(\d+)\.(\d+)\.(\d+)', release['tag_name'])
+              if match and tuple(map(int, match.groups())) < version:
+                  print(release['tag_name'])
+          PY
+          while IFS= read -r tag; do
+            mkdir -p "previous-releases/$tag"
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir "previous-releases/$tag"
+          done < previous-releases/tags.txt
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path('previous-releases')
+          releases = json.loads((root / 'releases.json').read_text())
+          for tag in (root / 'tags.txt').read_text().splitlines():
+              release = next(item for item in releases if item['tag_name'] == tag)
+              for asset in release['assets']:
+                  path = root / tag / asset['name']
+                  assert path.is_file() and path.stat().st_size == asset['size'], str(path)
+                  digest = asset.get('digest')
+                  if digest:
+                      assert digest == 'sha256:' + hashlib.sha256(path.read_bytes()).hexdigest(), str(path)
+          PY
+      - name: Save earlier release archive
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: VireoLumaTV-before-${{ env.VERSION }}
+          path: previous-releases/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Create release
+        uses: softprops/action-gh-release@v3.0.3
+        with:
+          tag_name: v${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
+          name: VireoLumaTV ${{ env.VERSION }}
+          body_path: RELEASE_NOTES.md
+          prerelease: ${{ inputs.prerelease == 'pre-release' }}
+          fail_on_unmatched_files: true
+          files: dist/*
+      - name: Remove completed publication branch
+        if: github.event_name == 'create'
+        run: git push --force-with-lease="$GITHUB_REF:$GITHUB_SHA" origin ":$GITHUB_REF"
+      - name: Remove signing material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks" "$RUNNER_TEMP/release-signing-key.pem"

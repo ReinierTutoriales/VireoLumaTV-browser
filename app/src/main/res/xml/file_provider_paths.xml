@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only completed legacy downloads and verified updater packages are shared with other apps. -->
+<paths>
+    <external-path name="downloaded_files" path="Download/" />
+    <cache-path name="verified_updates" path="updates/" />
+</paths>

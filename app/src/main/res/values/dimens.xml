@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sizes on the 960 x 540 dp TV canvas. -->
+<resources>
+    <!-- Overscan-safe margins: nothing focusable or textual closer to the edge. -->
+    <dimen name="safe_horizontal">48dp</dimen>
+    <dimen name="safe_vertical">27dp</dimen>
+
+    <dimen name="control_size">48dp</dimen>
+    <dimen name="control_icon_padding">12dp</dimen>
+    <dimen name="control_gap">8dp</dimen>
+    <dimen name="row_height">56dp</dimen>
+    <dimen name="corner_small">14dp</dimen>
+    <!-- Half the 48 dp control height: buttons, tabs and fields are full pills. -->
+    <dimen name="corner_large">24dp</dimen>
+    <dimen name="corner_panel">28dp</dimen>
+
+    <!-- Four tabs and the new-tab control fit between the safe margins (960 - 2 x 48 dp). -->
+    <dimen name="tab_width">188dp</dimen>
+    <dimen name="tab_height">48dp</dimen>
+
+    <!-- Side panel: a third of the canvas. -->
+    <dimen name="side_panel_width">320dp</dimen>
+    <dimen name="side_panel_wide">420dp</dimen>
+
+    <dimen name="notification_margin_end">@dimen/safe_horizontal</dimen>
+    <dimen name="notification_margin_bottom">@dimen/safe_vertical</dimen>
+    <dimen name="notification_padding_horizontal">16dp</dimen>
+    <dimen name="notification_padding_vertical">10dp</dimen>
+</resources>

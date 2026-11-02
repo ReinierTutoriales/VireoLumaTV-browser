@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- The application theme: dark surfaces, brand accent, and the TV dialog style. -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="colorPrimary">@color/surface</item>
+        <item name="colorPrimaryDark">@color/background</item>
+        <item name="colorAccent">@color/brand</item>
+        <item name="colorControlNormal">@color/on_surface_variant</item>
+        <item name="colorControlActivated">@color/brand</item>
+        <item name="android:textColorPrimary">@color/on_surface</item>
+        <item name="android:textColorSecondary">@color/on_surface_variant</item>
+        <item name="android:textColorHint">@color/on_surface_variant</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.Vireo.Dialog</item>
+        <item name="android:alertDialogTheme">@style/ThemeOverlay.Vireo.Dialog</item>
+    </style>
+
+    <style name="ThemeOverlay.Vireo.Dialog" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
+        <item name="android:windowBackground">@drawable/bg_dialog</item>
+        <item name="android:windowMinWidthMajor">40%</item>
+        <item name="android:windowMinWidthMinor">60%</item>
+        <item name="android:backgroundDimAmount">0.7</item>
+        <item name="colorAccent">@color/brand</item>
+        <item name="colorControlActivated">@color/brand</item>
+        <item name="android:textColorPrimary">@color/on_surface</item>
+        <item name="android:textColorSecondary">@color/on_surface_variant</item>
+        <item name="android:textColorAlertDialogListItem">@color/on_control</item>
+        <item name="alertDialogStyle">@style/Widget.Vireo.AlertDialog</item>
+        <item name="android:listViewStyle">@style/Widget.Vireo.DialogList</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Vireo.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.Vireo.DialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.Vireo.DialogButton</item>
+    </style>
+
+    <!-- A panel along the end edge of the screen (the application menu). -->
+    <style name="SidePanel" parent="Theme.AppCompat.Dialog">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
+        <item name="android:windowBackground">@drawable/bg_side_panel</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+        <item name="android:windowAnimationStyle">@style/SidePanelAnimation</item>
+        <item name="android:textColorPrimary">@color/on_surface</item>
+    </style>
+    <style name="SidePanelAnimation">
+        <item name="android:windowEnterAnimation">@anim/panel_enter</item>
+        <item name="android:windowExitAnimation">@anim/panel_exit</item>
+    </style>
+
+    <!-- Full-window dialogs that draw their own panel (settings). -->
+    <style name="SettingsScreen" parent="Theme.AppCompat.Dialog">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
+        <item name="android:backgroundDimAmount">0.7</item>
+    </style>
+</resources>

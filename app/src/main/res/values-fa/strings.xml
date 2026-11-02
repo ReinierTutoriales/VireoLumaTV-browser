@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_source">VireoLumaTV از ReinierTutoriales · کد منبع</string>
+    <string name="about_tagline">مرورگر وب ساخته‌شده برای کنترل تلویزیون</string>
+    <string name="about_version">نسخهٔ %s</string>
+    <string name="about_build">ساخت: %1$s · %2$s</string>
+    <string name="about_license">مجوز · MIT</string>
+    <string name="about_privacy">سیاست حریم خصوصی</string>
+    <string name="action_allow">اجازه</string>
+    <string name="action_deny">اجازه نده</string>
+    <string name="action_edit">ویرایش</string>
+    <string name="action_done">تمام</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_cancel">لغو</string>
+    <string name="action_clear">پاک کردن</string>
+    <string name="action_update">به‌روزرسانی</string>
+    <string name="action_exit">خروج</string>
+    <string name="action_open_store">یافتن در فروشگاه</string>
+    <string name="action_dont_show_again">دوباره نشان نده</string>
+    <string name="action_open">باز کردن</string>
+    <string name="address_hint">جست‌وجو یا وارد کردن نشانی وب</string>
+    <string name="nav_back">بازگشت</string>
+    <string name="nav_forward">جلو</string>
+    <string name="nav_reload">بارگیری دوباره</string>
+    <string name="nav_home">خانه</string>
+    <string name="nav_menu">منو</string>
+    <string name="blocker_toggle">مسدودسازی تبلیغات</string>
+    <string name="tabs_new">زبانهٔ جدید</string>
+    <string name="tabs_title">زبانه</string>
+    <string name="menu_history">تاریخچه</string>
+    <string name="menu_favorites">علاقه‌مندی‌ها</string>
+    <string name="menu_downloads">بارگیری‌ها</string>
+    <string name="menu_private">حالت ناشناس</string>
+    <string name="menu_settings">تنظیمات</string>
+    <string name="menu_close_tab">بستن زبانه</string>
+    <string name="menu_quit">خروج از VireoLumaTV</string>
+    <string name="pointer_move_page">جابه‌جایی صفحه</string>
+    <string name="pointer_link_options">گزینه‌های پیوند</string>
+    <string name="pointer_zoom_in">بزرگ‌نمایی</string>
+    <string name="pointer_zoom_out">کوچک‌نمایی</string>
+    <string name="dpad_mode_title">حالت دکمه‌های جهت</string>
+    <string name="dpad_mode_message">نشانگر پنهان می‌شود و دکمه‌های جهت بین پیوندها و کنترل‌های صفحه جابه‌جا می‌شوند، در سایت‌هایی که از آن پشتیبانی کنند.\n\nبرای خروج، روی کنترل «بازگشت» را بزنید یا دکمهٔ B دستهٔ بازی را نگه دارید.</string>
+    <string name="link_open_in_new_tab">باز کردن در زبانهٔ جدید</string>
+    <string name="link_open_in_app">باز کردن در برنامهٔ دیگر</string>
+    <string name="link_download">بارگیری</string>
+    <string name="link_copy">کپی نشانی</string>
+    <string name="link_copied">نشانی کپی شد</string>
+    <string name="link_share">اشتراک‌گذاری</string>
+    <string name="permission_request">%1$s می‌خواهد از این‌ها استفاده کند:\n\n%2$s</string>
+    <string name="permission_location">موقعیت مکانی شما</string>
+    <string name="permission_camera">دوربین</string>
+    <string name="permission_microphone">میکروفون</string>
+    <string name="permission_protected_media">محتوای محافظت‌شده (DRM)</string>
+    <string name="error_no_file_picker">هیچ برنامه‌ای در این دستگاه نمی‌تواند فایل انتخاب کند</string>
+    <string name="external_open_title">در برنامهٔ دیگری باز شود؟</string>
+    <string name="external_open_message">این صفحه می‌خواهد نشانی‌ای را باز کند که برنامهٔ دیگری آن را مدیریت می‌کند:</string>
+    <string name="external_no_app">هیچ برنامه‌ای در این دستگاه نمی‌تواند این نشانی را باز کند</string>
+    <string name="error_no_app">هیچ برنامه‌ای نمی‌تواند این را باز کند</string>
+    <string name="http_auth_message">%1$s نام کاربری و گذرواژه می‌خواهد.</string>
+    <string name="http_auth_realm">پیام سایت: %1$s</string>
+    <string name="http_auth_cleartext">این اتصال رمزگذاری نشده است: نام کاربری و گذرواژه به‌صورت متن ساده ارسال می‌شوند.</string>
+    <string name="http_auth_other_site">سایت دیگری درخواست می‌کند، نه %1$s که در حال باز شدن است. فقط اگر به آن اعتماد دارید وارد شوید.</string>
+    <string name="http_auth_title">ورود به این سایت</string>
+    <string name="http_auth_user">نام کاربری</string>
+    <string name="http_auth_password">گذرواژه</string>
+    <string name="error_no_webview">این دستگاه WebView قابل‌استفاده ندارد. Android System WebView را نصب یا به‌روز کنید.</string>
+    <string name="webview_outdated">موتور صفحه (Android System WebView) بیش از شش ماه به‌روز نشده و اصلاحیه‌های امنیتی را ندارد. آن را از فروشگاه یا به‌روزرسانی‌های سیستم به‌روز کنید.</string>
+    <string name="cert_title">این اتصال خصوصی نیست</string>
+    <string name="cert_site">سایت</string>
+    <string name="cert_problem">مشکل</string>
+    <string name="cert_details">گواهی</string>
+    <string name="cert_go_back">بازگشت</string>
+    <string name="cert_proceed">به‌هرحال ادامه بده (ناامن)</string>
+    <string name="cert_expired">گواهی منقضی شده است</string>
+    <string name="cert_wrong_site">گواهی متعلق به سایت دیگری است</string>
+    <string name="cert_bad_date">گواهی در این تاریخ معتبر نیست</string>
+    <string name="cert_invalid">گواهی معتبر نیست</string>
+    <string name="cert_untrusted">گواهی را مرجع مورد اعتمادی صادر نکرده است</string>
+    <string name="blocker_state_paused">متوقف</string>
+    <string name="blocker_state_loading">در حال بارگیری قوانین</string>
+    <string name="blocker_state_updating">در حال به‌روزرسانی قوانین</string>
+    <string name="blocker_state_active">فعال</string>
+    <string name="blocker_state_partial">برخی قوانین</string>
+    <string name="blocker_state_saved">قوانین ذخیره‌شده</string>
+    <string name="blocker_state_none">بدون قانون</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">مسدودسازی تبلیغات: %1$s. %2$d مورد در این صفحه مسدود شد.</item>
+        <item quantity="other">مسدودسازی تبلیغات: %1$s. %2$d مورد در این صفحه مسدود شد.</item>
+    </plurals>
+    <string name="popups_title">پنجره‌های بازشو: %s</string>
+    <string name="popups_dialog_blocked">یک پنجرهٔ گفتگوی این صفحه مسدود شد</string>
+    <string name="popups_window_blocked">یک پنجرهٔ بازشو مسدود شد</string>
+    <string name="blocker_never">هرگز</string>
+    <string name="blocker_last_update">آخرین به‌روزرسانی</string>
+    <string name="blocker_update_lists">به‌روزرسانی فهرست‌های فیلتر</string>
+    <string name="blocker_updating">در حال به‌روزرسانی فهرست‌های فیلتر…</string>
+    <string name="blocker_updated">فهرست‌های فیلتر به‌روز هستند</string>
+    <string name="blocker_partial">برخی فهرست‌ها به‌روز شدند؛ بقیه قوانین ذخیره‌شدهٔ خود را نگه می‌دارند.</string>
+    <string name="blocker_using_saved">قوانین ذخیره‌شده استفاده می‌شوند؛ هیچ فهرستی بارگیری نشد.</string>
+    <string name="blocker_not_refreshed">به‌روز نشده: %1$s</string>
+    <string name="blocker_update_failed">فهرست‌های فیلتر بارگیری نشدند. اتصال یا نشانی فهرست را بررسی کنید.</string>
+    <string name="favorites_add">افزودن این صفحه</string>
+    <string name="favorites_empty">هنوز علاقه‌مندی‌ای نیست</string>
+    <string name="favorites_new">علاقه‌مندی جدید</string>
+    <string name="field_title">عنوان</string>
+    <string name="field_address">نشانی</string>
+    <string name="history_delete_selected">صفحه‌های انتخاب‌شده از تاریخچه حذف شوند؟</string>
+    <string name="history_delete_all">کل تاریخچه پاک شود؟</string>
+    <string name="download_started">بارگیری اضافه شد. محل ذخیره:\n%s</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">منو. %1$d بارگیری در جریان است</item>
+        <item quantity="other">منو. %1$d بارگیری در جریان است</item>
+    </plurals>
+    <string name="downloads_empty">هنوز بارگیری‌ای نیست</string>
+    <string name="download_cancelled">لغو شد</string>
+    <string name="download_file_missing">فایل دیگر وجود ندارد</string>
+    <string name="download_no_app">هیچ برنامه‌ای این نوع فایل را باز نمی‌کند</string>
+    <string name="download_open_folder">نمایش در پوشه</string>
+    <string name="download_no_file_manager">هیچ مدیر فایلی نصب نیست</string>
+    <string name="download_install">نصب</string>
+    <string name="install_allow_unknown_sources">برای نصب برنامه‌ها، «منابع ناشناس» را در تنظیمات سیستم روشن کنید.</string>
+    <string name="install_allow_this_app">در تنظیمات سیستم به VireoLumaTV اجازهٔ نصب برنامه بدهید.</string>
+    <string name="download_storage_unavailable">حافظه در دسترس نیست</string>
+    <string name="download_folder_error">پوشهٔ بارگیری‌ها ساخته نشد</string>
+    <string name="downloads_channel_description">پیشرفت بارگیری‌ها</string>
+    <string name="update_available_title">به‌روزرسانی در دسترس است</string>
+    <string name="update_available_message">نسخهٔ %s در دسترس است.</string>
+    <string name="update_none">VireoLumaTV به‌روز است</string>
+    <string name="update_failed">بررسی یا نصب به‌روزرسانی ممکن نشد</string>
+    <string name="settings_tab_general">عمومی</string>
+    <string name="settings_tab_shortcuts">میان‌برها</string>
+    <string name="settings_tab_about">درباره</string>
+    <string name="settings_search_engine">موتور جست‌وجو</string>
+    <string name="settings_search_engine_address">نشانی جست‌وجو ([query] با عبارت جست‌وجو جایگزین می‌شود)</string>
+    <string name="settings_home_page">صفحهٔ خانه</string>
+    <string name="settings_home_page_address">نشانی صفحهٔ خانه</string>
+    <string name="settings_user_agent_choice">معرفی مرورگر به‌عنوان</string>
+    <string name="settings_user_agent">عامل کاربر</string>
+    <string name="settings_user_agent_custom">عامل کاربر سفارشی</string>
+    <string name="settings_keep_screen_on">روشن نگه‌داشتن صفحه</string>
+    <string name="settings_stick_moves_pointer">حرکت نشانگر با اهرم</string>
+    <string name="settings_pointer_speed">بیشینهٔ سرعت نشانگر</string>
+    <string name="settings_pointer_acceleration">شتاب نشانگر</string>
+    <string name="settings_percent_of_default">%d%% از مقدار پیش‌فرض</string>
+    <string name="settings_darken_pages">تیره کردن صفحه‌های وب (پس از راه‌اندازی دوباره)</string>
+    <string name="settings_autoplay">پخش خودکار ویدیو و صدا توسط صفحه‌ها</string>
+    <string name="settings_video_quality">بیشترین کیفیت ویدیو</string>
+    <string name="settings_debugging">اشکال‌زدایی صفحه‌های وب (پس از راه‌اندازی دوباره)</string>
+    <string name="settings_debugging_warning">اشکال‌زدایی به هر کسی که به این دستگاه دسترسی اشکال‌زدایی دارد اجازه می‌دهد محتوای صفحه، کوکی‌ها و داده‌های نشست را بخواند. فقط روی دستگاه مورد اعتماد و هنگام رفع اشکال روشنش کنید.</string>
+    <string name="settings_restart_needed">برای اعمال، VireoLumaTV را دوباره راه‌اندازی کنید</string>
+    <string name="settings_clear_cache">پاک کردن دادهٔ وب ذخیره‌شده</string>
+    <string name="settings_section_browsing">مرور</string>
+    <string name="settings_section_protection">محافظت</string>
+    <string name="settings_section_display">ویدیو و نمایش</string>
+    <string name="settings_section_remote">کنترل و نشانگر</string>
+    <string name="settings_section_advanced">پیشرفته</string>
+    <string name="settings_filter_list">نشانی فهرست فیلتر</string>
+    <string name="warning_title">هشدار</string>
+    <string name="private_explained">مرور خصوصی پس از خروج، تاریخچه، کوکی‌ها، داده‌های سایت و ورودی‌های فرم را نگه نمی‌دارد.\n\nبارگیری‌ها و علاقه‌مندی‌ها حفظ می‌شوند. سایت‌هایی که بازدید می‌کنید، شبکهٔ شما و ارائه‌دهندهٔ اینترنت همچنان فعالیت شما را می‌بینند.</string>
+    <string name="shortcut_unassigned">تعیین نشده</string>
+    <string name="shortcut_current_key">کلید:</string>
+    <string name="shortcut_key_code">کلید %d</string>
+    <string name="shortcut_assign">تعیین کلید</string>
+    <string name="shortcut_waiting">یک دکمهٔ کنترل را بزنید…</string>
+    <string name="shortcut_reserved">این کلید برای حرکت در مرورگر است و نمی‌توان آن را تعیین کرد</string>
+    <string name="shortcut_long_press">نگه‌داشتن</string>
+    <string name="media_play_pause">پخش / توقف</string>
+    <string name="media_stop">توقف پخش</string>
+    <string name="media_rewind">۱۰ ثانیه عقب</string>
+    <string name="media_fast_forward">۱۰ ثانیه جلو</string>
+    <string name="favorite_added">به علاقه‌مندی‌ها افزوده شد</string>
+    <string name="favorite_exists">از قبل در علاقه‌مندی‌ها است</string>
+    <string name="favorite_not_web">فقط صفحه‌های وب را می‌توان در علاقه‌مندی‌ها ذخیره کرد</string>
+    <string-array name="popups_levels">
+        <item>اجازه به هشدارها و پنجره‌های جدید</item>
+        <item>مسدود کردن هشدارهای صفحه</item>
+        <item>مسدود کردن هشدارها و پنجره‌هایی که بدون کلیک باز می‌شوند</item>
+        <item>مسدود کردن هشدارها و همهٔ پنجره‌های جدید</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>صفحهٔ آغاز VireoLumaTV</item>
+        <item>موتور جست‌وجو</item>
+        <item>نشانی سفارشی</item>
+        <item>صفحهٔ خالی</item>
+    </string-array>
+    <string-array name="settings_video_qualities">
+        <item>خودکار (بهترین کیفیتی که تلویزیون رمزگشایی می‌کند)</item>
+        <item>بدون محدودیت</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </string-array>
+    <string name="download_queue_full">صف بارگیری پر است. منتظر بمانید تا یک بارگیری تمام شود و دوباره تلاش کنید.</string>
+    <string name="download_not_allowed">اندروید اکنون اجازه شروع بارگیری را نداد. با باز بودن مرورگر روی صفحه دوباره تلاش کنید.</string>
+    <string name="download_time_limit">اندروید بارگیری‌ها را متوقف کرد: محدودیت زمانی پس‌زمینه به پایان رسید.</string>
+    <string name="tab_action_new">زبانهٔ جدید در کنار آن</string>
+    <string name="tab_action_close">بستن این زبانه</string>
+    <string name="tab_action_close_all">بستن همهٔ زبانه‌ها</string>
+    <string name="tab_action_move_left">جابه‌جایی زبانه به چپ</string>
+    <string name="tab_action_move_right">جابه‌جایی زبانه به راست</string>
+    <string name="tab_action_favorite">افزودن زبانه به علاقه‌مندی‌ها</string>
+    <string name="download_failed">ناموفق</string>
+    <string name="system_settings_unavailable">تنظیمات Android باز نشد.</string>
+    <string name="favorite_save_failed">علاقه‌مندی ذخیره نشد.</string>
+    <string name="favorites_update_failed">علاقه‌مندی‌ها به‌روز نشد.</string>
+    <string name="favorite_address_required">یک نشانی وارد کنید.</string>
+    <string name="install_open_failed">نصب‌کننده باز نشد.</string>
+    <string name="webview_missing_title">WebView در دسترس نیست</string>
+    <string name="settings_language">زبان برنامه</string>
+    <string name="language_system">زبان سیستم</string>
+    <string name="install_failed">برنامه نصب نشد.</string>
+    <string name="home_title">خانه</string>
+    <string name="home_search">جست‌وجو در DuckDuckGo</string>
+    <string name="home_shortcuts">میان‌برها</string>
+    <string name="home_add">افزودن میان‌بر</string>
+    <string name="home_edit">ویرایش</string>
+    <string name="home_edit_label">ویرایش میان‌برها</string>
+    <string name="home_done">تمام</string>
+    <string name="home_save_failed">ذخیره نشد.</string>
+    <string name="home_edit_prompt">نشانی را ویرایش کنید. برای حذف میان‌بر، آن را خالی بگذارید.</string>
+    <string name="home_remove_confirm">این میان‌بر از خانه حذف شود؟</string>
+    <string name="home_invalid">نشانی نامعتبر است. از http:// یا https:// بدون نام کاربری و گذرواژه استفاده کنید.</string>
+    <string name="home_duplicate">این میان‌بر از قبل در خانه هست.</string>
+    <string name="home_youtube_removed">YouTube (حذف‌شده، برای بازگرداندن فشار دهید)</string>
+    <string name="home_favorite_managed">این میان‌بر یک علاقه‌مندی است. آن را در %s ویرایش یا حذف کنید.</string>
+    <string name="home_edit_item" formatted="false">ویرایش %s</string>
+    <string name="home_youtube_restore">YouTube دوباره در خانه نمایش داده شود؟</string>
+    <string name="home_youtube_remove">YouTube از خانه حذف شود؟</string>
+    <string name="home_limit">به سقف میان‌برها رسیدید (%d).</string>
+    <string name="home_add_prompt">نشانی میان‌بر (https://…)</string>
+    <string name="home_empty_search">چیزی برای جست‌وجو بنویسید.</string>
+    <string name="settings_slow_frames">فریم‌های کند از زمان باز شدن برنامه: %1$s</string>
+</resources>

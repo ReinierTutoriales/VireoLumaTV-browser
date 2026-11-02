@@ -1,0 +1,19 @@
+VireoLumaTV — source and license information
+
+Original application code: MIT, Copyright (c) 2026 ReinierTutoriales.
+The application license is included as APP-LICENSE.txt.
+Project: https://github.com/ReinierTutoriales/VireoLumaTV-browser
+Each release includes RELEASE_SOURCE.txt with the exact source commit.
+
+Native blocking engine: adblock-rust 0.13.5, MPL 2.0.
+Source: https://crates.io/crates/adblock/0.13.5
+JNI bridge and dependency lockfile: native/adblock-jni in the application sources.
+The bridge retains its MPL 2.0 license.
+
+See NOTICE.md and rust-crates.txt for separately licensed components.
+Make corresponding covered source and required notices available when distributing binaries.
+
+Bundled first-install filter data: assets/adblock/baseline/manifest.json records
+source URLs, retrieval time and hashes. Original source text is shipped as gzip;
+GPL-3.0.txt and NOTICE.md describe its authors and license. The maintenance script
+scripts/refresh-bundled-filters.py verifies locally or refreshes explicitly.

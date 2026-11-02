@@ -1,0 +1,303 @@
+# Política de estabilidad, navegación y modernización
+
+Vigente desde 2026-10-07. Objetivo: mejorar el navegador TV preservando sus
+recorridos críticos y detectar fallos antes de entregar versiones. No existe
+una garantía técnica de cero regresiones; esta política exige pruebas y
+mediciones adecuadas al riesgo. Aplica a colaboradores y agentes mediante
+`AGENTS.md`, al trabajo mediante `ROADMAP.md` y a revisión mediante la plantilla PR.
+
+El [plan detallado de ejecución](IMPLEMENTATION_PLAN.md) concreta tareas,
+recorridos, mediciones y aceptación; mantiene separado lo propuesto de lo entregado.
+
+## 1. Estado actual y restricciones reales
+
+Base de esta política: `660c0db`. Las pruebas actuales cubren partes del
+contrato, pero no toda la aplicación con WebView real. CI construye debug/release,
+ejecuta pruebas Android/Javascript y controla el esquema Room; no ejecuta
+actualmente la matriz completa en una TV física ni benchmarks de release.
+La plantilla PR y AGENTS son reglas de trabajo: **no configuran por sí solos
+protección de rama ni impiden un merge en GitHub**. No se ha modificado esa
+configuración administrativa.
+
+El repositorio usa WebView del sistema con AndroidX WebKit. La biblioteca
+`androidx.webkit:webkit:1.18.0` coincide con la estable consultada el
+30 de octubre de 2026 [O4]. Actualizarla no sustituye el proveedor Blink
+instalado por Android/OEM, ni garantiza soporte de todas sus funciones.
+
+Hay una WebView viva por política de recursos; otras pestañas guardan estado y
+se reconstruyen al seleccionarlas. Es una implementación deliberada, no prueba
+por sí misma de un motor defectuoso. Puede causar recargas o perder estado que
+WebView no serializa; debe verificarse la restauración y nunca aceptar pantalla
+vacía como efecto permitido de ahorro.
+
+El bloqueador conserva reglas funcionales si falla la red, distingue resultados
+UPDATED/PARTIAL/CACHED/ERROR y programa actualización cada 24 horas,
+reintento parcial a las 6 horas y reintento de fallo de red a los 60 minutos. Los disparadores de primer plano, sesión larga y conectividad se implementaron
+en el [lote adblock](audit/ADBLOCK_OFF_DEVICE_20261007.md); validar integración
+y compatibilidad real en TV sigue pendiente.
+No concluir que cada resultado CACHED significa fallo del bloqueador.
+
+## 2. Contrato de navegación protegido
+
+**Correcciones solicitadas en TV (2026-10-29):** la cápsula recorre horizontalmente
+los controles habilitados, incluida la dirección; OK activa su edición. Cada pestaña
+añade un botón de cierre alcanzable con mando. Favoritos se retira del menú y de
+las sugerencias sin borrar su tabla ni los datos guardados. Las ventanas de páginas
+requieren una activación nativa consumible salvo excepción explícita del sitio.
+Estas correcciones requieren CI y validación física; no resuelven por sí solas
+los sistemas antiadblock de los reproductores.
+
+
+**Cambio de contrato (2026-10-27, petición del propietario):** la barra inferior flotante se sustituye por una
+cápsula superior única con URL, Atrás, Adelante, Recargar, Inicio, escudo del bloqueador y menú. Cerrar pestaña
+sigue disponible en el menú y también mediante la X de cada pestaña. Pulsación larga en el escudo abre el detalle del bloqueador. Los recorridos
+N01–N06 se leen con esta cápsula; el resto de comportamiento no cambia. Pendiente de validación en Android TV.
+
+**Búsqueda por voz eliminada (2026-10-27, petición del propietario):** no hay entrada de menú, atajo ni
+callback. El permiso `RECORD_AUDIO` se conserva para el micrófono que piden las páginas web.
+
+**Puntero y mando (2026-10-27, petición del propietario):** el clic con OK sigue siendo un toque de dedo; el
+scroll de borde, el modo agarrar y el desplazamiento del puntero se envían a la página como rueda y hover de ratón.
+El stick analógico mueve el puntero a velocidad proporcional; el hat del gamepad es su D-pad. «Navegar con los ejes
+del joystick» desactivado apaga solo el stick. Pendiente de validación en Android TV.
+Al salir de un vídeo a pantalla completa la página recupera el modo que tenía antes (puntero o D-pad
+directo); N05 no fuerza el puntero.
+
+**Interfaz solo oscura (2026-10-27, petición del propietario):** el tema de la aplicación es oscuro siempre;
+se retiran el ajuste Tema y la paleta clara. Los fondos de la app, Inicio y el aviso de certificado
+son negros, con texto claro, foco diferenciado y fuente sans-serif del sistema;
+Inicio no ofrece una variante clara. «Oscurecer las páginas web» depende solo de su ajuste
+(activado por defecto), ya no del modo noche del sistema. Pendiente de validación en Android TV.
+
+**Sugerencias de dirección (2026-10-27, petición del propietario):** al editar la dirección se muestran hasta
+seis sugerencias locales del historial en lugar de la tira de pestañas.
+La retirada de favoritos del 29 de octubre deja la lista vacía en incógnito; no
+se consulta historial normal ni se borran datos existentes.
+Abajo entra en la lista sin cancelar la edición, Arriba vuelve al campo, OK abre la sugerencia y Atrás sigue N04.
+El campo ya no prohíbe las sugerencias del teclado (`textUri`) ni abre el teclado a pantalla completa.
+Nada sale del dispositivo. Pendiente de validación en Android TV con varios teclados.
+
+**Cierre y escudo (2026-10-30, petición del propietario):** la X tiene un objetivo de 48 dp;
+Derecha desde el título la enfoca y la Izquierda vuelve al título. OK cierra esa pestaña;
+la pulsación larga en título o cierre conserva las opciones. Al cerrar con la cápsula abierta,
+esta permanece abierta; cerrar una pestaña de fondo conserva la página activa y un cierre
+repetido de una pestaña retirada no actúa. El escudo es verde habilitado y rojo pausado,
+con variantes contrastadas al enfocar; el detalle sigue indicando si hay reglas cargadas.
+Validación física pendiente.
+
+**Rediseño TV (2026-10-28, petición del propietario):** interfaz nativa de Android TV con vistas
+AppCompat, sin dependencias nuevas. El foco invierte el control (superficie clara, contenido oscuro) y lo
+escala 1,1 (botones), 1,05 (pestañas y botones de texto) o 1,025 (filas), según el sistema de foco de TV.
+Los controles del navegador son una capa superior sobre un degradado, dentro de los márgenes seguros de
+48/27 dp; las pestañas son píldoras de 188 dp (caben cuatro y «+»). El menú de aplicación es un panel
+lateral a la derecha con icono por entrada; Atrás lo cierra sin elegir. La vista previa de otra pestaña
+ocupa la pantalla detrás de los controles, sin recortar. Las acciones y el orden de foco
+(N01–N06) conservan las correcciones posteriores de controles deshabilitados y cierre de pestañas. Pendiente de validación en Android TV.
+
+Estos recorridos deben seguir funcionando después de cada cambio que toque
+MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
+
+| ID | Recorrido | Resultado obligatorio |
+| --- | --- | --- |
+| N01 | Página → abrir cápsula | Cápsula visible con foco en Atrás cuando está habilitado, o en el primer comando habilitado; foco accionable. |
+| N02 | Mover foco por la cápsula → Abajo → pestañas → Arriba → URL | Controles alcanzables, sin ocultar filas por recibir foco; buscar no abre IME hasta activar edición. |
+| N03 | Cápsula Atrás/Adelante/Recargar/Inicio | Ejecutar una sola acción sobre la pestaña seleccionada; botones coherentes con historial. |
+| N04 | Editar dirección → Atrás/cancelar | Cerrar IME/edición antes de alterar historial; no enfocar accidentalmente Salir. |
+| N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view una vez y mostrar la cápsula en esa misma pulsación; foco en Atrás accionable, acceso a pestañas y retorno al puntero, sin navegar otra URL. |
+| N06 | Pestaña A → preview B → comando de la cápsula | Aplicar al contenido seleccionado B, sin quedarse apuntando a A. |
+| N07 | Diálogo/selector/permiso → cancelar o volver | Resolver callback una vez con su propietario; foco vuelve al lugar correcto. |
+| N08 | Atrás desde raíz | Salida al launcher alcanzable y sin bucle, conservando acceso al menú y comandos inferiores. La secuencia exacta debe especificarse antes de implementarla. |
+| N09 | Mando OK, D-pad, pulsación larga, gamepad y puntero | Un gesto físico produce una acción; se conserva selección, scroll y clic en enlaces. |
+| N10 | Incógnito, cambio de modo, muerte/recreación de renderer | Mantener separación de datos y navegación recuperable sin abrir pestañas normales como privadas o viceversa. |
+
+La auditoría F01 señala el bucle de Atrás del sistema. **No es una instrucción
+para quitar el menú, los botones inferiores o hacer que Atrás navegue siempre**.
+Antes del arreglo, definir estados y transición de salida; conservar N01–N10.
+La recomendación oficial de TV exige foco comprensible y salida por Atrás [O2].
+
+## 3. Evidencia exigida y control de regresiones
+
+| Tipo de cambio | Evidencia antes de integrar/entregar |
+| --- | --- |
+| Lógica funcional | Reproducción antes, prueba que detecta el defecto, después correcto y suites vecinas. |
+| Navegación/barras/fullscreen | N01–N10 según impacto, rutas reales de eventos; pruebas con dobles no bastan para afirmar fullscreen de WebView real. |
+| Adblock/popups/descargas | Fixtures deterministas de página legítima y abusiva, actualización fallida, descarga explícita y límites de memoria; además sitios reales para compatibilidad. |
+| Persistencia | Estados válidos/inválidos, migración, cierre abrupto, concurrencia e incógnito; preservar datos del usuario. |
+| UI visual | Comparación de capturas con estados normal/foco/pressed/disabled, overscan, texto largo y contraste; mando real cuando cambia geometría/foco. |
+| Rendimiento/renderer | Release, mismo dispositivo/proveedor/página, varias repeticiones, app y renderer separados; trazas y métricas antes/después. |
+| Dependencias/toolchain | Changelog oficial, matriz mínima/proveedor, suites y APK minificado; comprobar integración real, no solo resolución de Gradle. |
+| Documentación | Coherencia, enlaces locales, diff limpio y separación entre implementado y propuesto. |
+
+Suites de partida ya existentes, ampliar según fallo:
+
+- Navegación: BrowserNavigationTest, CursorMenuFocusTest, CursorLayoutRecoveryTest,
+  VirtualCursorPointerTest, CursorPointerMouseTest, RemoteInputContractTest, TabRowsTest
+  y scripts/test-webview-controls.cjs.
+- Pestañas/estado: SingleLiveTabTest, RendererRecoveryTest, AtomicTabSaveTest,
+  ExitPersistenceTest e IncognitoSessionTabsTest.
+- Bloqueo: AdblockUpdateTest, AdblockCacheTest, AdblockFilterListValidatorTest,
+  AdblockListDownloaderTest, AdblockRequestClassifierTest y YouTubeAdblockControllerTest.
+- Descargas/bridge: DownloadResourceTest, DownloadBackoffCancellationTest,
+  DownloadUtilsDataUrlTest, BridgePagePolicyTest, UserActivationTrackerTest,
+  IncognitoDownloadTest y scripts/test-home-page-security.cjs.
+
+La estrategia usa pruebas pequeñas para feedback rápido y pruebas de integración
+para recorridos reales, con una validación de release antes de distribuir [O1].
+No fijar porcentajes de cobertura como sustituto de probar rutas críticas.
+
+Cada PR funcional registra: SHA base, causa, alcance, contratos afectados,
+comandos/resultados, SHA de CI, dispositivo/proveedor si procede, riesgos
+pendientes y commit(s) a revertir. No marcar un pendiente como ejecutado.
+Si aparece una regresión, detener la entrega afectada, conservar evidencia y
+revertir el cambio causal o repararlo con prueba reproducible; no superponer
+ajustes sin conocer la causa. Las migraciones deben revisarse antes de revertir.
+
+## 4. Política de pestañas y recursos
+
+Separar **seleccionada**, **cargando**, **lista**, **suspendida**, **restaurando** y
+**fallida**. El usuario debe entender qué ocurrió y poder reanudar/reintentar.
+Conservar URL/historial antes de suspender; si restoreState falla, cargar la URL
+con fallback y sin anunciar éxito falso.
+
+Objetivo de diseño: modos Ahorro y Equilibrado con carga en segundo plano
+**acotada**, priorizando siempre la pestaña visible. Ahorro parte del modo
+actual. Equilibrado debe evaluar una precarga adicional y concederla solo
+bajo presupuesto medido, sin dar por seguro un número de WebViews por tener
+2 GB. Si hay presión, suspender trabajo de fondo y conservar su estado. Los
+umbrales y el modo predeterminado se decidirán con mediciones y validación;
+no están implementados por este documento.
+
+Condiciones para cambiar la política actual:
+
+- Consultar isLowRamDevice y medir app + renderer; incluir vídeo/fullscreen.
+- Coordinar pauseTimers/resumeTimers a nivel de proceso: son globales y la
+  lógica actual depende de una sola vista viva. No copiarla por pestaña al
+  añadir concurrencia.
+- Limitar estados, bitmaps, tareas, bytes pendientes, red, precargas y caché
+  de forma agregada; limitar trabajadores no limita la cola.
+- Cancelar navegación/precarga cerrada o sustituida, mantener prioridad de
+  interacción y evitar vídeo/audio de fondo no autorizado.
+- Probar A→B→A, fallo de restauración, formularios, sesión, scroll, popups,
+  pérdida del renderer, cambio de modo y presión de memoria.
+
+## 5. Política contra navegación y descargas abusivas
+
+Adblock de recursos, creación de ventanas, navegación/redirecciones y descargas
+son cuatro puntos distintos. Una lista de anuncios no cubre todos ellos.
+No confiar solamente en isUserGesture: un clic en un anuncio puede ser un gesto
+real y aun así abrir una cadena abusiva.
+
+Diseñar decisiones con origen, pestaña/sesión, acción explícita, destino,
+recursos solicitados y política por sitio. No convertir cada redirección HTTP
+en un popup ni romper login/OAuth, pagos o enlaces target=_blank legítimos.
+
+| Superficie | Comportamiento objetivo y aceptación |
+| --- | --- |
+| Reglas adblock | Actualización atómica; conservar última válida; resultados y fecha por fuente claros; reintento al recuperar conexión/primer plano con backoff y sin trabajos duplicados. Probar sesión larga y actualización manual durante carga. |
+| Ventanas emergentes | Bloquear aperturas automáticas y ráfagas; controlar ventanas originadas por clic según política del sitio. Contador comprensible y excepción deliberada; ninguna pestaña/vista huérfana. |
+| Descargas HTTP/blob/data/stream | Acción nativa Descargar o confirmación con origen, nombre y tipo; política decide antes de encolar. No generar un diálogo por cada anuncio: agrupar/rechazar ráfagas. Tokens de blob no sustituyen la política de todos los tipos de descarga. |
+| Instaladores/enlaces externos | No instalar ni abrir aplicaciones por anuncio automáticamente; preservar descarga/acción explícita del usuario y flujo Android de permisos. |
+| Excepciones por sitio | Alcance claro y reversible; no desactivar TLS ni Safe Browsing; preservar login, archivos y reproducción legítimos. |
+
+El bloqueo de una petición debe dejar UI operativa y mensajes limitados; nunca
+crear un bucle de recargas, diálogos o pruebas JS que consuman CPU para «ganar»
+a la publicidad. Compatibilidad perfecta con todas las webs no es garantizable.
+
+## 6. Modernización del motor, UI y dependencias
+
+Evaluar APIs estables de AndroidX WebKit ya disponible: startup asíncrono,
+seguimiento de navegación, control de favicons/duplicación y caché de perfil.
+Usar feature checks y fallback para cada proveedor. Las notas oficiales de
+1.17 describen navegación y control de caché/favicons; no prueban una mejora
+para este repositorio sin medir [O4]. No sustituir el motor como primera medida.
+
+La barra superior se renovará con tipografía legible a distancia, iconos
+consistentes, superficies y espaciado coherentes, contraste y foco/pressed
+visibles, tamaños adecuados al mando y transiciones breves. Conservar todas
+sus acciones y relaciones con la barra inferior. Primero capturas de propuesta
+y contrato de foco; después estilos; finalmente comportamiento si está
+justificado. No migrar todo a Compose ni cambiar librería solo por apariencia.
+Las guías TV centran la interacción en el foco [O3].
+
+Antes de cada cambio de dependencias y cada release, consultar fuentes
+oficiales actuales. Registrar versión instalada/candidata, canal, cambio útil,
+compatibilidad, validación y revert. Preferir estable; alpha/beta requieren
+motivo concreto y aislamiento. Separar librerías de UI, WebKit, Room y
+AGP/Kotlin/KSP en cambios distintos salvo versiones técnicamente acopladas.
+No usar rangos dinámicos ni actualizar todo en lote. Una revisión periódica es
+una tarea de mantenimiento propuesta; este documento no crea una automatización.
+
+Medir arranque, respuesta del mando, cambio de pestaña, carga web, memoria y
+vídeo. Evaluar Macrobenchmark/Baseline Profiles para rutas nativas; no asumir
+que optimizan Blink/JavaScript/decoder. Los benchmarks de rendimiento real se
+validan en dispositivo físico [O5]. No inventar mejoras porcentuales ni umbrales
+antes de obtener una base repetible.
+
+## Fuentes oficiales consultadas el 2026-10-07
+
+- O1: https://developer.android.com/training/testing/fundamentals/strategies
+- O2: https://developer.android.com/training/tv/get-started/navigation
+- O3: https://developer.android.com/design/ui/tv/guides/styles/focus-system
+- O4: https://developer.android.com/jetpack/androidx/releases/webkit
+- O5: https://developer.android.com/topic/performance/baselineprofiles/measure-baselineprofile
+- Memoria/renderer/permisos: fuentes y hallazgos en
+  [auditoría oficial Android TV](audit/ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md).
+
+
+## Sugerencias con puntero y selección de vídeo
+
+Al editar la dirección, Abajo entra en las sugerencias: puntero dentro de la lista
+si la página usa puntero, foco por filas en modo D-pad directo. OK elige, Arriba
+desde el borde superior vuelve al campo y Atrás conserva el cierre de edición.
+El puntero de la página permanece suprimido; el de sugerencias se dibuja encima
+de sus filas y se reinicia al cerrar o perder foco. No se envían consultas de
+autocompletado a proveedores externos.
+
+Los comandos multimedia priorizan el elemento fullscreen, después vídeos
+visibles y su reproducción/tamaño, con audio como alternativa. El seek respeta
+los rangos DVR; en vídeo de duración finita con metadatos permite currentTime
+aunque el proveedor aún no informe rangos. No fuerza seek de un directo sin rango.
+VP8, VP9 y AV1 se comprueban por separado; no se deshabilita VP8 por faltar VP9.
+La enumeración de decodificadores se comparte una vez por proceso.
+YouTube conserva el reproductor de su web móvil, con las mismas rutas de filtros,
+scriptlets y bloqueo de ventanas. Se descartan reproductores que desvíen peticiones
+fuera del bloqueador. No se añade Media3 ni un reproductor YouTube incrustado.
+El control de iframes de otro origen y la calidad adaptativa siguen dependiendo
+del reproductor y del proveedor WebView.
+Fuentes: https://developer.android.com/training/tv/get-started/navigation ;
+https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime ;
+https://developer.android.com/reference/android/media/MediaCodecInfo .
+Prueba física con mando/teclado/proveedor WebView pendiente.
+
+
+## Base de filtros sin conexión y trabajo repetido
+
+En primera instalación o si faltan textos válidos, la suscripción predeterminada
+puede recuperar las siete listas de `assets/adblock/baseline`. El manifiesto fija
+fecha, fuentes, tamaños y SHA-256 del texto original comprimido. Los payloads
+gzip usan extensión `.filterdata` y `noCompress` para evitar el tratamiento
+implícito de `.gz` por Android y una segunda capa de compresión del APK. Se validan antes
+de componer los `!#if`/`!#include` con el mismo preprocesador del runtime.
+La copia válida guardada tiene prioridad; una suscripción personalizada no recibe
+silenciosamente las reglas predeterminadas. La base no se marca como descarga
+actualizada y no retrasa los reintentos existentes. Los fallos de actualización
+mantienen el motor instalado; los siguientes arranques usan la caché compilada.
+
+La recuperación local y la compilación se ejecutan en IO. Con bloqueo global
+activado, el arranque espera de forma suspendida ese intento local antes de abrir
+la página inicial; no espera la descarga. La señal se libera también en fallo o
+cancelación. No garantiza bloqueo de todas las webs ni una actualización vigente
+cuando no hay red. El paquete de fuentes comprimidas añade aproximadamente 2 MB;
+el tamaño final de APK y el coste de primer arranque se comprueban por separado.
+
+Las mutaciones cosméticas se agrupan por elemento y subárbol para evitar recorrer
+repetidamente el mismo árbol dentro del lote de 250 ms. Se conservan las clases,
+IDs, scriptlets, el límite existente de nombres y las posteriores mutaciones.
+La prueba sintética de 100 avisos reduce 100 recorridos de ese subárbol a uno;
+no es una medición de FPS, memoria ni tiempo en TV. YouTube móvil conserva su
+filtro dedicado, fuera de esta ruta de ocultación genérica.
+
+Guías oficiales: https://developer.android.com/topic/architecture/data-layer/offline-first
+(local antes de red) y https://developer.android.com/topic/performance/threads
+(trabajo costoso fuera de Main). Medición física de arranque, app/renderer y sitios
+reales pendiente; no añadir timers, precargas o cambios de límites por intuición.

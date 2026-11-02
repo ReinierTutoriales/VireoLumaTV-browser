@@ -1,0 +1,7 @@
+VireoLumaTV is a browser for Android TV, maintained by ReinierTutoriales.
+
+Use the remote to browse, switch tabs, save pages and manage downloads. The address field offers local suggestions from bookmarks and history. Settings include per-site blocking, search providers, browser identification and remote shortcuts.
+
+Pages run in the Android system WebView. Filter lists are fetched from their configured providers. Private mode excludes visits from normal history; downloaded files and saved bookmarks remain on the device.
+
+Source and support: https://github.com/ReinierTutoriales/VireoLumaTV-browser

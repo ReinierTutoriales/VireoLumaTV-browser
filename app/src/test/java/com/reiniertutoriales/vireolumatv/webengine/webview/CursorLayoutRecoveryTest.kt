@@ -1,0 +1,189 @@
+package com.reiniertutoriales.vireolumatv.webengine.webview
+
+import android.app.Activity
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.View
+import android.webkit.WebView
+import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerLayout
+import org.junit.Assert.*
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+
+@RunWith(RobolectricTestRunner::class)
+@Config(application = VireoLumaTVApp::class, sdk = [28])
+class CursorLayoutRecoveryTest {
+    @Test fun webEditorFocusWithoutKeyboardDoesNotStealTheBookmarkPointerClick() {
+        val controller = Robolectric.buildActivity(Activity::class.java).setup()
+        try {
+            val activity = controller.get()
+            val layout = PointerLayout(activity)
+            val keys = mutableListOf<Int>()
+            val touches = mutableListOf<Pair<Int, Float>>()
+            val page = object : WebView(activity) {
+                override fun findFocus(): View = this
+                override fun onCheckIsTextEditor() = true
+                override fun onKeyDown(code: Int, event: KeyEvent): Boolean {
+                    keys += code
+                    return true
+                }
+                override fun onKeyUp(code: Int, event: KeyEvent) = true
+            }.apply { isFocusableInTouchMode = true }
+            layout.addView(page)
+            // A native hit target records the page tap; Robolectric does not lay out
+            // Chromium DOM content. The focused editor remains the WebView double.
+            var bookmarkClicks = 0
+            val bookmark = View(activity).apply {
+                setOnTouchListener { _, event ->
+                    touches += event.actionMasked to event.x
+                    false
+                }
+                setOnClickListener { bookmarkClicks++ }
+            }
+            layout.addView(bookmark, android.widget.FrameLayout.LayoutParams(800, 600))
+            activity.setContentView(layout)
+            layout.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
+            layout.layout(0, 0, 800, 600)
+            // The provider has no DOM focus implementation in Robolectric. Model the
+            // focused web editor while keeping the real PointerLayout event route.
+            assertEquals(800, bookmark.width)
+            assertEquals(600, bookmark.height)
+            layout.requestChildFocus(page, page)
+            assertSame(page, layout.findFocus())
+            assertTrue(page.onCheckIsTextEditor())
+            assertFalse("Dismissed web keyboard must release the remote", layout.isTextInputActive())
+            layout.pointerController.position.set(520f, 420f)
+            layout.pointerController.fadeIn()
+            for (action in listOf(KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP)) {
+                assertTrue(layout.dispatchKeyEvent(KeyEvent(action, KeyEvent.KEYCODE_DPAD_CENTER)))
+            }
+            assertTrue("OK must not return to the focused search editor", keys.isEmpty())
+            assertEquals(listOf(MotionEvent.ACTION_DOWN to 520f, MotionEvent.ACTION_UP to 520f), touches)
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            assertEquals(1, bookmarkClicks)
+            page.destroy()
+        } finally { controller.pause().stop().destroy() }
+    }
+
+    @Test fun focusedTextEditorReceivesEnterAndDpadWithoutImeInsets() {
+        val controller = Robolectric.buildActivity(Activity::class.java).setup()
+        try {
+            val activity = controller.get()
+            val layout = PointerLayout(activity)
+            val keys = mutableListOf<Int>()
+            val editor = object : View(activity) {
+                override fun onCheckIsTextEditor() = true
+                override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+                    keys += keyCode
+                    return true
+                }
+                override fun onKeyUp(keyCode: Int, event: KeyEvent) = true
+            }.apply { isFocusableInTouchMode = true }
+            layout.addView(editor)
+            activity.setContentView(layout)
+            layout.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
+            layout.layout(0, 0, 800, 600)
+            assertTrue(editor.requestFocus())
+            assertTrue(layout.isTextInputActive())
+            for (code in listOf(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_DPAD_LEFT)) {
+                assertTrue("Text editor must receive DOWN for $code", layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code)))
+                assertTrue("Text editor must receive UP for $code", layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code)))
+            }
+            assertEquals(listOf(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_DPAD_LEFT), keys)
+            assertTrue("Editing must preserve the cursor mode for after submission", layout.pointerEnabled)
+        } finally { controller.pause().stop().destroy() }
+    }
+
+    @Test fun openingKeyboardDuringOkPressStillFinishesTheClick() {
+        val controller = Robolectric.buildActivity(Activity::class.java).setup()
+        try {
+            val activity = controller.get()
+            val layout = PointerLayout(activity)
+            var editing = false
+            var clicks = 0
+            val touches = mutableListOf<Int>()
+            val keys = mutableListOf<Int>()
+            val editor = object : View(activity) {
+                override fun onCheckIsTextEditor() = editing
+                override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+                    keys += keyCode
+                    return true
+                }
+                override fun onKeyUp(keyCode: Int, event: KeyEvent) = true
+            }.apply {
+                isFocusableInTouchMode = true
+                setOnClickListener { clicks++ }
+                setOnTouchListener { _, event ->
+                    touches += event.actionMasked
+                    if (event.actionMasked == MotionEvent.ACTION_DOWN) editing = true
+                    false
+                }
+            }
+            layout.addView(editor)
+            activity.setContentView(layout)
+            layout.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(600, View.MeasureSpec.EXACTLY))
+            layout.layout(0, 0, 800, 600)
+            editor.requestFocus()
+            layout.pointerController.fadeIn()
+            assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER)))
+            assertTrue(layout.isTextInputActive())
+            assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER)))
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            assertEquals(listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP), touches)
+            assertEquals(1, clicks)
+            assertFalse(layout.pointerController.isSelectionPressed)
+            assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)))
+            assertTrue(layout.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER)))
+            assertEquals(listOf(KeyEvent.KEYCODE_ENTER), keys)
+        } finally { controller.pause().stop().destroy() }
+    }
+
+    @Test fun cursorSurvivesDrawingFlagChangesAndResizesWhileDisabled() {
+        val controller = Robolectric.buildActivity(Activity::class.java).setup()
+        val activity = controller.get()
+        val layout = PointerLayout(activity)
+        var clicks = 0
+        val touches = mutableListOf<Int>()
+        val target = View(activity).apply {
+            isFocusableInTouchMode = true
+            setOnClickListener { clicks++ }
+            setOnTouchListener { _, event -> touches += event.actionMasked; false }
+        }
+        layout.addView(target)
+        activity.setContentView(layout)
+        fun resize(size: Int) {
+            layout.measure(View.MeasureSpec.makeMeasureSpec(size, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(size, View.MeasureSpec.EXACTLY))
+            layout.layout(0, 0, size, size)
+        }
+        fun key(action: Int) = layout.dispatchKeyEvent(KeyEvent(action, KeyEvent.KEYCODE_DPAD_CENTER))
+        try {
+            resize(800)
+            target.requestFocus()
+            layout.setWillNotDraw(true)
+            assertTrue(layout.pointerEnabled)
+            layout.pointerEnabled = false
+            resize(1000)
+            assertEquals(500f, layout.pointerController.position.x, 0f)
+            layout.pointerEnabled = true
+            layout.pointerController.fadeIn()
+            assertTrue(key(KeyEvent.ACTION_DOWN))
+            // Dialog steals the window before the remote releases OK. This must cancel, never click.
+            layout.onWindowFocusChanged(false)
+            assertEquals(listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_CANCEL), touches)
+            layout.onWindowFocusChanged(true)
+            layout.pointerController.fadeIn()
+            assertTrue(key(KeyEvent.ACTION_DOWN))
+            assertTrue(key(KeyEvent.ACTION_UP))
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            assertEquals(1, clicks)
+        } finally { controller.pause().stop().destroy() }
+    }
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The list stays inside the TV overscan-safe area; rows scroll under the margins. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/item_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/safe_horizontal"
+        android:paddingTop="@dimen/safe_vertical"
+        android:paddingEnd="@dimen/safe_horizontal"
+        android:paddingBottom="@dimen/safe_vertical" />
+
+    <TextView
+        android:id="@+id/empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/downloads_empty"
+        android:textAppearance="@style/TextAppearance.Vireo.Title"
+        android:textColor="@color/on_surface_variant" />
+</FrameLayout>

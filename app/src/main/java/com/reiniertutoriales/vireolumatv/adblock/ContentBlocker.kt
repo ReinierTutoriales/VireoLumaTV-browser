@@ -1,0 +1,66 @@
+package com.reiniertutoriales.vireolumatv.adblock
+
+import android.net.Uri
+import java.io.File
+
+/**
+ * Compiled set of blocking rules produced by a [ContentBlockerEngine].
+ * Implementations are not required to be thread-safe unless [isConcurrent]; callers serialize
+ * access to the others.
+ */
+interface ContentBlocker {
+    /** Returns true if the request to [url] made from a page on [baseHost] must be blocked. */
+    fun shouldBlock(url: Uri, type: String?, baseHost: String): Boolean
+
+    /** Writes the compiled rules to [file]; returns false if they could not be written. */
+    fun serialize(file: File): Boolean
+
+    /** True when [check], [verdict] and [pageFilters] may run on several threads at once. */
+    val isConcurrent: Boolean get() = false
+
+    /** [ALLOW], [BLOCK] or [BLOCK_REDIRECT] for a request made by a document at [page]. */
+    fun check(url: Uri, type: String?, page: Uri): Int =
+        if (shouldBlock(url, type, page.host ?: "")) BLOCK else ALLOW
+
+    /** The whole answer for a request in one match, including any `$redirect` replacement. */
+    fun verdict(url: Uri, type: String?, page: Uri): AdVerdict =
+        if (check(url, type, page) == ALLOW) AdVerdict.ALLOW else AdVerdict.BLOCK
+
+    /** Element hiding and scriptlets for a document URL as JSON (see adblock-jni), or "". */
+    fun pageFilters(pageUrl: String): String = ""
+
+    /** Generic class/id hiding selectors (JSON array) for space-separated [classes] and [ids]. */
+    fun hiddenSelectors(pageUrl: String, classes: String, ids: String): String = "[]"
+
+    /** Frees native memory once no caller can use this instance any more. */
+    fun release() {}
+
+    companion object {
+        const val ALLOW = 0
+        const val BLOCK = 1
+        const val BLOCK_REDIRECT = 2
+    }
+}
+
+/** A network request's answer: allowed, blocked, or blocked with a [redirect] `data:` URL to serve instead. */
+class AdVerdict private constructor(val blocked: Boolean, val redirect: String?) {
+    companion object {
+        val ALLOW = AdVerdict(false, null)
+        val BLOCK = AdVerdict(true, null)
+        fun redirect(dataUrl: String) = AdVerdict(true, dataUrl)
+    }
+}
+
+/** Engine able to compile filter lists and restore compiled rules from its own cache format. */
+interface ContentBlockerEngine {
+    /** Cache file name; engine specific because each engine has its own serialized format. */
+    val cacheFileName: String
+
+    /** Compiles several filter lists into one engine; returns null if the engine rejects the input. */
+    fun compile(filterLists: List<String>): ContentBlocker?
+
+    fun compile(filterText: String): ContentBlocker? = compile(listOf(filterText))
+
+    /** Restores rules previously written by [ContentBlocker.serialize]; returns null if unusable. */
+    fun deserialize(file: File): ContentBlocker?
+}

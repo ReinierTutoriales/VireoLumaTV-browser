@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_source">VireoLumaTV מאת ReinierTutoriales · קוד מקור</string>
+    <string name="about_tagline">דפדפן אינטרנט שנבנה לשלט הטלוויזיה</string>
+    <string name="about_version">גרסה %s</string>
+    <string name="about_build">גרסת בנייה: %1$s · %2$s</string>
+    <string name="about_license">רישיון · MIT</string>
+    <string name="about_privacy">מדיניות פרטיות</string>
+    <string name="action_allow">אפשר</string>
+    <string name="action_deny">אל תאפשר</string>
+    <string name="action_edit">עריכה</string>
+    <string name="action_done">סיום</string>
+    <string name="action_delete">מחיקה</string>
+    <string name="action_cancel">ביטול</string>
+    <string name="action_clear">ניקוי</string>
+    <string name="action_update">עדכון</string>
+    <string name="action_exit">יציאה</string>
+    <string name="action_open_store">חיפוש בחנות</string>
+    <string name="action_dont_show_again">אל תציג שוב</string>
+    <string name="action_open">פתיחה</string>
+    <string name="address_hint">חיפוש או כתובת אינטרנט</string>
+    <string name="nav_back">אחורה</string>
+    <string name="nav_forward">קדימה</string>
+    <string name="nav_reload">רענון</string>
+    <string name="nav_home">דף הבית</string>
+    <string name="nav_menu">תפריט</string>
+    <string name="blocker_toggle">חסימת פרסומות</string>
+    <string name="tabs_new">כרטיסייה חדשה</string>
+    <string name="tabs_title">כרטיסייה</string>
+    <string name="menu_history">היסטוריה</string>
+    <string name="menu_favorites">מועדפים</string>
+    <string name="menu_downloads">הורדות</string>
+    <string name="menu_private">מצב גלישה בסתר</string>
+    <string name="menu_settings">הגדרות</string>
+    <string name="menu_close_tab">סגירת כרטיסייה</string>
+    <string name="menu_quit">יציאה מ-VireoLumaTV</string>
+    <string name="pointer_move_page">הזזת הדף</string>
+    <string name="pointer_link_options">אפשרויות קישור</string>
+    <string name="pointer_zoom_in">הגדלה</string>
+    <string name="pointer_zoom_out">הקטנה</string>
+    <string name="dpad_mode_title">מצב מקשי חיצים</string>
+    <string name="dpad_mode_message">הסמן מוסתר והחיצים עוברים בין הקישורים והפקדים של הדף, באתרים שתומכים בכך.\n\nכדי לצאת, לחצו על \"אחורה\" בשלט או החזיקו את B בבקר המשחק.</string>
+    <string name="link_open_in_new_tab">פתיחה בכרטיסייה חדשה</string>
+    <string name="link_open_in_app">פתיחה באפליקציה אחרת</string>
+    <string name="link_download">הורדה</string>
+    <string name="link_copy">העתקת כתובת</string>
+    <string name="link_copied">הכתובת הועתקה</string>
+    <string name="link_share">שיתוף</string>
+    <string name="permission_request">%1$s מבקש להשתמש ב:\n\n%2$s</string>
+    <string name="permission_location">המיקום שלך</string>
+    <string name="permission_camera">מצלמה</string>
+    <string name="permission_microphone">מיקרופון</string>
+    <string name="permission_protected_media">תוכן מוגן (DRM)</string>
+    <string name="error_no_file_picker">אין במכשיר אפליקציה לבחירת קבצים</string>
+    <string name="external_open_title">לפתוח באפליקציה אחרת?</string>
+    <string name="external_open_message">הדף מבקש לפתוח כתובת שמטופלת על ידי אפליקציה אחרת:</string>
+    <string name="external_no_app">אין במכשיר אפליקציה שיכולה לפתוח את הכתובת הזו</string>
+    <string name="error_no_app">אין אפליקציה שיכולה לפתוח את זה</string>
+    <string name="http_auth_message">%1$s מבקש שם משתמש וסיסמה.</string>
+    <string name="http_auth_realm">הודעה מהאתר: %1$s</string>
+    <string name="http_auth_cleartext">החיבור הזה אינו מוצפן: שם המשתמש והסיסמה יישלחו כטקסט גלוי.</string>
+    <string name="http_auth_other_site">הבקשה מגיעה מאתר אחר, לא מ-%1$s, הכתובת שנפתחת. יש להתחבר רק אם הוא מהימן.</string>
+    <string name="http_auth_title">התחברות לאתר הזה</string>
+    <string name="http_auth_user">שם משתמש</string>
+    <string name="http_auth_password">סיסמה</string>
+    <string name="error_no_webview">אין במכשיר WebView שמיש. יש להתקין או לעדכן את Android System WebView.</string>
+    <string name="webview_outdated">מנוע הדפים (Android System WebView) לא עודכן יותר משישה חודשים, ולכן חסרים בו תיקוני אבטחה. יש לעדכן אותו מהחנות או מעדכוני המערכת.</string>
+    <string name="cert_title">החיבור הזה אינו פרטי</string>
+    <string name="cert_site">אתר</string>
+    <string name="cert_problem">בעיה</string>
+    <string name="cert_details">אישור</string>
+    <string name="cert_go_back">חזרה</string>
+    <string name="cert_proceed">להמשיך בכל זאת (לא בטוח)</string>
+    <string name="cert_expired">תוקף האישור פג</string>
+    <string name="cert_wrong_site">האישור שייך לאתר אחר</string>
+    <string name="cert_bad_date">האישור אינו תקף בתאריך הזה</string>
+    <string name="cert_invalid">האישור אינו תקף</string>
+    <string name="cert_untrusted">האישור לא הונפק על ידי רשות מהימנה</string>
+    <string name="blocker_state_paused">מושהה</string>
+    <string name="blocker_state_loading">טוען כללים</string>
+    <string name="blocker_state_updating">מעדכן כללים</string>
+    <string name="blocker_state_active">חוסם</string>
+    <string name="blocker_state_partial">חלק מהכללים</string>
+    <string name="blocker_state_saved">כללים שמורים</string>
+    <string name="blocker_state_none">אין כללים</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">חסימת פרסומות: %1$s. נחסמו בדף הזה: %2$d.</item>
+        <item quantity="two">חסימת פרסומות: %1$s. נחסמו בדף הזה: %2$d.</item>
+        <item quantity="other">חסימת פרסומות: %1$s. נחסמו בדף הזה: %2$d.</item>
+    </plurals>
+    <string name="popups_title">חלונות קופצים: %s</string>
+    <string name="popups_dialog_blocked">נחסמה תיבת דו-שיח מהדף הזה</string>
+    <string name="popups_window_blocked">נחסם חלון קופץ</string>
+    <string name="blocker_never">אף פעם</string>
+    <string name="blocker_last_update">עודכן לאחרונה</string>
+    <string name="blocker_update_lists">עדכון רשימות סינון</string>
+    <string name="blocker_updating">מעדכן רשימות סינון…</string>
+    <string name="blocker_updated">רשימות הסינון מעודכנות</string>
+    <string name="blocker_partial">חלק מהרשימות עודכנו; האחרות שומרות על הכללים השמורים.</string>
+    <string name="blocker_using_saved">נעשה שימוש בכללים שמורים; לא הורדה אף רשימה.</string>
+    <string name="blocker_not_refreshed">לא עודכנו: %1$s</string>
+    <string name="blocker_update_failed">לא ניתן לטעון את רשימות הסינון. בדקו את החיבור או את כתובת הרשימה.</string>
+    <string name="favorites_add">הוספת הדף הזה</string>
+    <string name="favorites_empty">אין עדיין מועדפים</string>
+    <string name="favorites_new">מועדף חדש</string>
+    <string name="field_title">כותרת</string>
+    <string name="field_address">כתובת</string>
+    <string name="history_delete_selected">למחוק את הדפים שנבחרו מההיסטוריה?</string>
+    <string name="history_delete_all">למחוק את כל ההיסטוריה?</string>
+    <string name="download_started">ההורדה נוספה. תישמר ב:\n%s</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">תפריט. %1$d הורדה פעילה</item>
+        <item quantity="two">תפריט. %1$d הורדות פעילות</item>
+        <item quantity="other">תפריט. %1$d הורדות פעילות</item>
+    </plurals>
+    <string name="downloads_empty">אין עדיין הורדות</string>
+    <string name="download_cancelled">בוטל</string>
+    <string name="download_file_missing">הקובץ כבר לא נמצא</string>
+    <string name="download_no_app">אין אפליקציה שיכולה לפתוח סוג קובץ זה</string>
+    <string name="download_open_folder">הצגה בתיקייה</string>
+    <string name="download_no_file_manager">לא מותקן מנהל קבצים</string>
+    <string name="download_install">התקנה</string>
+    <string name="install_allow_unknown_sources">כדי להתקין אפליקציות, יש להפעיל \"מקורות לא ידועים\" בהגדרות המערכת.</string>
+    <string name="install_allow_this_app">יש לאפשר ל-VireoLumaTV להתקין אפליקציות בהגדרות המערכת.</string>
+    <string name="download_storage_unavailable">האחסון אינו זמין</string>
+    <string name="download_folder_error">לא ניתן ליצור את תיקיית ההורדות</string>
+    <string name="downloads_channel_description">התקדמות ההורדות</string>
+    <string name="update_available_title">עדכון זמין</string>
+    <string name="update_available_message">גרסה %s זמינה.</string>
+    <string name="update_none">VireoLumaTV מעודכן</string>
+    <string name="update_failed">לא ניתן לבדוק או להתקין את העדכון</string>
+    <string name="settings_tab_general">כללי</string>
+    <string name="settings_tab_shortcuts">קיצורי מקשים</string>
+    <string name="settings_tab_about">אודות</string>
+    <string name="settings_search_engine">מנוע חיפוש</string>
+    <string name="settings_search_engine_address">כתובת חיפוש ([query] מוחלף במה שחיפשת)</string>
+    <string name="settings_home_page">דף הבית</string>
+    <string name="settings_home_page_address">כתובת דף הבית</string>
+    <string name="settings_user_agent_choice">זיהוי הדפדפן בתור</string>
+    <string name="settings_user_agent">סוכן משתמש</string>
+    <string name="settings_user_agent_custom">סוכן משתמש מותאם</string>
+    <string name="settings_keep_screen_on">השארת המסך דלוק</string>
+    <string name="settings_stick_moves_pointer">הזזת הסמן עם הסטיק</string>
+    <string name="settings_pointer_speed">מהירות מרבית של הסמן</string>
+    <string name="settings_pointer_acceleration">האצת הסמן</string>
+    <string name="settings_percent_of_default">%d%% מברירת המחדל</string>
+    <string name="settings_darken_pages">הכהיית דפי אינטרנט (לאחר הפעלה מחדש)</string>
+    <string name="settings_autoplay">לאפשר לדפים להפעיל וידאו וצליל בעצמם</string>
+    <string name="settings_video_quality">איכות וידאו מרבית</string>
+    <string name="settings_debugging">ניפוי באגים בדפי אינטרנט (לאחר הפעלה מחדש)</string>
+    <string name="settings_debugging_warning">ניפוי באגים מאפשר לכל מי שיש לו גישת ניפוי באגים למכשיר לקרוא תוכן דפים, קובצי Cookie ונתוני הפעלה. יש להפעיל רק במכשיר מהימן ובזמן פתרון בעיות.</string>
+    <string name="settings_restart_needed">יש להפעיל מחדש את VireoLumaTV כדי להחיל</string>
+    <string name="settings_clear_cache">ניקוי נתוני אינטרנט שמורים</string>
+    <string name="settings_section_browsing">גלישה</string>
+    <string name="settings_section_protection">הגנה</string>
+    <string name="settings_section_display">וידאו ותצוגה</string>
+    <string name="settings_section_remote">שלט וסמן</string>
+    <string name="settings_section_advanced">מתקדם</string>
+    <string name="settings_filter_list">כתובת רשימת המסננים</string>
+    <string name="warning_title">אזהרה</string>
+    <string name="private_explained">גלישה פרטית לא שומרת היסטוריה, קובצי Cookie, נתוני אתרים או מה שהוזן בטפסים לאחר היציאה ממנה.\n\nהורדות ומועדפים נשמרים. האתרים שבהם ביקרת, הרשת וספק האינטרנט עדיין יכולים לראות את הפעילות שלך.</string>
+    <string name="shortcut_unassigned">לא הוקצה</string>
+    <string name="shortcut_current_key">מקש:</string>
+    <string name="shortcut_key_code">מקש %d</string>
+    <string name="shortcut_assign">הקצאת מקש</string>
+    <string name="shortcut_waiting">לחצו על מקש בשלט…</string>
+    <string name="shortcut_reserved">המקש הזה משמש לניווט בדפדפן ואי אפשר להקצות אותו</string>
+    <string name="shortcut_long_press">החזקה</string>
+    <string name="media_play_pause">הפעלה / השהיה</string>
+    <string name="media_stop">עצירת ההפעלה</string>
+    <string name="media_rewind">10 שניות אחורה</string>
+    <string name="media_fast_forward">10 שניות קדימה</string>
+    <string name="favorite_added">נוסף למועדפים</string>
+    <string name="favorite_exists">כבר נמצא במועדפים</string>
+    <string name="favorite_not_web">אפשר לשמור במועדפים רק דפי אינטרנט</string>
+    <string-array name="popups_levels">
+        <item>התרת התראות וחלונות חדשים</item>
+        <item>חסימת התראות של הדף</item>
+        <item>חסימת התראות וחלונות שנפתחו בלי לחיצה</item>
+        <item>חסימת התראות וכל חלון חדש</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>דף הפתיחה של VireoLumaTV</item>
+        <item>מנוע חיפוש</item>
+        <item>כתובת מותאמת</item>
+        <item>דף ריק</item>
+    </string-array>
+    <string-array name="settings_video_qualities">
+        <item>אוטומטי (המיטב שהטלוויזיה מפענחת)</item>
+        <item>ללא הגבלה</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </string-array>
+    <string name="download_queue_full">תור ההורדות מלא. יש להמתין לסיום הורדה ולנסות שוב.</string>
+    <string name="download_not_allowed">Android לא איפשרה להתחיל את ההורדה כעת. יש לנסות שוב כשהדפדפן מוצג על המסך.</string>
+    <string name="download_time_limit">Android עצרה את ההורדות: הושגה מגבלת הזמן ברקע.</string>
+    <string name="tab_action_new">כרטיסייה חדשה לצדה</string>
+    <string name="tab_action_close">סגירת הכרטיסייה הזו</string>
+    <string name="tab_action_close_all">סגירת כל הכרטיסיות</string>
+    <string name="tab_action_move_left">העברת הכרטיסייה שמאלה</string>
+    <string name="tab_action_move_right">העברת הכרטיסייה ימינה</string>
+    <string name="tab_action_favorite">הוספת הכרטיסייה למועדפים</string>
+    <string name="download_failed">נכשל</string>
+    <string name="system_settings_unavailable">לא ניתן היה לפתוח את הגדרות Android.</string>
+    <string name="favorite_save_failed">לא ניתן היה לשמור את המועדף.</string>
+    <string name="favorites_update_failed">לא ניתן היה לעדכן את המועדפים.</string>
+    <string name="favorite_address_required">יש להזין כתובת.</string>
+    <string name="install_open_failed">לא ניתן היה לפתוח את תוכנית ההתקנה.</string>
+    <string name="webview_missing_title">WebView אינו זמין</string>
+    <string name="settings_language">שפת האפליקציה</string>
+    <string name="language_system">שפת המערכת</string>
+    <string name="install_failed">לא ניתן היה להתקין את האפליקציה.</string>
+    <string name="home_title">דף הבית</string>
+    <string name="home_search">חיפוש ב-DuckDuckGo</string>
+    <string name="home_shortcuts">קיצורי דרך</string>
+    <string name="home_add">הוספת קיצור דרך</string>
+    <string name="home_edit">עריכה</string>
+    <string name="home_edit_label">עריכת קיצורי הדרך</string>
+    <string name="home_done">סיום</string>
+    <string name="home_save_failed">לא ניתן היה לשמור.</string>
+    <string name="home_edit_prompt">יש לערוך את הכתובת. השארתה ריקה תסיר את קיצור הדרך.</string>
+    <string name="home_remove_confirm">להסיר את קיצור הדרך מדף הבית?</string>
+    <string name="home_invalid">כתובת לא תקינה. יש להשתמש ב-http:// או ב-https:// בלי שם משתמש וסיסמה.</string>
+    <string name="home_duplicate">קיצור הדרך הזה כבר נמצא בדף הבית.</string>
+    <string name="home_youtube_removed">YouTube (הוסר, יש ללחוץ לשחזור)</string>
+    <string name="home_favorite_managed">קיצור הדרך הזה הוא מועדף. אפשר לערוך או להסיר אותו ב%s.</string>
+    <string name="home_edit_item" formatted="false">עריכת %s</string>
+    <string name="home_youtube_restore">להציג שוב את YouTube בדף הבית?</string>
+    <string name="home_youtube_remove">להסיר את YouTube מדף הבית?</string>
+    <string name="home_limit">הגעת למגבלת קיצורי הדרך (%d).</string>
+    <string name="home_add_prompt">כתובת קיצור הדרך (https://…)</string>
+    <string name="home_empty_search">יש להקליד מה לחפש.</string>
+    <string name="settings_slow_frames">פריימים איטיים מאז הפעלת האפליקציה: %1$s</string>
+</resources>

@@ -1,0 +1,36 @@
+package com.reiniertutoriales.vireolumatv.webengine.webview
+
+import android.webkit.WebView
+import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import org.junit.Assert.*
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+
+@RunWith(RobolectricTestRunner::class)
+@Config(application = VireoLumaTVApp::class, sdk = [28])
+class WebViewUserAgentTest {
+    @Test fun defaultSelectionResetsTheLiveWebViewWithoutReplacingIt() {
+        val app = RuntimeEnvironment.getApplication()
+        val reference = WebView(app)
+        reference.settings.userAgentString = null
+        val expectedDefault = reference.settings.userAgentString
+        reference.destroy()
+        val engine = WebViewPageEngine(BrowserTab())
+        try {
+            val live = engine.createView(app) as BrowserWebView
+            engine.userAgent = "CustomBrowser/2.0"
+            assertEquals("CustomBrowser/2.0", live.settings.userAgentString)
+            engine.userAgent = null
+            assertEquals(expectedDefault, live.settings.userAgentString)
+            assertNotEquals("CustomBrowser/2.0", live.settings.userAgentString)
+            assertNull(engine.userAgent)
+            assertSame("Changing UA must not replace the view", live, engine.view)
+            engine.userAgent = "DesktopBrowser/3.0"
+            assertEquals("DesktopBrowser/3.0", live.settings.userAgentString)
+        } finally { engine.detach(destroyView = true) }
+    }
+}

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pointer menu, a cross around the pointer: grab in the centre, link actions above, D-pad mode
+  below, zoom out to the left and zoom in to the right. Each arm leads back to the centre.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pointer_menu_panel"
+    android:layout_width="176dp"
+    android:layout_height="176dp"
+    android:background="@drawable/cursor_menu_bg"
+    android:padding="8dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <ImageButton
+        android:id="@+id/move_page_button"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_gravity="center"
+        android:contentDescription="@string/pointer_move_page"
+        android:nextFocusUp="@id/link_options_button"
+        android:nextFocusDown="@id/dpad_mode_button"
+        android:nextFocusLeft="@id/zoom_out_button"
+        android:nextFocusRight="@id/zoom_in_button"
+        android:src="@drawable/ic_move" />
+
+    <ImageButton
+        android:id="@+id/link_options_button"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_gravity="top|center_horizontal"
+        android:contentDescription="@string/pointer_link_options"
+        android:nextFocusDown="@id/move_page_button"
+        android:src="@drawable/ic_link" />
+
+    <ImageButton
+        android:id="@+id/dpad_mode_button"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_gravity="bottom|center_horizontal"
+        android:contentDescription="@string/dpad_mode_title"
+        android:nextFocusUp="@id/move_page_button"
+        android:src="@drawable/ic_dpad" />
+
+    <ImageButton
+        android:id="@+id/zoom_out_button"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_gravity="start|center_vertical"
+        android:contentDescription="@string/pointer_zoom_out"
+        android:nextFocusRight="@id/move_page_button"
+        android:src="@drawable/ic_zoom_out" />
+
+    <ImageButton
+        android:id="@+id/zoom_in_button"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_gravity="end|center_vertical"
+        android:contentDescription="@string/pointer_zoom_in"
+        android:nextFocusLeft="@id/move_page_button"
+        android:src="@drawable/ic_zoom_in" />
+</FrameLayout>

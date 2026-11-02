@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_source">VireoLumaTV від ReinierTutoriales · Вихідний код</string>
+    <string name="about_tagline">Веб-браузер для керування пультом ТБ</string>
+    <string name="about_version">Версія %s</string>
+    <string name="about_build">Збірка: %1$s · %2$s</string>
+    <string name="about_license">Ліцензія · MIT</string>
+    <string name="about_privacy">Політика конфіденційності</string>
+    <string name="action_allow">Дозволити</string>
+    <string name="action_deny">Заборонити</string>
+    <string name="action_edit">Змінити</string>
+    <string name="action_done">Готово</string>
+    <string name="action_delete">Видалити</string>
+    <string name="action_cancel">Скасувати</string>
+    <string name="action_clear">Очистити</string>
+    <string name="action_update">Оновити</string>
+    <string name="action_exit">Вийти</string>
+    <string name="action_open_store">Знайти в магазині</string>
+    <string name="action_dont_show_again">Більше не показувати</string>
+    <string name="action_open">Відкрити</string>
+    <string name="address_hint">Пошук або вебадреса</string>
+    <string name="nav_back">Назад</string>
+    <string name="nav_forward">Уперед</string>
+    <string name="nav_reload">Оновити</string>
+    <string name="nav_home">Головна</string>
+    <string name="nav_menu">Меню</string>
+    <string name="blocker_toggle">Блокування реклами</string>
+    <string name="tabs_new">Нова вкладка</string>
+    <string name="tabs_title">Вкладка</string>
+    <string name="menu_history">Історія</string>
+    <string name="menu_favorites">Вибране</string>
+    <string name="menu_downloads">Завантаження</string>
+    <string name="menu_private">Режим інкогніто</string>
+    <string name="menu_settings">Налаштування</string>
+    <string name="menu_close_tab">Закрити вкладку</string>
+    <string name="menu_quit">Вийти з VireoLumaTV</string>
+    <string name="pointer_move_page">Рухати сторінку</string>
+    <string name="pointer_link_options">Дії з посиланням</string>
+    <string name="pointer_zoom_in">Збільшити</string>
+    <string name="pointer_zoom_out">Зменшити</string>
+    <string name="dpad_mode_title">Режим хрестовини</string>
+    <string name="dpad_mode_message">Вказівник зникає, а стрілки переходять між посиланнями й елементами сторінки, якщо сайт це підтримує.\n\nЩоб вийти, натисніть «Назад» на пульті або утримуйте B на геймпаді.</string>
+    <string name="link_open_in_new_tab">Відкрити в новій вкладці</string>
+    <string name="link_open_in_app">Відкрити в іншому застосунку</string>
+    <string name="link_download">Завантажити</string>
+    <string name="link_copy">Копіювати адресу</string>
+    <string name="link_copied">Адресу скопійовано</string>
+    <string name="link_share">Поділитися</string>
+    <string name="permission_request">%1$s запитує доступ до:\n\n%2$s</string>
+    <string name="permission_location">Ваше місцезнаходження</string>
+    <string name="permission_camera">Камера</string>
+    <string name="permission_microphone">Мікрофон</string>
+    <string name="permission_protected_media">Захищений вміст (DRM)</string>
+    <string name="error_no_file_picker">На пристрої немає застосунку для вибору файлів</string>
+    <string name="external_open_title">Відкрити в іншому застосунку?</string>
+    <string name="external_open_message">Ця сторінка хоче відкрити адресу, яку обробляє інший застосунок:</string>
+    <string name="external_no_app">На пристрої немає застосунку, який відкриє цю адресу</string>
+    <string name="error_no_app">Немає застосунку, щоб це відкрити</string>
+    <string name="http_auth_message">%1$s запитує ім\'я користувача та пароль.</string>
+    <string name="http_auth_realm">Повідомлення сайту: %1$s</string>
+    <string name="http_auth_cleartext">Це з\'єднання не зашифроване: ім\'я користувача та пароль буде надіслано відкритим текстом.</string>
+    <string name="http_auth_other_site">Запитує інший сайт, а не %1$s — адреса, що відкривається. Входьте, лише якщо довіряєте йому.</string>
+    <string name="http_auth_title">Вхід на цей сайт</string>
+    <string name="http_auth_user">Ім\'я користувача</string>
+    <string name="http_auth_password">Пароль</string>
+    <string name="error_no_webview">На пристрої немає робочого WebView. Установіть або оновіть Android System WebView.</string>
+    <string name="webview_outdated">Рушій сторінок (Android System WebView) не оновлювався понад шість місяців, тому в ньому бракує виправлень безпеки. Оновіть його в магазині або через оновлення системи.</string>
+    <string name="cert_title">Це з\'єднання не захищене</string>
+    <string name="cert_site">Сайт</string>
+    <string name="cert_problem">Проблема</string>
+    <string name="cert_details">Сертифікат</string>
+    <string name="cert_go_back">Повернутися</string>
+    <string name="cert_proceed">Усе одно продовжити (небезпечно)</string>
+    <string name="cert_expired">Термін дії сертифіката минув</string>
+    <string name="cert_wrong_site">Сертифікат видано іншому сайту</string>
+    <string name="cert_bad_date">Сертифікат недійсний на цю дату</string>
+    <string name="cert_invalid">Сертифікат недійсний</string>
+    <string name="cert_untrusted">Сертифікат видано ненадійним центром</string>
+    <string name="blocker_state_paused">Призупинено</string>
+    <string name="blocker_state_loading">Завантаження правил</string>
+    <string name="blocker_state_updating">Оновлення правил</string>
+    <string name="blocker_state_active">Блокує</string>
+    <string name="blocker_state_partial">Частина правил</string>
+    <string name="blocker_state_saved">Збережені правила</string>
+    <string name="blocker_state_none">Немає правил</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">Блокування реклами: %1$s. Заблоковано на сторінці: %2$d.</item>
+        <item quantity="few">Блокування реклами: %1$s. Заблоковано на сторінці: %2$d.</item>
+        <item quantity="many">Блокування реклами: %1$s. Заблоковано на сторінці: %2$d.</item>
+        <item quantity="other">Блокування реклами: %1$s. Заблоковано на сторінці: %2$d.</item>
+    </plurals>
+    <string name="popups_title">Спливаючі вікна: %s</string>
+    <string name="popups_dialog_blocked">Діалог цієї сторінки заблоковано</string>
+    <string name="popups_window_blocked">Спливаюче вікно заблоковано</string>
+    <string name="blocker_never">ніколи</string>
+    <string name="blocker_last_update">Останнє оновлення</string>
+    <string name="blocker_update_lists">Оновити списки фільтрів</string>
+    <string name="blocker_updating">Оновлення списків фільтрів…</string>
+    <string name="blocker_updated">Списки фільтрів оновлено</string>
+    <string name="blocker_partial">Частину списків оновлено; решта використовує збережені правила.</string>
+    <string name="blocker_using_saved">Використовуються збережені правила; жоден список не завантажено.</string>
+    <string name="blocker_not_refreshed">Не оновлено: %1$s</string>
+    <string name="blocker_update_failed">Не вдалося завантажити списки фільтрів. Перевірте з\'єднання або адресу списку.</string>
+    <string name="favorites_add">Додати цю сторінку</string>
+    <string name="favorites_empty">У вибраному поки нічого немає</string>
+    <string name="favorites_new">Нова закладка</string>
+    <string name="field_title">Назва</string>
+    <string name="field_address">Адреса</string>
+    <string name="history_delete_selected">Видалити вибрані сторінки з історії?</string>
+    <string name="history_delete_all">Видалити всю історію?</string>
+    <string name="download_started">Завантаження додано. Буде збережено в:\n%s</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">Меню. Триває завантажень: %1$d</item>
+        <item quantity="few">Меню. Триває завантажень: %1$d</item>
+        <item quantity="many">Меню. Триває завантажень: %1$d</item>
+        <item quantity="other">Меню. Триває завантажень: %1$d</item>
+    </plurals>
+    <string name="downloads_empty">Завантажень поки немає</string>
+    <string name="download_cancelled">Скасовано</string>
+    <string name="download_file_missing">Файлу більше немає</string>
+    <string name="download_no_app">Немає застосунку для цього типу файлів</string>
+    <string name="download_open_folder">Показати в теці</string>
+    <string name="download_no_file_manager">Файловий менеджер не встановлено</string>
+    <string name="download_install">Установити</string>
+    <string name="install_allow_unknown_sources">Увімкніть «Невідомі джерела» в налаштуваннях системи, щоб установлювати застосунки.</string>
+    <string name="install_allow_this_app">Дозвольте VireoLumaTV установлювати застосунки в налаштуваннях системи.</string>
+    <string name="download_storage_unavailable">Сховище недоступне</string>
+    <string name="download_folder_error">Не вдалося створити теку завантажень</string>
+    <string name="downloads_channel_description">Перебіг завантажень</string>
+    <string name="update_available_title">Доступне оновлення</string>
+    <string name="update_available_message">Доступна версія %s.</string>
+    <string name="update_none">У вас остання версія VireoLumaTV</string>
+    <string name="update_failed">Не вдалося перевірити або встановити оновлення</string>
+    <string name="settings_tab_general">Загальні</string>
+    <string name="settings_tab_shortcuts">Комбінації клавіш</string>
+    <string name="settings_tab_about">Про застосунок</string>
+    <string name="settings_search_engine">Пошукова система</string>
+    <string name="settings_search_engine_address">Адреса пошуку ([query] замінюється запитом)</string>
+    <string name="settings_home_page">Домашня сторінка</string>
+    <string name="settings_home_page_address">Адреса домашньої сторінки</string>
+    <string name="settings_user_agent_choice">Представляти браузер як</string>
+    <string name="settings_user_agent">User agent</string>
+    <string name="settings_user_agent_custom">Власний user agent</string>
+    <string name="settings_keep_screen_on">Не вимикати екран</string>
+    <string name="settings_stick_moves_pointer">Рухати вказівник стиком</string>
+    <string name="settings_pointer_speed">Максимальна швидкість вказівника</string>
+    <string name="settings_pointer_acceleration">Прискорення вказівника</string>
+    <string name="settings_percent_of_default">%d%% від стандартного</string>
+    <string name="settings_darken_pages">Затемнювати вебсторінки (після перезапуску)</string>
+    <string name="settings_autoplay">Дозволити сторінкам самим відтворювати відео та звук</string>
+    <string name="settings_video_quality">Максимальна якість відео</string>
+    <string name="settings_debugging">Налагодження вебсторінок (після перезапуску)</string>
+    <string name="settings_debugging_warning">Налагодження дозволяє будь-кому з доступом налагодження до пристрою читати вміст сторінок, cookie та дані сеансів. Вмикайте його лише на довіреному пристрої й лише для пошуку проблем.</string>
+    <string name="settings_restart_needed">Перезапустіть VireoLumaTV, щоб застосувати</string>
+    <string name="settings_clear_cache">Очистити кеш вебданих</string>
+    <string name="settings_section_browsing">Перегляд</string>
+    <string name="settings_section_protection">Захист</string>
+    <string name="settings_section_display">Відео й екран</string>
+    <string name="settings_section_remote">Пульт і вказівник</string>
+    <string name="settings_section_advanced">Додатково</string>
+    <string name="settings_filter_list">Адреса списку фільтрів</string>
+    <string name="warning_title">Увага</string>
+    <string name="private_explained">Приватний режим не зберігає історію, cookie, дані сайтів і введене у форми після виходу з нього.\n\nЗавантаження та вибране зберігаються. Відвідані сайти, ваша мережа й інтернет-провайдер усе одно бачать вашу активність.</string>
+    <string name="shortcut_unassigned">Не призначено</string>
+    <string name="shortcut_current_key">Клавіша:</string>
+    <string name="shortcut_key_code">Клавіша %d</string>
+    <string name="shortcut_assign">Призначити клавішу</string>
+    <string name="shortcut_waiting">Натисніть клавішу на пульті…</string>
+    <string name="shortcut_reserved">Ця клавіша потрібна для переміщення браузером і не може бути призначена</string>
+    <string name="shortcut_long_press">Утримання</string>
+    <string name="media_play_pause">Відтворення / пауза</string>
+    <string name="media_stop">Зупинити відтворення</string>
+    <string name="media_rewind">Назад на 10 секунд</string>
+    <string name="media_fast_forward">Уперед на 10 секунд</string>
+    <string name="favorite_added">Додано до вибраного</string>
+    <string name="favorite_exists">Уже є у вибраному</string>
+    <string name="favorite_not_web">До вибраного можна зберегти лише вебсторінки</string>
+    <string-array name="popups_levels">
+        <item>Дозволяти повідомлення й нові вікна</item>
+        <item>Блокувати повідомлення сторінки</item>
+        <item>Блокувати повідомлення й вікна, відкриті без натискання</item>
+        <item>Блокувати повідомлення й усі нові вікна</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>Стартова сторінка VireoLumaTV</item>
+        <item>Пошукова система</item>
+        <item>Власна адреса</item>
+        <item>Порожня сторінка</item>
+    </string-array>
+    <string-array name="settings_video_qualities">
+        <item>Автоматично (найкраще, що декодує ТБ)</item>
+        <item>Без обмежень</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </string-array>
+    <string name="download_queue_full">Черга завантажень заповнена. Дочекайтеся завершення завантаження та спробуйте ще раз.</string>
+    <string name="download_not_allowed">Android не дозволив почати завантаження. Спробуйте ще раз, коли браузер відкрито на екрані.</string>
+    <string name="download_time_limit">Android зупинив завантаження: досягнуто ліміту часу фонової роботи.</string>
+    <string name="tab_action_new">Нова вкладка поруч</string>
+    <string name="tab_action_close">Закрити цю вкладку</string>
+    <string name="tab_action_close_all">Закрити всі вкладки</string>
+    <string name="tab_action_move_left">Перемістити вкладку ліворуч</string>
+    <string name="tab_action_move_right">Перемістити вкладку праворуч</string>
+    <string name="tab_action_favorite">Додати вкладку до вибраного</string>
+    <string name="download_failed">Не вдалося</string>
+    <string name="system_settings_unavailable">Не вдалося відкрити налаштування Android.</string>
+    <string name="favorite_save_failed">Не вдалося зберегти закладку.</string>
+    <string name="favorites_update_failed">Не вдалося оновити вибране.</string>
+    <string name="favorite_address_required">Введіть адресу.</string>
+    <string name="install_open_failed">Не вдалося відкрити інсталятор.</string>
+    <string name="webview_missing_title">WebView недоступний</string>
+    <string name="settings_language">Мова застосунку</string>
+    <string name="language_system">Мова системи</string>
+    <string name="install_failed">Не вдалося встановити застосунок.</string>
+    <string name="home_title">Головна</string>
+    <string name="home_search">Шукати в DuckDuckGo</string>
+    <string name="home_shortcuts">Ярлики</string>
+    <string name="home_add">Додати ярлик</string>
+    <string name="home_edit">Змінити</string>
+    <string name="home_edit_label">Змінити ярлики</string>
+    <string name="home_done">Готово</string>
+    <string name="home_save_failed">Не вдалося зберегти.</string>
+    <string name="home_edit_prompt">Змініть адресу. Залиште поле порожнім, щоб видалити ярлик.</string>
+    <string name="home_remove_confirm">Видалити цей ярлик із головної?</string>
+    <string name="home_invalid">Неправильна адреса. Використовуйте http:// або https:// без імені користувача й пароля.</string>
+    <string name="home_duplicate">Цей ярлик уже є на головній.</string>
+    <string name="home_youtube_removed">YouTube (видалено, натисніть, щоб повернути)</string>
+    <string name="home_favorite_managed">Цей ярлик — закладка. Змініть або видаліть її в розділі «%s».</string>
+    <string name="home_edit_item" formatted="false">Змінити %s</string>
+    <string name="home_youtube_restore">Знову показувати YouTube на головній?</string>
+    <string name="home_youtube_remove">Прибрати YouTube із головної?</string>
+    <string name="home_limit">Досягнуто ліміту ярликів (%d).</string>
+    <string name="home_add_prompt">Адреса ярлика (https://…)</string>
+    <string name="home_empty_search">Введіть запит.</string>
+    <string name="settings_slow_frames">Повільні кадри від запуску застосунку: %1$s</string>
+</resources>

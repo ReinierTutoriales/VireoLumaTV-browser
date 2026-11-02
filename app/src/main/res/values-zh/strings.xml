@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_source">VireoLumaTV · ReinierTutoriales 出品 · 源代码</string>
+    <string name="about_tagline">为电视遥控器打造的网页浏览器</string>
+    <string name="about_version">版本 %s</string>
+    <string name="about_build">构建：%1$s · %2$s</string>
+    <string name="about_license">许可证 · MIT</string>
+    <string name="about_privacy">隐私政策</string>
+    <string name="action_allow">允许</string>
+    <string name="action_deny">不允许</string>
+    <string name="action_edit">编辑</string>
+    <string name="action_done">完成</string>
+    <string name="action_delete">删除</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_clear">清除</string>
+    <string name="action_update">更新</string>
+    <string name="action_exit">退出</string>
+    <string name="action_open_store">在应用商店中查找</string>
+    <string name="action_dont_show_again">不再显示</string>
+    <string name="action_open">打开</string>
+    <string name="address_hint">搜索或输入网址</string>
+    <string name="nav_back">后退</string>
+    <string name="nav_forward">前进</string>
+    <string name="nav_reload">重新加载</string>
+    <string name="nav_home">主页</string>
+    <string name="nav_menu">菜单</string>
+    <string name="blocker_toggle">广告拦截</string>
+    <string name="tabs_new">新标签页</string>
+    <string name="tabs_title">标签页</string>
+    <string name="menu_history">历史记录</string>
+    <string name="menu_favorites">收藏</string>
+    <string name="menu_downloads">下载</string>
+    <string name="menu_private">无痕模式</string>
+    <string name="menu_settings">设置</string>
+    <string name="menu_close_tab">关闭标签页</string>
+    <string name="menu_quit">退出 VireoLumaTV</string>
+    <string name="pointer_move_page">移动页面</string>
+    <string name="pointer_link_options">链接选项</string>
+    <string name="pointer_zoom_in">放大</string>
+    <string name="pointer_zoom_out">缩小</string>
+    <string name="dpad_mode_title">方向键模式</string>
+    <string name="dpad_mode_message">指针会隐藏，方向键在网页的链接和控件之间移动（需网站支持）。\n\n要退出，请按遥控器上的返回键，或按住游戏手柄上的 B 键。</string>
+    <string name="link_open_in_new_tab">在新标签页中打开</string>
+    <string name="link_open_in_app">在其他应用中打开</string>
+    <string name="link_download">下载</string>
+    <string name="link_copy">复制地址</string>
+    <string name="link_copied">已复制地址</string>
+    <string name="link_share">分享</string>
+    <string name="permission_request">%1$s 想要使用：\n\n%2$s</string>
+    <string name="permission_location">您的位置</string>
+    <string name="permission_camera">摄像头</string>
+    <string name="permission_microphone">麦克风</string>
+    <string name="permission_protected_media">受保护的内容 (DRM)</string>
+    <string name="error_no_file_picker">此设备上没有可选择文件的应用</string>
+    <string name="external_open_title">要在其他应用中打开吗？</string>
+    <string name="external_open_message">此网页想要打开由其他应用处理的地址：</string>
+    <string name="external_no_app">此设备上没有可打开此地址的应用</string>
+    <string name="error_no_app">没有可打开此内容的应用</string>
+    <string name="http_auth_message">%1$s 要求输入用户名和密码。</string>
+    <string name="http_auth_realm">网站消息：%1$s</string>
+    <string name="http_auth_cleartext">此连接未加密：用户名和密码将以明文发送。</string>
+    <string name="http_auth_other_site">发出请求的是其他网站，而不是正在打开的 %1$s。仅在信任它时才登录。</string>
+    <string name="http_auth_title">登录此网站</string>
+    <string name="http_auth_user">用户名</string>
+    <string name="http_auth_password">密码</string>
+    <string name="error_no_webview">此设备没有可用的 WebView。请安装或更新 Android System WebView。</string>
+    <string name="webview_outdated">网页引擎 (Android System WebView) 已超过六个月未更新，缺少安全修复。请通过应用商店或系统更新进行更新。</string>
+    <string name="cert_title">此连接不是私密连接</string>
+    <string name="cert_site">网站</string>
+    <string name="cert_problem">问题</string>
+    <string name="cert_details">证书</string>
+    <string name="cert_go_back">返回</string>
+    <string name="cert_proceed">仍然继续（不安全）</string>
+    <string name="cert_expired">证书已过期</string>
+    <string name="cert_wrong_site">证书属于其他网站</string>
+    <string name="cert_bad_date">证书在此日期无效</string>
+    <string name="cert_invalid">证书无效</string>
+    <string name="cert_untrusted">证书不是由受信任的机构颁发的</string>
+    <string name="blocker_state_paused">已暂停</string>
+    <string name="blocker_state_loading">正在加载规则</string>
+    <string name="blocker_state_updating">正在更新规则</string>
+    <string name="blocker_state_active">拦截中</string>
+    <string name="blocker_state_partial">部分规则</string>
+    <string name="blocker_state_saved">已保存的规则</string>
+    <string name="blocker_state_none">无规则</string>
+    <plurals name="blocker_summary">
+        <item quantity="other">广告拦截：%1$s。本页已拦截 %2$d 个。</item>
+    </plurals>
+    <string name="popups_title">弹出式窗口：%s</string>
+    <string name="popups_dialog_blocked">已拦截此网页的一个对话框</string>
+    <string name="popups_window_blocked">已拦截一个弹出式窗口</string>
+    <string name="blocker_never">从未</string>
+    <string name="blocker_last_update">上次更新</string>
+    <string name="blocker_update_lists">更新过滤列表</string>
+    <string name="blocker_updating">正在更新过滤列表…</string>
+    <string name="blocker_updated">过滤列表已是最新</string>
+    <string name="blocker_partial">部分列表已更新；其余列表保留已保存的规则。</string>
+    <string name="blocker_using_saved">正在使用已保存的规则；未下载任何列表。</string>
+    <string name="blocker_not_refreshed">未更新：%1$s</string>
+    <string name="blocker_update_failed">无法加载过滤列表。请检查网络连接或列表地址。</string>
+    <string name="favorites_add">添加此网页</string>
+    <string name="favorites_empty">还没有收藏</string>
+    <string name="favorites_new">新收藏</string>
+    <string name="field_title">标题</string>
+    <string name="field_address">网址</string>
+    <string name="history_delete_selected">要从历史记录中删除所选网页吗？</string>
+    <string name="history_delete_all">要删除全部历史记录吗？</string>
+    <string name="download_started">已添加下载。将保存到：\n%s</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="other">菜单。%1$d 个下载进行中</item>
+    </plurals>
+    <string name="downloads_empty">还没有下载内容</string>
+    <string name="download_cancelled">已取消</string>
+    <string name="download_file_missing">文件已不存在</string>
+    <string name="download_no_app">没有可打开此类文件的应用</string>
+    <string name="download_open_folder">在文件夹中显示</string>
+    <string name="download_no_file_manager">未安装文件管理器</string>
+    <string name="download_install">安装</string>
+    <string name="install_allow_unknown_sources">请在系统设置中开启“未知来源”以安装应用。</string>
+    <string name="install_allow_this_app">请在系统设置中允许 VireoLumaTV 安装应用。</string>
+    <string name="download_storage_unavailable">存储空间不可用</string>
+    <string name="download_folder_error">无法创建下载文件夹</string>
+    <string name="downloads_channel_description">下载进度</string>
+    <string name="update_available_title">有可用更新</string>
+    <string name="update_available_message">版本 %s 现已推出。</string>
+    <string name="update_none">VireoLumaTV 已是最新版本</string>
+    <string name="update_failed">无法检查或安装更新</string>
+    <string name="settings_tab_general">常规</string>
+    <string name="settings_tab_shortcuts">快捷键</string>
+    <string name="settings_tab_about">关于</string>
+    <string name="settings_search_engine">搜索引擎</string>
+    <string name="settings_search_engine_address">搜索地址（[query] 会替换为搜索内容）</string>
+    <string name="settings_home_page">主页</string>
+    <string name="settings_home_page_address">主页地址</string>
+    <string name="settings_user_agent_choice">将浏览器标识为</string>
+    <string name="settings_user_agent">用户代理</string>
+    <string name="settings_user_agent_custom">自定义用户代理</string>
+    <string name="settings_keep_screen_on">保持屏幕常亮</string>
+    <string name="settings_stick_moves_pointer">用摇杆移动指针</string>
+    <string name="settings_pointer_speed">指针最高速度</string>
+    <string name="settings_pointer_acceleration">指针加速度</string>
+    <string name="settings_percent_of_default">默认值的 %d%%</string>
+    <string name="settings_darken_pages">调暗网页（重启后生效）</string>
+    <string name="settings_autoplay">允许网页自动播放视频和声音</string>
+    <string name="settings_video_quality">最高视频画质</string>
+    <string name="settings_debugging">网页调试（重启后生效）</string>
+    <string name="settings_debugging_warning">调试会让任何拥有此设备调试权限的人读取网页内容、Cookie 和会话数据。仅在受信任的设备上、排查问题时开启。</string>
+    <string name="settings_restart_needed">重启 VireoLumaTV 后生效</string>
+    <string name="settings_clear_cache">清除网页缓存</string>
+    <string name="settings_section_browsing">浏览</string>
+    <string name="settings_section_protection">防护</string>
+    <string name="settings_section_display">视频与显示</string>
+    <string name="settings_section_remote">遥控器与指针</string>
+    <string name="settings_section_advanced">高级</string>
+    <string name="settings_filter_list">过滤列表地址</string>
+    <string name="warning_title">警告</string>
+    <string name="private_explained">无痕浏览在退出后不会保留历史记录、Cookie、网站数据和表单内容。\n\n下载内容和收藏会保留。您访问的网站、所在网络和互联网服务提供商仍可看到您的活动。</string>
+    <string name="shortcut_unassigned">未分配</string>
+    <string name="shortcut_current_key">按键：</string>
+    <string name="shortcut_key_code">按键 %d</string>
+    <string name="shortcut_assign">分配按键</string>
+    <string name="shortcut_waiting">请按遥控器上的一个键…</string>
+    <string name="shortcut_reserved">此按键用于在浏览器中移动，无法分配</string>
+    <string name="shortcut_long_press">长按</string>
+    <string name="media_play_pause">播放 / 暂停</string>
+    <string name="media_stop">停止播放</string>
+    <string name="media_rewind">后退 10 秒</string>
+    <string name="media_fast_forward">快进 10 秒</string>
+    <string name="favorite_added">已添加到收藏夹</string>
+    <string name="favorite_exists">已在收藏夹中</string>
+    <string name="favorite_not_web">只能将网页添加到收藏夹</string>
+    <string-array name="popups_levels">
+        <item>允许提示框和新窗口</item>
+        <item>拦截网页提示框</item>
+        <item>拦截提示框和未经点击打开的窗口</item>
+        <item>拦截提示框和所有新窗口</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>VireoLumaTV 起始页</item>
+        <item>搜索引擎</item>
+        <item>自定义地址</item>
+        <item>空白页</item>
+    </string-array>
+    <string-array name="settings_video_qualities">
+        <item>自动（电视可解码的最佳画质）</item>
+        <item>不限制</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </string-array>
+    <string name="download_queue_full">下载队列已满。请等待一个下载完成后重试。</string>
+    <string name="download_not_allowed">Android 目前不允许开始下载。请在浏览器显示在屏幕上时重试。</string>
+    <string name="download_time_limit">Android 已停止下载：已达到后台运行时间限制。</string>
+    <string name="tab_action_new">在旁边新建标签页</string>
+    <string name="tab_action_close">关闭此标签页</string>
+    <string name="tab_action_close_all">关闭所有标签页</string>
+    <string name="tab_action_move_left">将标签页向左移动</string>
+    <string name="tab_action_move_right">将标签页向右移动</string>
+    <string name="tab_action_favorite">将标签页添加到收藏夹</string>
+    <string name="download_failed">失败</string>
+    <string name="system_settings_unavailable">无法打开 Android 设置。</string>
+    <string name="favorite_save_failed">无法保存收藏。</string>
+    <string name="favorites_update_failed">无法更新收藏夹。</string>
+    <string name="favorite_address_required">请输入地址。</string>
+    <string name="install_open_failed">无法打开安装程序。</string>
+    <string name="webview_missing_title">WebView 不可用</string>
+    <string name="settings_language">应用语言</string>
+    <string name="language_system">跟随系统</string>
+    <string name="install_failed">无法安装此应用。</string>
+    <string name="home_title">首页</string>
+    <string name="home_search">用 DuckDuckGo 搜索</string>
+    <string name="home_shortcuts">快捷方式</string>
+    <string name="home_add">添加快捷方式</string>
+    <string name="home_edit">编辑</string>
+    <string name="home_edit_label">编辑快捷方式</string>
+    <string name="home_done">完成</string>
+    <string name="home_save_failed">无法保存。</string>
+    <string name="home_edit_prompt">编辑地址。留空即可删除此快捷方式。</string>
+    <string name="home_remove_confirm">要从首页移除此快捷方式吗？</string>
+    <string name="home_invalid">地址无效。请使用 http:// 或 https://，且不含用户名或密码。</string>
+    <string name="home_duplicate">此快捷方式已在首页上。</string>
+    <string name="home_youtube_removed">YouTube（已移除，按下即可恢复）</string>
+    <string name="home_favorite_managed">此快捷方式是收藏项。请在“%s”中编辑或删除。</string>
+    <string name="home_edit_item" formatted="false">编辑 %s</string>
+    <string name="home_youtube_restore">要在首页重新显示 YouTube 吗？</string>
+    <string name="home_youtube_remove">要从首页移除 YouTube 吗？</string>
+    <string name="home_limit">已达到快捷方式上限（%d）。</string>
+    <string name="home_add_prompt">快捷方式地址（https://…）</string>
+    <string name="home_empty_search">请输入要搜索的内容。</string>
+    <string name="settings_slow_frames">应用启动以来的慢帧：%1$s</string>
+</resources>

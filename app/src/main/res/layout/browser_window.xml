@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The page fills the screen. The browser controls are an overlay at the top: a scrim that fades
+  into the page, with the address row and the tab row inside the TV overscan-safe margins.
+  While another tab is previewed, its picture fills the screen behind the controls.
+-->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/browser_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    tools:context=".activity.main.MainActivity"
+    tools:deviceIds="tv">
+
+    <com.reiniertutoriales.vireolumatv.widgets.cursor.PointerLayout
+        android:id="@+id/page_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/tab_preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:importantForAccessibility="no"
+        android:scaleType="centerInside"
+        android:visibility="invisible" />
+
+    <LinearLayout
+        android:id="@+id/preview_placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_new_tab"
+            app:tint="@color/on_surface_variant" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/tabs_new"
+            android:textAppearance="@style/TextAppearance.Vireo.Title" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/load_progress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:progressBackgroundTint="@android:color/transparent"
+        android:progressTint="@color/brand"
+        android:visibility="gone" />
+
+    <RelativeLayout
+        android:id="@+id/controls_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_scrim_top"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/safe_horizontal"
+        android:paddingTop="@dimen/safe_vertical"
+        android:paddingEnd="@dimen/safe_horizontal"
+        android:paddingBottom="48dp">
+
+        <com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
+            android:id="@+id/controls_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:gravity="center_vertical" />
+
+        <!-- Takes the tab row's place while the address being edited has suggestions. -->
+        <com.reiniertutoriales.vireolumatv.activity.main.view.AddressSuggestionsView
+            android:id="@+id/vSuggestions"
+            android:clipToPadding="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/controls_row"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_panel"
+            android:clipChildren="false"
+            android:padding="12dp"
+            android:visibility="gone" />
+
+        <com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabStrip
+            android:id="@+id/tab_strip"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_below="@id/controls_row"
+            android:layout_marginTop="16dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:focusable="true"
+            android:nextFocusUp="@+id/address_field" />
+    </RelativeLayout>
+
+    <com.reiniertutoriales.vireolumatv.activity.main.view.PointerMenu
+        android:id="@+id/pointer_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:visibility="invisible" />
+
+    <ProgressBar
+        android:id="@+id/startup_spinner"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:indeterminateTint="@color/brand" />
+</RelativeLayout>

@@ -1,0 +1,4 @@
+# Line endings the Gradle wrapper scripts need on each system.
+gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary

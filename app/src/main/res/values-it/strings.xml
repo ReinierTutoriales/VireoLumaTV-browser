@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_source">VireoLumaTV di ReinierTutoriales · Codice sorgente</string>
+    <string name="about_tagline">Un browser web pensato per il telecomando della TV</string>
+    <string name="about_version">Versione %s</string>
+    <string name="about_build">Build: %1$s · %2$s</string>
+    <string name="about_license">Licenza · MIT</string>
+    <string name="about_privacy">Informativa sulla privacy</string>
+    <string name="action_allow">Consenti</string>
+    <string name="action_deny">Non consentire</string>
+    <string name="action_edit">Modifica</string>
+    <string name="action_done">Fine</string>
+    <string name="action_delete">Elimina</string>
+    <string name="action_cancel">Annulla</string>
+    <string name="action_clear">Cancella</string>
+    <string name="action_update">Aggiorna</string>
+    <string name="action_exit">Esci</string>
+    <string name="action_open_store">Cerca nello store</string>
+    <string name="action_dont_show_again">Non mostrare più</string>
+    <string name="action_open">Apri</string>
+    <string name="address_hint">Cerca o digita un indirizzo web</string>
+    <string name="nav_back">Indietro</string>
+    <string name="nav_forward">Avanti</string>
+    <string name="nav_reload">Ricarica</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_menu">Menu</string>
+    <string name="blocker_toggle">Blocco annunci</string>
+    <string name="tabs_new">Nuova scheda</string>
+    <string name="tabs_title">Scheda</string>
+    <string name="menu_history">Cronologia</string>
+    <string name="menu_favorites">Preferiti</string>
+    <string name="menu_downloads">Download</string>
+    <string name="menu_private">Modalità in incognito</string>
+    <string name="menu_settings">Impostazioni</string>
+    <string name="menu_close_tab">Chiudi scheda</string>
+    <string name="menu_quit">Esci da VireoLumaTV</string>
+    <string name="pointer_move_page">Sposta la pagina</string>
+    <string name="pointer_link_options">Opzioni link</string>
+    <string name="pointer_zoom_in">Ingrandisci</string>
+    <string name="pointer_zoom_out">Riduci</string>
+    <string name="dpad_mode_title">Modalità croce direzionale</string>
+    <string name="dpad_mode_message">Il puntatore si nasconde e le frecce si spostano tra i link e i controlli della pagina, nei siti che lo supportano.\n\nPer uscire, premi Indietro sul telecomando o tieni premuto B su un controller.</string>
+    <string name="link_open_in_new_tab">Apri in una nuova scheda</string>
+    <string name="link_open_in_app">Apri in un\'altra app</string>
+    <string name="link_download">Scarica</string>
+    <string name="link_copy">Copia indirizzo</string>
+    <string name="link_copied">Indirizzo copiato</string>
+    <string name="link_share">Condividi</string>
+    <string name="permission_request">%1$s vuole usare:\n\n%2$s</string>
+    <string name="permission_location">La tua posizione</string>
+    <string name="permission_camera">Fotocamera</string>
+    <string name="permission_microphone">Microfono</string>
+    <string name="permission_protected_media">Contenuti protetti (DRM)</string>
+    <string name="error_no_file_picker">Nessuna app su questo dispositivo può scegliere file</string>
+    <string name="external_open_title">Aprire in un\'altra app?</string>
+    <string name="external_open_message">Questa pagina vuole aprire un indirizzo gestito da un\'altra app:</string>
+    <string name="external_no_app">Nessuna app su questo dispositivo può aprire questo indirizzo</string>
+    <string name="error_no_app">Nessuna app può aprirlo</string>
+    <string name="http_auth_message">%1$s chiede nome utente e password.</string>
+    <string name="http_auth_realm">Messaggio del sito: %1$s</string>
+    <string name="http_auth_cleartext">Questa connessione non è crittografata: nome utente e password verranno inviati in chiaro.</string>
+    <string name="http_auth_other_site">La richiesta arriva da un altro sito, non da %1$s, l\'indirizzo che si sta aprendo. Accedi solo se ti fidi.</string>
+    <string name="http_auth_title">Accedi a questo sito</string>
+    <string name="http_auth_user">Nome utente</string>
+    <string name="http_auth_password">Password</string>
+    <string name="error_no_webview">Questo dispositivo non ha un WebView utilizzabile. Installa o aggiorna Android System WebView.</string>
+    <string name="webview_outdated">Il motore delle pagine (Android System WebView) non viene aggiornato da più di sei mesi, quindi gli mancano correzioni di sicurezza. Aggiornalo dallo store o dagli aggiornamenti di sistema.</string>
+    <string name="cert_title">Questa connessione non è privata</string>
+    <string name="cert_site">Sito</string>
+    <string name="cert_problem">Problema</string>
+    <string name="cert_details">Certificato</string>
+    <string name="cert_go_back">Torna indietro</string>
+    <string name="cert_proceed">Continua comunque (non sicuro)</string>
+    <string name="cert_expired">Il certificato è scaduto</string>
+    <string name="cert_wrong_site">Il certificato appartiene a un altro sito</string>
+    <string name="cert_bad_date">Il certificato non è valido in questa data</string>
+    <string name="cert_invalid">Il certificato non è valido</string>
+    <string name="cert_untrusted">Il certificato non è stato emesso da un\'autorità attendibile</string>
+    <string name="blocker_state_paused">In pausa</string>
+    <string name="blocker_state_loading">Caricamento regole</string>
+    <string name="blocker_state_updating">Aggiornamento regole</string>
+    <string name="blocker_state_active">Attivo</string>
+    <string name="blocker_state_partial">Regole parziali</string>
+    <string name="blocker_state_saved">Regole salvate</string>
+    <string name="blocker_state_none">Nessuna regola</string>
+    <plurals name="blocker_summary">
+        <item quantity="one">Blocco annunci: %1$s. %2$d bloccato in questa pagina.</item>
+        <item quantity="many">Blocco annunci: %1$s. %2$d bloccati in questa pagina.</item>
+        <item quantity="other">Blocco annunci: %1$s. %2$d bloccati in questa pagina.</item>
+    </plurals>
+    <string name="popups_title">Pop-up: %s</string>
+    <string name="popups_dialog_blocked">Una finestra di dialogo di questa pagina è stata bloccata</string>
+    <string name="popups_window_blocked">Una finestra pop-up è stata bloccata</string>
+    <string name="blocker_never">mai</string>
+    <string name="blocker_last_update">Ultimo aggiornamento</string>
+    <string name="blocker_update_lists">Aggiorna elenchi filtri</string>
+    <string name="blocker_updating">Aggiornamento elenchi filtri…</string>
+    <string name="blocker_updated">Gli elenchi filtri sono aggiornati</string>
+    <string name="blocker_partial">Alcuni elenchi sono stati aggiornati; gli altri mantengono le regole salvate.</string>
+    <string name="blocker_using_saved">Vengono usate le regole salvate; nessun elenco è stato scaricato.</string>
+    <string name="blocker_not_refreshed">Non aggiornati: %1$s</string>
+    <string name="blocker_update_failed">Impossibile caricare gli elenchi filtri. Controlla la connessione o l\'indirizzo dell\'elenco.</string>
+    <string name="favorites_add">Aggiungi questa pagina</string>
+    <string name="favorites_empty">Ancora nessun preferito</string>
+    <string name="favorites_new">Nuovo preferito</string>
+    <string name="field_title">Titolo</string>
+    <string name="field_address">Indirizzo</string>
+    <string name="history_delete_selected">Eliminare dalla cronologia le pagine selezionate?</string>
+    <string name="history_delete_all">Cancellare tutta la cronologia?</string>
+    <string name="download_started">Download aggiunto. Verrà salvato in:\n%s</string>
+    <plurals name="nav_menu_downloads">
+        <item quantity="one">Menu. %1$d download in corso</item>
+        <item quantity="many">Menu. %1$d download in corso</item>
+        <item quantity="other">Menu. %1$d download in corso</item>
+    </plurals>
+    <string name="downloads_empty">Ancora nessun download</string>
+    <string name="download_cancelled">Annullato</string>
+    <string name="download_file_missing">Il file non c\'è più</string>
+    <string name="download_no_app">Nessuna app può aprire questo tipo di file</string>
+    <string name="download_open_folder">Mostra nella cartella</string>
+    <string name="download_no_file_manager">Nessun gestore di file installato</string>
+    <string name="download_install">Installa</string>
+    <string name="install_allow_unknown_sources">Attiva \"Origini sconosciute\" nelle impostazioni di sistema per installare app.</string>
+    <string name="install_allow_this_app">Consenti a VireoLumaTV di installare app nelle impostazioni di sistema.</string>
+    <string name="download_storage_unavailable">La memoria non è disponibile</string>
+    <string name="download_folder_error">Impossibile creare la cartella Download</string>
+    <string name="downloads_channel_description">Avanzamento dei download</string>
+    <string name="update_available_title">Aggiornamento disponibile</string>
+    <string name="update_available_message">È disponibile la versione %s.</string>
+    <string name="update_none">VireoLumaTV è aggiornato</string>
+    <string name="update_failed">Impossibile verificare o installare l\'aggiornamento</string>
+    <string name="settings_tab_general">Generali</string>
+    <string name="settings_tab_shortcuts">Scorciatoie</string>
+    <string name="settings_tab_about">Informazioni</string>
+    <string name="settings_search_engine">Motore di ricerca</string>
+    <string name="settings_search_engine_address">Indirizzo di ricerca ([query] viene sostituito dalla ricerca)</string>
+    <string name="settings_home_page">Pagina iniziale</string>
+    <string name="settings_home_page_address">Indirizzo della pagina iniziale</string>
+    <string name="settings_user_agent_choice">Identifica il browser come</string>
+    <string name="settings_user_agent">User agent</string>
+    <string name="settings_user_agent_custom">User agent personalizzato</string>
+    <string name="settings_keep_screen_on">Mantieni lo schermo acceso</string>
+    <string name="settings_stick_moves_pointer">Muovi il puntatore con la levetta</string>
+    <string name="settings_pointer_speed">Velocità massima del puntatore</string>
+    <string name="settings_pointer_acceleration">Accelerazione del puntatore</string>
+    <string name="settings_percent_of_default">%d%% del valore predefinito</string>
+    <string name="settings_darken_pages">Scurisci le pagine web (dopo il riavvio)</string>
+    <string name="settings_autoplay">Consenti alle pagine di riprodurre video e audio da sole</string>
+    <string name="settings_video_quality">Qualità video massima</string>
+    <string name="settings_debugging">Debug delle pagine web (dopo il riavvio)</string>
+    <string name="settings_debugging_warning">Il debug consente a chiunque abbia accesso di debug a questo dispositivo di leggere contenuti delle pagine, cookie e dati di sessione. Attivalo solo su un dispositivo attendibile e durante la risoluzione dei problemi.</string>
+    <string name="settings_restart_needed">Riavvia VireoLumaTV per applicarlo</string>
+    <string name="settings_clear_cache">Cancella i dati web in cache</string>
+    <string name="settings_section_browsing">Navigazione</string>
+    <string name="settings_section_protection">Protezione</string>
+    <string name="settings_section_display">Video e schermo</string>
+    <string name="settings_section_remote">Telecomando e puntatore</string>
+    <string name="settings_section_advanced">Avanzate</string>
+    <string name="settings_filter_list">Indirizzo dell\'elenco filtri</string>
+    <string name="warning_title">Attenzione</string>
+    <string name="private_explained">La navigazione privata non conserva cronologia, cookie, dati dei siti e dati dei moduli quando ne esci.\n\nI download e i preferiti vengono mantenuti. I siti visitati, la tua rete e il tuo provider possono comunque vedere la tua attività.</string>
+    <string name="shortcut_unassigned">Non assegnata</string>
+    <string name="shortcut_current_key">Tasto:</string>
+    <string name="shortcut_key_code">Tasto %d</string>
+    <string name="shortcut_assign">Assegna un tasto</string>
+    <string name="shortcut_waiting">Premi un tasto del telecomando…</string>
+    <string name="shortcut_reserved">Questo tasto serve per muoversi nel browser e non può essere assegnato</string>
+    <string name="shortcut_long_press">Tieni premuto</string>
+    <string name="media_play_pause">Riproduci / pausa</string>
+    <string name="media_stop">Interrompi riproduzione</string>
+    <string name="media_rewind">Indietro di 10 secondi</string>
+    <string name="media_fast_forward">Avanti di 10 secondi</string>
+    <string name="favorite_added">Aggiunta ai preferiti</string>
+    <string name="favorite_exists">Già nei preferiti</string>
+    <string name="favorite_not_web">Solo le pagine web possono essere salvate nei preferiti</string>
+    <string-array name="popups_levels">
+        <item>Consenti avvisi e nuove finestre</item>
+        <item>Blocca gli avvisi della pagina</item>
+        <item>Blocca avvisi e finestre aperte senza clic</item>
+        <item>Blocca avvisi e ogni nuova finestra</item>
+    </string-array>
+    <string-array name="settings_home_page_modes">
+        <item>Pagina iniziale di VireoLumaTV</item>
+        <item>Motore di ricerca</item>
+        <item>Indirizzo personalizzato</item>
+        <item>Pagina vuota</item>
+    </string-array>
+    <string-array name="settings_video_qualities">
+        <item>Automatica (il meglio che la TV decodifica)</item>
+        <item>Nessun limite</item>
+        <item>1080p</item>
+        <item>720p</item>
+        <item>480p</item>
+    </string-array>
+    <string name="download_queue_full">La coda dei download è piena. Attendi il completamento di un download e riprova.</string>
+    <string name="download_not_allowed">Android non ha consentito di avviare il download ora. Riprova con il browser in primo piano.</string>
+    <string name="download_time_limit">Android ha interrotto i download: è stato raggiunto il limite di tempo in background.</string>
+    <string name="tab_action_new">Nuova scheda accanto</string>
+    <string name="tab_action_close">Chiudi questa scheda</string>
+    <string name="tab_action_close_all">Chiudi tutte le schede</string>
+    <string name="tab_action_move_left">Sposta la scheda a sinistra</string>
+    <string name="tab_action_move_right">Sposta la scheda a destra</string>
+    <string name="tab_action_favorite">Aggiungi la scheda ai preferiti</string>
+    <string name="download_failed">Non riuscito</string>
+    <string name="system_settings_unavailable">Impossibile aprire le impostazioni di Android.</string>
+    <string name="favorite_save_failed">Impossibile salvare il preferito.</string>
+    <string name="favorites_update_failed">Impossibile aggiornare i preferiti.</string>
+    <string name="favorite_address_required">Inserisci un indirizzo.</string>
+    <string name="install_open_failed">Impossibile aprire il programma di installazione.</string>
+    <string name="webview_missing_title">WebView non disponibile</string>
+    <string name="settings_language">Lingua dell\'app</string>
+    <string name="language_system">Lingua di sistema</string>
+    <string name="install_failed">Impossibile installare l\'app.</string>
+    <string name="home_title">Home</string>
+    <string name="home_search">Cerca con DuckDuckGo</string>
+    <string name="home_shortcuts">Collegamenti</string>
+    <string name="home_add">Aggiungi collegamento</string>
+    <string name="home_edit">Modifica</string>
+    <string name="home_edit_label">Modifica collegamenti</string>
+    <string name="home_done">Fine</string>
+    <string name="home_save_failed">Impossibile salvare.</string>
+    <string name="home_edit_prompt">Modifica l\'indirizzo. Lascialo vuoto per rimuovere il collegamento.</string>
+    <string name="home_remove_confirm">Rimuovere questo collegamento dalla Home?</string>
+    <string name="home_invalid">Indirizzo non valido. Usa http:// o https:// senza nome utente né password.</string>
+    <string name="home_duplicate">Questo collegamento è già nella Home.</string>
+    <string name="home_youtube_removed">YouTube (rimosso, premi per ripristinarlo)</string>
+    <string name="home_favorite_managed">Questo collegamento è un preferito. Modificalo o rimuovilo in %s.</string>
+    <string name="home_edit_item" formatted="false">Modifica %s</string>
+    <string name="home_youtube_restore">Mostrare di nuovo YouTube nella Home?</string>
+    <string name="home_youtube_remove">Rimuovere YouTube dalla Home?</string>
+    <string name="home_limit">Limite di collegamenti raggiunto (%d).</string>
+    <string name="home_add_prompt">Indirizzo del collegamento (https://…)</string>
+    <string name="home_empty_search">Scrivi qualcosa da cercare.</string>
+    <string name="settings_slow_frames">Fotogrammi lenti dall\'avvio dell\'app: %1$s</string>
+</resources>

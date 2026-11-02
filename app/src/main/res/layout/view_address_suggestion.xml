@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One address suggestion: kind icon, title and address; OK opens it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Vireo.Row"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="2dp"
+    android:clickable="true"
+    android:gravity="center_vertical"
+    android:minHeight="48dp"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/ivKind"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:duplicateParentState="true"
+        android:importantForAccessibility="no"
+        app:tint="@color/on_control_variant" />
+
+    <TextView
+        android:id="@+id/title_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:duplicateParentState="true"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:maxWidth="420dp"
+        android:textAppearance="@style/TextAppearance.Vireo.Body" />
+
+    <!-- Takes the rest of the row; no weight, so the row is measured once. -->
+    <TextView
+        android:id="@+id/address_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:duplicateParentState="true"
+        android:ellipsize="middle"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.Vireo.Secondary" />
+</LinearLayout>

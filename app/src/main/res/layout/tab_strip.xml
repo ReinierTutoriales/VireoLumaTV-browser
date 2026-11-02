@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The tab row: the open tabs, then "new tab". Padding leaves room for the focused chip to grow. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:parentTag="android.widget.RelativeLayout">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/tab_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="@dimen/control_gap"
+        android:layout_toStartOf="@+id/add_button"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingStart="6dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="8dp" />
+
+    <ImageButton
+        android:id="@+id/add_button"
+        style="@style/Widget.Vireo.IconButton"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/tabs_new"
+        android:nextFocusUp="@+id/address_field"
+        android:src="@drawable/ic_add" />
+</merge>
