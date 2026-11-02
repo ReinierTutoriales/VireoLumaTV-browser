@@ -42,3 +42,7 @@ description: Use when changing product logic, adding features, or fixing regress
 - Before a version bump, check CI on every merged change and again on the exact combined release candidate; do not use an earlier passing run as proof. Verify versionCode, versionName, signing configuration and unchanged user data contracts.
 - Distinguish a merged PR, successful CI, triggered release workflow and published signed APKs. Confirm the published tag, workflow conclusion and APK/checksum/signature assets before saying a version has shipped.
 - Release CI does not establish better loading speed, lower RAM usage or success on physical TV; require before/after device measurements for those claims.
+
+- Android uses ICU regular expressions; host JVM tests can accept patterns that
+  Android rejects. Exercise template rendering and cold startup in the minified
+  APK on Android before publishing; a successful build is insufficient.
