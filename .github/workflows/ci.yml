@@ -203,6 +203,7 @@ jobs:
           target: google_apis
           arch: x86_64
           ram-size: ${{ matrix.api == '37.0' && '4096M' || '2048M' }}
+          disk-size: ${{ matrix.api == '37.0' && '6G' || '' }}
           disable-animations: true
           script: bash scripts/test-release-startup.sh candidate.apk baseline-test.apk
       - uses: actions/upload-artifact@v7.0.2
