@@ -9,6 +9,8 @@ app_pid=
 mkdir -p "$report"
 adb root
 adb wait-for-device
+adb shell getprop ro.build.version.sdk > "$report/android-api.txt"
+adb shell dumpsys webviewupdate > "$report/webview-provider.txt"
 capture() {
   adb logcat -d > "$report/$scenario-logcat.txt"
   if [ -n "$app_pid" ]; then
@@ -20,7 +22,28 @@ capture() {
   adb exec-out screencap -p > "$report/$scenario.png"
 }
 trap 'capture' ERR
+# The FontsProvider connection appears when Android System WebView loads in the app process, with
+# Google Sans / Noto Color Emoji Compat requests that match Chromium's AndroidFontLookupImpl; the
+# app has no font or EmojiCompat initializer. When Play Services restarts, Android kills every
+# client of that provider. The browser declares no Play Services dependency, so that
+# kill is accepted only with this exact reason, and the app must then start again with its data.
+external_font_kill() {
+  adb logcat -d | grep -q "Killing ${app_pid}:${package}/.*depends on provider com.google.android.gms/.fonts.provider.FontsProvider"
+}
 launch() {
+  if attempt_launch; then return 0; fi
+  if [ -n "$app_pid" ] && external_font_kill; then
+    echo "Play Services restart killed the WebView font client in $scenario; relaunching once"
+    cp "$report/$scenario-logcat.txt" "$report/$scenario-provider-kill-logcat.txt" 2>/dev/null || true
+    # A Play Services restart already happened: in the cold scenario it counts as the stop check.
+    [ "$scenario" = cold ] && gms_checked=1
+    attempt_launch
+    return
+  fi
+  return 1
+}
+gms_checked=0
+attempt_launch() {
   app_pid=
   adb shell am force-stop "$package"
   adb logcat -c
@@ -65,12 +88,14 @@ root = ET.parse(sys.argv[1]).getroot()
 assert any(node.get('text') == 'DuckDuckGo' for node in root.iter('node'))
 PYXML
     then
-      test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid"
-      if [ "$scenario" = cold ]; then
-        # A provider restart must not terminate the browser through a font dependency.
+      test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid" || { capture; return 1; }
+      if [ "$scenario" = cold ] && [ "$gms_checked" = 0 ]; then
+        # A Play Services restart may only end the app through WebView's font client (see above);
+        # launch() then requires a clean restart with the home page and data.
+        gms_checked=1
         adb shell am force-stop com.google.android.gms
         sleep 3
-        test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid"
+        test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid" || { capture; return 1; }
       fi
       capture
       if grep -q 'FATAL EXCEPTION\|Fatal signal' "$report/$scenario-crash.txt"; then return 1; fi

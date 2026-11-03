@@ -46,3 +46,7 @@ description: Use when changing product logic, adding features, or fixing regress
 - Android uses ICU regular expressions; host JVM tests can accept patterns that
   Android rejects. Exercise template rendering and cold startup in the minified
   APK on Android before publishing; a successful build is insufficient.
+
+- Check how an action executes multiline script inputs before using shell blocks.
+  Keep compound pre-emulator checks in a repository script; locate SDK tools
+  explicitly before the emulator action has added them to PATH.

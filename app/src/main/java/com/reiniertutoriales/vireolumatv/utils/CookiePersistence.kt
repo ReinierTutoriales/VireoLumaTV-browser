@@ -13,11 +13,15 @@ import java.util.concurrent.Executors
  * when it ends and are never meant to be kept.
  */
 class CookiePersistence(
-    private val executor: Executor = Executors.newSingleThreadExecutor { task ->
-        Thread(task, "VireoCookies").apply { isDaemon = true }
-    },
+    private val executor: Executor = worker,
     private val flush: () -> Unit = { CookieManager.getInstance().flush() },
 ) {
+    private companion object {
+        val worker: Executor = Executors.newSingleThreadExecutor { task ->
+            Thread(task, "VireoCookies").apply { isDaemon = true }
+        }
+    }
+
     fun onLeftScreen(privateMode: Boolean) {
         if (privateMode) return
         executor.execute {
