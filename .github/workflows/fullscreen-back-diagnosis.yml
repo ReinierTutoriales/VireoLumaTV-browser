@@ -1,0 +1,42 @@
+name: Fullscreen Back diagnosis
+
+# Temporary: reproduces YouTube fullscreen + remote Back on the published APK. Removed before merge.
+on:
+  push:
+    branches: [fix/tv-test-feedback]
+    paths: [scripts/diagnose-fullscreen-back.py, .github/workflows/fullscreen-back-diagnosis.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Published APK
+        run: |
+          curl --fail --location --retry 3 https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/download/v2.0.17/VireoLumaTV-2.0.17-x86_64.apk -o app.apk
+          pip install websocket-client==1.8.0
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: YouTube fullscreen and Back
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          ram-size: 4096M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          script: adb root && adb wait-for-device && python scripts/diagnose-fullscreen-back.py app.apk report 8
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: fullscreen-back-report
+          path: report/
+          retention-days: 7
