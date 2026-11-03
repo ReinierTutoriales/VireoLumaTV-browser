@@ -145,7 +145,7 @@ class FileTransfer internal constructor(
                 val code = network { connection.responseCode }
                 when {
                     code == HttpURLConnection.HTTP_OK -> return receive(connection, startOver = true)
-                    code == HttpURLConnection.HTTP_PARTIAL && resume && rangeStart(connection) == offset ->
+                    code == HttpURLConnection.HTTP_PARTIAL && resume && validRange(connection, offset, job.size) ->
                         return receive(connection, startOver = false)
                     code in REDIRECTS -> {
                         // Followed here so that an http → https redirect works too; other schemes are refused.
@@ -264,9 +264,18 @@ class FileTransfer internal constructor(
             connection.getHeaderField("ETag")?.trim()?.takeIf { it.startsWith("\"") }
                 ?: connection.getHeaderField("Last-Modified")?.trim()?.takeIf { it.isNotEmpty() }
 
-        private fun rangeStart(connection: HttpURLConnection): Long? =
-            CONTENT_RANGE.matchEntire(connection.getHeaderField("Content-Range")?.trim().orEmpty())
-                ?.groupValues?.get(1)?.toLongOrNull()
+        private fun validRange(connection: HttpURLConnection, offset: Long, expectedTotal: Long): Boolean {
+            val range = CONTENT_RANGE.matchEntire(connection.getHeaderField("Content-Range")?.trim().orEmpty())
+                ?.groupValues ?: return false
+            val start = range[1].toLongOrNull() ?: return false
+            val end = range[2].toLongOrNull() ?: return false
+            val total = if (range[3] == "*") null else range[3].toLongOrNull() ?: return false
+            if (start != offset || end < start || end == Long.MAX_VALUE) return false
+            if (total != null && (end >= total || (expectedTotal > 0 && total != expectedTotal))) return false
+            if (expectedTotal > 0 && end >= expectedTotal) return false
+            val length = connection.contentLengthLong
+            return length < 0 || length == end - start + 1
+        }
 
         private fun rangeTotal(connection: HttpURLConnection): Long? =
             CONTENT_RANGE.matchEntire(connection.getHeaderField("Content-Range")?.trim().orEmpty())

@@ -117,9 +117,9 @@ object Favicons {
     }
 
     /** The first decodable of the site's few candidates closest to [PREFERRED_SIDE]. */
-    private suspend fun fromSite(url: URL): Bitmap? {
+    private suspend fun fromSite(url: URL): Bitmap? = withContext(Dispatchers.IO) {
         // A page can list hundreds of duplicates, or SVGs that cannot be decoded here.
-        val candidates = withContext(Dispatchers.IO) { extractor.iconsFromAddress(url) }
+        val candidates = extractor.iconsFromAddress(url)
             .filter { it.src.length <= MAX_ICON_URL && isWeb(it.src) && !it.type.equals("image/svg+xml", ignoreCase = true) }
             .distinctBy { it.src }
             .sortedBy { abs(it.width.toLong() - PREFERRED_SIDE) + abs(it.height.toLong() - PREFERRED_SIDE) }
@@ -127,16 +127,16 @@ object Favicons {
         for (candidate in candidates) {
             currentCoroutineContext().ensureActive()
             val bytes = try {
-                withContext(Dispatchers.IO) { download(candidate.src) }
+                download(candidate.src)
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
                 Log.w(TAG, "Icon download failed", error)
                 null
             }
-            bytes?.let(::decode)?.let { return it }
+            bytes?.let(::decode)?.let { return@withContext it }
         }
-        return null
+        null
     }
 
     private fun isWeb(address: String) =

@@ -162,6 +162,27 @@ class DownloadResumeTest {
         assertFalse(File(info.filepath).exists())
     }
 
+    @Test fun contradictoryPartialRangesAreNotPublishedAsCompleteFiles() {
+        val invalid = listOf("bytes 4-3/10", "bytes 4-9/6", "bytes 4-8/10")
+        invalid.forEachIndexed { index, range ->
+            val calls = java.util.concurrent.atomic.AtomicInteger()
+            server.createContext("/invalid-$index") { exchange ->
+                if (calls.incrementAndGet() == 1) exchange.cutAfter(4, "ETag" to "\"v1\"")
+                else {
+                    exchange.responseHeaders.add("Content-Range", range)
+                    exchange.sendResponseHeaders(206, 6)
+                    exchange.responseBody.use { it.write(body, 4, 6) }
+                }
+            }
+            val info = download("invalid-$index.bin").apply { url = "$base/invalid-$index" }
+            val recorder = run(info)
+            assertEquals(range, 1, recorder.errors)
+            assertEquals(range, 0, recorder.done)
+            assertFalse("No incomplete output for $range", File(info.filepath).exists())
+            assertEquals("Invalid metadata is not retried", 2, calls.get())
+        }
+    }
+
     @Test fun progressBetweenCutsKeepsTheDownloadGoing() {
         // More cuts than CONNECT_ATTEMPTS, each after new bytes: never counted as consecutive failures.
         server.createContext("/file") { exchange ->
