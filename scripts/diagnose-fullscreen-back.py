@@ -71,7 +71,7 @@ class Page:
                 targets = json.load(urllib.request.urlopen("http://127.0.0.1:9222/json", timeout=5))
                 pages = [t for t in targets if t.get("type") == "page" and "youtube" in t.get("url", "")]
                 if pages:
-                    self.ws = websocket.create_connection(pages[0]["webSocketDebuggerUrl"], timeout=20, suppress_origin=True)
+                    self.ws = websocket.create_connection(pages[0]["webSocketDebuggerUrl"], timeout=45, suppress_origin=True)
                     return pages[0]["url"]
             except Exception as error:  # noqa: BLE001 - diagnostic retries
                 note("devtools not ready:", error)
@@ -111,15 +111,17 @@ PROBE = """(function(){
 })()"""
 
 ENTER = """(async function(){
+  var limit = function(p, ms){ return Promise.race([Promise.resolve(p).catch(function(e){ return 'rejected: ' + e; }), new Promise(function(r){ setTimeout(function(){ r('pending'); }, ms); })]); };
   var v = document.querySelector('video');
-  if (v) { try { v.muted = true; await v.play(); } catch (e) {} }
+  var played = v ? await limit((v.muted = true, v.play()), 3000) : 'no video';
   var button = document.querySelector('.fullscreen-icon, button.ytp-fullscreen-button, [aria-label*="ull screen"]');
-  if (button) { button.click(); await new Promise(r => setTimeout(r, 1500)); }
+  if (button) { button.click(); await limit(null, 1500); await new Promise(function(r){ setTimeout(r, 1500); }); }
+  var requested = '';
   if (!document.fullscreenElement) {
     var target = document.querySelector('#player-container-id') || document.querySelector('#movie_player') || v;
-    if (target) await target.requestFullscreen();
+    if (target) requested = String(await limit(target.requestFullscreen(), 3000));
   }
-  return {button: !!button, fullscreen: !!document.fullscreenElement, video: !!v, playing: !!(v && !v.paused)};
+  return {button: !!button, requested: requested, played: String(played), fullscreen: !!document.fullscreenElement, playing: !!(v && !v.paused)};
 })()"""
 
 
