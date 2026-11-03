@@ -17,6 +17,9 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.TabStore
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
+import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
+import com.reiniertutoriales.vireolumatv.model.Favorite
+import kotlinx.coroutines.runBlocking
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.webengine.PageEngine
@@ -89,6 +92,21 @@ class NativeHomeTest {
         assertNull(f.home.preview(preview))
         assertFalse(f.vb.pageContainer.cursorSuppressed)
         preview.recycle()
+    }
+
+    @Test fun privateHomeKeepsTheSharedFavoritesPromisedByTheExistingPrivateMode() = Fixture().use { f ->
+        val favorite = Favorite().apply { title = "Saved favorite"; url = "https://favorite.test/" }
+        favorite.id = runBlocking { AppDatabase.db.favoriteDao().insert(favorite) }
+        try {
+            f.home.update(f.tab)
+            f.finishRead()
+            val grid = f.vb.nativeHomeContainer.findViewById<RecyclerView>(R.id.home_tiles)
+            assertTrue((0 until grid.childCount).any { grid.getChildAt(it).tag == "favorite:https://favorite.test/" })
+            f.home.hide()
+            assertEquals(0, f.vb.nativeHomeContainer.childCount)
+        } finally {
+            runBlocking { AppDatabase.db.favoriteDao().delete(favorite) }
+        }
     }
 
     @Test fun largeTextAndRtlLeaveTheNativeControlsMeasurableAndReachable() = Fixture().use { f ->

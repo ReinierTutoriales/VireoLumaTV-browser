@@ -514,3 +514,5 @@ app/src/main/res/layout/native_home.xml	PROPIO
 app/src/main/res/layout/native_home_tile.xml	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/home/HomeShortcutsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/home/NativeHomeTest.kt	PROPIO
+scripts/check-startup-avd.sh	PROPIO
+scripts/test-native-home-navigation.py	PROPIO

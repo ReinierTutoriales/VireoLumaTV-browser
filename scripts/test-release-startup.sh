@@ -65,10 +65,17 @@ PYNOTICE
 import sys, xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
 assert any(node.get('text') == 'DuckDuckGo' for node in root.iter('node'))
+# Native Home must finish its existing origin-local storage read before editing is available.
+assert any(node.get('resource-id', '').endswith(':id/home_search') for node in root.iter('node'))
+assert any(node.get('text') == 'Add shortcut' and node.get('enabled') == 'true' for node in root.iter('node'))
+assert not any(node.get('class') == 'android.webkit.WebView' for node in root.iter('node'))
 PYXML
     then
       test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid"
       if [ "$scenario" = cold ]; then
+        python scripts/test-native-home-navigation.py "$report" "$package" "$app_pid"
+        adb shell dumpsys activity providers > "$report/cold-providers-before-stop.txt"
+        adb shell dumpsys activity processes > "$report/cold-processes-before-stop.txt"
         # A provider restart must not terminate the browser through a font dependency.
         adb shell am force-stop com.google.android.gms
         sleep 3

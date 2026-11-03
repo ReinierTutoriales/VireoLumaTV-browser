@@ -72,7 +72,8 @@ Inicio no ofrece una variante clara. «Oscurecer las páginas web» depende solo
 **Inicio nativo (revisión en curso, 2026-11-03):** búsqueda, tarjetas y edición usan Views/AppCompat
 con RecyclerView; el documento interno vacío conserva el historial y las claves de localStorage existentes.
 El acceso a ese almacén se verifica contra la URL interna exacta antes de ejecutar y al recibir la respuesta;
-ningún sitio recibe un puente nuevo. Incógnito no consulta favoritos normales. El foco no abre el teclado:
+ningún sitio recibe un puente nuevo. Favoritos se conserva en ambos modos; localStorage sigue usando
+el perfil WebView aislado de cada modo. El foco no abre el teclado:
 OK o clic lo solicita; Arriba desde búsqueda abre la cápsula. Las miniaturas conservan el límite de 480 px.
 Sin nuevas dependencias. Requiere CI del conjunto y validación física de mando antes de integrar.
 

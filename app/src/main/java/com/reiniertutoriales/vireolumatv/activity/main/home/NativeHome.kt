@@ -105,17 +105,17 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             }
         }
         render()
-        // No normal bookmarks are queried by the private process, and no work survives hiding Home.
-        if (!browser.config.privateBrowsing) favoritesJob = browser.lifecycleScope.launch {
+        // Favorites are shared in both modes, as before; the observer ends when Home is hidden.
+        favoritesJob = browser.lifecycleScope.launch {
             AppDatabase.db.favoriteDao().observeAll().catch { error ->
                 Log.w("NativeHome", "Home favorites unavailable", error)
                 emit(emptyList())
             }.collect { values ->
-                favorites = values.asReversed().mapNotNull { value ->
+                favorites = values.asReversed().asSequence().mapNotNull { value ->
                     value.url?.let { HomeShortcuts.address(it) }?.let { url ->
                         Tile("favorite:$url", value.title.orEmpty().trim().take(200).ifEmpty { label(url) }, url, R.drawable.ic_bookmark)
                     }
-                }.distinctBy { it.url }.take(48)
+                }.distinctBy { it.url }.take(48).toList()
                 render()
             }
         }
@@ -129,6 +129,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     }
 
     fun hide() {
+        if (root == null) return
         generation++
         dialog?.dismiss()
         dialog = null
@@ -262,7 +263,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
                     url != old && (url in shortcuts.urls || favorites.any { it.url == url }) -> input.error = browser.getString(R.string.home_duplicate)
                     else -> {
                         popup.dismiss()
-                        if (HomeShortcuts.isYoutube(url)) {
+                        if (old == null && HomeShortcuts.isYoutube(url)) {
                             storage("localStorage.removeItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)});") { shortcuts = it; render() }
                         } else save(if (old == null) shortcuts.urls + url else shortcuts.urls.map { if (it == old) url else it })
                     }
