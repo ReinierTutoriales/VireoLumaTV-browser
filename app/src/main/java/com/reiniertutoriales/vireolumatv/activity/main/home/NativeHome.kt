@@ -31,6 +31,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.Favicons
+import com.reiniertutoriales.vireolumatv.utils.openKeyboard
 import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.webview.HomePage
 import com.reiniertutoriales.vireolumatv.webengine.webview.safeHomeAssetPath
@@ -191,7 +192,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     private fun showKeyboard(field: AppCompatEditText) {
         closeCapsuleIfVisible()
         field.requestFocus()
-        browser.getSystemService<InputMethodManager>()?.showSoftInput(field, InputMethodManager.SHOW_IMPLICIT)
+        field.openKeyboard()
     }
 
     private fun submitSearch() {

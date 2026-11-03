@@ -17,6 +17,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.databinding.BrowserControlsBinding
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
+import com.reiniertutoriales.vireolumatv.utils.openKeyboard
 
 /** One TV command row. Focusing the address does not start editing or open the keyboard. */
 class BrowserControls @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : LinearLayout(context, attrs) {
@@ -105,7 +106,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         ui.addressField.requestFocus()
         renderEditing(true)
         callback?.onAddressEditing()
-        keyboard.showSoftInput(ui.addressField, InputMethodManager.SHOW_IMPLICIT)
+        ui.addressField.openKeyboard()
         removeCallbacks(selectText)
         postDelayed(selectText, 500)
     }
