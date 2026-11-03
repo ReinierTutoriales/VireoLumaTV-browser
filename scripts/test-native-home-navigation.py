@@ -20,12 +20,26 @@ def key(code):
 
 def snapshot(label):
     path = '/sdcard/native-home-focus.xml'
-    adb('shell', 'rm', '-f', path)
-    # Some images terminate the dumper after writing a complete XML file.
-    subprocess.run(['adb', 'shell', 'uiautomator', 'dump', path], check=False, capture_output=True, timeout=25)
-    text = adb('shell', 'cat', path)
-    (report / f'cold-focus-{label}.xml').write_text(text)
-    return ET.fromstring(text)
+    for attempt in range(3):
+        assert adb('shell', 'pidof', package).strip() == expected_pid, 'The app exited before the UI snapshot'
+        adb('shell', 'rm', '-f', path)
+        # Retry only the dumper, without repeating input or accepting a stale hierarchy.
+        try:
+            result = subprocess.run(['adb', 'shell', 'uiautomator', 'dump', path],
+                                    check=False, capture_output=True, text=True, timeout=25)
+            (report / f'cold-focus-{label}-dump-{attempt}.txt').write_text(result.stdout + result.stderr)
+        except subprocess.TimeoutExpired:
+            continue
+        result = subprocess.run(['adb', 'shell', 'cat', path], capture_output=True, text=True)
+        if result.returncode != 0:
+            continue
+        try:
+            root = ET.fromstring(result.stdout)
+        except ET.ParseError:
+            continue
+        (report / f'cold-focus-{label}.xml').write_text(result.stdout)
+        return root
+    raise AssertionError(f'UIAutomator did not write a fresh hierarchy for {label}')
 
 
 def focused(root, name):
