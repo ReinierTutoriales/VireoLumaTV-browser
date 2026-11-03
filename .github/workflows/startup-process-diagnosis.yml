@@ -1,142 +1,49 @@
-name: Verify native Home editing and restart persistence
-'on':
+name: Delete verified obsolete branches
+on:
   push:
-    branches:
-    - diagnose/focus-startup
+    branches: [diagnose/focus-startup]
 permissions:
-  contents: read
-  actions: read
+  contents: write
 jobs:
-  editing:
+  cleanup:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
     steps:
-    - uses: actions/checkout@v7.0.1
-      with:
-        ref: fe6ca34de456a916bd1f9c7538d9ca227e1d6393
-    - uses: actions/setup-java@v6.1.0
-      with:
-        java-version: '25'
-        distribution: temurin
-    - uses: actions/download-artifact@v8.0.2
-      with:
-        name: vireolumatv-release
-        path: candidate
-        run-id: 41632055635
-        github-token: ${{ github.token }}
-        repository: ReinierTutoriales/VireoLumaTV-browser
-    - name: Sign isolated candidate
-      run: 'keytool -genkeypair -keystore "$RUNNER_TEMP/editing.jks" -storepass android
-        -keypass android -alias editing -dname CN=EditingTest -keyalg RSA -validity
-        2
-
-        signer=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V
-        | tail -n 1)
-
-        candidate=$(find candidate -name ''*x86_64*.apk'' -type f)
-
-        "$signer" sign --ks "$RUNNER_TEMP/editing.jks" --ks-pass pass:android --out
-        candidate.apk "$candidate"
-
-        "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install ''cmdline-tools;22.0''
-
-        rm -rf "$ANDROID_HOME/cmdline-tools/latest"
-
-        ln -s 22.0 "$ANDROID_HOME/cmdline-tools/latest"
-
-        echo ''KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"''
-        | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-
-        sudo udevadm control --reload-rules
-
-        sudo udevadm trigger --name-match=kvm'
-    - name: Prepare editing checks
-      run: "cat > \"$RUNNER_TEMP/check-home-editing.py\" <<'PYTEST'\nimport re\nimport\
-        \ subprocess\nimport time\nimport xml.etree.ElementTree as ET\nfrom pathlib\
-        \ import Path\n\nREPORT = Path('home-editing-report')\nREPORT.mkdir(exist_ok=True)\n\
-        PACKAGE = 'com.reiniertutoriales.vireolumatv'\nHOME = 'https://vireolumatv.invalid/appcontent/home/'\n\
-        pid = ''\nsequence = 0\n\n\ndef adb(*args):\n    return subprocess.check_output(['adb',\
-        \ *args], text=True)\n\n\ndef key(*codes):\n    adb('shell', 'input', 'keyevent',\
-        \ *(str(code) for code in codes))\n\n\ndef snapshot():\n    global sequence\n\
-        \    sequence += 1\n    for attempt in range(3):\n        assert adb('shell',\
-        \ 'pidof', PACKAGE).strip() == pid, 'Browser process exited during editing'\n\
-        \        adb('shell', 'rm', '-f', '/sdcard/editing.xml')\n        result =\
-        \ subprocess.run(['adb', 'shell', 'uiautomator', 'dump', '/sdcard/editing.xml'],\n\
-        \                                text=True, capture_output=True, timeout=25)\n\
-        \        (REPORT / f'dump-{sequence}-{attempt}.txt').write_text(result.stdout\
-        \ + result.stderr)\n        result = subprocess.run(['adb', 'shell', 'cat',\
-        \ '/sdcard/editing.xml'], text=True, capture_output=True)\n        if result.returncode\
-        \ != 0:\n            continue\n        try:\n            root = ET.fromstring(result.stdout)\n\
-        \        except ET.ParseError:\n            continue\n        (REPORT / f'window-{sequence}.xml').write_text(result.stdout)\n\
-        \        return root\n    raise AssertionError('UIAutomator did not produce\
-        \ fresh XML')\n\n\ndef tap(node):\n    x1, y1, x2, y2 = map(int, re.findall(r'\\\
-        d+', node.get('bounds')))\n    assert x2 > x1 and y2 > y1\n    adb('shell',\
-        \ 'input', 'tap', str((x1 + x2) // 2), str((y1 + y2) // 2))\n\n\ndef find_text(title,\
-        \ scroll=True):\n    for direction in ([None, 20, 20, 19, 19, 20, 20, 19,\
-        \ 19] if scroll else [None]):\n        if direction:\n            key(direction)\n\
-        \        root = snapshot()\n        for node in root.iter('node'):\n     \
-        \       if node.get('text') == title and node.get('enabled') == 'true':\n\
-        \                return node\n    raise AssertionError(f'Native control not\
-        \ found: {title}')\n\n\ndef button_id(name):\n    root = snapshot()\n    return\
-        \ next(n for n in root.iter('node') if n.get('resource-id') == f'android:id/{name}')\n\
-        \n\ndef hide_ime():\n    state = adb('shell', 'dumpsys', 'input_method')\n\
-        \    if re.search(r'mInputShown\\s*[=:]\\s*true', state):\n        key(4)\n\
-        \n\ndef enter_url(value):\n    root = snapshot()\n    fields = [n for n in\
-        \ root.iter('node') if n.get('class') == 'android.widget.EditText']\n    field\
-        \ = next((n for n in fields if n.get('focused') == 'true'), fields[-1])\n\
-        \    previous = field.get('text', '')\n    tap(field)\n    key(123)\n    key(*([67]\
-        \ * (len(previous) + 4)))\n    if value:\n        adb('shell', 'input', 'text',\
-        \ value)\n    hide_ime()\n    tap(button_id('button1'))\n\n\ndef restart():\n\
-        \    global pid\n    adb('shell', 'am', 'force-stop', PACKAGE)\n    adb('shell',\
-        \ 'am', 'start', '-W', '-n', PACKAGE + '/.activity.main.MainActivity', '-d',\
-        \ HOME)\n    pid = adb('shell', 'pidof', PACKAGE).strip()\n    for attempt\
-        \ in range(12):\n        root = snapshot()\n        if any(n.get('text') ==\
-        \ 'Add shortcut' and n.get('enabled') == 'true' for n in root.iter('node')):\n\
-        \            return\n        # Dismiss only the provider-age notice, never\
-        \ an editing confirmation.\n        notice = [n for n in root.iter('node')\
-        \ if n.get('text') == 'OK' and n.get('resource-id') in\n                 \
-        \ ('android:id/button1', 'android:id/button2')]\n        if notice:\n    \
-        \        tap(notice[0])\n        time.sleep(1)\n    raise AssertionError('Native\
-        \ Home storage did not become ready')\n\n\ntry:\n    restart()\n    tap(find_text('Add\
-        \ shortcut'))\n    enter_url('https://native-home-check.invalid/first')\n\
-        \    find_text('native-home-check.invalid')\n    restart()\n    find_text('native-home-check.invalid')\n\
-        \    print('PASS: created shortcut survives process restart', flush=True)\n\
-        \n    tap(find_text('Edit'))\n    tap(find_text('native-home-check.invalid'))\n\
-        \    enter_url('https://edited-home-check.invalid/second')\n    find_text('edited-home-check.invalid')\n\
-        \    print('PASS: edited address replaces the saved shortcut', flush=True)\n\
-        \n    tap(find_text('edited-home-check.invalid'))\n    enter_url('')\n   \
-        \ find_text('Remove this shortcut from Home?', scroll=False)\n    tap(button_id('button1'))\n\
-        \    tap(find_text('Done'))\n    restart()\n    assert not any(n.get('text')\
-        \ in ('native-home-check.invalid', 'edited-home-check.invalid')\n        \
-        \           for n in snapshot().iter('node'))\n    print('PASS: confirmed\
-        \ deletion survives process restart', flush=True)\n\n    tap(find_text('Edit'))\n\
-        \    tap(find_text('YouTube'))\n    find_text('Remove YouTube from Home?',\
-        \ scroll=False)\n    tap(button_id('button1'))\n    tap(find_text('Done'))\n\
-        \    restart()\n    assert not any(n.get('text') == 'YouTube' for n in snapshot().iter('node'))\n\
-        \    print('PASS: hidden default shortcut survives process restart', flush=True)\n\
-        \n    tap(find_text('Edit'))\n    tap(find_text('YouTube'))\n    find_text('Show\
-        \ YouTube on Home again?', scroll=False)\n    tap(button_id('button1'))\n\
-        \    tap(find_text('Done'))\n    restart()\n    find_text('YouTube')\n   \
-        \ print('PASS: restoring the default shortcut survives process restart', flush=True)\n\
-        finally:\n    subprocess.run(['adb', 'logcat', '-d'], stdout=(REPORT / 'logcat.txt').open('w'),\
-        \ check=False)\n    subprocess.run(['adb', 'exec-out', 'screencap', '-p'],\
-        \ stdout=(REPORT / 'final.png').open('wb'), check=False)\n\nPYTEST\n"
-    - uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: '37.0'
-        target: google_apis
-        arch: x86_64
-        ram-size: 4096M
-        disk-size: 6G
-        emulator-options: -no-window -gpu software -no-snapshot -noaudio -no-boot-anim
-        disable-animations: true
-        pre-emulator-launch-script: bash scripts/check-startup-avd.sh 37.0
-        script: 'adb install --no-incremental candidate.apk
-
-          python "$RUNNER_TEMP/check-home-editing.py"'
-    - uses: actions/upload-artifact@v7.0.2
-      if: always()
-      with:
-        name: native-home-editing-fe6ca34d
-        path: home-editing-report/
-        retention-days: 7
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Verify closed PRs and ancestry, then delete with leases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          rows = json.loads("[{\"name\":\"adblock-lazy-scriptlets\",\"sha\":\"76953ae87ad2508cc343e351c23ac7aa36cd1839\",\"merged\":true,\"closed_prs\":[172],\"eligible\":true},{\"name\":\"baseline-profile/41650883199\",\"sha\":\"7a00a9a1aa990c7364d0cf3f7550ae389b1e7eb2\",\"merged\":true,\"closed_prs\":[],\"eligible\":true},{\"name\":\"diagnose/startup-process\",\"sha\":\"8db47362bf3f3709cf4093df182a23e312bb3e5d\",\"merged\":false,\"closed_prs\":[180],\"eligible\":true},{\"name\":\"fix/unlimited-video\",\"sha\":\"6d3fe695b8093b8f868dda8f894858d24fc1bd38\",\"merged\":false,\"closed_prs\":[181],\"eligible\":true},{\"name\":\"improve/home-cards\",\"sha\":\"2bcff302e49f05856f0a31022894d22c211bdce3\",\"merged\":false,\"closed_prs\":[183],\"eligible\":true},{\"name\":\"improve/panel-transitions\",\"sha\":\"c1043347197520f71b93d2f5b0a0ad096986f1d7\",\"merged\":false,\"closed_prs\":[185],\"eligible\":true},{\"name\":\"improve/tv-focus-halo\",\"sha\":\"8346cb8d36dfa30283c279e05b0a2590aea8a207\",\"merged\":false,\"closed_prs\":[186],\"eligible\":true},{\"name\":\"improve/tv-focus-motion\",\"sha\":\"45b5cfaccc121890551b765fc458a41016e899e4\",\"merged\":false,\"closed_prs\":[184],\"eligible\":true},{\"name\":\"improve/video-viewport\",\"sha\":\"4da759e3faf28d5b34e91e3cb047223ff9ada16c\",\"merged\":false,\"closed_prs\":[187],\"eligible\":true}]")
+          repo = 'ReinierTutoriales/VireoLumaTV-browser'
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          for row in rows:
+              name, sha = row['name'], row['sha']
+              assert name not in ('master', 'main', 'diagnose/focus-startup')
+              remote = git('ls-remote', '--heads', 'origin', 'refs/heads/' + name)
+              assert remote.split()[0] == sha, f'Changed branch: {name}'
+              if row['merged']:
+                  subprocess.run(['git', 'merge-base', '--is-ancestor', sha, 'origin/master'], check=True)
+              else:
+                  assert row['closed_prs']
+                  for number in row['closed_prs']:
+                      result = subprocess.check_output(['gh', 'api', f'repos/{repo}/pulls/{number}'], text=True)
+                      pr = json.loads(result)
+                      assert pr['state'] == 'closed' and pr['head']['ref'] == name and pr['head']['sha'] == sha, name
+              print('Verified:', name, sha, flush=True)
+          args = ['git', 'push', '--atomic']
+          args += [f"--force-with-lease=refs/heads/{row['name']}:{row['sha']}" for row in rows]
+          args += ['origin', '--delete'] + [row['name'] for row in rows]
+          subprocess.run(args, check=True)
+          remaining = git('ls-remote', '--heads', 'origin')
+          for row in rows:
+              assert ('refs/heads/' + row['name']) not in [line.split()[1] for line in remaining.splitlines()]
+          print('DELETED_VERIFIED_BRANCHES=' + str(len(rows)), flush=True)
+          print(remaining)
+          
+          PY
