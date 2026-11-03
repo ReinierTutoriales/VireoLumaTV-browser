@@ -228,7 +228,7 @@ jobs:
           target: google_apis
           arch: x86_64
           ram-size: ${{ matrix.api == '37.0' && '4096M' || '2048M' }}
-          disk-size: ${{ matrix.api == '37.0' && '6G' || '' }}
+          disk-size: ${{ matrix.api == '37.0' && '4G' || '' }}
           emulator-options: ${{ matrix.api == '37.0' && '-no-window -gpu software -no-snapshot -noaudio -no-boot-anim' || '-no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim' }}
           disable-animations: true
           pre-emulator-launch-script: bash scripts/check-startup-avd.sh ${{ matrix.api }}
