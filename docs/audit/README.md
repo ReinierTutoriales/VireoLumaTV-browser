@@ -48,3 +48,12 @@ compare their source SHA and conditions before using them as a baseline.
 
 Obsolete identity and migration reports are retained in Git history and the
 repository backups, rather than presented as current project instructions.
+
+## Interface icon sources (2026-11-03)
+
+The current interface symbols come from the pinned Material Symbols Rounded
+snapshot in `NOTICE.md`, converted from SVG paths to Android VectorDrawable.
+The resource comments identify each upstream symbol; the inventory marks these
+adapted resources and the mixed-source home page as MODIFICADO. This is an
+asset import under Apache 2.0, not a claim of independent icon authorship.
+No icon library, icon font or network font loader is added.
