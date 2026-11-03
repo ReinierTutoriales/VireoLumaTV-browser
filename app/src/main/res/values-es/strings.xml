@@ -221,7 +221,11 @@
     <string name="home_invalid">Dirección no válida. Usa http:// o https:// sin usuario ni contraseña.</string>
     <string name="home_duplicate">Ese acceso ya está en el inicio.</string>
     <string name="home_youtube_removed">YouTube (eliminado, pulsa para restaurarlo)</string>
-    <string name="home_favorite_managed">Este acceso es un favorito. Edítalo o elimínalo en %s.</string>
+    <string name="home_move_left">Mover a la izquierda</string>
+    <string name="home_move_right">Mover a la derecha</string>
+    <string name="home_edit_address">Editar dirección</string>
+    <string name="home_remove">Quitar del inicio</string>
+    <string name="home_favorite_remove_confirm">¿Eliminar este favorito? También se quitará de Favoritos.</string>
     <string name="home_edit_item" formatted="false">Editar %s</string>
     <string name="home_youtube_restore">¿Volver a mostrar YouTube en el inicio?</string>
     <string name="home_youtube_remove">¿Eliminar YouTube del inicio?</string>

@@ -221,7 +221,11 @@
     <string name="home_invalid">כתובת לא תקינה. יש להשתמש ב-http:// או ב-https:// בלי שם משתמש וסיסמה.</string>
     <string name="home_duplicate">קיצור הדרך הזה כבר נמצא בדף הבית.</string>
     <string name="home_youtube_removed">YouTube (הוסר, יש ללחוץ לשחזור)</string>
-    <string name="home_favorite_managed">קיצור הדרך הזה הוא מועדף. אפשר לערוך או להסיר אותו ב%s.</string>
+    <string name="home_move_left">הזזה שמאלה</string>
+    <string name="home_move_right">הזזה ימינה</string>
+    <string name="home_edit_address">עריכת כתובת</string>
+    <string name="home_remove">הסרה מדף הבית</string>
+    <string name="home_favorite_remove_confirm">להסיר את המועדף? הוא יוסר גם מהמועדפים.</string>
     <string name="home_edit_item" formatted="false">עריכת %s</string>
     <string name="home_youtube_restore">להציג שוב את YouTube בדף הבית?</string>
     <string name="home_youtube_remove">להסיר את YouTube מדף הבית?</string>

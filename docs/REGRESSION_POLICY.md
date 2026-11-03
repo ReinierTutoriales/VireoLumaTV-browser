@@ -75,6 +75,9 @@ El acceso a ese almacén se verifica contra la URL interna exacta antes de ejecu
 ningún sitio recibe un puente nuevo. Favoritos se conserva en ambos modos; localStorage sigue usando
 el perfil WebView aislado de cada modo. El foco no abre el teclado:
 OK o clic lo solicita; Arriba desde búsqueda abre la cápsula. Las miniaturas conservan el límite de 480 px.
+En modo edición, OK sobre YouTube, un favorito o un acceso ofrece moverlo, editar su dirección (solo
+accesos) o quitarlo; quitar un favorito lo borra también de Favoritos tras confirmar. El orden se guarda
+en `vireo.home.order.v1` del mismo almacén (petición del propietario, 2026-11-03).
 Sin nuevas dependencias. Requiere CI del conjunto y validación física de mando antes de integrar.
 
 **Sugerencias de dirección (2026-10-27, petición del propietario):** al editar la dirección se muestran hasta

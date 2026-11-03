@@ -6,20 +6,35 @@ import java.net.IDN
 import java.net.URI
 import java.util.Locale
 
-/** The existing origin-local shortcut format; native controls do not move or duplicate its data. */
-internal data class HomeShortcuts(val urls: List<String> = emptyList(), val youtubeHidden: Boolean = false) {
+/**
+ * The existing origin-local shortcut format; native controls do not move or duplicate its data.
+ * [order] lists tile keys (YouTube, favorites and shortcuts) as the user arranged them.
+ */
+internal data class HomeShortcuts(val urls: List<String> = emptyList(), val youtubeHidden: Boolean = false,
+                                  val order: List<String> = emptyList()) {
+    /** [items] in the saved order; keys never arranged keep their default place after the arranged ones. */
+    fun <T> arrange(items: List<T>, key: (T) -> String): List<T> =
+        items.sortedBy { item -> order.indexOf(key(item)).let { if (it < 0) Int.MAX_VALUE else it } }
+
     companion object {
         const val MAX = 24
         const val KEY = "vireo.home.shortcuts.v1"
         const val HIDDEN_KEY = "vireo.home.youtube.hidden.v1"
+        const val ORDER_KEY = "vireo.home.order.v1"
         const val YOUTUBE = "https://m.youtube.com/"
+        /** YouTube, up to 48 favorites and [MAX] shortcuts. */
+        private const val MAX_ORDER = 1 + 48 + MAX
 
-        fun read(raw: String?, hidden: Boolean): HomeShortcuts {
+        fun read(raw: String?, hidden: Boolean, orderRaw: String? = null): HomeShortcuts {
             val data = if (raw != null && raw.length <= 65536) runCatching { JSONArray(raw) }.getOrNull() else null
             val urls = (0 until minOf(data?.length() ?: 0, MAX)).mapNotNull { index ->
                 (data?.opt(index) as? String)?.let(::address)
             }.distinct()
-            return HomeShortcuts(urls, hidden)
+            val keys = if (orderRaw != null && orderRaw.length <= 262144) runCatching { JSONArray(orderRaw) }.getOrNull() else null
+            val order = (0 until minOf(keys?.length() ?: 0, MAX_ORDER)).mapNotNull { index ->
+                (keys?.opt(index) as? String)?.takeIf { it.length <= 2100 }
+            }.distinct()
+            return HomeShortcuts(urls, hidden, order)
         }
 
         /** Only ordinary web destinations, with no embedded credentials or executable scheme. */

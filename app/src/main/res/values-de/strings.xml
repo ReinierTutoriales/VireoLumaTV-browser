@@ -219,7 +219,11 @@
     <string name="home_invalid">Ungültige Adresse. Verwende http:// oder https:// ohne Benutzername und Passwort.</string>
     <string name="home_duplicate">Diese Verknüpfung ist schon auf der Startseite.</string>
     <string name="home_youtube_removed">YouTube (entfernt, zum Wiederherstellen drücken)</string>
-    <string name="home_favorite_managed">Diese Verknüpfung ist ein Favorit. Bearbeite oder entferne sie unter %s.</string>
+    <string name="home_move_left">Nach links verschieben</string>
+    <string name="home_move_right">Nach rechts verschieben</string>
+    <string name="home_edit_address">Adresse bearbeiten</string>
+    <string name="home_remove">Von der Startseite entfernen</string>
+    <string name="home_favorite_remove_confirm">Diesen Favoriten entfernen? Er wird auch aus den Favoriten gelöscht.</string>
     <string name="home_edit_item" formatted="false">%s bearbeiten</string>
     <string name="home_youtube_restore">YouTube wieder auf der Startseite anzeigen?</string>
     <string name="home_youtube_remove">YouTube von der Startseite entfernen?</string>

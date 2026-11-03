@@ -223,7 +223,11 @@
     <string name="home_invalid">Неправильна адреса. Використовуйте http:// або https:// без імені користувача й пароля.</string>
     <string name="home_duplicate">Цей ярлик уже є на головній.</string>
     <string name="home_youtube_removed">YouTube (видалено, натисніть, щоб повернути)</string>
-    <string name="home_favorite_managed">Цей ярлик — закладка. Змініть або видаліть її в розділі «%s».</string>
+    <string name="home_move_left">Перемістити ліворуч</string>
+    <string name="home_move_right">Перемістити праворуч</string>
+    <string name="home_edit_address">Змінити адресу</string>
+    <string name="home_remove">Прибрати з головної</string>
+    <string name="home_favorite_remove_confirm">Видалити цю закладку? Її також буде прибрано з Вибраного.</string>
     <string name="home_edit_item" formatted="false">Змінити %s</string>
     <string name="home_youtube_restore">Знову показувати YouTube на головній?</string>
     <string name="home_youtube_remove">Прибрати YouTube із головної?</string>

@@ -223,7 +223,11 @@
     <string name="home_invalid">Nieprawidłowy adres. Użyj http:// lub https:// bez nazwy użytkownika i hasła.</string>
     <string name="home_duplicate">Ten skrót jest już na stronie startowej.</string>
     <string name="home_youtube_removed">YouTube (usunięty, naciśnij, aby przywrócić)</string>
-    <string name="home_favorite_managed">Ten skrót jest ulubionym. Edytuj go lub usuń w sekcji %s.</string>
+    <string name="home_move_left">Przesuń w lewo</string>
+    <string name="home_move_right">Przesuń w prawo</string>
+    <string name="home_edit_address">Edytuj adres</string>
+    <string name="home_remove">Usuń ze strony startowej</string>
+    <string name="home_favorite_remove_confirm">Usunąć tę zakładkę? Zostanie też usunięta z Ulubionych.</string>
     <string name="home_edit_item" formatted="false">Edytuj %s</string>
     <string name="home_youtube_restore">Pokazać ponownie YouTube na stronie startowej?</string>
     <string name="home_youtube_remove">Usunąć YouTube ze strony startowej?</string>

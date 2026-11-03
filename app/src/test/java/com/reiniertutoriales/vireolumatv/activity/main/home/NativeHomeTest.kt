@@ -108,6 +108,46 @@ class NativeHomeTest {
         preview.recycle()
     }
 
+    @Test fun editingOffersMoveAndRemoveForShortcutsAndFavoritesAndSavesTheOrder() = Fixture().use { f ->
+        val favorite = Favorite().apply { title = "Saved favorite"; url = "https://favorite.test/" }
+        favorite.id = runBlocking { AppDatabase.db.favoriteDao().insert(favorite) }
+        try {
+            f.home.update(f.tab)
+            f.finishRead("{\"raw\":\"[\\\"https://a.test/\\\"]\",\"hidden\":false}")
+            val grid = f.vb.nativeHomeContainer.findViewById<RecyclerView>(R.id.home_tiles)
+            fun tile(key: String) = (0 until grid.childCount).map { grid.getChildAt(it) }.first { it.tag == key }
+            fun keys() = (0 until grid.childCount).map { grid.getChildAt(it).tag as String }
+            assertEquals(listOf("youtube", "favorite:https://favorite.test/", "shortcut:https://a.test/", "add", "edit"), keys())
+            tile("edit").performClick()
+            f.drain()
+
+            // A favorite is no longer a dead end while editing: it can be moved and removed here.
+            tile("favorite:https://favorite.test/").performClick()
+            val menu = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
+            val labels = (0 until menu.listView.adapter.count).map { menu.listView.adapter.getItem(it).toString() }
+            assertEquals(listOf(R.string.home_move_left, R.string.home_move_right, R.string.home_remove)
+                .map { f.host.get().getString(it) }, labels)
+
+            // Moving the shortcut left saves the whole arrangement, which the next read applies.
+            menu.dismiss()
+            tile("shortcut:https://a.test/").performClick()
+            val actions = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
+            val shortcutLabels = (0 until actions.listView.adapter.count).map { actions.listView.adapter.getItem(it).toString() }
+            assertEquals(listOf(R.string.home_move_left, R.string.home_edit_address, R.string.home_remove)
+                .map { f.host.get().getString(it) }, shortcutLabels)
+            actions.listView.performItemClick(null, 0, 0)
+            val saved = """["youtube","shortcut:https://a.test/","favorite:https://favorite.test/"]"""
+            assertTrue(f.web.scripts.last().contains(org.json.JSONObject.quote(HomeShortcuts.ORDER_KEY)))
+            val written = org.json.JSONArray(listOf("youtube", "shortcut:https://a.test/", "favorite:https://favorite.test/")).toString()
+            assertTrue(f.web.scripts.last().contains(org.json.JSONObject.quote(written)))
+            f.finishRead(org.json.JSONObject().put("raw", "[\"https://a.test/\"]").put("hidden", false)
+                .put("order", saved).toString())
+            assertEquals(listOf("youtube", "shortcut:https://a.test/", "favorite:https://favorite.test/", "add", "edit"), keys())
+        } finally {
+            runBlocking { AppDatabase.db.favoriteDao().delete(favorite) }
+        }
+    }
+
     @Test fun previewingANewTabHidesNativeHomeAndBackRestoresItWithoutChangingTabs() = Fixture().use { f ->
         f.home.update(f.tab)
         f.finishRead()
@@ -231,9 +271,10 @@ class NativeHomeTest {
         }
         fun finishRead(json: String = "{\"raw\":\"[]\",\"hidden\":false}") {
             requireNotNull(web.callback).onReceiveValue(json)
-            // ListAdapter computes updates off the UI thread; drain the posted commit before inspecting focus.
-            repeat(30) { Thread.sleep(5); shadowOf(Looper.getMainLooper()).idle(); layout() }
+            drain()
         }
+        /** ListAdapter computes updates off the UI thread; drain the posted commit before inspecting focus. */
+        fun drain() = repeat(30) { Thread.sleep(5); shadowOf(Looper.getMainLooper()).idle(); layout() }
         fun layout(width: Int = 1280, height: Int = 720) {
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, width, height)
