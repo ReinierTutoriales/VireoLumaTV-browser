@@ -16,10 +16,10 @@ class BaselineProfileGenerator {
     @get:Rule val rule = BaselineProfileRule()
 
     @Test fun startupAndFirstRemotePresses() = rule.collect(
-        // The baseline profile plugin passes each variant's application ID (the foss build adds
-        // ".foss"), so every distribution profiles its own installed package.
-        packageName = InstrumentationRegistry.getArguments().getString("targetAppId")
-            ?: "com.reiniertutoriales.vireolumatv",
+        // Each flavor passes its application ID (build.gradle.kts): foss installs with ".foss".
+        packageName = requireNotNull(InstrumentationRegistry.getArguments().getString("targetAppId")) {
+            "targetAppId instrumentation argument is missing"
+        },
         includeInStartupProfile = true,
     ) {
         pressHome()
