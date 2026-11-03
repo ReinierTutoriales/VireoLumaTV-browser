@@ -172,6 +172,7 @@ def main():
         time.sleep(0.4 if SCENARIOS[(cycle - 1) % len(SCENARIOS)] == 'quick' else 3)
         before = {"page_fullscreen": page.eval("!!document.fullscreenElement"), "app": app_state()}
         scenario = SCENARIOS[(cycle - 1) % len(SCENARIOS)]
+        note(f"cycle {cycle} {scenario}: app pid {pid() or 'none'}")
         scenario_before(scenario)
         before["scenario"] = scenario
         before["app_after_setup"] = app_state()
@@ -214,4 +215,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        # Keep the evidence even when a cycle breaks: app process and logcat at that moment.
+        note("app pid at end:", pid() or "none")
+        with open(os.path.join(REPORT, "logcat.txt"), "w") as f:
+            f.write(adb("logcat", "-d", timeout=60))
+        with open(os.path.join(REPORT, "summary.txt"), "w") as f:
+            f.write("\n".join(log_lines))
