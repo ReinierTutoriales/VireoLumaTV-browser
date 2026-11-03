@@ -3,6 +3,7 @@
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="vertical" android:background="@color/background"
     android:paddingStart="48dp" android:paddingEnd="48dp" android:paddingTop="32dp" android:paddingBottom="27dp"
+    android:focusable="false" android:descendantFocusability="afterDescendants"
     android:clipChildren="false">
     <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
         android:text="@string/home_search_brand" android:gravity="center" android:textAppearance="@style/TextAppearance.Vireo.Title"

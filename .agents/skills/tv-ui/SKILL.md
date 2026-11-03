@@ -33,3 +33,8 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
 
 - Validate layout attributes against Android resources, not Kotlin property names;
   `TextView.compoundDrawablePadding` is `android:drawablePadding` in XML.
+
+- A background click listener can make a ViewGroup keyboard-focusable through
+  FOCUSABLE_AUTO. Mark touch-only containers non-focusable explicitly, and test
+  returning from touch/dialog interaction to D-pad navigation, including rows
+  outside the initially visible grid.

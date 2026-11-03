@@ -109,6 +109,27 @@ class NativeHomeTest {
         assertSame(f.tab, f.tabs.currentTab.value)
     }
 
+    @Test fun backgroundClicksCannotCaptureDpadFocusAndAnotherGridRowRemainsReachable() = Fixture().use { f ->
+        f.home.update(f.tab)
+        f.finishRead("{\"raw\":\"[\\\"https://saved.test/\\\"]\",\"hidden\":false}")
+        repeat(2) { f.layout(640, 320); shadowOf(Looper.getMainLooper()).idle() }
+        val content = f.vb.nativeHomeContainer.getChildAt(0)
+        content.performClick()
+        assertFalse("The background must never become a keyboard focus target", content.isFocusable)
+        f.vb.root.clearFocus()
+        val target = android.view.FocusFinder.getInstance().findNextFocus(f.vb.root, null, View.FOCUS_DOWN)
+        assertNotNull(target)
+        assertNotSame(content, target)
+        val grid = f.vb.nativeHomeContainer.findViewById<RecyclerView>(R.id.home_tiles)
+        val youtube = (0 until grid.childCount).map { grid.getChildAt(it) }.first { it.tag == "youtube" }
+        assertTrue(youtube.requestFocus())
+        val edit = youtube.focusSearch(View.FOCUS_DOWN)
+        assertNotNull("Edit on the next row must stay reachable on a short window", edit)
+        assertEquals("edit", edit.tag)
+        assertTrue(edit.requestFocus())
+        assertTrue(grid.hasFocus())
+    }
+
     @Test fun privateHomeKeepsTheSharedFavoritesPromisedByTheExistingPrivateMode() = Fixture().use { f ->
         val favorite = Favorite().apply { title = "Saved favorite"; url = "https://favorite.test/" }
         favorite.id = runBlocking { AppDatabase.db.favoriteDao().insert(favorite) }
@@ -200,9 +221,9 @@ class NativeHomeTest {
             // ListAdapter computes updates off the UI thread; drain the posted commit before inspecting focus.
             repeat(30) { Thread.sleep(5); shadowOf(Looper.getMainLooper()).idle(); layout() }
         }
-        fun layout() {
-            vb.root.measure(View.MeasureSpec.makeMeasureSpec(1280, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY))
-            vb.root.layout(0, 0, 1280, 720)
+        fun layout(width: Int = 1280, height: Int = 720) {
+            vb.root.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY))
+            vb.root.layout(0, 0, width, height)
         }
         override fun close() {
             home.hide()

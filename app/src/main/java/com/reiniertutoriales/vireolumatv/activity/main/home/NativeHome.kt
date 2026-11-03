@@ -75,6 +75,9 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         host.addView(content)
         host.visibility = browser.vb.pageContainer.visibility
         content.setOnClickListener { closeCapsuleIfVisible() }
+        // A clickable ViewGroup becomes focusable automatically on newer Android versions.
+        // The background handles touch only; keyboard focus belongs to the actual controls.
+        content.isFocusable = false
         search = content.findViewById<AppCompatEditText>(R.id.home_search).apply {
             showSoftInputOnFocus = false
             setOnClickListener { showKeyboard(this) }
