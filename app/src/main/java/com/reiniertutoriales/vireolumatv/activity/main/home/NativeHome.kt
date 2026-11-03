@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
@@ -112,12 +113,9 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             layoutManager = GridLayoutManager(browser, 4)
             itemAnimator = null
             adapter = Tiles().also { this@NativeHome.adapter = it }
-            addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ ->
-                val manager = layoutManager as GridLayoutManager
-                val columns = ((right - left) / resources.getDimensionPixelSize(R.dimen.home_tile_min_width)).coerceIn(2, 6)
-                if (manager.spanCount != columns) manager.spanCount = columns
-            }
+            addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ -> fitColumns(right - left) }
         }
+        followCapsule(animate = false)
         render()
         // Favorites are shared in both modes, as before; the observer ends when Home is hidden.
         favoritesJob = browser.lifecycleScope.launch {
@@ -164,6 +162,35 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         loaded = false
         busy = false
         editing = false
+    }
+
+    /**
+     * Columns keep one tile width whatever the count; a row that does not fill the width is
+     * centred by the grid's side padding instead of hanging from the left edge.
+     */
+    private fun fitColumns(width: Int) {
+        val view = grid ?: return
+        val manager = view.layoutManager as GridLayoutManager
+        val fit = (width / view.resources.getDimensionPixelSize(R.dimen.home_tile_min_width)).coerceIn(2, 6)
+        val columns = (adapter?.itemCount ?: 0).coerceIn(1, fit)
+        val side = (width - width / fit * columns) / 2
+        if (manager.spanCount != columns) manager.spanCount = columns
+        if (view.paddingLeft != side || view.paddingRight != side) view.setPadding(side, view.paddingTop, side, view.paddingBottom)
+    }
+
+    /**
+     * Moves Home below the open capsule, so the address row and tabs never cover its title and
+     * search field; back in place when the capsule closes.
+     */
+    fun followCapsule(animate: Boolean) {
+        val view = root ?: return
+        val overlay = browser.vb.controlsOverlay
+        val offset = if (overlay.isVisible && overlay.height > 0) {
+            (overlay.height - overlay.paddingBottom - view.paddingTop).coerceAtLeast(0).toFloat()
+        } else 0f
+        view.animate().cancel()
+        if (animate) view.animate().translationY(offset).setDuration(CAPSULE_MS).setInterpolator(DecelerateInterpolator()).start()
+        else view.translationY = offset
     }
 
     fun setPageVisible(visible: Boolean) {
@@ -231,6 +258,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         val key = focused?.tag as? String
         val oldIndex = adapter?.currentList?.indexOfFirst { it.key == key } ?: -1
         adapter?.submitList(items) {
+            grid?.let { if (it.width > 0) fitColumns(it.width) }
             if (key == null || browser.vb.controlsOverlay.isVisible || dialog?.isShowing == true) return@submitList
             val current = root?.findFocus()
             if (current != null && current !== focused) return@submitList
@@ -360,4 +388,9 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         }
     }
     private class Holder(view: View) : RecyclerView.ViewHolder(view)
+
+    private companion object {
+        /** The capsule's own opening time, so Home moves with it. */
+        const val CAPSULE_MS = 220L
+    }
 }

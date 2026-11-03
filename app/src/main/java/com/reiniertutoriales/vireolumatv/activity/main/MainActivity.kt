@@ -946,6 +946,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.controlsOverlay.alpha = 0f
         vb.controlsOverlay.animate().translationY(0f).alpha(1f).setDuration(OVERLAY_OPEN_MS)
             .setInterpolator(DecelerateInterpolator()).start()
+        nativeHome?.followCapsule(animate = true)
     }
 
     /** Shows [tab] behind the capsule: the live page for the shown tab, its stored picture for another. */
@@ -998,6 +999,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.controlsOverlay.visibility = View.INVISIBLE
         vb.controlsOverlay.translationY = 0f
         vb.controlsOverlay.alpha = 1f
+        nativeHome?.followCapsule(animate = false)
         vb.tabPreview.translationY = 0f
         showPicture(null, placeholder = false)
         if (wasVisible) cancelStripSelection()
