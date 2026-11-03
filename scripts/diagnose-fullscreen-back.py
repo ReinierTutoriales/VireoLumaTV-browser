@@ -133,9 +133,27 @@ def app_state():
         m = re.search(r"\{[0-9a-f]+ ([VIG])\S* (\S+) [^}]*app:id/" + name + r"\b", text)
         if m:
             state[name] = m.group(1) + ("F" if m.group(2)[1:2] == "F" else "")
-    focus = re.findall(r"\{[0-9a-f]+ [VIG]\S* .F\S* [^}]*?(app:id/\w+|\})", text)
-    state["focused"] = [f for f in focus if f != "}"][:3]
+    state["focused"] = [m.group(2) or m.group(1) for m in
+                        re.finditer(r"(\w+)\{[0-9a-f]+ \S{9} .F\S* [^}]*?(?:#\w+ (\S+))?\}", text)][:3]
     return state
+
+
+SCENARIOS = ["quick", "after-ok", "after-play", "after-move", "long-back", "double-back"]
+
+
+def scenario_before(name):
+    """What the viewer did in fullscreen before Back."""
+    if name == "quick":
+        return
+    if name == "after-ok":  # OK with the pointer shows the player's controls.
+        adb("shell", "input", "keyevent", "KEYCODE_DPAD_CENTER")
+        time.sleep(1.5)
+    elif name == "after-play":
+        time.sleep(20)
+    elif name == "after-move":  # Pointer moved over the video, then left still.
+        for key in ("KEYCODE_DPAD_UP", "KEYCODE_DPAD_UP", "KEYCODE_DPAD_RIGHT"):
+            adb("shell", "input", "keyevent", key)
+        time.sleep(1)
 
 
 def main():
@@ -151,9 +169,18 @@ def main():
         page.eval(PROBE)
         page.eval("window.__fs.length = 0")
         entered = page.eval(ENTER, gesture=True)
-        time.sleep(3)
+        time.sleep(0.4 if SCENARIOS[(cycle - 1) % len(SCENARIOS)] == 'quick' else 3)
         before = {"page_fullscreen": page.eval("!!document.fullscreenElement"), "app": app_state()}
-        adb("shell", "input", "keyevent", "KEYCODE_BACK")
+        scenario = SCENARIOS[(cycle - 1) % len(SCENARIOS)]
+        scenario_before(scenario)
+        before["scenario"] = scenario
+        before["app_after_setup"] = app_state()
+        if scenario == "long-back":
+            adb("shell", "input", "keyevent", "--longpress", "KEYCODE_BACK")
+        else:
+            adb("shell", "input", "keyevent", "KEYCODE_BACK")
+        if scenario == "double-back":
+            adb("shell", "input", "keyevent", "KEYCODE_BACK")
         samples = []
         for wait in (0.5, 1.0, 2.0, 4.0):
             time.sleep(wait - (samples[-1]["t"] if samples else 0))
