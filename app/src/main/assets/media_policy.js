@@ -11,18 +11,7 @@
     var blockVp9 = config.block.indexOf('vp9') !== -1;
     var blockAv1 = config.block.indexOf('av1') !== -1;
     var maxHeight = config.maxHeight | 0;
-    // CSS viewport dimensions multiplied by the device pixel ratio approximate physical pixels.
-    // Missing or invalid dimensions leave the existing hardware policy in charge.
-    function viewportHeight() {
-        if (!config.viewport) return 0;
-        // The native window is shared by every frame; a small iframe must not lower its cap.
-        if (config.windowHeight > 0) return config.windowHeight;
-        var w = Number(window.innerWidth), h = Number(window.innerHeight);
-        var ratio = Number(window.devicePixelRatio) || 1;
-        if (!(w > 0 && h > 0 && ratio > 0 && isFinite(w) && isFinite(h) && isFinite(ratio))) return 0;
-        return Math.floor(Math.min(w, h) * ratio);
-    }
-    function qualityHeight() { return maxHeight || viewportHeight(); }
+    var maxWidth = Math.round(maxHeight * 16 / 9);
     // Per codec family: highest height decoded in hardware at 30 and 60 fps, and 10-bit support.
     var hw = config.hw || {};
 
@@ -46,11 +35,9 @@
         return false;
     }
     function overCap(width, height) {
-        var cap = qualityHeight();
-        if (!cap) return false;
-        var maxWidth = Math.round(cap * 16 / 9);
-        if (width && height) return width * height > maxWidth * cap;
-        return height > cap || width > maxWidth;
+        if (!maxHeight) return false;
+        if (width && height) return width * height > maxWidth * maxHeight;
+        return height > maxHeight || width > maxWidth;
     }
     function familyOf(codecs) {
         if (/(^|[\s,])(avc1|avc3)\./.test(codecs)) return 'avc';
@@ -146,11 +133,9 @@
         if (!player || typeof player.getAvailableQualityLevels !== 'function') return;
         try {
             var available = player.getAvailableQualityLevels() || [];
-            var cap = qualityHeight();
-            if (!cap) return;
             var quality = null;
             for (var i = 0; i < levels.length && !quality; i++) {
-                if (levels[i][0] <= cap && available.indexOf(levels[i][1]) !== -1) quality = levels[i][1];
+                if (levels[i][0] <= maxHeight && available.indexOf(levels[i][1]) !== -1) quality = levels[i][1];
             }
             if (!quality) return;
             var data = typeof player.getVideoData === 'function' ? player.getVideoData() : null;

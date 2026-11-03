@@ -282,6 +282,9 @@ fotogramas y profundidad de color a lo que informa el hardware. En «Automática
 disponibles a las páginas, aunque WebView pueda decodificarlos por software. No cambiar
 esta política (incluido dejar que WebView decida en «Sin límite») sin decisión expresa
 del propietario.
+«Automática» no limita la resolución al tamaño de la ventana o del viewport: la
+interfaz de muchas TV 4K se dibuja a 1080p y ese límite ocultaba 1440p y 2160p
+(retirado por decisión del propietario, 2026-11-03).
 Las consultas permitidas de `mediaCapabilities.decodingInfo` conservan la promesa
 y el resultado originales de WebView, incluidos `smooth`, `powerEfficient` y el
 acceso DRM. La presencia de un decodificador no prueba fluidez ni eficiencia;
