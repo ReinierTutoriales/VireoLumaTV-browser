@@ -112,15 +112,21 @@ class NativeHomeTest {
     @Test fun privateHomeKeepsTheSharedFavoritesPromisedByTheExistingPrivateMode() = Fixture().use { f ->
         val favorite = Favorite().apply { title = "Saved favorite"; url = "https://favorite.test/" }
         favorite.id = runBlocking { AppDatabase.db.favoriteDao().insert(favorite) }
+        val internal = Favorite().apply { title = "Internal page"; url = Config.HOME_PAGE_URL }
+        internal.id = runBlocking { AppDatabase.db.favoriteDao().insert(internal) }
         try {
             f.home.update(f.tab)
             f.finishRead()
             val grid = f.vb.nativeHomeContainer.findViewById<RecyclerView>(R.id.home_tiles)
             assertTrue((0 until grid.childCount).any { grid.getChildAt(it).tag == "favorite:https://favorite.test/" })
+            assertEquals("Internal destinations are excluded, just as in the previous Home", 4, grid.adapter!!.itemCount)
             f.home.hide()
             assertEquals(0, f.vb.nativeHomeContainer.childCount)
         } finally {
-            runBlocking { AppDatabase.db.favoriteDao().delete(favorite) }
+            runBlocking {
+                AppDatabase.db.favoriteDao().delete(favorite)
+                AppDatabase.db.favoriteDao().delete(internal)
+            }
         }
     }
 

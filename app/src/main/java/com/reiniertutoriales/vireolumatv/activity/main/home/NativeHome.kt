@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
@@ -113,7 +114,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
                 emit(emptyList())
             }.collect { values ->
                 favorites = values.asReversed().asSequence().mapNotNull { value ->
-                    value.url?.let { HomeShortcuts.address(it) }?.let { url ->
+                    TabFavorites.webAddress(value.url)?.let { HomeShortcuts.address(it) }?.let { url ->
                         Tile("favorite:$url", value.title.orEmpty().trim().take(200).ifEmpty { label(url) }, url, R.drawable.ic_bookmark)
                     }
                 }.distinctBy { it.url }.take(48).toList()
@@ -272,7 +273,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
                 val url = HomeShortcuts.address(text)
                 when {
                     url == null -> input.error = browser.getString(R.string.home_invalid)
-                    url != old && (url in shortcuts.urls || favorites.any { it.url == url }) -> input.error = browser.getString(R.string.home_duplicate)
+                    url != old && url in shortcuts.urls -> input.error = browser.getString(R.string.home_duplicate)
                     else -> {
                         popup.dismiss()
                         if (old == null && HomeShortcuts.isYoutube(url)) {
