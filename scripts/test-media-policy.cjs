@@ -118,10 +118,10 @@ function page(config, host = 'www.youtube.com') {
         };
         window.innerWidth = 1280; window.innerHeight = 720; window.devicePixelRatio = 1;
         listeners.playing();
-        assert.deepEqual(viewportCalls, ['hd720-hd720', 'hd720']);
+        assert.deepEqual(viewportCalls, ['large-hd720']);
         window.innerWidth = 1920; window.innerHeight = 1080;
         windowListeners.resize();
-        assert.deepEqual(viewportCalls, ['hd720-hd720', 'hd720', 'hd1080-hd1080', 'hd1080']);
+        assert.deepEqual(viewportCalls, ['large-hd720', 'large-hd1080']);
     `, c);
 
     // The YouTube player hook stays off other sites; a second injection is a no-op.
