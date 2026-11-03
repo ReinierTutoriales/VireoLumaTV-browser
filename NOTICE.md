@@ -26,6 +26,19 @@ AndroidX, Kotlin, coroutines and other dependencies keep their respective licens
 Their declarations are in gradle/libs.versions.toml and app/build.gradle.kts.
 Android System WebView is provided by the device and has its own provider terms.
 
+## Interface symbols
+
+The interface uses Material Symbols Rounded by Google, under Apache 2.0.
+SVG paths are converted to native Android VectorDrawable resources in
+`app/src/main/res/drawable/ic_*.xml`; each file names its source symbol.
+Native Home uses the same drawable resources; no icon font is loaded.
+
+- Source: https://github.com/google/material-design-icons/tree/10ecc14790612ca8fd164e3f4ffe9c16fc50d5b7/symbols/web
+- Snapshot commit: `10ecc14790612ca8fd164e3f4ffe9c16fc50d5b7`
+- License: licenses/Apache-2.0.txt
+
+The launcher bird and banner remain the application's separate artwork.
+
 ## Filter data
 
 A dated baseline of EasyList, EasyPrivacy, EasyList Spanish and uBlock Origin

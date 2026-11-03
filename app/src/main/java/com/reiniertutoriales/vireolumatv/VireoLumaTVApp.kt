@@ -37,7 +37,10 @@ class VireoLumaTVApp : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && getProcessName().endsWith(PRIVATE_PROCESS_SUFFIX)) {
             IncognitoWebViewData.configure(this)
         }
-        AppContext.init(this, Config(getSharedPreferences(PREFS_FILE, MODE_MULTI_PROCESS)))
+        // Each process (main and :incognito) reads the settings file when it starts. MODE_MULTI_PROCESS
+        // only re-read the file on this one call, which happens at process start anyway, and Android
+        // deprecates it as unreliable; MODE_PRIVATE keeps the same behavior.
+        AppContext.init(this, Config(getSharedPreferences(PREFS_FILE, MODE_PRIVATE)))
         Engines.install(WebViewPageEngine.Backend)
         // Connections opened by the app itself (favicons, filter lists) keep their own cookies.
         java.net.CookieHandler.setDefault(java.net.CookieManager())

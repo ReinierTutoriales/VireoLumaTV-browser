@@ -45,6 +45,17 @@ jobs:
           ./gradlew :app:generateBaselineProfile --stacktrace
           -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect
 
+      - name: Upload generator reports
+        if: failure()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: baseline-profile-reports
+          path: |
+            baselineprofile/build/reports/androidTests/
+            baselineprofile/build/outputs/androidTest-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Upload profile
         uses: actions/upload-artifact@v7.0.2
         with:

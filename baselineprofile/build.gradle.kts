@@ -22,9 +22,19 @@ android {
     // Mirrors the app's distributions, so each release variant gets its profile.
     flavorDimensions += "distribution"
     productFlavors {
-        create("generic") { dimension = "distribution" }
-        create("google") { dimension = "distribution" }
-        create("foss") { dimension = "distribution" }
+        // Each flavor tells the generator which installed package to profile (foss adds ".foss").
+        create("generic") {
+            dimension = "distribution"
+            testInstrumentationRunnerArguments["targetAppId"] = "com.reiniertutoriales.vireolumatv"
+        }
+        create("google") {
+            dimension = "distribution"
+            testInstrumentationRunnerArguments["targetAppId"] = "com.reiniertutoriales.vireolumatv"
+        }
+        create("foss") {
+            dimension = "distribution"
+            testInstrumentationRunnerArguments["targetAppId"] = "com.reiniertutoriales.vireolumatv.foss"
+        }
     }
 
     testOptions.managedDevices.localDevices {

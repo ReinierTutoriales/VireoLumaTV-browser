@@ -145,6 +145,18 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      # Lint warnings do not fail the build; keep the report so they can be reviewed.
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: lint-report
+          path: |
+            app/build/reports/lint-results-genericRelease.html
+            app/build/reports/lint-results-genericRelease.sarif
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v7.0.2

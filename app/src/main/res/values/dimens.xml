@@ -18,6 +18,9 @@
     <dimen name="tab_width">188dp</dimen>
     <dimen name="tab_height">48dp</dimen>
 
+    <!-- Home shortcut grid: one column per this width, between two and six columns. -->
+    <dimen name="home_tile_min_width">180dp</dimen>
+
     <!-- Side panel: a third of the canvas. -->
     <dimen name="side_panel_width">320dp</dimen>
     <dimen name="side_panel_wide">420dp</dimen>

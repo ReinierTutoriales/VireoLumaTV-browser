@@ -12,14 +12,15 @@ adb wait-for-device
 adb shell getprop ro.build.version.sdk > "$report/android-api.txt"
 adb shell dumpsys webviewupdate > "$report/webview-provider.txt"
 capture() {
-  adb logcat -d > "$report/$scenario-logcat.txt"
+  # Bounded: if the emulator drops, adb waits for a device forever and the job only ends at the timeout.
+  timeout 20s adb logcat -d > "$report/$scenario-logcat.txt" || true
   if [ -n "$app_pid" ]; then
-    adb logcat -d -b crash --pid="$app_pid" > "$report/$scenario-crash.txt"
+    timeout 20s adb logcat -d -b crash --pid="$app_pid" > "$report/$scenario-crash.txt" || true
   else
-    adb logcat -d -b crash > "$report/$scenario-crash.txt"
+    timeout 20s adb logcat -d -b crash > "$report/$scenario-crash.txt" || true
   fi
-  adb shell dumpsys activity activities > "$report/$scenario-activities.txt"
-  adb exec-out screencap -p > "$report/$scenario.png"
+  timeout 20s adb shell dumpsys activity activities > "$report/$scenario-activities.txt" || true
+  timeout 20s adb exec-out screencap -p > "$report/$scenario.png" || true
 }
 trap 'capture' ERR
 # The FontsProvider connection appears when Android System WebView loads in the app process, with
@@ -86,16 +87,25 @@ PYNOTICE
 import sys, xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
 assert any(node.get('text') == 'DuckDuckGo' for node in root.iter('node'))
+# Native Home must finish its existing origin-local storage read before editing is available.
+assert any(node.get('resource-id', '').endswith(':id/home_search') for node in root.iter('node'))
+assert any(node.get('text') == 'Add shortcut' and node.get('enabled') == 'true' for node in root.iter('node'))
+assert not any(node.get('class') == 'android.webkit.WebView' for node in root.iter('node'))
 PYXML
     then
       test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid" || { capture; return 1; }
-      if [ "$scenario" = cold ] && [ "$gms_checked" = 0 ]; then
-        # A Play Services restart may only end the app through WebView's font client (see above);
-        # launch() then requires a clean restart with the home page and data.
-        gms_checked=1
-        adb shell am force-stop com.google.android.gms
-        sleep 3
-        test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid" || { capture; return 1; }
+      if [ "$scenario" = cold ]; then
+        python scripts/test-native-home-navigation.py "$report" "$package" "$app_pid" || { capture; return 1; }
+        adb shell dumpsys activity providers > "$report/cold-providers-before-stop.txt"
+        adb shell dumpsys activity processes > "$report/cold-processes-before-stop.txt"
+        if [ "$gms_checked" = 0 ]; then
+          # A Play Services restart may only end the app through WebView's font client (see above);
+          # launch() then requires a clean restart with the home page and data.
+          gms_checked=1
+          adb shell am force-stop com.google.android.gms
+          sleep 3
+          test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid" || { capture; return 1; }
+        fi
       fi
       capture
       if grep -q 'FATAL EXCEPTION\|Fatal signal' "$report/$scenario-crash.txt"; then return 1; fi

@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.baselineprofile
 
 import androidx.benchmark.macro.junit4.BaselineProfileRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,7 +16,10 @@ class BaselineProfileGenerator {
     @get:Rule val rule = BaselineProfileRule()
 
     @Test fun startupAndFirstRemotePresses() = rule.collect(
-        packageName = "com.reiniertutoriales.vireolumatv",
+        // Each flavor passes its application ID (build.gradle.kts): foss installs with ".foss".
+        packageName = requireNotNull(InstrumentationRegistry.getArguments().getString("targetAppId")) {
+            "targetAppId instrumentation argument is missing"
+        },
         includeInStartupProfile = true,
     ) {
         pressHome()

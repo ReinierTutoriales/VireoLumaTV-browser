@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- VireoLumaTV line icon: 24 dp grid, 2 dp round stroke, white so controls can tint it. -->
+<!-- Material Symbols Rounded: arrow_forward. Apache-2.0; see NOTICE.md. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp"
-    android:viewportWidth="24" android:viewportHeight="24">
-    <path android:pathData="M5,12H19" android:strokeColor="#FFFFFFFF" android:strokeWidth="2"
-        android:strokeLineCap="round" android:strokeLineJoin="round" />
-    <path android:pathData="M13,6L19,12L13,18" android:strokeColor="#FFFFFFFF" android:strokeWidth="2"
-        android:strokeLineCap="round" android:strokeLineJoin="round" />
+    android:viewportWidth="960" android:viewportHeight="960" android:autoMirrored="true">
+    <group android:translateX="-0" android:translateY="960">
+        <path android:fillColor="#FFFFFFFF" android:pathData="M647-440H200q-17 0-28.5-11.5T160-480q0-17 11.5-28.5T200-520h447L451-716q-12-12-11.5-28t12.5-28q12-11 28-11.5t28 11.5l264 264q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L508-188q-11 11-27.5 11T452-188q-12-12-12-28.5t12-28.5l195-195Z" />
+    </group>
 </vector>

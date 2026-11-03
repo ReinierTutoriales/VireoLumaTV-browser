@@ -14,6 +14,9 @@
     <color name="inverse_on_surface">#10141B</color>
     <color name="brand">#7BD88F</color>
     <color name="brand_container">#1B3D2A</color>
+    <!-- Focus halo: the brand color at 20 % (outer ring) and 40 % (inner ring) opacity. -->
+    <color name="focus_halo_outer">#337BD88F</color>
+    <color name="focus_halo_inner">#667BD88F</color>
     <color name="error">#FF8A80</color>
     <color name="scrim_strong">#F2000000</color>
     <color name="scrim_clear">#00000000</color>
