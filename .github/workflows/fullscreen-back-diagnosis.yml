@@ -1,24 +1,34 @@
 name: Fullscreen Back diagnosis
 
-# Temporary: reproduces YouTube fullscreen + remote Back on the published APK. Removed before merge.
+# Temporary: reproduces YouTube fullscreen + remote Back on this commit's APK. Removed before merge.
 on:
   push:
     branches: [fix/tv-test-feedback]
-    paths: [scripts/diagnose-fullscreen-back.py, .github/workflows/fullscreen-back-diagnosis.yml]
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Published APK
+      - name: APK of this commit from CI
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          curl --fail --location --retry 3 https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/download/v2.0.17/VireoLumaTV-2.0.17-x86_64.apk -o app.apk
           pip install websocket-client==1.8.0
+          for i in $(seq 1 50); do
+            run=$(gh api "repos/${{ github.repository }}/actions/runs?head_sha=${{ github.sha }}" -q '.workflow_runs[]|select(.name=="CI")|.id' | head -n 1)
+            if [ -n "$run" ] && gh api "repos/${{ github.repository }}/actions/runs/$run/artifacts" -q '.artifacts[].name' | grep -qx vireolumatv-release; then break; fi
+            sleep 30
+          done
+          gh run download "$run" -R "${{ github.repository }}" -n vireolumatv-release -D candidate
+          keytool -genkeypair -keystore "$RUNNER_TEMP/t.jks" -storepass android -keypass android -alias t -dname CN=Diagnosis -keyalg RSA -validity 2
+          signer=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          "$signer" sign --ks "$RUNNER_TEMP/t.jks" --ks-pass pass:android --out app.apk "$(find candidate -name '*x86_64*.apk' | head -n 1)"
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
