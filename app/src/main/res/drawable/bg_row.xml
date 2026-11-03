@@ -5,7 +5,12 @@
         <shape><corners android:radius="@dimen/corner_small" /><solid android:color="@color/on_surface_variant" /></shape>
     </item>
     <item android:state_focused="true">
-        <shape><corners android:radius="@dimen/corner_small" /><solid android:color="@color/inverse_surface" /></shape>
+        <layer-list>
+            <item><shape><corners android:radius="@dimen/corner_small" /><solid android:color="#665FD095" /></shape></item>
+            <item android:left="3dp" android:top="3dp" android:right="3dp" android:bottom="3dp">
+                <shape><corners android:radius="@dimen/corner_small" /><solid android:color="@color/inverse_surface" /></shape>
+            </item>
+        </layer-list>
     </item>
     <item android:state_activated="true">
         <shape><corners android:radius="@dimen/corner_small" /><solid android:color="@color/brand_container" /></shape>
