@@ -1,4 +1,4 @@
-name: Consolidate repository to master
+name: Finish consolidation to master
 on:
   push:
     branches: [diagnose/focus-startup]
@@ -12,36 +12,33 @@ jobs:
       - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - name: Archive verified diagnostics and remove remaining branches
+      - name: Require preserved history and unchanged files, then delete branches
         run: |
           python - <<'PY'
-          import json, os, subprocess
-          rows = json.loads("[{\"name\":\"diagnose/focus-startup\",\"sha\":\"98f0ad812581bfd4f4dc3144354bb8f2390dc385\",\"tag\":\"archive/diagnose-focus-startup-2026-11-03\",\"paths\":[\".github/workflows/startup-process-diagnosis.yml\"]},{\"name\":\"diagnose/font-provider-client\",\"sha\":\"1d6f1d20d7431ffed7c23c0e9f2d8064292cde0b\",\"tag\":\"archive/diagnose-font-provider-client-2026-11-03\",\"paths\":[\"scripts/test-release-startup.sh\"]},{\"name\":\"diagnose/startup-cold\",\"sha\":\"500cf036f804cf1033f42983e168581321456df8\",\"tag\":\"archive/diagnose-startup-cold-2026-11-03\",\"paths\":[\".github/workflows/startup-log-review.yml\",\"docs/audit/SOURCE_INVENTORY.tsv\"]}]")
-          master = '9bd840f730674e2b0c50ac4321fff3204b9767f0'
+          import json, os, subprocess, time
+          others = json.loads("[{\"name\":\"diagnose/font-provider-client\",\"sha\":\"1d6f1d20d7431ffed7c23c0e9f2d8064292cde0b\"},{\"name\":\"diagnose/startup-cold\",\"sha\":\"500cf036f804cf1033f42983e168581321456df8\"}]")
+          expected_tree = '35bde7ab16cf6a72f244919ada7a860c4e795c94'
           def git(*args):
               return subprocess.check_output(['git', *args], text=True).strip()
-          assert git('rev-parse', 'origin/master') == master
-          assert git('rev-parse', os.environ['GITHUB_SHA'] + '^') == rows[0]['sha'], 'Diagnostic branch changed before cleanup'
+          rows = [{'name':'diagnose/focus-startup','sha':os.environ['GITHUB_SHA']}] + others
+          for attempt in range(24):
+              subprocess.run(['git','fetch','origin','master'],check=True)
+              merged = all(subprocess.run(['git','merge-base','--is-ancestor',row['sha'],'origin/master']).returncode == 0 for row in rows)
+              if merged:
+                  break
+              time.sleep(5)
+          assert merged, 'Diagnostic history must be preserved in master before deletion'
+          assert git('rev-parse','origin/master^{tree}') == expected_tree, 'Master files changed unexpectedly'
           for row in rows:
-              base = git('merge-base', master, row['sha'])
-              paths = set(git('diff', '--name-only', base, row['sha']).splitlines())
-              assert paths == set(row['paths']), (row['name'], paths)
-              expected = os.environ['GITHUB_SHA'] if row['name'] == 'diagnose/focus-startup' else row['sha']
-              live = git('ls-remote', '--heads', 'origin', 'refs/heads/' + row['name'])
-              assert live.split()[0] == expected, row['name']
-              row['delete_sha'] = expected
-              git('update-ref', 'refs/tags/' + row['tag'], row['sha'])
-              print('Preserving diagnostic history:', row['name'], row['sha'], 'as', row['tag'], flush=True)
-          subprocess.run(['git', 'push', '--atomic', 'origin'] + ['refs/tags/' + row['tag'] for row in rows], check=True)
-          for row in rows:
-              archived = git('ls-remote', '--tags', 'origin', 'refs/tags/' + row['tag'])
-              assert archived.split()[0] == row['sha'], 'Archive verification failed'
-          args = ['git', 'push', '--atomic']
-          args += [f"--force-with-lease=refs/heads/{row['name']}:{row['delete_sha']}" for row in rows]
-          args += ['origin', '--delete'] + [row['name'] for row in rows]
-          subprocess.run(args, check=True)
-          remaining = git('ls-remote', '--heads', 'origin').splitlines()
-          assert len(remaining) == 1 and remaining[0].split() == [master, 'refs/heads/master'], remaining
-          print('ONLY_MASTER_REMAINS=' + master, flush=True)
+              live = git('ls-remote','--heads','origin','refs/heads/' + row['name'])
+              assert live.split()[0] == row['sha'], 'Branch changed after consolidation'
+              print('History preserved in master:',row['name'],row['sha'],flush=True)
+          args=['git','push','--atomic']
+          args += [f"--force-with-lease=refs/heads/{row['name']}:{row['sha']}" for row in rows]
+          args += ['origin','--delete']+[row['name'] for row in rows]
+          subprocess.run(args,check=True)
+          remaining=git('ls-remote','--heads','origin').splitlines()
+          assert len(remaining)==1 and remaining[0].split()[1]=='refs/heads/master', remaining
+          print('ONLY_MASTER_REMAINS',remaining[0],flush=True)
           
           PY
