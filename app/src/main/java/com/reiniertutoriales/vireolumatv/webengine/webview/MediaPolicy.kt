@@ -134,12 +134,13 @@ internal object MediaPolicy {
 
     /** Script argument; null when the policy changes nothing. */
     fun configJson(blocked: List<String>, maxHeight: Int, hardware: Map<String, HardwareVideo> = emptyMap()): String? {
-        if (blocked.isEmpty() && maxHeight <= 0 && hardware.isEmpty()) return null
+        if (blocked.isEmpty() && maxHeight < 0 && hardware.isEmpty()) return null
         val hw = hardware.entries.joinToString(",") { (family, v) ->
             "\"$family\":{\"h30\":${v.maxHeight30},\"h60\":${v.maxHeight60},\"ten\":${v.tenBit}}"
         }
         return "{\"block\":[" + blocked.joinToString(",") { "\"$it\"" } + "],\"maxHeight\":" +
-            maxHeight.coerceAtLeast(0) + (if (hardware.isEmpty()) "" else ",\"hw\":{$hw}") + "}"
+            maxHeight.coerceAtLeast(0) + (if (maxHeight == 0) ",\"viewport\":true" else "") +
+            (if (hardware.isEmpty()) "" else ",\"hw\":{$hw}") + "}"
     }
 
     private fun hasHardwareDecoder(mime: String): Boolean = hardwareDecoders?.contains(mime) ?: true
