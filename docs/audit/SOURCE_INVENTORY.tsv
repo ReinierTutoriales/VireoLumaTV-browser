@@ -10,6 +10,7 @@ ruta	clasificacion
 .github/ISSUE_TEMPLATE/feature_request.md	REESCRITO
 .github/pull_request_template.md	PROPIO
 .github/workflows/ci.yml	PROPIO
+.github/workflows/fullscreen-back-diagnosis.yml	PROPIO
 .github/workflows/startup-diagnosis.yml	ELIMINADO
 .github/workflows/release.yml	REESCRITO
 .github/workflows/baseline-profile.yml	PROPIO
@@ -451,6 +452,7 @@ native/adblock-jni/src/lib.rs	PROPIO
 native/adblock-jni/src/scoped.rs	PROPIO
 scripts/audit-apk-provenance.py	PROPIO
 scripts/check-source-inventory.py	PROPIO
+scripts/diagnose-fullscreen-back.py	PROPIO
 scripts/test-adblock-surrogates.cjs	PROPIO
 scripts/test-apk-provenance.py	PROPIO
 scripts/test-blob-transfer.cjs	PROPIO
