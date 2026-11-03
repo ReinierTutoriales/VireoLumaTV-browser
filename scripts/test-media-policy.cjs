@@ -114,6 +114,26 @@ function page(config, host = 'www.youtube.com') {
         assert.equal(windowListeners.resize, undefined, 'capability queries read current dimensions directly');
     `, c);
 
+    vm.runInContext('window.innerWidth = 1280; window.innerHeight = 720; window.devicePixelRatio = 1;', c);
+    info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/mp4; codecs="avc1.640028"', width: 1920, height: 1080}})`, c);
+    assert.equal(info.supported, false, 'automatic viewport also applies to decodingInfo');
+    vm.runInContext(`
+        var configuration = {video: {contentType: 'video/mp4; codecs="avc1.4d401f"', width: 1280, height: 720}};
+        assert.equal(navigator.mediaCapabilities.decodingInfo(configuration), nativeAnswer,
+            'automatic sizing preserves the native promise for eligible streams');
+        window.devicePixelRatio = Infinity;
+        assert.equal(probe('video/mp4; codecs="avc1.640028"; width=3840; height=2160'), true,
+            'invalid viewport scale leaves the provider decision');
+    `, c);
+
+    // Unlimited quality keeps missing-codec blocks but never applies the viewport cap.
+    c = page({block: ['av1'], maxHeight: 0});
+    vm.runInContext(`
+        assert.equal(MediaSource.isTypeSupported('video/mp4; codecs="avc1.640033"; width=3840; height=2160'), true);
+        assert.equal(MediaSource.isTypeSupported('video/mp4; codecs="av01.0.08M.08"'), false);
+        assert.equal(listeners.playing, undefined);
+    `, c);
+
     // The YouTube player hook stays off other sites; a second injection is a no-op.
     c = page({block: [], maxHeight: 480}, 'example.com');
     vm.runInContext(`
