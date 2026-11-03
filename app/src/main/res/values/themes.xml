@@ -61,6 +61,11 @@
         <item name="android:windowExitAnimation">@anim/panel_exit</item>
     </style>
 
+    <style name="SettingsScreenAnimation">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
+
     <!-- Full-window dialogs that draw their own panel (settings). -->
     <style name="SettingsScreen" parent="Theme.AppCompat.Dialog">
         <item name="android:fontFamily">sans-serif</item>
@@ -71,7 +76,7 @@
         <item name="android:windowBackground">@color/background</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowAnimationStyle">@style/SettingsScreenAnimation</item>
         <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
         <item name="android:backgroundDimAmount">0.7</item>
     </style>
