@@ -136,9 +136,6 @@
     <string name="settings_search_engine_address">Indirizzo di ricerca ([query] viene sostituito dalla ricerca)</string>
     <string name="settings_home_page">Pagina iniziale</string>
     <string name="settings_home_page_address">Indirizzo della pagina iniziale</string>
-    <string name="settings_user_agent_choice">Identifica il browser come</string>
-    <string name="settings_user_agent">User agent</string>
-    <string name="settings_user_agent_custom">User agent personalizzato</string>
     <string name="settings_keep_screen_on">Mantieni lo schermo acceso</string>
     <string name="settings_stick_moves_pointer">Muovi il puntatore con la levetta</string>
     <string name="settings_pointer_speed">Velocità massima del puntatore</string>
@@ -224,7 +221,11 @@
     <string name="home_invalid">Indirizzo non valido. Usa http:// o https:// senza nome utente né password.</string>
     <string name="home_duplicate">Questo collegamento è già nella Home.</string>
     <string name="home_youtube_removed">YouTube (rimosso, premi per ripristinarlo)</string>
-    <string name="home_favorite_managed">Questo collegamento è un preferito. Modificalo o rimuovilo in %s.</string>
+    <string name="home_move_left">Sposta a sinistra</string>
+    <string name="home_move_right">Sposta a destra</string>
+    <string name="home_edit_address">Modifica indirizzo</string>
+    <string name="home_remove">Rimuovi dalla Home</string>
+    <string name="home_favorite_remove_confirm">Rimuovere questo preferito? Verrà rimosso anche dai Preferiti.</string>
     <string name="home_edit_item" formatted="false">Modifica %s</string>
     <string name="home_youtube_restore">Mostrare di nuovo YouTube nella Home?</string>
     <string name="home_youtube_remove">Rimuovere YouTube dalla Home?</string>

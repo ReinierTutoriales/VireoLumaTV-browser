@@ -54,9 +54,6 @@ class Config(val prefs: SharedPreferences) {
 
     val searchAddress = StringPreference(SEARCH_URL_KEY, DUCKDUCKGO_SEARCH_URL)
 
-    /** Null means the WebView's own user agent. */
-    val userAgentOverride = OptionalStringPreference("user_agent")
-
     /** Read on every request, so it is kept in memory as well. */
     // Read by WebView worker threads when they decide on ads.
     @Volatile var adBlockEnabled: Boolean = prefs.getBoolean(BLOCKER_ENABLED_KEY, true)
@@ -81,16 +78,6 @@ class Config(val prefs: SharedPreferences) {
         override var value: String = prefs.getString(key, default) ?: default
             set(value) {
                 prefs.edit { putString(key, value) }
-                field = value
-                sendAll()
-            }
-    }
-
-    /** Like [StringPreference]; null removes the stored value. */
-    inner class OptionalStringPreference(private val key: String) : LiveValue<String?>(null) {
-        override var value: String? = prefs.getString(key, null)
-            set(value) {
-                prefs.edit { if (value == null) remove(key) else putString(key, value) }
                 field = value
                 sendAll()
             }

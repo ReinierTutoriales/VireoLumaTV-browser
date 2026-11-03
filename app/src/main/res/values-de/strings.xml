@@ -134,9 +134,6 @@
     <string name="settings_search_engine_address">Suchadresse ([query] wird durch deine Suche ersetzt)</string>
     <string name="settings_home_page">Startseite</string>
     <string name="settings_home_page_address">Adresse der Startseite</string>
-    <string name="settings_user_agent_choice">Browser ausgeben als</string>
-    <string name="settings_user_agent">User-Agent</string>
-    <string name="settings_user_agent_custom">Eigener User-Agent</string>
     <string name="settings_keep_screen_on">Bildschirm eingeschaltet lassen</string>
     <string name="settings_stick_moves_pointer">Zeiger mit dem Stick bewegen</string>
     <string name="settings_pointer_speed">Höchstgeschwindigkeit des Zeigers</string>
@@ -222,7 +219,11 @@
     <string name="home_invalid">Ungültige Adresse. Verwende http:// oder https:// ohne Benutzername und Passwort.</string>
     <string name="home_duplicate">Diese Verknüpfung ist schon auf der Startseite.</string>
     <string name="home_youtube_removed">YouTube (entfernt, zum Wiederherstellen drücken)</string>
-    <string name="home_favorite_managed">Diese Verknüpfung ist ein Favorit. Bearbeite oder entferne sie unter %s.</string>
+    <string name="home_move_left">Nach links verschieben</string>
+    <string name="home_move_right">Nach rechts verschieben</string>
+    <string name="home_edit_address">Adresse bearbeiten</string>
+    <string name="home_remove">Von der Startseite entfernen</string>
+    <string name="home_favorite_remove_confirm">Diesen Favoriten entfernen? Er wird auch aus den Favoriten gelöscht.</string>
     <string name="home_edit_item" formatted="false">%s bearbeiten</string>
     <string name="home_youtube_restore">YouTube wieder auf der Startseite anzeigen?</string>
     <string name="home_youtube_remove">YouTube von der Startseite entfernen?</string>

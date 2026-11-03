@@ -136,9 +136,6 @@
     <string name="settings_search_engine_address">כתובת חיפוש ([query] מוחלף במה שחיפשת)</string>
     <string name="settings_home_page">דף הבית</string>
     <string name="settings_home_page_address">כתובת דף הבית</string>
-    <string name="settings_user_agent_choice">זיהוי הדפדפן בתור</string>
-    <string name="settings_user_agent">סוכן משתמש</string>
-    <string name="settings_user_agent_custom">סוכן משתמש מותאם</string>
     <string name="settings_keep_screen_on">השארת המסך דלוק</string>
     <string name="settings_stick_moves_pointer">הזזת הסמן עם הסטיק</string>
     <string name="settings_pointer_speed">מהירות מרבית של הסמן</string>
@@ -224,7 +221,11 @@
     <string name="home_invalid">כתובת לא תקינה. יש להשתמש ב-http:// או ב-https:// בלי שם משתמש וסיסמה.</string>
     <string name="home_duplicate">קיצור הדרך הזה כבר נמצא בדף הבית.</string>
     <string name="home_youtube_removed">YouTube (הוסר, יש ללחוץ לשחזור)</string>
-    <string name="home_favorite_managed">קיצור הדרך הזה הוא מועדף. אפשר לערוך או להסיר אותו ב%s.</string>
+    <string name="home_move_left">הזזה שמאלה</string>
+    <string name="home_move_right">הזזה ימינה</string>
+    <string name="home_edit_address">עריכת כתובת</string>
+    <string name="home_remove">הסרה מדף הבית</string>
+    <string name="home_favorite_remove_confirm">להסיר את המועדף? הוא יוסר גם מהמועדפים.</string>
     <string name="home_edit_item" formatted="false">עריכת %s</string>
     <string name="home_youtube_restore">להציג שוב את YouTube בדף הבית?</string>
     <string name="home_youtube_remove">להסיר את YouTube מדף הבית?</string>

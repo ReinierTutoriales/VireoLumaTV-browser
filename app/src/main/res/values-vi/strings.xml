@@ -132,9 +132,6 @@
     <string name="settings_search_engine_address">Địa chỉ tìm kiếm ([query] được thay bằng nội dung bạn tìm)</string>
     <string name="settings_home_page">Trang chủ</string>
     <string name="settings_home_page_address">Địa chỉ trang chủ</string>
-    <string name="settings_user_agent_choice">Nhận dạng trình duyệt là</string>
-    <string name="settings_user_agent">Tác nhân người dùng</string>
-    <string name="settings_user_agent_custom">Tác nhân người dùng tùy chỉnh</string>
     <string name="settings_keep_screen_on">Giữ màn hình luôn bật</string>
     <string name="settings_stick_moves_pointer">Di chuyển con trỏ bằng cần analog</string>
     <string name="settings_pointer_speed">Tốc độ tối đa của con trỏ</string>
@@ -220,7 +217,11 @@
     <string name="home_invalid">Địa chỉ không hợp lệ. Dùng http:// hoặc https:// và không kèm tên người dùng hay mật khẩu.</string>
     <string name="home_duplicate">Lối tắt này đã có trên trang chủ.</string>
     <string name="home_youtube_removed">YouTube (đã xóa, nhấn để khôi phục)</string>
-    <string name="home_favorite_managed">Lối tắt này là mục yêu thích. Sửa hoặc xóa trong %s.</string>
+    <string name="home_move_left">Di chuyển sang trái</string>
+    <string name="home_move_right">Di chuyển sang phải</string>
+    <string name="home_edit_address">Sửa địa chỉ</string>
+    <string name="home_remove">Xóa khỏi trang chủ</string>
+    <string name="home_favorite_remove_confirm">Xóa mục yêu thích này? Mục này cũng bị xóa khỏi Yêu thích.</string>
     <string name="home_edit_item" formatted="false">Sửa %s</string>
     <string name="home_youtube_restore">Hiện lại YouTube trên trang chủ?</string>
     <string name="home_youtube_remove">Xóa YouTube khỏi trang chủ?</string>

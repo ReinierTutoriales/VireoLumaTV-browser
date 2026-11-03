@@ -43,7 +43,6 @@ class GeneralPage @JvmOverloads constructor(
     private lateinit var searchEngineUrl: EditText
     private lateinit var homePageMode: Spinner
     private lateinit var customHomePageUrl: EditText
-    private lateinit var userAgent: EditText
     private lateinit var adBlockListUrl: EditText
     private lateinit var adBlockStatus: SettingsRows.Status
 
@@ -51,7 +50,6 @@ class GeneralPage @JvmOverloads constructor(
         rows.section(R.string.settings_section_browsing)
         addSearchEngine()
         addHomePage()
-        addUserAgent()
         rows.section(R.string.settings_section_protection)
         addAdBlock()
         rows.section(R.string.settings_section_display)
@@ -111,32 +109,6 @@ class GeneralPage @JvmOverloads constructor(
         customHomePageUrl = rows.field(R.string.settings_home_page_address, R.string.field_address,
             visible = browserSettings.homePageMode == Config.HomePageMode.CUSTOM)
         customHomePageUrl.setText(browserSettings.homePage)
-    }
-
-    private fun addUserAgent() {
-        val presets = browserSettings.uaStrings
-        val custom = browserSettings.userAgentStringTitles.lastIndex
-        val saved = config.userAgentOverride.value
-        val known = if (saved == null) 0 else presets.indexOf(saved)
-        rows.choice(R.string.settings_user_agent_choice, R.id.spTitles, browserSettings.userAgentStringTitles,
-            if (known == -1) custom else known) { position ->
-            val group = userAgent.parent as View
-            if (position == custom) {
-                // Repeated custom selections keep a saved or half-typed value.
-                if (group.visibility != View.VISIBLE) {
-                    reveal(group)
-                    userAgent.setText(config.userAgentOverride.value.orEmpty())
-                    userAgent.requestFocus()
-                }
-            } else {
-                group.visibility = View.GONE
-                userAgent.setText(presets[position])
-            }
-        }
-        userAgent = rows.field(R.string.settings_user_agent, R.string.settings_user_agent_custom,
-            id = R.id.etUAString, groupId = R.id.llUAString, visible = known == -1)
-        userAgent.setText(if (known == -1) saved.orEmpty() else presets[known])
-        if (known == -1) userAgent.requestFocus()
     }
 
     private fun addAdBlock() {
@@ -268,7 +240,6 @@ class GeneralPage @JvmOverloads constructor(
         browserSettings.setSearchEngineURL(searchEngineUrl.text.toString())
         browserSettings.setHomePageProperties(Config.HomePageMode.entries[homePageMode.selectedItemPosition],
             customHomePageUrl.text.toString())
-        config.userAgentOverride.value = userAgent.text.toString().trim(' ').ifEmpty { null }
         setBlockListUrl()
     }
 }

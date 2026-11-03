@@ -134,9 +134,6 @@
     <string name="settings_search_engine_address">نشانی جست‌وجو ([query] با عبارت جست‌وجو جایگزین می‌شود)</string>
     <string name="settings_home_page">صفحهٔ خانه</string>
     <string name="settings_home_page_address">نشانی صفحهٔ خانه</string>
-    <string name="settings_user_agent_choice">معرفی مرورگر به‌عنوان</string>
-    <string name="settings_user_agent">عامل کاربر</string>
-    <string name="settings_user_agent_custom">عامل کاربر سفارشی</string>
     <string name="settings_keep_screen_on">روشن نگه‌داشتن صفحه</string>
     <string name="settings_stick_moves_pointer">حرکت نشانگر با اهرم</string>
     <string name="settings_pointer_speed">بیشینهٔ سرعت نشانگر</string>
@@ -222,7 +219,11 @@
     <string name="home_invalid">نشانی نامعتبر است. از http:// یا https:// بدون نام کاربری و گذرواژه استفاده کنید.</string>
     <string name="home_duplicate">این میان‌بر از قبل در خانه هست.</string>
     <string name="home_youtube_removed">YouTube (حذف‌شده، برای بازگرداندن فشار دهید)</string>
-    <string name="home_favorite_managed">این میان‌بر یک علاقه‌مندی است. آن را در %s ویرایش یا حذف کنید.</string>
+    <string name="home_move_left">انتقال به چپ</string>
+    <string name="home_move_right">انتقال به راست</string>
+    <string name="home_edit_address">ویرایش نشانی</string>
+    <string name="home_remove">حذف از خانه</string>
+    <string name="home_favorite_remove_confirm">این مورد علاقه حذف شود؟ از علاقه‌مندی‌ها هم حذف می‌شود.</string>
     <string name="home_edit_item" formatted="false">ویرایش %s</string>
     <string name="home_youtube_restore">YouTube دوباره در خانه نمایش داده شود؟</string>
     <string name="home_youtube_remove">YouTube از خانه حذف شود؟</string>

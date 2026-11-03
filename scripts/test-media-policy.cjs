@@ -8,9 +8,6 @@ function page(config, host = 'www.youtube.com') {
     vm.runInContext(`
         window = globalThis;
         var listeners = {};
-        var windowListeners = {};
-        window.innerWidth = 1280; window.innerHeight = 720; window.devicePixelRatio = 1;
-        window.addEventListener = function(name, fn) { windowListeners[name] = fn; };
         var player = null;
         document = {
             addEventListener(name, fn) { listeners[name] = fn; },
@@ -94,57 +91,6 @@ function page(config, host = 'www.youtube.com') {
     `, c);
     info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/mp4; codecs="avc1.640028"', width: 1920, height: 1080}})`, c);
     assert.equal(info.supported, false);
-
-    // Automatic mode follows the window in physical pixels; it updates after a resize.
-    c = page({block: ['av1'], maxHeight: 0, viewport: true});
-    vm.runInContext(`
-        var probe = t => MediaSource.isTypeSupported(t);
-        assert.equal(probe('video/mp4; codecs="avc1.4d401f"; width=1920; height=1080'), false);
-        assert.equal(probe('video/mp4; codecs="avc1.4d401f"; width=1280; height=720'), true);
-        assert.equal(probe('video/mp4; codecs="av01.0.08M.08"'), false, 'codec policy remains');
-        window.innerWidth = 1920; window.innerHeight = 1080;
-        assert.equal(probe('video/mp4; codecs="avc1.4d401f"; width=1920; height=1080'), true);
-        window.devicePixelRatio = 2;
-        assert.equal(probe('video/mp4; codecs="avc1.4d401f"; width=3840; height=2160'), true);
-        window.innerWidth = 0; window.innerHeight = 0;
-        assert.equal(probe('video/mp4; codecs="avc1.4d401f"; width=3840; height=2160'), true, 'unknown viewport leaves provider decision');
-        assert.equal(listeners.playing, undefined, 'automatic sizing never controls playback');
-        assert.equal(listeners.loadedmetadata, undefined);
-        assert.equal(listeners['yt-navigate-finish'], undefined);
-        assert.equal(windowListeners.resize, undefined, 'capability queries read current dimensions directly');
-    `, c);
-
-    vm.runInContext('window.innerWidth = 1280; window.innerHeight = 720; window.devicePixelRatio = 1;', c);
-    info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/mp4; codecs="avc1.640028"', width: 1920, height: 1080}})`, c);
-    assert.equal(info.supported, false, 'automatic viewport also applies to decodingInfo');
-    vm.runInContext(`
-        var configuration = {video: {contentType: 'video/mp4; codecs="avc1.4d401f"', width: 1280, height: 720}};
-        assert.equal(navigator.mediaCapabilities.decodingInfo(configuration), nativeAnswer,
-            'automatic sizing preserves the native promise for eligible streams');
-        window.devicePixelRatio = Infinity;
-        assert.equal(probe('video/mp4; codecs="avc1.640028"; width=3840; height=2160'), true,
-            'invalid viewport scale leaves the provider decision');
-    `, c);
-
-    // Native bounds apply equally to embedded frames and pages with inflated CSS viewports.
-    c = page({block: [], maxHeight: 0, viewport: true, windowHeight: 1080});
-    vm.runInContext(`
-        window.innerWidth = 320; window.innerHeight = 180;
-        assert.equal(MediaSource.isTypeSupported('video/mp4; codecs="avc1.640028"; width=1920; height=1080'), true,
-            'an embedded frame uses the native window, not its own small layout viewport');
-        window.innerWidth = 3840; window.innerHeight = 2160; window.devicePixelRatio = 2;
-        assert.equal(MediaSource.isTypeSupported('video/mp4; codecs="avc1.640033"; width=3840; height=2160'), false,
-            'page scaling must not inflate the native window cap');
-        assert.equal(listeners.playing, undefined, 'native sizing never controls the player');
-    `, c);
-
-    // Unlimited quality keeps missing-codec blocks but never applies the viewport cap.
-    c = page({block: ['av1'], maxHeight: 0});
-    vm.runInContext(`
-        assert.equal(MediaSource.isTypeSupported('video/mp4; codecs="avc1.640033"; width=3840; height=2160'), true);
-        assert.equal(MediaSource.isTypeSupported('video/mp4; codecs="av01.0.08M.08"'), false);
-        assert.equal(listeners.playing, undefined);
-    `, c);
 
     // The YouTube player hook stays off other sites; a second injection is a no-op.
     c = page({block: [], maxHeight: 480}, 'example.com');

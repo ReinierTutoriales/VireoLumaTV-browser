@@ -138,9 +138,6 @@
     <string name="settings_search_engine_address">Adres wyszukiwania ([query] zostanie zastąpione zapytaniem)</string>
     <string name="settings_home_page">Strona startowa</string>
     <string name="settings_home_page_address">Adres strony startowej</string>
-    <string name="settings_user_agent_choice">Przedstawiaj przeglądarkę jako</string>
-    <string name="settings_user_agent">Identyfikator przeglądarki</string>
-    <string name="settings_user_agent_custom">Własny identyfikator przeglądarki</string>
     <string name="settings_keep_screen_on">Nie wyłączaj ekranu</string>
     <string name="settings_stick_moves_pointer">Przesuwaj wskaźnik gałką</string>
     <string name="settings_pointer_speed">Maksymalna prędkość wskaźnika</string>
@@ -226,7 +223,11 @@
     <string name="home_invalid">Nieprawidłowy adres. Użyj http:// lub https:// bez nazwy użytkownika i hasła.</string>
     <string name="home_duplicate">Ten skrót jest już na stronie startowej.</string>
     <string name="home_youtube_removed">YouTube (usunięty, naciśnij, aby przywrócić)</string>
-    <string name="home_favorite_managed">Ten skrót jest ulubionym. Edytuj go lub usuń w sekcji %s.</string>
+    <string name="home_move_left">Przesuń w lewo</string>
+    <string name="home_move_right">Przesuń w prawo</string>
+    <string name="home_edit_address">Edytuj adres</string>
+    <string name="home_remove">Usuń ze strony startowej</string>
+    <string name="home_favorite_remove_confirm">Usunąć tę zakładkę? Zostanie też usunięta z Ulubionych.</string>
     <string name="home_edit_item" formatted="false">Edytuj %s</string>
     <string name="home_youtube_restore">Pokazać ponownie YouTube na stronie startowej?</string>
     <string name="home_youtube_remove">Usunąć YouTube ze strony startowej?</string>

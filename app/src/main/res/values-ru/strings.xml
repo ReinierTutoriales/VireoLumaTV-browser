@@ -138,9 +138,6 @@
     <string name="settings_search_engine_address">Адрес поиска ([query] заменяется запросом)</string>
     <string name="settings_home_page">Домашняя страница</string>
     <string name="settings_home_page_address">Адрес домашней страницы</string>
-    <string name="settings_user_agent_choice">Представлять браузер как</string>
-    <string name="settings_user_agent">User agent</string>
-    <string name="settings_user_agent_custom">Свой user agent</string>
     <string name="settings_keep_screen_on">Не выключать экран</string>
     <string name="settings_stick_moves_pointer">Двигать указатель стиком</string>
     <string name="settings_pointer_speed">Максимальная скорость указателя</string>
@@ -226,7 +223,11 @@
     <string name="home_invalid">Неверный адрес. Используйте http:// или https:// без имени пользователя и пароля.</string>
     <string name="home_duplicate">Этот ярлык уже есть на главной.</string>
     <string name="home_youtube_removed">YouTube (удалён, нажмите, чтобы вернуть)</string>
-    <string name="home_favorite_managed">Этот ярлык — закладка. Измените или удалите её в разделе «%s».</string>
+    <string name="home_move_left">Переместить влево</string>
+    <string name="home_move_right">Переместить вправо</string>
+    <string name="home_edit_address">Изменить адрес</string>
+    <string name="home_remove">Убрать с главной</string>
+    <string name="home_favorite_remove_confirm">Удалить это избранное? Оно также исчезнет из Избранного.</string>
     <string name="home_edit_item" formatted="false">Изменить %s</string>
     <string name="home_youtube_restore">Снова показывать YouTube на главной?</string>
     <string name="home_youtube_remove">Убрать YouTube с главной?</string>

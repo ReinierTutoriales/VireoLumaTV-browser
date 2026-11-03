@@ -3,9 +3,6 @@
 <resources>
     <item name="spEngine" type="id" />
     <item name="spHomePage" type="id" />
-    <item name="spTitles" type="id" />
-    <item name="llUAString" type="id" />
-    <item name="etUAString" type="id" />
     <item name="llAdblock" type="id" />
     <item name="etAdBlockerListUrl" type="id" />
     <item name="tvAdBlockerListInfo" type="id" />

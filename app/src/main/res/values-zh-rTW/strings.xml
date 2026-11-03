@@ -132,9 +132,6 @@
     <string name="settings_search_engine_address">搜尋網址（[query] 會替換為搜尋內容）</string>
     <string name="settings_home_page">首頁</string>
     <string name="settings_home_page_address">首頁網址</string>
-    <string name="settings_user_agent_choice">將瀏覽器識別為</string>
-    <string name="settings_user_agent">使用者代理程式</string>
-    <string name="settings_user_agent_custom">自訂使用者代理程式</string>
     <string name="settings_keep_screen_on">保持螢幕開啟</string>
     <string name="settings_stick_moves_pointer">用搖桿移動指標</string>
     <string name="settings_pointer_speed">指標最高速度</string>
@@ -218,7 +215,11 @@
     <string name="home_invalid">網址無效。請使用 http:// 或 https://，且不含使用者名稱或密碼。</string>
     <string name="home_duplicate">此捷徑已在首頁上。</string>
     <string name="home_youtube_removed">YouTube（已移除，按下即可還原）</string>
-    <string name="home_favorite_managed">此捷徑是最愛項目。請在「%s」中編輯或移除。</string>
+    <string name="home_move_left">向左移</string>
+    <string name="home_move_right">向右移</string>
+    <string name="home_edit_address">編輯網址</string>
+    <string name="home_remove">從首頁移除</string>
+    <string name="home_favorite_remove_confirm">要移除這個我的最愛嗎？它也會從我的最愛中移除。</string>
     <string name="home_edit_item" formatted="false">編輯 %s</string>
     <string name="home_youtube_restore">要在首頁重新顯示 YouTube 嗎？</string>
     <string name="home_youtube_remove">要從首頁移除 YouTube 嗎？</string>

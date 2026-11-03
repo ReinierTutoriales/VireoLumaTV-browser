@@ -56,5 +56,15 @@ class HomeShortcutsTest {
         assertFalse(HomeShortcuts.isYoutube("https://youtube.com.evil.test/"))
     }
 
+    @Test fun savedOrderArrangesTilesAndKeepsNewOnesAfterIt() {
+        val order = JSONArray().put("shortcut:b").put("youtube").put(5).put("shortcut:b").toString()
+        val shortcuts = HomeShortcuts.read("[]", false, order)
+        assertEquals(listOf("shortcut:b", "youtube"), shortcuts.order)
+        assertEquals(listOf("shortcut:b", "youtube", "favorite:a", "shortcut:c"),
+            shortcuts.arrange(listOf("youtube", "favorite:a", "shortcut:b", "shortcut:c")) { it })
+        assertEquals(emptyList<String>(), HomeShortcuts.read("[]", false, "[broken").order)
+        assertEquals(emptyList<String>(), HomeShortcuts.read("[]", false, null).order)
+    }
+
     private val JSONObjectNull = org.json.JSONObject.NULL
 }

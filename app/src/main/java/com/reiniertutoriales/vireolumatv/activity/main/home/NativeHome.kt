@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
@@ -29,6 +30,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.model.Favorite
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.Favicons
 import com.reiniertutoriales.vireolumatv.utils.openKeyboard
@@ -112,12 +114,9 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             layoutManager = GridLayoutManager(browser, 4)
             itemAnimator = null
             adapter = Tiles().also { this@NativeHome.adapter = it }
-            addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ ->
-                val manager = layoutManager as GridLayoutManager
-                val columns = ((right - left) / resources.getDimensionPixelSize(R.dimen.home_tile_min_width)).coerceIn(2, 6)
-                if (manager.spanCount != columns) manager.spanCount = columns
-            }
+            addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ -> fitColumns(right - left) }
         }
+        followCapsule(animate = false)
         render()
         // Favorites are shared in both modes, as before; the observer ends when Home is hidden.
         favoritesJob = browser.lifecycleScope.launch {
@@ -127,7 +126,8 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             }.collect { values ->
                 favorites = values.asReversed().asSequence().mapNotNull { value ->
                     TabFavorites.webAddress(value.url)?.let { HomeShortcuts.address(it) }?.let { url ->
-                        Tile("favorite:$url", value.title.orEmpty().trim().take(200).ifEmpty { label(url) }, url, R.drawable.ic_bookmark)
+                        Tile("favorite:$url", value.title.orEmpty().trim().take(200).ifEmpty { label(url) }, url, R.drawable.ic_bookmark,
+                            favorite = value)
                     }
                 }.distinctBy { it.url }.take(48).toList()
                 render()
@@ -164,6 +164,35 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         loaded = false
         busy = false
         editing = false
+    }
+
+    /**
+     * Columns keep one tile width whatever the count; a row that does not fill the width is
+     * centred by the grid's side padding instead of hanging from the left edge.
+     */
+    private fun fitColumns(width: Int) {
+        val view = grid ?: return
+        val manager = view.layoutManager as GridLayoutManager
+        val fit = (width / view.resources.getDimensionPixelSize(R.dimen.home_tile_min_width)).coerceIn(2, 6)
+        val columns = (adapter?.itemCount ?: 0).coerceIn(1, fit)
+        val side = (width - width / fit * columns) / 2
+        if (manager.spanCount != columns) manager.spanCount = columns
+        if (view.paddingLeft != side || view.paddingRight != side) view.setPadding(side, view.paddingTop, side, view.paddingBottom)
+    }
+
+    /**
+     * Moves Home below the open capsule, so the address row and tabs never cover its title and
+     * search field; back in place when the capsule closes.
+     */
+    fun followCapsule(animate: Boolean) {
+        val view = root ?: return
+        val overlay = browser.vb.controlsOverlay
+        val offset = if (overlay.isVisible && overlay.height > 0) {
+            (overlay.height - overlay.paddingBottom - view.paddingTop).coerceAtLeast(0).toFloat()
+        } else 0f
+        view.animate().cancel()
+        if (animate) view.animate().translationY(offset).setDuration(CAPSULE_MS).setInterpolator(DecelerateInterpolator()).start()
+        else view.translationY = offset
     }
 
     fun setPageVisible(visible: Boolean) {
@@ -212,18 +241,23 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     }
 
     private data class Tile(val key: String, val title: String, val url: String? = null, val icon: Int,
-        val enabled: Boolean = true, val selected: Boolean = false, val hidden: Boolean = false)
+        val enabled: Boolean = true, val selected: Boolean = false, val hidden: Boolean = false,
+        val favorite: Favorite? = null) {
+        /** YouTube, favorites and shortcuts can be arranged and removed; Add and Edit stay last. */
+        val movable get() = key != "add" && key != "edit"
+    }
 
     private fun render() {
         val active = loaded && !busy
-        val items = mutableListOf<Tile>()
-        if (!shortcuts.youtubeHidden || editing) items += Tile("youtube", browser.getString(R.string.home_video_brand), HomeShortcuts.YOUTUBE,
+        val movable = mutableListOf<Tile>()
+        if (!shortcuts.youtubeHidden || editing) movable += Tile("youtube", browser.getString(R.string.home_video_brand), HomeShortcuts.YOUTUBE,
             R.drawable.ic_video, !editing || active, hidden = shortcuts.youtubeHidden)
-        items += favorites
+        movable += favorites.map { it.copy(enabled = !editing || active) }
         val used = favorites.mapNotNull { it.url }.toSet()
         shortcuts.urls.filter { it !in used }.forEach { url ->
-            items += Tile("shortcut:$url", label(url), url, R.drawable.ic_globe, !editing || active)
+            movable += Tile("shortcut:$url", label(url), url, R.drawable.ic_globe, !editing || active)
         }
+        val items = shortcuts.arrange(movable) { it.key }.toMutableList()
         items += Tile("add", browser.getString(R.string.home_add), icon = R.drawable.ic_add, enabled = active)
         items += Tile("edit", browser.getString(if (editing) R.string.home_done else R.string.home_edit),
             icon = if (editing) R.drawable.ic_done else R.drawable.ic_edit, enabled = active, selected = editing)
@@ -231,6 +265,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         val key = focused?.tag as? String
         val oldIndex = adapter?.currentList?.indexOfFirst { it.key == key } ?: -1
         adapter?.submitList(items) {
+            grid?.let { if (it.width > 0) fitColumns(it.width) }
             if (key == null || browser.vb.controlsOverlay.isVisible || dialog?.isShowing == true) return@submitList
             val current = root?.findFocus()
             if (current != null && current !== focused) return@submitList
@@ -244,20 +279,67 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         when (tile.key) {
             "add" -> if (shortcuts.urls.size >= HomeShortcuts.MAX) notice(browser.getString(R.string.home_limit, HomeShortcuts.MAX)) else edit(null)
             "edit" -> { editing = !editing; render() }
-            "youtube" -> if (!editing) open(HomeShortcuts.YOUTUBE) else {
-                dialog = AlertDialog.Builder(browser)
-                    .setMessage(if (shortcuts.youtubeHidden) R.string.home_youtube_restore else R.string.home_youtube_remove)
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(android.R.string.ok) { _, _ ->
-                        val value = if (shortcuts.youtubeHidden) "localStorage.removeItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)});" else
-                            "localStorage.setItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)},'1');"
-                        storage(value) { shortcuts = it; render() }
-                    }.show()
-            }
-            else -> if (!editing) tile.url?.let(::open) else if (tile.key.startsWith("favorite:")) {
-                notice(browser.getString(R.string.home_favorite_managed, browser.getString(R.string.menu_favorites)))
-            } else edit(tile.url)
+            "youtube" -> if (!editing) open(HomeShortcuts.YOUTUBE) else if (shortcuts.youtubeHidden) toggleYoutube() else actions(tile)
+            else -> if (!editing) tile.url?.let(::open) else actions(tile)
         }
+    }
+
+    /** What OK on a tile offers while editing: move it, change its address, or take it off Home. */
+    private fun actions(tile: Tile) {
+        val list = adapter?.currentList.orEmpty().filter { it.movable }
+        val index = list.indexOfFirst { it.key == tile.key }
+        if (index < 0) return
+        // In right-to-left layouts the first tile is drawn on the right.
+        val rtl = grid?.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val choices = buildList<Pair<Int, () -> Unit>> {
+            val left = if (rtl) 1 else -1
+            if (index + left in list.indices) add(R.string.home_move_left to { move(list, index, index + left) })
+            if (index - left in list.indices) add(R.string.home_move_right to { move(list, index, index - left) })
+            if (tile.key.startsWith("shortcut:")) add(R.string.home_edit_address to { edit(tile.url) })
+            add(R.string.home_remove to { removeTile(tile) })
+        }
+        dialog = AlertDialog.Builder(browser).setTitle(tile.title)
+            .setItems(choices.map { browser.getString(it.first) }.toTypedArray()) { _, which -> choices[which].second() }
+            .setNegativeButton(android.R.string.cancel, null).show()
+    }
+
+    /** Saves the whole arrangement, so favorites and shortcuts keep their places across visits. */
+    private fun move(list: List<Tile>, from: Int, to: Int) {
+        val keys = list.map { it.key }.toMutableList()
+        keys.add(to, keys.removeAt(from))
+        val value = JSONArray(keys).toString()
+        storage("localStorage.setItem(${JSONObject.quote(HomeShortcuts.ORDER_KEY)},${JSONObject.quote(value)});") {
+            shortcuts = it
+            render()
+            grid?.post { grid?.findViewHolderForAdapterPosition(to)?.itemView?.requestFocus() }
+        }
+    }
+
+    private fun removeTile(tile: Tile) {
+        val favorite = tile.favorite
+        when {
+            tile.key == "youtube" -> toggleYoutube()
+            favorite != null -> dialog = AlertDialog.Builder(browser).setMessage(R.string.home_favorite_remove_confirm)
+                .setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok) { _, _ ->
+                    // The list follows the database observer; Favorites shows the same change.
+                    browser.lifecycleScope.launch { AppDatabase.db.favoriteDao().delete(favorite) }
+                }.show()
+            else -> dialog = AlertDialog.Builder(browser).setMessage(R.string.home_remove_confirm)
+                .setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok) { _, _ ->
+                    tile.url?.let { save(shortcuts.urls - it) }
+                }.show()
+        }
+    }
+
+    private fun toggleYoutube() {
+        dialog = AlertDialog.Builder(browser)
+            .setMessage(if (shortcuts.youtubeHidden) R.string.home_youtube_restore else R.string.home_youtube_remove)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val value = if (shortcuts.youtubeHidden) "localStorage.removeItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)});" else
+                    "localStorage.setItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)},'1');"
+                storage(value) { shortcuts = it; render() }
+            }.show()
     }
 
     private fun edit(old: String?) {
@@ -312,13 +394,14 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         busy = true
         render()
         val script = """(function(){if(location.href!==${JSONObject.quote(address)})return null;try{$write
-            return {raw:localStorage.getItem(${JSONObject.quote(HomeShortcuts.KEY)}),hidden:localStorage.getItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)})==='1'};
+            return {raw:localStorage.getItem(${JSONObject.quote(HomeShortcuts.KEY)}),hidden:localStorage.getItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)})==='1',
+            order:localStorage.getItem(${JSONObject.quote(HomeShortcuts.ORDER_KEY)})};
             }catch(e){return null;}})()""".trimIndent()
         view.evaluateJavascript(script) { result ->
             if (visit != generation || view !== web || view.url != address || browser.tabStore.currentTab.value !== tab) return@evaluateJavascript
             busy = false
             val data = runCatching { JSONObject(result) }.getOrNull()
-            if (data != null) accept(HomeShortcuts.read(data.opt("raw") as? String, data.optBoolean("hidden")))
+            if (data != null) accept(HomeShortcuts.read(data.opt("raw") as? String, data.optBoolean("hidden"), data.opt("order") as? String))
             else {
                 render()
                 if (write.isNotEmpty()) notice(browser.getString(R.string.home_save_failed))
@@ -347,7 +430,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             button.isSelected = tile.selected
             button.alpha = if (tile.hidden) .5f else 1f
             button.contentDescription = if (tile.hidden) browser.getString(R.string.home_youtube_removed)
-                else if (editing && tile.key.startsWith("shortcut:"))
+                else if (editing && tile.movable)
                 browser.getString(R.string.home_edit_item).replace("%s", tile.title) else tile.title
             val cached = tile.url?.let { android.net.Uri.parse(it).host }?.let(Favicons::cached)
             val icon = cached?.let { BitmapDrawable(browser.resources, it) }
@@ -360,4 +443,9 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         }
     }
     private class Holder(view: View) : RecyclerView.ViewHolder(view)
+
+    private companion object {
+        /** The capsule's own opening time, so Home moves with it. */
+        const val CAPSULE_MS = 220L
+    }
 }

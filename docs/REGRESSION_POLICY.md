@@ -75,6 +75,9 @@ El acceso a ese almacén se verifica contra la URL interna exacta antes de ejecu
 ningún sitio recibe un puente nuevo. Favoritos se conserva en ambos modos; localStorage sigue usando
 el perfil WebView aislado de cada modo. El foco no abre el teclado:
 OK o clic lo solicita; Arriba desde búsqueda abre la cápsula. Las miniaturas conservan el límite de 480 px.
+En modo edición, OK sobre YouTube, un favorito o un acceso ofrece moverlo, editar su dirección (solo
+accesos) o quitarlo; quitar un favorito lo borra también de Favoritos tras confirmar. El orden se guarda
+en `vireo.home.order.v1` del mismo almacén (petición del propietario, 2026-11-03).
 Sin nuevas dependencias. Requiere CI del conjunto y validación física de mando antes de integrar.
 
 **Sugerencias de dirección (2026-10-27, petición del propietario):** al editar la dirección se muestran hasta
@@ -112,7 +115,7 @@ MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 | N02 | Mover foco por la cápsula → Abajo → pestañas → Arriba → URL | Controles alcanzables, sin ocultar filas por recibir foco; buscar no abre IME hasta activar edición. |
 | N03 | Cápsula Atrás/Adelante/Recargar/Inicio | Ejecutar una sola acción sobre la pestaña seleccionada; botones coherentes con historial. |
 | N04 | Editar dirección → Atrás/cancelar | Cerrar IME/edición antes de alterar historial; no enfocar accidentalmente Salir. |
-| N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view una vez y mostrar la cápsula en esa misma pulsación; foco en Atrás accionable, acceso a pestañas y retorno al puntero, sin navegar otra URL. |
+| N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view una vez y mostrar la cápsula en esa misma pulsación; foco en Atrás accionable, acceso a pestañas y retorno al puntero, sin navegar otra URL. Otra pulsación de Atrás en los 800 ms siguientes no cierra esa cápsula. |
 | N06 | Pestaña A → preview B → comando de la cápsula | Aplicar al contenido seleccionado B, sin quedarse apuntando a A. |
 | N07 | Diálogo/selector/permiso → cancelar o volver | Resolver callback una vez con su propietario; foco vuelve al lugar correcto. |
 | N08 | Atrás desde raíz | Salida al launcher alcanzable y sin bucle, conservando acceso al menú y comandos inferiores. La secuencia exacta debe especificarse antes de implementarla. |
@@ -282,6 +285,9 @@ fotogramas y profundidad de color a lo que informa el hardware. En «Automática
 disponibles a las páginas, aunque WebView pueda decodificarlos por software. No cambiar
 esta política (incluido dejar que WebView decida en «Sin límite») sin decisión expresa
 del propietario.
+«Automática» no limita la resolución al tamaño de la ventana o del viewport: la
+interfaz de muchas TV 4K se dibuja a 1080p y ese límite ocultaba 1440p y 2160p
+(retirado por decisión del propietario, 2026-11-03).
 Las consultas permitidas de `mediaCapabilities.decodingInfo` conservan la promesa
 y el resultado originales de WebView, incluidos `smooth`, `powerEfficient` y el
 acceso DRM. La presencia de un decodificador no prueba fluidez ni eficiencia;
