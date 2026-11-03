@@ -5,7 +5,12 @@
         <shape android:shape="oval"><solid android:color="@color/on_surface_variant" /></shape>
     </item>
     <item android:state_focused="true">
-        <shape android:shape="oval"><solid android:color="@color/inverse_surface" /></shape>
+        <layer-list>
+            <item><shape android:shape="oval"><solid android:color="#665FD095" /></shape></item>
+            <item android:left="3dp" android:top="3dp" android:right="3dp" android:bottom="3dp">
+                <shape android:shape="oval"><solid android:color="@color/inverse_surface" /></shape>
+            </item>
+        </layer-list>
     </item>
     <item android:state_activated="true">
         <shape android:shape="oval"><solid android:color="@color/brand_container" /></shape>
