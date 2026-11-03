@@ -1,27 +1,20 @@
-name: Inspect startup termination
+name: Inspect available Android SDK packages
 on:
   push:
     branches: [diagnose/focus-startup]
 permissions:
-  actions: read
   contents: read
 jobs:
   inspect:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v8.0.2
-        with:
-          name: release-startup-api-34
-          path: report
-          run-id: 41570836408
-          github-token: ${{ github.token }}
-      - name: Examine process termination
+      - name: List current SDK platforms and images
         run: |
+          sdkmanager --version
+          sdkmanager --list > packages.txt
           python - <<'PY'
           from pathlib import Path
-          lines = Path('report/cold-logcat.txt').read_text(errors='replace').splitlines()
-          terms = ('5769', 'vireolumatv', 'FontsProvider', 'force stop', 'Force stopping', 'Killing', 'died', 'died because')
-          for line in lines:
-              if any(term.lower() in line.lower() for term in terms):
-                  print(line[:1000])
+          for line in Path('packages.txt').read_text().splitlines():
+              if 'platforms;android-' in line or ('system-images;android-' in line and 'google_apis;x86_64' in line):
+                  print(line)
           PY
