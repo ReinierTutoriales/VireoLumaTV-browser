@@ -61,7 +61,8 @@ internal object AdblockListDownloader {
                         throw IOException("Filter endpoint redirected; use its canonical HTTPS URL")
                     }
                     if (code == HttpURLConnection.HTTP_NOT_MODIFIED && conditional) return Result.NotModified
-                    if (code !in 200..299) {
+                    // A partial response must never replace the complete saved rules.
+                    if (code != HttpURLConnection.HTTP_OK) {
                         throw IOException("Filter server returned HTTP $code")
                     }
                     val text = BoundedReader(connection.inputStream.bufferedReader(Charsets.UTF_8),
