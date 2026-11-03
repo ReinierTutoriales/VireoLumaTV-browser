@@ -154,8 +154,21 @@
             var data = typeof player.getVideoData === 'function' ? player.getVideoData() : null;
             var key = (data && data.video_id || '') + '|' + quality;
             if (key === applied) return;
-            if (typeof player.setPlaybackQualityRange === 'function') player.setPlaybackQualityRange(quality, quality);
-            if (typeof player.setPlaybackQuality === 'function') player.setPlaybackQuality(quality);
+            if (config.viewport && !maxHeight) {
+                // Keep lower levels available for adaptive playback when bandwidth changes.
+                if (typeof player.setPlaybackQualityRange !== 'function') return;
+                var lowest = quality;
+                for (var j = levels.length - 1; j >= 0; j--) {
+                    if (levels[j][0] <= cap && available.indexOf(levels[j][1]) !== -1) {
+                        lowest = levels[j][1];
+                        break;
+                    }
+                }
+                player.setPlaybackQualityRange(lowest, quality);
+            } else {
+                if (typeof player.setPlaybackQualityRange === 'function') player.setPlaybackQualityRange(quality, quality);
+                if (typeof player.setPlaybackQuality === 'function') player.setPlaybackQuality(quality);
+            }
             applied = key;
         } catch (_) {}
     }
