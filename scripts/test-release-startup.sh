@@ -9,6 +9,12 @@ app_pid=
 mkdir -p "$report"
 adb root
 adb wait-for-device
+# Diagnostic: which content providers the browser process holds (label: when).
+providers() {
+  adb shell dumpsys activity processes "$package" > "$report/$scenario-$1-processes.txt" || true
+  adb shell dumpsys activity provider com.google.android.gms/.fonts.provider.FontsProvider \
+    > "$report/$scenario-$1-fontsprovider.txt" || true
+}
 capture() {
   adb logcat -d > "$report/$scenario-logcat.txt"
   if [ -n "$app_pid" ]; then
@@ -26,6 +32,7 @@ launch() {
   adb logcat -c
   timeout 30s adb shell am start -W -n "$package/.activity.main.MainActivity" -d https://vireolumatv.invalid/appcontent/home/ > "$report/$scenario-launch.txt" || true
   app_pid=$(adb shell pidof "$package" | tr -d '\r') || { capture; return 1; }
+  providers launched
   local notice_dismissed=0
   for attempt in $(seq 1 12); do
     sleep 3
@@ -66,6 +73,7 @@ assert any(node.get('text') == 'DuckDuckGo' for node in root.iter('node'))
 PYXML
     then
       test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid"
+      providers rendered
       if [ "$scenario" = cold ]; then
         # A provider restart must not terminate the browser through a font dependency.
         adb shell am force-stop com.google.android.gms
