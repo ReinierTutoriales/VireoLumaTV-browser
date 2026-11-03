@@ -42,4 +42,18 @@ class CookiePersistenceTest {
         assertTrue(thread !== Thread.currentThread())
         assertTrue(thread!!.isDaemon)
     }
+
+    @Test fun recreatedScreensShareOneCookieWorker() {
+        val count = 8
+        val done = java.util.concurrent.CountDownLatch(count)
+        val threads = java.util.concurrent.ConcurrentHashMap.newKeySet<Thread>()
+        repeat(count) {
+            CookiePersistence(flush = {
+                threads.add(Thread.currentThread())
+                done.countDown()
+            }).onLeftScreen(false)
+        }
+        assertTrue(done.await(5, java.util.concurrent.TimeUnit.SECONDS))
+        assertEquals("Recreating the screen must not retain another worker thread", 1, threads.size)
+    }
 }
