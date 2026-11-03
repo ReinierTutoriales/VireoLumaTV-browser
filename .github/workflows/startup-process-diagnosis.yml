@@ -4,6 +4,7 @@ on:
     branches: [diagnose/focus-startup]
 permissions:
   contents: write
+  pull-requests: read
 jobs:
   cleanup:
     runs-on: ubuntu-latest
