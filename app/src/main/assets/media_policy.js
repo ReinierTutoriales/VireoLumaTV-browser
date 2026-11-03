@@ -135,7 +135,7 @@
     var host = (location.hostname || '').toLowerCase();
     var youtube = host === 'youtube.com' || /\.youtube(-nocookie)?\.com$/.test(host) ||
         host === 'youtube-nocookie.com';
-    if ((!maxHeight && !config.viewport) || !youtube) return;
+    if (!maxHeight || !youtube) return;
     var levels = [[2160, 'hd2160'], [1440, 'hd1440'], [1080, 'hd1080'], [720, 'hd720'],
         [480, 'large'], [360, 'medium'], [240, 'small'], [144, 'tiny']];
     var applied = '';
@@ -154,21 +154,8 @@
             var data = typeof player.getVideoData === 'function' ? player.getVideoData() : null;
             var key = (data && data.video_id || '') + '|' + quality;
             if (key === applied) return;
-            if (config.viewport && !maxHeight) {
-                // Keep lower levels available for adaptive playback when bandwidth changes.
-                if (typeof player.setPlaybackQualityRange !== 'function') return;
-                var lowest = quality;
-                for (var j = levels.length - 1; j >= 0; j--) {
-                    if (levels[j][0] <= cap && available.indexOf(levels[j][1]) !== -1) {
-                        lowest = levels[j][1];
-                        break;
-                    }
-                }
-                player.setPlaybackQualityRange(lowest, quality);
-            } else {
-                if (typeof player.setPlaybackQualityRange === 'function') player.setPlaybackQualityRange(quality, quality);
-                if (typeof player.setPlaybackQuality === 'function') player.setPlaybackQuality(quality);
-            }
+            if (typeof player.setPlaybackQualityRange === 'function') player.setPlaybackQualityRange(quality, quality);
+            if (typeof player.setPlaybackQuality === 'function') player.setPlaybackQuality(quality);
             applied = key;
         } catch (_) {}
     }
@@ -176,8 +163,4 @@
     document.addEventListener('loadedmetadata', applyCap, true);
     document.addEventListener('playing', applyCap, true);
     document.addEventListener('yt-navigate-finish', applyCap);
-    if (config.viewport) {
-        window.addEventListener('resize', applyCap);
-        document.addEventListener('fullscreenchange', applyCap);
-    }
 })(__VIREO_MEDIA_POLICY__);

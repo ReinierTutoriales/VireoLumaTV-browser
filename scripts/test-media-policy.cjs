@@ -108,20 +108,10 @@ function page(config, host = 'www.youtube.com') {
         assert.equal(probe('video/mp4; codecs="avc1.4d401f"; width=3840; height=2160'), true);
         window.innerWidth = 0; window.innerHeight = 0;
         assert.equal(probe('video/mp4; codecs="avc1.4d401f"; width=3840; height=2160'), true, 'unknown viewport leaves provider decision');
-        assert.equal(typeof windowListeners.resize, 'function');
-        var viewportCalls = [];
-        player = {
-            getAvailableQualityLevels() { return ['hd1080', 'hd720', 'large']; },
-            getVideoData() { return {video_id: 'viewport'}; },
-            setPlaybackQualityRange(a, b) { viewportCalls.push(a + '-' + b); },
-            setPlaybackQuality(q) { viewportCalls.push(q); }
-        };
-        window.innerWidth = 1280; window.innerHeight = 720; window.devicePixelRatio = 1;
-        listeners.playing();
-        assert.deepEqual(viewportCalls, ['large-hd720']);
-        window.innerWidth = 1920; window.innerHeight = 1080;
-        windowListeners.resize();
-        assert.deepEqual(viewportCalls, ['large-hd720', 'large-hd1080']);
+        assert.equal(listeners.playing, undefined, 'automatic sizing never controls playback');
+        assert.equal(listeners.loadedmetadata, undefined);
+        assert.equal(listeners['yt-navigate-finish'], undefined);
+        assert.equal(windowListeners.resize, undefined, 'capability queries read current dimensions directly');
     `, c);
 
     // The YouTube player hook stays off other sites; a second injection is a no-op.
