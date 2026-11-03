@@ -253,6 +253,9 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
     // Fullscreen
 
     override fun onEnterFullscreen() {
+        // A player may enter fullscreen while the capsule is open. Close it now so the
+        // fullscreen exit can reopen it and restore focus to an actionable control.
+        if (vb.controlsOverlay.isVisible) browser.closeCapsule()
         val window = browser.window
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         @Suppress("DEPRECATION") // The insets API needs API 30; these flags work on every supported TV.
