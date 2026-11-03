@@ -32,5 +32,3 @@ También puedes buscar actualizaciones desde **Ajustes → Acerca de → Actuali
 ## Más información
 
 [Notas de la versión](RELEASE_NOTES.md) · [Privacidad](PRIVACY.md) · [Licencia](LICENSE.md) · [Avisos de componentes](NOTICE.md)
-
-Para comunicar un problema o compartir una sugerencia, utiliza [Issues](https://github.com/ReinierTutoriales/VireoLumaTV-browser/issues).
