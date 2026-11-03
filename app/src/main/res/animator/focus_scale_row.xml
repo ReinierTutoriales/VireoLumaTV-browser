@@ -2,13 +2,13 @@
 <!-- Focus grows the item by 1.025x, the TV focus-system step for its size; brief, so the remote feels direct. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
-        <set>
+        <set android:interpolator="@android:interpolator/fast_out_slow_in">
             <objectAnimator android:propertyName="scaleX" android:valueTo="1.025" android:duration="@integer/focus_ms" android:valueType="floatType" />
             <objectAnimator android:propertyName="scaleY" android:valueTo="1.025" android:duration="@integer/focus_ms" android:valueType="floatType" />
         </set>
     </item>
     <item>
-        <set>
+        <set android:interpolator="@android:interpolator/fast_out_slow_in">
             <objectAnimator android:propertyName="scaleX" android:valueTo="1" android:duration="@integer/focus_ms" android:valueType="floatType" />
             <objectAnimator android:propertyName="scaleY" android:valueTo="1" android:duration="@integer/focus_ms" android:valueType="floatType" />
         </set>
