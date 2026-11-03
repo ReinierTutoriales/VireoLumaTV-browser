@@ -138,9 +138,6 @@
     <string name="settings_search_engine_address">Адрес поиска ([query] заменяется запросом)</string>
     <string name="settings_home_page">Домашняя страница</string>
     <string name="settings_home_page_address">Адрес домашней страницы</string>
-    <string name="settings_user_agent_choice">Представлять браузер как</string>
-    <string name="settings_user_agent">User agent</string>
-    <string name="settings_user_agent_custom">Свой user agent</string>
     <string name="settings_keep_screen_on">Не выключать экран</string>
     <string name="settings_stick_moves_pointer">Двигать указатель стиком</string>
     <string name="settings_pointer_speed">Максимальная скорость указателя</string>

@@ -52,7 +52,7 @@ class MainSettingsFocusTest {
             // Grouped as Browsing, Protection, Video and display, Remote and pointer, Advanced; the
             // section headings are not focus stops.
             val expected = listOf(
-                "spEngine", "spHomePage", "spTitles",
+                "spEngine", "spHomePage",
                 "llAdblock", "btnAdBlockerUpdate",
                 "spAppLanguage", "llWebViewAlgorithmicDarkening", "llAllowAutoplayMedia", "spVideoMaxQuality", "llKeepScreenOn",
                 "llNavigateWithJoystickAxes", "sbCursorMaxSpeed", "sbCursorAcceleration",

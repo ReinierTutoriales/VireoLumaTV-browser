@@ -138,9 +138,6 @@
     <string name="settings_search_engine_address">Adres wyszukiwania ([query] zostanie zastąpione zapytaniem)</string>
     <string name="settings_home_page">Strona startowa</string>
     <string name="settings_home_page_address">Adres strony startowej</string>
-    <string name="settings_user_agent_choice">Przedstawiaj przeglądarkę jako</string>
-    <string name="settings_user_agent">Identyfikator przeglądarki</string>
-    <string name="settings_user_agent_custom">Własny identyfikator przeglądarki</string>
     <string name="settings_keep_screen_on">Nie wyłączaj ekranu</string>
     <string name="settings_stick_moves_pointer">Przesuwaj wskaźnik gałką</string>
     <string name="settings_pointer_speed">Maksymalna prędkość wskaźnika</string>

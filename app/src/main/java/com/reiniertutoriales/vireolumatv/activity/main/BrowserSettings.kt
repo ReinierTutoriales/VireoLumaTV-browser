@@ -22,19 +22,6 @@ class BrowserSettings : ScreenModel() {
             }
     }
 
-    /** User agent presets; an empty string means the WebView's own, and the last entry is custom. */
-    private val userAgentPresets = listOf(
-        "Default (recommended)" to "",
-        "Chrome (Desktop)" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
-        "Chrome (Mobile)" to "Mozilla/5.0 (Linux; Android 16; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36",
-        "Firefox (Desktop)" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0",
-        "Firefox (Mobile)" to "Mozilla/5.0 (Android 16; Mobile; rv:147.0) Gecko/125.0 Firefox/147.0",
-        "Edge (Desktop)" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0",
-        "Custom" to "",
-    )
-    val userAgentStringTitles: Array<String> = userAgentPresets.map { it.first }.toTypedArray()
-    val uaStrings: List<String> = userAgentPresets.map { it.second }
-
     fun setSearchEngineURL(url: String) {
         config.searchAddress.value = url
         if (homePageMode == Config.HomePageMode.SEARCH_ENGINE) homePage = searchHome(url)

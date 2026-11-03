@@ -147,7 +147,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     private fun observeModels() {
-        config.userAgentOverride.observe(lifecycle, false) { agent -> tabStore.openTabs.forEach { it.engine.userAgent = agent } }
         browserSettings.keepScreenOn.observe(lifecycle) { on ->
             if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -566,7 +565,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         ServiceWorkerFilter.install(this)
         LegacyLocationGrants.clearOnce(config.prefs, webViewProfile()) { GeolocationPermissions.getInstance().clearAll() }
         warnIfWebViewIsStale()
-        config.userAgentOverride.value?.let { tab.engine.userAgent = it }
         return view
     }
 

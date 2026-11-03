@@ -132,9 +132,6 @@
     <string name="settings_search_engine_address">搜尋網址（[query] 會替換為搜尋內容）</string>
     <string name="settings_home_page">首頁</string>
     <string name="settings_home_page_address">首頁網址</string>
-    <string name="settings_user_agent_choice">將瀏覽器識別為</string>
-    <string name="settings_user_agent">使用者代理程式</string>
-    <string name="settings_user_agent_custom">自訂使用者代理程式</string>
     <string name="settings_keep_screen_on">保持螢幕開啟</string>
     <string name="settings_stick_moves_pointer">用搖桿移動指標</string>
     <string name="settings_pointer_speed">指標最高速度</string>

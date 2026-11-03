@@ -134,9 +134,6 @@
     <string name="settings_search_engine_address">نشانی جست‌وجو ([query] با عبارت جست‌وجو جایگزین می‌شود)</string>
     <string name="settings_home_page">صفحهٔ خانه</string>
     <string name="settings_home_page_address">نشانی صفحهٔ خانه</string>
-    <string name="settings_user_agent_choice">معرفی مرورگر به‌عنوان</string>
-    <string name="settings_user_agent">عامل کاربر</string>
-    <string name="settings_user_agent_custom">عامل کاربر سفارشی</string>
     <string name="settings_keep_screen_on">روشن نگه‌داشتن صفحه</string>
     <string name="settings_stick_moves_pointer">حرکت نشانگر با اهرم</string>
     <string name="settings_pointer_speed">بیشینهٔ سرعت نشانگر</string>

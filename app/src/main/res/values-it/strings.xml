@@ -136,9 +136,6 @@
     <string name="settings_search_engine_address">Indirizzo di ricerca ([query] viene sostituito dalla ricerca)</string>
     <string name="settings_home_page">Pagina iniziale</string>
     <string name="settings_home_page_address">Indirizzo della pagina iniziale</string>
-    <string name="settings_user_agent_choice">Identifica il browser come</string>
-    <string name="settings_user_agent">User agent</string>
-    <string name="settings_user_agent_custom">User agent personalizzato</string>
     <string name="settings_keep_screen_on">Mantieni lo schermo acceso</string>
     <string name="settings_stick_moves_pointer">Muovi il puntatore con la levetta</string>
     <string name="settings_pointer_speed">Velocità massima del puntatore</string>

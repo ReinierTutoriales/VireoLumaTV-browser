@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A labelled choice: the spinner is the focus stop. -->
+<!-- A labelled choice: the spinner is the focus stop; its options open in a centred dialog,
+     which is never cut by the screen edge as a drop-down near the bottom is. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -23,8 +24,7 @@
         android:layout_marginTop="4dp"
         android:background="@drawable/bg_row"
         android:defaultFocusHighlightEnabled="false"
-        android:dropDownWidth="360dp"
         android:paddingStart="8dp"
-        android:popupBackground="@drawable/bg_panel"
+        android:spinnerMode="dialog"
         android:stateListAnimator="@animator/focus_scale_row" />
 </LinearLayout>

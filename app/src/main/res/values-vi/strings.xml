@@ -132,9 +132,6 @@
     <string name="settings_search_engine_address">Địa chỉ tìm kiếm ([query] được thay bằng nội dung bạn tìm)</string>
     <string name="settings_home_page">Trang chủ</string>
     <string name="settings_home_page_address">Địa chỉ trang chủ</string>
-    <string name="settings_user_agent_choice">Nhận dạng trình duyệt là</string>
-    <string name="settings_user_agent">Tác nhân người dùng</string>
-    <string name="settings_user_agent_custom">Tác nhân người dùng tùy chỉnh</string>
     <string name="settings_keep_screen_on">Giữ màn hình luôn bật</string>
     <string name="settings_stick_moves_pointer">Di chuyển con trỏ bằng cần analog</string>
     <string name="settings_pointer_speed">Tốc độ tối đa của con trỏ</string>

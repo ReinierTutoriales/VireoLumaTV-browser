@@ -132,9 +132,6 @@
     <string name="settings_search_engine_address">搜索地址（[query] 会替换为搜索内容）</string>
     <string name="settings_home_page">主页</string>
     <string name="settings_home_page_address">主页地址</string>
-    <string name="settings_user_agent_choice">将浏览器标识为</string>
-    <string name="settings_user_agent">用户代理</string>
-    <string name="settings_user_agent_custom">自定义用户代理</string>
     <string name="settings_keep_screen_on">保持屏幕常亮</string>
     <string name="settings_stick_moves_pointer">用摇杆移动指针</string>
     <string name="settings_pointer_speed">指针最高速度</string>

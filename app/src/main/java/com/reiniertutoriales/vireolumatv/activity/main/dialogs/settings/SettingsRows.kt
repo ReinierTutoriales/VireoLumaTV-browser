@@ -44,8 +44,9 @@ internal class SettingsRows(private val parent: ViewGroup) {
         val spinner = row(R.layout.view_setting_choice).apply { title(title) }
             .findViewById<Spinner>(R.id.settingControl)
         spinner.id = id
+        spinner.prompt = parent.context.getString(title)
         spinner.adapter = ArrayAdapter(parent.context, android.R.layout.simple_spinner_item, items).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            setDropDownViewResource(R.layout.dialog_choice_item)
         }
         spinner.setSelection(selected, false)
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
