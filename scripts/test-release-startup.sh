@@ -9,6 +9,8 @@ app_pid=
 mkdir -p "$report"
 adb root
 adb wait-for-device
+adb shell getprop ro.build.version.sdk > "$report/android-api.txt"
+adb shell dumpsys webviewupdate > "$report/webview-provider.txt"
 capture() {
   adb logcat -d > "$report/$scenario-logcat.txt"
   if [ -n "$app_pid" ]; then
