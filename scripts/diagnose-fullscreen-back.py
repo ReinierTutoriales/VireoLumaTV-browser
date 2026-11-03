@@ -138,7 +138,7 @@ def app_state():
     return state
 
 
-SCENARIOS = ["quick", "after-ok", "after-play", "after-move", "long-back", "double-back"]
+SCENARIOS = ["double-back", "quick", "double-back", "after-ok", "long-back", "double-back", "after-move", "after-play"]
 
 
 def scenario_before(name):
