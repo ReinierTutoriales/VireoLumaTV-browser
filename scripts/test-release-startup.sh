@@ -12,14 +12,15 @@ adb wait-for-device
 adb shell getprop ro.build.version.sdk > "$report/android-api.txt"
 adb shell dumpsys webviewupdate > "$report/webview-provider.txt"
 capture() {
-  adb logcat -d > "$report/$scenario-logcat.txt"
+  # Bounded: if the emulator drops, adb waits for a device forever and the job only ends at the timeout.
+  timeout 20s adb logcat -d > "$report/$scenario-logcat.txt" || true
   if [ -n "$app_pid" ]; then
-    adb logcat -d -b crash --pid="$app_pid" > "$report/$scenario-crash.txt"
+    timeout 20s adb logcat -d -b crash --pid="$app_pid" > "$report/$scenario-crash.txt" || true
   else
-    adb logcat -d -b crash > "$report/$scenario-crash.txt"
+    timeout 20s adb logcat -d -b crash > "$report/$scenario-crash.txt" || true
   fi
-  adb shell dumpsys activity activities > "$report/$scenario-activities.txt"
-  adb exec-out screencap -p > "$report/$scenario.png"
+  timeout 20s adb shell dumpsys activity activities > "$report/$scenario-activities.txt" || true
+  timeout 20s adb exec-out screencap -p > "$report/$scenario.png" || true
 }
 trap 'capture' ERR
 # The FontsProvider connection appears when Android System WebView loads in the app process, with
