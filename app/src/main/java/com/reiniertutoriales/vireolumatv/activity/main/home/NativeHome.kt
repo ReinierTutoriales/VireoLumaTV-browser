@@ -91,6 +91,14 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
                         if (event.action == KeyEvent.ACTION_UP) showKeyboard(this)
                         true
                     }
+                    // At the end of the text, the key toward Submit (Right, or Left in RTL) moves to it
+                    // on every Android version: some consume it in a single-line field.
+                    code == (if (layoutDirection == View.LAYOUT_DIRECTION_RTL) KeyEvent.KEYCODE_DPAD_LEFT
+                        else KeyEvent.KEYCODE_DPAD_RIGHT) && selectionStart == selectionEnd &&
+                        selectionEnd == (text?.length ?: 0) -> {
+                        if (event.action == KeyEvent.ACTION_DOWN) content.findViewById<View>(R.id.home_submit).requestFocus()
+                        true
+                    }
                     else -> false
                 }
             }

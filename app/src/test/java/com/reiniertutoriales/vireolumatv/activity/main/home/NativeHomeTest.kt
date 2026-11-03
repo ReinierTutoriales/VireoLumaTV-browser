@@ -51,6 +51,19 @@ class NativeHomeTest {
         // The native focus graph reaches Submit and the grid; focusing a control never navigates.
         assertEquals(R.id.home_submit, input.focusSearch(View.FOCUS_RIGHT)?.id)
         assertNull(f.loadedUrl)
+        // Right moves focus to Submit from the end of the text, and moves the cursor inside it.
+        input.setText("tv")
+        input.setSelection(1)
+        input.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT))
+        input.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_RIGHT))
+        assertTrue("Right inside the text stays in the field", input.hasFocus())
+        input.setSelection(2)
+        input.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT))
+        input.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_RIGHT))
+        assertEquals(R.id.home_submit, f.vb.nativeHomeContainer.findFocus()?.id)
+        assertNull(f.loadedUrl)
+        input.setText("")
+        assertTrue(f.home.focusContent())
         input.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
         assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
         input.performClick() // The first native page click closes the capsule and reaches the field.
