@@ -296,7 +296,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             if (index + left in list.indices) add(R.string.home_move_left to { move(list, index, index + left) })
             if (index - left in list.indices) add(R.string.home_move_right to { move(list, index, index - left) })
             if (tile.key.startsWith("shortcut:")) add(R.string.home_edit_address to { edit(tile.url) })
-            add(R.string.home_remove to { remove(tile) })
+            add(R.string.home_remove to { removeTile(tile) })
         }
         dialog = AlertDialog.Builder(browser).setTitle(tile.title)
             .setItems(choices.map { browser.getString(it.first) }.toTypedArray()) { _, which -> choices[which].second() }
@@ -315,7 +315,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         }
     }
 
-    private fun remove(tile: Tile) {
+    private fun removeTile(tile: Tile) {
         val favorite = tile.favorite
         when {
             tile.key == "youtube" -> toggleYoutube()
