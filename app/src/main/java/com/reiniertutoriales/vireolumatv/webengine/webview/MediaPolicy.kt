@@ -133,13 +133,15 @@ internal object MediaPolicy {
     fun hardwareLimits(maxHeight: Int): Map<String, HardwareVideo> = if (maxHeight == NO_LIMIT) emptyMap() else hardwareVideo
 
     /** Script argument; null when the policy changes nothing. */
-    fun configJson(blocked: List<String>, maxHeight: Int, hardware: Map<String, HardwareVideo> = emptyMap()): String? {
+    fun configJson(blocked: List<String>, maxHeight: Int, hardware: Map<String, HardwareVideo> = emptyMap(),
+                   windowHeight: Int = 0): String? {
         if (blocked.isEmpty() && maxHeight < 0 && hardware.isEmpty()) return null
         val hw = hardware.entries.joinToString(",") { (family, v) ->
             "\"$family\":{\"h30\":${v.maxHeight30},\"h60\":${v.maxHeight60},\"ten\":${v.tenBit}}"
         }
         return "{\"block\":[" + blocked.joinToString(",") { "\"$it\"" } + "],\"maxHeight\":" +
             maxHeight.coerceAtLeast(0) + (if (maxHeight == 0) ",\"viewport\":true" else "") +
+            (if (maxHeight == 0 && windowHeight > 0) ",\"windowHeight\":$windowHeight" else "") +
             (if (hardware.isEmpty()) "" else ",\"hw\":{$hw}") + "}"
     }
 
@@ -161,8 +163,13 @@ internal class MediaPolicyController(private val view: WebView, private val conf
 
     /** Cheap when nothing changed; call before each navigation so settings apply to the next page. */
     fun refresh() {
+        // Native pixels belong to the whole WebView, including scripts injected in small iframes.
+        // Before the first layout, the activity's display metrics provide the window dimensions.
+        val metrics = view.resources.displayMetrics
+        val windowHeight = minOf(view.width.takeIf { it > 0 } ?: metrics.widthPixels,
+            view.height.takeIf { it > 0 } ?: metrics.heightPixels)
         val json = MediaPolicy.configJson(MediaPolicy.blockedCodecs(), config.videoMaxHeight,
-            MediaPolicy.hardwareLimits(config.videoMaxHeight))
+            MediaPolicy.hardwareLimits(config.videoMaxHeight), windowHeight)
         if (json == appliedJson) return
         registration?.remove()
         registration = null

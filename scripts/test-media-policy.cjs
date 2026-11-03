@@ -126,6 +126,18 @@ function page(config, host = 'www.youtube.com') {
             'invalid viewport scale leaves the provider decision');
     `, c);
 
+    // Native bounds apply equally to embedded frames and pages with inflated CSS viewports.
+    c = page({block: [], maxHeight: 0, viewport: true, windowHeight: 1080});
+    vm.runInContext(`
+        window.innerWidth = 320; window.innerHeight = 180;
+        assert.equal(MediaSource.isTypeSupported('video/mp4; codecs="avc1.640028"; width=1920; height=1080'), true,
+            'an embedded frame uses the native window, not its own small layout viewport');
+        window.innerWidth = 3840; window.innerHeight = 2160; window.devicePixelRatio = 2;
+        assert.equal(MediaSource.isTypeSupported('video/mp4; codecs="avc1.640033"; width=3840; height=2160'), false,
+            'page scaling must not inflate the native window cap');
+        assert.equal(listeners.playing, undefined, 'native sizing never controls the player');
+    `, c);
+
     // Unlimited quality keeps missing-codec blocks but never applies the viewport cap.
     c = page({block: ['av1'], maxHeight: 0});
     vm.runInContext(`

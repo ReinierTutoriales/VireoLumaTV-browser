@@ -15,6 +15,8 @@
     // Missing or invalid dimensions leave the existing hardware policy in charge.
     function viewportHeight() {
         if (!config.viewport) return 0;
+        // The native window is shared by every frame; a small iframe must not lower its cap.
+        if (config.windowHeight > 0) return config.windowHeight;
         var w = Number(window.innerWidth), h = Number(window.innerHeight);
         var ratio = Number(window.devicePixelRatio) || 1;
         if (!(w > 0 && h > 0 && ratio > 0 && isFinite(w) && isFinite(h) && isFinite(ratio))) return 0;

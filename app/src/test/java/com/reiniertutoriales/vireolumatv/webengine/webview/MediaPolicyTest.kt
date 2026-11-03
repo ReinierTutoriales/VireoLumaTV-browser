@@ -23,6 +23,14 @@ class MediaPolicyTest {
         assertEquals("{\"block\":[],\"maxHeight\":720}", MediaPolicy.configJson(emptyList(), 720))
     }
 
+    @Test fun onlyAutomaticModeUsesTheNativeWindowHeight() {
+        assertEquals("{\"block\":[],\"maxHeight\":0,\"viewport\":true,\"windowHeight\":1080}",
+            MediaPolicy.configJson(emptyList(), 0, windowHeight = 1080))
+        assertEquals("{\"block\":[],\"maxHeight\":720}",
+            MediaPolicy.configJson(emptyList(), 720, windowHeight = 1080))
+        assertNull(MediaPolicy.configJson(emptyList(), MediaPolicy.NO_LIMIT, windowHeight = 1080))
+    }
+
     /** A decoder that sustains up to [h30] at 30 fps and [h60] at 60 fps. */
     private fun decoder(h30: Int, h60: Int, tenBit: Boolean = false) = object : HardwareVideo.Probe {
         override val tenBit = tenBit
