@@ -114,7 +114,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             adapter = Tiles().also { this@NativeHome.adapter = it }
             addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ ->
                 val manager = layoutManager as GridLayoutManager
-                val columns = ((right - left) / dp(180)).coerceIn(2, 6)
+                val columns = ((right - left) / resources.getDimensionPixelSize(R.dimen.home_tile_min_width)).coerceIn(2, 6)
                 if (manager.spanCount != columns) manager.spanCount = columns
             }
         }
