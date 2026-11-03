@@ -10,6 +10,7 @@ jobs:
     steps:
       - name: List current SDK platforms and images
         run: |
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
           sdkmanager --version
           sdkmanager --list > packages.txt
           python - <<'PY'
