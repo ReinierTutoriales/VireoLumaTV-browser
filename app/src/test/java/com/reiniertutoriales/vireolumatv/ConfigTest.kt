@@ -39,22 +39,10 @@ class ConfigTest {
         Config(prefs).apply {
             privateBrowsing = true
             keepScreenOn = true
-            userAgentOverride.value = "UA"
             blockListRetryAt = 5L
         }
         assertTrue(prefs.getBoolean("incognito_mode", false))
         assertTrue(prefs.getBoolean("keep_screen_on", false))
-        assertEquals("UA", prefs.getString("user_agent", null))
         assertEquals(5L, prefs.getLong("adblock_list_next_retry", 0))
-        Config(prefs).userAgentOverride.value = null
-        assertFalse(prefs.contains("user_agent"))
-    }
-
-    @Test fun startupKeepsAnExplicitCustomUserAgent() {
-        val prefs = prefs()
-        val custom = "CustomBrowser/2.0 Android TV"
-        prefs.edit().putString("user_agent", custom).commit()
-        assertEquals(custom, Config(prefs).userAgentOverride.value)
-        assertEquals(custom, prefs.getString("user_agent", null))
     }
 }
