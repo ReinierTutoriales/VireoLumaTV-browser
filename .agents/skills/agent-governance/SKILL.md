@@ -17,6 +17,14 @@ Hard constraints that override convenience:
 - Do not insert AI names, tool names, or third-party identities into commit messages, trailers (`Signed-off-by`, `Co-authored-by`), or file metadata.
 - Commit messages must describe the change factually; do not attribute the work to an agent.
 
+## Owner decisions
+- Ask the owner before implementing, integrating or changing any behavior that was not
+  explicitly requested, including follow-up "improvements" found during a task. Present the
+  finding and options; wait for the owner's choice.
+- Merging, releasing, closing PRs and deleting branches also require the owner's answer.
+- A behavior the owner chose stays as it is until the owner decides otherwise; the
+  contracts are in `docs/REGRESSION_POLICY.md`.
+
 ## Verify before writing
 - Read the relevant source, tests, contracts, and existing documentation before proposing or writing any change.
 - Do not write code, comments, or documentation for the sake of writing.

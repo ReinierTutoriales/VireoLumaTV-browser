@@ -276,6 +276,12 @@ los rangos DVR; en vídeo de duración finita con metadatos permite currentTime
 aunque el proveedor aún no informe rangos. No fuerza seek de un directo sin rango.
 VP8, VP9 y AV1 se comprueban por separado; no se deshabilita VP8 por faltar VP9.
 La enumeración de decodificadores se comparte una vez por proceso.
+**Contrato del propietario (2026-11-02):** «Automática» (predeterminada) ajusta resolución,
+fotogramas y profundidad de color a lo que informa el hardware. En «Automática» y en
+«Sin límite», VP8, VP9 y AV1 sin decodificador por hardware se anuncian como no
+disponibles a las páginas, aunque WebView pueda decodificarlos por software. No cambiar
+esta política (incluido dejar que WebView decida en «Sin límite») sin decisión expresa
+del propietario.
 Las consultas permitidas de `mediaCapabilities.decodingInfo` conservan la promesa
 y el resultado originales de WebView, incluidos `smooth`, `powerEfficient` y el
 acceso DRM. La presencia de un decodificador no prueba fluidez ni eficiencia;
