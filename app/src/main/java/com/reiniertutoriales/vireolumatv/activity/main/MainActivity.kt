@@ -885,9 +885,14 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val pointer = vb.pageContainer.pointerController
         when {
             vb.pointerMenu.isVisible -> vb.pointerMenu.close()
-            isFullscreen -> tabStore.currentTab.value?.engine?.closeFullscreen()
+            isFullscreen -> {
+                fullscreenBackAt = SystemClock.uptimeMillis()
+                tabStore.currentTab.value?.engine?.closeFullscreen()
+            }
             vb.controlsRow.isEditingAddress -> vb.controlsRow.cancelAddressInput()
-            overlayVisible -> closeCapsule()
+            // A second press while the video is still coming down (or a remote's double send) must not
+            // close the capsule that the first one opened.
+            overlayVisible -> if (SystemClock.uptimeMillis() - fullscreenBackAt >= FULLSCREEN_BACK_SETTLE_MS) closeCapsule()
             pointer.canGoBackInPage() -> pointer.consumeBack()
             !vb.pageContainer.pointerEnabled -> {
                 // Leaving D-pad mode returns to the pointer on the same page; nothing else happens.
@@ -903,6 +908,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     // The capsule over the page
 
     private var overlayVisible = false
+    /** When Back last closed a fullscreen video. */
+    private var fullscreenBackAt = Long.MIN_VALUE / 2
     /** Bumped whenever the preview may change, so a slow picture load never shows a stale tab. */
     private var previewGeneration = 0
     private var focusedPreviewTab: BrowserTab? = null
@@ -1015,6 +1022,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         const val SUGGESTIONS_DELAY_MS = 150L
         const val PREVIEW_FOCUS_DELAY_MS = 200L
         const val OVERLAY_OPEN_MS = 220L
+        const val FULLSCREEN_BACK_SETTLE_MS = 800L
         const val PROGRESS_DONE_MS = 1000L
         const val PROGRESS_STALL_MS = 5000L
         // Pop-up and dialog spam must not stack notices on a slow TV.

@@ -451,6 +451,11 @@ class BrowserNavigationTest {
         assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
         assertTrue(f.vb.controlsRow.backButton.hasFocus())
         f.activity.consumeBack()
+        assertEquals("A second press right after leaving the video keeps the capsule it opened",
+            View.VISIBLE, f.vb.controlsOverlay.visibility)
+        assertTrue(f.vb.controlsRow.backButton.hasFocus())
+        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofSeconds(1))
+        f.activity.consumeBack()
         assertEquals("Back must close the existing menu, not reopen bars in an unknown state",
             View.INVISIBLE, f.vb.controlsOverlay.visibility)
         assertTrue(f.page.hasFocus())
