@@ -72,7 +72,8 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         val content = LayoutInflater.from(browser).inflate(R.layout.native_home, host, false)
         root = content
         host.addView(content)
-        host.isVisible = true
+        host.visibility = browser.vb.pageContainer.visibility
+        content.setOnClickListener { closeCapsuleIfVisible() }
         search = content.findViewById<AppCompatEditText>(R.id.home_search).apply {
             showSoftInputOnFocus = false
             setOnClickListener { showKeyboard(this) }
@@ -152,6 +153,14 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         editing = false
     }
 
+    fun setPageVisible(visible: Boolean) {
+        if (root != null) host.visibility = if (visible) View.VISIBLE else View.INVISIBLE
+    }
+
+    private fun closeCapsuleIfVisible() {
+        if (browser.vb.controlsOverlay.isVisible) browser.closeCapsule()
+    }
+
     fun focusContent(): Boolean = search?.requestFocus() == true
 
     /** The same 480 px budget as web previews, without capturing a blank underlying document. */
@@ -168,11 +177,13 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     }
 
     private fun showKeyboard(field: AppCompatEditText) {
+        closeCapsuleIfVisible()
         field.requestFocus()
         browser.getSystemService<InputMethodManager>()?.showSoftInput(field, InputMethodManager.SHOW_IMPLICIT)
     }
 
     private fun submitSearch() {
+        closeCapsuleIfVisible()
         val field = search ?: return
         val url = HomeShortcuts.search(field.text.toString())
         if (url == null) field.error = browser.getString(R.string.home_empty_search) else open(url)
@@ -216,6 +227,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     }
 
     private fun click(tile: Tile) {
+        closeCapsuleIfVisible()
         when (tile.key) {
             "add" -> if (shortcuts.urls.size >= HomeShortcuts.MAX) notice(browser.getString(R.string.home_limit, HomeShortcuts.MAX)) else edit(null)
             "edit" -> { editing = !editing; render() }

@@ -934,8 +934,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             closeCapsule()
         }
         val previewed = tabAtStripSelection()
-        vb.pageContainer.visibility =
-            if (previewed != null && previewed === tabStore.currentTab.value) View.VISIBLE else View.INVISIBLE
+        showLivePage(previewed != null && previewed === tabStore.currentTab.value)
         lifecycleScope.launch { showPreview(previewed) }
         vb.controlsRow.closeAddressEditing()
         vb.controlsOverlay.visibility = View.VISIBLE
@@ -956,16 +955,21 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             // The live WebView at full resolution, never a stretched small picture.
             previewGeneration++
             showPicture(null, placeholder = false)
-            vb.pageContainer.visibility = View.VISIBLE
+            showLivePage(true)
             return
         }
-        vb.pageContainer.visibility = View.INVISIBLE
+        showLivePage(false)
         if (tab == null) return showPicture(null, placeholder = true)
         val request = ++previewGeneration
         vb.tabPreview.setImageResource(0) // Never leave the previous site's picture up while loading.
         val picture = tab.thumbnail ?: withContext(Dispatchers.IO) { tab.loadPreview() }
         if (request != previewGeneration || !overlayVisible || tab.closed || tabAtStripSelection() !== tab) return
         showPicture(picture, placeholder = picture == null)
+    }
+
+    private fun showLivePage(visible: Boolean) {
+        vb.pageContainer.visibility = if (visible) View.VISIBLE else View.INVISIBLE
+        nativeHome?.setPageVisible(visible)
     }
 
     private fun showPicture(picture: Bitmap?, placeholder: Boolean) {
@@ -998,7 +1002,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         showPicture(null, placeholder = false)
         if (wasVisible) cancelStripSelection()
         if (!vb.pointerMenu.isVisible) {
-            vb.pageContainer.visibility = View.VISIBLE
+            showLivePage(true)
             if (nativeHome?.focusContent() != true) tabStore.currentTab.value?.engine?.view?.requestFocus()
         }
     }

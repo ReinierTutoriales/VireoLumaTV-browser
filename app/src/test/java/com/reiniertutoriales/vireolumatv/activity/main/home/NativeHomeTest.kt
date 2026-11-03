@@ -53,7 +53,8 @@ class NativeHomeTest {
         assertNull(f.loadedUrl)
         input.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
         assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
-        f.activity.closeCapsule()
+        input.performClick() // The first native page click closes the capsule and reaches the field.
+        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
         assertTrue(input.hasFocus())
         assertTrue(f.vb.pageContainer.cursorSuppressed)
         assertEquals(View.INVISIBLE, f.web.visibility)
@@ -92,6 +93,20 @@ class NativeHomeTest {
         assertNull(f.home.preview(preview))
         assertFalse(f.vb.pageContainer.cursorSuppressed)
         preview.recycle()
+    }
+
+    @Test fun previewingANewTabHidesNativeHomeAndBackRestoresItWithoutChangingTabs() = Fixture().use { f ->
+        f.home.update(f.tab)
+        f.finishRead()
+        f.activity.openCapsule()
+        f.vb.tabStrip.current = 1
+        runBlocking { f.activity.showPreview(null) }
+        assertEquals(View.INVISIBLE, f.vb.nativeHomeContainer.visibility)
+        assertSame(f.tab, f.tabs.currentTab.value)
+        f.activity.closeCapsule()
+        assertEquals(View.VISIBLE, f.vb.nativeHomeContainer.visibility)
+        assertTrue(f.vb.nativeHomeContainer.findViewById<View>(R.id.home_search).hasFocus())
+        assertSame(f.tab, f.tabs.currentTab.value)
     }
 
     @Test fun privateHomeKeepsTheSharedFavoritesPromisedByTheExistingPrivateMode() = Fixture().use { f ->
