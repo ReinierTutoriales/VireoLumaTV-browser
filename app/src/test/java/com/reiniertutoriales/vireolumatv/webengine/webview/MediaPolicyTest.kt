@@ -18,8 +18,8 @@ class MediaPolicyTest {
     }
 
     @Test fun scriptIsOnlyInjectedWhenThePolicyChangesSomething() {
-        assertNull(MediaPolicy.configJson(emptyList(), 0))
-        assertEquals("{\"block\":[\"vp9\",\"av1\"],\"maxHeight\":0}", MediaPolicy.configJson(listOf("vp9", "av1"), 0))
+        assertEquals("{\"block\":[],\"maxHeight\":0,\"viewport\":true}", MediaPolicy.configJson(emptyList(), 0))
+        assertEquals("{\"block\":[\"vp9\",\"av1\"],\"maxHeight\":0,\"viewport\":true}", MediaPolicy.configJson(listOf("vp9", "av1"), 0))
         assertEquals("{\"block\":[],\"maxHeight\":720}", MediaPolicy.configJson(emptyList(), 720))
     }
 
@@ -42,7 +42,7 @@ class MediaPolicyTest {
 
     @Test fun hardwareLimitsTravelToThePageUnlessTheUserLiftsThem() {
         val hw = mapOf("vp9" to HardwareVideo(2160, 1080, true))
-        assertEquals("{\"block\":[\"av1\"],\"maxHeight\":0,\"hw\":{\"vp9\":{\"h30\":2160,\"h60\":1080,\"ten\":true}}}",
+        assertEquals("{\"block\":[\"av1\"],\"maxHeight\":0,\"viewport\":true,\"hw\":{\"vp9\":{\"h30\":2160,\"h60\":1080,\"ten\":true}}}",
             MediaPolicy.configJson(listOf("av1"), 0, hw))
         assertNull("No limit and no missing decoder: nothing to inject", MediaPolicy.configJson(emptyList(), MediaPolicy.NO_LIMIT, emptyMap()))
         assertTrue(MediaPolicy.hardwareLimits(MediaPolicy.NO_LIMIT).isEmpty())
