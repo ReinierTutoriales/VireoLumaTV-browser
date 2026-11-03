@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.AppCompatButton xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.Vireo.Button"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_margin="6dp" android:minHeight="96dp"
+    android:maxLines="1" android:ellipsize="end" android:compoundDrawablePadding="8dp" />

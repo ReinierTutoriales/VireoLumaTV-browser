@@ -69,6 +69,13 @@ son negros, con texto claro, foco diferenciado y fuente sans-serif del sistema;
 Inicio no ofrece una variante clara. «Oscurecer las páginas web» depende solo de su ajuste
 (activado por defecto), ya no del modo noche del sistema. Pendiente de validación en Android TV.
 
+**Inicio nativo (revisión en curso, 2026-11-03):** búsqueda, tarjetas y edición usan Views/AppCompat
+con RecyclerView; el documento interno vacío conserva el historial y las claves de localStorage existentes.
+El acceso a ese almacén se verifica contra la URL interna exacta antes de ejecutar y al recibir la respuesta;
+ningún sitio recibe un puente nuevo. Incógnito no consulta favoritos normales. El foco no abre el teclado:
+OK o clic lo solicita; Arriba desde búsqueda abre la cápsula. Las miniaturas conservan el límite de 480 px.
+Sin nuevas dependencias. Requiere CI del conjunto y validación física de mando antes de integrar.
+
 **Sugerencias de dirección (2026-10-27, petición del propietario):** al editar la dirección se muestran hasta
 seis sugerencias locales del historial en lugar de la tira de pestañas.
 La retirada de favoritos del 29 de octubre deja la lista vacía en incógnito; no

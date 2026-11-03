@@ -1,5 +1,6 @@
 package com.reiniertutoriales.vireolumatv.model.dao
 
+import kotlinx.coroutines.flow.Flow
 import androidx.room3.Dao
 import androidx.room3.Delete
 import androidx.room3.Insert
@@ -12,6 +13,9 @@ abstract class FavoriteDao {
     /** Every bookmark, newest first. */
     @Query("SELECT * FROM bookmarks ORDER BY id DESC")
     abstract suspend fun getAll(): List<Favorite>
+
+    @Query("SELECT * FROM bookmarks ORDER BY id DESC")
+    abstract fun observeAll(): Flow<List<Favorite>>
 
     @Insert
     abstract suspend fun insert(item: Favorite): Long

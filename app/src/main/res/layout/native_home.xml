@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/background"
+    android:paddingStart="48dp" android:paddingEnd="48dp" android:paddingTop="32dp" android:paddingBottom="27dp"
+    android:clipChildren="false">
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="@string/home_search_brand" android:gravity="center" android:textAppearance="@style/TextAppearance.Vireo.Title"
+        android:layout_marginBottom="16dp" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical" android:clipChildren="false">
+        <androidx.appcompat.widget.AppCompatEditText android:id="@+id/home_search"
+            style="@style/Widget.Vireo.Field" android:layout_width="0dp" android:layout_weight="1"
+            android:layout_height="wrap_content" android:minHeight="56dp" android:singleLine="true"
+            android:hint="@string/home_search" android:inputType="text" android:imeOptions="actionSearch|flagNoExtractUi" />
+        <androidx.appcompat.widget.AppCompatImageButton android:id="@+id/home_submit"
+            style="@style/Widget.Vireo.IconButton" android:layout_width="56dp" android:layout_height="56dp"
+            android:layout_marginStart="12dp" android:src="@drawable/ic_search" android:contentDescription="@string/home_search" />
+    </LinearLayout>
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="24dp" android:layout_marginBottom="8dp" android:text="@string/home_shortcuts"
+        android:textAppearance="@style/TextAppearance.Vireo.Label" />
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/home_tiles"
+        android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:clipChildren="false" android:clipToPadding="false" android:padding="8dp" />
+</LinearLayout>

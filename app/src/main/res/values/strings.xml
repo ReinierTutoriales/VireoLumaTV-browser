@@ -212,6 +212,8 @@
     <string name="settings_language">App language</string>
     <string name="language_system">System language</string>
     <string name="install_failed">The app could not be installed.</string>
+    <string name="home_search_brand" translatable="false">DuckDuckGo</string>
+    <string name="home_video_brand" translatable="false">YouTube</string>
     <string name="home_title">Home</string>
     <string name="home_search">Search DuckDuckGo</string>
     <string name="home_shortcuts">Shortcuts</string>

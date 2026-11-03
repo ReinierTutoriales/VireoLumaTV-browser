@@ -45,6 +45,7 @@ import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesPanel
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
+import com.reiniertutoriales.vireolumatv.activity.main.home.NativeHome
 import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
 import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
@@ -111,6 +112,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     private var nextPermissionRequest = PAGE_PERMISSION_REQUESTS_START
     private var lastBlockedNotice = 0L
     private var suggestionsLookup: Job? = null
+    internal var nativeHome: NativeHome? = null
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,6 +139,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.controlsOverlay.visibility = View.INVISIBLE
         vb.loadProgress.visibility = View.GONE
         vb.tabStrip.onCommand = ::onTabCommand
+        nativeHome = NativeHome(this, vb.nativeHomeContainer)
         configureBrowserControls()
         observeModels()
         onBackPressedDispatcher.addCallback(onBackPressedCallback)
@@ -152,7 +155,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         tabStore.currentTab.observe(this) { tab ->
             vb.controlsRow.showAddress(tab?.url.orEmpty())
             publishShownSite()
-            tab?.let(::onPageViewChanged)
+            if (tab == null) nativeHome?.hide() else onPageViewChanged(tab)
         }
         adBlocker.listLoading.observe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
         adBlocker.updateResult.observe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
@@ -263,6 +266,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     override fun onDestroy() {
+        nativeHome?.hide()
+        nativeHome = null
         if (ServiceWorkerFilter.policy === serviceWorkerPolicy) ServiceWorkerFilter.policy = null
         overlayVisible = false
         previewGeneration++
@@ -543,8 +548,10 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         } else closeCapsule()
     }
 
-    internal fun changeTab(newTab: BrowserTab, loadInitialUrl: Boolean = true) =
+    internal fun changeTab(newTab: BrowserTab, loadInitialUrl: Boolean = true) {
         tabStore.changeTab(newTab, ::createWebView, vb.pageContainer, TabWindow(this, newTab), loadInitialUrl)
+        nativeHome?.update(tabStore.currentTab.value)
+    }
 
     /** The tab's WebView, or null after telling the user that this device has no usable WebView. */
     internal fun createWebView(tab: BrowserTab): View? {
@@ -607,7 +614,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     /** The capsule follows the shown tab: Back and Forward availability and the blocker shield. */
     internal fun onPageViewChanged(tab: BrowserTab) {
-        if (tab === tabStore.currentTab.value) publishShownSite()
+        if (tab !== tabStore.currentTab.value) return
+        publishShownSite()
+        nativeHome?.update(tab)
         vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
         vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
         updateAdblockStatus(tab)
@@ -852,7 +861,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     /** The page owns the screen: no capsule, pointer menu, text field or keyboard in front of it. */
     private fun browserOwnsPointer(): Boolean {
-        if (!::vb.isInitialized || !window.decorView.hasWindowFocus()) return false
+        if (!::vb.isInitialized || !window.decorView.hasWindowFocus() || nativeHome?.isVisible == true) return false
         val page = vb.pageContainer
         return page.isShown && page.pointerEnabled && !page.cursorSuppressed && !page.isTextInputActive() &&
             !vb.pointerMenu.isVisible && !vb.controlsOverlay.isVisible && !keyboardVisible()
@@ -975,7 +984,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val wasVisible = overlayVisible
         overlayVisible = false
         vb.pageContainer.onPageTouch = null
-        vb.pageContainer.cursorSuppressed = false
+        vb.pageContainer.cursorSuppressed = nativeHome?.isVisible == true
         previewGeneration++
         mainThread.removeCallbacks(showFocusedPreview)
         focusedPreviewTab = null
@@ -990,7 +999,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (wasVisible) cancelStripSelection()
         if (!vb.pointerMenu.isVisible) {
             vb.pageContainer.visibility = View.VISIBLE
-            tabStore.currentTab.value?.engine?.view?.requestFocus()
+            if (nativeHome?.focusContent() != true) tabStore.currentTab.value?.engine?.view?.requestFocus()
         }
     }
 

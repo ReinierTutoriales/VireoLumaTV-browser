@@ -120,8 +120,9 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     override fun onPageFinished(url: String?) {
         if (tabs.currentTab.value == null) return
-        browser.onPageViewChanged(tab)
         updateAddress(url)
+        browser.onPageViewChanged(tab)
+        browser.nativeHome?.documentReady(tab)
         tabs.openTabs.forEach { if (it !== tab) it.thumbnail = null }
         // Drawing a WebView in software is slow on TV chips: one preview once the page has settled,
         // not one per redirect, frame or single-page navigation.
@@ -144,7 +145,8 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         if (browser.isFinishing || browser.isDestroyed || tab.closed || !isShownTab ||
             tab.engine.view?.isAttachedToWindow != true) return@Runnable
         browser.lifecycleScope.launch {
-            val preview = tab.engine.preview(tab.thumbnail) ?: return@launch
+            val preview = (if (browser.nativeHome?.isVisible == true) browser.nativeHome?.preview(tab.thumbnail)
+                else tab.engine.preview(tab.thumbnail)) ?: return@launch
             tab.refreshPreview(browser, preview)
             if (vb.controlsOverlay.isVisible && isShownTab) browser.showPreview(tab)
         }

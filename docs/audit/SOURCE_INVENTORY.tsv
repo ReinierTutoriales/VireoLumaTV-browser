@@ -469,7 +469,7 @@ app/src/test/resources/adblock/0.13.3.dat	REGENERADO
 app/src/test/resources/adblock/README.md	PROPIO
 native/adblock-jni/examples/export_cache_fixture.rs	PROPIO
 native/adblock-jni/tests/hostname_boundary.rs	PROPIO
-app/src/main/assets/pages/home/home.js	PROPIO
+app/src/main/assets/pages/home/home.js	ELIMINADO
 app/src/main/assets/adblock/baseline/4371c134ba65509982a7b2ad.filterdata	REGENERADO
 app/src/main/assets/adblock/baseline/450a8406273877cbdbed8460.filterdata	REGENERADO
 app/src/main/assets/adblock/baseline/48438fd84bac161a7dc9b3fd.filterdata	REGENERADO
@@ -508,3 +508,9 @@ app/src/main/res/drawable/ic_search.xml	MODIFICADO
 app/src/main/res/drawable/ic_edit.xml	MODIFICADO
 app/src/main/res/drawable/ic_done.xml	MODIFICADO
 app/src/main/res/drawable/ic_video.xml	MODIFICADO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/home/HomeShortcuts.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/home/NativeHome.kt	PROPIO
+app/src/main/res/layout/native_home.xml	PROPIO
+app/src/main/res/layout/native_home_tile.xml	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/home/HomeShortcutsTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/home/NativeHomeTest.kt	PROPIO

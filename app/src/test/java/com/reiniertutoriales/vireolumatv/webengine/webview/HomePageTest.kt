@@ -3,8 +3,6 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 import android.app.Application
 import android.content.res.Configuration
 import com.reiniertutoriales.vireolumatv.R
-import org.json.JSONObject
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,15 +37,13 @@ class HomePageTest {
         assertTrue(HomePage.render(context("es"), template).contains("dir=\"ltr\""))
     }
 
-    @Test fun theScriptMessagesArriveAsEscapedJsonInTheLanguageShown() {
+    @Test fun theDocumentKeepsHistoryAndStorageWithoutRenderingApplicationUi() {
         val es = context("es")
         val page = HomePage.render(es, template)
-        val encoded = Regex("""<meta name="vireo-strings" content="([^"]*)">""").find(page)!!.groupValues[1]
-        val json = JSONObject(android.text.Html.fromHtml(encoded, 0).toString())
-        assertEquals(es.getString(R.string.home_done), json.getString("done"))
-        assertTrue("The limit is filled in", json.getString("limit").contains("24"))
-        assertTrue("Favorites is named as in the menu", json.getString("favoriteManaged").contains(es.getString(R.string.menu_favorites)))
-        assertEquals("%s stays for the page to fill", true, json.getString("editItem").contains("%s"))
-        assertTrue(page.contains(">" + es.getString(R.string.home_edit) + "</button>"))
+        assertTrue(page.contains("<title>" + es.getString(R.string.home_title) + "</title>"))
+        assertTrue(page.contains("<body></body>"))
+        assertFalse(page.contains("<script"))
+        assertFalse(page.contains("<form"))
+        assertFalse(page.contains("<input"))
     }
 }
