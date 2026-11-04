@@ -124,8 +124,10 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
                 val document = downloadMessageDocument(isMainFrame, sourceOrigin, url?.toUri())
                     ?: return@addWebMessageListener
                 val request = DownloadMessage.parse(message.data) ?: return@addWebMessageListener
-                engine.privileged.onDownloadMessage(request, document, { webOrigin(url?.toUri()) }) {
-                    reply.postMessage(it)
+                engine.privileged.onDownloadMessage(request, document,
+                    { if (engine.view === this) webOrigin(url?.toUri()) else null }) {
+                    // The asynchronous reply belongs to this WebView, never its replacement.
+                    if (engine.view === this) reply.postMessage(it)
                 }
             }
         }
