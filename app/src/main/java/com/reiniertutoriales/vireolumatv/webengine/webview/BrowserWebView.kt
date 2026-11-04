@@ -115,6 +115,8 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
             // Top-level warning only. An embedded frame cannot approve another site's certificate.
             WebViewCompat.addWebMessageListener(this, "VireoCertificate", setOf("*")) {
                     _, message, _, isMainFrame, _ ->
+                // Ignore callbacks queued for a tab that was destroyed or replaced.
+                if (destroyed.get() || engine.view !== this) return@addWebMessageListener
                 if (mayApproveCertificateMessage(isMainFrame, message.data, url, ASSET_BASE,
                         shownCertificateError() != null)) {
                     engine.privileged.approveCertificate()
@@ -123,6 +125,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
             // Blob downloads of the visible page's own main frame; see DownloadMessage.
             WebViewCompat.addWebMessageListener(this, "VireoDownload", setOf("*")) {
                     _, message, sourceOrigin, isMainFrame, reply ->
+                if (destroyed.get() || engine.view !== this) return@addWebMessageListener
                 val document = downloadMessageDocument(isMainFrame, sourceOrigin, url?.toUri())
                     ?: return@addWebMessageListener
                 val request = DownloadMessage.parse(message.data) ?: return@addWebMessageListener
