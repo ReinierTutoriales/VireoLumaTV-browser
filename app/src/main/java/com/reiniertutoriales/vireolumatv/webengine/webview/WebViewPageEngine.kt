@@ -247,7 +247,9 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
     internal fun isTabUnderAd(url: Uri): Boolean = window?.isTabUnderAd(url, webView?.currentOriginalUrl) ?: false
 
     /** The renderer died: the dead view goes, and the tab reloads its address instead of its history. */
-    internal fun onRenderProcessGone(): Boolean {
+    internal fun onRenderProcessGone(affectedView: WebView): Boolean {
+        // A callback from an obsolete WebView must not tear down its replacement.
+        if (webView !== affectedView) return true
         Log.i(TAG, "Renderer gone (fullscreen: ${fullscreenView != null})")
         exitFullscreen(restoreBrowserControls = false)
         val dead = webView ?: return true
