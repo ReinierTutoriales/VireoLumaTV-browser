@@ -9,7 +9,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.DecelerateInterpolator
+import android.view.animation.AnimationUtils
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
@@ -190,9 +190,14 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         val offset = if (overlay.isVisible && overlay.height > 0) {
             (overlay.height - overlay.paddingBottom - view.paddingTop).coerceAtLeast(0).toFloat()
         } else 0f
+        // A repeated focus/capsule event must not restart the same transition.
+        if (kotlin.math.abs(view.translationY - offset) < 0.5f) return
         view.animate().cancel()
-        if (animate) view.animate().translationY(offset).setDuration(CAPSULE_MS).setInterpolator(DecelerateInterpolator()).start()
-        else view.translationY = offset
+        if (animate && android.animation.ValueAnimator.areAnimatorsEnabled()) {
+            view.animate().translationY(offset).setDuration(CAPSULE_MS)
+                .setInterpolator(AnimationUtils.loadInterpolator(browser, android.R.interpolator.fast_out_slow_in))
+                .start()
+        } else view.translationY = offset
     }
 
     fun setPageVisible(visible: Boolean) {
