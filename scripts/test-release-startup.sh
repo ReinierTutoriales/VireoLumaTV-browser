@@ -7,8 +7,12 @@ package=com.reiniertutoriales.vireolumatv
 report=startup-report
 app_pid=
 mkdir -p "$report"
-adb root
-adb wait-for-device
+for attempt in 1 2 3; do
+  if timeout 15s adb root && timeout 15s adb wait-for-device; then break; fi
+  [ "$attempt" -lt 3 ] || { echo 'Emulator ADB did not become ready for root'; exit 1; }
+  sleep 2
+done
+test "$(adb shell id -u | tr -d '\r')" = 0
 adb shell getprop ro.build.version.sdk > "$report/android-api.txt"
 adb shell dumpsys webviewupdate > "$report/webview-provider.txt"
 capture() {

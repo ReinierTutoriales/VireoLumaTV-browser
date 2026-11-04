@@ -86,20 +86,15 @@ def wait_text(label, value):
     raise AssertionError(f'{value} was not visible in {label}')
 
 
-def wait_selected_tab(label, title):
+def wait_page(label, title):
     for attempt in range(5):
         root = snapshot(f'{label}-{attempt}')
-        parent = {child: node for node in root.iter('node') for child in node}
-        for node in root.iter('node'):
-            if node.get('text') != title:
-                continue
-            current = node
-            while current in parent:
-                current = parent[current]
-                if current.get('selected') == 'true' and current.get('clickable') == 'true':
-                    return
+        if any(node.get('class') == 'android.webkit.WebView' and
+               any(child.get('text') == title for child in node.iter('node'))
+               for node in root.iter('node')):
+            return
         time.sleep(1)
-    raise AssertionError(f'{title} was not the selected tab')
+    raise AssertionError(f'{title} was not displayed in WebView')
 
 
 def tap(node):
@@ -112,8 +107,7 @@ def tap(node):
 def navigate(path, title):
     adb('am', 'start', '-n', f'{package}/.activity.main.MainActivity',
         '-a', 'android.intent.action.VIEW', '-d', origin + path)
-    wait_text(path.strip('/'), title)
-    wait_selected_tab(path.strip('/'), title)
+    wait_page(path.strip('/'), title)
     assert path in requests, f'Local fixture {path} was not requested'
 
 
@@ -132,8 +126,9 @@ try:
     sample('page-a')
     navigate('/b', 'Memory fixture B')
     sample('page-b')
+    adb('input', 'keyevent', '19')  # Show the tab strip with the TV remote.
     tap(wait_text('tab-a', 'Memory fixture A'))
-    wait_selected_tab('return-a', 'Memory fixture A')
+    wait_page('return-a', 'Memory fixture A')
     sample('tab-a-return')
     navigate('/video', 'Memory fixture video')
     tap(wait_text('video-play', 'Play sample'))
