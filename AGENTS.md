@@ -46,6 +46,8 @@ Read only the relevant `.agents/skills/` instructions: `precise-coding` for
 implementation, `testing-discipline` for functional changes, `tv-ui` for
 focus/layout, `code-quality` for refactors, and `agent-governance` before Git
 mutations. Use `source-migration` when replacing inherited code or resources.
+Use `webview-evidence-optimization` for WebView startup, memory, network,
+security, browsing performance and evidence-based platform modernization.
 After a verified regression or owner correction, apply the feedback loop in
 `agent-governance`: fix and test the cause, retain only a reusable lesson in the
 relevant existing skill, and consult it before the next related change.
