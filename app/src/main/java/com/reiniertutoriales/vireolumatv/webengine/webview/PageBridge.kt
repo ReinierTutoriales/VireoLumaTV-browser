@@ -1,5 +1,6 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
@@ -40,12 +41,23 @@ internal open class FilterBridge(protected val engine: WebViewPageEngine) {
         engine.tab.mediaStarted = true
     }
 
-    private fun isFrameUrl(url: String?) =
-        url != null && url.length <= MAX_URL && (url.startsWith("http://") || url.startsWith("https://"))
+    private fun isFrameUrl(url: String?) = FilterBridgeUrlPolicy.isWebFrame(url)
 
     private companion object {
-        const val MAX_URL = 4096
         const val MAX_SELECTOR_INPUT = 64 * 1024
+    }
+}
+
+/** Reject malformed, hostless and non-web URLs before they reach the native filter engine. */
+internal object FilterBridgeUrlPolicy {
+    private const val MAX_URL = 4096
+
+    fun isWebFrame(url: String?): Boolean {
+        if (url.isNullOrBlank() || url.length > MAX_URL) return false
+        val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return false
+        return uri.isHierarchical &&
+            (uri.scheme.equals("http", ignoreCase = true) || uri.scheme.equals("https", ignoreCase = true)) &&
+            !uri.host.isNullOrBlank()
     }
 }
 
