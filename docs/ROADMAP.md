@@ -25,8 +25,10 @@ y `native/adblock-jni/Cargo.lock`. No se conserva una cola de cambios del fork.
 4. Mantener los contratos de navegación, privacidad, descargas, actualización firmada
    y restauración definidos en [la política de regresión](REGRESSION_POLICY.md).
 
-No hay mediciones nuevas que permitan afirmar mejoras de memoria o rendimiento.
-La comprobación en dispositivo queda aplazada por decisión del propietario.
+La [captura de memoria de Inicio en CI](audit/WEBVIEW_MEMORY_CI_20261104.md)
+separa app y renderer en emuladores; no compara rendimiento antes/después ni
+justifica cambios de caché o de pestañas. La comprobación en dispositivo queda
+aplazada por decisión del propietario.
 
 ## Dependencias contrastadas el 2 de noviembre de 2026
 
