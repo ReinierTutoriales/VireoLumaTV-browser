@@ -1,6 +1,7 @@
 package com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings
 
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.RadioGroup
@@ -33,5 +34,12 @@ internal class SettingsPages(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
         ))
+        // Animate only the new page's opacity; never move focus or re-create saved fields.
+        if (android.os.Build.VERSION.SDK_INT < 26 || android.animation.ValueAnimator.areAnimatorsEnabled()) {
+            page.alpha = 0f
+            page.animate().alpha(1f).setDuration(180L)
+                .setInterpolator(AnimationUtils.loadInterpolator(page.context, android.R.interpolator.fast_out_slow_in))
+                .start()
+        }
     }
 }
