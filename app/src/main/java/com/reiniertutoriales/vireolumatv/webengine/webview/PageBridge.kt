@@ -63,7 +63,8 @@ internal class LegacyPrivilegedBridge(engine: WebViewPageEngine) : FilterBridge(
     @JavascriptInterface
     fun trustCertificateOnce() {
         // A WebMessage-capable provider must reject the untrusted all-frames JS interface.
-        if (page?.usesWebMessageBridge == true) return
+        val view = page ?: return
+        if (view.usesWebMessageBridge || view.shownCertificateError() == null) return
         engine.privileged.approveCertificate()
     }
 }
@@ -89,13 +90,14 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
     private val page get() = engine.view as? BrowserWebView
 
     fun approveCertificate() {
-        val error = page?.shownCertificateError() ?: return
+        val originView = page ?: return
+        val error = originView.shownCertificateError() ?: return
         // An embedded script must never approve a certificate error without a real TV
         // remote or touch activation. This check does not identify the calling frame.
         if (!UserActivation.consume()) return
         main.post {
             val view = page ?: return@post
-            if (view.shownCertificateError() !== error) return@post
+            if (view !== originView || view.shownCertificateError() !== error) return@post
             view.trustedCertificate = CertificateTrust.Approval(error.url, error.certificate)
             engine.load(error.url)
         }
