@@ -44,8 +44,9 @@ class VireoLumaTVApp : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && getProcessName().endsWith(PRIVATE_PROCESS_SUFFIX)) {
             IncognitoWebViewData.configure(this)
         }
-        // Begin the provider's background work before the first page; private storage is already isolated.
-        try {
+        // Before Android 9, private mode moves WebView data when its window starts; do not
+        // initialize the provider first in that process. Android 9+ has already set its suffix.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) try {
             WebViewCompat.startUpWebView(this, WebViewStartUpConfig.Builder(webViewStartupExecutor).build(),
                 object : WebViewOutcomeReceiver<WebViewStartUpResult, WebViewStartupException> {
                     override fun onResult(result: WebViewStartUpResult) = Unit

@@ -126,6 +126,7 @@
             android:launchMode="singleTask"
             android:process=":incognito"
             android:screenOrientation="sensorLandscape"
+            android:windowSoftInputMode="stateAlwaysHidden"
             tools:ignore="DiscouragedApi" />
 
         <activity
