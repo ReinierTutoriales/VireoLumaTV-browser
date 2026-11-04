@@ -193,7 +193,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         // A repeated focus/capsule event must not restart the same transition.
         if (kotlin.math.abs(view.translationY - offset) < 0.5f) return
         view.animate().cancel()
-        if (animate && android.animation.ValueAnimator.areAnimatorsEnabled()) {
+        if (animate && (android.os.Build.VERSION.SDK_INT < 26 || android.animation.ValueAnimator.areAnimatorsEnabled())) {
             view.animate().translationY(offset).setDuration(CAPSULE_MS)
                 .setInterpolator(AnimationUtils.loadInterpolator(browser, android.R.interpolator.fast_out_slow_in))
                 .start()
