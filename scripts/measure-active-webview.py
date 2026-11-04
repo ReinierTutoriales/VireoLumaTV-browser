@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ET
 report = Path(sys.argv[1])
 package = sys.argv[2]
 pid = sys.argv[3]
-origin = 'http://10.0.2.2:18764'
+origin = 'http://127.0.0.1:18764'
 requests = []
 
 
@@ -104,6 +104,18 @@ def tap(node):
     adb('input', 'tap', str((x1 + x2) // 2), str((y1 + y2) // 2))
 
 
+def tab_in_strip(title):
+    for attempt in range(3):
+        adb('input', 'keyevent', '4')  # Back opens the capsule on a page with no history.
+        root = snapshot(f'tab-strip-{attempt}')
+        tab = next((node for node in root.iter('node')
+                    if node.get('resource-id') == f'{package}:id/title_text' and
+                    node.get('text') == title), None)
+        if tab is not None:
+            return tab
+    raise AssertionError(f'{title} was not in the open tab strip')
+
+
 def navigate(path, title):
     adb('am', 'start', '-n', f'{package}/.activity.main.MainActivity',
         '-a', 'android.intent.action.VIEW', '-d', origin + path)
@@ -122,12 +134,13 @@ server = http.server.ThreadingHTTPServer(('0.0.0.0', 18764), Fixture)
 thread = threading.Thread(target=server.serve_forever, daemon=True)
 thread.start()
 try:
+    # ADB reverse reaches the host on all API levels, independent of emulator NAT.
+    subprocess.run(['adb', 'reverse', 'tcp:18764', 'tcp:18764'], check=True, timeout=30)
     navigate('/a', 'Memory fixture A')
     sample('page-a')
     navigate('/b', 'Memory fixture B')
     sample('page-b')
-    adb('input', 'keyevent', '19')  # Show the tab strip with the TV remote.
-    tap(wait_text('tab-a', 'Memory fixture A'))
+    tap(tab_in_strip('Memory fixture A'))
     wait_page('return-a', 'Memory fixture A')
     sample('tab-a-return')
     navigate('/video', 'Memory fixture video')
@@ -140,5 +153,6 @@ try:
     wait_text('home-return', 'DuckDuckGo')
     sample('home-return')
 finally:
+    subprocess.run(['adb', 'reverse', '--remove', 'tcp:18764'], capture_output=True, timeout=30)
     server.shutdown()
     (report / 'memory-fixture-requests.json').write_text(json.dumps(requests, indent=2) + '\n')
