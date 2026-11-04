@@ -116,6 +116,11 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Older WebView providers cannot isolate persistent profiles. Recover a previously
+        // saved private-mode preference before routing activities, including after an upgrade.
+        if (android.os.Build.VERSION.SDK_INT < 28 && config.privateBrowsing) {
+            config.privateBrowsing = false
+        }
         val incognito = config.privateBrowsing
         // Private mode has its own activity class and process; the wrong one restarts as the right one.
         if (incognito xor (this is PrivateBrowserActivity)) {
