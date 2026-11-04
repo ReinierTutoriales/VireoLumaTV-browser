@@ -19,7 +19,7 @@ class AppMenuTest {
 
         // Favorites saved from a tab must stay reachable to be opened, edited and removed.
         assertEquals(listOf(AppMenuEntry.HISTORY, AppMenuEntry.FAVORITES), entries.take(2))
-        assertEquals(AppMenuEntry.entries.toList(), entries)
+        assertEquals(AppMenuEntry.entries.filter { it != AppMenuEntry.INCOGNITO || android.os.Build.VERSION.SDK_INT >= 28 }, entries)
         assertEquals(AppMenuEntry.CLOSE_APPLICATION, entries.last())
     }
 }
