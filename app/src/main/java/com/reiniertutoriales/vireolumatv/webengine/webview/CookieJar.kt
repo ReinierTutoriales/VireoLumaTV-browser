@@ -1,7 +1,9 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.webkit.CookieManager
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 
 /** Cookie operations that must finish before the caller goes on. */
@@ -12,11 +14,12 @@ object CookieJar {
      * after the removal has been confirmed.
      */
     suspend fun clear(cookies: CookieManager = CookieManager.getInstance()) {
-        suspendCancellableCoroutine { done ->
+        // Cancellation of the caller must not interrupt the irreversible cookie removal/flush.
+        withContext(NonCancellable) { suspendCancellableCoroutine { done ->
             cookies.removeAllCookies {
                 cookies.flush()
-                done.resume(Unit)
+                if (done.isActive) done.resume(Unit)
             }
-        }
+        } }
     }
 }
