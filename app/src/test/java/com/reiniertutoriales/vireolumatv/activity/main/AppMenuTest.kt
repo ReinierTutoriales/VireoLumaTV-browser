@@ -6,6 +6,14 @@ import org.junit.Test
 
 class AppMenuTest {
     @Test
+    fun privateModeRequiresIsolatedWebViewDataDirectories() {
+        assertTrue(AppMenuEntry.INCOGNITO !in appMenuEntries(24))
+        assertTrue(AppMenuEntry.INCOGNITO !in appMenuEntries(27))
+        assertTrue(AppMenuEntry.INCOGNITO in appMenuEntries(28))
+        assertTrue(AppMenuEntry.INCOGNITO in appMenuEntries(37))
+    }
+
+    @Test
     fun entriesKeepDisplayOrderAndEndWithClosingTheApplication() {
         val entries = appMenuEntries()
 
