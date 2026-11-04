@@ -55,10 +55,11 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
             engine.networkFailure.requested()
         }
         val page = this.view.currentOriginalUrl
-        if (page != null && page.toString().startsWith(Config.HOME_PAGE_URL, ignoreCase = true)) {
+        if (BridgePagePolicy.isPackagedHomePage(page)) {
             StartPageAssets.shouldInterceptRequest(request)?.let { return it }
             val address = request.url.toString()
-            if (address.startsWith(Config.HOME_PAGE_URL)) {
+            if (safeHomeAssetPath(address) != null) {
+                // Packaged Home resources are not ad requests. Never pass missing assets to ad rules.
                 return homePageAsset(address) ?: super.shouldInterceptRequest(view, request)
             }
         }
