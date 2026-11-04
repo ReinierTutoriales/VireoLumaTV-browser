@@ -7,8 +7,23 @@ package=com.reiniertutoriales.vireolumatv
 report=startup-report
 app_pid=
 mkdir -p "$report"
-adb root
-adb wait-for-device
+# API 37 emulator can report boot_completed before adbd accepts the root handshake.
+# Retry only this transient transport step; fail if root never becomes available.
+root_ready=0
+for attempt in $(seq 1 8); do
+  if timeout 15s adb root && timeout 15s adb wait-for-device &&
+      timeout 15s adb shell id -u | tr -d '\\r' | grep -qx 0; then
+    root_ready=1
+    break
+  fi
+  echo "adbd root not ready (attempt $attempt/8); reconnecting"
+  timeout 10s adb reconnect offline || true
+  sleep 2
+done
+if [ "$root_ready" != 1 ]; then
+  echo "Emulator adbd never became available as root" >&2
+  exit 1
+fi
 adb shell getprop ro.build.version.sdk > "$report/android-api.txt"
 adb shell dumpsys webviewupdate > "$report/webview-provider.txt"
 capture() {
