@@ -106,7 +106,10 @@ PYXML
           sleep 3
           test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid" || { capture; return 1; }
         fi
+        python scripts/capture-webview-memory.py "$report" "$package" "$app_pid" normal-home
         python scripts/test-private-startup.py "$report" "$package" "$app_pid" || { capture; return 1; }
+        private_pid=$(adb shell pidof "$package:incognito" | tr -d '\r')
+        python scripts/capture-webview-memory.py "$report" "$package" "$private_pid" private-home
       fi
       capture
       if grep -q 'FATAL EXCEPTION\|Fatal signal' "$report/$scenario-crash.txt"; then return 1; fi
