@@ -126,6 +126,23 @@ class BlobTransfersTest {
         assertEquals(-1L, transfers.append(token, 1, byteArrayOf(2)))
     }
 
+    @Test fun cancelAllAbortsActiveSpoolAndInvalidatesToken() {
+        val token = open()
+        assertEquals(1L, transfers.append(token, 0, byteArrayOf(1)))
+        transfers.cancelAll()
+        assertTrue(sinks.single().aborted)
+        assertEquals(-1L, transfers.append(token, 1, byteArrayOf(2)))
+        assertNull(transfers.finish(token, URL, PAGE))
+        assertEquals("t2", transfers.begin(URL, null, PAGE) { true })
+        transfers.cancelAll()
+    }
+
+    @Test fun cancelAllIsSafeWithoutAnActiveTransfer() {
+        transfers.cancelAll()
+        transfers.cancelAll()
+        assertEquals("t1", transfers.begin(URL, null, PAGE) { true })
+    }
+
     private companion object {
         const val PAGE = "https://a.test"
         const val URL = "blob:https://a.test/1"

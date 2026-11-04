@@ -13,6 +13,7 @@ import java.io.IOException
 import java.security.SecureRandom
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * The read-only JavaScript bridge, registered as `VireoLumaTVApp` on every WebView. Any frame of
@@ -75,6 +76,13 @@ internal class LegacyPrivilegedBridge(engine: WebViewPageEngine) : FilterBridge(
 internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
     private val main = Handler(Looper.getMainLooper())
     private val random = SecureRandom()
+    private val generation = AtomicLong(0)
+
+    /** Invalidate queued messages and release the spool when its owning WebView dies. */
+    fun invalidateTransfers() {
+        generation.incrementAndGet()
+        blobs.cancelAll()
+    }
     private val blobs = BlobTransfers(SystemClock::uptimeMillis, ::newToken) {
         BlobSpool.open(File(VireoLumaTVApp.instance.cacheDir, SPOOL_DIR))
     }
@@ -98,7 +106,9 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
      * main thread, the latter to drop a finished file whose page has meanwhile changed origin.
      */
     fun onDownloadMessage(request: DownloadMessage, document: String, currentDocument: () -> String?, reply: (String) -> Unit) {
+        val acceptedGeneration = generation.get()
         blobThread.execute {
+            if (generation.get() != acceptedGeneration) return@execute
             val answer = when (request) {
                 is DownloadMessage.Begin -> DownloadMessage.beginReply(request.url,
                     if (request.url.startsWith("blob:", ignoreCase = true))
@@ -112,7 +122,14 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
                 is DownloadMessage.Done -> { finish(request, document, currentDocument); null }
                 is DownloadMessage.Cancel -> { blobs.cancel(request.token); null }
             }
-            if (answer != null) main.post { reply(answer) }
+            // Teardown may race a chunk already executing on this worker.
+            if (generation.get() != acceptedGeneration) {
+                blobs.cancelAll()
+                return@execute
+            }
+            if (answer != null) main.post {
+                if (generation.get() == acceptedGeneration) reply(answer)
+            }
         }
     }
 

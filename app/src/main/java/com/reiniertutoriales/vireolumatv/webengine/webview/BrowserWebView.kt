@@ -266,6 +266,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     }
 
     override fun destroy() {
+        engine.privileged.invalidateTransfers()
         destroyed.set(true)
         pendingBlockedAds.set(0)
         endCertificateVisit(null)
