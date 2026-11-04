@@ -119,7 +119,7 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
                 is DownloadMessage.Chunk -> DownloadMessage.chunkReply(request.token, decode(request.base64)
                     ?.let { blobs.append(request.token, request.offset, it) }
                     ?: (-1L).also { blobs.cancel(request.token) })
-                is DownloadMessage.Done -> { finish(request, document, currentDocument); null }
+                is DownloadMessage.Done -> { finish(request, document, currentDocument, acceptedGeneration); null }
                 is DownloadMessage.Cancel -> { blobs.cancel(request.token); null }
             }
             // Teardown may race a chunk already executing on this worker.
@@ -133,13 +133,13 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
         }
     }
 
-    private fun finish(request: DownloadMessage.Done, document: String, currentDocument: () -> String?) {
+    private fun finish(request: DownloadMessage.Done, document: String, currentDocument: () -> String?, acceptedGeneration: Long) {
         val completed = blobs.finish(request.token, request.url, document) ?: return
         val ticket = completed.ticket
         val name = FileNames.sanitizeFileName(ticket.fileName) ?: FileNames.guessFileName(ticket.url, null, ticket.mimeType)
         main.post {
             val window = engine.window
-            if (window == null || currentDocument() != ticket.page) {
+            if (generation.get() != acceptedGeneration || window == null || currentDocument() != ticket.page) {
                 try { completed.bytes.close() } catch (_: IOException) { }
                 return@post
             }
