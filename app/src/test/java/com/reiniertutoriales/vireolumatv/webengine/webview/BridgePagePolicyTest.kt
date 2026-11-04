@@ -30,7 +30,9 @@ class BridgePagePolicyTest {
             Config.HOME_PAGE_URL + "../outside",
             Config.HOME_PAGE_URL + "%2e%2e/outside",
             Config.HOME_PAGE_URL + "index.html?unexpected=1",
-            Config.HOME_PAGE_URL + "index.html#fragment").forEach {
+            Config.HOME_PAGE_URL + "index.html#fragment",
+            "https://user@vireolumatv.invalid/appcontent/home/index.html",
+            "https://user:password@vireolumatv.invalid/appcontent/home/index.html").forEach {
             assertFalse(it, BridgePagePolicy.isPackagedHomePage(Uri.parse(it)))
         }
     }
