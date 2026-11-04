@@ -24,7 +24,8 @@ internal enum class AppMenuEntry(@StringRes val label: Int, @DrawableRes val ico
 }
 
 /** Every entry: Favorites is where saved favorites are opened, edited and removed. */
-internal fun appMenuEntries(): List<AppMenuEntry> = AppMenuEntry.entries.toList()
+internal fun appMenuEntries(sdk: Int = android.os.Build.VERSION.SDK_INT): List<AppMenuEntry> =
+    AppMenuEntry.entries.filter { it != AppMenuEntry.INCOGNITO || sdk >= 28 }
 
 /**
  * The application menu as a TV side panel: full height at the end of the screen, one row per
