@@ -107,10 +107,8 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
             // Blob downloads are read by the injected script; everything else goes to the download service.
             if (!url.startsWith("blob:")) window?.onPageDownload(url, userAgent, contentDisposition, mimetype, contentLength)
         }
-        // Filters stay synchronous for every frame; privileged calls join them only where no
-        // WebMessage listener can tell the main frame from an embedded one.
-        addJavascriptInterface(if (usesWebMessageBridge) FilterBridge(engine) else LegacyPrivilegedBridge(engine),
-            JS_INTERFACE_NAME)
+        // The synchronous all-frame bridge exposes filters only, never privileged actions.
+        addJavascriptInterface(FilterBridge(engine), JS_INTERFACE_NAME)
         if (usesWebMessageBridge) {
             // Top-level warning only. An embedded frame cannot approve another site's certificate.
             WebViewCompat.addWebMessageListener(this, "VireoCertificate", setOf("*")) {
