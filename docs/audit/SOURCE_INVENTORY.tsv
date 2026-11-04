@@ -524,3 +524,4 @@ scripts/test-private-startup.py	PROPIO
 scripts/capture-webview-memory.py	PROPIO
 scripts/test-memory-capture.py	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/FilterBridgeUrlPolicyTest.kt	PROPIO
+docs/audit/SECURITY_PRIVACY_REVIEW_20261104.md	PROPIO

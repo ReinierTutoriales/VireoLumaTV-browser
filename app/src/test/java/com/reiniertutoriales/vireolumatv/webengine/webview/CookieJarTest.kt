@@ -36,6 +36,17 @@ class CookieJarTest {
         @Deprecated("") override fun removeExpiredCookie() = Unit
     }
 
+    @Test fun cancellationDoesNotSkipCookieFlush() = runBlocking {
+        val cookies = Deferred(CookieManager.getInstance())
+        val clearing = launch(kotlinx.coroutines.Dispatchers.Unconfined) { CookieJar.clear(cookies) }
+        assertEquals(listOf("remove"), cookies.calls)
+        clearing.cancel()
+        assertEquals(listOf("remove"), cookies.calls)
+        cookies.pending!!.onReceiveValue(true)
+        clearing.join()
+        assertEquals(listOf("remove", "flush"), cookies.calls)
+    }
+
     @Test fun theStoreIsFlushedOnlyAfterTheRemovalIsConfirmed() = runBlocking {
         val real = CookieManager.getInstance()
         real.setCookie("https://site.test", "session=1")
