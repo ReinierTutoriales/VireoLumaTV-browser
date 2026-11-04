@@ -1,5 +1,7 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
+import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import org.robolectric.annotation.Config
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -7,6 +9,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
+@Config(application = VireoLumaTVApp::class, sdk = [28])
 class FilterBridgeUrlPolicyTest {
     @Test fun acceptsWebOrigins() {
         assertTrue(FilterBridgeUrlPolicy.isWebFrame("https://example.com/watch"))
