@@ -518,3 +518,4 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/home/HomeShort
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/home/NativeHomeTest.kt	PROPIO
 scripts/check-startup-avd.sh	PROPIO
 scripts/test-native-home-navigation.py	PROPIO
+scripts/test-private-startup.py	PROPIO
