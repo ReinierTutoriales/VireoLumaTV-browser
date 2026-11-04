@@ -50,16 +50,7 @@ internal open class FilterBridge(protected val engine: WebViewPageEngine) {
 }
 
 /**
- * The filter bridge plus certificate trust, registered instead of [FilterBridge] only on WebView
- * providers without WebMessage listeners. There a call cannot be traced to its frame: trust is
- * honored only from the packaged warning page, which loads no frames, after a fresh physical press.
- * Blob downloads need a frame's identity, so these providers get none (generic_injects.js leaves
- * blob links to WebView).
- */
-internal class LegacyPrivilegedBridge(engine: WebViewPageEngine) : FilterBridge(engine)
-
-/**
- * Certificate approval for both channels, and blob downloads for main-frame-checked WebMessages.
+ * Certificate approval and blob downloads through main-frame-checked WebMessages.
  * Blob steps run in order on one background thread, write each chunk straight to a [BlobSpool] and
  * answer on the main thread; a transfer completes only for the document key it began from.
  */
