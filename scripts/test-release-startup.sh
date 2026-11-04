@@ -12,7 +12,7 @@ mkdir -p "$report"
 root_ready=0
 for attempt in $(seq 1 8); do
   if timeout 15s adb root && timeout 15s adb wait-for-device &&
-      timeout 15s adb shell id -u | tr -d '\\r' | grep -qx 0; then
+      timeout 15s adb shell id -u | tr -d '\r' | grep -qx 0; then
     root_ready=1
     break
   fi
