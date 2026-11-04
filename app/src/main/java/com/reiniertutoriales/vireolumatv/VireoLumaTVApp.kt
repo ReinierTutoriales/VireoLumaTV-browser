@@ -6,7 +6,13 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.core.content.getSystemService
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewOutcomeReceiver
+import androidx.webkit.WebViewStartUpConfig
+import androidx.webkit.WebViewStartUpResult
+import androidx.webkit.WebViewStartupException
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
@@ -17,6 +23,7 @@ import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.webengine.Engines
 import com.reiniertutoriales.vireolumatv.webengine.webview.MediaPolicy
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
+import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
@@ -36,6 +43,18 @@ class VireoLumaTVApp : Application() {
         // The private process gets its own WebView data directory before any WebView exists.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && getProcessName().endsWith(PRIVATE_PROCESS_SUFFIX)) {
             IncognitoWebViewData.configure(this)
+        }
+        // Begin the provider's background work before the first page; private storage is already isolated.
+        try {
+            WebViewCompat.startUpWebView(this, WebViewStartUpConfig.Builder(webViewStartupExecutor).build(),
+                object : WebViewOutcomeReceiver<WebViewStartUpResult, WebViewStartupException> {
+                    override fun onResult(result: WebViewStartUpResult) = Unit
+                    override fun onError(error: WebViewStartupException) {
+                        Log.w(TAG, "Asynchronous WebView startup failed; normal page startup remains available", error)
+                    }
+                })
+        } catch (error: RuntimeException) {
+            Log.w(TAG, "Unable to start WebView asynchronously; normal page startup remains available", error)
         }
         // Each process (main and :incognito) reads the settings file when it starts. MODE_MULTI_PROCESS
         // only re-read the file on this one call, which happens at process start anyway, and Android
@@ -87,6 +106,10 @@ class VireoLumaTVApp : Application() {
     }
 
     companion object {
+        private const val TAG = "VireoLumaTVApp"
+        private val webViewStartupExecutor = Executors.newSingleThreadExecutor { work ->
+            Thread(work, "VireoWebViewStartup").apply { isDaemon = true }
+        }
         lateinit var instance: VireoLumaTVApp
         const val DOWNLOAD_CHANNEL = "downloads"
         const val PREFS_FILE = "main.xml"
