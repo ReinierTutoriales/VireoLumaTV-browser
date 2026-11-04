@@ -14,6 +14,23 @@ Improve VireoLumaTV's real-world browsing speed, resilience, privacy, security a
 3. Primary documentation and release notes from Android Developers, AndroidX WebKit, Chromium and the actual library vendor. Record URL, publication/revision date when available, minimum version, feature availability, caveats and confidence. Resolve contradictions before recommending changes.
 4. Use available repository, documentation and CI integrations (including MCP connectors where authorized) as retrieval/verification tools, not as proof that code runs. Never claim a connection, benchmark or test was executed unless it was.
 
+## Source acquisition and verification ladder (mandatory)
+Do not begin by asking for physical TV tests. Retrieve and contrast the strongest available evidence in this order:
+1. **Official platform contracts:** Android Developers API/reference and behavior-change pages; AndroidX WebKit release notes, `WebViewFeature` support and source; Android TV design/navigation/accessibility guidance; Chromium/WebView documentation and upstream source where applicable; official AGP/Kotlin/Rust and dependency changelogs. Use primary documentation over blogs, forum claims or unsourced benchmark percentages. Record direct URL, version/date, scope and caveats.
+2. **Official implementation patterns:** Android/Chromium source, AndroidX tests, samples, CTS and public issue trackers. Check whether guidance is normative, illustrative, experimental or device-dependent. Do not transplant a sample without reconciling its lifecycle, security model and API compatibility.
+3. **Our repository:** inspect implementation, dependency lockfiles, manifest, feature checks, test fixtures, CI, prior regressions and exact commit. Prefer a source-to-source gap matrix: official requirement -> current code -> evidence -> minimal change -> acceptance check.
+4. **Automated evidence:** compile, lint, unit/instrumented tests, emulator, CI logs and reproducible profiling where available. Use connected GitHub/docs/CI tools or authorized MCP services to retrieve evidence; discover actual capabilities before claiming a connector can fetch, run or change anything. Missing MCP access is not a reason to invent results.
+5. **Physical hardware only when material:** hardware decoder behavior, real D-pad focus, frame drops, thermals and device-specific memory pressure may require device measurements to *claim measured device outcomes*. Do not block standards-compliant code improvements, documentation, static analysis or CI work pending a physical TV. Label the narrow residual validation gap instead.
+
+Distinguish three conclusions: **documented compliant** (API/contract verified), **automatically verified** (exact tests/build passed), and **empirically faster** (comparable benchmark). Never conflate them. Do not use generic baseline-profile speedup claims as evidence of this app's gain.
+
+### Research efficiency
+- Start with a scoped question and the smallest set of authoritative sources. Prefer targeted source paths and official release diffs over broad repeated searches.
+- Cache findings in the existing PR/audit with source URLs and version/date; refresh when the API or dependency changes, not on every unrelated edit.
+- Group related findings into a single actionable change plan. Rank by proven correctness/security risk, likely user impact, implementation complexity and regression surface; avoid speculative redesigns.
+- Use API capability detection and documented fallback paths rather than device-specific guesses. Prefer standard Android/WebView implementations unless a demonstrated gap requires custom code.
+- Every research cycle must yield a concrete output: verified gap, compatible implementation with checks, or a documented no-change decision with reason. Avoid indefinite testing requests.
+
 ## Investigation lanes (evaluate, do not blindly enable)
 - **Startup and UI:** WebView startup APIs and main-thread blocking; StrictMode/Perfetto traces; startup timing; Baseline Profiles and Macrobenchmark for app-owned Kotlin/Java paths; D-pad focus latency, frame pacing, accessibility and TV-native components.
 - **Memory and lifecycle:** host plus renderer memory, PSS/private dirty/RSS as appropriate, native allocations, renderer recovery via `onRenderProcessGone`, WebView disposal, tab restoration, bounded caches, low-memory pressure and long sessions. Never equate host heap with total WebView cost.
