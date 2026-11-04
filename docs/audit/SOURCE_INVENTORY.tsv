@@ -523,3 +523,4 @@ scripts/test-native-home-navigation.py	PROPIO
 scripts/test-private-startup.py	PROPIO
 scripts/capture-webview-memory.py	PROPIO
 scripts/test-memory-capture.py	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/FilterBridgeUrlPolicyTest.kt	PROPIO
