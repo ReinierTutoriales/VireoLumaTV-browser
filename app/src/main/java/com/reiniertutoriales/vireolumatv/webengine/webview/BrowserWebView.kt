@@ -29,6 +29,7 @@ import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import java.net.URLEncoder
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -87,10 +88,11 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         private set
 
     private val ui = Handler(Looper.getMainLooper())
+    private val destroyed = AtomicBoolean(false)
     private val pendingBlockedAds = AtomicInteger(0)
     private val reportBlockedAds = Runnable {
         val count = pendingBlockedAds.getAndSet(0)
-        if (count > 0) window?.onAdsBlocked(count)
+        if (count > 0 && !destroyed.get()) window?.onAdsBlocked(count)
     }
 
     init {
@@ -186,7 +188,9 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
 
     /** One blocked request; a burst is reported to the window once, after [BLOCKED_ADS_REPORT_DELAY_MS]. */
     internal fun countBlockedAd() {
-        if (pendingBlockedAds.getAndIncrement() == 0) ui.postDelayed(reportBlockedAds, BLOCKED_ADS_REPORT_DELAY_MS)
+        if (destroyed.get()) return
+        if (pendingBlockedAds.getAndIncrement() == 0 && !destroyed.get())
+            ui.postDelayed(reportBlockedAds, BLOCKED_ADS_REPORT_DELAY_MS)
     }
 
     internal fun onDocumentStarted(url: String) {
@@ -262,6 +266,8 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     }
 
     override fun destroy() {
+        destroyed.set(true)
+        pendingBlockedAds.set(0)
         endCertificateVisit(null)
         permissions.destroy()
         ui.removeCallbacks(reportBlockedAds)
