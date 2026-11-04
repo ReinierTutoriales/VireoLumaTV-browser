@@ -107,6 +107,7 @@ PYXML
           test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid" || { capture; return 1; }
         fi
         python scripts/capture-webview-memory.py "$report" "$package" "$app_pid" normal-home
+        python scripts/measure-active-webview.py "$report" "$package" "$app_pid" || { capture; return 1; }
         python scripts/test-private-startup.py "$report" "$package" "$app_pid" || { capture; return 1; }
         private_pid=$(adb shell pidof "$package:incognito" | tr -d '\r')
         python scripts/capture-webview-memory.py "$report" "$package" "$private_pid" private-home

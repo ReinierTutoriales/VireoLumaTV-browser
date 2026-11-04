@@ -25,4 +25,6 @@ assert capture.renderer_pids(private, 'com.reiniertutoriales.vireolumatv', 6470,
 assert capture.total_pss_kib(' TOTAL PSS:  123,456\n') == 123456
 assert capture.total_pss_kib('               TOTAL:  106043       TOTAL SWAP PSS: 0\n') == 106043
 assert capture.total_pss_kib('no total') is None
+assert capture.rollup_kib('Rss: 20900 kB\nPss:  12345 kB\nSwapPss: 300 kB\n', 'Pss') == 12345
+assert capture.rollup_kib('Pss:  12345 kB\n', 'SwapPss') is None
 print('Renderer ownership and PSS parsing passed')
