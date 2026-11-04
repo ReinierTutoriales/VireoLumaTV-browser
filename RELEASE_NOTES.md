@@ -1,15 +1,12 @@
-# VireoLumaTV 2.0.18
+# VireoLumaTV 2.0.19
 
-Correcciones de vídeo, Inicio y navegación con mando.
+Mejoras de vídeo web y navegación en pantalla completa.
 
 ## Correcciones
 
-- **Vídeo:** recuperada la disponibilidad de 2K y 4K en YouTube, según las capacidades del dispositivo y del vídeo.
-- **Inicio:** tarjetas centradas y buscador visible al abrir los controles superiores.
-- **Organización:** permite mover y quitar tarjetas, incluidos los favoritos, y editar la dirección de los accesos. Quitar un favorito también lo elimina de Favoritos, previa confirmación.
-- **Ajustes:** listas de opciones en diálogos completos y retirada la selección de identidad del navegador.
-- **Pantalla completa:** una segunda pulsación rápida de Atrás conserva los controles que acaba de mostrar la primera.
+- **Vídeo web:** el navegador anuncia los límites de resolución y fotogramas de vídeo de 10 bits que respalda un mismo decodificador. Conserva 4K cuando el equipo lo admite.
+- **Pantalla completa:** al salir del vídeo se recuperan los controles superiores con el foco disponible. Se evita repetir el aviso de cierre al reproductor.
 
 ## Instalación
 
-Disponible para Android 7.0 o superior. Instala el APK compatible sobre tu versión actual para conservar tus datos, favoritos y ajustes; no necesitas desinstalar la aplicación.
+Disponible para Android 7.0 o superior. Instala el APK compatible sobre tu versión actual para conservar tus datos, favoritos y ajustes.
