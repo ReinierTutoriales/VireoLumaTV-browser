@@ -768,6 +768,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     // Private mode
 
     fun togglePrivateMode() {
+        // Separate persistent WebView profiles require API 28's data-directory suffix.
+        if (android.os.Build.VERSION.SDK_INT < 28) return
         togglePrivateMode(andSwitchProcess = true)
     }
 
