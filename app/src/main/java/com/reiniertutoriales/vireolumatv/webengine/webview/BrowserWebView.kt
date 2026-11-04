@@ -171,7 +171,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         val error = lastSSLError ?: return
         val template = context.assets.open(CERTIFICATE_WARNING_ASSET).bufferedReader().use { it.readText() }
         loadDataWithBaseURL(ASSET_BASE, CertificateWarningPage.render(AppLanguages.localized(context), template, error.url, error.primaryError,
-            error.certificate?.toString().orEmpty()), "text/html", "UTF-8",
+            error.certificate?.toString().orEmpty(), usesWebMessageBridge), "text/html", "UTF-8",
             uri.getQueryParameter("url"))
     }
 
