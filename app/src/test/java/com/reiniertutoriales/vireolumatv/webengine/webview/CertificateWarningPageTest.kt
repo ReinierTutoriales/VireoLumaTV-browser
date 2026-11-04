@@ -45,6 +45,10 @@ class CertificateWarningPageTest {
         assertTrue(page.contains(">bad.example<"))
         assertTrue(page.contains(context.getString(R.string.cert_untrusted)))
         assertTrue("Certificate details are escaped", page.contains("&lt;Evil CA&gt;") && !page.contains("<Evil CA>"))
-        assertTrue("Proceeding is the only bridge call", page.contains("VireoLumaTVApp.trustCertificateOnce()"))
+        assertTrue("Proceeding uses the origin-aware bridge", page.contains("VireoCertificate.postMessage"))
+        assertFalse("Legacy bridge must not approve certificates", page.contains("VireoLumaTVApp.trustCertificateOnce()"))
+        val legacy = CertificateWarningPage.render(context, template, "https://bad.example/", SslError.SSL_UNTRUSTED,
+            "Untrusted", canProceed = false)
+        assertTrue("Legacy warning must disable unsafe bypass", legacy.contains("id=\"proceed\" disabled"))
     }
 }
