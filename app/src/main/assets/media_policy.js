@@ -12,7 +12,7 @@
     var blockAv1 = config.block.indexOf('av1') !== -1;
     var maxHeight = config.maxHeight | 0;
     var maxWidth = Math.round(maxHeight * 16 / 9);
-    // Per codec family: highest height decoded in hardware at 30 and 60 fps, and 10-bit support.
+    // Per codec family: highest height decoded in hardware at 30 and 60 fps, for 8- and 10-bit.
     var hw = config.hw || {};
 
     function codecsOf(type) {
@@ -62,9 +62,9 @@
         var family = familyOf(codecs);
         var limits = family && hw[family];
         if (!limits) return false;
-        if (tenBit(family, codecs) && !limits.ten) return true;
-        if (!width && !height) return false;
-        var limit = fps > 30 ? limits.h60 : limits.h30;
+        var hdr = tenBit(family, codecs);
+        if (!width && !height) return hdr && !limits.t30;
+        var limit = fps > 30 ? (hdr ? limits.t60 : limits.h60) : (hdr ? limits.t30 : limits.h30);
         if (!limit) return true;
         var short = Math.min(width || height, height || width), long = Math.max(width, height);
         return short > limit || long > Math.round(limit * 16 / 9);

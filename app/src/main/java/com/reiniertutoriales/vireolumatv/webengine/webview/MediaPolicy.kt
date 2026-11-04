@@ -16,10 +16,11 @@ import java.util.Locale
 
 /**
  * What one codec's hardware decoders handle: the highest 16:9 tier (by height) decoded at 30 and
- * at 60 frames per second, 0 when not even the smallest tier is, and whether 10-bit (HDR) streams
- * are decoded. The best decoder counts, since the platform picks it for the stream.
+ * at 60 frames per second, also for 10-bit streams. Each tier must be supported by one decoder;
+ * resolution and bit depth from separate decoders cannot be combined.
  */
-internal data class HardwareVideo(val maxHeight30: Int, val maxHeight60: Int, val tenBit: Boolean) {
+internal data class HardwareVideo(val maxHeight30: Int, val maxHeight60: Int,
+                                  val maxHeight10Bit30: Int, val maxHeight10Bit60: Int) {
     /** One decoder as the policy asks it; production wraps MediaCodecInfo.VideoCapabilities. */
     interface Probe {
         fun decodes(width: Int, height: Int, fps: Int): Boolean
@@ -34,8 +35,10 @@ internal data class HardwareVideo(val maxHeight30: Int, val maxHeight60: Int, va
 
         fun of(decoders: List<Probe>): HardwareVideo? {
             if (decoders.isEmpty()) return null
-            fun best(fps: Int) = TIERS.firstOrNull { h -> decoders.any { it.decodes(widthFor(h), h, fps) } } ?: 0
-            return HardwareVideo(best(30), best(60), decoders.any { it.tenBit })
+            fun best(fps: Int, tenBit: Boolean) = TIERS.firstOrNull { h ->
+                decoders.any { (!tenBit || it.tenBit) && it.decodes(widthFor(h), h, fps) }
+            } ?: 0
+            return HardwareVideo(best(30, false), best(60, false), best(30, true), best(60, true))
         }
     }
 }
@@ -136,7 +139,8 @@ internal object MediaPolicy {
     fun configJson(blocked: List<String>, maxHeight: Int, hardware: Map<String, HardwareVideo> = emptyMap()): String? {
         if (blocked.isEmpty() && maxHeight <= 0 && hardware.isEmpty()) return null
         val hw = hardware.entries.joinToString(",") { (family, v) ->
-            "\"$family\":{\"h30\":${v.maxHeight30},\"h60\":${v.maxHeight60},\"ten\":${v.tenBit}}"
+            "\"$family\":{\"h30\":${v.maxHeight30},\"h60\":${v.maxHeight60}," +
+                "\"t30\":${v.maxHeight10Bit30},\"t60\":${v.maxHeight10Bit60}}"
         }
         return "{\"block\":[" + blocked.joinToString(",") { "\"$it\"" } + "],\"maxHeight\":" +
             maxHeight.coerceAtLeast(0) + (if (hardware.isEmpty()) "" else ",\"hw\":{$hw}") + "}"

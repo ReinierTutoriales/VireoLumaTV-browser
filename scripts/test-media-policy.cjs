@@ -103,20 +103,23 @@ function page(config, host = 'www.youtube.com') {
 
     // Automatic on a TV whose hardware decodes VP9 to 4K at 30 fps but 1080p at 60, without 10-bit,
     // and HEVC to 4K60 with 10-bit; AV1 has no hardware decoder and is blocked.
-    c = page({block: ['av1'], maxHeight: 0, hw: {vp9: {h30: 2160, h60: 1080, ten: false},
-        hevc: {h30: 2160, h60: 2160, ten: true}}}, 'example.com');
+    c = page({block: ['av1'], maxHeight: 0, hw: {vp9: {h30: 2160, h60: 1080, t30: 1080, t60: 720},
+        hevc: {h30: 2160, h60: 2160, t30: 2160, t60: 2160}}}, 'example.com');
     vm.runInContext(`
         var ok = t => MediaSource.isTypeSupported(t);
         assert.equal(ok('video/webm; codecs="vp09.00.51.08"; width=3840; height=2160; framerate=30'), true, '4K30 in hardware');
         assert.equal(ok('video/webm; codecs="vp09.00.51.08"; width=3840; height=2160; framerate=60'), false, '4K60 would be software');
         assert.equal(ok('video/webm; codecs="vp09.00.41.08"; width=1920; height=1080; framerate=60'), true);
         assert.equal(ok('video/webm; codecs="vp09.00.51.08"; width=2160; height=3840; framerate=30'), true, 'portrait 4K');
-        assert.equal(ok('video/webm; codecs="vp09.02.51.10"; width=1920; height=1080'), false, 'no 10-bit VP9');
+        assert.equal(ok('video/webm; codecs="vp09.02.51.10"; width=1920; height=1080'), true, '10-bit 1080p in hardware');
+        assert.equal(ok('video/webm; codecs="vp09.02.51.10"; width=3840; height=2160'), false, '4K and 10-bit need one decoder');
+        assert.equal(ok('video/webm; codecs="vp09.02.51.10"; width=1920; height=1080; framerate=60'), false, '10-bit 60fps limited to 720p');
+        assert.equal(ok('video/webm; codecs="vp09.02.51.10"; width=1280; height=720; framerate=60'), true);
         assert.equal(ok('video/mp4; codecs="hvc1.2.4.L153.B0"; width=3840; height=2160; framerate=60'), true, 'HEVC Main 10 4K60');
         assert.equal(ok('video/mp4; codecs="avc1.640033"; width=3840; height=2160'), true, 'no AVC entry: WebView decides');
         assert.equal(ok('video/webm; codecs="vp9"'), true, 'no size: the codec alone is fine');
         var media = new HTMLMediaElement();
-        assert.equal(media.canPlayType('video/webm; codecs="vp09.02.10.10"'), '', '10-bit refused without size too');
+        assert.equal(media.canPlayType('video/webm; codecs="vp09.02.10.10"'), 'probably', '10-bit decoder exists');
         assert.equal(media.canPlayType('video/webm; codecs="vp09.00.10.08"'), 'probably');
     `, c);
     info = await vm.runInContext(`navigator.mediaCapabilities.decodingInfo({video: {contentType: 'video/webm; codecs="vp09.00.51.08"', width: 3840, height: 2160, framerate: 60}})`, c);

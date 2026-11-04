@@ -30,10 +30,12 @@ class MediaPolicyTest {
             width <= HardwareVideo.widthFor(if (fps > 30) h60 else h30)
     }
 
-    @Test fun theBestDecoderSetsEachLimitAndTenBitComesFromAnyOfThem() {
+    @Test fun tenBitLimitsComeFromTheSameDecoderAsTheResolution() {
         val video = HardwareVideo.of(listOf(decoder(1080, 720), decoder(2160, 1080, tenBit = true)))
-        assertEquals(HardwareVideo(2160, 1080, true), video)
-        assertEquals(HardwareVideo(1080, 0, false), HardwareVideo.of(listOf(decoder(1080, 240))))
+        assertEquals(HardwareVideo(2160, 1080, 2160, 1080), video)
+        assertEquals(HardwareVideo(2160, 1080, 1080, 720),
+            HardwareVideo.of(listOf(decoder(2160, 1080), decoder(1080, 720, tenBit = true))))
+        assertEquals(HardwareVideo(1080, 0, 0, 0), HardwareVideo.of(listOf(decoder(1080, 240))))
         assertNull("No hardware decoder, no entry", HardwareVideo.of(emptyList()))
         assertEquals(3840, HardwareVideo.widthFor(2160))
         assertEquals(1920, HardwareVideo.widthFor(1080))
@@ -41,8 +43,8 @@ class MediaPolicyTest {
     }
 
     @Test fun hardwareLimitsTravelToThePageUnlessTheUserLiftsThem() {
-        val hw = mapOf("vp9" to HardwareVideo(2160, 1080, true))
-        assertEquals("{\"block\":[\"av1\"],\"maxHeight\":0,\"hw\":{\"vp9\":{\"h30\":2160,\"h60\":1080,\"ten\":true}}}",
+        val hw = mapOf("vp9" to HardwareVideo(2160, 1080, 1080, 720))
+        assertEquals("{\"block\":[\"av1\"],\"maxHeight\":0,\"hw\":{\"vp9\":{\"h30\":2160,\"h60\":1080,\"t30\":1080,\"t60\":720}}}",
             MediaPolicy.configJson(listOf("av1"), 0, hw))
         assertNull("No limit and no missing decoder: nothing to inject", MediaPolicy.configJson(emptyList(), MediaPolicy.NO_LIMIT, emptyMap()))
         assertTrue(MediaPolicy.hardwareLimits(MediaPolicy.NO_LIMIT).isEmpty())

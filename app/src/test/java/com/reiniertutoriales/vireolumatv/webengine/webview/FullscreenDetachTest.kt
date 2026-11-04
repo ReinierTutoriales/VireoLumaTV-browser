@@ -41,4 +41,27 @@ class FullscreenDetachTest {
             assertEquals("The first callback is not called again", 1, first.hidden)
         } finally { engine.detach(destroyView = true) }
     }
+
+    @Test fun callbackReenteringHideDoesNotNotifyThePlayerTwice() {
+        val app = RuntimeEnvironment.getApplication()
+        val engine = WebViewPageEngine(BrowserTab())
+        try {
+            val page = engine.createView(app) as BrowserWebView
+            val chrome = page.webChromeClient!!
+            var hidden = 0
+            val callback = object : WebChromeClient.CustomViewCallback {
+                override fun onCustomViewHidden() {
+                    hidden++
+                    if (hidden == 1) chrome.onHideCustomView()
+                }
+            }
+            chrome.onShowCustomView(View(app), callback)
+            chrome.onHideCustomView()
+            assertEquals("A reentrant fullscreen exit must notify the page only once", 1, hidden)
+            val next = Callback()
+            chrome.onShowCustomView(View(app), next)
+            engine.closeFullscreen()
+            assertEquals(1, next.hidden)
+        } finally { engine.detach(destroyView = true) }
+    }
 }

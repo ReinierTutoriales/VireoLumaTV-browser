@@ -288,6 +288,9 @@ del propietario.
 «Automática» no limita la resolución al tamaño de la ventana o del viewport: la
 interfaz de muchas TV 4K se dibuja a 1080p y ese límite ocultaba 1440p y 2160p
 (retirado por decisión del propietario, 2026-11-03).
+Para vídeo de 10 bits, el límite de resolución y fotogramas debe venir del mismo
+decodificador que declara el perfil de 10 bits; no combinar capacidades de dos
+decodificadores para anunciar una combinación inexistente.
 Las consultas permitidas de `mediaCapabilities.decodingInfo` conservan la promesa
 y el resultado originales de WebView, incluidos `smooth`, `powerEfficient` y el
 acceso DRM. La presencia de un decodificador no prueba fluidez ni eficiencia;
