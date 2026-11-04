@@ -21,6 +21,7 @@ dd { margin: 0 0 1rem; overflow-wrap: anywhere; white-space: pre-line; }
 button { font: inherit; border: 3px solid transparent; border-radius: 999px; padding: .6rem 1.5rem; cursor: pointer; }
 #back { background: #7bd88f; color: #141414; }
 #proceed { background: transparent; color: #ff8a80; border-color: #5f6368; }
+#proceed:disabled { opacity: .45; cursor: not-allowed; }
 button:focus { outline: none; border-color: #dadada; }
 </style>
 </head>
@@ -35,7 +36,7 @@ button:focus { outline: none; border-color: #dadada; }
 </dl>
 <div class="actions">
 <button id="back" autofocus onclick="history.back()">{{back}}</button>
-<button id="proceed" onclick="if (window.VireoCertificate) VireoCertificate.postMessage(&quot;trustCertificateOnce&quot;); else VireoLumaTVApp.trustCertificateOnce()">{{proceed}}</button>
+<button id="proceed" {{proceedDisabled}} onclick="if (window.VireoCertificate) VireoCertificate.postMessage(&quot;trustCertificateOnce&quot;)">{{proceed}}</button>
 </div>
 </main>
 </body>

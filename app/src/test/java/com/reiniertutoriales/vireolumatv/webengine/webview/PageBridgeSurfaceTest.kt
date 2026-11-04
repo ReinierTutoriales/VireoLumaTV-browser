@@ -18,9 +18,4 @@ class PageBridgeSurfaceTest {
         assertEquals(filters, exposed(FilterBridge::class.java))
     }
 
-    @Test
-    fun legacyBridgeAddsOnlyCertificateTrustAndNoBlobDownloads() {
-        // Old providers cannot name the calling frame, so no blob download method exists there.
-        assertEquals(filters + "trustCertificateOnce", exposed(LegacyPrivilegedBridge::class.java))
-    }
 }
