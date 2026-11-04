@@ -7,13 +7,14 @@ import subprocess
 import sys
 
 
-def renderer_pids(processes, package, app_pid):
+def renderer_pids(processes, package, app_pid, process_name=None):
     """Only accept a sandbox service explicitly bound to this app process."""
     lines = processes.splitlines()
     pids = set()
-    owner = f'<=Proc{{{app_pid}:{package}/'
+    owner = f'<=Proc{{{app_pid}:{process_name or package}/'
     for current, following in zip(lines, lines[1:]):
-        if 'Proc #' not in current or owner not in following or 'SandboxedProcessService' not in following:
+        if ('Proc #' not in current or owner not in following or
+                f'{package}/org.chromium.content.app.SandboxedProcessService' not in following):
             continue
         match = re.search(r'\b(\d+):\S*sandboxed_process\S*', current)
         if match:
@@ -22,7 +23,7 @@ def renderer_pids(processes, package, app_pid):
 
 
 def total_pss_kib(meminfo):
-    match = re.search(r'(?m)^\s*TOTAL PSS:\s*([\d,]+)', meminfo)
+    match = re.search(r'(?m)^\s*(?:TOTAL PSS|TOTAL):\s*([\d,]+)', meminfo)
     return int(match.group(1).replace(',', '')) if match else None
 
 
@@ -37,7 +38,7 @@ def capture(report, package, app_pid, phase):
     assert app_pid in [int(pid) for pid in adb('pidof', process_name).split()], 'App process changed during capture'
     processes = adb('dumpsys', 'activity', 'processes')
     (report / f'{phase}-processes.txt').write_text(processes)
-    pids = renderer_pids(processes, package, app_pid)
+    pids = renderer_pids(processes, package, app_pid, process_name)
     measurements = {}
     for role, pid in [('app', app_pid)] + [('renderer', pid) for pid in pids]:
         meminfo = adb('dumpsys', 'meminfo', str(pid))

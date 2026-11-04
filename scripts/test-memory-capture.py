@@ -16,6 +16,13 @@ processes = '''
 assert capture.renderer_pids(processes, 'com.reiniertutoriales.vireolumatv', 5168) == [5214]
 assert capture.renderer_pids(processes, 'com.reiniertutoriales.vireolumatv', 6000) == []
 assert capture.renderer_pids('', 'com.reiniertutoriales.vireolumatv', 5168) == []
+private = '''
+    Proc # 1: fore  6523:com.android.chrome:sandboxed_process0/u0a87i4 (service)
+        com.reiniertutoriales.vireolumatv/org.chromium.content.app.SandboxedProcessService0<=Proc{6470:com.reiniertutoriales.vireolumatv:incognito/u0a87}
+'''
+assert capture.renderer_pids(private, 'com.reiniertutoriales.vireolumatv', 6470,
+                             'com.reiniertutoriales.vireolumatv:incognito') == [6523]
 assert capture.total_pss_kib(' TOTAL PSS:  123,456\n') == 123456
+assert capture.total_pss_kib('               TOTAL:  106043       TOTAL SWAP PSS: 0\n') == 106043
 assert capture.total_pss_kib('no total') is None
 print('Renderer ownership and PSS parsing passed')
