@@ -2,5 +2,5 @@
 <androidx.appcompat.widget.AppCompatButton xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/Widget.Vireo.Button"
     android:layout_width="match_parent" android:layout_height="wrap_content"
-    android:layout_margin="6dp" android:paddingTop="20dp" android:paddingBottom="16dp"
+    android:layout_margin="6dp" android:stateListAnimator="@animator/focus_scale_row" android:paddingTop="20dp" android:paddingBottom="16dp"
     android:maxLines="1" android:ellipsize="end" android:drawablePadding="8dp" android:gravity="center" />
