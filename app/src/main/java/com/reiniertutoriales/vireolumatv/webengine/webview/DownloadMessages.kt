@@ -51,7 +51,8 @@ internal sealed class DownloadMessage {
         private fun chunk(message: String): Chunk? {
             if (message.length > 2 * MAX_FIELD + MAX_CHUNK_TEXT) return null
             val parts = message.split('\n', limit = 4)
-            if (parts.size != 4 || parts[1].isEmpty() || parts[1].length > MAX_FIELD || parts[3].isEmpty()) return null
+            if (parts.size != 4 || parts[1].isEmpty() || parts[1].length > MAX_FIELD ||
+                parts[3].isEmpty() || parts[3].length > MAX_CHUNK_TEXT) return null
             val offset = parts[2].toLongOrNull()?.takeIf { it >= 0 } ?: return null
             return Chunk(parts[1], offset, parts[3])
         }

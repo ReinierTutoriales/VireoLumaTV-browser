@@ -54,6 +54,7 @@ class DownloadMessagesTest {
         listOf(null, "", "begin", "begin\n\nname", "size\nt\nlots\ntype", "size\nt\n3", "cancel\n", "chunk\nt\n0",
             "chunk\n\n0\nYWJj", "chunk\nt\n-1\nYWJj", "chunk\nt\nx\nYWJj", "chunk\nt\n0\n", oversizedChunk,
             "done\nt", "done\nt\n", "data\nt\nurl\ndata:", "other\nt", "begin\n" + "x".repeat(5000) + "\nname",
+            "chunk\\nt\\n0\\n" + "A".repeat((BlobTransfers.CHUNK_BYTES + 2) / 3 * 4 + 1),
         ).forEach { assertNull(it?.take(40), DownloadMessage.parse(it)) }
     }
 
