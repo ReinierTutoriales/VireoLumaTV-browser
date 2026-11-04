@@ -27,7 +27,9 @@ class SettingsScreen(context: Context, val model: BrowserSettings) : AppCompatDi
     }
 
     override fun show() {
-        previousFocus = (context as? android.app.Activity)?.window?.decorView?.findFocus()
+        var owner: Context = context
+        while (owner is android.content.ContextWrapper && owner !is android.app.Activity) owner = owner.baseContext
+        previousFocus = (owner as? android.app.Activity)?.window?.decorView?.findFocus()
         super.show()
     }
 
