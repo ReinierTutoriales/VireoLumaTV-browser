@@ -519,3 +519,5 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/home/NativeHom
 scripts/check-startup-avd.sh	PROPIO
 scripts/test-native-home-navigation.py	PROPIO
 scripts/test-private-startup.py	PROPIO
+scripts/capture-webview-memory.py	PROPIO
+scripts/test-memory-capture.py	PROPIO
