@@ -6,7 +6,7 @@ import androidx.core.net.toUri
 
 internal object BridgePagePolicy {
     fun isPackagedHomePage(uri: Uri?): Boolean =
-        uri?.toString()?.startsWith(Config.HOME_PAGE_URL) == true
+        uri != null && safeHomeAssetPath(uri.toString()) != null
 
     fun isNormalWebPage(uri: Uri?): Boolean {
         val scheme = uri?.scheme ?: return false

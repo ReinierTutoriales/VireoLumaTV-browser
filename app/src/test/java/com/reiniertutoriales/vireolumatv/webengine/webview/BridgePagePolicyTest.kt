@@ -26,7 +26,11 @@ class BridgePagePolicyTest {
         assertTrue(BridgePagePolicy.isPackagedHomePage(Uri.parse(Config.HOME_PAGE_URL + "index.html")))
         listOf("https://www.youtube.com/watch?v=test", "https://m.youtube.com/", "https://duckduckgo.com/?q=test",
             "https://en.wikipedia.org/", "https://example.com/?url=" + Config.HOME_PAGE_URL,
-            "https://vireolumatv.invalid.evil.example/appcontent/home/").forEach {
+            "https://vireolumatv.invalid.evil.example/appcontent/home/",
+            Config.HOME_PAGE_URL + "../outside",
+            Config.HOME_PAGE_URL + "%2e%2e/outside",
+            Config.HOME_PAGE_URL + "index.html?unexpected=1",
+            Config.HOME_PAGE_URL + "index.html#fragment").forEach {
             assertFalse(it, BridgePagePolicy.isPackagedHomePage(Uri.parse(it)))
         }
     }
