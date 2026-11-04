@@ -15,7 +15,7 @@ internal object CertificateWarningPage {
     private val PLACEHOLDER = Regex("""\{\{(\w+)\}\}""")
 
     /** The page for a [primaryError] at [url]; [details] describes the certificate. */
-    fun render(context: Context, template: String, url: String, primaryError: Int, details: String): String {
+    fun render(context: Context, template: String, url: String, primaryError: Int, details: String, canProceed: Boolean = true): String {
         val locale = AppLanguages.localeOf(context)
         val values = mapOf(
             "lang" to locale.toLanguageTag(),
@@ -29,6 +29,7 @@ internal object CertificateWarningPage {
             "details" to details,
             "back" to context.getString(R.string.cert_go_back),
             "proceed" to context.getString(R.string.cert_proceed),
+            "proceedDisabled" to if (canProceed) "" else "disabled",
         )
         return fill(template, values)
     }
