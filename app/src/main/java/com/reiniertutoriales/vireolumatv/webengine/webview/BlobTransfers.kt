@@ -85,6 +85,10 @@ internal class BlobTransfers(
         if (open?.token == token) close(Unit)
     }
 
+    /** A destroyed page cannot leave its temporary spool or token alive. */
+    @Synchronized
+    fun cancelAll() { close(Unit) }
+
     /** The open transfer, closing it first if it has expired. */
     private fun live(now: Long): Ticket? {
         val ticket = open ?: return null
