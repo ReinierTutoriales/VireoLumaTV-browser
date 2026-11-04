@@ -165,7 +165,8 @@ internal fun safeHomeAssetPath(address: String): String? {
     val uri = runCatching { Uri.parse(address) }.getOrNull() ?: return null
     val base = Uri.parse(Config.HOME_PAGE_URL)
     if (!uri.scheme.equals(base.scheme, true) || !uri.host.equals(base.host, true) ||
-        uri.port != base.port || uri.encodedQuery != null || uri.encodedFragment != null) return null
+        uri.port != base.port || uri.encodedUserInfo != null ||
+        uri.encodedQuery != null || uri.encodedFragment != null) return null
     val basePath = base.encodedPath.orEmpty()
     val path = uri.encodedPath.orEmpty()
     if (!path.startsWith(basePath)) return null
