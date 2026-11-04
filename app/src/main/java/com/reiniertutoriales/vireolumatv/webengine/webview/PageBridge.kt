@@ -122,6 +122,11 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
                 is DownloadMessage.Done -> { finish(request, document, currentDocument); null }
                 is DownloadMessage.Cancel -> { blobs.cancel(request.token); null }
             }
+            // Teardown may race a chunk already executing on this worker.
+            if (generation.get() != acceptedGeneration) {
+                blobs.cancelAll()
+                return@execute
+            }
             if (answer != null) main.post {
                 if (generation.get() == acceptedGeneration) reply(answer)
             }
