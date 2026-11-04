@@ -126,7 +126,8 @@ internal class PagePermissions(
         generation++
         dialog?.dismiss()
         dialog = null
-        locationCallback = null
+        // A dismissed prompt still needs a negative answer; never leave its callback unresolved.
+        answerLocation(false)
     }
 
     /** Android's answer to [requestAndroid]: grants what the user and the system allowed. */
