@@ -119,7 +119,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
         if (view.streamLogBudget.allow()) Log.w(BrowserWebView.LOG_TAG, "Stream $kind ${detail()} host=${url.host}")
     }
 
-    override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean = engine.onRenderProcessGone()
+    override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean = engine.onRenderProcessGone(view)
 
     /**
      * A certificate error stops the load. Only the certificate the user accepted on the warning page,
