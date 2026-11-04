@@ -28,7 +28,8 @@ y `native/adblock-jni/Cargo.lock`. No se conserva una cola de cambios del fork.
 La [captura de memoria de Inicio en CI](audit/WEBVIEW_MEMORY_CI_20261104.md)
 separa app y renderer en emuladores; no compara rendimiento antes/después ni
 justifica cambios de caché o de pestañas. La comprobación en dispositivo queda
-aplazada por decisión del propietario.
+aplazada por decisión del propietario. El informe define la comparación con
+Perfetto, Macrobenchmark y DevTools cuando haya acceso a equipos reales.
 
 ## Dependencias contrastadas el 2 de noviembre de 2026
 
