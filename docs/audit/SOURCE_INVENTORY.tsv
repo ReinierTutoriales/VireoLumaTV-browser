@@ -5,6 +5,7 @@ ruta	clasificacion
 .agents/skills/source-migration/SKILL.md	PROPIO
 .agents/skills/testing-discipline/SKILL.md	PROPIO
 .agents/skills/tv-ui/SKILL.md	PROPIO
+.agents/skills/webview-evidence-optimization/SKILL.md	PROPIO
 .gitattributes	PROPIO
 .github/ISSUE_TEMPLATE/bug_report.md	REESCRITO
 .github/ISSUE_TEMPLATE/feature_request.md	REESCRITO
