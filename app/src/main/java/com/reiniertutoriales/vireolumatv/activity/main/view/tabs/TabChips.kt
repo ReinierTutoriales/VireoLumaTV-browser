@@ -99,6 +99,8 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
         fun bind(tab: BrowserTab, isCurrent: Boolean) {
             itemView.tag = tab
             itemView.isSelected = isCurrent
+            // RecyclerView reuses rows: refresh the accessible label on every bind.
+            itemView.contentDescription = tab.title.ifBlank { tab.url }
             close.setOnClickListener {
                 if (this.tab === tab && shown.any { it === tab }) onCommand?.invoke(TabCommand.Close(tab))
             }
@@ -142,10 +144,12 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
             iconAddress = null
             itemView.tag = null
             itemView.isSelected = false
+            itemView.contentDescription = null
         }
 
         fun updateTitle(tab: BrowserTab) {
             if (title.text.toString() != tab.title) title.text = tab.title
+            itemView.contentDescription = tab.title.ifBlank { tab.url }
             updateIcon(tab)
         }
 
