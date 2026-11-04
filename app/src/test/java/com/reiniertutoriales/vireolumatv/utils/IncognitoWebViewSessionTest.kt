@@ -39,6 +39,20 @@ class IncognitoWebViewSessionTest {
         assertTrue(File(normalDirectory, "cookie").exists())
     }
 
+    @Test fun clearRemovesBothPrivateCacheNamesButPreservesNormalWebViewCache() {
+        val context = RuntimeEnvironment.getApplication()
+        val normal = File(context.cacheDir, "WebView").apply { mkdirs() }
+        val normalCookie = File(normal, "normal-cache").apply { writeText("keep") }
+        val privateUpper = File(context.cacheDir, "WebView_incognito").apply { mkdirs() }
+        val privateLower = File(context.cacheDir, "webview_incognito").apply { mkdirs() }
+        File(privateUpper, "old-cache").writeText("private")
+        File(privateLower, "old-cache").writeText("private")
+        IncognitoWebViewSession().clear(context)
+        assertFalse(privateUpper.exists())
+        assertFalse(privateLower.exists())
+        assertEquals("keep", normalCookie.readText())
+    }
+
     @Test fun failedSuffixConfigurationCanBeRetried() {
         val context = RuntimeEnvironment.getApplication()
         val session = IncognitoWebViewSession()
