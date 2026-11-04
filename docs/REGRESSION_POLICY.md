@@ -192,6 +192,10 @@ Condiciones para cambiar la política actual:
 - Probar A→B→A, fallo de restauración, formularios, sesión, scroll, popups,
   pérdida del renderer, cambio de modo y presión de memoria.
 
+La [captura de Inicio en CI](audit/WEBVIEW_MEMORY_CI_20261104.md) documenta el
+PSS de app y renderer cuando Android lo entrega; no establece aún un presupuesto
+para vídeo o precarga.
+
 ## 5. Política contra navegación y descargas abusivas
 
 Adblock de recursos, creación de ventanas, navegación/redirecciones y descargas
