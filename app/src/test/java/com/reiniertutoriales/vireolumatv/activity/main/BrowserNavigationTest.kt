@@ -461,6 +461,18 @@ class BrowserNavigationTest {
         assertTrue(f.page.hasFocus())
     }
 
+    @Test fun fullscreenEnteredWithCapsuleOpenRestoresActionableControlsOnExit() = Fixture().use { f ->
+        val engine = fullscreenEngine(f)
+        f.activity.openCapsule()
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        engine.enterFullscreen(View(f.host.get()).apply { isFocusableInTouchMode = true })
+        assertEquals("A fullscreen player must own the screen", View.INVISIBLE, f.vb.controlsOverlay.visibility)
+        assertTrue(f.activity.isFullscreen)
+        engine.closeFullscreen()
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        assertTrue("The restored capsule must take focus from the player", f.vb.controlsRow.backButton.hasFocus())
+    }
+
     /** A player view that records the touches the pointer sends it. */
     private class Player(context: android.content.Context) : View(context) {
         val touches = mutableListOf<Int>()
