@@ -56,18 +56,7 @@ internal open class FilterBridge(protected val engine: WebViewPageEngine) {
  * Blob downloads need a frame's identity, so these providers get none (generic_injects.js leaves
  * blob links to WebView).
  */
-internal class LegacyPrivilegedBridge(engine: WebViewPageEngine) : FilterBridge(engine) {
-    private val page get() = engine.view as? BrowserWebView
-
-    /** The warning page's "proceed": trusts the shown certificate error once and loads the site. */
-    @JavascriptInterface
-    fun trustCertificateOnce() {
-        // A WebMessage-capable provider must reject the untrusted all-frames JS interface.
-        val view = page ?: return
-        if (view.usesWebMessageBridge || view.shownCertificateError() == null) return
-        engine.privileged.approveCertificate()
-    }
-}
+internal class LegacyPrivilegedBridge(engine: WebViewPageEngine) : FilterBridge(engine)
 
 /**
  * Certificate approval for both channels, and blob downloads for main-frame-checked WebMessages.
