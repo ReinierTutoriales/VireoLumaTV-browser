@@ -10,11 +10,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommand
-import com.reiniertutoriales.vireolumatv.activity.main.compose.TvBrowserCommandBar
 import androidx.core.widget.doAfterTextChanged
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
@@ -38,12 +33,6 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     var callback: Callback? = null
-    var onBackCommand: (() -> Unit)? = null
-    var onForwardCommand: (() -> Unit)? = null
-    var onRefreshCommand: (() -> Unit)? = null
-    var onHomeCommand: (() -> Unit)? = null
-    var onBlockerCommand: (() -> Unit)? = null
-    var onBlockerDetailsCommand: (() -> Unit)? = null
     private val ui = BrowserControlsBinding.inflate(LayoutInflater.from(context), this)
     val backButton: ImageButton get() = ui.backButton
     val forwardButton: ImageButton get() = ui.forwardButton
@@ -51,11 +40,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     val homeButton: ImageButton get() = ui.homeButton
     val adBlockButton: ImageButton get() = ui.blockerButton
     private val commands = listOf(ui.backButton, ui.forwardButton, ui.reloadButton, ui.homeButton, ui.blockerButton, ui.menuButton)
-    private val composeCommands = ComposeView(context)
-    private val focusRow = listOf<View>(ui.addressField, composeCommands)
-    private val canGoBack = mutableStateOf(false)
-    private val canGoForward = mutableStateOf(false)
-    private val shieldEnabled = mutableStateOf(false)
+    private val focusRow = listOf<View>(ui.addressField) + commands
     private var pageAddress = ""
     private var editing = false
     private var enteringSuggestions = false
@@ -75,20 +60,6 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
             showBlockerEnabled(AppContext.config.adBlockEnabled)
             ui.menuButton.setOnClickListener { callback?.showAppMenu() }
             renderEditing(false)
-            composeCommands.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-            composeCommands.setContent {
-                TvBrowserCommandBar(
-                    back = BrowserCommand(context.getString(R.string.nav_back), R.drawable.ic_back, canGoBack.value) { onBackCommand?.invoke() },
-                    forward = BrowserCommand(context.getString(R.string.nav_forward), R.drawable.ic_forward, canGoForward.value) { onForwardCommand?.invoke() },
-                    refresh = BrowserCommand(context.getString(R.string.nav_reload), R.drawable.ic_refresh) { onRefreshCommand?.invoke() },
-                    home = BrowserCommand(context.getString(R.string.nav_home), R.drawable.ic_home) { onHomeCommand?.invoke() },
-                    menu = BrowserCommand(context.getString(R.string.nav_menu), R.drawable.ic_more) { ui.menuButton.performClick() },
-                    blockerEnabled = shieldEnabled.value,
-                    onToggleBlocker = { onBlockerCommand?.invoke() },
-                    onShowBlockerDetails = { onBlockerDetailsCommand?.invoke() },
-                )
-            }
-            addView(composeCommands, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
             ui.addressField.setOnClickListener { beginEditing() }
             ui.addressField.setOnFocusChangeListener { _, focused ->
                 if (!focused && editing && !enteringSuggestions) {
@@ -119,7 +90,6 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
 
     fun showBlockerEnabled(enabled: Boolean) {
         if (adBlockButton.isSelected == enabled) return
-        shieldEnabled.value = enabled
         adBlockButton.isSelected = enabled
         adBlockButton.setImageResource(if (enabled) R.drawable.ic_shield_on else R.drawable.ic_shield_off)
     }
@@ -129,8 +99,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         ui.addressField.isCursorVisible = value
         ui.addressField.showSoftInputOnFocus = value
         val targetVisibility = if (value) GONE else VISIBLE
-        commands.forEach { if (it.visibility != GONE) it.visibility = GONE }
-        composeCommands.visibility = targetVisibility
+        commands.forEach { if (it.visibility != targetVisibility) it.visibility = targetVisibility }
     }
 
     private fun beginEditing() {
@@ -181,7 +150,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
             }
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
                 if (editing) false else {
-                    if (down && event.repeatCount == 0) composeCommands.requestFocus()
+                    if (down && event.repeatCount == 0) backButton.requestFocus()
                     true
                 }
             }
@@ -190,8 +159,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (!editing && ui.addressField.hasFocus() &&
-            (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+        if (!editing && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
             val current = focusRow.indexOfFirst { it.hasFocus() }
             if (current >= 0) {
                 if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
@@ -237,13 +205,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         takeFocus()
     }
 
-    fun updateNavigation(canBack: Boolean, canForward: Boolean) {
-        canGoBack.value = canBack
-        canGoForward.value = canForward
-    }
-
     fun takeFocus() {
-        if (!editing && composeCommands.requestFocus()) return
         for (command in commands) {
             if (command.isEnabled && command.visibility == VISIBLE && command.requestFocus()) return
         }
