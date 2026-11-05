@@ -11,6 +11,10 @@ import org.junit.Assert.assertTrue
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.keyDown
+import androidx.compose.ui.test.keyUp
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.performClick
 import org.junit.Rule
 import org.junit.Test
@@ -46,6 +50,17 @@ class AppMenuPanelTest {
             compose.onNodeWithText(host.get().getString(entry.label)).assertExists()
         }
         compose.onNodeWithText(host.get().getString(appMenuEntries().first().label)).assertIsFocused()
+        compose.runOnIdle { panel.dismiss() }
+    }
+
+    @Test fun dpadMovesToNextEntryAndDoesNotEscapeAboveFirst() {
+        val panel = open {}
+        val entries = appMenuEntries()
+        val first = compose.onNodeWithText(host.get().getString(entries.first().label))
+        first.performKeyInput { keyDown(Key.DirectionUp); keyUp(Key.DirectionUp) }
+        first.assertIsFocused()
+        first.performKeyInput { keyDown(Key.DirectionDown); keyUp(Key.DirectionDown) }
+        compose.onNodeWithText(host.get().getString(entries[1].label)).assertIsFocused()
         compose.runOnIdle { panel.dismiss() }
     }
 
