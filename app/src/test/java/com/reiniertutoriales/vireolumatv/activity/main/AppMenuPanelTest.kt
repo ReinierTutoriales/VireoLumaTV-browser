@@ -12,8 +12,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.keyDown
-import androidx.compose.ui.test.keyUp
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.performClick
 import org.junit.Rule
