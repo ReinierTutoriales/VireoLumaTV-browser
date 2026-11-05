@@ -109,7 +109,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         callback?.onAddressEditing()
         ui.addressField.openKeyboard()
         removeCallbacks(selectText)
-        postDelayed(selectText, 500)
+        // Select on the next UI traversal instead of waiting a fixed half-second.
+        post(selectText)
     }
 
     private fun finishEditing(cancelled: Boolean) {
@@ -161,7 +162,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         if (!editing && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
             val current = focusRow.indexOfFirst { it.hasFocus() }
             if (current >= 0) {
-                if (event.action == KeyEvent.ACTION_DOWN) {
+                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
                     val towardsEnd = (event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) != (layoutDirection == LAYOUT_DIRECTION_RTL)
                     val step = if (towardsEnd) 1 else -1
                     var next = current + step
