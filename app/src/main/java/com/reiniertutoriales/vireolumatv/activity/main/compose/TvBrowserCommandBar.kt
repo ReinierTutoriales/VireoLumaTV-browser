@@ -95,13 +95,17 @@ fun TvConnectedBrowserCommandBar(
     blockerEnabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val backLabel = androidx.compose.ui.res.stringResource(R.string.nav_back)
+    val forwardLabel = androidx.compose.ui.res.stringResource(R.string.nav_forward)
+    val reloadLabel = androidx.compose.ui.res.stringResource(R.string.nav_reload)
+    val homeLabel = androidx.compose.ui.res.stringResource(R.string.nav_home)
+    val menuLabel = androidx.compose.ui.res.stringResource(R.string.nav_menu)
     TvBrowserCommandBar(
-        back = BrowserCommand(context.getString(R.string.nav_back), R.drawable.ic_back, canGoBack, actions.back),
-        forward = BrowserCommand(context.getString(R.string.nav_forward), R.drawable.ic_forward, canGoForward, actions.forward),
-        refresh = BrowserCommand(context.getString(R.string.nav_reload), R.drawable.ic_refresh, onClick = actions.reload),
-        home = BrowserCommand(context.getString(R.string.nav_home), R.drawable.ic_home, onClick = actions.home),
-        menu = BrowserCommand(context.getString(R.string.nav_menu), R.drawable.ic_more, onClick = actions.menu),
+        back = BrowserCommand(backLabel, R.drawable.ic_back, canGoBack, actions.back),
+        forward = BrowserCommand(forwardLabel, R.drawable.ic_forward, canGoForward, actions.forward),
+        refresh = BrowserCommand(reloadLabel, R.drawable.ic_refresh, onClick = actions.reload),
+        home = BrowserCommand(homeLabel, R.drawable.ic_home, onClick = actions.home),
+        menu = BrowserCommand(menuLabel, R.drawable.ic_more, onClick = actions.menu),
         blockerEnabled = blockerEnabled,
         onToggleBlocker = actions.shield,
         onShowBlockerDetails = actions.shieldDetails,
