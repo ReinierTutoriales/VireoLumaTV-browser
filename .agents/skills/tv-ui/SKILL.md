@@ -38,3 +38,13 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
   FOCUSABLE_AUTO. Mark touch-only containers non-focusable explicitly, and test
   returning from touch/dialog interaction to D-pad navigation, including rows
   outside the initially visible grid.
+
+## Compose TV modernization and release gates
+
+- Consult current official Android Developers guidance for Compose for TV, focus, Back handling, interoperability, Baseline Profiles and Macrobenchmark before adopting a platform pattern. Record the consulted version/date in the PR; never assume the latest release is compatible with AGP, Kotlin, minSdk or the TV Material stack.
+- Use the newest compatible **stable** dependency versions after checking release notes and transitive compatibility. Update the version catalog and lockstep integrations together; experimental versions require a demonstrated need and an explicit risk assessment.
+- Keep one owner of Back navigation in MainActivity/OnBackPressedDispatcher. Compose actions dispatch to the existing browser commands; do not create a competing WebView navigation or fullscreen controller.
+- For the top capsule, preserve the current ordering of address, Back/Forward/Reload/Home, shield (including long press), menu, suggestions and tabs. Focusing an address must not open the IME; OK activates editing, Back dismisses the innermost layer, and focus is restored predictably.
+- During hybrid migration, retain the stable View control until Compose has equivalent state, accessibility, pointer/D-pad and callback behavior. Never recreate a WebView due to Compose recomposition; avoid observing high-frequency page state in the entire toolbar.
+- Check API 24/28/34/37 CI, emulator D-pad routes, fullscreen exit, tab switching, shield toggling and text suggestions. Baseline Profiles are only coverage; claim a speed or memory improvement after comparative measurements on a representative low-RAM TV.
+- For each UI migration, document verified behavioral improvements, the exact tests run and unverified device-specific behavior; avoid cosmetic-only commits that leave the new UI disconnected.
