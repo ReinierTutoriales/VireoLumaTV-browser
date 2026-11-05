@@ -82,3 +82,29 @@ private fun CommandAction(command: BrowserCommand) {
         showLabel = false,
     )
 }
+
+/**
+ * Maps the activity's shared commands into Compose without forwarding clicks
+ * to hidden Android Views. This adapter is also usable by an isolated TV preview.
+ */
+@Composable
+fun TvConnectedBrowserCommandBar(
+    actions: com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls.CommandActions,
+    canGoBack: Boolean,
+    canGoForward: Boolean,
+    blockerEnabled: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    TvBrowserCommandBar(
+        back = BrowserCommand(context.getString(R.string.nav_back), R.drawable.ic_back, canGoBack, actions.back),
+        forward = BrowserCommand(context.getString(R.string.nav_forward), R.drawable.ic_forward, canGoForward, actions.forward),
+        refresh = BrowserCommand(context.getString(R.string.nav_reload), R.drawable.ic_refresh, onClick = actions.reload),
+        home = BrowserCommand(context.getString(R.string.nav_home), R.drawable.ic_home, onClick = actions.home),
+        menu = BrowserCommand(context.getString(R.string.nav_menu), R.drawable.ic_more, onClick = actions.menu),
+        blockerEnabled = blockerEnabled,
+        onToggleBlocker = actions.shield,
+        onShowBlockerDetails = actions.shieldDetails,
+        modifier = modifier,
+    )
+}
