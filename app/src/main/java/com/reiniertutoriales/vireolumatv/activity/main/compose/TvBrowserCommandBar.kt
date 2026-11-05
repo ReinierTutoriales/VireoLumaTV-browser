@@ -46,6 +46,7 @@ fun TvBrowserCommandBar(
                 iconRes = command.icon,
                 onClick = command.onClick,
                 enabled = command.enabled,
+                showLabel = false,
             )
         }
         TvBrowserAction(
@@ -53,12 +54,14 @@ fun TvBrowserCommandBar(
             iconRes = if (blockerEnabled) R.drawable.ic_shield_on else R.drawable.ic_shield_off,
             onClick = onToggleBlocker,
             tint = if (blockerEnabled) Color(0xFF4ADE80) else Color(0xFFF87171),
+            showLabel = false,
         )
         TvBrowserAction(
             label = menu.label,
             iconRes = menu.icon,
             onClick = menu.onClick,
             enabled = menu.enabled,
+            showLabel = false,
         )
     }
 }
