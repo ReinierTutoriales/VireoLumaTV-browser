@@ -252,12 +252,14 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     // Preserve the exact pre-video system UI state; it may belong to another window mode.
     private var systemUiBeforeFullscreen: Int? = null
+    private var keepScreenOnBeforeFullscreen = false
 
     // Fullscreen
 
     override fun onEnterFullscreen() {
         if (systemUiBeforeFullscreen != null) return
         systemUiBeforeFullscreen = browser.window.decorView.systemUiVisibility
+        keepScreenOnBeforeFullscreen = browser.window.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0
         // A player may enter fullscreen while the capsule is open. Close it now so the
         // fullscreen exit can reopen it and restore focus to an actionable control.
         if (vb.controlsOverlay.isVisible) browser.closeCapsule()
@@ -272,7 +274,9 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     override fun onExitFullscreen(restoreControls: Boolean) {
         val window = browser.window
-        if (!browser.config.keepScreenOn) window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (!keepScreenOnBeforeFullscreen && !browser.config.keepScreenOn) {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
         val previousUi = systemUiBeforeFullscreen
         systemUiBeforeFullscreen = null
         if (previousUi != null) {

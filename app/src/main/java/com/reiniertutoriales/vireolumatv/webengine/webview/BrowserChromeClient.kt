@@ -53,10 +53,11 @@ internal class BrowserChromeClient(private val view: BrowserWebView) : WebChrome
 
     /** Chromium ends fullscreen: the page's own doing, unless the remote already closed it. */
     override fun onHideCustomView() {
-        engine.onPageLeftFullscreen()
-        val callback = fullscreen
+        // Clear the session before callbacks: Chromium can re-enter synchronously.
+        val callback = fullscreen ?: return
         fullscreen = null
-        callback?.onCustomViewHidden()
+        engine.onPageLeftFullscreen()
+        callback.onCustomViewHidden()
     }
 
     override fun onProgressChanged(view: WebView, newProgress: Int) { window?.onProgress(newProgress) }
