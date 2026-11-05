@@ -28,12 +28,15 @@ internal class SettingsPages(
         }
         val page = pages.getOrPut(id) { createPage(id) }
         if (content.getChildAt(0) === page) return
+        content.getChildAt(0)?.animate()?.cancel()
         content.removeAllViews()
         (page.parent as? ViewGroup)?.removeView(page)
         content.addView(page, FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
         ))
+        page.animate().cancel()
+        page.alpha = 1f
         // Animate only the new page's opacity; never move focus or re-create saved fields.
         if (android.os.Build.VERSION.SDK_INT < 26 || android.animation.ValueAnimator.areAnimatorsEnabled()) {
             page.alpha = 0f

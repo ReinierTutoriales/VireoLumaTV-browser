@@ -54,8 +54,8 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
         selected = shown.indexOfFirst { it === selectedTab }.takeIf { it >= 0 }
             ?: previous.coerceIn(0, maxOf(0, shown.lastIndex))
         diff.dispatchUpdatesTo(this)
-        if (previous in shown.indices) notifyItemChanged(previous)
-        if (selected != previous && selected in shown.indices) notifyItemChanged(selected)
+        if (previous in shown.indices) notifyItemChanged(previous, SelectionChanged)
+        if (selected != previous && selected in shown.indices) notifyItemChanged(selected, SelectionChanged)
     }
 
     fun refresh(tab: BrowserTab, iconChanged: Boolean = false) {
@@ -99,7 +99,6 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
         fun bind(tab: BrowserTab, isCurrent: Boolean) {
             itemView.tag = tab
             itemView.isSelected = isCurrent
-            itemView.contentDescription = tab.title.ifBlank { tab.url }
             close.setOnClickListener {
                 if (this.tab === tab && shown.any { it === tab }) onCommand?.invoke(TabCommand.Close(tab))
             }
@@ -148,7 +147,8 @@ class TabChips(private val onLongPress: (BrowserTab) -> Unit) : RecyclerView.Ada
 
         fun updateTitle(tab: BrowserTab) {
             if (title.text.toString() != tab.title) title.text = tab.title
-            itemView.contentDescription = tab.title.ifBlank { tab.url }
+            val description = tab.title.ifBlank { tab.url }
+            if (itemView.contentDescription != description) itemView.contentDescription = description
             updateIcon(tab)
         }
 

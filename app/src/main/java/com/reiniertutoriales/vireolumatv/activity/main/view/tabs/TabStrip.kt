@@ -35,6 +35,8 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             tabStore = ScreenModels.get(TabStore::class, context)
             adapter.tabStore = tabStore
             vb.tabList.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+            vb.tabList.itemAnimator = null
+            vb.tabList.setHasFixedSize(true)
             vb.addButton.setOnClickListener { onCommand?.invoke(TabCommand.Add) }
         }
     }
@@ -44,13 +46,14 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         if (isInEditMode) return
         tabStore.openTabs.observe(listObserver)
         tabStore.currentTab.observe(currentObserver)
-        vb.tabList.adapter = adapter
+        if (vb.tabList.adapter !== adapter) vb.tabList.adapter = adapter
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         if (isInEditMode) return
         tabStore.openTabs.forget(listObserver)
+        vb.tabList.adapter = null
         tabStore.currentTab.forget(currentObserver)
     }
 
