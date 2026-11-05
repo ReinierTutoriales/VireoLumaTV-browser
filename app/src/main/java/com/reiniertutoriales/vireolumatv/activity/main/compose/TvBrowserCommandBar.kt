@@ -62,13 +62,10 @@ fun TvBrowserCommandBar(
         CommandAction(forward)
         CommandAction(refresh)
         CommandAction(home)
-        TvBrowserAction(
-            label = if (blockerEnabled) "Shield on" else "Shield off",
-            iconRes = if (blockerEnabled) R.drawable.ic_shield_on else R.drawable.ic_shield_off,
-            onClick = onToggleBlocker,
-            onLongClick = onShowBlockerDetails,
-            tint = if (blockerEnabled) Color(0xFF4ADE80) else Color(0xFFF87171),
-            showLabel = false,
+        TvBlockerAction(
+            enabled = blockerEnabled,
+            onToggle = onToggleBlocker,
+            onDetails = onShowBlockerDetails,
         )
         TvBrowserAction(
             label = menu.label,
@@ -78,6 +75,23 @@ fun TvBrowserCommandBar(
             showLabel = false,
         )
     }
+}
+
+/** Only browser-specific addition to the native Compose command row. */
+@Composable
+private fun TvBlockerAction(
+    enabled: Boolean,
+    onToggle: () -> Unit,
+    onDetails: (() -> Unit)?,
+) {
+    TvBrowserAction(
+        label = if (enabled) "Shield on" else "Shield off",
+        iconRes = if (enabled) R.drawable.ic_shield_on else R.drawable.ic_shield_off,
+        onClick = onToggle,
+        onLongClick = onDetails,
+        tint = if (enabled) Color(0xFF4ADE80) else Color(0xFFF87171),
+        showLabel = false,
+    )
 }
 
 @Composable
