@@ -38,6 +38,12 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     var callback: Callback? = null
+    var onBackCommand: (() -> Unit)? = null
+    var onForwardCommand: (() -> Unit)? = null
+    var onRefreshCommand: (() -> Unit)? = null
+    var onHomeCommand: (() -> Unit)? = null
+    var onBlockerCommand: (() -> Unit)? = null
+    var onBlockerDetailsCommand: (() -> Unit)? = null
     private val ui = BrowserControlsBinding.inflate(LayoutInflater.from(context), this)
     val backButton: ImageButton get() = ui.backButton
     val forwardButton: ImageButton get() = ui.forwardButton
@@ -72,14 +78,14 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
             composeCommands.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             composeCommands.setContent {
                 TvBrowserCommandBar(
-                    back = BrowserCommand(context.getString(R.string.nav_back), R.drawable.ic_back, canGoBack.value) { ui.backButton.performClick() },
-                    forward = BrowserCommand(context.getString(R.string.nav_forward), R.drawable.ic_forward, canGoForward.value) { ui.forwardButton.performClick() },
-                    refresh = BrowserCommand(context.getString(R.string.nav_reload), R.drawable.ic_refresh) { ui.reloadButton.performClick() },
-                    home = BrowserCommand(context.getString(R.string.nav_home), R.drawable.ic_home) { ui.homeButton.performClick() },
+                    back = BrowserCommand(context.getString(R.string.nav_back), R.drawable.ic_back, canGoBack.value) { onBackCommand?.invoke() },
+                    forward = BrowserCommand(context.getString(R.string.nav_forward), R.drawable.ic_forward, canGoForward.value) { onForwardCommand?.invoke() },
+                    refresh = BrowserCommand(context.getString(R.string.nav_reload), R.drawable.ic_refresh) { onRefreshCommand?.invoke() },
+                    home = BrowserCommand(context.getString(R.string.nav_home), R.drawable.ic_home) { onHomeCommand?.invoke() },
                     menu = BrowserCommand(context.getString(R.string.nav_menu), R.drawable.ic_more) { ui.menuButton.performClick() },
                     blockerEnabled = shieldEnabled.value,
-                    onToggleBlocker = { ui.blockerButton.performClick() },
-                    onShowBlockerDetails = { ui.blockerButton.performLongClick() },
+                    onToggleBlocker = { onBlockerCommand?.invoke() },
+                    onShowBlockerDetails = { onBlockerDetailsCommand?.invoke() },
                 )
             }
             addView(composeCommands, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
