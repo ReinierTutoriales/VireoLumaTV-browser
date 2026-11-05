@@ -51,6 +51,8 @@ fun TvBrowserCommandBar(
                 onSubmit = onSubmitAddress,
                 onCancel = onCancelAddress,
                 onDraftChanged = onAddressDraftChanged,
+                onEditingChanged = onAddressEditingChanged,
+                onFocusSuggestions = onFocusSuggestions,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -98,6 +100,8 @@ fun TvConnectedBrowserCommandBar(
     onSubmitAddress: (String) -> Unit,
     onCancelAddress: () -> Unit,
     onAddressDraftChanged: (String) -> Unit,
+    onAddressEditingChanged: (Boolean) -> Unit,
+    onFocusSuggestions: () -> Boolean,
     canGoBack: Boolean,
     canGoForward: Boolean,
     blockerEnabled: Boolean,
@@ -113,6 +117,8 @@ fun TvConnectedBrowserCommandBar(
         onSubmitAddress = onSubmitAddress,
         onCancelAddress = onCancelAddress,
         onAddressDraftChanged = onAddressDraftChanged,
+        onAddressEditingChanged = onAddressEditingChanged,
+        onFocusSuggestions = onFocusSuggestions,
         back = BrowserCommand(backLabel, R.drawable.ic_back, canGoBack, actions.back),
         forward = BrowserCommand(forwardLabel, R.drawable.ic_forward, canGoForward, actions.forward),
         refresh = BrowserCommand(reloadLabel, R.drawable.ic_refresh, onClick = actions.reload),
