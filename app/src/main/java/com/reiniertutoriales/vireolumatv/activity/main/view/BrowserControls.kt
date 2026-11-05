@@ -64,6 +64,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     private val blockerStatus = mutableStateOf("")
     private val blockerReady = mutableStateOf(false)
     private val composeAddress = mutableStateOf("")
+    private val focusRequest = mutableStateOf(0)
     private val cancelAddressRequest = mutableStateOf(0)
     private val submitAddressRequest = mutableStateOf(0 to "")
     private var pageAddress = ""
@@ -109,6 +110,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                         blockerEnabled = blockerActive.value,
                         blockerDescription = blockerStatus.value,
                         blockerReady = blockerReady.value,
+                        focusRequest = focusRequest.value,
                     )
                 }
             }
@@ -246,11 +248,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     fun takeFocus() {
-        if (!editing && composeRow.requestFocus()) return
-        for (command in commands) {
-            if (command.isEnabled && command.visibility == VISIBLE && command.requestFocus()) return
-        }
-        ui.addressField.requestFocus()
+        if (!editing) focusRequest.value += 1
     }
 
     override fun onDetachedFromWindow() {
