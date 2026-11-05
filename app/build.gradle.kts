@@ -3,6 +3,7 @@ import javax.inject.Inject
 import org.gradle.process.ExecOperations
 
 plugins {
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.baselineprofile)
@@ -140,6 +141,7 @@ android {
     }
 
     buildFeatures {
+        compose = true
         viewBinding = true
         buildConfig = true
     }
@@ -161,6 +163,7 @@ ksp {
 }
 
 dependencies {
+    implementation(libs.androidx.tv.material)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.recyclerview)
