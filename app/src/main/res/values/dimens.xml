@@ -6,7 +6,7 @@
     <dimen name="safe_vertical">27dp</dimen>
 
     <dimen name="control_size">48dp</dimen>
-    <dimen name="control_icon_padding">12dp</dimen>
+    <dimen name="control_icon_padding">11dp</dimen>
     <dimen name="control_gap">8dp</dimen>
     <dimen name="row_height">56dp</dimen>
     <dimen name="corner_small">14dp</dimen>
