@@ -53,6 +53,7 @@ fun TvAddressField(
     val shape = RoundedCornerShape(10.dp)
     fun cancelEditing() {
         editing = false
+        onEditingChanged(false)
         draft = address
         keyboard?.hide()
         onCancel()
@@ -61,6 +62,7 @@ fun TvAddressField(
         val target = draft.trim()
         if (target.isNotEmpty()) {
             editing = false
+            onEditingChanged(false)
             keyboard?.hide()
             onSubmit(target)
         }
@@ -95,12 +97,16 @@ fun TvAddressField(
                 .background(Color.Black, shape)
                 .border(2.dp, Color.White, shape)
                 .onPreviewKeyEvent { event ->
-                    if (event.type == KeyEventType.KeyUp &&
-                        (event.key == Key.Escape || event.key == Key.Back)
-                    ) {
-                        cancelEditing()
-                        true
-                    } else false
+                    when {
+                        event.type == KeyEventType.KeyUp &&
+                            (event.key == Key.Escape || event.key == Key.Back) -> {
+                            cancelEditing()
+                            true
+                        }
+                        event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown ->
+                            onFocusSuggestions()
+                        else -> false
+                    }
                 }
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         )
@@ -113,6 +119,7 @@ fun TvAddressField(
                 .clickable {
                     draft = address
                     editing = true
+                    onEditingChanged(true)
                 }
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
