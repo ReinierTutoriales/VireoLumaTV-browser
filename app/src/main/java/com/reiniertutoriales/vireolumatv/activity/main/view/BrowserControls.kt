@@ -61,6 +61,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     private val backAvailable = mutableStateOf(false)
     private val forwardAvailable = mutableStateOf(false)
     private val blockerActive = mutableStateOf(false)
+    private val blockerStatus = mutableStateOf("")
+    private val blockerReady = mutableStateOf(false)
     private val composeAddress = mutableStateOf("")
     private var pageAddress = ""
     private var editing = false
@@ -101,6 +103,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                         canGoBack = backAvailable.value,
                         canGoForward = forwardAvailable.value,
                         blockerEnabled = blockerActive.value,
+                        blockerDescription = blockerStatus.value,
+                        blockerReady = blockerReady.value,
                     )
                 }
             }
@@ -132,6 +136,11 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                     else context.resources.getQuantityString(R.plurals.nav_menu_downloads, count, count)
             }
         }
+    }
+
+    fun updateBlockerStatus(description: String, ready: Boolean) {
+        blockerStatus.value = description
+        blockerReady.value = ready
     }
 
     fun showBlockerEnabled(enabled: Boolean) {
