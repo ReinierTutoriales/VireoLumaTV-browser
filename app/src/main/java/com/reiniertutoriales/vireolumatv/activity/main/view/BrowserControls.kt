@@ -205,7 +205,10 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     fun takeFocus() {
-        (commands.firstOrNull { it.isEnabled && it.visibility == VISIBLE } ?: ui.addressField).requestFocus()
+        for (command in commands) {
+            if (command.isEnabled && command.visibility == VISIBLE && command.requestFocus()) return
+        }
+        ui.addressField.requestFocus()
     }
 
     override fun onDetachedFromWindow() {
