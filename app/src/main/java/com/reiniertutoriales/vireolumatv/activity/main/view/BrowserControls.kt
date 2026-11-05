@@ -55,8 +55,8 @@ class BrowserControls @JvmOverloads constructor(
     private val focusRequest = mutableStateOf(0)
     private val cancelRequest = mutableStateOf(0)
     private val submitRequest = mutableStateOf(0 to "")
-    private var editing = false
-    val isEditingAddress: Boolean get() = editing
+    private val editingState = mutableStateOf(false)
+    val isEditingAddress: Boolean get() = editingState.value
 
     init {
         composeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
@@ -73,7 +73,7 @@ class BrowserControls @JvmOverloads constructor(
                     onCancelAddress = { callback?.onAddressInputCancelled() },
                     onAddressDraftChanged = { callback?.onAddressTyped(it) },
                     onAddressEditingChanged = { active ->
-                        editing = active
+                        editingState.value = active
                         if (active) callback?.onAddressEditing()
                     },
                     onFocusSuggestions = { callback?.focusSuggestions() == true },
@@ -110,11 +110,11 @@ class BrowserControls @JvmOverloads constructor(
     }
 
     fun submit(text: String) {
-        if (editing) submitRequest.value = (submitRequest.value.first + 1) to text
+        if (editingState.value) submitRequest.value = (submitRequest.value.first + 1) to text
     }
 
     fun closeAddressEditing() {
-        if (editing) cancelRequest.value += 1
+        if (editingState.value) cancelRequest.value += 1
     }
 
     fun cancelAddressInput() {
@@ -126,6 +126,6 @@ class BrowserControls @JvmOverloads constructor(
     }
 
     fun takeFocus() {
-        if (!editing) focusRequest.value += 1
+        if (!editingState.value) focusRequest.value += 1
     }
 }
