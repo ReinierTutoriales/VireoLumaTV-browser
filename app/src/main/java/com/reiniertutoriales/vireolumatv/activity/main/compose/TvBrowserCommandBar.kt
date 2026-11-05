@@ -27,6 +27,8 @@ data class BrowserCommand(
 
 @Composable
 fun TvBrowserCommandBar(
+    address: String,
+    onSubmitAddress: (String) -> Unit,
     back: BrowserCommand,
     forward: BrowserCommand,
     refresh: BrowserCommand,
@@ -41,15 +43,15 @@ fun TvBrowserCommandBar(
         modifier = modifier.fillMaxWidth().focusRestorer().focusGroup().background(Color.Black).padding(horizontal = 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        listOf(back, forward, refresh, home).forEach { command ->
-            TvBrowserAction(
-                label = command.label,
-                iconRes = command.icon,
-                onClick = command.onClick,
-                enabled = command.enabled,
-                showLabel = false,
-            )
-        }
+        TvAddressField(
+            address = address,
+            onSubmit = onSubmitAddress,
+            modifier = Modifier.weight(1f),
+        )
+        CommandAction(back)
+        CommandAction(forward)
+        CommandAction(refresh)
+        CommandAction(home)
         TvBrowserAction(
             label = if (blockerEnabled) "Shield on" else "Shield off",
             iconRes = if (blockerEnabled) R.drawable.ic_shield_on else R.drawable.ic_shield_off,
@@ -66,4 +68,15 @@ fun TvBrowserCommandBar(
             showLabel = false,
         )
     }
+}
+
+@Composable
+private fun CommandAction(command: BrowserCommand) {
+    TvBrowserAction(
+        label = command.label,
+        iconRes = command.icon,
+        onClick = command.onClick,
+        enabled = command.enabled,
+        showLabel = false,
+    )
 }
