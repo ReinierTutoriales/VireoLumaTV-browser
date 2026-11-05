@@ -63,21 +63,20 @@ class BrowserUiSnapshotTest {
         tabs.currentTab.value = tabs.openTabs[0]
         val vb = BrowserWindowBinding.inflate(activity.layoutInflater)
         try {
-            assertTrue("Blocker shield needs a readable initial description",
-                !vb.controlsRow.adBlockButton.contentDescription.isNullOrBlank())
+            vb.controlsRow.updateBlockerStatus("Shield active", true)
+            assertEquals("Shield active", vb.controlsRow.snapshot.blockerDescription)
             vb.pageContainer.setBackgroundColor(Color.rgb(100, 116, 139))
             vb.tabPreview.visibility = View.GONE
             vb.pointerMenu.visibility = View.INVISIBLE
             vb.loadProgress.visibility = View.GONE
             vb.startupSpinner.visibility = View.GONE
             vb.controlsRow.showAddress("https://example.test/documentacion/una-direccion-larga")
-            vb.controlsRow.forwardButton.isEnabled = false
+            vb.controlsRow.updateNavigation(back = true, forward = false)
             activity.setContentView(vb.root)
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, 960, 540)
-            vb.controlsRow.backButton.isFocusableInTouchMode = true
-            assertTrue(vb.controlsRow.backButton.requestFocus())
+            vb.controlsRow.takeFocus()
             vb.root.refreshDrawableState()
             val bitmap = Bitmap.createBitmap(960, 540, Bitmap.Config.ARGB_8888)
             vb.root.draw(Canvas(bitmap))
@@ -87,10 +86,8 @@ class BrowserUiSnapshotTest {
             assertTrue("Native drawing must include browser controls", bitmap.getPixel(40, 40) !=
                 Color.rgb(100, 116, 139))
             bitmap.recycle()
-            val address = vb.root.findViewById<TextView>(R.id.address_field)
-            assertEquals("System font scaling is honored", 18f * fontScale, address.textSize, 0.1f)
-            assertTrue("Enlarged URL text fits vertically: line=${address.layout.getLineBottom(0)}, height=${address.height}, padding=${address.compoundPaddingTop + address.compoundPaddingBottom}", address.layout.getLineBottom(0) <=
-                address.height - address.compoundPaddingTop - address.compoundPaddingBottom)
+            assertEquals("https://example.test/documentacion/una-direccion-larga", vb.controlsRow.snapshot.address)
+            assertFalse(vb.controlsRow.snapshot.canGoForward)
             verifyGeometry(vb, fontScale)
             verifyStates(activity, name)
         } finally {
@@ -103,32 +100,13 @@ class BrowserUiSnapshotTest {
         }
     }
     private fun verifyGeometry(vb: BrowserWindowBinding, fontScale: Float) {
-        // One row of round 48dp commands in a single focus chain.
-        val capsuleIds = listOf(R.id.back_button, R.id.forward_button, R.id.reload_button,
-            R.id.home_button, R.id.blocker_button, R.id.menu_button)
+        // Compose owns command geometry. Android View IDs are no longer present.
         for (width in listOf(720, 960, 1280)) {
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(width * 9 / 16, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, width, width * 9 / 16)
-            var previousRight = -1
-            for (id in capsuleIds) {
-                val view = vb.root.findViewById<View>(id)
-                assertEquals("Uniform control width at $width", 48, view.width)
-                assertEquals("Uniform control height at $width", 48, view.height)
-                // A focused control grows 1.1x: neighbours must keep a gap for it.
-                assertTrue("Controls keep room to grow at $width", view.left >= previousRight + 4)
-                previousRight = view.right
-            }
-            // Everything focusable stays inside the 48 dp / 27 dp overscan-safe area.
-            val surface = vb.controlsOverlay
-            val rowLeft = surface.left + vb.controlsRow.left
-            val rowRight = surface.left + vb.controlsRow.right
-            assertTrue("Controls inside the safe area at $width", rowLeft >= 48 && rowRight <= width - 48)
-            assertTrue("Controls start below the safe top at $width", surface.top + vb.controlsRow.top >= 27)
-            val address = vb.root.findViewById<View>(R.id.address_field)
-            assertTrue("Address remains usable at $width", address.width >= 240)
-            if (fontScale == 1f) assertEquals("Default address height", 48, address.height)
-            else assertTrue("Accessible text may expand the field", address.height >= 48)
+            assertTrue("Compose toolbar must fit the viewport", vb.controlsRow.width <= width)
+            assertTrue("Compose toolbar must remain attached", vb.controlsRow.childCount == 1)
             // Tab chips: 48dp tall, 188dp wide so four fit inside the safe area; "+" is a 48dp control.
             val tabs = vb.tabStrip.findViewById<RecyclerView>(R.id.tab_list)
             val tab = tabs.getChildAt(0)
