@@ -3,7 +3,7 @@ package com.reiniertutoriales.vireolumatv.activity.main.compose
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -45,6 +45,7 @@ fun TvBrowserAction(
     enabled: Boolean = true,
     tint: Color = Color.White,
     showLabel: Boolean = true,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -65,7 +66,14 @@ fun TvBrowserAction(
             .clip(shape)
             .background(surface)
             .border(BorderStroke(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray), shape)
-            .clickable(interactionSource = interaction, indication = null, enabled = enabled, onClick = onClick)
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick,
+                onLongClick = onLongClick,
+                onLongClickLabel = if (onLongClick != null) "More options: $label" else null,
+            )
             .padding(horizontal = if (showLabel) 14.dp else 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
