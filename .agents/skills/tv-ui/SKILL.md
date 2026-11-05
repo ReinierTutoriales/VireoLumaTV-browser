@@ -48,3 +48,10 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
 - During hybrid migration, retain the stable View control until Compose has equivalent state, accessibility, pointer/D-pad and callback behavior. Never recreate a WebView due to Compose recomposition; avoid observing high-frequency page state in the entire toolbar.
 - Check API 24/28/34/37 CI, emulator D-pad routes, fullscreen exit, tab switching, shield toggling and text suggestions. Baseline Profiles are only coverage; claim a speed or memory improvement after comparative measurements on a representative low-RAM TV.
 - For each UI migration, document verified behavioral improvements, the exact tests run and unverified device-specific behavior; avoid cosmetic-only commits that leave the new UI disconnected.
+
+## Verified migration regression: 2026-11-05
+
+- The hybrid Compose toolbar compiled but CI run 42033562413 failed 19 of 533 unit tests, including BrowserNavigationTest, BrowserUiSnapshotTest and ToolbarStateTest. Treat this as a functional regression, not a transient CI failure; diagnose test assertions and restore behavior before merging.
+- Do not hide legacy buttons and redirect Compose clicks through `performClick()` without first updating the focus, navigation, editing, accessibility and test contracts. A hidden View cannot remain the authoritative focus target; expose commands through explicit activity callbacks and one coherent state owner.
+- During View/Compose interoperability, verify D-pad movement across the address field, Compose buttons, tab strip and suggestions in both directions; verify Back/IME/fullscreen and the enabled/disabled history state. Existing navigation and snapshot tests are acceptance gates, not tests to delete to make CI green.
+- Before declaring a migration integrated, require passing targeted tests, the complete CI suite and an emulator D-pad path. A source-level mount is not equivalent to a verified TV user interaction.
