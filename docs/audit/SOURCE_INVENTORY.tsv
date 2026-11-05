@@ -526,3 +526,4 @@ scripts/test-memory-capture.py	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/FilterBridgeUrlPolicyTest.kt	PROPIO
 docs/audit/SECURITY_PRIVACY_REVIEW_20261104.md	PROPIO
 docs/audit/TV_UI_AUDIT_20261104.md	PROPIO
+docs/audit/ANDROID_TV_WEBVIEW_ENGINEERING_BASELINE.md	PROPIO
