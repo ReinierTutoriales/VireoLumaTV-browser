@@ -34,6 +34,7 @@ fun TvBrowserCommandBar(
     menu: BrowserCommand,
     blockerEnabled: Boolean,
     onToggleBlocker: () -> Unit,
+    onShowBlockerDetails: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -53,6 +54,7 @@ fun TvBrowserCommandBar(
             label = if (blockerEnabled) "Shield on" else "Shield off",
             iconRes = if (blockerEnabled) R.drawable.ic_shield_on else R.drawable.ic_shield_off,
             onClick = onToggleBlocker,
+            onLongClick = onShowBlockerDetails,
             tint = if (blockerEnabled) Color(0xFF4ADE80) else Color(0xFFF87171),
             showLabel = false,
         )
