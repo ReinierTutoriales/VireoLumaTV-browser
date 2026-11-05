@@ -33,6 +33,17 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     var callback: Callback? = null
+    /** Shared commands can be used by either View or Compose without hidden button proxies. */
+    data class CommandActions(
+        val back: () -> Unit,
+        val forward: () -> Unit,
+        val reload: () -> Unit,
+        val home: () -> Unit,
+        val shield: () -> Unit,
+        val shieldDetails: () -> Unit,
+        val menu: () -> Unit,
+    )
+    var commandActions: CommandActions? = null
     private val ui = BrowserControlsBinding.inflate(LayoutInflater.from(context), this)
     val backButton: ImageButton get() = ui.backButton
     val forwardButton: ImageButton get() = ui.forwardButton
@@ -58,7 +69,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         if (!isInEditMode) {
             ui.blockerButton.imageTintList = context.getColorStateList(R.color.blocker_icon)
             showBlockerEnabled(AppContext.config.adBlockEnabled)
-            ui.menuButton.setOnClickListener { callback?.showAppMenu() }
+            ui.menuButton.setOnClickListener { commandActions?.menu?.invoke() ?: callback?.showAppMenu() }
             renderEditing(false)
             ui.addressField.setOnClickListener { beginEditing() }
             ui.addressField.setOnFocusChangeListener { _, focused ->
