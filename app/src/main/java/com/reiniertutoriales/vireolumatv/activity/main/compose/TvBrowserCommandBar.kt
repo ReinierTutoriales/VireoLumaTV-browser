@@ -52,9 +52,12 @@ fun TvBrowserCommandBar(
     onShowBlockerDetails: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
+    val backFocus = remember { FocusRequester() }
     val homeFocus = remember { FocusRequester() }
     LaunchedEffect(focusRequest) {
-        if (focusRequest > 0) homeFocus.requestFocus()
+        if (focusRequest > 0) {
+            if (back.enabled) backFocus.requestFocus() else homeFocus.requestFocus()
+        }
     }
     Row(
         modifier = modifier.focusGroup().focusRestorer().background(Color.Black).padding(horizontal = if (address == null) 0.dp else 24.dp, vertical = 8.dp),
@@ -73,7 +76,7 @@ fun TvBrowserCommandBar(
                 modifier = Modifier.weight(1f),
             )
         }
-        CommandAction(back)
+        CommandAction(back, Modifier.focusRequester(backFocus))
         CommandAction(forward)
         CommandAction(refresh)
         CommandAction(home, Modifier.focusRequester(homeFocus))
