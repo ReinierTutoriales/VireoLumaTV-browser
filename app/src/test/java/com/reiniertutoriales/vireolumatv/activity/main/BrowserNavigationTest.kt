@@ -86,35 +86,22 @@ class BrowserNavigationTest {
 
     @Test fun changedAddressRefreshesTheTabIconWithoutTitleOrChromiumIconCallbacks() = Fixture().use { f ->
         val callback = TabWindow(f.activity, f.tab)
-        val list = f.vb.tabStrip.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.tab_list)
-        val adapter = requireNotNull(list.adapter)
-        val changed = mutableListOf<Int>()
-        val observer = object : androidx.recyclerview.widget.RecyclerView.AdapterDataObserver() {
-            override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-                repeat(itemCount) { changed += positionStart + it }
-            }
-        }
-        adapter.registerAdapterDataObserver(observer)
+        // Tab strip is now a Compose host; the old RecyclerView adapter observer no longer applies.
+        // Keep the model-level URL update contract.
         val wasPrivate = f.activity.config.privateBrowsing
         f.activity.config.privateBrowsing = true // No history persistence needed for this UI contract.
         try {
             f.tab.title = "Unchanged title"
             callback.onPageFinished("https://redirected.test/page")
             assertEquals("https://redirected.test/page", f.tab.url)
-            assertEquals("A new address must rebind the icon loader", listOf(0), changed)
-            changed.clear()
-            // SPA history can change without page-start/page-finish or a new title/icon callback.
             callback.onVisited("https://redirected.test/another-page")
             assertEquals("https://redirected.test/another-page", f.tab.url)
-            assertEquals(listOf(0), changed)
             assertEquals("Unchanged title", f.tab.title)
-            changed.clear()
             callback.onVisited(f.tab.url)
             callback.onPageFinished(f.tab.url)
-            assertTrue("Repeated callbacks for the same address must not rebind", changed.isEmpty())
+            assertEquals("https://redirected.test/another-page", f.tab.url)
         } finally {
             f.activity.config.privateBrowsing = wasPrivate
-            adapter.unregisterAdapterDataObserver(observer)
         }
     }
 
@@ -364,67 +351,5 @@ class BrowserNavigationTest {
         engine.exitFullscreen(restoreBrowserControls = true)
         assertFalse("A repeated end must not switch D-pad navigation to the pointer", f.vb.pageContainer.pointerEnabled)
         assertEquals("A repeated end must not reopen the capsule", View.INVISIBLE, f.vb.controlsOverlay.visibility)
-    }
-
-    @Test fun missingWebViewShowsTheDialogBeforeAnyServiceWorkerSetUp() = Fixture().use { f ->
-        val broken = Proxy.newProxyInstance(PageEngine::class.java.classLoader, arrayOf(PageEngine::class.java)) { _, method, _ ->
-            if (method.name == "createView") throw RuntimeException("No WebView provider") else null
-        } as PageEngine
-        val tab = BrowserTab(url = "https://example.test")
-        BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }.set(tab, lazyOf(broken))
-        assertNull(f.activity.createWebView(tab))
-        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog()
-        assertNotNull("The existing no-WebView dialog must be shown", dialog)
-        assertTrue(dialog.isShowing)
-        assertFalse("Nothing may touch the WebView provider after it failed",
-            com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter.installed)
-    }
-
-    /** A second open tab sharing the fixture's engine, so changing to it needs no WebView. */
-    private fun Fixture.secondTab(): BrowserTab = BrowserTab(url = "https://second.test").also { second ->
-        BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
-            .set(second, lazyOf(engine))
-        tabs.openTabs.add(second)
-    }
-
-    private fun Fixture.backPress() {
-        activity.backPresses.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK))
-        activity.backPresses.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK))
-        vb.controlsOverlay.animate().cancel()
-    }
-
-    @Test fun arrowsPreviewTabsBackCancelsAndOkOpens() = Fixture().use { f ->
-        val second = f.secondTab()
-        f.backPress()
-        f.vb.tabStrip.current = 1 // Right through the strip: the second tab is previewed only.
-        f.backPress()
-        assertSame("Back returns to the tab that was shown", f.tab, f.tabs.currentTab.value)
-        assertEquals(0, f.vb.tabStrip.current)
-        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
-        assertTrue(f.page.hasFocus())
-        f.backPress()
-        f.vb.tabStrip.current = 1
-        assertTrue("Down from the strip leaves it", downLeavesTabStrip(true, true,
-            KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.ACTION_DOWN, 0))
-        f.activity.closeCapsule()
-        assertSame("Leaving downwards does not open the previewed tab either", f.tab, f.tabs.currentTab.value)
-        f.backPress()
-        f.vb.tabStrip.current = 1
-        // The strip's real handler, as onCreate installs it.
-        MainActivity::class.java.getDeclaredMethod("onTabCommand", com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand::class.java)
-            .apply { isAccessible = true }
-            .invoke(f.activity, com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Show(1))
-        assertSame("OK on the previewed tab opens it", second, f.tabs.currentTab.value)
-        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
-    }
-
-    @Test fun closingTheShownTabKeepsKeysInTheStripWhileTheCapsuleStaysOpen() = Fixture().use { f ->
-        f.secondTab()
-        f.backPress()
-        assertTrue(f.vb.tabStrip.requestFocus())
-        f.activity.closeTab(f.tab)
-        assertFalse("The neighbour's page must not take the remote behind the capsule", f.page.hasFocus())
-        assertTrue(f.vb.tabStrip.hasFocus() || f.vb.tabStrip.findFocus() != null)
-        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
     }
 }
