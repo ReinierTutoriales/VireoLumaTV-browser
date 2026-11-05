@@ -47,6 +47,8 @@ fun TvAddressField(
     onDraftChanged: (String) -> Unit = {},
     onEditingChanged: (Boolean) -> Unit = {},
     onFocusSuggestions: () -> Boolean = { false },
+    cancelRequest: Int = 0,
+    submitRequest: Pair<Int, String> = 0 to "",
 ) {
     var editing by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf(address) }
@@ -67,6 +69,17 @@ fun TvAddressField(
             onEditingChanged(false)
             keyboard?.hide()
             onSubmit(target)
+        }
+    }
+
+    // Requests from the host are explicit: the hidden legacy EditText is not authoritative.
+    LaunchedEffect(cancelRequest) {
+        if (cancelRequest > 0 && editing) cancelEditing()
+    }
+    LaunchedEffect(submitRequest) {
+        if (submitRequest.first > 0 && editing) {
+            draft = submitRequest.second
+            submitEditing()
         }
     }
 
