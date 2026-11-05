@@ -613,8 +613,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (tab !== tabStore.currentTab.value) return
         publishShownSite()
         nativeHome?.update(tab)
-        vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
-        vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
         vb.controlsRow.updateNavigation(tab.engine.canGoBack, tab.engine.canGoForward)
         updateAdblockStatus(tab)
     }
@@ -662,9 +660,10 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal fun updateAdblockStatus(tab: BrowserTab) {
         val state = getString(blockerStatusLabel(tab))
         vb.controlsRow.showBlockerEnabled(tab.adblock ?: config.adBlockEnabled)
-        vb.controlsRow.adBlockButton.contentDescription = resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds)
-        vb.controlsRow.adBlockButton.isActivated =
-            (tab.adblock ?: config.adBlockEnabled) && ::adBlocker.isInitialized && adBlocker.hasActiveRules
+        vb.controlsRow.updateBlockerStatus(
+            resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds),
+            (tab.adblock ?: config.adBlockEnabled) && ::adBlocker.isInitialized && adBlocker.hasActiveRules,
+        )
     }
 
     private fun showBlockerDetails() {
