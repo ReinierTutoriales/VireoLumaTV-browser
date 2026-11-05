@@ -334,6 +334,12 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal fun configureBrowserControls() {
         val bar = vb.controlsRow
         bar.callback = this
+        bar.onHomeCommand = { closeCapsule(); navigate(browserSettings.homePage) }
+        bar.onBackCommand = { closeCapsule(); navigateBack() }
+        bar.onForwardCommand = { closeCapsule(); tabStore.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } }
+        bar.onRefreshCommand = { closeCapsule(); refresh() }
+        bar.onBlockerCommand = { commitStripSelection(); toggleBlockerForTab() }
+        bar.onBlockerDetailsCommand = { commitStripSelection(); showBlockerDetails() }
         vb.vSuggestions.onPick = { bar.submit(it.url) }
         // A command runs on the tab shown, after the capsule hands focus back to the page.
         fun pageCommand(button: View, action: () -> Unit) = button.setOnClickListener {
