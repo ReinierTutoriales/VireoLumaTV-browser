@@ -527,3 +527,6 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/FilterBrid
 docs/audit/SECURITY_PRIVACY_REVIEW_20261104.md	PROPIO
 docs/audit/TV_UI_AUDIT_20261104.md	PROPIO
 docs/audit/ANDROID_TV_WEBVIEW_ENGINEERING_BASELINE.md	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvAddressField.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserAction.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserCommandBar.kt	PROPIO
