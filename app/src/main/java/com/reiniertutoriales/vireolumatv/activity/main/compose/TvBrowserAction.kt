@@ -23,8 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.border
 
 /**
@@ -48,8 +46,7 @@ fun TvBrowserAction(
         modifier = modifier
             .defaultMinSize(minHeight = 48.dp)
             .clip(shape)
-            .semantics { contentDescription = label }
-            .border(BorderStroke(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray), shape)
+                        .border(BorderStroke(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray), shape)
             .clickable(interactionSource = interaction, indication = null, enabled = enabled, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
