@@ -18,7 +18,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
@@ -37,7 +39,7 @@ fun TvAddressField(
     modifier: Modifier = Modifier,
 ) {
     var editing by remember { mutableStateOf(false) }
-    var draft by remember(address, editing) { mutableStateOf(address) }
+    var draft by remember(address) { mutableStateOf(address) }
     val keyboard = LocalSoftwareKeyboardController.current
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -62,9 +64,20 @@ fun TvAddressField(
             .fillMaxWidth()
             .background(Color.Black, shape)
             .border(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray, shape)
+.onPreviewKeyEvent { event ->
+                if (editing && event.key == Key.Escape && event.type == KeyEventType.KeyUp) {
+                    editing = false
+                    draft = address
+                    keyboard?.hide()
+                    true
+                } else false
+            }
             .clickable {
-                editing = true
-                keyboard?.show()
+                if (!editing) {
+                    draft = address
+                    editing = true
+                    keyboard?.show()
+                }
             }
             .padding(horizontal = 16.dp, vertical = 14.dp),
         decorationBox = { inner ->
