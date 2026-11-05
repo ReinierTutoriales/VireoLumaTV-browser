@@ -530,3 +530,4 @@ docs/audit/ANDROID_TV_WEBVIEW_ENGINEERING_BASELINE.md	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvAddressField.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserAction.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserCommandBar.kt	PROPIO
+docs/superpowers/plans/2026-11-05-compose-native-tv-migration.md	PROPIO
