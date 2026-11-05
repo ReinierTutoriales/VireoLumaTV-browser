@@ -5,6 +5,7 @@ import org.gradle.process.ExecOperations
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.androidx.baselineprofile)
 }
 
@@ -141,6 +142,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        compose = true
         buildConfig = true
     }
 
@@ -161,6 +163,13 @@ ksp {
 }
 
 dependencies {
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.tv.material)
+    debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.webkit)
     implementation(libs.androidx.recyclerview)
