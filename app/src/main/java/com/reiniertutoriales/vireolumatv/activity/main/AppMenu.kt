@@ -53,5 +53,6 @@ internal class AppMenuPanel(context: Context, entries: List<AppMenuEntry>, onPic
             setLayout(context.resources.getDimensionPixelSize(R.dimen.side_panel_width), ViewGroup.LayoutParams.MATCH_PARENT)
         }
         setOnShowListener { rows.firstOrNull()?.requestFocus() }
+        setOnDismissListener { rows.forEach { it.setOnClickListener(null) } }
     }
 }
