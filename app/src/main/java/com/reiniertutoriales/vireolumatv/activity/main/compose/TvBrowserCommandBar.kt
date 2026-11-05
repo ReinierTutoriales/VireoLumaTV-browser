@@ -31,6 +31,8 @@ fun TvBrowserCommandBar(
     onSubmitAddress: (String) -> Unit = {},
     onCancelAddress: () -> Unit = {},
     onAddressDraftChanged: (String) -> Unit = {},
+    onAddressEditingChanged: (Boolean) -> Unit = {},
+    onFocusSuggestions: () -> Boolean = { false },
     back: BrowserCommand,
     forward: BrowserCommand,
     refresh: BrowserCommand,
