@@ -27,8 +27,8 @@ data class BrowserCommand(
 
 @Composable
 fun TvBrowserCommandBar(
-    address: String,
-    onSubmitAddress: (String) -> Unit,
+    address: String? = null,
+    onSubmitAddress: (String) -> Unit = {},
     back: BrowserCommand,
     forward: BrowserCommand,
     refresh: BrowserCommand,
@@ -40,14 +40,16 @@ fun TvBrowserCommandBar(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().focusRestorer().focusGroup().background(Color.Black).padding(horizontal = 24.dp, vertical = 8.dp),
+        modifier = modifier.focusRestorer().focusGroup().background(Color.Black).padding(horizontal = if (address == null) 0.dp else 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        TvAddressField(
-            address = address,
-            onSubmit = onSubmitAddress,
-            modifier = Modifier.weight(1f),
-        )
+        if (address != null) {
+            TvAddressField(
+                address = address,
+                onSubmit = onSubmitAddress,
+                modifier = Modifier.weight(1f),
+            )
+        }
         CommandAction(back)
         CommandAction(forward)
         CommandAction(refresh)
