@@ -35,3 +35,10 @@ Every line must be traceable to existing code or a clearly labeled minimal assum
   before calling it; access attachment-dependent state after it returns.
 - Read focused text-control selections through their selection APIs; document
   selection alone does not describe text selected inside an input or textarea.
+
+## Delivery efficiency for repository tasks
+
+- Work toward the user's acceptance criterion, not a sequence of preparation-only commits. Before editing, map the minimum complete vertical slice (UI, activity callbacks, resources, tests) and implement the related changes together.
+- Prefer one cohesive multi-file commit over many trivial commits. Avoid repeated status-only reports and documentation-only changes while the requested feature remains disconnected.
+- Check the exact current CI head once, inspect failing logs to identify a reproducible cause, and distinguish transient infrastructure errors from code regressions. Do not rerun unaffected jobs or repeatedly poll without a decision to make.
+- After changes, verify the exact head; report implemented behavior, validation, and remaining gaps precisely. Do not call a component integrated merely because it compiles or exists in the source tree.
