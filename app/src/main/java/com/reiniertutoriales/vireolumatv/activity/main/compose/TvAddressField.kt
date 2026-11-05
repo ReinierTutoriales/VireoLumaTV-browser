@@ -10,6 +10,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,12 +58,14 @@ fun TvAddressField(
     var draft by remember { mutableStateOf(address) }
     val editorFocus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     val shape = RoundedCornerShape(10.dp)
     fun cancelEditing() {
         editing = false
         onEditingChanged(false)
         draft = address
         keyboard?.hide()
+        focusManager.clearFocus()
         onCancel()
     }
     fun submitEditing() {
@@ -68,6 +74,7 @@ fun TvAddressField(
             editing = false
             onEditingChanged(false)
             keyboard?.hide()
+            focusManager.clearFocus()
             onSubmit(target)
         }
     }
@@ -104,7 +111,7 @@ fun TvAddressField(
             singleLine = true,
             textStyle = TextStyle(color = Color.White, fontSize = 17.sp),
             cursorBrush = androidx.compose.ui.graphics.SolidColor(Color.White),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go, keyboardType = KeyboardType.Uri),
             keyboardActions = KeyboardActions(onGo = { submitEditing() }),
             modifier = modifier
                 .focusRequester(editorFocus)
@@ -131,6 +138,7 @@ fun TvAddressField(
                 .fillMaxWidth()
                 .background(Color.Black, shape)
                 .border(1.dp, Color.DarkGray, shape)
+                .semantics { contentDescription = "Address and search" }
                 .clickable {
                     draft = address
                     editing = true
