@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvConnectedBrowserCommandBar
+import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
 
 /**
  * Native Compose TV toolbar. No XML inflation, hidden buttons, or legacy EditText.
@@ -29,16 +30,6 @@ class BrowserControls @JvmOverloads constructor(
         fun focusSuggestions(): Boolean = false
         fun suggestionsHaveFocus(): Boolean = false
     }
-
-    data class CommandActions(
-        val back: () -> Unit,
-        val forward: () -> Unit,
-        val reload: () -> Unit,
-        val home: () -> Unit,
-        val shield: () -> Unit,
-        val shieldDetails: () -> Unit,
-        val menu: () -> Unit,
-    )
 
     /** Immutable observable contract for JVM tests and the Compose presentation. */
     data class ToolbarSnapshot(
@@ -63,8 +54,8 @@ class BrowserControls @JvmOverloads constructor(
         )
 
     var callback: Callback? = null
-    private val actionsState = mutableStateOf<CommandActions?>(null)
-    var commandActions: CommandActions?
+    private val actionsState = mutableStateOf<BrowserCommandActions?>(null)
+    var commandActions: BrowserCommandActions?
         get() = actionsState.value
         set(value) { actionsState.value = value }
 
