@@ -22,6 +22,8 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -41,6 +43,7 @@ fun TvAddressField(
     var editing by remember { mutableStateOf(false) }
     var draft by remember(address) { mutableStateOf(address) }
     val keyboard = LocalSoftwareKeyboardController.current
+    val editorFocus = remember { FocusRequester() }
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val shape = RoundedCornerShape(10.dp)
@@ -61,6 +64,7 @@ fun TvAddressField(
             keyboard?.hide()
         }),
         modifier = modifier
+            .focusRequester(editorFocus)
             .fillMaxWidth()
             .background(Color.Black, shape)
             .border(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray, shape)
@@ -76,6 +80,7 @@ fun TvAddressField(
                 if (!editing) {
                     draft = address
                     editing = true
+                    editorFocus.requestFocus()
                     keyboard?.show()
                 }
             }
