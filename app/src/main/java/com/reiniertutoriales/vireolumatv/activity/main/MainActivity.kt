@@ -621,6 +621,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         nativeHome?.update(tab)
         vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
         vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
+        vb.controlsRow.updateNavigation(tab.engine.canGoBack, tab.engine.canGoForward)
         updateAdblockStatus(tab)
     }
 
