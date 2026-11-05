@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.widget.FrameLayout
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -16,7 +17,8 @@ import com.reiniertutoriales.vireolumatv.activity.main.compose.TvConnectedBrowse
 class BrowserControls @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-) : ComposeView(context, attrs) {
+) : FrameLayout(context, attrs) {
+    private val composeView = ComposeView(context)
     interface Callback {
         fun showAppMenu()
         fun search(text: String)
@@ -57,9 +59,9 @@ class BrowserControls @JvmOverloads constructor(
     val isEditingAddress: Boolean get() = editing
 
     init {
-        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        composeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
         blockerEnabled.value = AppContext.config.adBlockEnabled
-        setContent {
+        composeView.setContent {
             actionsState.value?.let { actions ->
                 TvConnectedBrowserCommandBar(
                     actions = actions,
@@ -86,6 +88,7 @@ class BrowserControls @JvmOverloads constructor(
                 )
             }
         }
+        addView(composeView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
     }
 
     fun showAddress(text: String) {
