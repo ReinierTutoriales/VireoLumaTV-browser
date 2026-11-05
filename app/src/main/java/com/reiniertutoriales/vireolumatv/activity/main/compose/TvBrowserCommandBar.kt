@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -35,7 +36,7 @@ fun TvBrowserCommandBar(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().background(Color.Black).padding(horizontal = 24.dp, vertical = 8.dp),
+        modifier = modifier.fillMaxWidth().focusGroup().background(Color.Black).padding(horizontal = 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         listOf(back, forward, refresh, home).forEach { command ->
