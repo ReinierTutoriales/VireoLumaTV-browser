@@ -184,7 +184,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (!editing && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+        if (!editing && ui.addressField.hasFocus() &&
+            (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
             val current = focusRow.indexOfFirst { it.hasFocus() }
             if (current >= 0) {
                 if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
