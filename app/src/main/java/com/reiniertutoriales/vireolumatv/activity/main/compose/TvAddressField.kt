@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +49,16 @@ fun TvAddressField(
     val editorFocus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     val shape = RoundedCornerShape(10.dp)
+
+    // A tab switch must update the displayed draft, but never overwrite active typing.
+    LaunchedEffect(address, editing) {
+        if (!editing) draft = address
+    }
+
+    // If the host removes this field while the IME is active, release it explicitly.
+    DisposableEffect(editing) {
+        onDispose { if (editing) keyboard?.hide() }
+    }
 
     if (editing) {
         LaunchedEffect(Unit) {
