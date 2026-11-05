@@ -334,12 +334,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal fun configureBrowserControls() {
         val bar = vb.controlsRow
         bar.callback = this
-        bar.onHomeCommand = { closeCapsule(); navigate(browserSettings.homePage) }
-        bar.onBackCommand = { closeCapsule(); navigateBack() }
-        bar.onForwardCommand = { closeCapsule(); tabStore.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } }
-        bar.onRefreshCommand = { closeCapsule(); refresh() }
-        bar.onBlockerCommand = { commitStripSelection(); toggleBlockerForTab() }
-        bar.onBlockerDetailsCommand = { commitStripSelection(); showBlockerDetails() }
         vb.vSuggestions.onPick = { bar.submit(it.url) }
         // A command runs on the tab shown, after the capsule hands focus back to the page.
         fun pageCommand(button: View, action: () -> Unit) = button.setOnClickListener {
@@ -628,7 +622,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         nativeHome?.update(tab)
         vb.controlsRow.backButton.isEnabled = tab.engine.canGoBack
         vb.controlsRow.forwardButton.isEnabled = tab.engine.canGoForward
-        vb.controlsRow.updateNavigation(tab.engine.canGoBack, tab.engine.canGoForward)
         updateAdblockStatus(tab)
     }
 
@@ -958,7 +951,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         // History can change without a page load (pushState on single-page sites): refresh Back first.
         tabStore.currentTab.value?.let(::onPageViewChanged)
         // Focus is part of opening, not of the animation's end.
-        vb.controlsRow.takeFocus()
+        if (!vb.controlsRow.backButton.requestFocus() && !vb.controlsRow.homeButton.requestFocus()) {
+            vb.controlsRow.takeFocus()
+        }
         vb.controlsOverlay.translationY = -vb.controlsOverlay.height.toFloat()
         vb.controlsOverlay.alpha = 0f
         vb.controlsOverlay.animate().translationY(0f).alpha(1f).setDuration(OVERLAY_OPEN_MS)
