@@ -251,6 +251,26 @@ class BrowserNavigationTest {
         }
     }
 
+    /** A player view that records the touches the pointer sends it. */
+    private class Player(context: android.content.Context) : View(context) {
+        val touches = mutableListOf<Int>()
+        init { isFocusableInTouchMode = true }
+        override fun onTouchEvent(event: MotionEvent): Boolean { touches += event.actionMasked; return true }
+    }
+
+    private fun fullscreenEngine(f: Fixture): WebViewPageEngine {
+        val engine = WebViewPageEngine(f.tab).apply { window = TabWindow(f.activity, f.tab) }
+        WebViewPageEngine::class.java.getDeclaredField("container").apply { isAccessible = true }
+            .set(engine, f.vb.pageContainer)
+        return engine
+    }
+
+    private fun relayout(f: Fixture) {
+        f.vb.root.measure(View.MeasureSpec.makeMeasureSpec(1280, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY))
+        f.vb.root.layout(0, 0, 1280, 720)
+    }
+
     @Test fun okOverAFullscreenPlayerTapsItsControlsOncePerPress() = Fixture().use { f ->
         val engine = fullscreenEngine(f)
         val player = Player(f.host.get())
@@ -360,6 +380,19 @@ class BrowserNavigationTest {
             com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter.installed)
     }
 
+    /** A second open tab sharing the fixture's engine, so changing to it needs no WebView. */
+    private fun Fixture.secondTab(): BrowserTab = BrowserTab(url = "https://second.test").also { second ->
+        BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
+            .set(second, lazyOf(engine))
+        tabs.openTabs.add(second)
+    }
+
+    private fun Fixture.backPress() {
+        activity.backPresses.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK))
+        activity.backPresses.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK))
+        vb.controlsOverlay.animate().cancel()
+    }
+
     @Test fun arrowsPreviewTabsBackCancelsAndOkOpens() = Fixture().use { f ->
         val second = f.secondTab()
         f.backPress()
@@ -394,4 +427,4 @@ class BrowserNavigationTest {
         assertTrue(f.vb.tabStrip.hasFocus() || f.vb.tabStrip.findFocus() != null)
         assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
     }
-
+}
