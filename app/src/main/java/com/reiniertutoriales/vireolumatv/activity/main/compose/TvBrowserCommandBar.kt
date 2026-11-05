@@ -29,6 +29,8 @@ data class BrowserCommand(
 fun TvBrowserCommandBar(
     address: String? = null,
     onSubmitAddress: (String) -> Unit = {},
+    onCancelAddress: () -> Unit = {},
+    onAddressDraftChanged: (String) -> Unit = {},
     back: BrowserCommand,
     forward: BrowserCommand,
     refresh: BrowserCommand,
@@ -47,6 +49,8 @@ fun TvBrowserCommandBar(
             TvAddressField(
                 address = address,
                 onSubmit = onSubmitAddress,
+                onCancel = onCancelAddress,
+                onDraftChanged = onAddressDraftChanged,
                 modifier = Modifier.weight(1f),
             )
         }
