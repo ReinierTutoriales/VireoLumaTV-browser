@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -57,10 +56,6 @@ fun TvBrowserCommandBar(
     val homeFocus = remember { FocusRequester() }
     LaunchedEffect(focusRequest) {
         if (focusRequest > 0) {
-            // A newly opened capsule is visible to the View hierarchy before its
-            // Compose focus targets have necessarily been attached. Wait for a
-            // composition frame before requesting D-pad focus.
-            withFrameNanos { }
             if (back.enabled) backFocus.requestFocus() else homeFocus.requestFocus()
         }
     }
@@ -133,13 +128,24 @@ private fun CommandAction(command: BrowserCommand, modifier: Modifier = Modifier
     )
 }
 
+/** Actions are independent of the legacy Android View wrapper. */
+data class BrowserCommandActions(
+    val back: () -> Unit,
+    val forward: () -> Unit,
+    val reload: () -> Unit,
+    val home: () -> Unit,
+    val shield: () -> Unit,
+    val shieldDetails: () -> Unit,
+    val menu: () -> Unit,
+)
+
 /**
  * Maps the activity's shared commands into Compose without forwarding clicks
  * to hidden Android Views. This adapter is also usable by an isolated TV preview.
  */
 @Composable
 fun TvConnectedBrowserCommandBar(
-    actions: com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls.CommandActions,
+    actions: BrowserCommandActions,
     address: String,
     onSubmitAddress: (String) -> Unit,
     onCancelAddress: () -> Unit,
