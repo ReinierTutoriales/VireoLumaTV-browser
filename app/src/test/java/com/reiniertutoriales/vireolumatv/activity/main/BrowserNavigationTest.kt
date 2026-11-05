@@ -32,6 +32,13 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
+    @Test fun openingCapsuleFocusesAvailableCommandWhenHistoryIsEmpty() = Fixture().use { f ->
+        f.canGoBack = false
+        f.activity.consumeBack()
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        assertTrue(f.vb.controlsRow.forwardButton.hasFocus())
+    }
+
     @Test fun shieldColorsFollowThePerTabChoiceAndRemainReadableOnFocus() = Fixture().use { f ->
         val button = f.vb.controlsRow.adBlockButton
         for (enabled in listOf(true, false)) {
@@ -213,6 +220,7 @@ class BrowserNavigationTest {
         var virtualCursor = true
         var exitedFullscreen = 0
         var hideFullscreen: (() -> Unit)? = null
+        var canGoBack = true
         var wentBack = 0
         var refreshed = 0
         var restoredNetwork = 0
@@ -234,7 +242,8 @@ class BrowserNavigationTest {
                 }
                 "attach" -> { page.requestFocus(); null } // The real engine focuses its page when shown.
                 "getUrl" -> pageUrl
-                "getCanGoBack", "getCanGoForward" -> true
+                "getCanGoBack" -> canGoBack
+                "getCanGoForward" -> true
                 "closeFullscreen" -> { exitedFullscreen++; hideFullscreen?.invoke(); null }
                 "back" -> { wentBack++; null }
                 "reload" -> { refreshed++; null }
