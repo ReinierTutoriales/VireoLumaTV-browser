@@ -7,20 +7,27 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * Records the code the browser runs at start-up and on the first remote presses: opening the
- * home page, moving the focus and opening the menu. The result is the app's baseline profile.
- */
 @RunWith(AndroidJUnit4::class)
 class BaselineProfileGenerator {
     @get:Rule val rule = BaselineProfileRule()
 
-    @Test fun startupAndFirstRemotePresses() = rule.collect(
-        // Each flavor passes its application ID (build.gradle.kts): foss installs with ".foss".
-        packageName = requireNotNull(InstrumentationRegistry.getArguments().getString("targetAppId")) {
+    private val targetAppId: String
+        get() = requireNotNull(InstrumentationRegistry.getArguments().getString("targetAppId")) {
             "targetAppId instrumentation argument is missing"
-        },
+        }
+
+    @Test fun startup() = rule.collect(
+        packageName = targetAppId,
         includeInStartupProfile = true,
+    ) {
+        pressHome()
+        startActivityAndWait()
+        device.waitForIdle()
+    }
+
+    @Test fun firstRemotePresses() = rule.collect(
+        packageName = targetAppId,
+        includeInStartupProfile = false,
     ) {
         pressHome()
         startActivityAndWait()
