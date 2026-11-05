@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
@@ -87,7 +88,12 @@ internal fun AppMenuContent(entries: List<AppMenuEntry>, onPick: (AppMenuEntry) 
             entries.forEachIndexed { index, entry ->
                 Button(
                     onClick = { onPick(entry) },
-                    modifier = Modifier.fillMaxWidth().then(
+                    modifier = Modifier.fillMaxWidth().focusProperties {
+                        left = FocusRequester.Cancel
+                        right = FocusRequester.Cancel
+                        if (index == 0) up = FocusRequester.Cancel
+                        if (index == entries.lastIndex) down = FocusRequester.Cancel
+                    }.then(
                         if (index == 0) Modifier.focusRequester(first) else Modifier
                     ),
                 ) {
