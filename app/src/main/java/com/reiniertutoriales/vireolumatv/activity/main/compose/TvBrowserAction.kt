@@ -26,6 +26,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.border
@@ -62,7 +64,7 @@ fun TvBrowserAction(
     Row(
         modifier = modifier
             .defaultMinSize(minHeight = 48.dp)
-            .semantics { contentDescription = label }
+            .semantics { contentDescription = label; role = Role.Button }
             .clip(shape)
             .background(surface)
             .border(BorderStroke(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray), shape)
