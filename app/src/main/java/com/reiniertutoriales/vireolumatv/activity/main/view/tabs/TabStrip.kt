@@ -3,132 +3,121 @@ package com.reiniertutoriales.vireolumatv.activity.main.view.tabs
 import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
-import android.view.LayoutInflater
-import android.widget.RelativeLayout
+import android.widget.FrameLayout
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.TabStore
-import com.reiniertutoriales.vireolumatv.databinding.TabStripBinding
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvTabStrip
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.utils.observable.LiveList
 
 /**
- * The tab strip under the top capsule. The strip itself takes focus from the capsule and hands it to
- * the selected tab, or to "+" when that tab is not on screen, so focus always lands on a control.
+ * Browser model bridge. The tab rail and its remote-control focus are Compose-native;
+ * this host only observes the existing TabStore and forwards commands.
  */
 class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
-    RelativeLayout(context, attrs) {
+    FrameLayout(context, attrs) {
+    private val tabs = mutableStateListOf<BrowserTab>()
+    private val selected = mutableIntStateOf(0)
+    private val tabStore: TabStore? =
+        if (isInEditMode) null else ScreenModels.get(TabStore::class, context)
 
-    private val vb = TabStripBinding.inflate(LayoutInflater.from(context), this)
-    private val adapter = TabChips(::showTabOptions)
-    private lateinit var tabStore: TabStore
+    var current: Int
+        get() = selected.intValue
+        set(value) { selected.intValue = value }
 
-    var current: Int by adapter::current
-    var onCommand: ((TabCommand) -> Unit)? by adapter::onCommand
+    var onCommand: ((TabCommand) -> Unit)? = null
 
     init {
         if (!isInEditMode) {
-            tabStore = ScreenModels.get(TabStore::class, context)
-            adapter.tabStore = tabStore
-            vb.tabList.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-            vb.tabList.itemAnimator = null
-            vb.tabList.setHasFixedSize(true)
-            vb.addButton.setOnClickListener { onCommand?.invoke(TabCommand.Add) }
+            addView(ComposeView(context).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+                setContent {
+                    TvTabStrip(
+                        tabs = tabs,
+                        selected = selected.intValue,
+                        onActivate = { index -> onCommand?.invoke(TabCommand.Show(index)) },
+                        onClose = { tab -> onCommand?.invoke(TabCommand.Close(tab)) },
+                        onOptions = ::showTabOptions,
+                        onAdd = { onCommand?.invoke(TabCommand.Add) },
+                    )
+                }
+            }, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
         }
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (isInEditMode) return
-        tabStore.openTabs.observe(listObserver)
-        tabStore.currentTab.observe(currentObserver)
-        if (vb.tabList.adapter !== adapter) vb.tabList.adapter = adapter
+        tabStore?.openTabs?.observe(listObserver)
+        tabStore?.currentTab?.observe(currentObserver)
+        refreshTabs()
     }
 
     override fun onDetachedFromWindow() {
+        tabStore?.openTabs?.forget(listObserver)
+        tabStore?.currentTab?.forget(currentObserver)
         super.onDetachedFromWindow()
-        if (isInEditMode) return
-        tabStore.openTabs.forget(listObserver)
-        vb.tabList.adapter = null
-        tabStore.currentTab.forget(currentObserver)
     }
 
     override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
-        if (gainFocus) focusCurrentTab()
+        if (gainFocus) getChildAt(0)?.requestFocus()
     }
 
-    fun onTabTitle(tab: BrowserTab) = adapter.refresh(tab)
+    fun onTabTitle(tab: BrowserTab) = refreshTabs()
+    fun onFavIconUpdated(tab: BrowserTab) = refreshTabs()
 
-    fun onFavIconUpdated(tab: BrowserTab) = adapter.refresh(tab, iconChanged = true)
+    private fun refreshTabs() {
+        val store = tabStore ?: return
+        tabs.clear()
+        tabs.addAll(store.openTabs.toList())
+        val index = store.openTabs.indexOf(store.currentTab.value)
+        if (index >= 0) selected.intValue = index
+    }
 
-    /** Options for [tab]; each acts on that tab, wherever it has moved meanwhile. */
     fun showTabOptions(tab: BrowserTab) {
+        val store = tabStore ?: return
         val actions = TabAction.entries
         AlertDialog.Builder(context)
             .setTitle(R.string.tabs_title)
             .setItems(actions.map { context.getString(it.label) }.toTypedArray()) { _, option ->
-                val tabs = tabStore.openTabs
-                val index = tabs.indexOf(tab)
+                val index = store.openTabs.indexOf(tab)
                 if (index < 0) return@setItems
                 when (actions[option]) {
                     TabAction.NEW_NEXT -> onCommand?.invoke(TabCommand.AddAt(index + 1))
                     TabAction.CLOSE -> onCommand?.invoke(TabCommand.Close(tab))
                     TabAction.CLOSE_ALL -> {
-                        tabStore.onCloseOthers()
+                        store.onCloseOthers()
                         onCommand?.invoke(TabCommand.AddAt(0))
                     }
-                    TabAction.MOVE_LEFT -> move(index, towardsStart = !isRtl)
-                    TabAction.MOVE_RIGHT -> move(index, towardsStart = isRtl)
+                    TabAction.MOVE_LEFT -> move(index, towardsStart = layoutDirection != LAYOUT_DIRECTION_RTL)
+                    TabAction.MOVE_RIGHT -> move(index, towardsStart = layoutDirection == LAYOUT_DIRECTION_RTL)
                     TabAction.FAVORITE -> onCommand?.invoke(TabCommand.Favorite(tab))
                 }
-            }
-            .show()
+            }.show()
     }
-
-    /** Right-to-left the strip starts at the right edge, so "left" moves a tab later in the order. */
-    private val isRtl: Boolean get() = layoutDirection == LAYOUT_DIRECTION_RTL
 
     private fun move(index: Int, towardsStart: Boolean) {
-        val tabs = tabStore.openTabs
+        val store = tabStore ?: return
         val target = if (towardsStart) index - 1 else index + 1
-        if (target in tabs.indices) tabs.swap(index, target)
+        if (target in store.openTabs.indices) store.openTabs.swap(index, target)
     }
 
-    private fun focusCurrentTab(): Boolean {
-        val tab = tabStore.openTabs.getOrNull(current)
-        for (i in 0 until vb.tabList.childCount) {
-            val row = vb.tabList.getChildAt(i)
-            if (row.tag === tab && row.requestFocus()) return true
-        }
-        return vb.addButton.requestFocus()
-    }
-
-    private fun revealCurrent() {
-        if (current !in 0 until adapter.itemCount) return
-        val layout = vb.tabList.layoutManager as LinearLayoutManager
-        if (current < layout.findFirstCompletelyVisibleItemPosition() ||
-            current > layout.findLastCompletelyVisibleItemPosition()) vb.tabList.scrollToPosition(current)
-    }
-
-    private val listObserver: (LiveList<BrowserTab>) -> Unit = {
-        adapter.onTabsChanged()
-        revealCurrent()
-    }
-
+    private val listObserver: (LiveList<BrowserTab>) -> Unit = { refreshTabs() }
     private val currentObserver: (BrowserTab?) -> Unit = { tab ->
-        val index = tabStore.openTabs.indexOf(tab)
-        if (index >= 0 && index != current) {
-            current = index
-            revealCurrent()
+        val store = tabStore
+        if (store != null) {
+            val index = store.openTabs.indexOf(tab)
+            if (index >= 0) selected.intValue = index
         }
     }
 
-    /** The tab options dialog, in the order shown. */
     internal enum class TabAction(@StringRes val label: Int) {
         NEW_NEXT(R.string.tab_action_new),
         CLOSE(R.string.tab_action_close),
