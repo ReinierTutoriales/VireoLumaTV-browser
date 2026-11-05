@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 
@@ -57,9 +59,10 @@ fun TvBrowserAction(
     Row(
         modifier = modifier
             .defaultMinSize(minHeight = 48.dp)
+            .widthIn(min = 48.dp)
             .clip(shape)
             .background(surface)
-                        .border(BorderStroke(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray), shape)
+            .border(BorderStroke(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray), shape)
             .clickable(interactionSource = interaction, indication = null, enabled = enabled, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -71,6 +74,6 @@ fun TvBrowserAction(
             tint = if (enabled) tint else Color.Gray,
             modifier = Modifier.size(24.dp),
         )
-        Text(label, color = if (enabled) Color.White else Color.Gray, fontSize = 16.sp)
+        Text(label, color = if (enabled) Color.White else Color.Gray, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
