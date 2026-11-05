@@ -335,24 +335,23 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val bar = vb.controlsRow
         bar.callback = this
         vb.vSuggestions.onPick = { bar.submit(it.url) }
-        // A command runs on the tab shown, after the capsule hands focus back to the page.
-        fun pageCommand(button: View, action: () -> Unit) = button.setOnClickListener {
-            closeCapsule()
-            action()
-        }
-        pageCommand(bar.homeButton) { navigate(browserSettings.homePage) }
-        pageCommand(bar.backButton) { navigateBack() }
-        pageCommand(bar.forwardButton) { tabStore.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } }
-        pageCommand(bar.refreshButton) { refresh() }
-        bar.adBlockButton.setOnClickListener {
-            commitStripSelection()
-            toggleBlockerForTab()
-        }
-        bar.adBlockButton.setOnLongClickListener {
-            commitStripSelection()
-            showBlockerDetails()
-            true
-        }
+        // One action contract for both the current View controls and future Compose controls.
+        val actions = com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls.CommandActions(
+            back = { closeCapsule(); navigateBack() },
+            forward = { closeCapsule(); tabStore.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } },
+            reload = { closeCapsule(); refresh() },
+            home = { closeCapsule(); navigate(browserSettings.homePage) },
+            shield = { commitStripSelection(); toggleBlockerForTab() },
+            shieldDetails = { commitStripSelection(); showBlockerDetails() },
+            menu = { showAppMenu() },
+        )
+        bar.commandActions = actions
+        bar.homeButton.setOnClickListener { actions.home() }
+        bar.backButton.setOnClickListener { actions.back() }
+        bar.forwardButton.setOnClickListener { actions.forward() }
+        bar.refreshButton.setOnClickListener { actions.reload() }
+        bar.adBlockButton.setOnClickListener { actions.shield() }
+        bar.adBlockButton.setOnLongClickListener { actions.shieldDetails(); true }
     }
 
     override fun showAppMenu() = AppMenuPanel(this, appMenuEntries(), ::runAppMenuEntry).show()
