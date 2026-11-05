@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -56,6 +57,10 @@ fun TvBrowserCommandBar(
     val homeFocus = remember { FocusRequester() }
     LaunchedEffect(focusRequest) {
         if (focusRequest > 0) {
+            // A newly opened capsule is visible to the View hierarchy before its
+            // Compose focus targets have necessarily been attached. Wait for a
+            // composition frame before requesting D-pad focus.
+            withFrameNanos { }
             if (back.enabled) backFocus.requestFocus() else homeFocus.requestFocus()
         }
     }
