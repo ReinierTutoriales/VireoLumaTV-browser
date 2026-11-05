@@ -2,6 +2,9 @@ name: Release
 
 on:
   create:
+  push:
+    branches:
+      - 'release/**'
   workflow_dispatch:
     inputs:
       version:
@@ -25,7 +28,7 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')) || (github.event_name == 'create' && github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
