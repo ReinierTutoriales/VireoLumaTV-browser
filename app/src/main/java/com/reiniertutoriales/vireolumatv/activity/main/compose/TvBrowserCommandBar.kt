@@ -57,7 +57,7 @@ fun TvBrowserCommandBar(
         if (focusRequest > 0) homeFocus.requestFocus()
     }
     Row(
-        modifier = modifier.focusRestorer().focusGroup().background(Color.Black).padding(horizontal = if (address == null) 0.dp else 24.dp, vertical = 8.dp),
+        modifier = modifier.focusGroup().focusRestorer().background(Color.Black).padding(horizontal = if (address == null) 0.dp else 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (address != null) {
