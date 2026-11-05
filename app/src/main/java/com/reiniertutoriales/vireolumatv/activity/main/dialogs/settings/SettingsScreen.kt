@@ -10,6 +10,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.BrowserSettings
 /** Full-screen settings with General, Shortcuts and About pages; General text fields apply on close. */
 class SettingsScreen(context: Context, val model: BrowserSettings) : AppCompatDialog(context, R.style.SettingsScreen) {
     private var general: GeneralPage? = null
+    private var previousFocus: android.view.View? = null
 
     init {
         setContentView(R.layout.settings_screen)
@@ -23,6 +24,19 @@ class SettingsScreen(context: Context, val model: BrowserSettings) : AppCompatDi
             }
         }
         setOnDismissListener { general?.save() }
+    }
+
+    override fun show() {
+        var owner: Context = context
+        while (owner is android.content.ContextWrapper && owner !is android.app.Activity) owner = owner.baseContext
+        previousFocus = (owner as? android.app.Activity)?.window?.decorView?.findFocus()
+        super.show()
+    }
+
+    override fun dismiss() {
+        super.dismiss()
+        previousFocus?.takeIf { it.isAttachedToWindow && it.isFocusable && it.isShown }?.requestFocus()
+        previousFocus = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -98,7 +98,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         editing = value
         ui.addressField.isCursorVisible = value
         ui.addressField.showSoftInputOnFocus = value
-        commands.forEach { it.visibility = if (value) GONE else VISIBLE }
+        val targetVisibility = if (value) GONE else VISIBLE
+        commands.forEach { if (it.visibility != targetVisibility) it.visibility = targetVisibility }
     }
 
     private fun beginEditing() {
@@ -188,7 +189,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
 
     fun showAddress(text: String) {
         pageAddress = text.takeUnless { it == Config.HOME_PAGE_URL }.orEmpty()
-        if (!editing) ui.addressField.setText(pageAddress)
+        if (!editing && ui.addressField.text.toString() != pageAddress) ui.addressField.setText(pageAddress)
     }
 
     fun tintAddress(color: Int) = ui.addressField.setTextColor(color)
