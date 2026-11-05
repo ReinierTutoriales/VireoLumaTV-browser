@@ -177,6 +177,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     baselineProfile(project(":baselineprofile"))
 
+    testImplementation("androidx.compose.ui:ui-test-junit4:1.12.1")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.12.1")
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.room.sqlite.wrapper)
