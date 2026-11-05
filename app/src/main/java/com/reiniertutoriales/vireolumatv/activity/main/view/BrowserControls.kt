@@ -118,7 +118,7 @@ class BrowserControls @JvmOverloads constructor(
     }
 
     fun cancelAddressInput() {
-        if (editing) cancelRequest.value += 1 else takeFocus()
+        if (editingState.value) cancelRequest.value += 1 else takeFocus()
     }
 
     fun tintAddress(@Suppress("UNUSED_PARAMETER") color: Int) {
