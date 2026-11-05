@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,6 +34,7 @@ import com.reiniertutoriales.vireolumatv.model.BrowserTab
 fun TvTabStrip(
     tabs: List<BrowserTab>,
     selected: Int,
+    onFocus: (Int) -> Unit,
     onActivate: (Int) -> Unit,
     onClose: (BrowserTab) -> Unit,
     onOptions: (BrowserTab) -> Unit,
@@ -49,6 +51,7 @@ fun TvTabStrip(
         tabs.forEachIndexed { index, tab ->
             val interaction = remember(tab) { MutableInteractionSource() }
             val focused by interaction.collectIsFocusedAsState()
+            LaunchedEffect(focused) { if (focused) onFocus(index) }
             Row(
                 modifier = Modifier.defaultMinSize(minHeight = 48.dp)
                     .background(if (focused) Color(0xFF262626) else if (selected == index) Color(0xFF171717) else Color.Black, shape)
