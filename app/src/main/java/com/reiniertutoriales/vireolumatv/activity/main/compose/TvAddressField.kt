@@ -43,12 +43,28 @@ fun TvAddressField(
     address: String,
     onSubmit: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onCancel: () -> Unit = {},
+    onDraftChanged: (String) -> Unit = {},
 ) {
     var editing by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf(address) }
     val editorFocus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     val shape = RoundedCornerShape(10.dp)
+    fun cancelEditing() {
+        editing = false
+        draft = address
+        keyboard?.hide()
+        onCancel()
+    }
+    fun submitEditing() {
+        val target = draft.trim()
+        if (target.isNotEmpty()) {
+            editing = false
+            keyboard?.hide()
+            onSubmit(target)
+        }
+    }
 
     // A tab switch must update the displayed draft, but never overwrite active typing.
     LaunchedEffect(address, editing) {
@@ -67,19 +83,12 @@ fun TvAddressField(
         }
         BasicTextField(
             value = draft,
-            onValueChange = { draft = it },
+            onValueChange = { draft = it; onDraftChanged(it) },
             singleLine = true,
             textStyle = TextStyle(color = Color.White, fontSize = 17.sp),
             cursorBrush = androidx.compose.ui.graphics.SolidColor(Color.White),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
-            keyboardActions = KeyboardActions(onGo = {
-                val target = draft.trim()
-                if (target.isNotEmpty()) {
-                    editing = false
-                    keyboard?.hide()
-                    onSubmit(target)
-                }
-            }),
+            keyboardActions = KeyboardActions(onGo = { submitEditing() }),
             modifier = modifier
                 .focusRequester(editorFocus)
                 .fillMaxWidth()
@@ -89,9 +98,7 @@ fun TvAddressField(
                     if (event.type == KeyEventType.KeyUp &&
                         (event.key == Key.Escape || event.key == Key.Back)
                     ) {
-                        editing = false
-                        draft = address
-                        keyboard?.hide()
+                        cancelEditing()
                         true
                     } else false
                 }
