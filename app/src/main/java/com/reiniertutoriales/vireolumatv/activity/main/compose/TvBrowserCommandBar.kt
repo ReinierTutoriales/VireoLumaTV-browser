@@ -9,6 +9,10 @@ import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -43,10 +47,15 @@ fun TvBrowserCommandBar(
     blockerEnabled: Boolean,
     blockerDescription: String = "",
     blockerReady: Boolean = false,
+    focusRequest: Int = 0,
     onToggleBlocker: () -> Unit,
     onShowBlockerDetails: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
+    val homeFocus = remember { FocusRequester() }
+    LaunchedEffect(focusRequest) {
+        if (focusRequest > 0) homeFocus.requestFocus()
+    }
     Row(
         modifier = modifier.focusRestorer().focusGroup().background(Color.Black).padding(horizontal = if (address == null) 0.dp else 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -67,7 +76,7 @@ fun TvBrowserCommandBar(
         CommandAction(back)
         CommandAction(forward)
         CommandAction(refresh)
-        CommandAction(home)
+        CommandAction(home, Modifier.focusRequester(homeFocus))
         TvBlockerAction(
             enabled = blockerEnabled,
             description = blockerDescription,
@@ -105,10 +114,11 @@ private fun TvBlockerAction(
 }
 
 @Composable
-private fun CommandAction(command: BrowserCommand) {
+private fun CommandAction(command: BrowserCommand, modifier: Modifier = Modifier) {
     TvBrowserAction(
         label = command.label,
         iconRes = command.icon,
+        modifier = modifier,
         onClick = command.onClick,
         enabled = command.enabled,
         showLabel = false,
@@ -135,6 +145,7 @@ fun TvConnectedBrowserCommandBar(
     blockerEnabled: Boolean,
     blockerDescription: String = "",
     blockerReady: Boolean = false,
+    focusRequest: Int = 0,
     modifier: Modifier = Modifier,
 ) {
     val backLabel = androidx.compose.ui.res.stringResource(R.string.nav_back)
@@ -159,6 +170,7 @@ fun TvConnectedBrowserCommandBar(
         blockerEnabled = blockerEnabled,
         blockerDescription = blockerDescription,
         blockerReady = blockerReady,
+        focusRequest = focusRequest,
         onToggleBlocker = actions.shield,
         onShowBlockerDetails = actions.shieldDetails,
         modifier = modifier,
