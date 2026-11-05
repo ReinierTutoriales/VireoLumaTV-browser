@@ -62,7 +62,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     private val forwardAvailable = mutableStateOf(false)
     private val blockerActive = mutableStateOf(false)
     private val composeAddress = mutableStateOf("")
-    private val focusRow = listOf<View>(ui.addressField, composeRow)
+    private val focusRow = listOf<View>(composeRow)
     private var pageAddress = ""
     private var editing = false
     private var enteringSuggestions = false
@@ -100,7 +100,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                     )
                 }
             }
-            addView(composeRow, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT))
+            addView(composeRow, LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f))
+            ui.addressBox.visibility = GONE
             ui.addressField.setOnClickListener { beginEditing() }
             ui.addressField.setOnFocusChangeListener { _, focused ->
                 if (!focused && editing && !enteringSuggestions) {
