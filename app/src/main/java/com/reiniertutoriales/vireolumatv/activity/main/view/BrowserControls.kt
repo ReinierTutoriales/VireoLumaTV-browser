@@ -64,6 +64,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     private val blockerStatus = mutableStateOf("")
     private val blockerReady = mutableStateOf(false)
     private val composeAddress = mutableStateOf("")
+    private val cancelAddressRequest = mutableStateOf(0)
+    private val submitAddressRequest = mutableStateOf(0 to "")
     private var pageAddress = ""
     private var editing = false
     private var enteringSuggestions = false
@@ -100,6 +102,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                             if (active) callback?.onAddressEditing()
                         },
                         onFocusSuggestions = { callback?.focusSuggestions() == true },
+                        cancelAddressRequest = cancelAddressRequest.value,
+                        submitAddressRequest = submitAddressRequest.value,
                         canGoBack = backAvailable.value,
                         canGoForward = forwardAvailable.value,
                         blockerEnabled = blockerActive.value,
@@ -216,10 +220,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     fun submit(text: String) {
-        if (editing) {
-            ui.addressField.setText(text)
-            confirmAddress()
-        }
+        if (editing) submitAddressRequest.value = (submitAddressRequest.value.first + 1) to text
     }
 
     fun showAddress(text: String) {
@@ -231,16 +232,12 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     fun tintAddress(color: Int) = ui.addressField.setTextColor(color)
 
     fun closeAddressEditing() {
-        if (editing) {
-            editing = false
-            keyboard.hideSoftInputFromWindow(windowToken, 0)
-        }
+        if (editing) cancelAddressRequest.value += 1
     }
 
     fun cancelAddressInput() {
-        if (editing) finishEditing(cancelled = true)
-        ui.addressField.clearFocus()
-        takeFocus()
+        if (editing) cancelAddressRequest.value += 1
+        else takeFocus()
     }
 
     fun updateNavigation(canBack: Boolean, canForward: Boolean) {
