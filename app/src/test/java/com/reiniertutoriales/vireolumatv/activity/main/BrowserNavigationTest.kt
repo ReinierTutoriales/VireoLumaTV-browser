@@ -36,7 +36,7 @@ class BrowserNavigationTest {
         f.canGoBack = false
         f.activity.consumeBack()
         assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
-        assertTrue(f.vb.controlsRow.forwardButton.hasFocus())
+        assertTrue(f.vb.controlsRow.homeButton.hasFocus())
     }
 
     @Test fun shieldColorsFollowThePerTabChoiceAndRemainReadableOnFocus() = Fixture().use { f ->
