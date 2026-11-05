@@ -145,9 +145,9 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
         editing = value
         ui.addressField.isCursorVisible = value
         ui.addressField.showSoftInputOnFocus = value
-        val targetVisibility = if (value) GONE else VISIBLE
+        // Compose owns the editor and toolbar; editing must never unmount its host.
         commands.forEach { it.visibility = GONE }
-        composeRow.visibility = targetVisibility
+        composeRow.visibility = VISIBLE
     }
 
     private fun beginEditing() {
@@ -222,7 +222,10 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     fun tintAddress(color: Int) = ui.addressField.setTextColor(color)
 
     fun closeAddressEditing() {
-        if (editing) finishEditing(cancelled = false)
+        if (editing) {
+            editing = false
+            keyboard.hideSoftInputFromWindow(windowToken, 0)
+        }
     }
 
     fun cancelAddressInput() {
