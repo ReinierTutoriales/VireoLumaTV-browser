@@ -174,9 +174,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
      * ended): back to the page as it was, without opening the browser's controls.
      */
     internal fun onPageLeftFullscreen() {
-        val wasShown = fullscreenView != null
         exitFullscreen(restoreBrowserControls = false)
-        if (wasShown) webView?.requestFocus()
     }
 
     override fun setPointerMode(enabled: Boolean) {
