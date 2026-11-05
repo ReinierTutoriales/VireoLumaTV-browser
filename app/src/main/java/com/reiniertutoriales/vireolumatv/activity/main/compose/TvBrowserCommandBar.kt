@@ -94,6 +94,10 @@ private fun CommandAction(command: BrowserCommand) {
 @Composable
 fun TvConnectedBrowserCommandBar(
     actions: com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls.CommandActions,
+    address: String,
+    onSubmitAddress: (String) -> Unit,
+    onCancelAddress: () -> Unit,
+    onAddressDraftChanged: (String) -> Unit,
     canGoBack: Boolean,
     canGoForward: Boolean,
     blockerEnabled: Boolean,
@@ -105,6 +109,10 @@ fun TvConnectedBrowserCommandBar(
     val homeLabel = androidx.compose.ui.res.stringResource(R.string.nav_home)
     val menuLabel = androidx.compose.ui.res.stringResource(R.string.nav_menu)
     TvBrowserCommandBar(
+        address = address,
+        onSubmitAddress = onSubmitAddress,
+        onCancelAddress = onCancelAddress,
+        onAddressDraftChanged = onAddressDraftChanged,
         back = BrowserCommand(backLabel, R.drawable.ic_back, canGoBack, actions.back),
         forward = BrowserCommand(forwardLabel, R.drawable.ic_forward, canGoForward, actions.forward),
         refresh = BrowserCommand(reloadLabel, R.drawable.ic_refresh, onClick = actions.reload),
