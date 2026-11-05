@@ -56,6 +56,10 @@ class BrowserControls @JvmOverloads constructor(
     private val cancelRequest = mutableStateOf(0)
     private val submitRequest = mutableStateOf(0 to "")
     private val editingState = mutableStateOf(false)
+    private val addressSubmitHandler: (String) -> Unit = { target ->
+        callback?.onUrlInputDone()
+        callback?.search(target)
+    }
     val isEditingAddress: Boolean get() = editingState.value
 
     init {
@@ -66,10 +70,7 @@ class BrowserControls @JvmOverloads constructor(
                 TvConnectedBrowserCommandBar(
                     actions = actions,
                     address = address.value,
-                    onSubmitAddress = { target ->
-                        callback?.onUrlInputDone()
-                        callback?.search(target)
-                    },
+                    onSubmitAddress = addressSubmitHandler,
                     onCancelAddress = { callback?.onAddressInputCancelled() },
                     onAddressDraftChanged = { callback?.onAddressTyped(it) },
                     onAddressEditingChanged = { active ->
