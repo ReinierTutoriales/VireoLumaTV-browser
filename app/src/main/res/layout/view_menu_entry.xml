@@ -11,8 +11,8 @@
 
     <ImageView
         android:id="@+id/icon_image"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
         android:duplicateParentState="true"
         android:importantForAccessibility="no"
         app:tint="@color/on_control" />
@@ -21,7 +21,7 @@
         android:id="@+id/tvLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="18dp"
         android:duplicateParentState="true"
         android:ellipsize="end"
         android:maxLines="1"
