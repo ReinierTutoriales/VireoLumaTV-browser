@@ -951,7 +951,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         // History can change without a page load (pushState on single-page sites): refresh Back first.
         tabStore.currentTab.value?.let(::onPageViewChanged)
         // Focus is part of opening, not of the animation's end.
-        vb.controlsRow.takeFocus()
+        if (!vb.controlsRow.backButton.requestFocus() && !vb.controlsRow.homeButton.requestFocus()) {
+            vb.controlsRow.takeFocus()
+        }
         vb.controlsOverlay.translationY = -vb.controlsOverlay.height.toFloat()
         vb.controlsOverlay.alpha = 0f
         vb.controlsOverlay.animate().translationY(0f).alpha(1f).setDuration(OVERLAY_OPEN_MS)
