@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
+import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,7 +28,7 @@ class ToolbarStateTest {
             owner.get().setContentView(bar)
             assertEquals(1, bar.childCount)
             assertTrue(bar.getChildAt(0) is androidx.compose.ui.platform.ComposeView)
-            bar.commandActions = BrowserControls.CommandActions(
+            bar.commandActions = BrowserCommandActions(
                 back = {}, forward = {}, reload = {}, home = {},
                 shield = {}, shieldDetails = {}, menu = {},
             )
