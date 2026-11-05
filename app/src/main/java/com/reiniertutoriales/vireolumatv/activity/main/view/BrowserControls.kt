@@ -94,6 +94,11 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                         },
                         onCancelAddress = { callback?.onAddressInputCancelled() },
                         onAddressDraftChanged = { callback?.onAddressTyped(it) },
+                        onAddressEditingChanged = { active ->
+                            editing = active
+                            if (active) callback?.onAddressEditing()
+                        },
+                        onFocusSuggestions = { callback?.focusSuggestions() == true },
                         canGoBack = backAvailable.value,
                         canGoForward = forwardAvailable.value,
                         blockerEnabled = blockerActive.value,
