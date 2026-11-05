@@ -61,6 +61,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     private val backAvailable = mutableStateOf(false)
     private val forwardAvailable = mutableStateOf(false)
     private val blockerActive = mutableStateOf(false)
+    private val composeAddress = mutableStateOf("")
     private val focusRow = listOf<View>(ui.addressField, composeRow)
     private var pageAddress = ""
     private var editing = false
@@ -86,6 +87,13 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
                 commandActions?.let { actions ->
                     TvConnectedBrowserCommandBar(
                         actions = actions,
+                        address = composeAddress.value,
+                        onSubmitAddress = { destination ->
+                            callback?.onUrlInputDone()
+                            callback?.search(destination)
+                        },
+                        onCancelAddress = { callback?.onAddressInputCancelled() },
+                        onAddressDraftChanged = { callback?.onAddressTyped(it) },
                         canGoBack = backAvailable.value,
                         canGoForward = forwardAvailable.value,
                         blockerEnabled = blockerActive.value,
@@ -225,6 +233,7 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
 
     fun showAddress(text: String) {
         pageAddress = text.takeUnless { it == Config.HOME_PAGE_URL }.orEmpty()
+        composeAddress.value = pageAddress
         if (!editing && ui.addressField.text.toString() != pageAddress) ui.addressField.setText(pageAddress)
     }
 
