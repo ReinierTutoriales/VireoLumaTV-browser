@@ -101,4 +101,4 @@ class AddressSuggestionsFocusTest {
             assertTrue("Removing the focused result keeps focus inside the remaining results", suggestions.row(0)!!.isFocused)
         } finally { controller.pause().stop().destroy() }
     }
-
+}
