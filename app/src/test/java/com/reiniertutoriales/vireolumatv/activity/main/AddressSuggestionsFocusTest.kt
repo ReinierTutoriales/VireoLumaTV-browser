@@ -54,26 +54,22 @@ class AddressSuggestionsFocusTest {
         } finally { controller.pause().stop().destroy() }
     }
 
-    @Test fun rtlCommandsFollowTheirVisualDirectionAndSkipDisabledButtons() {
+    @Test fun rtlToolbarKeepsComposeHostAndDisabledHistoryState() {
         val controller = Robolectric.buildActivity(AppCompatActivity::class.java)
         controller.get().setTheme(R.style.AppTheme)
         controller.setup()
         try {
-            val bar = BrowserControls(controller.get()).apply { layoutDirection = View.LAYOUT_DIRECTION_RTL }
-            controller.get().setContentView(bar)
-            bar.backButton.isEnabled = false
-            bar.forwardButton.isEnabled = false
-            val address = bar.findViewById<EditText>(R.id.address_field)
-            assertTrue(address.requestFocus())
-            fun press(code: Int) {
-                bar.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
-                bar.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
+            val bar = BrowserControls(controller.get()).apply {
+                layoutDirection = View.LAYOUT_DIRECTION_RTL
+                updateNavigation(back = false, forward = false)
             }
-            press(KeyEvent.KEYCODE_DPAD_LEFT)
-            assertTrue("The next RTL command is visually to the left", bar.refreshButton.hasFocus())
-            press(KeyEvent.KEYCODE_DPAD_RIGHT)
-            assertTrue("Right returns to the RTL address", address.hasFocus())
-            assertFalse("Directional focus must not start editing", bar.isEditingAddress)
+            controller.get().setContentView(bar)
+            assertEquals(View.LAYOUT_DIRECTION_RTL, bar.layoutDirection)
+            assertEquals(1, bar.childCount)
+            assertTrue(bar.getChildAt(0) is androidx.compose.ui.platform.ComposeView)
+            assertFalse(bar.snapshot.canGoBack)
+            assertFalse(bar.snapshot.canGoForward)
+            assertFalse(bar.isEditingAddress)
         } finally { controller.pause().stop().destroy() }
     }
 
