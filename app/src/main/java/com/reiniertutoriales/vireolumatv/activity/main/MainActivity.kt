@@ -336,7 +336,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         bar.callback = this
         vb.vSuggestions.onPick = { bar.submit(it.url) }
         // One action contract for both the current View controls and future Compose controls.
-        val actions = com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls.CommandActions(
+        val actions = com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions(
             back = { closeCapsule(); navigateBack() },
             forward = { closeCapsule(); tabStore.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } },
             reload = { closeCapsule(); refresh() },
