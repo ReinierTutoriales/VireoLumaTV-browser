@@ -39,6 +39,8 @@ fun TvBrowserCommandBar(
     home: BrowserCommand,
     menu: BrowserCommand,
     blockerEnabled: Boolean,
+    blockerDescription: String = "",
+    blockerReady: Boolean = false,
     onToggleBlocker: () -> Unit,
     onShowBlockerDetails: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -64,6 +66,8 @@ fun TvBrowserCommandBar(
         CommandAction(home)
         TvBlockerAction(
             enabled = blockerEnabled,
+            description = blockerDescription,
+            ready = blockerReady,
             onToggle = onToggleBlocker,
             onDetails = onShowBlockerDetails,
         )
@@ -81,11 +85,13 @@ fun TvBrowserCommandBar(
 @Composable
 private fun TvBlockerAction(
     enabled: Boolean,
+    description: String,
+    ready: Boolean,
     onToggle: () -> Unit,
     onDetails: (() -> Unit)?,
 ) {
     TvBrowserAction(
-        label = if (enabled) "Shield on" else "Shield off",
+        label = description.ifBlank { if (enabled) "Shield on" else "Shield off" },
         iconRes = if (enabled) R.drawable.ic_shield_on else R.drawable.ic_shield_off,
         onClick = onToggle,
         onLongClick = onDetails,
@@ -121,6 +127,8 @@ fun TvConnectedBrowserCommandBar(
     canGoBack: Boolean,
     canGoForward: Boolean,
     blockerEnabled: Boolean,
+    blockerDescription: String = "",
+    blockerReady: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val backLabel = androidx.compose.ui.res.stringResource(R.string.nav_back)
@@ -141,6 +149,8 @@ fun TvConnectedBrowserCommandBar(
         home = BrowserCommand(homeLabel, R.drawable.ic_home, onClick = actions.home),
         menu = BrowserCommand(menuLabel, R.drawable.ic_more, onClick = actions.menu),
         blockerEnabled = blockerEnabled,
+        blockerDescription = blockerDescription,
+        blockerReady = blockerReady,
         onToggleBlocker = actions.shield,
         onShowBlockerDetails = actions.shieldDetails,
         modifier = modifier,
