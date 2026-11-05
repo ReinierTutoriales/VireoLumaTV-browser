@@ -40,6 +40,28 @@ class BrowserControls @JvmOverloads constructor(
         val menu: () -> Unit,
     )
 
+    /** Immutable observable contract for JVM tests and the Compose presentation. */
+    data class ToolbarSnapshot(
+        val address: String,
+        val canGoBack: Boolean,
+        val canGoForward: Boolean,
+        val blockerEnabled: Boolean,
+        val blockerDescription: String,
+        val blockerReady: Boolean,
+        val isEditingAddress: Boolean,
+    )
+
+    val snapshot: ToolbarSnapshot
+        get() = ToolbarSnapshot(
+            address = address.value,
+            canGoBack = canBack.value,
+            canGoForward = canForward.value,
+            blockerEnabled = blockerEnabled.value,
+            blockerDescription = blockerDescription.value,
+            blockerReady = blockerReady.value,
+            isEditingAddress = editingState.value,
+        )
+
     var callback: Callback? = null
     private val actionsState = mutableStateOf<CommandActions?>(null)
     var commandActions: CommandActions?
