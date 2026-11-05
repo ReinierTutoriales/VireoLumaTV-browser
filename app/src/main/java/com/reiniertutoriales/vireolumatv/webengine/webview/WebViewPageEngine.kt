@@ -304,6 +304,11 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
         webView?.usePointer(pointerBeforeFullscreen)
         container?.pointerEnabled = pointerBeforeFullscreen
         window?.onExitFullscreen(restoreBrowserControls)
+        // On a page-initiated exit, focus must return to the visible page rather than
+        // remaining on a detached video surface or escaping into browser chrome.
+        if (!restoreBrowserControls && container != null && webView?.visibility == View.VISIBLE) {
+            webView?.requestFocus()
+        }
     }
 
     companion object {
