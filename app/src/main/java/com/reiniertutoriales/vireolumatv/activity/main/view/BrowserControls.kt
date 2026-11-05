@@ -203,6 +203,8 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // Compose handles its own D-pad traversal; do not consume its arrow keys.
+        if (composeRow.hasFocus()) return super.dispatchKeyEvent(event)
         if (!editing && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
             val current = focusRow.indexOfFirst { it.hasFocus() }
             if (current >= 0) {
