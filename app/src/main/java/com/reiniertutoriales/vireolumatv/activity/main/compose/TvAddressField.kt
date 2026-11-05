@@ -45,6 +45,8 @@ fun TvAddressField(
     modifier: Modifier = Modifier,
     onCancel: () -> Unit = {},
     onDraftChanged: (String) -> Unit = {},
+    onEditingChanged: (Boolean) -> Unit = {},
+    onFocusSuggestions: () -> Boolean = { false },
 ) {
     var editing by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf(address) }
