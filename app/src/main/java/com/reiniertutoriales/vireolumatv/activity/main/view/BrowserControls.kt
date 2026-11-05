@@ -62,7 +62,6 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
     private val forwardAvailable = mutableStateOf(false)
     private val blockerActive = mutableStateOf(false)
     private val composeAddress = mutableStateOf("")
-    private val focusRow = listOf<View>(composeRow)
     private var pageAddress = ""
     private var editing = false
     private var enteringSuggestions = false
@@ -205,31 +204,6 @@ class BrowserControls @JvmOverloads constructor(context: Context, attrs: Attribu
             }
             else -> false
         }
-    }
-
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        // Compose handles its own D-pad traversal; do not consume its arrow keys.
-        if (composeRow.hasFocus()) return super.dispatchKeyEvent(event)
-        if (!editing && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
-            val current = focusRow.indexOfFirst { it.hasFocus() }
-            if (current >= 0) {
-                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
-                    val towardsEnd = (event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) != (layoutDirection == LAYOUT_DIRECTION_RTL)
-                    val step = if (towardsEnd) 1 else -1
-                    var next = current + step
-                    while (next in focusRow.indices) {
-                        val target = focusRow[next]
-                        if (target.isEnabled && target.visibility == VISIBLE && target.isFocusable) {
-                            target.requestFocus()
-                            break
-                        }
-                        next += step
-                    }
-                }
-                return true
-            }
-        }
-        return super.dispatchKeyEvent(event)
     }
 
     fun submit(text: String) {
