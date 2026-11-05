@@ -42,6 +42,7 @@ class TabStrip @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
                     TvTabStrip(
                         tabs = tabs,
                         selected = selected.intValue,
+                        onFocus = { index -> onCommand?.invoke(TabCommand.Focus(index)) },
                         onActivate = { index -> onCommand?.invoke(TabCommand.Show(index)) },
                         onClose = { tab -> onCommand?.invoke(TabCommand.Close(tab)) },
                         onOptions = ::showTabOptions,
