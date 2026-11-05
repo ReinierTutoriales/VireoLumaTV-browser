@@ -32,15 +32,11 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
-    @Test fun youtubeWatchRemoteBackUsesWebHistoryWithoutHijackingOtherSites() {
-        assertTrue(shouldNavigateYouTubeHistory("https://m.youtube.com/watch?v=abc", true))
-        assertTrue(shouldNavigateYouTubeHistory("https://www.youtube.com/shorts/abc", true))
-        assertFalse(shouldNavigateYouTubeHistory("https://www.youtube.com/shorts-fake/abc", true))
-        assertFalse(shouldNavigateYouTubeHistory("https://m.youtube.com/watch?v=abc", false))
-        assertFalse(shouldNavigateYouTubeHistory("https://m.youtube.com/", true))
-        assertFalse(shouldNavigateYouTubeHistory("https://youtube.com.evil.test/watch?v=abc", true))
-        assertFalse(shouldNavigateYouTubeHistory("http://m.youtube.com/watch?v=abc", true))
-        assertFalse(shouldNavigateYouTubeHistory("https://example.test/watch?v=abc", true))
+    @Test fun openingCapsuleFocusesAvailableCommandWhenHistoryIsEmpty() = Fixture().use { f ->
+        f.canGoBack = false
+        f.activity.consumeBack()
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        assertTrue(f.vb.controlsRow.homeButton.hasFocus())
     }
 
     @Test fun shieldColorsFollowThePerTabChoiceAndRemainReadableOnFocus() = Fixture().use { f ->
@@ -224,6 +220,7 @@ class BrowserNavigationTest {
         var virtualCursor = true
         var exitedFullscreen = 0
         var hideFullscreen: (() -> Unit)? = null
+        var canGoBack = true
         var wentBack = 0
         var refreshed = 0
         var restoredNetwork = 0
@@ -245,7 +242,8 @@ class BrowserNavigationTest {
                 }
                 "attach" -> { page.requestFocus(); null } // The real engine focuses its page when shown.
                 "getUrl" -> pageUrl
-                "getCanGoBack", "getCanGoForward" -> true
+                "getCanGoBack" -> canGoBack
+                "getCanGoForward" -> true
                 "closeFullscreen" -> { exitedFullscreen++; hideFullscreen?.invoke(); null }
                 "back" -> { wentBack++; null }
                 "reload" -> { refreshed++; null }
@@ -694,7 +692,7 @@ class BrowserNavigationTest {
         assertTrue(f.vb.controlsRow.backButton.hasFocus())
     }
 
-    @Test fun firstBackLeavesDpadModeBeforeYouTubeHistoryAndOpensNothing() = Fixture().use { f ->
+    @Test fun firstBackLeavesDpadModeThenOpensCapsuleOnYouTube() = Fixture().use { f ->
         f.pageUrl = "https://www.youtube.com/watch?v=test"
         f.engine.setPointerMode(false)
         f.activity.backPresses.holdBGoesBack = true
@@ -705,7 +703,9 @@ class BrowserNavigationTest {
         assertFalse(f.activity.backPresses.holdBGoesBack)
         assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
         f.activity.consumeBack()
-        assertEquals("Then Back follows YouTube's history", 1, f.wentBack)
+        assertEquals("Back does not navigate page history", 0, f.wentBack)
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        assertTrue(f.vb.controlsRow.backButton.hasFocus())
     }
 
     @Test fun arrowsPreviewTabsBackCancelsAndOkOpens() = Fixture().use { f ->

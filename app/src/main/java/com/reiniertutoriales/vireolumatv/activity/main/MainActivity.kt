@@ -906,8 +906,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
                 tabStore.currentTab.value?.engine?.setPointerMode(true)
                 backPresses.holdBGoesBack = false
             }
-            shouldNavigateYouTubeHistory(tabStore.currentTab.value?.engine?.url, tabStore.currentTab.value?.engine?.canGoBack == true) ->
-                tabStore.currentTab.value?.engine?.back()
             else -> openCapsule()
         }
     }
@@ -953,7 +951,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         // History can change without a page load (pushState on single-page sites): refresh Back first.
         tabStore.currentTab.value?.let(::onPageViewChanged)
         // Focus is part of opening, not of the animation's end.
-        if (!vb.controlsRow.backButton.requestFocus()) vb.controlsRow.homeButton.requestFocus()
+        if (!vb.controlsRow.backButton.requestFocus() && !vb.controlsRow.homeButton.requestFocus()) {
+            vb.controlsRow.takeFocus()
+        }
         vb.controlsOverlay.translationY = -vb.controlsOverlay.height.toFloat()
         vb.controlsOverlay.alpha = 0f
         vb.controlsOverlay.animate().translationY(0f).alpha(1f).setDuration(OVERLAY_OPEN_MS)
@@ -1035,15 +1035,4 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         // Pop-up and dialog spam must not stack notices on a slow TV.
         const val BLOCKED_NOTICE_INTERVAL_MS = 3000L
     }
-}
-
-/** Remote Back on a YouTube watch page should return through its in-site history. */
-internal fun shouldNavigateYouTubeHistory(url: String?, hasBackEntry: Boolean): Boolean {
-    if (!hasBackEntry || url.isNullOrEmpty()) return false
-    val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return false
-    val host = uri.host?.lowercase() ?: return false
-    return uri.scheme.equals("https", ignoreCase = true) &&
-        host in setOf("youtube.com", "www.youtube.com", "m.youtube.com") &&
-        (uri.path == "/watch" || uri.path == "/playlist" ||
-            uri.path?.startsWith("/shorts/") == true)
 }
