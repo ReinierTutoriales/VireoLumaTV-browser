@@ -13,12 +13,11 @@ import com.reiniertutoriales.vireolumatv.activity.main.compose.TvBrowserShell
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 
 /**
- * Optional host for [TvBrowserShell].
+ * Single Compose host for the browser controls overlay.
  *
- * Not referenced by browser_window.xml yet. The activity can later swap the
- * controls_overlay for this single ComposeView without changing command contracts.
- * Until that wiring exists, the existing BrowserControls + TabStrip path remains
- * the one exercised by CI.
+ * Replaces the previous pair of FrameLayouts (BrowserControls + TabStrip).
+ * The activity talks to this host with the same method names it used before;
+ * the shell owns presentation and focus.
  */
 class ComposeControlsHost @JvmOverloads constructor(
     context: Context,
@@ -34,6 +33,7 @@ class ComposeControlsHost @JvmOverloads constructor(
     private val focusRequest = mutableStateOf(0)
     private val cancelRequest = mutableStateOf(0)
     private val submitRequest = mutableStateOf(0 to "")
+    private val editing = mutableStateOf(false)
     private val actions = mutableStateOf<BrowserCommandActions?>(null)
 
     private val tabs = mutableStateListOf<BrowserTab>()
@@ -50,6 +50,14 @@ class ComposeControlsHost @JvmOverloads constructor(
     var onAddressEditingChanged: ((Boolean) -> Unit)? = null
     var onFocusSuggestions: (() -> Boolean)? = null
 
+    /** Mirrors the old BrowserControls.isEditingAddress for existing call sites. */
+    val isEditingAddress: Boolean get() = editing.value
+
+    /** Mirrors the old TabStrip.current. */
+    var current: Int
+        get() = selectedTab.intValue
+        set(value) { selectedTab.intValue = value }
+
     init {
         val compose = ComposeView(context).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
@@ -60,7 +68,10 @@ class ComposeControlsHost @JvmOverloads constructor(
                     onSubmitAddress = { onSubmitAddress?.invoke(it) },
                     onCancelAddress = { onCancelAddress?.invoke() },
                     onAddressDraftChanged = { onAddressDraftChanged?.invoke(it) },
-                    onAddressEditingChanged = { onAddressEditingChanged?.invoke(it) },
+                    onAddressEditingChanged = { active ->
+                        editing.value = active
+                        onAddressEditingChanged?.invoke(active)
+                    },
                     onFocusSuggestions = { onFocusSuggestions?.invoke() == true },
                     cancelAddressRequest = cancelRequest.value,
                     submitAddressRequest = submitRequest.value,
@@ -85,20 +96,46 @@ class ComposeControlsHost @JvmOverloads constructor(
     }
 
     fun bindActions(value: BrowserCommandActions) { actions.value = value }
+
     fun showAddress(text: String) { address.value = text }
+
     fun updateNavigation(back: Boolean, forward: Boolean) {
         canBack.value = back
         canForward.value = forward
     }
+
     fun showBlockerEnabled(enabled: Boolean) { blockerEnabled.value = enabled }
+
     fun updateBlockerStatus(description: String, ready: Boolean) {
         blockerDescription.value = description
         blockerReady.value = ready
     }
+
     fun setTabs(list: List<BrowserTab>, selected: Int) {
         tabs.clear()
         tabs.addAll(list)
         selectedTab.intValue = selected
     }
+
+    fun submit(text: String) {
+        if (editing.value) submitRequest.value = (submitRequest.value.first + 1) to text
+    }
+
+    fun closeAddressEditing() {
+        if (editing.value) cancelRequest.value += 1
+    }
+
+    fun cancelAddressInput() {
+        if (editing.value) cancelRequest.value += 1 else requestCommandFocus()
+    }
+
+    fun tintAddress(@Suppress("UNUSED_PARAMETER") color: Int) {
+        // Address color is owned by the Compose theme.
+    }
+
+    fun takeFocus() {
+        if (!editing.value) focusRequest.value += 1
+    }
+
     fun requestCommandFocus() { focusRequest.value += 1 }
 }
