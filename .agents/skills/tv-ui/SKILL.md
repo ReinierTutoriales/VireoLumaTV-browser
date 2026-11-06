@@ -6,7 +6,7 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
 # TV UI & Remote
 
 - Optimize for Android TV remote: proper focus handling, D-pad navigation, clear focus indicators, and accessibility.
-- Prefer native Android / WebView UI patterns. Keep layouts simple and lightweight.
+- Prefer native Compose for browser UI and official TV Material 3 patterns; retain Android WebView solely for web content. Keep layouts simple and lightweight.
 - Respect existing Spanish UI, theme, and compact TV-oriented design.
 - Avoid heavy animations or memory-intensive views that hurt low-RAM devices.
 - Trace focus in the actual layout and callback; cover adjacent controls and
@@ -45,7 +45,7 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
 - Use the newest compatible **stable** dependency versions after checking release notes and transitive compatibility. Update the version catalog and lockstep integrations together; experimental versions require a demonstrated need and an explicit risk assessment.
 - Keep one owner of Back navigation in MainActivity/OnBackPressedDispatcher. Compose actions dispatch to the existing browser commands; do not create a competing WebView navigation or fullscreen controller.
 - For the top capsule, preserve the current ordering of address, Back/Forward/Reload/Home, shield (including long press), menu, suggestions and tabs. Focusing an address must not open the IME; OK activates editing, Back dismisses the innermost layer, and focus is restored predictably.
-- During hybrid migration, retain the stable View control until Compose has equivalent state, accessibility, pointer/D-pad and callback behavior. Never recreate a WebView due to Compose recomposition; avoid observing high-frequency page state in the entire toolbar.
+- During a bounded migration, retain a View control only until Compose passes equivalent state, accessibility, pointer/D-pad and callback tests. Document its removal condition; never ship a permanent parallel UI. Never recreate WebView due to Compose recomposition; avoid observing high-frequency page state in the entire toolbar.
 - Check API 24/28/34/37 CI, emulator D-pad routes, fullscreen exit, tab switching, shield toggling and text suggestions. Baseline Profiles are only coverage; claim a speed or memory improvement after comparative measurements on a representative low-RAM TV.
 - For each UI migration, document verified behavioral improvements, the exact tests run and unverified device-specific behavior; avoid cosmetic-only commits that leave the new UI disconnected.
 
@@ -55,3 +55,12 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
 - Do not hide legacy buttons and redirect Compose clicks through `performClick()` without first updating the focus, navigation, editing, accessibility and test contracts. A hidden View cannot remain the authoritative focus target; expose commands through explicit activity callbacks and one coherent state owner.
 - During View/Compose interoperability, verify D-pad movement across the address field, Compose buttons, tab strip and suggestions in both directions; verify Back/IME/fullscreen and the enabled/disabled history state. Existing navigation and snapshot tests are acceptance gates, not tests to delete to make CI green.
 - Before declaring a migration integrated, require passing targeted tests, the complete CI suite and an emulator D-pad path. A source-level mount is not equivalent to a verified TV user interaction.
+
+## Single-architecture migration rule (owner decision, 2026-11-06)
+
+- Read `docs/NATIVE_UI_MODERNIZATION_POLICY.md` before changes. Target one Compose UI, not legacy Views controlled indirectly by Compose.
+- Iconography: choose a verified compatible Material Symbols Rounded source, one typed catalog and one renderer. Do not call a third-party Compose font wrapper official, and do not accept `@DrawableRes`-to-ligature mapping or API-split XML/font rendering as the final design.
+- An official vector resource can be a valid rendering asset; deleting XML by extension is not the objective. Remove obsolete assets only when no supported code path references them.
+- Before replacing UI, inventory all callers, callbacks, focus transitions and supported API levels. Replace the implementation and remove its obsolete counterpart in the same completed migration, with tests; do not layer new technology indefinitely.
+- Evaluate stable AndroidX Compose/TV libraries against the current Gradle, Kotlin, minSdk and release notes. Preserve WebView, adblock, private state, downloads, bookmarks and fullscreen behavior.
+- Measure Baseline Profile coverage and Macrobenchmark frame timing independently; neither CI green nor profiles alone proves latency or memory gains.
