@@ -11,6 +11,7 @@ import sys
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from ui_control_contract import matches_control, find_control, has_compose_tags
 
 report = Path(sys.argv[1])
 package = sys.argv[2]
@@ -46,8 +47,7 @@ def snapshot(label):
 
 
 def matches_id(node, name):
-    rid = node.get('resource-id') or ''
-    return rid == f'{package}:id/{name}' or rid.endswith(f'/{name}') or rid == name
+    return matches_control(node, package, name)
 
 
 def tap(node):
