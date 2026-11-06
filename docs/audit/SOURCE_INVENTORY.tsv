@@ -79,6 +79,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvAddr
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserAction.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserCommandBar.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserShell.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbol.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvTabStrip.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditor.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteRows.kt	REESCRITO
@@ -103,8 +104,8 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabStore.kt	RE
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabStripKeys.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/TabWindow.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/AddressSuggestionsView.kt	PROPIO
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/ComposeControlsHost.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/BrowserControls.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/ComposeControlsHost.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/PointerMenu.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabChips.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabCommand.kt	PROPIO
@@ -341,6 +342,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrandResources
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserDownloadsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserNavigationTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserUiSnapshotTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbolTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/DarkInterfaceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteDraftTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditorDialogTest.kt	PROPIO
@@ -460,10 +462,10 @@ build.gradle.kts	REESCRITO
 CLAUDE.md	PROPIO
 docs/ADBLOCK_AUDIT.md	PROPIO
 docs/ASSET_PROVENANCE.md	PROPIO
-docs/audit/COMPOSE_TV_STABILITY_GATE.md	PROPIO
 docs/audit/ADBLOCK_OFF_DEVICE_20261007.md	PROPIO
 docs/audit/ANDROID_TV_LOW_RESOURCE_AUDIT_20261007.md	PROPIO
 docs/audit/ANDROID_TV_WEBVIEW_ENGINEERING_BASELINE.md	PROPIO
+docs/audit/COMPOSE_TV_STABILITY_GATE.md	PROPIO
 docs/audit/CONSOLIDATED_AUDIT_20261007.md	PROPIO
 docs/audit/HLS_TIMEOUT_AUDIT_20261005.md	PROPIO
 docs/audit/NETWORK_AUDIT_20261005.md	PROPIO
