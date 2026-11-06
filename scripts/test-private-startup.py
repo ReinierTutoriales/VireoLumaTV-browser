@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Open private mode from the real menu and check its separate process on the CI emulator.
 
-During the Compose migration the menu button is no longer a View with
-resource-id menu_button. Missing legacy controls are treated as
+The menu button may be a legacy View (resource-id ...:id/menu_button) or a
+Compose element with testTag("menu_button"). Missing controls are treated as
 transitional; the script exits 0 as long as the normal process stays alive.
 """
 import re
@@ -45,6 +45,11 @@ def snapshot(label):
     return None
 
 
+def matches_id(node, name):
+    rid = node.get('resource-id') or ''
+    return rid == f'{package}:id/{name}' or rid.endswith(f'/{name}') or rid == name
+
+
 def tap(node):
     match = re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', node.get('bounds', ''))
     if not match:
@@ -61,7 +66,7 @@ if adb('shell', 'pidof', package) != normal_pid:
 for attempt in range(2):
     adb('shell', 'input', 'keyevent', '4')
     root = snapshot(f'reset-{attempt}')
-    if root and any(node.get('resource-id') == f'{package}:id/home_search' and node.get('focused') == 'true'
+    if root and any(matches_id(node, 'home_search') and node.get('focused') == 'true'
                     for node in root.iter('node')):
         break
 else:
@@ -71,10 +76,10 @@ adb('shell', 'input', 'keyevent', '19')  # Up from Home opens the capsule.
 root = snapshot('capsule')
 menu = None
 if root is not None:
-    menu = next((node for node in root.iter('node') if node.get('resource-id') == f'{package}:id/menu_button'), None)
+    menu = next((node for node in root.iter('node') if matches_id(node, 'menu_button')), None)
 
 if menu is None:
-    print('NOTE: menu_button resource-id not found (Compose migration); skipping private-mode path', file=sys.stderr)
+    print('NOTE: menu_button not found by id or testTag (Compose migration); skipping private-mode path', file=sys.stderr)
     print('Private-mode check skipped (transitional)')
     sys.exit(0)
 
