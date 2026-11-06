@@ -87,7 +87,7 @@ fun TvBrowserAction(
             painter = painterResource(iconRes),
             contentDescription = null,
             tint = if (enabled) tint else Color.Gray,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(28.dp),
         )
         if (showLabel) {
             Text(label, color = if (enabled) Color.White else Color.Gray, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
