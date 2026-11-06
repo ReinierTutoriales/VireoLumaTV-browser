@@ -3,8 +3,9 @@
 
 Controls may be legacy Views (resource-id package:id/name) or Compose
 elements with testTag (resource-id ending with the tag, or viewIdResourceName).
-Focus assertions are soft; the only hard failure is if the app process exits.
+Focus checks remain transitional except exported Compose toolbar tags.\nObservations are saved as JSON to expose gaps without changing test outcomes.
 """
+import json
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -61,41 +62,51 @@ def focused(root, name):
                for node in root.iter('node'))
 
 
-def note(msg):
-    print(f'NOTE: {msg}', file=sys.stderr)
+observations = []
 
 
-# Soft checks only. Hard requirement is that the process stays alive.
-for attempt in range(2):
+def observe(step, root, expected, *, strict_when_exported=False):
+    visible = root is not None and any(find_control(root, package, name) is not None for name in expected)
+    actual = root is not None and any(focused(root, name) for name in expected)
+    observations.append({'step': step, 'expected': list(expected), 'visible': bool(visible),
+                         'focused': bool(actual), 'hierarchy_available': root is not None})
+    if strict_when_exported and has_compose_tags(root, set(expected)) and not actual:
+        raise AssertionError(f'{step}: Compose tags exported but expected focus missing')
+    if not actual:
+        print(f'NOTE: {step}: expected focus not observed (transitional)', file=sys.stderr)
+    return actual
+
+
+def save_observations():
+    (report / 'native-home-focus-observations.json').write_text(
+        json.dumps({'schema': 1, 'observations': observations}, indent=2) + '\n')
+
+
+# Transitional checks are unchanged; every focus observation is recorded.
+try:
+    for attempt in range(2):
+        key(4)
+        root = snapshot(f'back-{attempt}')
+        if observe(f'back-{attempt}', root, ('home_search',)):
+            break
+    key(19)
+    observe('capsule', snapshot('capsule'), ('back_button', 'home_button'), strict_when_exported=True)
     key(4)
-    root = snapshot(f'back-{attempt}')
-    if focused(root, 'home_search'):
-        break
-if not focused(root, 'home_search'):
-    note('Closing the capsule did not return focus to home_search (transitional)')
-key(19)
-root = snapshot('capsule')
-if not (focused(root, 'back_button') or focused(root, 'home_button')):
-    if has_compose_tags(root, {'back_button', 'home_button'}):
-        raise AssertionError('Compose toolbar tags are exported but D-pad Up did not focus Back/Home')
-    note('Up did not focus capsule controls (transitional: toolbar tags not exported)')
-key(4)
-if not focused(snapshot('search'), 'home_search'):
-    note('Back did not restore search focus (transitional)')
-key(22)
-if not focused(snapshot('submit'), 'home_submit'):
-    note('Right from search did not reach Submit (transitional)')
-key(20)
-root = snapshot('tiles')
-if root is not None:
-    try:
-        grid = next(node for node in root.iter('node') if matches_id(node, 'home_tiles'))
-        if not any(node.get('focused') == 'true' and node.get('class') == 'android.widget.Button'
-                   for node in grid.iter('node')):
-            note('Down did not reach a native shortcut/action (transitional)')
-    except StopIteration:
-        note('home_tiles not found by id or testTag (transitional)')
-current = adb('shell', 'pidof', package).strip()
-if current != expected_pid:
-    raise AssertionError(f'The process restarted during remote navigation (pid {current} != {expected_pid})')
-print('Native Home remote focus checks completed (focus asserts soft; process stayed alive)')
+    observe('search', snapshot('search'), ('home_search',))
+    key(22)
+    observe('submit', snapshot('submit'), ('home_submit',))
+    key(20)
+    root = snapshot('tiles')
+    if root is not None:
+        grid = find_control(root, package, 'home_tiles')
+        if grid is None:
+            print('NOTE: home_tiles not found (transitional)', file=sys.stderr)
+        elif not any(node.get('focused') == 'true' and node.get('class') == 'android.widget.Button'
+                     for node in grid.iter('node')):
+            print('NOTE: Down did not reach a native shortcut/action (transitional)', file=sys.stderr)
+    current = adb('shell', 'pidof', package).strip()
+    if current != expected_pid:
+        raise AssertionError(f'The process restarted during remote navigation (pid {current} != {expected_pid})')
+    print('Native Home remote focus checks completed (transitional assertions unchanged)')
+finally:
+    save_observations()
