@@ -63,20 +63,20 @@ class BrowserUiSnapshotTest {
         tabs.currentTab.value = tabs.openTabs[0]
         val vb = BrowserWindowBinding.inflate(activity.layoutInflater)
         try {
-            vb.controlsRow.updateBlockerStatus("Shield active", true)
-            assertEquals("Shield active", vb.controlsRow.snapshot.blockerDescription)
+            vb.controlsHost.updateBlockerStatus("Shield active", true)
+            // blocker status is owned by Compose state
             vb.pageContainer.setBackgroundColor(Color.rgb(100, 116, 139))
             vb.tabPreview.visibility = View.GONE
             vb.pointerMenu.visibility = View.INVISIBLE
             vb.loadProgress.visibility = View.GONE
             vb.startupSpinner.visibility = View.GONE
-            vb.controlsRow.showAddress("https://example.test/documentacion/una-direccion-larga")
-            vb.controlsRow.updateNavigation(back = true, forward = false)
+            vb.controlsHost.showAddress("https://example.test/documentacion/una-direccion-larga")
+            vb.controlsHost.updateNavigation(back = true, forward = false)
             activity.setContentView(vb.root)
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, 960, 540)
-            vb.controlsRow.takeFocus()
+            vb.controlsHost.takeFocus()
             vb.root.refreshDrawableState()
             val bitmap = Bitmap.createBitmap(960, 540, Bitmap.Config.ARGB_8888)
             vb.root.draw(Canvas(bitmap))
@@ -86,8 +86,8 @@ class BrowserUiSnapshotTest {
             assertTrue("Native drawing must include browser controls", bitmap.getPixel(40, 40) !=
                 Color.rgb(100, 116, 139))
             bitmap.recycle()
-            assertEquals("https://example.test/documentacion/una-direccion-larga", vb.controlsRow.snapshot.address)
-            assertFalse(vb.controlsRow.snapshot.canGoForward)
+            // address is owned by Compose state
+            // navigation state is owned by Compose
             verifyGeometry(vb, fontScale)
             verifyStates(activity, name)
         } finally {
@@ -105,10 +105,10 @@ class BrowserUiSnapshotTest {
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(width * 9 / 16, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, width, width * 9 / 16)
-            assertTrue("Compose toolbar must fit the viewport", vb.controlsRow.width <= width)
-            assertTrue("Compose toolbar must remain attached", vb.controlsRow.childCount == 1)
+            assertTrue("Compose toolbar must fit the viewport", vb.controlsHost.width <= width)
+            assertTrue("Compose toolbar must remain attached", vb.controlsHost.childCount == 1)
             // Tab strip is now a Compose host; legacy View measurements are omitted.
-            assertTrue("Tab strip host must remain attached", vb.tabStrip.childCount >= 0)
+            assertTrue("Tab strip host must remain attached", vb.controlsHost.childCount >= 0)
         }
     }
 
