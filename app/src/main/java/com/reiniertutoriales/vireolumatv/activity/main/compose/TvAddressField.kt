@@ -36,6 +36,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.testTag
 
 /**
  * Two explicit modes prevent D-pad focus from opening the IME.
@@ -114,6 +115,7 @@ fun TvAddressField(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go, keyboardType = KeyboardType.Uri),
             keyboardActions = KeyboardActions(onGo = { submitEditing() }),
             modifier = modifier
+                .testTag("home_search")
                 .focusRequester(editorFocus)
                 .fillMaxWidth()
                 .background(Color.Black, shape)
@@ -135,6 +137,7 @@ fun TvAddressField(
     } else {
         Box(
             modifier = modifier
+                .testTag("home_search")
                 .fillMaxWidth()
                 .background(Color.Black, shape)
                 .border(1.dp, Color.DarkGray, shape)
