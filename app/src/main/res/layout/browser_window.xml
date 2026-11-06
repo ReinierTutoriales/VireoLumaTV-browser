@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   The page fills the screen. The browser controls are an overlay at the top: a scrim that fades
-  into the page, with the address row and the tab row inside the TV overscan-safe margins.
-  While another tab is previewed, its picture fills the screen behind the controls.
+  into the page, with the Compose shell (address + commands + tabs) inside the TV overscan-safe
+  margins. While another tab is previewed, its picture fills the screen behind the controls.
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -79,14 +79,12 @@
         android:paddingEnd="@dimen/safe_horizontal"
         android:paddingBottom="48dp">
 
-        <com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
-            android:id="@+id/controls_row"
+        <com.reiniertutoriales.vireolumatv.activity.main.view.ComposeControlsHost
+            android:id="@+id/controls_host"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:baselineAligned="false"
             android:clipChildren="false"
-            android:clipToPadding="false"
-            android:gravity="center_vertical" />
+            android:clipToPadding="false" />
 
         <!-- Takes the tab row's place while the address being edited has suggestions. -->
         <com.reiniertutoriales.vireolumatv.activity.main.view.AddressSuggestionsView
@@ -94,23 +92,12 @@
             android:clipToPadding="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/controls_row"
+            android:layout_below="@id/controls_host"
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_panel"
             android:clipChildren="false"
             android:padding="12dp"
             android:visibility="gone" />
-
-        <com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabStrip
-            android:id="@+id/tab_strip"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_below="@id/controls_row"
-            android:layout_marginTop="16dp"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:focusable="true"
-            android:nextFocusUp="@id/controls_row" />
     </RelativeLayout>
 
     <com.reiniertutoriales.vireolumatv.activity.main.view.PointerMenu
