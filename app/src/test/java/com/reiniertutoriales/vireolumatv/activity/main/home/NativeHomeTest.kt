@@ -152,7 +152,7 @@ class NativeHomeTest {
         f.home.update(f.tab)
         f.finishRead()
         f.activity.openCapsule()
-        f.vb.tabStrip.current = 1
+        f.vb.controlsHost.current = 1
         runBlocking { f.activity.showPreview(null) }
         assertEquals(View.INVISIBLE, f.vb.nativeHomeContainer.visibility)
         assertSame(f.tab, f.tabs.currentTab.value)
