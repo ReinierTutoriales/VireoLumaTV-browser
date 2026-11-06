@@ -9,6 +9,7 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from ui_control_contract import matches_control, find_control, has_compose_tags
 
 report = Path(sys.argv[1])
 package = sys.argv[2]
@@ -50,8 +51,7 @@ def snapshot(label):
 
 
 def matches_id(node, name):
-    rid = node.get('resource-id') or ''
-    return rid == f'{package}:id/{name}' or rid.endswith(f'/{name}') or rid == name
+    return matches_control(node, package, name)
 
 
 def focused(root, name):
@@ -76,7 +76,9 @@ if not focused(root, 'home_search'):
 key(19)
 root = snapshot('capsule')
 if not (focused(root, 'back_button') or focused(root, 'home_button')):
-    note('Up did not focus capsule controls (testTag or legacy id)')
+    if has_compose_tags(root, {'back_button', 'home_button'}):
+        raise AssertionError('Compose toolbar tags are exported but D-pad Up did not focus Back/Home')
+    note('Up did not focus capsule controls (transitional: toolbar tags not exported)')
 key(4)
 if not focused(snapshot('search'), 'home_search'):
     note('Back did not restore search focus (transitional)')
