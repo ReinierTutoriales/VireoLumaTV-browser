@@ -27,6 +27,7 @@ data class BrowserCommand(
     @DrawableRes val icon: Int,
     val enabled: Boolean = true,
     val onClick: () -> Unit,
+    val testTag: String? = null,
 )
 
 @Composable
@@ -93,6 +94,7 @@ fun TvBrowserCommandBar(
             onClick = menu.onClick,
             enabled = menu.enabled,
             showLabel = false,
+            testTag = menu.testTag,
         )
     }
 }
@@ -113,6 +115,7 @@ private fun TvBlockerAction(
         onLongClick = onDetails,
         tint = if (enabled) Color(0xFF4ADE80) else Color(0xFFF87171),
         showLabel = false,
+        testTag = "blocker_button",
     )
 }
 
@@ -125,6 +128,7 @@ private fun CommandAction(command: BrowserCommand, modifier: Modifier = Modifier
         onClick = command.onClick,
         enabled = command.enabled,
         showLabel = false,
+        testTag = command.testTag,
     )
 }
 
@@ -176,11 +180,11 @@ fun TvConnectedBrowserCommandBar(
         onFocusSuggestions = onFocusSuggestions,
         cancelAddressRequest = cancelAddressRequest,
         submitAddressRequest = submitAddressRequest,
-        back = BrowserCommand(backLabel, R.drawable.ic_back, canGoBack, actions.back),
-        forward = BrowserCommand(forwardLabel, R.drawable.ic_forward, canGoForward, actions.forward),
-        refresh = BrowserCommand(reloadLabel, R.drawable.ic_refresh, onClick = actions.reload),
-        home = BrowserCommand(homeLabel, R.drawable.ic_home, onClick = actions.home),
-        menu = BrowserCommand(menuLabel, R.drawable.ic_more, onClick = actions.menu),
+        back = BrowserCommand(backLabel, R.drawable.ic_back, canGoBack, actions.back, testTag = "back_button"),
+        forward = BrowserCommand(forwardLabel, R.drawable.ic_forward, canGoForward, actions.forward, testTag = "forward_button"),
+        refresh = BrowserCommand(reloadLabel, R.drawable.ic_refresh, onClick = actions.reload, testTag = "refresh_button"),
+        home = BrowserCommand(homeLabel, R.drawable.ic_home, onClick = actions.home, testTag = "home_button"),
+        menu = BrowserCommand(menuLabel, R.drawable.ic_more, onClick = actions.menu, testTag = "menu_button"),
         blockerEnabled = blockerEnabled,
         blockerDescription = blockerDescription,
         blockerReady = blockerReady,
