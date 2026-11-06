@@ -76,11 +76,11 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     override fun onTitle(title: String) {
         tab.title = title
-        vb.tabStrip.onTabTitle(tab)
+        vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
         browser.visitLog.onTabTitle(tab)
     }
 
-    override fun onIcon(icon: Bitmap) = vb.tabStrip.onFavIconUpdated(tab)
+    override fun onIcon(icon: Bitmap) = vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
 
     override fun requestPermissions(permissions: Array<String>): Int = browser.requestPagePermissions(permissions)
 
@@ -134,11 +134,11 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         (tab.engine.url ?: reported)?.let { url ->
             if (tab.url != url) {
                 tab.url = url
-                vb.tabStrip.onFavIconUpdated(tab)
+                vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
                 if (isShownTab) browser.publishShownSite()
             }
         }
-        if (browser.tabAtStripSelection() === tab) vb.controlsRow.showAddress(tab.url)
+        if (browser.tabAtStripSelection() === tab) vb.controlsHost.showAddress(tab.url)
     }
 
     private val capturePreview = Runnable {
@@ -152,7 +152,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         }
     }
 
-    override fun onCertificateError() = vb.controlsRow.tintAddress(browser.getColor(R.color.error))
+    override fun onCertificateError() = vb.controlsHost.tintAddress(browser.getColor(R.color.error))
 
     override fun onRendererGone() {
         if (isShownTab) browser.changeTab(tab)

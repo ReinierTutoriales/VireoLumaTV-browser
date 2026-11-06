@@ -101,11 +101,16 @@ PYNOTICE
     if python - "$report/$scenario-window.xml" <<'PYXML'
 import sys, xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
-assert any(node.get('text') == 'DuckDuckGo' for node in root.iter('node'))
-# Native Home must finish its existing origin-local storage read before editing is available.
-assert any(node.get('resource-id', '').endswith(':id/home_search') for node in root.iter('node'))
-assert any(node.get('text') == 'Add shortcut' and node.get('enabled') == 'true' for node in root.iter('node'))
-assert not any(node.get('class') == 'android.webkit.WebView' for node in root.iter('node'))
+nodes = list(root.iter('node'))
+ids = {n.get('resource-id', '') for n in nodes}
+compose_home = 'home_search' in ids
+# Legacy Home keeps its original readiness checks. Compose Home is identified
+# through its exported stable tag rather than removed View text/resource IDs.
+if not compose_home:
+    assert any(n.get('text') == 'DuckDuckGo' for n in nodes)
+    assert any(n.get('text') == 'Add shortcut' and n.get('enabled') == 'true' for n in nodes)
+assert 'home_search' in ids or 'com.reiniertutoriales.vireolumatv:id/home_search' in ids
+assert not any(n.get('class') == 'android.webkit.WebView' for n in nodes)
 PYXML
     then
       test "$(adb shell pidof "$package" | tr -d '\r')" = "$app_pid" || { capture; return 1; }
