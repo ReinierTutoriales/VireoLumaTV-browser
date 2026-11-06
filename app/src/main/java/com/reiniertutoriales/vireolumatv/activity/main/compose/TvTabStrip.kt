@@ -8,6 +8,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
@@ -19,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -67,24 +70,43 @@ fun TvTabStrip(
                     overflow = TextOverflow.Ellipsis)
                 val closeInteraction = remember(tab) { MutableInteractionSource() }
                 val closeFocused by closeInteraction.collectIsFocusedAsState()
-                TvSymbolIcon(symbol = TvSymbol.TabClose, tint = Color.White,
+                Box(
                     modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                         .background(if (closeFocused) Color(0xFF383838) else Color.Transparent, shape)
                         .border(if (closeFocused) 2.dp else 0.dp, Color.White, shape)
-                        .semantics { role = Role.Button }
-                        .combinedClickable(interactionSource = closeInteraction, indication = null,
-                            onClick = { onClose(tab) }, onLongClick = { onOptions(tab) })
-                        .padding(horizontal = 15.dp, vertical = 9.dp))
+                        .semantics { role = Role.Button; contentDescription = "Close tab" }
+                        .combinedClickable(
+                            interactionSource = closeInteraction,
+                            indication = null,
+                            onClick = { onClose(tab) },
+                            onLongClick = { onOptions(tab) },
+                            onLongClickLabel = "Tab options",
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    TvSymbolIcon(
+                        symbol = TvSymbol.TabClose,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
             }
         }
         val addInteraction = remember { MutableInteractionSource() }
         val addFocused by addInteraction.collectIsFocusedAsState()
-        TvSymbolIcon(symbol = TvSymbol.Add, tint = Color.White,
+        Box(
             modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                 .background(if (addFocused) Color(0xFF292929) else Color.Black, shape)
                 .border(if (addFocused) 2.dp else 1.dp, if (addFocused) Color.White else Color.DarkGray, shape)
-                .semantics { role = Role.Button }
-                .combinedClickable(interactionSource = addInteraction, indication = null, onClick = onAdd)
-                .padding(horizontal = 16.dp, vertical = 8.dp))
+                .semantics { role = Role.Button; contentDescription = "New tab" }
+                .combinedClickable(interactionSource = addInteraction, indication = null, onClick = onAdd),
+            contentAlignment = Alignment.Center,
+        ) {
+            TvSymbolIcon(
+                symbol = TvSymbol.Add,
+                tint = Color.White,
+                modifier = Modifier.size(24.dp),
+            )
+        }
     }
 }
