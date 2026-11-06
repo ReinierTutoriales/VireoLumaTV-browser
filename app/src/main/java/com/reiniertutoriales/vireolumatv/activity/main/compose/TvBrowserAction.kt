@@ -1,5 +1,8 @@
 package com.reiniertutoriales.vireolumatv.activity.main.compose
 
+import com.reiniertutoriales.vireolumatv.R
+import android.os.Build
+import dev.vicart.compose.material.symbols.MaterialSymbol
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
@@ -34,9 +37,45 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.ui.platform.testTag
 
+/** Maps existing resource IDs to font ligatures without changing any caller. */
+private fun materialSymbolName(@DrawableRes iconRes: Int): String? = when (iconRes) {
+        R.drawable.ic_add -> "add"
+        R.drawable.ic_back -> "arrow_back"
+        R.drawable.ic_block -> "block"
+        R.drawable.ic_bookmark -> "bookmark"
+        R.drawable.ic_delete -> "delete"
+        R.drawable.ic_done -> "check"
+        R.drawable.ic_download -> "download"
+        R.drawable.ic_dpad -> "gamepad"
+        R.drawable.ic_edit -> "edit"
+        R.drawable.ic_exit -> "logout"
+        R.drawable.ic_forward -> "arrow_forward"
+        R.drawable.ic_globe -> "language"
+        R.drawable.ic_history -> "history"
+        R.drawable.ic_home -> "home"
+        R.drawable.ic_link -> "link"
+        R.drawable.ic_menu_downloads -> "downloading"
+        R.drawable.ic_more -> "more_horiz"
+        R.drawable.ic_move -> "open_with"
+        R.drawable.ic_new_tab -> "add_box"
+        R.drawable.ic_private -> "domino_mask"
+        R.drawable.ic_refresh -> "refresh"
+        R.drawable.ic_search -> "search"
+        R.drawable.ic_settings -> "settings"
+        R.drawable.ic_shield_off -> "gpp_bad"
+        R.drawable.ic_shield_on -> "verified_user"
+        R.drawable.ic_stat_download -> "download"
+        R.drawable.ic_tab_close -> "close"
+        R.drawable.ic_video -> "smart_display"
+        R.drawable.ic_zoom_in -> "zoom_in"
+        R.drawable.ic_zoom_out -> "zoom_out"
+        else -> null
+}
+
 /**
  * Reusable AMOLED action for remote-control navigation.
- * Bundled vector drawables remain local: no fonts, network or Play Services.
+ * Experimental native Compose symbol rendering on API 26+; local vector fallback on API 24/25.
+ * Third-party font dependency: no network or Play Services at runtime.
  * Callers own the action and browser state; this component never touches WebView.
  */
 @Composable
@@ -83,12 +122,21 @@ fun TvBrowserAction(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Icon(
-            painter = painterResource(iconRes),
-            contentDescription = null,
-            tint = if (enabled) tint else Color.Gray,
-            modifier = Modifier.size(28.dp),
-        )
+        val symbolName = materialSymbolName(iconRes)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && symbolName != null) {
+            MaterialSymbol.Outlined.Rounded(
+                icon = symbolName,
+                size = 28.dp,
+                tint = if (enabled) tint else Color.Gray,
+            )
+        } else {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = null,
+                tint = if (enabled) tint else Color.Gray,
+                modifier = Modifier.size(28.dp),
+            )
+        }
         if (showLabel) {
             Text(label, color = if (enabled) Color.White else Color.Gray, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
