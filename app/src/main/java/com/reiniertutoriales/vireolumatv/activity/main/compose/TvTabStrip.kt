@@ -67,7 +67,7 @@ fun TvTabStrip(
                     overflow = TextOverflow.Ellipsis)
                 val closeInteraction = remember(tab) { MutableInteractionSource() }
                 val closeFocused by closeInteraction.collectIsFocusedAsState()
-                Text("×", color = Color.White, fontSize = 22.sp,
+                TvSymbolIcon(symbol = TvSymbol.TabClose, tint = Color.White,
                     modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                         .background(if (closeFocused) Color(0xFF383838) else Color.Transparent, shape)
                         .border(if (closeFocused) 2.dp else 0.dp, Color.White, shape)
@@ -79,7 +79,7 @@ fun TvTabStrip(
         }
         val addInteraction = remember { MutableInteractionSource() }
         val addFocused by addInteraction.collectIsFocusedAsState()
-        Text("+", color = Color.White, fontSize = 24.sp,
+        TvSymbolIcon(symbol = TvSymbol.Add, tint = Color.White,
             modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                 .background(if (addFocused) Color(0xFF292929) else Color.Black, shape)
                 .border(if (addFocused) 2.dp else 1.dp, if (addFocused) Color.White else Color.DarkGray, shape)
