@@ -143,7 +143,11 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.tabPreview.visibility = View.INVISIBLE
         vb.controlsOverlay.visibility = View.INVISIBLE
         vb.loadProgress.visibility = View.GONE
-        vb.tabStrip.onCommand = ::onTabCommand
+        vb.controlsHost.onTabFocus = { index -> onTabCommand(com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Focus(index)) }
+        vb.controlsHost.onTabActivate = { index -> onTabCommand(com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Show(index)) }
+        vb.controlsHost.onTabClose = { tab -> onTabCommand(com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Close(tab)) }
+        vb.controlsHost.onTabOptions = { tab -> showTabOptions(tab) }
+        vb.controlsHost.onAddTab = { onTabCommand(com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Add) }
         nativeHome = NativeHome(this, vb.nativeHomeContainer)
         configureBrowserControls()
         observeModels()
@@ -157,13 +161,17 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
         tabStore.currentTab.observe(this) { tab ->
-            vb.controlsRow.showAddress(tab?.url.orEmpty())
+            vb.controlsHost.showAddress(tab?.url.orEmpty())
             publishShownSite()
             if (tab == null) nativeHome?.hide() else onPageViewChanged(tab)
         }
         adBlocker.listLoading.observe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
         adBlocker.updateResult.observe(lifecycle) { tabStore.currentTab.value?.let(::updateAdblockStatus) }
-        tabStore.openTabs.observe(this, false) { if (it.isEmpty()) vb.pageContainer.removeAllViews() }
+        tabStore.openTabs.observe(this, false) { tabs ->
+            if (tabs.isEmpty()) vb.pageContainer.removeAllViews()
+            val selected = tabs.indexOf(tabStore.currentTab.value).coerceAtLeast(0)
+            vb.controlsHost.setTabs(tabs.toList(), selected)
+        }
     }
 
     /** Reads the stored state, then shows the tab the intent asks for, or the selected one, or a new home tab. */
@@ -332,9 +340,15 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     @VisibleForTesting
     internal fun configureBrowserControls() {
-        val bar = vb.controlsRow
-        bar.callback = this
-        vb.vSuggestions.onPick = { bar.submit(it.url) }
+        vb.controlsHost.onSubmitAddress = { target ->
+            onUrlInputDone()
+            search(target)
+        }
+        vb.controlsHost.onCancelAddress = { onAddressInputCancelled() }
+        vb.controlsHost.onAddressDraftChanged = { onAddressTyped(it) }
+        vb.controlsHost.onAddressEditingChanged = { active -> if (active) onAddressEditing() }
+        vb.controlsHost.onFocusSuggestions = { focusSuggestions() }
+        vb.vSuggestions.onPick = { vb.controlsHost.submit(it.url) }
         // One action contract for both the current View controls and future Compose controls.
         val actions = com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions(
             back = { closeCapsule(); navigateBack() },
@@ -345,7 +359,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             shieldDetails = { commitStripSelection(); showBlockerDetails() },
             menu = { showAppMenu() },
         )
-        bar.commandActions = actions
+        vb.controlsHost.bindActions(actions)
     }
 
     override fun showAppMenu() = AppMenuPanel(this, appMenuEntries(), ::runAppMenuEntry).show()
@@ -439,7 +453,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     /** Suggestions take the tab strip's place while there are any, so the capsule does not grow. */
     private fun showSuggestions(suggestions: List<AddressSuggestion>) {
         vb.vSuggestions.show(suggestions)
-        vb.tabStrip.isVisible = suggestions.isEmpty()
+        // Tab strip visibility is owned by the Compose shell; suggestions overlay is separate.
+        // vb.controlsHost.isVisible = suggestions.isEmpty()
     }
 
     private fun closeSuggestions() {
@@ -450,7 +465,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     // Navigation
 
     fun navigate(url: String) {
-        vb.controlsRow.tintAddress(ContextCompat.getColor(this, R.color.on_surface))
+        vb.controlsHost.tintAddress(ContextCompat.getColor(this, R.color.on_surface))
         val tab = tabStore.currentTab.value
         if (tab == null) {
             openInNewTab(url, 0, closeCapsuleAfter = true, navigateImmediately = true)
@@ -478,6 +493,24 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     // Tabs
 
+
+    private fun showTabOptions(tab: com.reiniertutoriales.vireolumatv.model.BrowserTab) {
+        val actions = arrayOf(
+            getString(R.string.tab_action_new),
+            getString(R.string.tab_action_close),
+            getString(R.string.tab_action_favorite),
+        )
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(R.string.tabs_title)
+            .setItems(actions) { _, which ->
+                when (which) {
+                    0 -> onTabCommand(com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.AddAt(tabStore.openTabs.indexOf(tab) + 1))
+                    1 -> onTabCommand(com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Close(tab))
+                    2 -> onTabCommand(com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Favorite(tab))
+                }
+            }.show()
+    }
+
     private fun onTabCommand(command: TabCommand) = when (command) {
         is TabCommand.Focus -> previewFocusedTab(tabAt(command.index))
         is TabCommand.Show -> {
@@ -493,7 +526,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     /** Focus moved to another tab: show its address and, a moment later, its preview. */
     private fun previewFocusedTab(tab: BrowserTab?) {
-        vb.controlsRow.showAddress(tab?.url.orEmpty())
+        vb.controlsHost.showAddress(tab?.url.orEmpty())
         previewGeneration++
         mainThread.removeCallbacks(showFocusedPreview)
         focusedPreviewTab = tab
@@ -503,7 +536,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     private fun tabAt(index: Int) = tabStore.openTabs.getOrNull(index)
 
     /** The tab the strip shows as selected, which differs from the shown one while another is previewed. */
-    internal fun tabAtStripSelection() = tabAt(vb.tabStrip.current)
+    internal fun tabAtStripSelection() = tabAt(vb.controlsHost.current)
 
     internal fun openInNewTab(url: String?, index: Int = 0, closeCapsuleAfter: Boolean = true, navigateImmediately: Boolean): PageEngine? {
         if (url == null) return null
@@ -532,16 +565,16 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         }
         tabStore.onCloseTab(tab)
         val current = tabStore.currentTab.value
-        vb.tabStrip.current = tabs.indexOf(current).coerceAtLeast(0)
+        vb.controlsHost.current = tabs.indexOf(current).coerceAtLeast(0)
         if (keepCapsule) {
             // Showing the neighbour focused its page behind the capsule; keys must stay in the strip.
-            vb.tabStrip.requestFocus()
+            vb.controlsHost.requestFocus()
             previewGeneration++
             mainThread.removeCallbacks(showFocusedPreview)
             focusedPreviewTab = null
-            vb.controlsRow.showAddress(current?.url.orEmpty())
+            vb.controlsHost.showAddress(current?.url.orEmpty())
             lifecycleScope.launch { showPreview(current) }
-            vb.tabStrip.post { if (overlayVisible) vb.tabStrip.requestFocus() }
+            vb.controlsHost.post { if (overlayVisible) vb.controlsHost.requestFocus() }
         } else closeCapsule()
     }
 
@@ -613,7 +646,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (tab !== tabStore.currentTab.value) return
         publishShownSite()
         nativeHome?.update(tab)
-        vb.controlsRow.updateNavigation(tab.engine.canGoBack, tab.engine.canGoForward)
+        vb.controlsHost.updateNavigation(tab.engine.canGoBack, tab.engine.canGoForward)
         updateAdblockStatus(tab)
     }
 
@@ -622,15 +655,15 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val shown = tabStore.currentTab.value
         val index = tabStore.openTabs.indexOf(shown)
         if (shown == null || index < 0) return commitStripSelection()
-        vb.tabStrip.current = index
-        vb.controlsRow.showAddress(shown.url)
+        vb.controlsHost.current = index
+        vb.controlsHost.showAddress(shown.url)
     }
 
     /** Commits the tab the strip shows as selected, or opens one when the strip points past the tabs. */
     private fun commitStripSelection() {
         val tab = tabAtStripSelection()
         when {
-            tab == null -> openInNewTab(browserSettings.homePage, if (vb.tabStrip.current < 0) 0 else tabStore.openTabs.size,
+            tab == null -> openInNewTab(browserSettings.homePage, if (vb.controlsHost.current < 0) 0 else tabStore.openTabs.size,
                 closeCapsuleAfter = true, navigateImmediately = true)
             !tab.selected -> changeTab(tab)
         }
@@ -659,8 +692,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     internal fun updateAdblockStatus(tab: BrowserTab) {
         val state = getString(blockerStatusLabel(tab))
-        vb.controlsRow.showBlockerEnabled(tab.adblock ?: config.adBlockEnabled)
-        vb.controlsRow.updateBlockerStatus(
+        vb.controlsHost.showBlockerEnabled(tab.adblock ?: config.adBlockEnabled)
+        vb.controlsHost.updateBlockerStatus(
             resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds),
             (tab.adblock ?: config.adBlockEnabled) && ::adBlocker.isInitialized && adBlocker.hasActiveRules,
         )
@@ -834,7 +867,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
                 val code = if (event.keyCode != 0) event.keyCode else event.scanCode
                 if (code !in BackPresses.BACK_KEYS &&
                     Shortcuts.getInstance().handle(event, this@MainActivity, tabStore.currentTab.value)) return true
-                if (downLeavesTabStrip(overlayVisible, vb.tabStrip.hasFocus(), event.keyCode, event.action, event.repeatCount)) {
+                if (downLeavesTabStrip(overlayVisible, vb.controlsHost.hasFocus(), event.keyCode, event.action, event.repeatCount)) {
                     closeCapsule()
                     return true
                 }
@@ -889,7 +922,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
                 fullscreenBackAt = SystemClock.uptimeMillis()
                 tabStore.currentTab.value?.engine?.closeFullscreen()
             }
-            vb.controlsRow.isEditingAddress -> vb.controlsRow.cancelAddressInput()
+            vb.controlsHost.isEditingAddress -> vb.controlsHost.cancelAddressInput()
             // A second press while the video is still coming down (or a remote's double send) must not
             // close the capsule that the first one opened.
             overlayVisible -> if (SystemClock.uptimeMillis() - fullscreenBackAt >= FULLSCREEN_BACK_SETTLE_MS) closeCapsule()
@@ -933,18 +966,18 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         vb.pageContainer.cursorSuppressed = true
         // The first press on the page closes the capsule and reaches the page.
         vb.pageContainer.onPageTouch = {
-            if (vb.controlsRow.isEditingAddress) vb.controlsRow.cancelAddressInput()
+            if (vb.controlsHost.isEditingAddress) vb.controlsHost.cancelAddressInput()
             closeCapsule()
         }
         val previewed = tabAtStripSelection()
         showLivePage(previewed != null && previewed === tabStore.currentTab.value)
         lifecycleScope.launch { showPreview(previewed) }
-        vb.controlsRow.closeAddressEditing()
+        vb.controlsHost.closeAddressEditing()
         vb.controlsOverlay.visibility = View.VISIBLE
         // History can change without a page load (pushState on single-page sites): refresh Back first.
         tabStore.currentTab.value?.let(::onPageViewChanged)
         // Focus is part of opening, not of the animation's end.
-        vb.controlsRow.takeFocus()
+        vb.controlsHost.takeFocus()
         vb.controlsOverlay.translationY = -vb.controlsOverlay.height.toFloat()
         vb.controlsOverlay.alpha = 0f
         vb.controlsOverlay.animate().translationY(0f).alpha(1f).setDuration(OVERLAY_OPEN_MS)
@@ -996,7 +1029,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         previewGeneration++
         mainThread.removeCallbacks(showFocusedPreview)
         focusedPreviewTab = null
-        vb.controlsRow.closeAddressEditing()
+        vb.controlsHost.closeAddressEditing()
         vb.controlsOverlay.animate().cancel()
         vb.tabPreview.animate().cancel()
         vb.controlsOverlay.visibility = View.INVISIBLE
