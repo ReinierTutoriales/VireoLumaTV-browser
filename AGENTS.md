@@ -41,6 +41,14 @@ exact head is the integration gate; report local tests and CI separately.
 - **Documentation**: Update or create documentation only when it reflects verified current behavior. Do not invent APIs, policies, or guarantees. Prefer updating existing docs over creating new ones. Keep docs short, precise, and consistent with the code.
 - **Optimal code**: Prefer the simplest correct solution that matches existing style and patterns. Avoid speculative refactors, unused helpers, extra abstractions, or "improvements" without measured benefit. Verify against tests and contracts before considering the change complete.
 
+## Native UI modernization mandate
+
+- Read `docs/NATIVE_UI_MODERNIZATION_POLICY.md` before any UI, icon, dependency, or Compose migration. It defines the approved target architecture; the current hybrid implementation is not the final design.
+- Use Compose as the target for all browser chrome and TV Material 3 components where appropriate. Keep WebView and the existing blocker as the web engine and filtering layer.
+- Material Symbols Rounded must have one centralized, typed icon API and one renderer in the final architecture. Do not introduce permanent drawable-ID bridges, font/XML dual renderers, or API-level fallbacks merely to retain old UI code. Evaluate platform support and document any genuine compatibility requirement.
+- Migration work must include a consumer inventory, explicit removal criteria for replaced resources, behavior-preserving tests, and exact-SHA CI verification. Do not declare the migration complete while compatibility scaffolding remains.
+- Validate official Android guidance, stable versions and compatibility before selecting dependencies; no unverified third-party wrapper is assumed official.
+
 ## Skills
 Read only the relevant `.agents/skills/` instructions: `precise-coding` for
 implementation, `testing-discipline` for functional changes, `tv-ui` for
