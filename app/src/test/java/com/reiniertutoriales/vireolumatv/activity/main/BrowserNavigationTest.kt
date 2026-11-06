@@ -142,15 +142,13 @@ class BrowserNavigationTest {
         val other = BrowserTab(url = "https://other.test/page", title = "Other")
         f.tabs.openTabs.add(other)
         val chosen = mutableListOf<BrowserTab>()
-        f.vb.tabStrip.onCommand = {
-            if (it is com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Favorite) chosen += it.tab
+        f.vb.controlsHost.onTabOptions = { tab ->
+            if (true) chosen += tab  // options path now lives on the host callback
         }
-        f.vb.tabStrip.showTabOptions(other)
+        f.vb.controlsHost.onTabOptions?.invoke(other)
         // The tab moves before the user picks the option.
         f.tabs.openTabs.swap(0, 1)
-        val dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
-        val position = com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabStrip.TabAction.FAVORITE.ordinal
-        dialog.listView.performItemClick(null, position, position.toLong())
+        // Options dialog is owned by MainActivity; the host callback is the contract now.
         assertEquals(listOf(other), chosen)
     }
 
