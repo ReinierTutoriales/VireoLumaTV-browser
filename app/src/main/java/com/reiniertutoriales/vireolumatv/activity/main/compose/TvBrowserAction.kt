@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
+import androidx.compose.ui.platform.testTag
 
 /**
  * Reusable AMOLED action for remote-control navigation.
@@ -48,6 +49,7 @@ fun TvBrowserAction(
     tint: Color = Color.White,
     showLabel: Boolean = true,
     onLongClick: (() -> Unit)? = null,
+    testTag: String? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -63,6 +65,7 @@ fun TvBrowserAction(
     val shape = RoundedCornerShape(10.dp)
     Row(
         modifier = modifier
+            .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
             .defaultMinSize(minHeight = 48.dp)
             .semantics { contentDescription = label; role = Role.Button }
             .clip(shape)
