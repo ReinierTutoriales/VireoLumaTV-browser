@@ -14,6 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.reiniertutoriales.vireolumatv.R
@@ -61,7 +63,7 @@ fun TvBrowserCommandBar(
         }
     }
     Row(
-        modifier = modifier.focusGroup().focusRestorer().background(Color.Black).padding(horizontal = if (address == null) 0.dp else 24.dp, vertical = 8.dp),
+        modifier = modifier.semantics { testTagsAsResourceId = true }.focusGroup().focusRestorer().background(Color.Black).padding(horizontal = if (address == null) 0.dp else 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (address != null) {
