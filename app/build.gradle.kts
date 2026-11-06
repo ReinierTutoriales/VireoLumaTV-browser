@@ -170,6 +170,8 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.tv.material)
+    // Experimental third-party Compose Material Symbols; evaluate APK size and API 24 fallback.
+    implementation("dev.vicart:compose-material-symbols:1.1.6")
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.webkit)
