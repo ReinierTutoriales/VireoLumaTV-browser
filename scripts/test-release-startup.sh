@@ -103,7 +103,7 @@ import sys, xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
 assert any(node.get('text') == 'DuckDuckGo' for node in root.iter('node'))
 # Native Home must finish its existing origin-local storage read before editing is available.
-assert any(node.get('resource-id', '').endswith(':id/home_search') for node in root.iter('node'))
+assert any(node.get('resource-id', '') in ('home_search', 'com.reiniertutoriales.vireolumatv:id/home_search') for node in root.iter('node'))
 assert any(node.get('text') == 'Add shortcut' and node.get('enabled') == 'true' for node in root.iter('node'))
 assert not any(node.get('class') == 'android.webkit.WebView' for node in root.iter('node'))
 PYXML
