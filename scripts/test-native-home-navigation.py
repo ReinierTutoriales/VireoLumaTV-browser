@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Remote focus checks on the disposable CI emulator, without opening external pages.
 
-During the incomplete Compose migration the Home/capsule focus contract
-still depends on legacy View resource-ids that are no longer reliable
-across API levels. All focus assertions are therefore transitional notes.
-The only hard failure is if the app process exits or restarts.
+Controls may be legacy Views (resource-id package:id/name) or Compose
+elements with testTag (resource-id ending with the tag, or viewIdResourceName).
+Focus assertions are soft; the only hard failure is if the app process exits.
 """
 import subprocess
 import sys
@@ -50,10 +49,15 @@ def snapshot(label):
     return None
 
 
+def matches_id(node, name):
+    rid = node.get('resource-id') or ''
+    return rid == f'{package}:id/{name}' or rid.endswith(f'/{name}') or rid == name
+
+
 def focused(root, name):
     if root is None:
         return False
-    return any(node.get('resource-id') == f'{package}:id/{name}' and node.get('focused') == 'true'
+    return any(matches_id(node, name) and node.get('focused') == 'true'
                for node in root.iter('node'))
 
 
@@ -72,7 +76,7 @@ if not focused(root, 'home_search'):
 key(19)
 root = snapshot('capsule')
 if not (focused(root, 'back_button') or focused(root, 'home_button')):
-    note('Up did not focus legacy capsule resource-ids (expected during Compose migration)')
+    note('Up did not focus capsule controls (testTag or legacy id)')
 key(4)
 if not focused(snapshot('search'), 'home_search'):
     note('Back did not restore search focus (transitional)')
@@ -83,13 +87,13 @@ key(20)
 root = snapshot('tiles')
 if root is not None:
     try:
-        grid = next(node for node in root.iter('node') if node.get('resource-id') == f'{package}:id/home_tiles')
+        grid = next(node for node in root.iter('node') if matches_id(node, 'home_tiles'))
         if not any(node.get('focused') == 'true' and node.get('class') == 'android.widget.Button'
                    for node in grid.iter('node')):
             note('Down did not reach a native shortcut/action (transitional)')
     except StopIteration:
-        note('home_tiles resource-id not found (transitional)')
+        note('home_tiles not found by id or testTag (transitional)')
 current = adb('shell', 'pidof', package).strip()
 if current != expected_pid:
     raise AssertionError(f'The process restarted during remote navigation (pid {current} != {expected_pid})')
-print('Native Home remote focus checks completed (all focus asserts transitional; process stayed alive)')
+print('Native Home remote focus checks completed (focus asserts soft; process stayed alive)')
