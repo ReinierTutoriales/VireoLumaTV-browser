@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.baselineprofile
 
 import android.content.Intent
 import android.net.Uri
+import java.io.File
 import androidx.benchmark.macro.MacrobenchmarkScope
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -19,17 +20,35 @@ private const val TIMEOUT_MS = 10_000L
 /** The native Home page used by the startup CI check; it needs no network. */
 private val HOME = Uri.parse("https://vireolumatv.invalid/appcontent/home/")
 
-/** Starts on native Home, dismisses the first-run WebView notice of old images, waits for Home. */
+/** Opens native Home with the same intent as the startup CI check (`am start -n … -d …`). */
 internal fun MacrobenchmarkScope.startOnHome() {
-    startActivityAndWait { intent: Intent -> intent.data = HOME }
+    startActivityAndWait { intent: Intent ->
+        intent.action = null
+        intent.removeCategory(Intent.CATEGORY_LAUNCHER)
+        intent.data = HOME
+    }
     waitForHome()
 }
 
-/** Waits for Home; only the launch requires it, later journeys continue from wherever Back lands. */
+/**
+ * Waits for Home, closing the app's notice about an outdated WebView that old emulator images
+ * show after launch. Only the launch requires Home; later journeys continue wherever Back lands.
+ */
 internal fun MacrobenchmarkScope.waitForHome(required: Boolean = true) {
-    device.findObject(By.res("android", "button2"))?.takeIf { it.applicationPackage == packageName }?.click()
-    val shown = device.wait(Until.hasObject(By.res("home_search")), TIMEOUT_MS)
-    check(shown || !required) { "Native Home did not appear" }
+    val deadline = System.currentTimeMillis() + TIMEOUT_MS
+    var shown = false
+    while (!shown && System.currentTimeMillis() < deadline) {
+        device.findObject(By.res("android", "button2"))
+            ?.takeIf { it.applicationPackage == packageName }
+            ?.click()
+        shown = device.wait(Until.hasObject(By.res("home_search")), 500)
+    }
+    if (!shown && required) {
+        // Kept with the test outputs to show what was on screen instead of Home.
+        val media = InstrumentationRegistry.getInstrumentation().context.externalMediaDirs.first()
+        device.dumpWindowHierarchy(File(media, "home-missing-${System.currentTimeMillis()}.xml"))
+        error("Native Home did not appear")
+    }
     device.waitForIdle()
 }
 
