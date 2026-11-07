@@ -32,6 +32,33 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
+    private fun tabCommand(activity: MainActivity, command: com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand) {
+        MainActivity::class.java.getDeclaredMethod("onTabCommand",
+            com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand::class.java)
+            .apply { isAccessible = true }.invoke(activity, command)
+    }
+
+    @Test fun tabFocusUpdatesThePreviewSelectionWithoutChangingTheLiveTab() = Fixture().use { f ->
+        f.tabs.workScope.cancel()
+        val background = BrowserTab(url = "https://background.test")
+        f.tabs.openTabs.add(background)
+        f.activity.openCapsule()
+        tabCommand(f.activity, com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Focus(1))
+        assertSame(background, f.activity.tabAtStripSelection())
+        assertSame(f.tab, f.tabs.currentTab.value)
+    }
+
+    @Test fun tabActivationUsesItsIndexWithoutAPrecedingFocusEvent() = Fixture().use { f ->
+        f.tabs.workScope.cancel()
+        val background = BrowserTab(url = "https://background.test")
+        BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
+            .set(background, lazyOf(f.engine))
+        f.tabs.openTabs.add(background)
+        tabCommand(f.activity, com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Show(1))
+        assertSame(background, f.tabs.currentTab.value)
+        assertSame(background, f.activity.tabAtStripSelection())
+    }
+
     @Test fun closingABackgroundTabKeepsTheLivePageAndTheStripAndIgnoresStaleCloses() = Fixture().use { f ->
         f.tabs.workScope.cancel()
         val background = BrowserTab(url = "https://background.test")
