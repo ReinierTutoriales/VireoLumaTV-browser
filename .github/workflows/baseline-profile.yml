@@ -69,9 +69,15 @@ jobs:
         run: |
           git add app/src/main/generated/baselineProfiles/
           if git diff --cached --quiet; then echo 'Profile unchanged'; exit 0; fi
-          branch="baseline-profile/${GITHUB_RUN_ID}"
           git config user.name 'ReinierTutoriales'
           git config user.email '86568548+ReinierTutoriales@users.noreply.github.com'
+          # On a working branch the profile joins that branch's pull request instead of a new one.
+          if [ "${GITHUB_REF_NAME}" != master ]; then
+            git commit -m 'Actualiza el perfil de referencia'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+            exit 0
+          fi
+          branch="baseline-profile/${GITHUB_RUN_ID}"
           git switch -c "$branch"
           git commit -m 'Actualiza el perfil de referencia'
           git push origin "$branch"

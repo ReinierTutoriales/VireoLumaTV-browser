@@ -12,6 +12,7 @@ ruta	clasificacion
 .github/ISSUE_TEMPLATE/feature_request.md	REESCRITO
 .github/pull_request_template.md	PROPIO
 .github/workflows/baseline-profile.yml	PROPIO
+.github/workflows/benchmark.yml	PROPIO
 .github/workflows/ci.yml	PROPIO
 .github/workflows/release.yml	REESCRITO
 .github/workflows/startup-diagnosis.yml	ELIMINADO
@@ -458,6 +459,9 @@ app/src/test/resources/adblock/README.md	PROPIO
 art/vireolumatv-icon-master.png	PROPIO
 baselineprofile/build.gradle.kts	PROPIO
 baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/BaselineProfileGenerator.kt	PROPIO
+baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/RemoteNavigationBenchmark.kt	PROPIO
+baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/StartupBenchmark.kt	PROPIO
+baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/TvFlows.kt	PROPIO
 build.gradle.kts	REESCRITO
 CLAUDE.md	PROPIO
 docs/ADBLOCK_AUDIT.md	PROPIO
@@ -524,6 +528,7 @@ scripts/diagnose-published-startup.sh	ELIMINADO
 scripts/measure-inherited-lines.py	PROPIO
 scripts/measure-tv.py	PROPIO
 scripts/refresh-bundled-filters.py	PROPIO
+scripts/summarize-benchmark.py	PROPIO
 scripts/test-adblock-surrogates.cjs	PROPIO
 scripts/test-apk-provenance.py	PROPIO
 scripts/test-blob-transfer.cjs	PROPIO

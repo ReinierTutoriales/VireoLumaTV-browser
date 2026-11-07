@@ -1,0 +1,59 @@
+name: Benchmark
+
+# Run by hand. Macrobenchmark on an emulator (Gradle managed device): cold start and frame timing
+# of the remote journeys, each without compilation and with the bundled profile, on the same build.
+# Emulator timings compare variants of one commit; they are not measurements of TV hardware.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macrobenchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-java@v6.1.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - uses: Swatinem/rust-cache@v2.9.3
+        with:
+          workspaces: native/adblock-jni
+
+      - uses: gradle/actions/setup-gradle@v6.4.1
+        with:
+          cache-provider: basic
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run Macrobenchmark
+        run: >
+          ./gradlew :baselineprofile:pixel6Api34GenericBenchmarkReleaseAndroidTest --stacktrace
+          -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect
+
+      - name: Summarize results
+        if: always()
+        run: python3 scripts/summarize-benchmark.py baselineprofile/build >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: macrobenchmark
+          path: |
+            baselineprofile/build/outputs/
+            baselineprofile/build/reports/androidTests/
+          if-no-files-found: ignore
+          retention-days: 30

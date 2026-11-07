@@ -31,6 +31,12 @@ justifica cambios de caché o de pestañas. La comprobación en dispositivo qued
 aplazada por decisión del propietario. El informe define la comparación con
 Perfetto, Macrobenchmark y DevTools cuando haya acceso a equipos reales.
 
+El workflow manual `Benchmark` ejecuta en emulador el arranque en frío y el tiempo
+de fotograma de los recorridos del mando (cápsula, menú, pestañas y Ajustes), sin
+compilar y con el perfil incluido. Compara variantes del mismo commit; no mide un TV.
+El workflow `Baseline profile` genera el perfil de arranque solo desde el arranque y
+el perfil general desde esos mismos recorridos.
+
 ## Dependencias contrastadas el 7 de noviembre de 2026
 
 Las versiones directas consultadas coinciden con las publicaciones estables de
