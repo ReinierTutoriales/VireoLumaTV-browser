@@ -76,11 +76,16 @@ private fun MacrobenchmarkScope.press(times: Int, key: () -> Boolean) = repeat(t
     device.waitForIdle()
 }
 
-/** Back opens the hidden capsule from a page without history, as on the remote. */
+/**
+ * Back opens the hidden capsule from a page without history, as on the remote. A first press can
+ * be taken by an inner state (D-pad mode, see MainActivity.consumeBack), so up to three are sent.
+ */
 private fun MacrobenchmarkScope.openCapsule(strict: Boolean): Boolean {
-    if (device.hasObject(By.res("menu_button"))) return true
-    press(1) { device.pressBack() }
-    if (device.wait(Until.hasObject(By.res("menu_button")), TIMEOUT_MS)) return true
+    repeat(3) {
+        if (device.hasObject(By.res("menu_button"))) return true
+        press(1) { device.pressBack() }
+        if (device.wait(Until.hasObject(By.res("menu_button")), 2_000)) return true
+    }
     if (strict) failWithScreen("Back did not open the capsule")
     return false
 }
