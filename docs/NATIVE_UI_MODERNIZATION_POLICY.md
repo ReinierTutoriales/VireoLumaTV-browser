@@ -4,7 +4,7 @@ Status: target architecture; migration is not complete.
 
 ## Architecture
 - Jetpack Compose is the sole target UI layer for toolbar, tabs, menus, settings, dialogs and browser controls.
-- Material 3 defines visual tokens, typography, states and motion, adapted for Android TV remote interaction.
+- TV Material 3 (`androidx.tv:tv-material`) defines visual tokens, typography, states and motion for remote interaction.
 - Material Symbols Rounded is the target icon identity. Use one centralized, typed icon catalog and one rendering mechanism; do not preserve XML-ID-to-ligature bridges as final architecture.
 - AMOLED uses pure black backgrounds, accessible contrast and unmistakable D-pad focus.
 - Preserve Android WebView as the web engine and preserve existing content blocking behavior.
@@ -38,15 +38,8 @@ Status: target architecture; migration is not complete.
 - Do not treat green CI as proof of visual quality or real-device performance.
 
 ## Execution
-1. Audit PR #232 (third-party Material Symbols integration). Do not merge its permanent fallback as final architecture. Check license, provenance, dependency resolution, API compatibility, APK size and TV focus/visuals.
-2. Migrate all icon references to one typed catalog and renderer; remove obsolete XML once unused.
+1. Done: one typed icon catalog (`TvSymbol`) with one renderer over the local Rounded vectors; the third-party font wrapper (PR #232) was rejected.
+2. Done: Compose text and icons use TV Material (`androidx.tv:tv-material`); `compose.material3` is not a dependency.
 3. Finish Compose migration of menus, settings and dialogs.
-4. Optimize D-pad, transitions, recomposition, Baseline Profiles, memory and latency.
+4. Optimize D-pad, transitions, recomposition, Baseline Profiles, memory and latency with the `Benchmark` workflow as evidence.
 5. Remove obsolete code, complete regression gates and publish a verified release.
-
-## PR #232 review notes (2026-11-06)
-- The draft adds `dev.vicart:compose-material-symbols:1.1.6` and a `materialSymbolName(@DrawableRes iconRes)` mapping for 30 legacy resources.
-- The rendering path selects the third-party symbol on API 26+ and existing XML vectors on API 24/25.
-- This is an experiment, not a single icon architecture. It must not be merged as the definitive solution.
-- License, transitive dependencies, artifact provenance, binary size, instrumentation and visual behavior remain unverified.
-- Combined commit status returned no legacy status entries; that does not establish GitHub Actions check-run success or failure.
