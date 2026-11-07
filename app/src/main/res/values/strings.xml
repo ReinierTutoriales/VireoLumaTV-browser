@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="control_more_options">More options: %1$s</string>
     <string name="app_name" translatable="false">VireoLumaTV</string>
     <string name="download_progress_size" translatable="false">%1$s / %2$s</string>
     <string name="about_engine" translatable="false">WebView: %s</string>

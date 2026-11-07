@@ -29,6 +29,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,12 +50,14 @@ fun TvTabStrip(
     onOptions: (BrowserTab) -> Unit,
     onAdd: () -> Unit,
     modifier: Modifier = Modifier,
+    onFocusWithinChanged: (Boolean) -> Unit = {},
 ) {
     val shape = RoundedCornerShape(12.dp)
     val newTab = stringResource(R.string.tabs_new)
     val closeTab = stringResource(R.string.menu_close_tab)
     Row(
-        modifier = modifier.background(Color.Black).horizontalScroll(rememberScrollState())
+        modifier = modifier.semantics { testTagsAsResourceId = true }.background(Color.Black).horizontalScroll(rememberScrollState())
+            .onFocusChanged { onFocusWithinChanged(it.hasFocus) }
             .focusGroup().padding(horizontal = 12.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -65,7 +71,8 @@ fun TvTabStrip(
                 modifier = Modifier.defaultMinSize(minHeight = 48.dp)
                     .background(if (focused) Color(0xFF262626) else if (selected == index) Color(0xFF171717) else TvControlColors.surface(false, hovered), shape)
                     .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
-                    .semantics { role = Role.Button }
+                    .testTag("tab_${index}_${System.identityHashCode(tab)}")
+                    .semantics { role = Role.Tab; this.selected = selected == index }
                     .combinedClickable(interactionSource = interaction, indication = null,
                         onClick = { onActivate(index) }, onLongClick = { onOptions(tab) })
                     .padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
@@ -81,6 +88,7 @@ fun TvTabStrip(
                     modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                         .background(if (closeFocused) Color(0xFF383838) else if (closeHovered) TvControlColors.Hovered else Color.Transparent, shape)
                         .border(if (closeFocused) 2.dp else if (closeHovered) 1.dp else 0.dp, TvControlColors.border(closeFocused, closeHovered), shape)
+                        .testTag("tab_close_$index")
                         .semantics { role = Role.Button; contentDescription = closeTab }
                         .combinedClickable(
                             interactionSource = closeInteraction,
@@ -105,6 +113,7 @@ fun TvTabStrip(
             modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                 .background(if (addFocused) Color(0xFF292929) else TvControlColors.surface(false, addHovered), shape)
                 .border(if (addFocused) 2.dp else 1.dp, TvControlColors.border(addFocused, addHovered), shape)
+                .testTag("new_tab_button")
                 .semantics { role = Role.Button; contentDescription = newTab }
                 .combinedClickable(interactionSource = addInteraction, indication = null, onClick = onAdd),
             contentAlignment = Alignment.Center,

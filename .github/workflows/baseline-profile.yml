@@ -1,24 +1,42 @@
 name: Baseline profile
 
-# Run by hand after changes to start-up or remote handling. Generates the profile on an emulator
-# (Gradle managed device) and proposes it as a pull request; the reviewer merges it like any change.
+# Generate after app/journey changes in same-repository PRs, or manually.
+# Generated commits do not recursively regenerate profiles; CI and Benchmark verify their SHA.
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'app/src/main/java/**'
+      - 'app/src/main/res/**'
+      - 'app/src/main/AndroidManifest.xml'
+      - 'app/build.gradle.kts'
+      - 'baselineprofile/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - '.github/workflows/baseline-profile.yml'
 
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 concurrency:
-  group: baseline-profile
+  group: baseline-profile-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   generate:
+    if: github.actor != 'github-actions[bot]' && (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      PROFILE_BRANCH: ${{ github.head_ref || github.ref_name }}
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - uses: actions/setup-java@v6.1.0
         with:
@@ -72,16 +90,21 @@ jobs:
           git config user.name 'ReinierTutoriales'
           git config user.email '86568548+ReinierTutoriales@users.noreply.github.com'
           # On a working branch the profile joins that branch's pull request instead of a new one.
-          if [ "${GITHUB_REF_NAME}" != master ]; then
+          if [ "${PROFILE_BRANCH}" != master ]; then
             git commit -m 'Actualiza el perfil de referencia'
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            git push origin "HEAD:${PROFILE_BRANCH}"
+            # Pushes with GITHUB_TOKEN do not guarantee automatic CI on the new SHA.
+            gh workflow run ci.yml --ref "${PROFILE_BRANCH}"
+            gh workflow run benchmark.yml --ref "${PROFILE_BRANCH}"
             exit 0
           fi
           branch="baseline-profile/${GITHUB_RUN_ID}"
           git switch -c "$branch"
           git commit -m 'Actualiza el perfil de referencia'
           git push origin "$branch"
-          gh pr create --base "${GITHUB_REF_NAME}" --head "$branch" \
+          gh pr create --base "${PROFILE_BRANCH}" --head "$branch" \
             --title 'Actualiza el perfil de referencia' \
             --body "Generado por el workflow Baseline profile (run ${GITHUB_RUN_ID}) en un emulador Pixel 6, API 34." \
             || echo 'Pull request not created: the profile is in the artifact and on branch '"$branch"
+          gh workflow run ci.yml --ref "$branch"
+          gh workflow run benchmark.yml --ref "$branch"

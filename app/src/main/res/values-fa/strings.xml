@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="control_more_options">گزینه‌های بیشتر: %1$s</string>
     <string name="about_source">VireoLumaTV از ReinierTutoriales · کد منبع</string>
     <string name="about_tagline">مرورگر وب ساخته‌شده برای کنترل تلویزیون</string>
     <string name="about_version">نسخهٔ %s</string>

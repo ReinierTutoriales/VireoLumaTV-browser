@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsFocused
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -20,6 +22,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvControlColors
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -31,6 +34,7 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
@@ -112,6 +116,19 @@ class AppMenuPanelTest {
         showMenu { picked += it }
         compose.onNodeWithTag(tag(AppMenuEntry.DOWNLOADS)).performScrollTo().performTouchInput { click() }
         assertEquals(listOf(AppMenuEntry.DOWNLOADS), picked)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Test fun hoverChangesTheSurfaceAndExitRestoresIt() {
+        showMenu()
+        val target = compose.onNodeWithTag(tag(AppMenuEntry.SETTINGS)).performScrollTo()
+        fun surface() = target.captureToImage().let { image -> image.toPixelMap()[image.width / 2, 8] }
+        assertEquals(TvControlColors.Idle, surface())
+        target.performMouseInput { enter(center) }
+        assertEquals(TvControlColors.Hovered, surface())
+        target.performMouseInput { exit() }
+        assertEquals(TvControlColors.Idle, surface())
     }
 
     private fun openPanel(onPick: (AppMenuEntry) -> Unit): AppMenuPanel {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="control_more_options">Więcej opcji: %1$s</string>
     <string name="about_source">VireoLumaTV od ReinierTutoriales · Kod źródłowy</string>
     <string name="about_tagline">Przeglądarka internetowa stworzona dla pilota TV</string>
     <string name="about_version">Wersja %s</string>

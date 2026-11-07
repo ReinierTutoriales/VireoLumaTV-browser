@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="control_more_options">אפשרויות נוספות: %1$s</string>
     <string name="about_source">VireoLumaTV מאת ReinierTutoriales · קוד מקור</string>
     <string name="about_tagline">דפדפן אינטרנט שנבנה לשלט הטלוויזיה</string>
     <string name="about_version">גרסה %s</string>

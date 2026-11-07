@@ -1,6 +1,6 @@
 name: Benchmark
 
-# Runs by hand and on pull requests that change the profiles or the benchmarks.
+# Runs by hand and on pull requests that change the app, build inputs or benchmarks.
 # Macrobenchmark on an emulator (Gradle managed device, full AOSP image): cold start and frame
 # timing of the remote journeys, each without compilation and with the bundled profile.
 # Emulator timings compare variants of one commit; they are not measurements of TV hardware.
@@ -8,8 +8,15 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'app/src/**'
+      - 'app/build.gradle.kts'
       - 'baselineprofile/**'
-      - 'app/src/main/generated/baselineProfiles/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'native/adblock-jni/**'
+      - 'scripts/summarize-benchmark.py'
       - '.github/workflows/benchmark.yml'
 
 permissions:

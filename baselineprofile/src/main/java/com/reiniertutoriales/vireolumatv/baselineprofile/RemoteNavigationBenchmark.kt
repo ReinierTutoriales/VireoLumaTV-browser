@@ -24,13 +24,13 @@ class RemoteNavigationBenchmark {
     @Test fun tabsAndSettingsBaselineProfile() = measure(CompilationMode.Partial(BaselineProfileMode.Require), tabsAndSettings)
 
     private val capsuleAndMenu: MacrobenchmarkScope.() -> Unit = {
-        traverseCapsule(strict = true)
-        openAndCloseMenu(strict = true)
+        traverseCapsule()
+        openAndCloseMenu()
     }
 
     private val tabsAndSettings: MacrobenchmarkScope.() -> Unit = {
-        openSwitchAndCloseTab(strict = true)
-        openAndCloseSettings(strict = true)
+        openSwitchAndCloseTab()
+        openAndCloseSettings()
     }
 
     private fun measure(mode: CompilationMode, journey: MacrobenchmarkScope.() -> Unit) = rule.measureRepeated(

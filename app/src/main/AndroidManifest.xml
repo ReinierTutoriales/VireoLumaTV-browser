@@ -70,7 +70,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
 
-        <property android:name="android.software.leanback.supports_touch" android:value="true" />
+        <meta-data android:name="android.software.leanback.supports_touch" android:value="true" />
 
         <activity
             android:name=".activity.main.MainActivity"

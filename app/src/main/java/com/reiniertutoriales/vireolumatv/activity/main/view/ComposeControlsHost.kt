@@ -39,6 +39,10 @@ class ComposeControlsHost @JvmOverloads constructor(
     private val tabs = mutableStateListOf<BrowserTab>()
     private val selectedTab = mutableIntStateOf(0)
 
+    /** Window-level Down handling applies only to the tab row, not the command row. */
+    var tabStripHasFocus: Boolean = false
+        private set
+
     var onTabFocus: ((Int) -> Unit)? = null
     var onTabActivate: ((Int) -> Unit)? = null
     var onTabClose: ((BrowserTab) -> Unit)? = null
@@ -89,6 +93,7 @@ class ComposeControlsHost @JvmOverloads constructor(
                     onTabClose = { onTabClose?.invoke(it) },
                     onTabOptions = { onTabOptions?.invoke(it) },
                     onAddTab = { onAddTab?.invoke() },
+                    onTabStripFocusChanged = { tabStripHasFocus = it },
                 )
             }
         }

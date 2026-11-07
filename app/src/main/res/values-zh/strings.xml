@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="control_more_options">更多选项：%1$s</string>
     <string name="about_source">VireoLumaTV · ReinierTutoriales 出品 · 源代码</string>
     <string name="about_tagline">为电视遥控器打造的网页浏览器</string>
     <string name="about_version">版本 %s</string>

@@ -35,6 +35,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
@@ -89,7 +91,7 @@ internal class AppMenuPanel(context: Context, entries: List<AppMenuEntry>, priva
 internal fun TvAppMenu(entries: List<AppMenuEntry>, onPick: (AppMenuEntry) -> Unit) {
     val first = remember { FocusRequester() }
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(
+        Modifier.semantics { testTagsAsResourceId = true }.fillMaxSize().verticalScroll(rememberScrollState()).padding(
             start = 24.dp,
             top = dimensionResource(R.dimen.safe_vertical),
             end = dimensionResource(R.dimen.safe_horizontal),

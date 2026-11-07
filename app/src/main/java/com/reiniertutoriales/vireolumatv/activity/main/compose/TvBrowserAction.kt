@@ -31,6 +31,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import com.reiniertutoriales.vireolumatv.R
 
 /**
  * Reusable AMOLED action for remote-control navigation.
@@ -72,7 +74,7 @@ fun TvBrowserAction(
                 enabled = enabled,
                 onClick = onClick,
                 onLongClick = onLongClick,
-                onLongClickLabel = if (onLongClick != null) "More options: $label" else null,
+                onLongClickLabel = if (onLongClick != null) stringResource(R.string.control_more_options, label) else null,
             )
             .padding(horizontal = if (showLabel) 14.dp else 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,

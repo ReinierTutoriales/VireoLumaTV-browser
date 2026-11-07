@@ -512,10 +512,16 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     private fun onTabCommand(command: TabCommand) = when (command) {
-        is TabCommand.Focus -> previewFocusedTab(tabAt(command.index))
+        is TabCommand.Focus -> tabAt(command.index)?.let { tab ->
+            vb.controlsHost.current = command.index
+            previewFocusedTab(tab)
+        }
         is TabCommand.Show -> {
-            commitStripSelection()
-            closeCapsule()
+            if (tabAt(command.index) != null) {
+                vb.controlsHost.current = command.index
+                commitStripSelection()
+                closeCapsule()
+            }
         }
         TabCommand.Add -> openInNewTab(browserSettings.homePage, tabStore.openTabs.size, navigateImmediately = true)
         is TabCommand.AddAt ->
@@ -867,7 +873,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
                 val code = if (event.keyCode != 0) event.keyCode else event.scanCode
                 if (code !in BackPresses.BACK_KEYS &&
                     Shortcuts.getInstance().handle(event, this@MainActivity, tabStore.currentTab.value)) return true
-                if (downLeavesTabStrip(overlayVisible, vb.controlsHost.hasFocus(), event.keyCode, event.action, event.repeatCount)) {
+                if (downLeavesTabStrip(overlayVisible, vb.controlsHost.tabStripHasFocus, event.keyCode, event.action, event.repeatCount)) {
                     closeCapsule()
                     return true
                 }

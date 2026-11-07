@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="control_more_options">Інші дії: %1$s</string>
     <string name="about_source">VireoLumaTV від ReinierTutoriales · Вихідний код</string>
     <string name="about_tagline">Веб-браузер для керування пультом ТБ</string>
     <string name="about_version">Версія %s</string>
