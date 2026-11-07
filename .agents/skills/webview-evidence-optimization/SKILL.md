@@ -70,7 +70,7 @@ This skill defines an investigation workflow, not a claim that any candidate opt
 
 ## Macrobenchmark harness lessons (verified 2026-11-07)
 
-- Benchmarks and the profile generator live in `:baselineprofile` and share `TvFlows.kt`; the `Benchmark` workflow runs on PRs that touch them. The generator tolerates missing controls; benchmarks pass `strict = true` so a journey that did not happen fails instead of being timed.
-- Frame journeys run without `startupMode`: a cold mode kills the process after `setupBlock`, so the journey runs with the app closed (seen as zero frames). Clear app data (`pm clear`) before each iteration, because every launch intent adds a tab.
-- Native Home hides the capsule; journeys open it with Back as on the remote. AGP 9 writes benchmark JSON, traces and screen dumps under `build/intermediates/managed_device_android_test_additional_output/`.
+- Benchmarks and the profile generator share mandatory `TvFlows.kt` journeys: assert focus, activate with D-pad OK, verify destinations and return. Positional tab counts cannot detect a wrong-tab close; verify the surviving tab identity. Missing controls must fail both callers.
+- Frame journeys run without `startupMode`: a cold mode kills the process after `setupBlock`, before the journey. Clear app data before each measurement, but only before the collection test for profiles, preserving ART between collection iterations. Use the launcher path: a VIEW intent appends a tab on each launch.
+- Open the capsule with Back only when absent. Use native resource IDs and exported Compose tags rather than translated text. AGP 9 writes benchmark JSON, traces and screen dumps under `build/intermediates/managed_device_android_test_additional_output/`.
 - Emulator frame time is dominated by the emulated GPU channel (`eglSwapBuffersWithDamageKHR`, `rcCreateSyncKHR`); the same case varied about 30 % between runs. Compare modes within one run, inspect Perfetto before attributing cost to app code, and claim no speed gain from emulator data.

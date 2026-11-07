@@ -31,11 +31,24 @@ justifica cambios de caché o de pestañas. La comprobación en dispositivo qued
 aplazada por decisión del propietario. El informe define la comparación con
 Perfetto, Macrobenchmark y DevTools cuando haya acceso a equipos reales.
 
-El workflow manual `Benchmark` ejecuta en emulador el arranque en frío y el tiempo
+El workflow `Benchmark`, manual y automático en PRs que afectan app/build/mediciones, ejecuta en emulador el arranque en frío y el tiempo
 de fotograma de los recorridos del mando (cápsula, menú, pestañas y Ajustes), sin
 compilar y con el perfil incluido. Compara variantes del mismo commit; no mide un TV.
-El workflow `Baseline profile` genera el perfil de arranque solo desde el arranque y
-el perfil general desde esos mismos recorridos.
+El workflow `Baseline profile`, manual y automático para cambios de app/recorridos
+en PRs del propio repositorio, genera el perfil de arranque solo desde el arranque y
+el perfil general desde esos mismos recorridos. Los recorridos exigen foco,
+activación con OK, destino y retorno; el cierre comprueba la identidad superviviente.
+El generador conserva ART entre iteraciones y usa el launcher sin añadir pestañas
+por intents VIEW repetidos. Tras subir perfiles solicita CI y Benchmark sobre el nuevo SHA.
+Los eventos del bot no vuelven a generar perfiles.
+
+La revisión del 7 de noviembre contrasta la declaración de puntero con la
+[guía oficial Google TV](https://developer.android.com/blog/posts/increasing-app-discovery-and-engagement-on-google-tv),
+las pruebas de entrada con las [API Compose](https://developer.android.com/develop/ui/compose/testing/apis)
+y los recorridos con la [generación de perfiles](https://developer.android.com/topic/performance/baselineprofiles/create-baselineprofile).
+El arranque asíncrono WebView ya existe; no se añaden precargas ni prerender sin
+mediciones y revisión de privacidad/bloqueo. La [guía de arranque](https://developer.android.com/develop/ui/views/layout/webapps/optimize-webview-startup)
+no demuestra por sí sola una mejora en esta app.
 
 ## Dependencias contrastadas el 7 de noviembre de 2026
 
