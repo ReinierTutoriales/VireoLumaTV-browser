@@ -25,7 +25,9 @@ Every line must be traceable to existing code or a clearly labeled minimal assum
   and a native player. Do not present them as interchangeable or promise that
   filters, sessions, quality controls or DRM transfer automatically between them.
 - Verify current versions in primary release documentation and compatibility
-  requirements. Resolve conflicting dates or channels before calling a version
+  requirements (Google Maven and Maven Central `maven-metadata.xml`, Gradle's
+  `versions/current`), and read a library's sources jar before using an API you
+  have not seen in this repository. Resolve conflicting dates or channels before calling a version
   latest; never infer an installed engine's capabilities from a spoofed user agent.
 - When combining rule engines, test precedence across their boundaries: a first
   ordinary match or exception must not hide a later higher-priority rule.

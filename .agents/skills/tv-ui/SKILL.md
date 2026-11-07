@@ -64,3 +64,10 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
 - Before replacing UI, inventory all callers, callbacks, focus transitions and supported API levels. Replace the implementation and remove its obsolete counterpart in the same completed migration, with tests; do not layer new technology indefinitely.
 - Evaluate stable AndroidX Compose/TV libraries against the current Gradle, Kotlin, minSdk and release notes. Preserve WebView, adblock, private state, downloads, bookmarks and fullscreen behavior.
 - Measure Baseline Profile coverage and Macrobenchmark frame timing independently; neither CI green nor profiles alone proves latency or memory gains.
+
+## Compose TV stack and pointer input (verified 2026-11-07)
+
+- TV Material 3 (`androidx.tv:tv-material`) is the only Material library: use `androidx.tv.material3` components (`ListItem`, `Surface`, `Text`, `Icon`) inside `VireoTvTheme`. Do not reintroduce `androidx.compose.material3`; remove a Compose artifact when no import uses it.
+- User-visible Compose text and content descriptions come from `stringResource`; a literal English string in a composable is a localization regression.
+- Pointer remotes and mice (Google TV, I/O 2026): every focusable control needs a hover state, scrollable containers must follow touchpad scroll, and a click on the hovered control must work without D-pad focus. The page cursor (`PointerController`) covers web content; native Compose controls must handle hover themselves. Confirm the `android.software.leanback.supports_touch` declaration form against current official documentation before changing it.
+- Each migrated screen deletes its XML layouts, adapters and obsolete resources in the same change, marks them `ELIMINADO` in `docs/audit/SOURCE_INVENTORY.tsv`, and adds Compose tests on Robolectric (`ui-test-junit4`, `setInTouchMode(false)`) for order, initial focus, D-pad movement, single activation and Back.
