@@ -1,6 +1,5 @@
 package com.reiniertutoriales.vireolumatv.activity.main.compose
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -26,7 +25,7 @@ import com.reiniertutoriales.vireolumatv.R
  */
 data class BrowserCommand(
     val label: String,
-    @DrawableRes val icon: Int,
+    val icon: TvSymbol,
     val enabled: Boolean = true,
     val onClick: () -> Unit,
     val testTag: String? = null,
@@ -92,7 +91,7 @@ fun TvBrowserCommandBar(
         )
         TvBrowserAction(
             label = menu.label,
-            iconRes = menu.icon,
+            symbol = menu.icon,
             onClick = menu.onClick,
             enabled = menu.enabled,
             showLabel = false,
@@ -112,7 +111,7 @@ private fun TvBlockerAction(
 ) {
     TvBrowserAction(
         label = description.ifBlank { if (enabled) "Shield on" else "Shield off" },
-        iconRes = if (enabled) R.drawable.ic_shield_on else R.drawable.ic_shield_off,
+        symbol = if (enabled) TvSymbol.ShieldOn else TvSymbol.ShieldOff,
         onClick = onToggle,
         onLongClick = onDetails,
         tint = if (enabled) Color(0xFF4ADE80) else Color(0xFFF87171),
@@ -125,7 +124,7 @@ private fun TvBlockerAction(
 private fun CommandAction(command: BrowserCommand, modifier: Modifier = Modifier) {
     TvBrowserAction(
         label = command.label,
-        iconRes = command.icon,
+        symbol = command.icon,
         modifier = modifier,
         onClick = command.onClick,
         enabled = command.enabled,
@@ -182,11 +181,11 @@ fun TvConnectedBrowserCommandBar(
         onFocusSuggestions = onFocusSuggestions,
         cancelAddressRequest = cancelAddressRequest,
         submitAddressRequest = submitAddressRequest,
-        back = BrowserCommand(backLabel, R.drawable.ic_back, canGoBack, actions.back, testTag = "back_button"),
-        forward = BrowserCommand(forwardLabel, R.drawable.ic_forward, canGoForward, actions.forward, testTag = "forward_button"),
-        refresh = BrowserCommand(reloadLabel, R.drawable.ic_refresh, onClick = actions.reload, testTag = "refresh_button"),
-        home = BrowserCommand(homeLabel, R.drawable.ic_home, onClick = actions.home, testTag = "home_button"),
-        menu = BrowserCommand(menuLabel, R.drawable.ic_more, onClick = actions.menu, testTag = "menu_button"),
+        back = BrowserCommand(backLabel, TvSymbol.Back, canGoBack, actions.back, testTag = "back_button"),
+        forward = BrowserCommand(forwardLabel, TvSymbol.Forward, canGoForward, actions.forward, testTag = "forward_button"),
+        refresh = BrowserCommand(reloadLabel, TvSymbol.Refresh, onClick = actions.reload, testTag = "refresh_button"),
+        home = BrowserCommand(homeLabel, TvSymbol.Home, onClick = actions.home, testTag = "home_button"),
+        menu = BrowserCommand(menuLabel, TvSymbol.More, onClick = actions.menu, testTag = "menu_button"),
         blockerEnabled = blockerEnabled,
         blockerDescription = blockerDescription,
         blockerReady = blockerReady,
