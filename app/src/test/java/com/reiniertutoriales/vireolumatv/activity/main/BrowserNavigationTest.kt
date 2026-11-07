@@ -32,6 +32,15 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
+    @Test fun downFromTheCommandHostDoesNotCloseTheCapsule() = Fixture().use { f ->
+        f.activity.openCapsule()
+        f.vb.controlsHost.requestFocus()
+        assertTrue(f.vb.controlsHost.hasFocus())
+        f.activity.onAttachedToWindow()
+        f.activity.window.callback.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+    }
+
     private fun tabCommand(activity: MainActivity, command: com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand) {
         MainActivity::class.java.getDeclaredMethod("onTabCommand",
             com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand::class.java)
