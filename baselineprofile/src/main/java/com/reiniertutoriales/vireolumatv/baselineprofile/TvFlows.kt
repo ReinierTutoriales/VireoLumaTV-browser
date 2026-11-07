@@ -8,6 +8,7 @@ import androidx.benchmark.macro.MacrobenchmarkScope
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
+import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.Until
 
 /** Package of the installed flavor, passed by the flavor's instrumentation arguments. */
@@ -125,6 +126,13 @@ internal fun MacrobenchmarkScope.openAndCloseSettings(strict: Boolean = false) {
 /** Adds a tab from the tab rail, switches back and closes the new one with its X. */
 internal fun MacrobenchmarkScope.openSwitchAndCloseTab(strict: Boolean = false) {
     if (!openCapsule(strict)) return
+    // Each launch intent adds a tab, so "+" can be past the end of the scrolling tab row.
+    val row = device.findObject(By.clazz("android.widget.HorizontalScrollView"))
+    repeat(6) {
+        if (device.hasObject(By.desc("New tab"))) return@repeat
+        row?.scroll(Direction.RIGHT, 1f)
+        device.waitForIdle()
+    }
     if (!clickIfPresent(By.desc("New tab"), strict)) return
     waitForHome(required = false)
     if (!openCapsule(strict)) return
