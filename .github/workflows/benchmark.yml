@@ -52,7 +52,7 @@ jobs:
 
       - name: Summarize results
         if: always()
-        run: python3 scripts/summarize-benchmark.py baselineprofile/build >> "$GITHUB_STEP_SUMMARY"
+        run: python3 scripts/summarize-benchmark.py baselineprofile/build | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v7.0.2
         if: always()
@@ -60,6 +60,7 @@ jobs:
           name: macrobenchmark
           path: |
             baselineprofile/build/outputs/
+            baselineprofile/build/intermediates/managed_device_android_test_additional_output/
             baselineprofile/build/reports/androidTests/
           if-no-files-found: ignore
           retention-days: 30
