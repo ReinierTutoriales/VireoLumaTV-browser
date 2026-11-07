@@ -516,12 +516,10 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             vb.controlsHost.current = command.index
             previewFocusedTab(tab)
         }
-        is TabCommand.Show -> {
-            if (tabAt(command.index) != null) {
-                vb.controlsHost.current = command.index
-                commitStripSelection()
-                closeCapsule()
-            }
+        is TabCommand.Show -> tabAt(command.index)?.let {
+            vb.controlsHost.current = command.index
+            commitStripSelection()
+            closeCapsule()
         }
         TabCommand.Add -> openInNewTab(browserSettings.homePage, tabStore.openTabs.size, navigateImmediately = true)
         is TabCommand.AddAt ->
