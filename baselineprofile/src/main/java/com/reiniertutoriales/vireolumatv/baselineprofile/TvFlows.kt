@@ -3,6 +3,7 @@ package com.reiniertutoriales.vireolumatv.baselineprofile
 import android.content.Intent
 import android.net.Uri
 import java.io.File
+import java.util.regex.Pattern
 import androidx.benchmark.macro.MacrobenchmarkScope
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -19,6 +20,9 @@ private const val TIMEOUT_MS = 10_000L
 
 /** The native Home page used by the startup CI check; it needs no network. */
 private val HOME = Uri.parse("https://vireolumatv.invalid/appcontent/home/")
+
+/** Home's search field: the native View id or the exported Compose tag, as in the startup CI check. */
+private val HOME_SEARCH = By.res(Pattern.compile("(.+:id/)?home_search"))
 
 /** Opens native Home with the same intent as the startup CI check (`am start -n … -d …`). */
 internal fun MacrobenchmarkScope.startOnHome() {
@@ -41,7 +45,7 @@ internal fun MacrobenchmarkScope.waitForHome(required: Boolean = true) {
         device.findObject(By.res("android", "button2"))
             ?.takeIf { it.applicationPackage == packageName }
             ?.click()
-        shown = device.wait(Until.hasObject(By.res("home_search")), 500)
+        shown = device.wait(Until.hasObject(HOME_SEARCH), 500)
     }
     if (!shown && required) {
         // Kept with the test outputs to show what was on screen instead of Home.
