@@ -25,7 +25,10 @@ class StartupBenchmark {
         compilationMode = mode,
         startupMode = StartupMode.COLD,
         iterations = 10,
-        setupBlock = { pressHome() },
+        setupBlock = {
+            pressHome()
+            resetBrowserData()
+        },
     ) {
         startOnHome()
     }

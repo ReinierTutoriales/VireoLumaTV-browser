@@ -41,6 +41,7 @@ class RemoteNavigationBenchmark {
         iterations = 5,
         setupBlock = {
             pressHome()
+            resetBrowserData()
             startOnHome()
         },
         measureBlock = journey,

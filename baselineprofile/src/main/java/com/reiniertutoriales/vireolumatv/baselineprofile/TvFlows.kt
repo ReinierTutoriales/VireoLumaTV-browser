@@ -25,6 +25,14 @@ private val HOME = Uri.parse("https://vireolumatv.invalid/appcontent/home/")
 /** Home's search field: the native View id or the exported Compose tag, as in the startup CI check. */
 private val HOME_SEARCH = By.res(Pattern.compile("(.+:id/)?home_search"))
 
+/**
+ * Clears the app's data before a measured iteration: every launch intent adds a tab, and restored
+ * tabs would make later iterations and tests heavier than earlier ones. Compiled code is kept.
+ */
+internal fun MacrobenchmarkScope.resetBrowserData() {
+    device.executeShellCommand("pm clear $packageName")
+}
+
 /** Opens native Home with the same intent as the startup CI check (`am start -n … -d …`). */
 internal fun MacrobenchmarkScope.startOnHome() {
     startActivityAndWait { intent: Intent ->
