@@ -50,7 +50,8 @@ internal fun MacrobenchmarkScope.waitForHome(required: Boolean = true) {
     if (!shown && required) {
         // Kept with the test outputs to show what was on screen instead of Home.
         val media = InstrumentationRegistry.getInstrumentation().context.externalMediaDirs.first()
-        device.dumpWindowHierarchy(File(media, "home-missing-${System.currentTimeMillis()}.xml"))
+        val output = File(media, "additional_test_output").apply { mkdirs() }
+        device.dumpWindowHierarchy(File(output, "home-missing-${System.currentTimeMillis()}.xml"))
         error("Native Home did not appear")
     }
     device.waitForIdle()
