@@ -47,18 +47,25 @@ internal fun MacrobenchmarkScope.waitForHome(required: Boolean = true) {
             ?.click()
         shown = device.wait(Until.hasObject(HOME_SEARCH), 500)
     }
-    if (!shown && required) {
-        // Kept with the test outputs to show what was on screen instead of Home.
-        val media = InstrumentationRegistry.getInstrumentation().context.externalMediaDirs.first()
-        val output = File(media, "additional_test_output").apply { mkdirs() }
-        device.dumpWindowHierarchy(File(output, "home-missing-${System.currentTimeMillis()}.xml"))
-        error("Native Home did not appear")
-    }
+    if (!shown && required) failWithScreen("Native Home did not appear")
     device.waitForIdle()
 }
 
-private fun MacrobenchmarkScope.clickIfPresent(selector: BySelector): Boolean {
-    val target = device.wait(Until.findObject(selector), TIMEOUT_MS) ?: return false
+/** Keeps the screen hierarchy with the test outputs, then fails with [message]. */
+private fun MacrobenchmarkScope.failWithScreen(message: String): Nothing {
+    val media = InstrumentationRegistry.getInstrumentation().context.externalMediaDirs.first()
+    val output = File(media, "additional_test_output").apply { mkdirs() }
+    device.dumpWindowHierarchy(File(output, "missing-${System.currentTimeMillis()}.xml"))
+    error(message)
+}
+
+/**
+ * Clicks [selector] when it appears. Benchmarks pass [strict] so a missing control fails the run
+ * instead of timing a journey that did not happen; the profile generator tolerates it.
+ */
+private fun MacrobenchmarkScope.clickIfPresent(selector: BySelector, strict: Boolean): Boolean {
+    val target = device.wait(Until.findObject(selector), TIMEOUT_MS)
+        ?: if (strict) failWithScreen("Control not found: $selector") else return false
     target.click()
     device.waitForIdle()
     return true
@@ -78,17 +85,17 @@ internal fun MacrobenchmarkScope.traverseCapsule() {
 }
 
 /** Opens the side menu, moves through its rows and closes it with Back. */
-internal fun MacrobenchmarkScope.openAndCloseMenu() {
-    if (!clickIfPresent(By.res("menu_button"))) return
+internal fun MacrobenchmarkScope.openAndCloseMenu(strict: Boolean = false) {
+    if (!clickIfPresent(By.res("menu_button"), strict)) return
     press(6) { device.pressDPadDown() }
     press(6) { device.pressDPadUp() }
     press(1) { device.pressBack() }
 }
 
 /** Opens Settings from the menu, scrolls its rows and returns with Back. */
-internal fun MacrobenchmarkScope.openAndCloseSettings() {
-    if (!clickIfPresent(By.res("menu_button"))) return
-    if (!clickIfPresent(By.text("Settings"))) {
+internal fun MacrobenchmarkScope.openAndCloseSettings(strict: Boolean = false) {
+    if (!clickIfPresent(By.res("menu_button"), strict)) return
+    if (!clickIfPresent(By.text("Settings"), strict)) {
         press(1) { device.pressBack() }
         return
     }
@@ -99,8 +106,8 @@ internal fun MacrobenchmarkScope.openAndCloseSettings() {
 }
 
 /** Adds a tab from the tab rail, switches back and closes the new one with its X. */
-internal fun MacrobenchmarkScope.openSwitchAndCloseTab() {
-    if (!clickIfPresent(By.desc("New tab"))) return
+internal fun MacrobenchmarkScope.openSwitchAndCloseTab(strict: Boolean = false) {
+    if (!clickIfPresent(By.desc("New tab"), strict)) return
     waitForHome(required = false)
     press(1) { device.pressDPadUp() }
     press(2) { device.pressDPadLeft() }

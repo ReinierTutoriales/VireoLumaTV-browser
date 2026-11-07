@@ -15,15 +15,23 @@ import org.junit.runner.RunWith
 class RemoteNavigationBenchmark {
     @get:Rule val rule = MacrobenchmarkRule()
 
-    @Test fun capsuleAndMenuNoCompilation() = measure(CompilationMode.None()) { traverseCapsule(); openAndCloseMenu() }
+    @Test fun capsuleAndMenuNoCompilation() = measure(CompilationMode.None(), capsuleAndMenu)
 
-    @Test fun capsuleAndMenuBaselineProfile() =
-        measure(CompilationMode.Partial(BaselineProfileMode.Require)) { traverseCapsule(); openAndCloseMenu() }
+    @Test fun capsuleAndMenuBaselineProfile() = measure(CompilationMode.Partial(BaselineProfileMode.Require), capsuleAndMenu)
 
-    @Test fun tabsAndSettingsNoCompilation() = measure(CompilationMode.None()) { openSwitchAndCloseTab(); openAndCloseSettings() }
+    @Test fun tabsAndSettingsNoCompilation() = measure(CompilationMode.None(), tabsAndSettings)
 
-    @Test fun tabsAndSettingsBaselineProfile() =
-        measure(CompilationMode.Partial(BaselineProfileMode.Require)) { openSwitchAndCloseTab(); openAndCloseSettings() }
+    @Test fun tabsAndSettingsBaselineProfile() = measure(CompilationMode.Partial(BaselineProfileMode.Require), tabsAndSettings)
+
+    private val capsuleAndMenu: MacrobenchmarkScope.() -> Unit = {
+        traverseCapsule()
+        openAndCloseMenu(strict = true)
+    }
+
+    private val tabsAndSettings: MacrobenchmarkScope.() -> Unit = {
+        openSwitchAndCloseTab(strict = true)
+        openAndCloseSettings(strict = true)
+    }
 
     private fun measure(mode: CompilationMode, journey: MacrobenchmarkScope.() -> Unit) = rule.measureRepeated(
         packageName = targetAppId,
