@@ -76,16 +76,27 @@ private fun MacrobenchmarkScope.press(times: Int, key: () -> Boolean) = repeat(t
     device.waitForIdle()
 }
 
-/** D-pad over the top capsule and back: address, history buttons, shield and menu. */
-internal fun MacrobenchmarkScope.traverseCapsule() {
-    press(1) { device.pressDPadUp() }
+/** Back opens the hidden capsule from a page without history, as on the remote. */
+private fun MacrobenchmarkScope.openCapsule(strict: Boolean): Boolean {
+    if (device.hasObject(By.res("menu_button"))) return true
+    press(1) { device.pressBack() }
+    if (device.wait(Until.hasObject(By.res("menu_button")), TIMEOUT_MS)) return true
+    if (strict) failWithScreen("Back did not open the capsule")
+    return false
+}
+
+/** Opens the capsule with Back and moves over it with the D-pad: address, buttons, shield and menu. */
+internal fun MacrobenchmarkScope.traverseCapsule(strict: Boolean = false) {
+    if (!openCapsule(strict)) return
     press(7) { device.pressDPadRight() }
     press(7) { device.pressDPadLeft() }
-    press(2) { device.pressDPadDown() }
+    press(1) { device.pressDPadDown() }
+    press(1) { device.pressDPadUp() }
 }
 
 /** Opens the side menu, moves through its rows and closes it with Back. */
 internal fun MacrobenchmarkScope.openAndCloseMenu(strict: Boolean = false) {
+    if (!openCapsule(strict)) return
     if (!clickIfPresent(By.res("menu_button"), strict)) return
     press(6) { device.pressDPadDown() }
     press(6) { device.pressDPadUp() }
@@ -94,6 +105,7 @@ internal fun MacrobenchmarkScope.openAndCloseMenu(strict: Boolean = false) {
 
 /** Opens Settings from the menu, scrolls its rows and returns with Back. */
 internal fun MacrobenchmarkScope.openAndCloseSettings(strict: Boolean = false) {
+    if (!openCapsule(strict)) return
     if (!clickIfPresent(By.res("menu_button"), strict)) return
     if (!clickIfPresent(By.text("Settings"), strict)) {
         press(1) { device.pressBack() }
@@ -107,13 +119,19 @@ internal fun MacrobenchmarkScope.openAndCloseSettings(strict: Boolean = false) {
 
 /** Adds a tab from the tab rail, switches back and closes the new one with its X. */
 internal fun MacrobenchmarkScope.openSwitchAndCloseTab(strict: Boolean = false) {
+    if (!openCapsule(strict)) return
     if (!clickIfPresent(By.desc("New tab"), strict)) return
     waitForHome(required = false)
-    press(1) { device.pressDPadUp() }
-    press(2) { device.pressDPadLeft() }
+    if (!openCapsule(strict)) return
+    // Down reaches the tab row; Left/Right move across the tabs and their close buttons.
+    press(1) { device.pressDPadDown() }
+    press(3) { device.pressDPadLeft() }
+    press(3) { device.pressDPadRight() }
     val closers = device.findObjects(By.desc("Close tab"))
     if (closers.size > 1) {
         closers.last().click()
         device.waitForIdle()
+    } else if (strict) {
+        failWithScreen("The new tab has no close button")
     }
 }

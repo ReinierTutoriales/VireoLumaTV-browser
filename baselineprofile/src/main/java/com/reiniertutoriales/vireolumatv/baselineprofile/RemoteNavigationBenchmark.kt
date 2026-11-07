@@ -24,7 +24,7 @@ class RemoteNavigationBenchmark {
     @Test fun tabsAndSettingsBaselineProfile() = measure(CompilationMode.Partial(BaselineProfileMode.Require), tabsAndSettings)
 
     private val capsuleAndMenu: MacrobenchmarkScope.() -> Unit = {
-        traverseCapsule()
+        traverseCapsule(strict = true)
         openAndCloseMenu(strict = true)
     }
 
