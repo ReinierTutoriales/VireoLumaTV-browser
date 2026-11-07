@@ -15,7 +15,8 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import androidx.tv.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +31,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 
 /** Native Compose TV tab strip; browser operations stay in the host. */
@@ -45,6 +47,8 @@ fun TvTabStrip(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(12.dp)
+    val newTab = stringResource(R.string.tabs_new)
+    val closeTab = stringResource(R.string.menu_close_tab)
     Row(
         modifier = modifier.background(Color.Black).horizontalScroll(rememberScrollState())
             .focusGroup().padding(horizontal = 12.dp, vertical = 6.dp),
@@ -65,7 +69,7 @@ fun TvTabStrip(
                     .padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(tab.title.ifBlank { tab.url }.ifBlank { "New tab" },
+                Text(tab.title.ifBlank { tab.url }.ifBlank { newTab },
                     color = Color.White, fontSize = 15.sp, maxLines = 1,
                     overflow = TextOverflow.Ellipsis)
                 val closeInteraction = remember(tab) { MutableInteractionSource() }
@@ -74,13 +78,12 @@ fun TvTabStrip(
                     modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                         .background(if (closeFocused) Color(0xFF383838) else Color.Transparent, shape)
                         .border(if (closeFocused) 2.dp else 0.dp, Color.White, shape)
-                        .semantics { role = Role.Button; contentDescription = "Close tab" }
+                        .semantics { role = Role.Button; contentDescription = closeTab }
                         .combinedClickable(
                             interactionSource = closeInteraction,
                             indication = null,
                             onClick = { onClose(tab) },
                             onLongClick = { onOptions(tab) },
-                            onLongClickLabel = "Tab options",
                         ),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -98,7 +101,7 @@ fun TvTabStrip(
             modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                 .background(if (addFocused) Color(0xFF292929) else Color.Black, shape)
                 .border(if (addFocused) 2.dp else 1.dp, if (addFocused) Color.White else Color.DarkGray, shape)
-                .semantics { role = Role.Button; contentDescription = "New tab" }
+                .semantics { role = Role.Button; contentDescription = newTab }
                 .combinedClickable(interactionSource = addInteraction, indication = null, onClick = onAdd),
             contentAlignment = Alignment.Center,
         ) {

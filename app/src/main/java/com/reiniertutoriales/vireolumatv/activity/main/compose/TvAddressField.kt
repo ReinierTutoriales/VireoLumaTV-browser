@@ -14,7 +14,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import androidx.tv.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.DisposableEffect
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.testTag
+import com.reiniertutoriales.vireolumatv.R
 
 /**
  * Two explicit modes prevent D-pad focus from opening the IME.
@@ -61,6 +63,7 @@ fun TvAddressField(
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val shape = RoundedCornerShape(10.dp)
+    val hint = stringResource(R.string.address_hint)
     fun cancelEditing() {
         editing = false
         onEditingChanged(false)
@@ -141,7 +144,7 @@ fun TvAddressField(
                 .fillMaxWidth()
                 .background(Color.Black, shape)
                 .border(1.dp, Color.DarkGray, shape)
-                .semantics { contentDescription = "Address and search" }
+                .semantics { contentDescription = hint }
                 .clickable {
                     draft = address
                     editing = true
@@ -150,7 +153,7 @@ fun TvAddressField(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
             Text(
-                text = address.ifBlank { "Search or enter address" },
+                text = address.ifBlank { hint },
                 color = if (address.isBlank()) Color.Gray else Color.White,
                 fontSize = 17.sp,
                 maxLines = 1,

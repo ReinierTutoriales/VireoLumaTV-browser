@@ -109,8 +109,9 @@ private fun TvBlockerAction(
     onToggle: () -> Unit,
     onDetails: (() -> Unit)?,
 ) {
+    val fallback = androidx.compose.ui.res.stringResource(R.string.blocker_toggle)
     TvBrowserAction(
-        label = description.ifBlank { if (enabled) "Shield on" else "Shield off" },
+        label = description.ifBlank { fallback },
         symbol = if (enabled) TvSymbol.ShieldOn else TvSymbol.ShieldOff,
         onClick = onToggle,
         onLongClick = onDetails,
