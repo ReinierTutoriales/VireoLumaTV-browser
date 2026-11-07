@@ -174,7 +174,7 @@ private fun MacrobenchmarkScope.focusFirstTab() {
 /** Add a tab, activate the first with OK, then close the background tab and verify selection. */
 internal fun MacrobenchmarkScope.openSwitchAndCloseTab() {
     focusFirstTab()
-    val originalTab = requireNode(FIRST_TAB).resourceName
+    val originalTab = requireNotNull(requireNode(FIRST_TAB).resourceName)
     requireGone(SECOND_TAB)
     focus(By.res("new_tab_button"), { device.pressDPadRight() })
     press { device.pressDPadCenter() }
