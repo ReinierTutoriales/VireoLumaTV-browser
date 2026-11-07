@@ -45,6 +45,12 @@ android {
             apiLevel = 34
             systemImageSource = "aosp-atd"
         }
+        // Full image for Macrobenchmark: ATD images render without RenderThread frames to time.
+        create("pixel6Api34Aosp") {
+            device = "Pixel 6"
+            apiLevel = 34
+            systemImageSource = "aosp"
+        }
     }
 }
 
