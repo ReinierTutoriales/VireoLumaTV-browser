@@ -82,6 +82,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrow
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserShell.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbol.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvTabStrip.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/VireoTvTheme.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditor.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteRows.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesPanel.kt	REESCRITO
@@ -270,7 +271,7 @@ app/src/main/res/drawable/ic_zoom_out.xml	MODIFICADO
 app/src/main/res/layout/browser_controls.xml	PROPIO
 app/src/main/res/layout/browser_window.xml	PROPIO
 app/src/main/res/layout/day_header.xml	PROPIO
-app/src/main/res/layout/dialog_app_menu.xml	PROPIO
+app/src/main/res/layout/dialog_app_menu.xml	ELIMINADO
 app/src/main/res/layout/dialog_check_item.xml	PROPIO
 app/src/main/res/layout/dialog_choice_item.xml	PROPIO
 app/src/main/res/layout/dialog_favorite_editor.xml	PROPIO
@@ -291,7 +292,7 @@ app/src/main/res/layout/tab_chip.xml	PROPIO
 app/src/main/res/layout/tab_strip.xml	PROPIO
 app/src/main/res/layout/toast_bar.xml	PROPIO
 app/src/main/res/layout/view_address_suggestion.xml	PROPIO
-app/src/main/res/layout/view_menu_entry.xml	PROPIO
+app/src/main/res/layout/view_menu_entry.xml	ELIMINADO
 app/src/main/res/layout/view_setting_button.xml	PROPIO
 app/src/main/res/layout/view_setting_choice.xml	PROPIO
 app/src/main/res/layout/view_setting_field.xml	PROPIO

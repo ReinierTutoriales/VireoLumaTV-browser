@@ -183,6 +183,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.room.sqlite.wrapper)
+    // Compose UI tests on Robolectric; the manifest library declares their host activity.
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
 
 val rustCrate = rootProject.layout.projectDirectory.dir("native/adblock-jni")
