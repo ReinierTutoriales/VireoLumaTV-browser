@@ -4,7 +4,6 @@ import androidx.benchmark.macro.BaselineProfileMode
 import androidx.benchmark.macro.CompilationMode
 import androidx.benchmark.macro.FrameTimingMetric
 import androidx.benchmark.macro.MacrobenchmarkScope
-import androidx.benchmark.macro.StartupMode
 import androidx.benchmark.macro.junit4.MacrobenchmarkRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -30,7 +29,7 @@ class RemoteNavigationBenchmark {
         packageName = targetAppId,
         metrics = listOf(FrameTimingMetric()),
         compilationMode = mode,
-        startupMode = StartupMode.COLD,
+        // No startup mode: a cold mode kills the process after setupBlock, before the journey.
         iterations = 5,
         setupBlock = {
             pressHome()
