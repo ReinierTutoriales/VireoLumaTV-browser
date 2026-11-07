@@ -7,6 +7,7 @@ import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -58,11 +59,12 @@ fun TvTabStrip(
         tabs.forEachIndexed { index, tab ->
             val interaction = remember(tab) { MutableInteractionSource() }
             val focused by interaction.collectIsFocusedAsState()
+            val hovered by interaction.collectIsHoveredAsState()
             LaunchedEffect(focused) { if (focused) onFocus(index) }
             Row(
                 modifier = Modifier.defaultMinSize(minHeight = 48.dp)
-                    .background(if (focused) Color(0xFF262626) else if (selected == index) Color(0xFF171717) else Color.Black, shape)
-                    .border(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray, shape)
+                    .background(if (focused) Color(0xFF262626) else if (selected == index) Color(0xFF171717) else TvControlColors.surface(false, hovered), shape)
+                    .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
                     .semantics { role = Role.Button }
                     .combinedClickable(interactionSource = interaction, indication = null,
                         onClick = { onActivate(index) }, onLongClick = { onOptions(tab) })
@@ -74,10 +76,11 @@ fun TvTabStrip(
                     overflow = TextOverflow.Ellipsis)
                 val closeInteraction = remember(tab) { MutableInteractionSource() }
                 val closeFocused by closeInteraction.collectIsFocusedAsState()
+                val closeHovered by closeInteraction.collectIsHoveredAsState()
                 Box(
                     modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-                        .background(if (closeFocused) Color(0xFF383838) else Color.Transparent, shape)
-                        .border(if (closeFocused) 2.dp else 0.dp, Color.White, shape)
+                        .background(if (closeFocused) Color(0xFF383838) else if (closeHovered) TvControlColors.Hovered else Color.Transparent, shape)
+                        .border(if (closeFocused) 2.dp else if (closeHovered) 1.dp else 0.dp, TvControlColors.border(closeFocused, closeHovered), shape)
                         .semantics { role = Role.Button; contentDescription = closeTab }
                         .combinedClickable(
                             interactionSource = closeInteraction,
@@ -97,10 +100,11 @@ fun TvTabStrip(
         }
         val addInteraction = remember { MutableInteractionSource() }
         val addFocused by addInteraction.collectIsFocusedAsState()
+        val addHovered by addInteraction.collectIsHoveredAsState()
         Box(
             modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-                .background(if (addFocused) Color(0xFF292929) else Color.Black, shape)
-                .border(if (addFocused) 2.dp else 1.dp, if (addFocused) Color.White else Color.DarkGray, shape)
+                .background(if (addFocused) Color(0xFF292929) else TvControlColors.surface(false, addHovered), shape)
+                .border(if (addFocused) 2.dp else 1.dp, TvControlColors.border(addFocused, addHovered), shape)
                 .semantics { role = Role.Button; contentDescription = newTab }
                 .combinedClickable(interactionSource = addInteraction, indication = null, onClick = onAdd),
             contentAlignment = Alignment.Center,

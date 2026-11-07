@@ -3,6 +3,9 @@ package com.reiniertutoriales.vireolumatv.activity.main.compose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -138,14 +141,17 @@ fun TvAddressField(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         )
     } else {
+        val interaction = remember { MutableInteractionSource() }
+        val focused by interaction.collectIsFocusedAsState()
+        val hovered by interaction.collectIsHoveredAsState()
         Box(
             modifier = modifier
                 .testTag("home_search")
                 .fillMaxWidth()
-                .background(Color.Black, shape)
-                .border(1.dp, Color.DarkGray, shape)
+                .background(TvControlColors.surface(focused, hovered), shape)
+                .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
                 .semantics { contentDescription = hint }
-                .clickable {
+                .clickable(interactionSource = interaction, indication = null) {
                     draft = address
                     editing = true
                     onEditingChanged(true)

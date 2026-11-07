@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.defaultMinSize
@@ -51,12 +52,9 @@ fun TvBrowserAction(
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val pressed by interaction.collectIsPressedAsState()
+    val hovered by interaction.collectIsHoveredAsState()
     val surface by animateColorAsState(
-        targetValue = when {
-            pressed -> Color(0xFF343434)
-            focused -> Color(0xFF202020)
-            else -> Color.Black
-        },
+        targetValue = TvControlColors.surface(focused, hovered, pressed),
         label = "tv-action-surface",
     )
     val shape = RoundedCornerShape(10.dp)
@@ -67,7 +65,7 @@ fun TvBrowserAction(
             .semantics { contentDescription = label; role = Role.Button }
             .clip(shape)
             .background(surface)
-            .border(BorderStroke(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray), shape)
+            .border(BorderStroke(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered)), shape)
             .combinedClickable(
                 interactionSource = interaction,
                 indication = null,
