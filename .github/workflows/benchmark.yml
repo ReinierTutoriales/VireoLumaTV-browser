@@ -1,10 +1,15 @@
 name: Benchmark
 
-# Run by hand. Macrobenchmark on an emulator (Gradle managed device): cold start and frame timing
+# Runs by hand and on pull requests that change the profiles or the benchmarks. Macrobenchmark on an emulator (Gradle managed device): cold start and frame timing
 # of the remote journeys, each without compilation and with the bundled profile, on the same build.
 # Emulator timings compare variants of one commit; they are not measurements of TV hardware.
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'baselineprofile/**'
+      - 'app/src/main/generated/baselineProfiles/**'
+      - '.github/workflows/benchmark.yml'
 
 permissions:
   contents: read
