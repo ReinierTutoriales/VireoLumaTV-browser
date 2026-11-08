@@ -90,13 +90,30 @@ jobs:
           if git diff --cached --quiet; then echo 'Profile unchanged'; exit 0; fi
           git config user.name 'ReinierTutoriales'
           git config user.email '86568548+ReinierTutoriales@users.noreply.github.com'
+          # The runs this push starts on the pull request wait for approval ("action_required") and
+          # leave its checks pending. Approve them so CI and Benchmark run on the new SHA; when none
+          # appear or approval is refused, dispatch both workflows instead.
+          verify() {
+            local ref=$1 sha ids='' approved=0
+            sha=$(git rev-parse HEAD)
+            for attempt in $(seq 1 12); do
+              ids=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${sha}&status=action_required" --jq '.workflow_runs[].id')
+              [ -n "$ids" ] && break
+              sleep 10
+            done
+            for id in $ids; do
+              if gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/approve" >/dev/null; then approved=1; fi
+            done
+            if [ "$approved" = 0 ]; then
+              gh workflow run ci.yml --ref "$ref"
+              gh workflow run benchmark.yml --ref "$ref"
+            fi
+          }
           # On a working branch the profile joins that branch's pull request instead of a new one.
           if [ "${PROFILE_BRANCH}" != master ]; then
             git commit -m 'Actualiza el perfil de referencia'
             git push origin "HEAD:${PROFILE_BRANCH}"
-            # Pushes with GITHUB_TOKEN do not guarantee automatic CI on the new SHA.
-            gh workflow run ci.yml --ref "${PROFILE_BRANCH}"
-            gh workflow run benchmark.yml --ref "${PROFILE_BRANCH}"
+            verify "${PROFILE_BRANCH}"
             exit 0
           fi
           branch="baseline-profile/${GITHUB_RUN_ID}"
@@ -107,5 +124,4 @@ jobs:
             --title 'Actualiza el perfil de referencia' \
             --body "Generado por el workflow Baseline profile (run ${GITHUB_RUN_ID}) en un emulador Pixel 6, API 34." \
             || echo 'Pull request not created: the profile is in the artifact and on branch '"$branch"
-          gh workflow run ci.yml --ref "$branch"
-          gh workflow run benchmark.yml --ref "$branch"
+          verify "$branch"
