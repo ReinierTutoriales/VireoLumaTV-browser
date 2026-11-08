@@ -30,6 +30,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
@@ -106,7 +108,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
             .firstOrNull { it in spec.buttons }
         val shape = RoundedCornerShape(16.dp)
         Column(
-            Modifier.widthIn(min = 360.dp, max = 640.dp)
+            Modifier.semantics { testTagsAsResourceId = true }.widthIn(min = 360.dp, max = 640.dp)
                 .background(MaterialTheme.colorScheme.surface, shape)
                 .border(1.dp, Color.DarkGray, shape)
                 .padding(24.dp),

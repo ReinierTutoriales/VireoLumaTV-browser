@@ -40,19 +40,18 @@ internal fun MacrobenchmarkScope.startOnHome() {
     waitForHome()
 }
 
+/** A new selector each time: BySelector's filters mutate the instance they are called on. */
+private fun noticeDismiss() = By.res("dialog_button_-2")
+
 /** Old AOSP providers can show an update notice; dismiss only this app's negative button. */
 internal fun MacrobenchmarkScope.waitForHome() {
     val deadline = SystemClock.uptimeMillis() + TIMEOUT_MS
     while (SystemClock.uptimeMillis() < deadline) {
-        device.findObject(By.res("android", "button2"))
-            ?.takeIf { it.applicationPackage == packageName }?.let { notice ->
-                val dismiss = By.res("android", "button2").focused(true)
-                press { device.pressDPadDown() }
-                if (!device.hasObject(dismiss)) press { device.pressDPadLeft() }
-                if (!device.hasObject(dismiss)) press { device.pressDPadRight() }
-                requireNode(dismiss)
-                press { device.pressDPadCenter() }
-            }
+        // TvDialog starts on its negative (safe) button, which exports the tag dialog_button_-2.
+        device.findObject(noticeDismiss())?.takeIf { it.applicationPackage == packageName }?.let {
+            requireNode(noticeDismiss().focused(true))
+            press { device.pressDPadCenter() }
+        }
         if (device.wait(Until.hasObject(HOME_SEARCH), 500)) {
             device.waitForIdle()
             return
