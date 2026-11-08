@@ -1,0 +1,6 @@
+# The Rust compiler for the adblock engine (native/adblock-jni), pinned so CI, release and local
+# builds produce the same library; rustup installs it on first use. Update to the latest stable.
+[toolchain]
+channel = "1.99.1"
+profile = "minimal"
+targets = ["aarch64-linux-android", "armv7-linux-androideabi", "x86_64-linux-android"]
