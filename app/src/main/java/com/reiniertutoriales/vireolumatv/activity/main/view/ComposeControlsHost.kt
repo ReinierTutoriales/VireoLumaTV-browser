@@ -143,4 +143,8 @@ class ComposeControlsHost @JvmOverloads constructor(
     }
 
     fun requestCommandFocus() { focusRequest.value += 1 }
+
+    /** Number of command-focus requests, for tests of the activity's focus guard. */
+    @androidx.annotation.VisibleForTesting
+    internal val commandFocusRequests: Int get() = focusRequest.value
 }

@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
@@ -340,6 +341,14 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
 
     @VisibleForTesting
     internal fun configureBrowserControls() {
+        // N01: while the capsule is open its commands own focus. A View behind it can still take
+        // focus without a key press (Home content added on first start, a page hidden behind
+        // Home, the window's default focus); that focus returns to the capsule's first command.
+        vb.root.viewTreeObserver.addOnGlobalFocusChangeListener { _, focused ->
+            if (overlayVisible && focused != null && !vb.controlsOverlay.holds(focused) && !vb.pointerMenu.holds(focused)) {
+                vb.controlsHost.requestCommandFocus()
+            }
+        }
         vb.controlsHost.onSubmitAddress = { target ->
             onUrlInputDone()
             search(target)
@@ -1053,6 +1062,16 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             showLivePage(true)
             if (nativeHome?.focusContent() != true) tabStore.currentTab.value?.engine?.view?.requestFocus()
         }
+    }
+
+    private fun ViewGroup.holds(view: View): Boolean {
+        var current: android.view.ViewParent? = view.parent
+        if (view === this) return true
+        while (current != null) {
+            if (current === this) return true
+            current = current.parent
+        }
+        return false
     }
 
     private companion object {

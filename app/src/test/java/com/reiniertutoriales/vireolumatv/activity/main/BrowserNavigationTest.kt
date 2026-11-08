@@ -45,6 +45,28 @@ class BrowserNavigationTest {
         assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
     }
 
+    @Test fun focusTakenBehindTheOpenCapsuleReturnsToItsCommands() = Fixture().use { f ->
+        f.activity.openCapsule()
+        // Focus starts in the capsule's host, as after opening it.
+        f.vb.controlsHost.layout(0, 0, 1280, 120)
+        f.vb.controlsHost.isFocusableInTouchMode = true
+        assertTrue(f.vb.controlsHost.requestFocus())
+        val before = f.vb.controlsHost.commandFocusRequests
+        // A View behind the capsule takes focus without a key press (Home added on first start).
+        assertTrue(f.page.requestFocus())
+        assertEquals(before + 1, f.vb.controlsHost.commandFocusRequests)
+    }
+
+    @Test fun focusOnThePageWithTheCapsuleClosedIsLeftAlone() = Fixture().use { f ->
+        val other = View(f.activity).apply { isFocusableInTouchMode = true }
+        f.vb.pageContainer.addView(other)
+        relayout(f)
+        val before = f.vb.controlsHost.commandFocusRequests
+        assertTrue(other.requestFocus())
+        assertTrue(f.page.requestFocus())
+        assertEquals(before, f.vb.controlsHost.commandFocusRequests)
+    }
+
     private fun tabCommand(activity: MainActivity, command: com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand) {
         MainActivity::class.java.getDeclaredMethod("onTabCommand",
             com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand::class.java)
