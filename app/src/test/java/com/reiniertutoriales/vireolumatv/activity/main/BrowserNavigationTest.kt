@@ -34,7 +34,10 @@ import java.lang.reflect.Proxy
 class BrowserNavigationTest {
     @Test fun downFromTheCommandHostDoesNotCloseTheCapsule() = Fixture().use { f ->
         f.activity.openCapsule()
-        f.vb.controlsHost.requestFocus()
+        // This fixture does not mount the Compose command actions: focus the host itself,
+        // a descendant of the overlay that is explicitly outside the tab focus group.
+        f.vb.controlsHost.isFocusableInTouchMode = true
+        assertTrue(f.vb.controlsHost.requestFocus())
         assertTrue(f.vb.controlsHost.hasFocus())
         f.activity.onAttachedToWindow()
         f.activity.window.callback.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
