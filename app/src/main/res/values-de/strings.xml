@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="control_more_options">Weitere Optionen: %1$s</string>
     <string name="about_source">VireoLumaTV von ReinierTutoriales · Quellcode</string>
     <string name="about_tagline">Ein Webbrowser für die TV-Fernbedienung</string>
     <string name="about_version">Version %s</string>

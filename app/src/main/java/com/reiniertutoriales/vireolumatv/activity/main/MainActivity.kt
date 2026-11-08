@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
@@ -512,8 +513,12 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     }
 
     private fun onTabCommand(command: TabCommand) = when (command) {
-        is TabCommand.Focus -> previewFocusedTab(tabAt(command.index))
-        is TabCommand.Show -> {
+        is TabCommand.Focus -> tabAt(command.index)?.let { tab ->
+            vb.controlsHost.current = command.index
+            previewFocusedTab(tab)
+        }
+        is TabCommand.Show -> tabAt(command.index)?.let {
+            vb.controlsHost.current = command.index
             commitStripSelection()
             closeCapsule()
         }
@@ -627,6 +632,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             .setTitle(R.string.warning_title)
             .setMessage(R.string.webview_outdated)
             .setNegativeButton(android.R.string.ok, null)
+            .setOnDismissListener {
+                if (overlayVisible) vb.controlsHost.requestCommandFocus()
+            }
         storeIntent(provider.packageName)?.let { store ->
             dialog.setPositiveButton(R.string.action_open_store) { _, _ -> openStore(store) }
         }
@@ -867,7 +875,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
                 val code = if (event.keyCode != 0) event.keyCode else event.scanCode
                 if (code !in BackPresses.BACK_KEYS &&
                     Shortcuts.getInstance().handle(event, this@MainActivity, tabStore.currentTab.value)) return true
-                if (downLeavesTabStrip(overlayVisible, vb.controlsHost.hasFocus(), event.keyCode, event.action, event.repeatCount)) {
+                if (downLeavesTabStrip(overlayVisible, vb.controlsHost.tabStripHasFocus, event.keyCode, event.action, event.repeatCount)) {
                     closeCapsule()
                     return true
                 }
@@ -956,8 +964,12 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             tabStore.currentTab.value?.engine?.closeFullscreen()
             return
         }
-        if (overlayVisible) return
+        if (overlayVisible) {
+            vb.controlsHost.takeFocus()
+            return
+        }
         overlayVisible = true
+        blockFocusBehindCapsule(true)
         previewGeneration++
         vb.controlsOverlay.animate().cancel()
         vb.tabPreview.animate().cancel()
@@ -1024,6 +1036,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal fun closeCapsule() {
         val wasVisible = overlayVisible
         overlayVisible = false
+        blockFocusBehindCapsule(false)
         vb.pageContainer.onPageTouch = null
         vb.pageContainer.cursorSuppressed = nativeHome?.isVisible == true
         previewGeneration++
@@ -1043,6 +1056,17 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             showLivePage(true)
             if (nativeHome?.focusContent() != true) tabStore.currentTab.value?.engine?.view?.requestFocus()
         }
+    }
+
+    /**
+     * N01: the open capsule is modal for the remote. The page and Home behind it cannot take focus,
+     * whatever asks for it: an arrow key past the capsule's edge, a page attached on a tab change,
+     * or the window's default focus when Compose releases its own.
+     */
+    private fun blockFocusBehindCapsule(block: Boolean) {
+        val mode = if (block) ViewGroup.FOCUS_BLOCK_DESCENDANTS else ViewGroup.FOCUS_BEFORE_DESCENDANTS
+        vb.pageContainer.descendantFocusability = mode
+        vb.nativeHomeContainer.descendantFocusability = mode
     }
 
     private companion object {

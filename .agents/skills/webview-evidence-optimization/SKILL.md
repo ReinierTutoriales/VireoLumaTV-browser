@@ -67,3 +67,10 @@ For each reproducible regression or owner correction: identify the violated cont
 - https://developer.android.com/training/tv/get-started/navigation
 
 This skill defines an investigation workflow, not a claim that any candidate optimization is implemented or benchmarked.
+
+## Macrobenchmark harness lessons (verified 2026-11-07)
+
+- Benchmarks and the profile generator share mandatory `TvFlows.kt` journeys: assert focus, activate with D-pad OK, verify destinations and return. Positional tab counts cannot detect a wrong-tab close; verify the surviving tab identity. Missing controls must fail both callers.
+- Frame journeys run without `startupMode`: a cold mode kills the process after `setupBlock`, before the journey. Clear app data before each measurement, but only before the collection test for profiles, preserving ART between collection iterations. Use the launcher path: a VIEW intent appends a tab on each launch.
+- Open the capsule with Back only when absent. Use native resource IDs and exported Compose tags rather than translated text. AGP 9 writes benchmark JSON, traces and screen dumps under `build/intermediates/managed_device_android_test_additional_output/`.
+- Emulator frame time is dominated by the emulated GPU channel (`eglSwapBuffersWithDamageKHR`, `rcCreateSyncKHR`); the same case varied about 30 % between runs. Compare modes within one run, inspect Perfetto before attributing cost to app code, and claim no speed gain from emulator data.

@@ -3,6 +3,9 @@ package com.reiniertutoriales.vireolumatv.activity.main.compose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,7 +17,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import androidx.tv.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.DisposableEffect
@@ -37,6 +41,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.testTag
+import com.reiniertutoriales.vireolumatv.R
 
 /**
  * Two explicit modes prevent D-pad focus from opening the IME.
@@ -61,6 +66,7 @@ fun TvAddressField(
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val shape = RoundedCornerShape(10.dp)
+    val hint = stringResource(R.string.address_hint)
     fun cancelEditing() {
         editing = false
         onEditingChanged(false)
@@ -135,14 +141,17 @@ fun TvAddressField(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         )
     } else {
+        val interaction = remember { MutableInteractionSource() }
+        val focused by interaction.collectIsFocusedAsState()
+        val hovered by interaction.collectIsHoveredAsState()
         Box(
             modifier = modifier
                 .testTag("home_search")
                 .fillMaxWidth()
-                .background(Color.Black, shape)
-                .border(1.dp, Color.DarkGray, shape)
-                .semantics { contentDescription = "Address and search" }
-                .clickable {
+                .background(TvControlColors.surface(focused, hovered), shape)
+                .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
+                .semantics { contentDescription = hint }
+                .clickable(interactionSource = interaction, indication = null) {
                     draft = address
                     editing = true
                     onEditingChanged(true)
@@ -150,7 +159,7 @@ fun TvAddressField(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
             Text(
-                text = address.ifBlank { "Search or enter address" },
+                text = address.ifBlank { hint },
                 color = if (address.isBlank()) Color.Gray else Color.White,
                 fontSize = 17.sp,
                 maxLines = 1,

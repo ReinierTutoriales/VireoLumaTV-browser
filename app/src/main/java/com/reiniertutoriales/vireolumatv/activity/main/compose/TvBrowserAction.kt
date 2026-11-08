@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.defaultMinSize
@@ -12,7 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
+import androidx.tv.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -30,6 +31,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import com.reiniertutoriales.vireolumatv.R
 
 /**
  * Reusable AMOLED action for remote-control navigation.
@@ -51,12 +54,9 @@ fun TvBrowserAction(
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val pressed by interaction.collectIsPressedAsState()
+    val hovered by interaction.collectIsHoveredAsState()
     val surface by animateColorAsState(
-        targetValue = when {
-            pressed -> Color(0xFF343434)
-            focused -> Color(0xFF202020)
-            else -> Color.Black
-        },
+        targetValue = TvControlColors.surface(focused, hovered, pressed),
         label = "tv-action-surface",
     )
     val shape = RoundedCornerShape(10.dp)
@@ -67,14 +67,14 @@ fun TvBrowserAction(
             .semantics { contentDescription = label; role = Role.Button }
             .clip(shape)
             .background(surface)
-            .border(BorderStroke(if (focused) 2.dp else 1.dp, if (focused) Color.White else Color.DarkGray), shape)
+            .border(BorderStroke(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered)), shape)
             .combinedClickable(
                 interactionSource = interaction,
                 indication = null,
                 enabled = enabled,
                 onClick = onClick,
                 onLongClick = onLongClick,
-                onLongClickLabel = if (onLongClick != null) "More options: $label" else null,
+                onLongClickLabel = if (onLongClick != null) stringResource(R.string.control_more_options, label) else null,
             )
             .padding(horizontal = if (showLabel) 14.dp else 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,

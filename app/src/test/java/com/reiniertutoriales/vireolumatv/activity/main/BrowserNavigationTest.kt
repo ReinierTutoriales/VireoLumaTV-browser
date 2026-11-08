@@ -32,6 +32,67 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
+    @Test fun downFromTheCommandHostDoesNotCloseTheCapsule() = Fixture().use { f ->
+        f.activity.openCapsule()
+        // Exercise window dispatch with focus in the host, outside the tab focus group.
+        // This View-only fixture has no Compose frame to give its host a measured height.
+        f.vb.controlsHost.layout(0, 0, 1280, 120)
+        f.vb.controlsHost.isFocusableInTouchMode = true
+        assertTrue("The laid-out command host must take focus", f.vb.controlsHost.requestFocus())
+        assertTrue(f.vb.controlsHost.hasFocus())
+        f.activity.onAttachedToWindow()
+        f.activity.window.callback.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+    }
+
+    @Test fun thePageBehindTheOpenCapsuleCannotTakeFocusUntilItCloses() = Fixture().use { f ->
+        f.activity.openCapsule()
+        // A page attached on a tab change asks for focus behind the open capsule.
+        assertFalse(f.page.requestFocus())
+        f.activity.closeCapsule()
+        assertTrue(f.page.hasFocus() || f.page.requestFocus())
+    }
+
+    @Test fun arrowSearchStopsAtTheCapsuleEdge() = Fixture().use { f ->
+        f.activity.openCapsule()
+        // A focusable View of the page behind the capsule, below the controls.
+        val behind = View(f.activity).apply { isFocusable = true; isFocusableInTouchMode = true }
+        f.vb.pageContainer.addView(behind, android.widget.FrameLayout.LayoutParams(400, 200, android.view.Gravity.BOTTOM))
+        relayout(f)
+        f.vb.controlsHost.layout(0, 0, 600, 120)
+        f.vb.controlsHost.isFocusableInTouchMode = true
+        assertTrue(f.vb.controlsHost.requestFocus())
+        assertNull("Arrow search must not leave the capsule for the page behind it",
+            f.vb.controlsHost.focusSearch(f.vb.controlsHost, View.FOCUS_DOWN))
+    }
+
+    private fun tabCommand(activity: MainActivity, command: com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand) {
+        MainActivity::class.java.getDeclaredMethod("onTabCommand",
+            com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand::class.java)
+            .apply { isAccessible = true }.invoke(activity, command)
+    }
+
+    @Test fun tabFocusUpdatesThePreviewSelectionWithoutChangingTheLiveTab() = Fixture().use { f ->
+        f.tabs.workScope.cancel()
+        val background = BrowserTab(url = "https://background.test")
+        f.tabs.openTabs.add(background)
+        f.activity.openCapsule()
+        tabCommand(f.activity, com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Focus(1))
+        assertSame(background, f.activity.tabAtStripSelection())
+        assertSame(f.tab, f.tabs.currentTab.value)
+    }
+
+    @Test fun tabActivationUsesItsIndexWithoutAPrecedingFocusEvent() = Fixture().use { f ->
+        f.tabs.workScope.cancel()
+        val background = BrowserTab(url = "https://background.test")
+        BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
+            .set(background, lazyOf(f.engine))
+        f.tabs.openTabs.add(background)
+        tabCommand(f.activity, com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand.Show(1))
+        assertSame(background, f.tabs.currentTab.value)
+        assertSame(background, f.activity.tabAtStripSelection())
+    }
+
     @Test fun closingABackgroundTabKeepsTheLivePageAndTheStripAndIgnoresStaleCloses() = Fixture().use { f ->
         f.tabs.workScope.cancel()
         val background = BrowserTab(url = "https://background.test")

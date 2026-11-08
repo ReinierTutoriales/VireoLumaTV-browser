@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="control_more_options">Altre opzioni: %1$s</string>
     <string name="about_source">VireoLumaTV di ReinierTutoriales · Codice sorgente</string>
     <string name="about_tagline">Un browser web pensato per il telecomando della TV</string>
     <string name="about_version">Versione %s</string>

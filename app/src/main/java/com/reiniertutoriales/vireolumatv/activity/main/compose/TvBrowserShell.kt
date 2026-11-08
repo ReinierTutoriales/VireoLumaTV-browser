@@ -47,6 +47,7 @@ fun TvBrowserShell(
     onTabOptions: (BrowserTab) -> Unit,
     onAddTab: () -> Unit,
     modifier: Modifier = Modifier,
+    onTabStripFocusChanged: (Boolean) -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -80,6 +81,7 @@ fun TvBrowserShell(
             onClose = onTabClose,
             onOptions = onTabOptions,
             onAdd = onAddTab,
+            onFocusWithinChanged = onTabStripFocusChanged,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 12.dp),

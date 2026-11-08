@@ -1,4 +1,6 @@
 ruta	clasificacion
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/PointerSupportTest.kt	PROPIO
+docs/superpowers/plans/2026-11-07-tv-audit-corrections.md	PROPIO
 
 .agents/skills/agent-governance/SKILL.md	PROPIO
 .agents/skills/code-quality/SKILL.md	PROPIO
@@ -12,6 +14,7 @@ ruta	clasificacion
 .github/ISSUE_TEMPLATE/feature_request.md	REESCRITO
 .github/pull_request_template.md	PROPIO
 .github/workflows/baseline-profile.yml	PROPIO
+.github/workflows/benchmark.yml	PROPIO
 .github/workflows/ci.yml	PROPIO
 .github/workflows/release.yml	REESCRITO
 .github/workflows/startup-diagnosis.yml	ELIMINADO
@@ -79,8 +82,10 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvAddr
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserAction.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserCommandBar.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserShell.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvControlColors.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbol.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvTabStrip.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/VireoTvTheme.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteEditor.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteRows.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoritesPanel.kt	REESCRITO
@@ -269,7 +274,7 @@ app/src/main/res/drawable/ic_zoom_out.xml	MODIFICADO
 app/src/main/res/layout/browser_controls.xml	PROPIO
 app/src/main/res/layout/browser_window.xml	PROPIO
 app/src/main/res/layout/day_header.xml	PROPIO
-app/src/main/res/layout/dialog_app_menu.xml	PROPIO
+app/src/main/res/layout/dialog_app_menu.xml	ELIMINADO
 app/src/main/res/layout/dialog_check_item.xml	PROPIO
 app/src/main/res/layout/dialog_choice_item.xml	PROPIO
 app/src/main/res/layout/dialog_favorite_editor.xml	PROPIO
@@ -290,7 +295,7 @@ app/src/main/res/layout/tab_chip.xml	PROPIO
 app/src/main/res/layout/tab_strip.xml	PROPIO
 app/src/main/res/layout/toast_bar.xml	PROPIO
 app/src/main/res/layout/view_address_suggestion.xml	PROPIO
-app/src/main/res/layout/view_menu_entry.xml	PROPIO
+app/src/main/res/layout/view_menu_entry.xml	ELIMINADO
 app/src/main/res/layout/view_setting_button.xml	PROPIO
 app/src/main/res/layout/view_setting_choice.xml	PROPIO
 app/src/main/res/layout/view_setting_field.xml	PROPIO
@@ -342,6 +347,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrandResources
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserDownloadsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserNavigationTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserUiSnapshotTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/CommandBarFocusTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbolTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/DarkInterfaceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteDraftTest.kt	PROPIO
@@ -458,6 +464,9 @@ app/src/test/resources/adblock/README.md	PROPIO
 art/vireolumatv-icon-master.png	PROPIO
 baselineprofile/build.gradle.kts	PROPIO
 baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/BaselineProfileGenerator.kt	PROPIO
+baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/RemoteNavigationBenchmark.kt	PROPIO
+baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/StartupBenchmark.kt	PROPIO
+baselineprofile/src/main/java/com/reiniertutoriales/vireolumatv/baselineprofile/TvFlows.kt	PROPIO
 build.gradle.kts	REESCRITO
 CLAUDE.md	PROPIO
 docs/ADBLOCK_AUDIT.md	PROPIO
@@ -484,6 +493,7 @@ docs/audit/WEBVIEW_VIDEO_POINTER_AUDIT_20261005.md	PROPIO
 docs/audit/YOUTUBE_ADBLOCK_20261005.md	PROPIO
 docs/BRAND_STANDARD.md	PROPIO
 docs/IMPLEMENTATION_PLAN.md	PROPIO
+docs/NATIVE_UI_MODERNIZATION_POLICY.md	PROPIO
 docs/PRIVACY_POLICY_EVIDENCE.md	PROPIO
 docs/REGRESSION_POLICY.md	PROPIO
 docs/ROADMAP.md	PROPIO
@@ -524,6 +534,7 @@ scripts/diagnose-published-startup.sh	ELIMINADO
 scripts/measure-inherited-lines.py	PROPIO
 scripts/measure-tv.py	PROPIO
 scripts/refresh-bundled-filters.py	PROPIO
+scripts/summarize-benchmark.py	PROPIO
 scripts/test-adblock-surrogates.cjs	PROPIO
 scripts/test-apk-provenance.py	PROPIO
 scripts/test-blob-transfer.cjs	PROPIO
