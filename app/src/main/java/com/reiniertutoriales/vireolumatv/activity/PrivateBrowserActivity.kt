@@ -2,7 +2,6 @@ package com.reiniertutoriales.vireolumatv.activity
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.reiniertutoriales.vireolumatv.AppContext
@@ -37,7 +36,7 @@ object PrivateSessionNotice {
         val registry = activity.savedStateRegistry
         val restored = registry.consumeRestoredStateForKey(KEY)
         var dialog: TvDialog? = null
-        registry.registerSavedStateProvider(KEY) { bundleOf(SHOWING to (dialog?.isShowing == true)) }
+        registry.registerSavedStateProvider(KEY) { Bundle().apply { putBoolean(SHOWING, dialog?.isShowing == true) } }
         activity.lifecycle.addObserver(LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_DESTROY) dialog?.dismiss()
         })

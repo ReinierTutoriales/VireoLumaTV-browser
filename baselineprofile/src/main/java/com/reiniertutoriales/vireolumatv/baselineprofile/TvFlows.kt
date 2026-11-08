@@ -191,18 +191,14 @@ internal fun MacrobenchmarkScope.openAndCloseSettings() {
         requireFocus(By.res("menu_$entry"))
     }
     press { device.pressDPadCenter() }
-    requireNode(By.res("general_page_tab"))
+    // The General tab takes focus; each step must land on the next row, then Up returns to it.
+    requireFocus(By.res("general_page_tab"))
     requireGone(By.res("menu_settings"))
-    val initial = requireNode(By.focused(true))
-    val initialBounds = initial.visibleBounds
-    val initialId = initial.resourceName
-    press { device.pressDPadDown() }
-    val next = requireNode(By.focused(true))
-    if (next.resourceName == initialId && next.visibleBounds == initialBounds) {
-        failWithScreen("D-pad Down did not move focus in Settings")
-    }
-    repeat(7) { press { device.pressDPadDown() } }
-    repeat(8) { press { device.pressDPadUp() } }
+    step(By.res("spEngine")) { device.pressDPadDown() }
+    step(By.res("spHomePage")) { device.pressDPadDown() }
+    // Further rows scroll the page; their order is covered by MainSettingsFocusTest.
+    repeat(6) { press { device.pressDPadDown() } }
+    focus(By.res("general_page_tab"), { device.pressDPadUp() }, limit = 16)
     press { device.pressBack() }
     requireGone(By.res("general_page_tab"))
     requireFocus(By.res("menu_button"))
