@@ -4,19 +4,11 @@
     <!-- Overscan-safe margins: nothing focusable or textual closer to the edge. -->
     <dimen name="safe_horizontal">48dp</dimen>
     <dimen name="safe_vertical">27dp</dimen>
-
-    <dimen name="control_size">48dp</dimen>
-    <dimen name="control_icon_padding">11dp</dimen>
-    <dimen name="control_gap">8dp</dimen>
-    <dimen name="row_height">56dp</dimen>
-    <dimen name="corner_small">14dp</dimen>
     <!-- Half the 48 dp control height: buttons, tabs and fields are full pills. -->
     <dimen name="corner_large">24dp</dimen>
     <dimen name="corner_panel">28dp</dimen>
 
     <!-- Four tabs and the new-tab control fit between the safe margins (960 - 2 x 48 dp). -->
-    <dimen name="tab_width">188dp</dimen>
-    <dimen name="tab_height">48dp</dimen>
 
     <!-- Home shortcut grid: one column per this width, between two and six columns. -->
     <dimen name="home_tile_min_width">180dp</dimen>

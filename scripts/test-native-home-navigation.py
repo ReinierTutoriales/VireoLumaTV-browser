@@ -87,12 +87,12 @@ try:
     for attempt in range(2):
         key(4)
         root = snapshot(f'back-{attempt}')
-        if observe(f'back-{attempt}', root, ('home_search',)):
+        if observe(f'back-{attempt}', root, ('home_page_search',)):
             break
     key(19)
     observe('capsule', snapshot('capsule'), ('back_button', 'home_button'), strict_when_exported=True)
     key(4)
-    observe('search', snapshot('search'), ('home_search',))
+    observe('search', snapshot('search'), ('home_page_search',))
     key(22)
     observe('submit', snapshot('submit'), ('home_submit',))
     key(20)
@@ -101,7 +101,7 @@ try:
         grid = find_control(root, package, 'home_tiles')
         if grid is None:
             print('NOTE: home_tiles not found (transitional)', file=sys.stderr)
-        elif not any(node.get('focused') == 'true' and node.get('class') == 'android.widget.Button'
+        elif not any(node.get('focused') == 'true' and node.get('resource-id', '').startswith('home_tile_')
                      for node in grid.iter('node')):
             print('NOTE: Down did not reach a native shortcut/action (transitional)', file=sys.stderr)
     current = adb('shell', 'pidof', package).strip()

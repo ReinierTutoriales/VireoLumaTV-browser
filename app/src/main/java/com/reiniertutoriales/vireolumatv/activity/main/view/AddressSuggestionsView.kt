@@ -3,29 +3,50 @@ package com.reiniertutoriales.vireolumatv.activity.main.view
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Rect
-import android.view.MotionEvent
-import android.view.inputmethod.InputMethodManager
-import com.reiniertutoriales.vireolumatv.AppContext
-import com.reiniertutoriales.vireolumatv.utils.RemoteInput
-import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
 import android.util.AttributeSet
 import android.view.KeyEvent
-import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.view.inputmethod.InputMethodManager
+import android.widget.FrameLayout
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
-import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.activity.main.AddressSuggestion
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvListRow
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
+import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
+import com.reiniertutoriales.vireolumatv.utils.RemoteInput
+import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
 
 /**
- * Suggestions under the address while it is edited. D-pad Down from the address enters the list
- * ([focusFirst]), Up from the first row returns to it, and Down stops at the last row so focus
- * never leaves an edit half-way. OK opens the suggestion through [onPick].
+ * Suggestions under the address while it is edited, drawn in Compose. D-pad Down from the address
+ * enters the list ([focusFirst]), Up from the first row returns to it, and Down stops at the last
+ * row so focus never leaves an edit half-way. OK opens the suggestion through [onPick]. Focus
+ * follows the focused address when the results change. With the pointer, this view draws its own
+ * pointer over the rows ([focusPointer]).
  */
 class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
-    LinearLayout(context, attrs) {
+    FrameLayout(context, attrs) {
 
     var onPick: ((AddressSuggestion) -> Unit)? = null
     private val pointer = lazy { PointerController(context, this).also { it.resize(width, height) } }
@@ -39,11 +60,17 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
         stickEnabled = { !AppContext.config.ignoreStickAxes },
         isTyping = { false },
     )
-    private var shown: List<AddressSuggestion> = emptyList()
+    private var shown by mutableStateOf<List<AddressSuggestion>>(emptyList())
+    private var requesters: List<FocusRequester> = emptyList()
+    /** The address of the focused row, so focus follows it when the results change. */
+    private var focusedUrl: String? = null
+    /** A row to focus once the new results are composed; -1 for none. */
+    private var pendingFocus by mutableIntStateOf(-1)
 
     init {
-        orientation = VERTICAL
         isFocusableInTouchMode = true
+        isVisible = false
+        addView(ComposeView(context).apply { setContent { VireoTvTheme { Rows() } } })
     }
 
     val hasSuggestions: Boolean get() = shown.isNotEmpty()
@@ -51,36 +78,15 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
     fun show(suggestions: List<AddressSuggestion>) {
         if (suggestions == shown) return
         val keepFocus = hasFocus()
-        val focusedIndex = (0 until childCount).firstOrNull { getChildAt(it).hasFocus() } ?: 0
-        val focusedUrl = shown.getOrNull(focusedIndex)?.url
-        val previous = shown
+        val focusedIndex = shown.indexOfFirst { it.url == focusedUrl }.coerceAtLeast(0)
         shown = suggestions
-        while (childCount > suggestions.size) removeViewAt(childCount - 1)
-        val inflater = LayoutInflater.from(context)
-        suggestions.forEachIndexed { index, suggestion ->
-            if (getChildAt(index) != null && previous.getOrNull(index) == suggestion) return@forEachIndexed
-            val row = getChildAt(index) ?: inflater.inflate(R.layout.view_address_suggestion, this, false).also { addView(it) }
-            if (previous.getOrNull(index)?.bookmark != suggestion.bookmark) {
-                row.findViewById<ImageView>(R.id.ivKind).setImageResource(
-                    if (suggestion.bookmark) R.drawable.ic_bookmark else R.drawable.ic_history)
-            }
-            row.findViewById<TextView>(R.id.title_text).apply {
-                if (text.toString() != suggestion.title) text = suggestion.title
-            }
-            row.findViewById<TextView>(R.id.address_text).apply {
-                if (text.toString() != suggestion.url) text = suggestion.url
-                isVisible = suggestion.url != suggestion.title
-            }
-            row.setOnClickListener { onPick?.invoke(suggestion) }
-            row.setOnKeyListener { _, code, _ -> index == shown.lastIndex && code == KeyEvent.KEYCODE_DPAD_DOWN }
-        }
+        requesters = List(suggestions.size) { FocusRequester() }
         isVisible = suggestions.isNotEmpty()
         if (suggestions.isEmpty()) stopPointer()
         else if (keepFocus) {
             if (pointerMode) requestFocus() else {
-                val target = suggestions.indexOfFirst { it.url == focusedUrl }.takeIf { it >= 0 }
+                pendingFocus = suggestions.indexOfFirst { it.url == focusedUrl }.takeIf { it >= 0 }
                     ?: focusedIndex.coerceAtMost(suggestions.lastIndex)
-                getChildAt(target).requestFocus()
             }
         }
     }
@@ -90,10 +96,11 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
     /** Moves focus to the first suggestion; false when there is none. */
     fun focusFirst(): Boolean {
         stopPointer()
-        return getChildAt(0)?.requestFocus() == true
+        val first = requesters.firstOrNull() ?: return false
+        return runCatching { first.requestFocus() }.isSuccess
     }
 
-    /** A separate pointer surface over native rows; the page's hidden pointer stays suppressed. */
+    /** A separate pointer surface over the rows; the page's hidden pointer stays suppressed. */
     fun focusPointer(): Boolean {
         if (!hasSuggestions) return false
         pointerMode = true
@@ -104,6 +111,32 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
             pointerController.fadeIn()
         } else stopPointer()
         return focused
+    }
+
+    @Composable
+    private fun Rows() {
+        val items = shown
+        val focus = requesters
+        Column(Modifier.semantics { testTagsAsResourceId = true }) {
+            items.forEachIndexed { index, suggestion ->
+                TvListRow(
+                    title = suggestion.title,
+                    supporting = suggestion.url.takeIf { it != suggestion.title },
+                    symbol = if (suggestion.bookmark) TvSymbol.Bookmark else TvSymbol.History,
+                    onClick = { onPick?.invoke(suggestion) },
+                    modifier = Modifier.padding(bottom = 2.dp).testTag("suggestion_${suggestion.url}")
+                        .focusRequester(focus[index])
+                        .onFocusChanged { if (it.isFocused) focusedUrl = suggestion.url }
+                        // Down stops at the last row, so focus never leaves an edit half-way.
+                        .onPreviewKeyEvent { index == items.lastIndex && it.key == Key.DirectionDown },
+                )
+            }
+        }
+        LaunchedEffect(items, pendingFocus) {
+            val target = pendingFocus
+            if (target in focus.indices) runCatching { focus[target].requestFocus() }
+            pendingFocus = -1
+        }
     }
 
     private fun stopPointer() {
@@ -123,7 +156,8 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
             if (event.keyCode == KeyEvent.KEYCODE_DPAD_UP && event.action == KeyEvent.ACTION_DOWN &&
                 event.repeatCount == 0 && pointerController.position.y <= 12 * resources.displayMetrics.density) {
                 stopPointer()
-                rootView.findViewById<View>(R.id.address_field)?.requestFocus()
+                // Back to the address above, wherever its host draws it.
+                focusSearch(View.FOCUS_UP)?.requestFocus()
                 return true
             }
             if (remote.dispatchKeyEvent(event)) return true
@@ -153,6 +187,4 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
         stopPointer()
         super.onDetachedFromWindow()
     }
-
-    internal fun row(index: Int): View? = getChildAt(index)
 }

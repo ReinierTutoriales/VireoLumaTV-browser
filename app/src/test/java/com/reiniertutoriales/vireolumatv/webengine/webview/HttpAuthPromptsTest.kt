@@ -2,12 +2,10 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.content.DialogInterface
 import android.net.Uri
-import android.widget.EditText
-import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -23,7 +21,7 @@ import org.robolectric.shadows.ShadowLooper
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class HttpAuthPromptsTest {
-    private val activity = Robolectric.buildActivity(AppCompatActivity::class.java)
+    private val activity = Robolectric.buildActivity(ComponentActivity::class.java)
         .apply { get().setTheme(R.style.AppTheme) }.setup().get()
     private val prompts = HttpAuthPrompts { activity }
 
@@ -34,8 +32,8 @@ class HttpAuthPromptsTest {
         override fun cancel() { cancelled = true }
     }
 
-    private fun dialog() = ShadowDialog.getLatestDialog() as AlertDialog?
-    private fun message() = dialog()!!.findViewById<TextView>(android.R.id.message)!!.text.toString()
+    private fun dialog() = ShadowDialog.getLatestDialog() as TvDialog?
+    private fun message() = dialog()!!.message.toString()
     private fun shown(url: String) = Uri.parse(url)
 
     @Test fun anEmbeddedResourceOfAnotherHostCannotAskUnderTheShownPage() {
@@ -52,14 +50,8 @@ class HttpAuthPromptsTest {
         assertTrue(text.contains("intranet.test"))
         assertTrue(text.contains("Staff"))
         assertTrue(text.contains(activity.getString(R.string.http_auth_cleartext)))
-        val inputs = mutableListOf<EditText>()
-        fun collect(v: android.view.View) {
-            if (v is EditText) inputs += v
-            if (v is android.view.ViewGroup) for (i in 0 until v.childCount) collect(v.getChildAt(i))
-        }
-        collect(dialog()!!.window!!.decorView)
-        inputs[0].setText("ana"); inputs[1].setText("secret")
-        dialog()!!.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
+        dialog()!!.setFieldValue(0, "ana"); dialog()!!.setFieldValue(1, "secret")
+        dialog()!!.press(DialogInterface.BUTTON_POSITIVE)
         ShadowLooper.idleMainLooper()
         assertEquals("ana" to "secret", answer.credentials)
     }
@@ -100,7 +92,7 @@ class HttpAuthPromptsTest {
         prompts.request("site.test", "Other", page, null, other)
         assertTrue("A different realm cannot stack a second dialog", other.cancelled)
         assertTrue(open === dialog())
-        open!!.getButton(DialogInterface.BUTTON_NEGATIVE).performClick()
+        open!!.press(DialogInterface.BUTTON_NEGATIVE)
         ShadowLooper.idleMainLooper()
         assertTrue(first.cancelled)
         assertTrue(sameRealm.cancelled)

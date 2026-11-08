@@ -196,9 +196,6 @@
     <string name="download_time_limit">Android stopped the downloads: the background time limit was reached.</string>
     <string name="tab_action_new">New tab next to this one</string>
     <string name="tab_action_close">Close this tab</string>
-    <string name="tab_action_close_all">Close all tabs</string>
-    <string name="tab_action_move_left">Move tab left</string>
-    <string name="tab_action_move_right">Move tab right</string>
     <string name="tab_action_favorite">Add tab to favorites</string>
     <string name="download_failed">Failed</string>
     <string name="system_settings_unavailable">Android settings could not be opened.</string>

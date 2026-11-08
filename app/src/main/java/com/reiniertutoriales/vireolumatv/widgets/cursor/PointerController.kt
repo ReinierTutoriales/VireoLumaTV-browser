@@ -17,6 +17,7 @@ import android.view.ViewConfiguration
 import androidx.core.view.ViewConfigurationCompat
 import com.reiniertutoriales.vireolumatv.AppContext
 import kotlin.math.abs
+import kotlin.math.hypot
 
 /**
  * Page pointer driven by the remote. D-pad keys accelerate it, the analog stick sets its speed
@@ -229,9 +230,12 @@ class PointerController(val context: Context, val surface: View) {
                 speedX = stickX * speedCap
                 speedY = stickY * speedCap
             } else {
-                val step = ACCELERATION * accelerationScale * elapsed
-                speedX = (speedX + keyDirX * step).coerceIn(-speedCap, speedCap)
-                speedY = (speedY + keyDirY * step).coerceIn(-speedCap, speedCap)
+                // Two held keys share one direction vector: same acceleration and top speed as one key.
+                val share = if (keyDirX != 0 && keyDirY != 0) DIAGONAL_SHARE else 1f
+                val step = ACCELERATION * accelerationScale * elapsed * share
+                val cap = speedCap * share
+                speedX = (speedX + keyDirX * step).coerceIn(-cap, cap)
+                speedY = (speedY + keyDirY * step).coerceIn(-cap, cap)
                 if (abs(speedX) < MIN_SPEED) speedX = 0f
                 if (abs(speedY) < MIN_SPEED) speedY = 0f
             }
@@ -240,10 +244,14 @@ class PointerController(val context: Context, val surface: View) {
                 scheduleHide()
                 return
             }
+            // A stick pushed into a corner reports up to full speed on both axes; the movement is
+            // scaled so no direction exceeds the speed cap.
+            val magnitude = hypot(speedX, speedY)
+            val scale = if (magnitude > speedCap) speedCap / magnitude else 1f
             val oldX = position.x
             val oldY = position.y
-            position.x = (oldX + speedX * frames).coerceIn(0f, surface.width - 1f)
-            position.y = (oldY + speedY * frames).coerceIn(0f, surface.height - 1f)
+            position.x = (oldX + speedX * scale * frames).coerceIn(0f, surface.width - 1f)
+            position.y = (oldY + speedY * scale * frames).coerceIn(0f, surface.height - 1f)
             val moved = oldX != position.x || oldY != position.y
             if (moved) surface.removeCallbacks(holdTimeout)
             when {
@@ -400,6 +408,8 @@ class PointerController(val context: Context, val surface: View) {
     }
 
     private companion object {
+        /** Per-axis share of a diagonal of two held keys, 1/√2. */
+        const val DIAGONAL_SHARE = 0.70710677f
         const val HIDE_AFTER_MS = 5000L
         const val REFERENCE_FRAME_MS = 1000f / 60f
         const val MAX_FRAME_MS = 50L

@@ -197,9 +197,6 @@
     <string name="download_time_limit">Android зупинив завантаження: досягнуто ліміту часу фонової роботи.</string>
     <string name="tab_action_new">Нова вкладка поруч</string>
     <string name="tab_action_close">Закрити цю вкладку</string>
-    <string name="tab_action_close_all">Закрити всі вкладки</string>
-    <string name="tab_action_move_left">Перемістити вкладку ліворуч</string>
-    <string name="tab_action_move_right">Перемістити вкладку праворуч</string>
     <string name="tab_action_favorite">Додати вкладку до вибраного</string>
     <string name="download_failed">Не вдалося</string>
     <string name="system_settings_unavailable">Не вдалося відкрити налаштування Android.</string>

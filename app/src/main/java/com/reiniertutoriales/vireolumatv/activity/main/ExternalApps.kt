@@ -8,17 +8,17 @@ import android.content.Intent
 import android.util.Log
 import android.webkit.URLUtil
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 
 /**
  * Everything that leaves the browser for another app: addresses pages want opened elsewhere
  * (always confirmed by the user first), sharing and the clipboard.
  */
 internal class ExternalApps(private val activity: Activity) {
-    private var confirmation: AlertDialog? = null
+    private var confirmation: TvDialog? = null
 
     /** What a page's navigation to [url] should do. */
     enum class Navigation { LOAD, BLOCK, ASK_INTENT, ASK_EXTERNAL }
@@ -66,7 +66,7 @@ internal class ExternalApps(private val activity: Activity) {
     /** One question at a time: a page cannot stack them. */
     private fun askToOpen(url: String, intent: Intent) {
         if (confirmation != null) return
-        confirmation = AlertDialog.Builder(activity)
+        confirmation = TvDialog.Builder(activity)
             .setTitle(R.string.external_open_title)
             .setMessage(activity.getString(R.string.external_open_message) + "\n\n" + url)
             .setPositiveButton(R.string.action_open) { _, _ -> start(intent) }

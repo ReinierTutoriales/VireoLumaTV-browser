@@ -66,7 +66,7 @@ if adb('shell', 'pidof', package) != normal_pid:
 for attempt in range(2):
     adb('shell', 'input', 'keyevent', '4')
     root = snapshot(f'reset-{attempt}')
-    if root and any(matches_id(node, 'home_search') and node.get('focused') == 'true'
+    if root and any(matches_id(node, 'home_page_search') and node.get('focused') == 'true'
                     for node in root.iter('node')):
         break
 else:

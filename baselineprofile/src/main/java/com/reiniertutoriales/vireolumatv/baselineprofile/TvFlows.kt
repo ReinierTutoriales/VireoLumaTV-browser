@@ -18,7 +18,7 @@ internal val targetAppId: String
     }
 
 private const val TIMEOUT_MS = 10_000L
-private val HOME_SEARCH get() = By.res(targetAppId, "home_search")
+private val HOME_SEARCH get() = By.res("home_page_search")
 private val FIRST_TAB get() = By.res(Pattern.compile("tab_0_[0-9]+"))
 private val SECOND_TAB get() = By.res(Pattern.compile("tab_1_[0-9]+"))
 private val TAB_CONTROL get() = By.res(Pattern.compile("tab_[0-9]+_[0-9]+|tab_close_[0-9]+|new_tab_button"))
@@ -40,19 +40,18 @@ internal fun MacrobenchmarkScope.startOnHome() {
     waitForHome()
 }
 
+/** A new selector each time: BySelector's filters mutate the instance they are called on. */
+private fun noticeDismiss() = By.res("dialog_button_-2")
+
 /** Old AOSP providers can show an update notice; dismiss only this app's negative button. */
 internal fun MacrobenchmarkScope.waitForHome() {
     val deadline = SystemClock.uptimeMillis() + TIMEOUT_MS
     while (SystemClock.uptimeMillis() < deadline) {
-        device.findObject(By.res("android", "button2"))
-            ?.takeIf { it.applicationPackage == packageName }?.let { notice ->
-                val dismiss = By.res("android", "button2").focused(true)
-                press { device.pressDPadDown() }
-                if (!device.hasObject(dismiss)) press { device.pressDPadLeft() }
-                if (!device.hasObject(dismiss)) press { device.pressDPadRight() }
-                requireNode(dismiss)
-                press { device.pressDPadCenter() }
-            }
+        // TvDialog starts on its negative (safe) button, which exports the tag dialog_button_-2.
+        device.findObject(noticeDismiss())?.takeIf { it.applicationPackage == packageName }?.let {
+            requireNode(noticeDismiss().focused(true))
+            press { device.pressDPadCenter() }
+        }
         if (device.wait(Until.hasObject(HOME_SEARCH), 500)) {
             device.waitForIdle()
             return
@@ -97,10 +96,14 @@ private fun MacrobenchmarkScope.press(key: () -> Boolean) {
  */
 private fun MacrobenchmarkScope.soleFocus(selector: BySelector, timeout: Long): Boolean =
     device.wait(Condition<UiDevice, Boolean> { ui ->
-        val node = ui.findObject(By.copy(selector).focused(true)) ?: return@Condition false
-        var root = node
-        while (true) root = root.parent ?: break
-        root.findObjects(By.focused(true)).size == 1
+        try {
+            val node = ui.findObject(By.copy(selector).focused(true)) ?: return@Condition false
+            var root = node
+            while (true) root = root.parent ?: break
+            root.findObjects(By.focused(true)).size == 1
+        } catch (_: androidx.test.uiautomator.StaleObjectException) {
+            false // Recycled while reading; the next poll reads the new tree.
+        }
     }, timeout) == true
 
 private fun MacrobenchmarkScope.requireFocus(selector: BySelector) {
@@ -110,16 +113,24 @@ private fun MacrobenchmarkScope.requireFocus(selector: BySelector) {
 private fun MacrobenchmarkScope.focus(selector: BySelector, key: () -> Boolean, limit: Int = 12) {
     repeat(limit) {
         if (soleFocus(selector, 300)) return
-        val before = device.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds }
+        val before = focusedIdentity()
         press(key)
         // Wait until the accessibility tree reports the move; a stale read would press again
         // and step past the target on a slow, uncompiled run.
         if (soleFocus(selector, 300)) return
-        device.wait(Condition<UiDevice, Boolean> { ui ->
-            ui.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds } != before
-        }, 1_000L)
+        device.wait(Condition<UiDevice, Boolean> { focusedIdentity() != before }, 1_000L)
     }
     if (!soleFocus(selector, TIMEOUT_MS)) failWithScreen("Expected sole focus not reached: $selector")
+}
+
+/**
+ * The focused node's id and bounds, or null. A scrolling Compose list can recycle the node between
+ * finding and reading it (StaleObjectException); that read counts as no focus yet.
+ */
+private fun MacrobenchmarkScope.focusedIdentity(): Pair<String?, android.graphics.Rect>? = try {
+    device.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds }
+} catch (_: androidx.test.uiautomator.StaleObjectException) {
+    null
 }
 
 private fun MacrobenchmarkScope.openCapsule() {
@@ -192,20 +203,16 @@ internal fun MacrobenchmarkScope.openAndCloseSettings() {
         requireFocus(By.res("menu_$entry"))
     }
     press { device.pressDPadCenter() }
-    requireNode(By.res(packageName, "general_page_tab"))
+    // The General tab takes focus; each step must land on the next row, then Up returns to it.
+    requireFocus(By.res("general_page_tab"))
     requireGone(By.res("menu_settings"))
-    val initial = requireNode(By.focused(true))
-    val initialBounds = initial.visibleBounds
-    val initialId = initial.resourceName
-    press { device.pressDPadDown() }
-    val next = requireNode(By.focused(true))
-    if (next.resourceName == initialId && next.visibleBounds == initialBounds) {
-        failWithScreen("D-pad Down did not move focus in Settings")
-    }
-    repeat(7) { press { device.pressDPadDown() } }
-    repeat(8) { press { device.pressDPadUp() } }
+    step(By.res("spEngine")) { device.pressDPadDown() }
+    step(By.res("spHomePage")) { device.pressDPadDown() }
+    // Further rows scroll the page; their order is covered by MainSettingsFocusTest.
+    repeat(6) { press { device.pressDPadDown() } }
+    focus(By.res("general_page_tab"), { device.pressDPadUp() }, limit = 16)
     press { device.pressBack() }
-    requireGone(By.res(packageName, "general_page_tab"))
+    requireGone(By.res("general_page_tab"))
     requireFocus(By.res("menu_button"))
     requireNode(HOME_SEARCH)
 }

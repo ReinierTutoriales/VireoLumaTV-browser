@@ -101,7 +101,8 @@ import re, sys, xml.etree.ElementTree as ET
 nodes = list(ET.parse(sys.argv[1]).getroot().iter('node'))
 if any(n.get('text', '').startswith('The page engine (Android System WebView) has not been updated') for n in nodes):
     for n in nodes:
-        if n.get('resource-id') == 'android:id/button2' and n.get('text') == 'OK' and n.get('package') == 'com.reiniertutoriales.vireolumatv':
+        # The notice is a TvDialog; its negative button exports the stable tag dialog_button_-2.
+        if n.get('resource-id') == 'dialog_button_-2' and n.get('package') == 'com.reiniertutoriales.vireolumatv':
             m = re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', n.get('bounds', ''))
             if m:
                 x1, y1, x2, y2 = map(int, m.groups())
@@ -120,13 +121,10 @@ import sys, xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
 nodes = list(root.iter('node'))
 ids = {n.get('resource-id', '') for n in nodes}
-compose_home = 'home_search' in ids
-# Legacy Home keeps its original readiness checks. Compose Home is identified
-# through its exported stable tag rather than removed View text/resource IDs.
-if not compose_home:
-    assert any(n.get('text') == 'DuckDuckGo' for n in nodes)
-    assert any(n.get('text') == 'Add shortcut' and n.get('enabled') == 'true' for n in nodes)
-assert 'home_search' in ids or 'com.reiniertutoriales.vireolumatv:id/home_search' in ids
+# Compose Home exports stable tags; its controls are identified by them, not by text.
+assert 'home_page_search' in ids
+# Add is enabled once the Home storage read has completed.
+assert any(n.get('resource-id') == 'home_tile_add' and n.get('enabled') == 'true' for n in nodes)
 assert not any(n.get('class') == 'android.webkit.WebView' for n in nodes)
 PYXML
     then

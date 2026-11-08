@@ -2,12 +2,9 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.content.Context
 import android.net.Uri
-import android.text.InputType
-import android.widget.EditText
-import android.widget.LinearLayout
-import androidx.appcompat.app.AlertDialog
 import androidx.core.text.BidiFormatter
 import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 
 /**
  * HTTP authentication requests of one page view. WebView reports only the host and realm, not
@@ -47,26 +44,14 @@ internal class HttpAuthPrompts(private val context: () -> Context) {
 
     private fun show(scope: Scope, realm: String?) {
         val context = context()
-        val user = EditText(context).apply {
-            setHint(R.string.http_auth_user)
-            isSingleLine = true
-        }
-        val password = EditText(context).apply {
-            setHint(R.string.http_auth_password)
-            isSingleLine = true
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-        }
-        AlertDialog.Builder(context)
+        TvDialog.Builder(context)
             .setTitle(R.string.http_auth_title)
             .setMessage(message(context, scope, realm))
             .setCancelable(false)
-            .setView(LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                addView(user)
-                addView(password)
-            })
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                answerAll { it.proceed(user.text.toString(), password.text.toString()) }
+            .setFields(TvDialog.Field(R.string.http_auth_user), TvDialog.Field(R.string.http_auth_password, password = true))
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                val form = dialog as TvDialog
+                answerAll { it.proceed(form.fieldValue(0), form.fieldValue(1)) }
             }
             .setNegativeButton(android.R.string.cancel) { _, _ -> answerAll { it.cancel() } }
             .show()

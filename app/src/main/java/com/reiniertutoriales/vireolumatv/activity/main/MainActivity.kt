@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.ConnectivityManager
@@ -27,8 +28,7 @@ import android.webkit.WebStorage
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
@@ -43,6 +43,8 @@ import com.reiniertutoriales.vireolumatv.activity.PrivateBrowserActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesPanel
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
@@ -55,6 +57,7 @@ import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.Favicons
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcuts
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 import com.reiniertutoriales.vireolumatv.utils.BackPresses
 import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
@@ -89,7 +92,7 @@ import kotlin.system.exitProcess
  * [BrowserDownloads] and other apps through [ExternalApps]. Private mode runs as
  * [PrivateBrowserActivity] in its own process.
  */
-open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
+open class MainActivity : ComponentActivity(), BrowserControls.Callback {
     internal lateinit var vb: BrowserWindowBinding
     internal lateinit var tabStore: TabStore
     internal lateinit var browserSettings: BrowserSettings
@@ -114,6 +117,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     private var lastBlockedNotice = 0L
     private var suggestionsLookup: Job? = null
     internal var nativeHome: NativeHome? = null
+
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguages.localized(newBase))
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -501,7 +506,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             getString(R.string.tab_action_close),
             getString(R.string.tab_action_favorite),
         )
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        TvDialog.Builder(this)
             .setTitle(R.string.tabs_title)
             .setItems(actions) { _, which ->
                 when (which) {
@@ -609,7 +614,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) Application.getProcessName() else packageName
 
     private fun showNoWebViewDialog() {
-        val dialog = AlertDialog.Builder(this)
+        val dialog = TvDialog.Builder(this)
             .setTitle(R.string.webview_missing_title)
             .setCancelable(false)
             .setMessage(R.string.error_no_webview)
@@ -628,7 +633,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val provider = runCatching { WebViewCompat.getCurrentWebViewPackage(this) }.getOrNull() ?: return
         val notice = WebViewFreshness.pendingNotice(config.prefs, provider, System.currentTimeMillis()) ?: return
         WebViewFreshness.noticeShown(config.prefs, notice)
-        val dialog = AlertDialog.Builder(this)
+        val dialog = TvDialog.Builder(this)
             .setTitle(R.string.warning_title)
             .setMessage(R.string.webview_outdated)
             .setNegativeButton(android.R.string.ok, null)
@@ -711,7 +716,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val tab = tabStore.currentTab.value ?: return
         val state = getString(blockerStatusLabel(tab))
         // A dialog message would hide the list, so the status is the title.
-        AlertDialog.Builder(this)
+        TvDialog.Builder(this)
             .setTitle(resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds))
             .setItems(arrayOf(
                 getString(R.string.blocker_toggle),
@@ -752,7 +757,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val site = tabStore.siteSettingsFor(tab, false)
         val level = site?.popupBlockLevel ?: SiteSettings.DEFAULT_POPUP_POLICY
         val host = site?.hostName ?: runCatching { URL(tab.url).host }.getOrDefault("")
-        AlertDialog.Builder(this)
+        TvDialog.Builder(this)
             .setTitle(getString(R.string.popups_title, host))
             .setSingleChoiceItems(R.array.popups_levels, level) { dialog, choice ->
                 lifecycleScope.launch {
@@ -777,7 +782,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val now = SystemClock.uptimeMillis()
         if (now - lastBlockedNotice < BLOCKED_NOTICE_INTERVAL_MS) return
         lastBlockedNotice = now
-        ToastBar.showBottomRight(vb.browserRoot, R.drawable.ic_block,
+        ToastBar.showBottomRight(vb.browserRoot, TvSymbol.Block,
             getString(if (newTab) R.string.popups_window_blocked else R.string.popups_dialog_blocked))
     }
 

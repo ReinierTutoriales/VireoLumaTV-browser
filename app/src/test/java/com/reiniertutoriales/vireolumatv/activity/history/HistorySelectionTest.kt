@@ -1,54 +1,59 @@
 package com.reiniertutoriales.vireolumatv.activity.history
 
-import android.view.View
-import androidx.recyclerview.widget.RecyclerView
-import com.reiniertutoriales.vireolumatv.R
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTouchInput
+import androidx.test.core.app.ActivityScenario
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import org.robolectric.shadows.ShadowLooper
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class HistorySelectionTest {
+    @get:Rule val compose = createEmptyComposeRule()
+
     @Test fun longPressSelectsAndBackLeavesSelectionBeforeClosing() {
-        runBlocking(Dispatchers.IO) {
+        val ids = runBlocking(Dispatchers.IO) {
             AppDatabase.db.clearAllTables()
-            AppDatabase.db.visitDao().insert(HistoryItem().apply { time = 2; title = "B"; url = "https://b.test" })
-            AppDatabase.db.visitDao().insert(HistoryItem().apply { time = 1; title = "A"; url = "https://a.test" })
+            listOf(
+                AppDatabase.db.visitDao().insert(HistoryItem().apply { time = 2; title = "B"; url = "https://b.test" }),
+                AppDatabase.db.visitDao().insert(HistoryItem().apply { time = 1; title = "A"; url = "https://a.test" }),
+            )
         }
-        val activity = Robolectric.buildActivity(HistoryActivity::class.java).setup().get()
-        val list = activity.findViewById<RecyclerView>(R.id.item_list)
-        val deadline = System.currentTimeMillis() + 5_000
-        while (list.childCount < 3 && System.currentTimeMillis() < deadline) {
-            Thread.sleep(20)
-            ShadowLooper.idleMainLooper()
-            list.measure(View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY))
-            list.layout(0, 0, 1920, 1080)
+        ActivityScenario.launch(HistoryActivity::class.java).use { scenario ->
+            compose.waitUntil(5_000) {
+                compose.onAllNodes(hasTestTag("history_row_${ids[0]}")).fetchSemanticsNodes().isNotEmpty()
+            }
+            // One date header and two rows, and the first row has the focus.
+            assertEquals(1, compose.onAllNodes(hasTestTag("history_day_1")).fetchSemanticsNodes().size +
+                compose.onAllNodes(hasTestTag("history_day_2")).fetchSemanticsNodes().size)
+            compose.onNodeWithTag("history_row_${ids[1]}").assertExists()
+            compose.onNodeWithTag("history_delete_selected").assertDoesNotExist()
+
+            compose.onNodeWithTag("history_row_${ids[0]}").performTouchInput { longClick() }
+            compose.onNodeWithTag("history_delete_selected").assertExists()
+
+            scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+            compose.onNodeWithTag("history_delete_selected").assertDoesNotExist()
+            scenario.onActivity { activity ->
+                assertFalse("Back first leaves selection mode", activity.isFinishing)
+                activity.onBackPressedDispatcher.onBackPressed()
+                assertTrue("A second Back closes the screen", activity.isFinishing)
+            }
         }
-        assertEquals("One date header and two rows", 3, list.childCount)
-        val delete = activity.findViewById<View>(R.id.delete_selected_button)
-        assertFalse(delete.isShown)
-
-        list.getChildAt(1).performLongClick()
-        assertEquals(View.VISIBLE, delete.visibility)
-
-        activity.onBackPressedDispatcher.onBackPressed()
-        assertEquals("Back first leaves selection mode", View.GONE, delete.visibility)
-        assertFalse(activity.isFinishing)
-
-        activity.onBackPressedDispatcher.onBackPressed()
-        assertTrue("A second Back closes the screen", activity.isFinishing)
     }
 
     @Test fun thePickedAddressComesBackOnlyWithAnOkResult() {

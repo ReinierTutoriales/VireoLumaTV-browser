@@ -2,10 +2,10 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.content.DialogInterface
 import android.content.Intent
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -22,14 +22,14 @@ import org.robolectric.shadows.ShadowLooper
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class ExternalAppsTest {
-    private val controller = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
+    private val controller = Robolectric.buildActivity(ComponentActivity::class.java).apply {
         get().setTheme(R.style.AppTheme)
         setup()
     }
     private val activity = controller.get()
 
     private fun answer(button: Int) {
-        (ShadowDialog.getLatestDialog() as AlertDialog).getButton(button).performClick()
+        (ShadowDialog.getLatestDialog() as TvDialog).press(button)
         ShadowLooper.idleMainLooper()
     }
 

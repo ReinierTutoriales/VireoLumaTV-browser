@@ -1,42 +1,68 @@
 package com.reiniertutoriales.vireolumatv.widgets
 
 import android.content.Context
-import android.util.AttributeSet
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.FrameLayout
 import android.widget.RelativeLayout
-import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.tv.material3.Text
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.databinding.ToastBarBinding
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbolIcon
+import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
 import java.lang.ref.WeakReference
 
 /**
  * A message that fades in at the bottom end of the screen and leaves after [VISIBLE_MS]. A new
  * one replaces the one on screen. It is announced to accessibility services but never focused.
  */
-class ToastBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
-    LinearLayout(context, attrs) {
-
-    private val vb = ToastBarBinding.inflate(LayoutInflater.from(context), this)
+class ToastBar private constructor(context: Context, val symbol: TvSymbol, val message: String) : FrameLayout(context) {
     private val leave = Runnable { fadeOut() }
 
     init {
-        orientation = HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-        background = context.getDrawable(R.drawable.bg_toast)
-        val horizontal = resources.getDimensionPixelSize(R.dimen.notification_padding_horizontal)
-        val vertical = resources.getDimensionPixelSize(R.dimen.notification_padding_vertical)
-        setPadding(horizontal, vertical, horizontal, vertical)
         isFocusable = false
-        accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+        addView(ComposeView(context).apply {
+            isFocusable = false
+            setContent {
+                VireoTvTheme {
+                    val shape = RoundedCornerShape(dimensionResource(R.dimen.corner_large))
+                    Row(
+                        Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+                            .background(colorResource(R.color.surface_high), shape)
+                            .border(1.dp, colorResource(R.color.outline), shape)
+                            .padding(horizontal = dimensionResource(R.dimen.notification_padding_horizontal),
+                                vertical = dimensionResource(R.dimen.notification_padding_vertical)),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        TvSymbolIcon(symbol, Modifier.size(24.dp), tint = colorResource(R.color.brand))
+                        Text(message, color = colorResource(R.color.on_surface), fontSize = 18.sp, maxLines = 2,
+                            overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 360.dp))
+                    }
+                }
+            }
+        })
     }
 
-    private fun show(@DrawableRes icon: Int, message: String) {
-        vb.iconImage.setImageResource(icon)
-        vb.messageText.text = message
+    private fun show() {
         alpha = 0f
         animate().alpha(1f).setDuration(FADE_MS).withEndAction { postDelayed(leave, VISIBLE_MS) }.start()
     }
@@ -65,9 +91,9 @@ class ToastBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         private var current: WeakReference<ToastBar>? = null
 
         /** Shows [message] in the bottom end corner of [parent], replacing any message on screen. */
-        fun showBottomRight(parent: RelativeLayout, @DrawableRes icon: Int, message: String): ToastBar {
+        fun showBottomRight(parent: RelativeLayout, symbol: TvSymbol, message: String): ToastBar {
             current?.get()?.remove()
-            val view = ToastBar(parent.context)
+            val view = ToastBar(parent.context, symbol, message)
             val end = parent.resources.getDimensionPixelSize(R.dimen.notification_margin_end)
             val bottom = parent.resources.getDimensionPixelSize(R.dimen.notification_margin_bottom)
             val params = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
@@ -78,7 +104,7 @@ class ToastBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             }
             parent.addView(view, params)
             current = WeakReference(view)
-            view.show(icon, message)
+            view.show()
             return view
         }
     }

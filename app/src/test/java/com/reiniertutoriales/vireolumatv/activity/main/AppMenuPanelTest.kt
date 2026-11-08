@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.os.Looper
 import android.view.KeyEvent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsFocused
@@ -132,7 +132,7 @@ class AppMenuPanelTest {
     }
 
     private fun openPanel(onPick: (AppMenuEntry) -> Unit): AppMenuPanel {
-        val host = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
+        val host = Robolectric.buildActivity(ComponentActivity::class.java).apply {
             get().setTheme(R.style.AppTheme)
             setup()
         }

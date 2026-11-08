@@ -197,9 +197,6 @@
     <string name="download_time_limit">Android zatrzymał pobieranie: osiągnięto limit czasu działania w tle.</string>
     <string name="tab_action_new">Nowa karta obok</string>
     <string name="tab_action_close">Zamknij tę kartę</string>
-    <string name="tab_action_close_all">Zamknij wszystkie karty</string>
-    <string name="tab_action_move_left">Przenieś kartę w lewo</string>
-    <string name="tab_action_move_right">Przenieś kartę w prawo</string>
     <string name="tab_action_favorite">Dodaj kartę do ulubionych</string>
     <string name="download_failed">Nieudane</string>
     <string name="system_settings_unavailable">Nie udało się otworzyć ustawień Androida.</string>

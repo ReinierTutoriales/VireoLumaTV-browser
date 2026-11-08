@@ -7,11 +7,11 @@ import android.media.MediaDrm
 import android.net.Uri
 import android.webkit.GeolocationPermissions
 import android.webkit.PermissionRequest
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.text.BidiFormatter
 import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import java.util.UUID
 
 /**
@@ -28,7 +28,7 @@ internal class PagePermissions(
 ) {
     internal var generation = 0L
         private set
-    private var dialog: AlertDialog? = null
+    private var dialog: TvDialog? = null
     private var request: PermissionRequest? = null
     /** Resources of [request] the app may grant without asking Android, waiting with it. */
     private var grantableWithoutAndroid: List<String>? = null
@@ -50,7 +50,7 @@ internal class PagePermissions(
         }
         val activity = activity() ?: return newRequest.deny()
         request = newRequest
-        dialog = AlertDialog.Builder(activity)
+        dialog = TvDialog.Builder(activity)
             .setMessage(prompt(activity, newRequest.origin, newRequest.resources.mapNotNull(LABELS::get).distinct()
                 .map(activity::getString)))
             .setCancelable(false)
@@ -103,7 +103,7 @@ internal class PagePermissions(
         val activity = activity() ?: return callback.invoke(origin, false, false)
         locationOrigin = origin
         locationCallback = callback
-        dialog = AlertDialog.Builder(activity)
+        dialog = TvDialog.Builder(activity)
             .setMessage(prompt(activity, origin.toUri(), listOf(activity.getString(R.string.permission_location))))
             .setCancelable(false)
             .setNegativeButton(R.string.action_deny) { _, _ ->

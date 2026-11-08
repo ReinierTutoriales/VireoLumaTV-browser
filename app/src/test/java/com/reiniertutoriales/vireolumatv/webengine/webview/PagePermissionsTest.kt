@@ -6,10 +6,10 @@ import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.webkit.PermissionRequest
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -32,23 +32,23 @@ class PagePermissionsTest {
         override fun deny() { denied = true }
     }
 
-    private val activity = Robolectric.buildActivity(AppCompatActivity::class.java)
+    private val activity = Robolectric.buildActivity(ComponentActivity::class.java)
         .apply { get().setTheme(R.style.AppTheme) }.setup().get()
     private val asked = mutableListOf<List<String>>()
     private val permissions = PagePermissions({ activity }, { list, _ -> asked += list.toList() })
 
     private fun allow() {
-        (ShadowDialog.getLatestDialog() as AlertDialog).getButton(DialogInterface.BUTTON_POSITIVE).performClick()
+        (ShadowDialog.getLatestDialog() as TvDialog).press(DialogInterface.BUTTON_POSITIVE)
         ShadowLooper.idleMainLooper()
     }
 
     private fun deny() {
-        (ShadowDialog.getLatestDialog() as AlertDialog).getButton(DialogInterface.BUTTON_NEGATIVE).performClick()
+        (ShadowDialog.getLatestDialog() as TvDialog).press(DialogInterface.BUTTON_NEGATIVE)
         ShadowLooper.idleMainLooper()
     }
 
     private fun shownMessage(): String =
-        (ShadowDialog.getLatestDialog() as AlertDialog).findViewById<android.widget.TextView>(android.R.id.message)!!.text.toString()
+        (ShadowDialog.getLatestDialog() as TvDialog).message.toString()
 
     @Test fun thePromptNamesTheRequestingOriginAndReadableResourcesOnly() {
         // An embedded frame asks: its own origin is shown, not the page's, with readable names.

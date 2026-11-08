@@ -189,9 +189,6 @@
     <string name="download_queue_full">下載佇列已滿。請等待一個下載完成後再試。</string>
     <string name="tab_action_new">在旁邊開新分頁</string>
     <string name="tab_action_close">關閉此分頁</string>
-    <string name="tab_action_close_all">關閉所有分頁</string>
-    <string name="tab_action_move_left">將分頁向左移動</string>
-    <string name="tab_action_move_right">將分頁向右移動</string>
     <string name="tab_action_favorite">將分頁加入我的最愛</string>
     <string name="download_failed">失敗</string>
     <string name="system_settings_unavailable">無法開啟 Android 設定。</string>

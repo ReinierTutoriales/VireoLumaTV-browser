@@ -195,9 +195,6 @@
     <string name="download_time_limit">Android עצרה את ההורדות: הושגה מגבלת הזמן ברקע.</string>
     <string name="tab_action_new">כרטיסייה חדשה לצדה</string>
     <string name="tab_action_close">סגירת הכרטיסייה הזו</string>
-    <string name="tab_action_close_all">סגירת כל הכרטיסיות</string>
-    <string name="tab_action_move_left">העברת הכרטיסייה שמאלה</string>
-    <string name="tab_action_move_right">העברת הכרטיסייה ימינה</string>
     <string name="tab_action_favorite">הוספת הכרטיסייה למועדפים</string>
     <string name="download_failed">נכשל</string>
     <string name="system_settings_unavailable">לא ניתן היה לפתוח את הגדרות Android.</string>

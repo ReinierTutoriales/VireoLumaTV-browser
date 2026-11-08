@@ -1,64 +1,133 @@
 package com.reiniertutoriales.vireolumatv.activity.main.home
 
+import android.app.Dialog
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
-import android.text.InputType
-import android.text.TextUtils
-import android.view.KeyEvent
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.animation.AnimationUtils
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
-import android.webkit.WebView
 import android.util.Log
+import android.view.View
+import android.view.animation.AnimationUtils
+import android.webkit.WebView
 import android.widget.FrameLayout
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.AppCompatButton
-import androidx.appcompat.widget.AppCompatEditText
-import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
+import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Text
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvControlColors
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbolIcon
+import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.model.Favorite
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.singleton.Favicons
-import com.reiniertutoriales.vireolumatv.utils.openKeyboard
 import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.webview.HomePage
 import com.reiniertutoriales.vireolumatv.webengine.webview.safeHomeAssetPath
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** Native UI over the internal history document. Only its existing, isolated localStorage is used. */
+/**
+ * Native Home in Compose over the internal history document; only that document's existing,
+ * isolated localStorage is used. Focus never activates anything: OK on the search field opens the
+ * keyboard, Up from it opens the capsule, and tiles keep their focus by key across updates.
+ */
 internal class NativeHome(private val browser: MainActivity, private val host: FrameLayout) {
     private var tab: BrowserTab? = null
     private var web: WebView? = null
-    private var root: View? = null
-    private var grid: RecyclerView? = null
-    private var search: AppCompatEditText? = null
-    private var adapter: Tiles? = null
+    private var root: ComposeView? = null
     private var favoritesJob: Job? = null
-    private var dialog: AlertDialog? = null
+    private var dialog: Dialog? = null
     private var generation = 0
     private var loaded = false
     private var busy = false
-    private var editing = false
     private var shortcuts = HomeShortcuts()
     private var favorites: List<Tile> = emptyList()
+    private var searchFocus = FocusRequester()
+    private var submitFocus = FocusRequester()
+    /** A focus request made before the first composition; applied once the field exists. */
+    private var pendingFocus = false
+
+    private var editing by mutableStateOf(false)
+    private var tiles by mutableStateOf<List<Tile>>(emptyList())
+    private var query by mutableStateOf(TextFieldValue(""))
+    private var searchError by mutableStateOf<String?>(null)
+
     val isVisible get() = root != null
 
     fun update(shown: BrowserTab?) {
@@ -73,49 +142,14 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         web = view
         view.visibility = View.INVISIBLE
         browser.vb.pageContainer.cursorSuppressed = true
-        val content = LayoutInflater.from(browser).inflate(R.layout.native_home, host, false)
+        searchFocus = FocusRequester()
+        submitFocus = FocusRequester()
+        val content = ComposeView(host.context).apply {
+            setContent { VireoTvTheme { HomeContent() } }
+        }
         root = content
         host.addView(content)
         host.visibility = browser.vb.pageContainer.visibility
-        content.setOnClickListener { closeCapsuleIfVisible() }
-        // A clickable ViewGroup becomes focusable automatically on newer Android versions.
-        // The background handles touch only; keyboard focus belongs to the actual controls.
-        content.isFocusable = false
-        search = content.findViewById<AppCompatEditText>(R.id.home_search).apply {
-            showSoftInputOnFocus = false
-            setOnClickListener { showKeyboard(this) }
-            setOnKeyListener { _, code, event ->
-                when {
-                    code == KeyEvent.KEYCODE_DPAD_UP -> {
-                        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) browser.openCapsule()
-                        true
-                    }
-                    code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER -> {
-                        if (event.action == KeyEvent.ACTION_UP) showKeyboard(this)
-                        true
-                    }
-                    // At the end of the text, the key toward Submit (Right, or Left in RTL) moves to it
-                    // on every Android version: some consume it in a single-line field.
-                    code == (if (layoutDirection == View.LAYOUT_DIRECTION_RTL) KeyEvent.KEYCODE_DPAD_LEFT
-                        else KeyEvent.KEYCODE_DPAD_RIGHT) && selectionStart == selectionEnd &&
-                        selectionEnd == (text?.length ?: 0) -> {
-                        if (event.action == KeyEvent.ACTION_DOWN) content.findViewById<View>(R.id.home_submit).requestFocus()
-                        true
-                    }
-                    else -> false
-                }
-            }
-            setOnEditorActionListener { _, action, _ ->
-                if (action == EditorInfo.IME_ACTION_SEARCH) { submitSearch(); true } else false
-            }
-        }
-        content.findViewById<View>(R.id.home_submit).setOnClickListener { submitSearch() }
-        grid = content.findViewById<RecyclerView>(R.id.home_tiles).apply {
-            layoutManager = GridLayoutManager(browser, 4)
-            itemAnimator = null
-            adapter = Tiles().also { this@NativeHome.adapter = it }
-            addOnLayoutChangeListener { _, left, _, right, _, _, _, _, _ -> fitColumns(right - left) }
-        }
         followCapsule(animate = false)
         render()
         // Favorites are shared in both modes, as before; the observer ends when Home is hidden.
@@ -126,7 +160,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             }.collect { values ->
                 favorites = values.asReversed().asSequence().mapNotNull { value ->
                     TabFavorites.webAddress(value.url)?.let { HomeShortcuts.address(it) }?.let { url ->
-                        Tile("favorite:$url", value.title.orEmpty().trim().take(200).ifEmpty { label(url) }, url, R.drawable.ic_bookmark,
+                        Tile("favorite:$url", value.title.orEmpty().trim().take(200).ifEmpty { label(url) }, url, TvSymbol.Bookmark,
                             favorite = value)
                     }
                 }.distinctBy { it.url }.take(48).toList()
@@ -150,13 +184,10 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         favoritesJob?.cancel()
         favoritesJob = null
         web?.visibility = View.VISIBLE
-        if (root != null) browser.vb.pageContainer.cursorSuppressed = browser.vb.controlsOverlay.isVisible
+        browser.vb.pageContainer.cursorSuppressed = browser.vb.controlsOverlay.isVisible
         host.removeAllViews()
         host.isVisible = false
         root = null
-        grid = null
-        search = null
-        adapter = null
         tab = null
         web = null
         favorites = emptyList()
@@ -164,20 +195,10 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         loaded = false
         busy = false
         editing = false
-    }
-
-    /**
-     * Columns keep one tile width whatever the count; a row that does not fill the width is
-     * centred by the grid's side padding instead of hanging from the left edge.
-     */
-    private fun fitColumns(width: Int) {
-        val view = grid ?: return
-        val manager = view.layoutManager as GridLayoutManager
-        val fit = (width / view.resources.getDimensionPixelSize(R.dimen.home_tile_min_width)).coerceIn(2, 6)
-        val columns = (adapter?.itemCount ?: 0).coerceIn(1, fit)
-        val side = (width - width / fit * columns) / 2
-        if (manager.spanCount != columns) manager.spanCount = columns
-        if (view.paddingLeft != side || view.paddingRight != side) view.setPadding(side, view.paddingTop, side, view.paddingBottom)
+        pendingFocus = false
+        tiles = emptyList()
+        query = TextFieldValue("")
+        searchError = null
     }
 
     /**
@@ -187,8 +208,9 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     fun followCapsule(animate: Boolean) {
         val view = root ?: return
         val overlay = browser.vb.controlsOverlay
+        val top = browser.resources.getDimensionPixelSize(R.dimen.safe_vertical)
         val offset = if (overlay.isVisible && overlay.height > 0) {
-            (overlay.height - overlay.paddingBottom - view.paddingTop).coerceAtLeast(0).toFloat()
+            (overlay.height - overlay.paddingBottom - top).coerceAtLeast(0).toFloat()
         } else 0f
         // A repeated focus/capsule event must not restart the same transition.
         if (kotlin.math.abs(view.translationY - offset) < 0.5f) return
@@ -208,7 +230,19 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         if (browser.vb.controlsOverlay.isVisible) browser.closeCapsule()
     }
 
-    fun focusContent(): Boolean = search?.requestFocus() == true
+    /**
+     * Focuses the search field. Before the first composition the request waits for it; while Home
+     * is being shown again in the same frame (after the capsule closes) it is retried once laid out.
+     */
+    fun focusContent(): Boolean {
+        val view = root ?: return false
+        // Take the window focus from the capsule's host first; Compose then places it on the field.
+        view.requestFocus()
+        val done = runCatching { searchFocus.requestFocus(FocusDirection.Enter) }
+        if (done.isFailure) pendingFocus = true
+        else if (done.getOrNull() == false) view.post { if (root === view) runCatching { searchFocus.requestFocus(FocusDirection.Enter) } }
+        return true
+    }
 
     /** The same 480 px budget as web previews, without capturing a blank underlying document. */
     fun preview(reuse: Bitmap?): Bitmap? {
@@ -223,29 +257,21 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         return bitmap
     }
 
-    private fun showKeyboard(field: AppCompatEditText) {
-        closeCapsuleIfVisible()
-        field.requestFocus()
-        field.openKeyboard()
-    }
-
     private fun submitSearch() {
         closeCapsuleIfVisible()
-        val field = search ?: return
-        val url = HomeShortcuts.search(field.text.toString())
-        if (url == null) field.error = browser.getString(R.string.home_empty_search) else open(url)
+        val url = HomeShortcuts.search(query.text)
+        if (url == null) searchError = browser.getString(R.string.home_empty_search) else open(url)
     }
 
     private fun open(url: String) {
         if (browser.tabStore.currentTab.value !== tab) return
-        search?.let { browser.getSystemService<InputMethodManager>()?.hideSoftInputFromWindow(it.windowToken, 0) }
         // Remove the overlay synchronously; the external document is rendered by the same engine.
         hide()
         browser.navigate(url)
         browser.closeCapsule()
     }
 
-    private data class Tile(val key: String, val title: String, val url: String? = null, val icon: Int,
+    internal data class Tile(val key: String, val title: String, val url: String? = null, val icon: TvSymbol,
         val enabled: Boolean = true, val selected: Boolean = false, val hidden: Boolean = false,
         val favorite: Favorite? = null) {
         /** YouTube, favorites and shortcuts can be arranged and removed; Add and Edit stay last. */
@@ -256,31 +282,26 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         val active = loaded && !busy
         val movable = mutableListOf<Tile>()
         if (!shortcuts.youtubeHidden || editing) movable += Tile("youtube", browser.getString(R.string.home_video_brand), HomeShortcuts.YOUTUBE,
-            R.drawable.ic_video, !editing || active, hidden = shortcuts.youtubeHidden)
+            TvSymbol.Video, !editing || active, hidden = shortcuts.youtubeHidden)
         movable += favorites.map { it.copy(enabled = !editing || active) }
         val used = favorites.mapNotNull { it.url }.toSet()
         shortcuts.urls.filter { it !in used }.forEach { url ->
-            movable += Tile("shortcut:$url", label(url), url, R.drawable.ic_globe, !editing || active)
+            movable += Tile("shortcut:$url", label(url), url, TvSymbol.Globe, !editing || active)
         }
         val items = shortcuts.arrange(movable) { it.key }.toMutableList()
-        items += Tile("add", browser.getString(R.string.home_add), icon = R.drawable.ic_add, enabled = active)
+        items += Tile("add", browser.getString(R.string.home_add), icon = TvSymbol.Add, enabled = active)
         items += Tile("edit", browser.getString(if (editing) R.string.home_done else R.string.home_edit),
-            icon = if (editing) R.drawable.ic_done else R.drawable.ic_edit, enabled = active, selected = editing)
-        val focused = grid?.findFocus()
-        val key = focused?.tag as? String
-        val oldIndex = adapter?.currentList?.indexOfFirst { it.key == key } ?: -1
-        adapter?.submitList(items) {
-            grid?.let { if (it.width > 0) fitColumns(it.width) }
-            if (key == null || browser.vb.controlsOverlay.isVisible || dialog?.isShowing == true) return@submitList
-            val current = root?.findFocus()
-            if (current != null && current !== focused) return@submitList
-            val index = items.indexOfFirst { it.key == key }.takeIf { it >= 0 } ?: oldIndex.coerceIn(0, items.lastIndex)
-            grid?.findViewHolderForAdapterPosition(index)?.itemView?.requestFocus()
-        }
+            icon = if (editing) TvSymbol.Done else TvSymbol.Edit, enabled = active, selected = editing)
+        tiles = items
     }
+
+    /** The keys of the tiles shown, in order; for tests and diagnostics. */
+    internal val tileKeys: List<String> get() = tiles.map { it.key }
 
     private fun click(tile: Tile) {
         closeCapsuleIfVisible()
+        // A tile waiting for storage keeps its focus but ignores OK, so the D-pad never jumps.
+        if (!tile.enabled) return
         when (tile.key) {
             "add" -> if (shortcuts.urls.size >= HomeShortcuts.MAX) notice(browser.getString(R.string.home_limit, HomeShortcuts.MAX)) else edit(null)
             "edit" -> { editing = !editing; render() }
@@ -291,11 +312,11 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
 
     /** What OK on a tile offers while editing: move it, change its address, or take it off Home. */
     private fun actions(tile: Tile) {
-        val list = adapter?.currentList.orEmpty().filter { it.movable }
+        val list = tiles.filter { it.movable }
         val index = list.indexOfFirst { it.key == tile.key }
         if (index < 0) return
         // In right-to-left layouts the first tile is drawn on the right.
-        val rtl = grid?.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val rtl = host.layoutDirection == View.LAYOUT_DIRECTION_RTL
         val choices = buildList<Pair<Int, () -> Unit>> {
             val left = if (rtl) 1 else -1
             if (index + left in list.indices) add(R.string.home_move_left to { move(list, index, index + left) })
@@ -303,7 +324,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             if (tile.key.startsWith("shortcut:")) add(R.string.home_edit_address to { edit(tile.url) })
             add(R.string.home_remove to { removeTile(tile) })
         }
-        dialog = AlertDialog.Builder(browser).setTitle(tile.title)
+        dialog = TvDialog.Builder(browser).setTitle(tile.title)
             .setItems(choices.map { browser.getString(it.first) }.toTypedArray()) { _, which -> choices[which].second() }
             .setNegativeButton(android.R.string.cancel, null).show()
     }
@@ -316,73 +337,66 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         storage("localStorage.setItem(${JSONObject.quote(HomeShortcuts.ORDER_KEY)},${JSONObject.quote(value)});") {
             shortcuts = it
             render()
-            grid?.post { grid?.findViewHolderForAdapterPosition(to)?.itemView?.requestFocus() }
         }
+    }
+
+    private fun confirm(message: Int, onConfirmed: () -> Unit) {
+        dialog = TvDialog.Builder(browser).setMessage(message)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok) { _, _ -> onConfirmed() }.show()
     }
 
     private fun removeTile(tile: Tile) {
         val favorite = tile.favorite
         when {
             tile.key == "youtube" -> toggleYoutube()
-            favorite != null -> dialog = AlertDialog.Builder(browser).setMessage(R.string.home_favorite_remove_confirm)
-                .setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok) { _, _ ->
-                    // The list follows the database observer; Favorites shows the same change.
-                    browser.lifecycleScope.launch { AppDatabase.db.favoriteDao().delete(favorite) }
-                }.show()
-            else -> dialog = AlertDialog.Builder(browser).setMessage(R.string.home_remove_confirm)
-                .setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok) { _, _ ->
-                    tile.url?.let { save(shortcuts.urls - it) }
-                }.show()
+            // The list follows the database observer; Favorites shows the same change.
+            favorite != null -> confirm(R.string.home_favorite_remove_confirm) {
+                browser.lifecycleScope.launch { AppDatabase.db.favoriteDao().delete(favorite) }
+            }
+            else -> confirm(R.string.home_remove_confirm) { tile.url?.let { save(shortcuts.urls - it) } }
         }
     }
 
     private fun toggleYoutube() {
-        dialog = AlertDialog.Builder(browser)
-            .setMessage(if (shortcuts.youtubeHidden) R.string.home_youtube_restore else R.string.home_youtube_remove)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                val value = if (shortcuts.youtubeHidden) "localStorage.removeItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)});" else
-                    "localStorage.setItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)},'1');"
-                storage(value) { shortcuts = it; render() }
-            }.show()
+        confirm(if (shortcuts.youtubeHidden) R.string.home_youtube_restore else R.string.home_youtube_remove) {
+            val value = if (shortcuts.youtubeHidden) "localStorage.removeItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)});" else
+                "localStorage.setItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)},'1');"
+            storage(value) { shortcuts = it; render() }
+        }
     }
 
+    /** Adds a shortcut ([old] null) or changes one; an empty address offers to remove it. */
     private fun edit(old: String?) {
-        val input = AppCompatEditText(browser).apply {
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
-            isSingleLine = true
-            imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI
-            setText(old.orEmpty())
-            setSelection(text?.length ?: 0)
-        }
-        val popup = AlertDialog.Builder(browser).setMessage(if (old == null) R.string.home_add_prompt else R.string.home_edit_prompt)
-            .setView(input).setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, null).create()
-        dialog = popup
-        popup.setOnShowListener {
-            popup.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val text = input.text.toString().trim()
-                if (text.isEmpty() && old != null) {
-                    popup.dismiss()
-                    dialog = AlertDialog.Builder(browser).setMessage(R.string.home_remove_confirm)
-                        .setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok) { _, _ ->
-                            save(shortcuts.urls - old)
-                        }.show()
-                    return@setOnClickListener
-                }
+        dialog = TvDialog.Builder(browser)
+            .setMessage(if (old == null) R.string.home_add_prompt else R.string.home_edit_prompt)
+            .setFields(TvDialog.Field(R.string.field_address, uri = true))
+            .setValidator { editor ->
+                val text = editor.fieldValue(0).trim()
+                if (text.isEmpty() && old != null) return@setValidator null
                 val url = HomeShortcuts.address(text)
                 when {
-                    url == null -> input.error = browser.getString(R.string.home_invalid)
-                    url != old && url in shortcuts.urls -> input.error = browser.getString(R.string.home_duplicate)
-                    else -> {
-                        popup.dismiss()
-                        if (old == null && HomeShortcuts.isYoutube(url)) {
-                            storage("localStorage.removeItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)});") { shortcuts = it; render() }
-                        } else save(if (old == null) shortcuts.urls + url else shortcuts.urls.map { if (it == old) url else it })
-                    }
+                    url == null -> browser.getString(R.string.home_invalid)
+                    url != old && url in shortcuts.urls -> browser.getString(R.string.home_duplicate)
+                    else -> null
                 }
             }
-        }
-        popup.show()
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok) { editor, _ ->
+                val text = (editor as TvDialog).fieldValue(0).trim()
+                if (text.isEmpty() && old != null) {
+                    // Shown after this editor closes, so the confirmation is the dialog kept.
+                    host.post { confirm(R.string.home_remove_confirm) { save(shortcuts.urls - old) } }
+                    return@setPositiveButton
+                }
+                val url = HomeShortcuts.address(text) ?: return@setPositiveButton
+                if (old == null && HomeShortcuts.isYoutube(url)) {
+                    storage("localStorage.removeItem(${JSONObject.quote(HomeShortcuts.HIDDEN_KEY)});") { shortcuts = it; render() }
+                } else save(if (old == null) shortcuts.urls + url else shortcuts.urls.map { if (it == old) url else it })
+            }
+            .create()
+            .apply { setFieldValue(0, old.orEmpty()) }
+            .also { it.show() }
     }
 
     private fun save(urls: List<String>) {
@@ -416,41 +430,177 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
 
     private fun notice(text: String) = browser.toast(text)
     private fun label(url: String) = android.net.Uri.parse(url).host ?: url
-    private fun dp(value: Int) = (value * browser.resources.displayMetrics.density).toInt()
 
-    private inner class Tiles : ListAdapter<Tile, Holder>(object : DiffUtil.ItemCallback<Tile>() {
-        override fun areItemsTheSame(oldItem: Tile, newItem: Tile) = oldItem.key == newItem.key
-        override fun areContentsTheSame(oldItem: Tile, newItem: Tile) = oldItem == newItem
-    }) {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-            val button = LayoutInflater.from(parent.context).inflate(R.layout.native_home_tile, parent, false) as AppCompatButton
-            return Holder(button)
+    @Composable
+    private fun HomeContent() {
+        // The background closes the capsule on a click but is never a keyboard focus target.
+        Column(
+            Modifier.semantics { testTagsAsResourceId = true }.fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .pointerInput(Unit) { detectTapGestures { closeCapsuleIfVisible() } }
+                .padding(horizontal = dimensionResource(R.dimen.safe_horizontal), vertical = dimensionResource(R.dimen.safe_vertical)),
+        ) {
+            Text(stringResource(R.string.home_search_brand), color = MaterialTheme.colorScheme.onSurface, fontSize = 22.sp,
+                textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                SearchField(Modifier.weight(1f))
+                SubmitButton()
+            }
+            searchError?.let {
+                Text(it, color = ErrorColor, fontSize = 15.sp, modifier = Modifier.padding(top = 6.dp).testTag("home_search_error"))
+            }
+            Text(stringResource(R.string.home_shortcuts), color = MaterialTheme.colorScheme.onSurface, fontSize = 15.sp,
+                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp))
+            TileGrid(Modifier.weight(1f))
         }
-        override fun onBindViewHolder(holder: Holder, position: Int) {
-            val tile = getItem(position)
-            val button = holder.itemView as AppCompatButton
-            button.text = tile.title
-            button.tag = tile.key
-            button.isEnabled = tile.enabled
-            button.isSelected = tile.selected
-            button.alpha = if (tile.hidden) .5f else 1f
-            button.contentDescription = if (tile.hidden) browser.getString(R.string.home_youtube_removed)
-                else if (editing && tile.movable)
-                browser.getString(R.string.home_edit_item).replace("%s", tile.title) else tile.title
-            val cached = tile.url?.let { android.net.Uri.parse(it).host }?.let(Favicons::cached)
-            val icon = cached?.let { BitmapDrawable(browser.resources, it) }
-                ?: ContextCompat.getDrawable(browser, tile.icon)?.mutate()?.apply {
-                    setTintList(ContextCompat.getColorStateList(browser, R.color.on_control))
-                }
-            icon?.setBounds(0, 0, dp(28), dp(28))
-            button.setCompoundDrawablesRelative(null, icon, null, null)
-            button.setOnClickListener { click(tile) }
+        LaunchedEffect(Unit) {
+            if (pendingFocus && !browser.vb.controlsOverlay.isVisible) runCatching { searchFocus.requestFocus() }
+            pendingFocus = false
         }
     }
-    private class Holder(view: View) : RecyclerView.ViewHolder(view)
+
+    /**
+     * Shows the query until OK; then edits it with the keyboard. Up opens the capsule; at the end of
+     * the text the key toward Submit moves to it; the keyboard's Search runs the search.
+     */
+    @Composable
+    private fun SearchField(modifier: Modifier) {
+        var typing by remember { mutableStateOf(false) }
+        val keyboard = LocalSoftwareKeyboardController.current
+        val towardSubmit = if (LocalLayoutDirection.current == LayoutDirection.Rtl) Key.DirectionLeft else Key.DirectionRight
+        val interaction = remember { MutableInteractionSource() }
+        val focused by interaction.collectIsFocusedAsState()
+        val hovered by interaction.collectIsHoveredAsState()
+        val shape = RoundedCornerShape(12.dp)
+        val hint = stringResource(R.string.home_search)
+        val keys = Modifier.onPreviewKeyEvent { event ->
+            when (event.key) {
+                Key.DirectionUp -> {
+                    if (event.type == KeyEventType.KeyDown && event.nativeKeyEvent.repeatCount == 0) browser.openCapsule()
+                    true
+                }
+                // Some Android versions consume it at the end of a single-line field.
+                towardSubmit -> (typing && query.selection.collapsed && query.selection.end == query.text.length).also { atEnd ->
+                    if (atEnd && event.type == KeyEventType.KeyDown) {
+                        typing = false
+                        runCatching { submitFocus.requestFocus() }
+                    }
+                }
+                else -> false
+            }
+        }
+        val frame = modifier.testTag("home_page_search").heightIn(min = 56.dp)
+            .background(TvControlColors.surface(focused || typing, hovered), shape)
+            .border(if (focused || typing) 2.dp else 1.dp, TvControlColors.border(focused || typing, hovered), shape)
+        if (typing) {
+            var hadFocus by remember { mutableStateOf(false) }
+            BasicTextField(
+                value = query,
+                onValueChange = { query = it; searchError = null },
+                singleLine = true,
+                textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
+                cursorBrush = SolidColor(Color.White),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { submitSearch() }),
+                interactionSource = interaction,
+                modifier = frame.focusRequester(searchFocus).then(keys)
+                    .onFocusChanged { if (it.isFocused) hadFocus = true else if (hadFocus) typing = false }
+                    .semantics { contentDescription = hint }
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+            )
+            LaunchedEffect(Unit) {
+                runCatching { searchFocus.requestFocus() }
+                keyboard?.show()
+            }
+        } else {
+            Box(
+                frame.focusRequester(searchFocus).then(keys)
+                    .semantics { contentDescription = hint }
+                    .clickable(interactionSource = interaction, indication = null) {
+                        closeCapsuleIfVisible()
+                        query = query.copy(selection = TextRange(query.text.length))
+                        typing = true
+                    }
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                Text(query.text.ifEmpty { hint }, color = if (query.text.isEmpty()) Color.Gray else Color.White,
+                    fontSize = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+
+    @Composable
+    private fun SubmitButton() {
+        val interaction = remember { MutableInteractionSource() }
+        val focused by interaction.collectIsFocusedAsState()
+        val hovered by interaction.collectIsHoveredAsState()
+        val shape = RoundedCornerShape(28.dp)
+        val label = stringResource(R.string.home_search)
+        Box(
+            Modifier.testTag("home_submit").focusRequester(submitFocus).size(56.dp)
+                .background(TvControlColors.surface(focused, hovered), shape)
+                .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
+                .semantics { contentDescription = label }
+                .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = ::submitSearch),
+            contentAlignment = Alignment.Center,
+        ) { TvSymbolIcon(TvSymbol.Search, Modifier.size(28.dp)) }
+    }
+
+    /**
+     * Columns keep one tile width whatever the count; a row that does not fill the width is
+     * centred instead of hanging from the start edge.
+     */
+    @Composable
+    private fun TileGrid(modifier: Modifier) {
+        val minTile = dimensionResource(R.dimen.home_tile_min_width)
+        BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            val fit = (maxWidth / minTile).toInt().coerceIn(2, 6)
+            val columns = tiles.size.coerceIn(1, fit)
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columns),
+                modifier = Modifier.width(maxWidth / fit * columns).testTag("home_tiles"),
+                contentPadding = PaddingValues(8.dp),
+            ) {
+                items(tiles, key = { it.key }) { tile -> HomeTile(tile) }
+            }
+        }
+    }
+
+    @Composable
+    private fun HomeTile(tile: Tile) {
+        val interaction = remember { MutableInteractionSource() }
+        val focused by interaction.collectIsFocusedAsState()
+        val hovered by interaction.collectIsHoveredAsState()
+        val shape = RoundedCornerShape(16.dp)
+        val description = when {
+            tile.hidden -> stringResource(R.string.home_youtube_removed)
+            editing && tile.movable -> stringResource(R.string.home_edit_item).replace("%s", tile.title)
+            else -> tile.title
+        }
+        val favicon = tile.url?.let { android.net.Uri.parse(it).host }?.let(Favicons::cached)
+        Column(
+            Modifier.testTag("home_tile_${tile.key}").padding(6.dp).fillMaxWidth()
+                .alpha(if (tile.hidden || !tile.enabled) .5f else 1f)
+                .background(if (tile.selected && !focused) TvControlColors.Selected else TvControlColors.surface(focused, hovered), shape)
+                .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
+                .clickable(interactionSource = interaction, indication = null, role = Role.Button) { click(tile) }
+                // Reported as disabled while waiting for storage, but still focusable (see click).
+                .semantics { contentDescription = description; if (!tile.enabled) disabled() }
+                .padding(start = 12.dp, end = 12.dp, top = 20.dp, bottom = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            if (favicon != null) Image(favicon.asImageBitmap(), contentDescription = null, modifier = Modifier.size(28.dp))
+            else TvSymbolIcon(tile.icon, Modifier.size(28.dp))
+            Text(tile.title, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
 
     private companion object {
         /** The capsule's own opening time, so Home moves with it. */
         const val CAPSULE_MS = 220L
+        /** Readable on black (contrast above 4.5:1). */
+        val ErrorColor = Color(0xFFFF8A80)
     }
 }

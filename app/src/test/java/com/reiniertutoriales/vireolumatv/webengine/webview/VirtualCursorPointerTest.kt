@@ -188,6 +188,34 @@ class VirtualCursorPointerTest {
         assertEquals(steady, sampled, steady * 0.05f)
     }
 
+    /** Distance covered from (10, 10) while [codes] are held for [holdMs] at 60 fps. */
+    private fun travel(holdMs: Long, vararg codes: Int): Float {
+        var distance = 0f
+        withCursor { delegate, _, _ ->
+            delegate.position.set(10f, 10f)
+            val update = PointerController::class.java.getDeclaredField("pointerTick")
+                .apply { isAccessible = true }.get(delegate) as Runnable
+            codes.forEach { assertTrue(delegate.onKey(KeyEvent(KeyEvent.ACTION_DOWN, it))) }
+            val end = SystemClock.uptimeMillis() + holdMs
+            while (SystemClock.uptimeMillis() < end) {
+                ShadowSystemClock.advanceBy(Duration.ofMillis(16))
+                update.run()
+            }
+            distance = kotlin.math.hypot(delegate.position.x - 10f, delegate.position.y - 10f)
+            delegate.resetInput()
+        }
+        return distance
+    }
+
+    @Test fun twoHeldDirectionsAreNotFasterThanOne() {
+        initConfig()
+        val straight = travel(500, KeyEvent.KEYCODE_DPAD_RIGHT)
+        val diagonal = travel(500, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_DOWN)
+        assertTrue("The pointer must move: $straight", straight > 100f)
+        // Without the cap on the combined speed the diagonal covers about 41 % more.
+        assertEquals(straight, diagonal, straight * 0.08f)
+    }
+
     @Test fun releasingOneOfTwoHeldDirectionsKeepsTheOtherAxisSpeed() {
         initConfig()
         withCursor { delegate, _, _ ->

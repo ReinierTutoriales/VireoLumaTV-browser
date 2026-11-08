@@ -9,7 +9,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.cancel
 import com.reiniertutoriales.vireolumatv.R
@@ -214,7 +214,7 @@ class BrowserNavigationTest {
     }
 
     private class Fixture : AutoCloseable {
-        val host = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
+        val host = Robolectric.buildActivity(ComponentActivity::class.java).apply {
             get().setTheme(R.style.AppTheme)
             setup()
         }

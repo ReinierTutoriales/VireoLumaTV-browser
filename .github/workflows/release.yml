@@ -53,7 +53,7 @@ jobs:
             echo 'Tag already exists; refusing to move it.'
             exit 1
           fi
-      - uses: actions/setup-java@v6.1.0
+      - uses: actions/setup-java@v6.2.0
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -91,7 +91,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Verify signed release startup before publication
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
           api-level: 34
           target: google_apis
@@ -199,7 +199,7 @@ jobs:
           if-no-files-found: error
           retention-days: 90
       - name: Create release
-        uses: softprops/action-gh-release@v3.0.3
+        uses: softprops/action-gh-release@v3.0.4
         with:
           tag_name: v${{ env.VERSION }}
           target_commitish: ${{ github.sha }}

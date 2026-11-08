@@ -9,9 +9,9 @@ agp = "9.5.1"
 kotlin = "2.4.21"
 ksp = "2.3.13"
 
-appcompat = "1.8.0"
+activity = "1.13.0"
+core = "1.19.1"
 webkit = "1.18.0"
-recyclerview = "1.4.0"
 coroutines-android = "1.11.0"
 lifecycle-runtime-ktx = "2.11.0"
 room = "3.0.3"
@@ -31,9 +31,9 @@ robolectric = "4.17"
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 
 # AndroidX
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
-androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 androidx-metrics-performance = { group = "androidx.metrics", name = "metrics-performance", version.ref = "metrics-performance" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
