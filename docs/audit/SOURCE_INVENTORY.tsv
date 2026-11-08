@@ -300,7 +300,7 @@ app/src/main/res/layout/settings_screen.xml	ELIMINADO
 app/src/main/res/layout/tab_chip.xml	ELIMINADO
 app/src/main/res/layout/tab_strip.xml	ELIMINADO
 app/src/main/res/layout/toast_bar.xml	ELIMINADO
-app/src/main/res/layout/view_address_suggestion.xml	PROPIO
+app/src/main/res/layout/view_address_suggestion.xml	ELIMINADO
 app/src/main/res/layout/view_menu_entry.xml	ELIMINADO
 app/src/main/res/layout/view_setting_button.xml	ELIMINADO
 app/src/main/res/layout/view_setting_choice.xml	ELIMINADO
