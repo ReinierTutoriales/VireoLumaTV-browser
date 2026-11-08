@@ -23,7 +23,9 @@ permissions:
   actions: write
 
 concurrency:
-  group: baseline-profile-${{ github.head_ref || github.ref_name }}
+  # The bot's own profile push starts a run that the job skips; give it a group of its own so it
+  # never cancels the generator that pushed it while that one approves the new checks.
+  group: baseline-profile-${{ github.head_ref || github.ref_name }}${{ github.actor == 'github-actions[bot]' && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 jobs:
