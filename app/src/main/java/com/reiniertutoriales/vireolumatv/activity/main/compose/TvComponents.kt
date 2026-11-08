@@ -117,7 +117,10 @@ fun TvTextButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
     }
 }
 
-/** A single-line text field with a visible focus border; [password] hides the characters. */
+/**
+ * A single-line text field with a visible focus border; [password] hides the characters and [uri]
+ * asks for the keyboard layout made for addresses.
+ */
 @Composable
 fun TvTextField(
     value: String,
@@ -125,6 +128,7 @@ fun TvTextField(
     hint: String,
     modifier: Modifier = Modifier,
     password: Boolean = false,
+    uri: Boolean = false,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -138,7 +142,11 @@ fun TvTextField(
         textStyle = TextStyle(color = Color.White, fontSize = 17.sp),
         cursorBrush = SolidColor(Color.White),
         visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
-        keyboardOptions = if (password) KeyboardOptions(keyboardType = KeyboardType.Password) else KeyboardOptions.Default,
+        keyboardOptions = when {
+            password -> KeyboardOptions(keyboardType = KeyboardType.Password)
+            uri -> KeyboardOptions(keyboardType = KeyboardType.Uri)
+            else -> KeyboardOptions.Default
+        },
         modifier = modifier.fillMaxWidth().semantics { contentDescription = hint },
         decorationBox = { inner ->
             Box(

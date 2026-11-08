@@ -21,8 +21,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -48,7 +51,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     ComponentDialog(context, R.style.TvDialog) {
 
     /** A text field of the dialog; read its value with [fieldValue] in a button callback. */
-    class Field(@StringRes val hint: Int, val password: Boolean = false)
+    class Field(@StringRes val hint: Int, val password: Boolean = false, val uri: Boolean = false)
 
     private class Button(val text: CharSequence, val onClick: DialogInterface.OnClickListener?)
 
@@ -60,9 +63,14 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
         val checked: Int,
         val fields: List<Field>,
         val buttons: Map<Int, Button>,
+        val validate: ((TvDialog) -> CharSequence?)?,
     )
 
     private val values = mutableStateListOf<String>().apply { repeat(spec.fields.size) { add("") } }
+
+    /** Why the positive button was refused; shown under the fields until the text changes. */
+    var error by mutableStateOf<CharSequence?>(null)
+        private set
 
     init {
         setContentView(ComposeView(context).apply {
@@ -74,7 +82,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     fun fieldValue(index: Int): String = values[index]
 
     /** Sets field [index] as if typed: for tests and for prefilled forms. */
-    fun setFieldValue(index: Int, value: String) { values[index] = value }
+    fun setFieldValue(index: Int, value: String) { values[index] = value; error = null }
 
     /** The title and message shown. */
     val title: CharSequence? get() = spec.title
@@ -93,10 +101,14 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
         dismiss()
     }
 
-    /** Presses button [which] (DialogInterface.BUTTON_*), as a click on it does. */
+    /**
+     * Presses button [which] (DialogInterface.BUTTON_*), as a click on it does. The positive button
+     * first asks the validator; a refusal keeps the dialog open and shows its reason.
+     */
     fun press(which: Int) {
         if (!isShowing) return
         val button = spec.buttons[which] ?: return
+        if (which == DialogInterface.BUTTON_POSITIVE) spec.validate?.invoke(this)?.let { error = it; return }
         button.onClick?.onClick(this, which)
         dismiss()
     }
@@ -138,12 +150,17 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
             spec.fields.forEachIndexed { index, field ->
                 TvTextField(
                     value = values[index],
-                    onValueChange = { values[index] = it },
+                    onValueChange = { setFieldValue(index, it) },
                     hint = context.getString(field.hint),
                     password = field.password,
+                    uri = field.uri,
                     modifier = Modifier.padding(bottom = 10.dp).testTag("dialog_field_$index")
                         .then(if (index == 0 && spec.items.isEmpty()) Modifier.focusRequester(first) else Modifier),
                 )
+            }
+            error?.let {
+                Text(it.toString(), color = ErrorColor, fontSize = 15.sp,
+                    modifier = Modifier.padding(bottom = 8.dp).testTag("dialog_error"))
             }
             if (spec.buttons.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
@@ -177,6 +194,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
         private var onDismiss: DialogInterface.OnDismissListener? = null
         private var onCancel: DialogInterface.OnCancelListener? = null
         private var onKey: DialogInterface.OnKeyListener? = null
+        private var validate: ((TvDialog) -> CharSequence?)? = null
 
         fun setTitle(@StringRes text: Int) = apply { title = context.getText(text) }
         fun setTitle(text: CharSequence?) = apply { title = text }
@@ -204,12 +222,14 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
             setNeutralButton(context.getText(text), listener)
         fun setNeutralButton(text: CharSequence, listener: DialogInterface.OnClickListener?) =
             apply { buttons[DialogInterface.BUTTON_NEUTRAL] = Button(text, listener) }
+        /** Checked before the positive button runs: a non-null reason keeps the dialog open. */
+        fun setValidator(check: (TvDialog) -> CharSequence?) = apply { validate = check }
         fun setCancelable(value: Boolean) = apply { cancelable = value }
         fun setOnDismissListener(listener: DialogInterface.OnDismissListener?) = apply { onDismiss = listener }
         fun setOnCancelListener(listener: DialogInterface.OnCancelListener?) = apply { onCancel = listener }
         fun setOnKeyListener(listener: DialogInterface.OnKeyListener?) = apply { onKey = listener }
 
-        fun create(): TvDialog = TvDialog(context, Spec(title, message, items, onItem, checked, fields, buttons.toMap())).also {
+        fun create(): TvDialog = TvDialog(context, Spec(title, message, items, onItem, checked, fields, buttons.toMap(), validate)).also {
             it.setCancelable(cancelable)
             it.setOnDismissListener(onDismiss)
             it.setOnCancelListener(onCancel)
@@ -219,3 +239,6 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
         fun show(): TvDialog = create().also { it.show() }
     }
 }
+
+/** Readable on the black panel (contrast above 4.5:1). */
+private val ErrorColor = Color(0xFFFF8A80)

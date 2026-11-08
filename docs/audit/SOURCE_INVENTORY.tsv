@@ -288,8 +288,8 @@ app/src/main/res/layout/downloads_screen.xml	PROPIO
 app/src/main/res/layout/favorite_row.xml	PROPIO
 app/src/main/res/layout/history_row.xml	PROPIO
 app/src/main/res/layout/history_screen.xml	PROPIO
-app/src/main/res/layout/native_home_tile.xml	PROPIO
-app/src/main/res/layout/native_home.xml	PROPIO
+app/src/main/res/layout/native_home_tile.xml	ELIMINADO
+app/src/main/res/layout/native_home.xml	ELIMINADO
 app/src/main/res/layout/panel_favorites.xml	PROPIO
 app/src/main/res/layout/pointer_menu.xml	PROPIO
 app/src/main/res/layout/settings_general.xml	ELIMINADO

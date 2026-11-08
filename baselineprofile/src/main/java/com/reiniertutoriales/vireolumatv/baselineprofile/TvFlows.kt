@@ -18,7 +18,7 @@ internal val targetAppId: String
     }
 
 private const val TIMEOUT_MS = 10_000L
-private val HOME_SEARCH get() = By.res(targetAppId, "home_search")
+private val HOME_SEARCH get() = By.res("home_page_search")
 private val FIRST_TAB get() = By.res(Pattern.compile("tab_0_[0-9]+"))
 private val SECOND_TAB get() = By.res(Pattern.compile("tab_1_[0-9]+"))
 private val TAB_CONTROL get() = By.res(Pattern.compile("tab_[0-9]+_[0-9]+|tab_close_[0-9]+|new_tab_button"))
