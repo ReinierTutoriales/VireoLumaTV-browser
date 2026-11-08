@@ -236,6 +236,8 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
      */
     fun focusContent(): Boolean {
         val view = root ?: return false
+        // Take the window focus from the capsule's host first; Compose then places it on the field.
+        view.requestFocus()
         val done = runCatching { searchFocus.requestFocus(FocusDirection.Enter) }
         if (done.isFailure) pendingFocus = true
         else if (done.getOrNull() == false) view.post { if (root === view) runCatching { searchFocus.requestFocus(FocusDirection.Enter) } }

@@ -54,6 +54,10 @@ class SettingsTabsTest {
 
     @Before fun remote() {
         InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
+        // FileProvider keeps the roots it resolved in a static cache; each Robolectric test has its
+        // own data directory, so a root cached by an earlier test would not contain this one's files.
+        (androidx.core.content.FileProvider::class.java.getDeclaredField("sCache")
+            .apply { isAccessible = true }.get(null) as MutableMap<*, *>).clear()
         // The About page reads the version of the engine the app initialized at start-up.
         val engine = java.lang.reflect.Proxy.newProxyInstance(javaClass.classLoader,
             arrayOf(EngineBackend::class.java)) { _, method, _ ->
