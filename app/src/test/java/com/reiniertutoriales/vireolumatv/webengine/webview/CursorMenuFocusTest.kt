@@ -47,7 +47,7 @@ class CursorMenuFocusTest {
             }
         } as PageEngine
         val provider = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
-            arrayOf(PageWindow::class.java)) { _, method, _ -> if (method.name == "getControlsHaveFocus") false else null } as PageWindow
+            arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
         val tab = BrowserTab()
         BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }
             .set(tab, lazyOf(engine))

@@ -68,7 +68,7 @@ class SingleLiveTabTest {
             model.openTabs.add(first)
             model.openTabs.add(second)
             val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
-                arrayOf(PageWindow::class.java)) { _, method, _ -> if (method.name == "getControlsHaveFocus") false else null } as PageWindow
+                arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
             val parent = FrameLayout(app)
             val allocate: (BrowserTab) -> View? = { tab ->
                 assertTrue("Old renderer must be released before allocating another", views.isEmpty())

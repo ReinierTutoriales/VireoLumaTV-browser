@@ -45,13 +45,12 @@ class BrowserNavigationTest {
         assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
     }
 
-    @Test fun aPageShownBehindTheOpenCapsuleDoesNotTakeFocus() = Fixture().use { f ->
-        val window = TabWindow(f.activity, f.tab)
-        assertFalse(window.controlsHaveFocus)
+    @Test fun thePageBehindTheOpenCapsuleCannotTakeFocusUntilItCloses() = Fixture().use { f ->
         f.activity.openCapsule()
-        assertTrue("Engines must leave focus to the open capsule", window.controlsHaveFocus)
+        // A page attached on a tab change asks for focus behind the open capsule.
+        assertFalse(f.page.requestFocus())
         f.activity.closeCapsule()
-        assertFalse(window.controlsHaveFocus)
+        assertTrue(f.page.hasFocus() || f.page.requestFocus())
     }
 
     @Test fun arrowSearchStopsAtTheCapsuleEdge() = Fixture().use { f ->

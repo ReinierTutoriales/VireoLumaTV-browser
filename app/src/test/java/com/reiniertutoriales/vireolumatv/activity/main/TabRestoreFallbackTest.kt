@@ -50,7 +50,7 @@ class TabRestoreFallbackTest {
             model.workScope.cancel() // Persistence is covered by separate Room/atomic-file tests.
             model.openTabs.add(tab)
             val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
-                arrayOf(PageWindow::class.java)) { _, method, _ -> if (method.name == "getControlsHaveFocus") false else null } as PageWindow
+                arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
             try {
                 model.changeTab(tab, { View(app).also { liveView = it } }, FrameLayout(app), window)
                 assertEquals(1, restores)

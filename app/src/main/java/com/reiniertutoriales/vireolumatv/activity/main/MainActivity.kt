@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
@@ -946,7 +947,6 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     // The capsule over the page
 
     private var overlayVisible = false
-    internal val capsuleOpen: Boolean get() = overlayVisible
     /** When Back last closed a fullscreen video. */
     private var fullscreenBackAt = Long.MIN_VALUE / 2
     /** Bumped whenever the preview may change, so a slow picture load never shows a stale tab. */
@@ -969,6 +969,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             return
         }
         overlayVisible = true
+        blockFocusBehindCapsule(true)
         previewGeneration++
         vb.controlsOverlay.animate().cancel()
         vb.tabPreview.animate().cancel()
@@ -1035,6 +1036,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     internal fun closeCapsule() {
         val wasVisible = overlayVisible
         overlayVisible = false
+        blockFocusBehindCapsule(false)
         vb.pageContainer.onPageTouch = null
         vb.pageContainer.cursorSuppressed = nativeHome?.isVisible == true
         previewGeneration++
@@ -1054,6 +1056,17 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             showLivePage(true)
             if (nativeHome?.focusContent() != true) tabStore.currentTab.value?.engine?.view?.requestFocus()
         }
+    }
+
+    /**
+     * N01: the open capsule is modal for the remote. The page and Home behind it cannot take focus,
+     * whatever asks for it: an arrow key past the capsule's edge, a page attached on a tab change,
+     * or the window's default focus when Compose releases its own.
+     */
+    private fun blockFocusBehindCapsule(block: Boolean) {
+        val mode = if (block) ViewGroup.FOCUS_BLOCK_DESCENDANTS else ViewGroup.FOCUS_BEFORE_DESCENDANTS
+        vb.pageContainer.descendantFocusability = mode
+        vb.nativeHomeContainer.descendantFocusability = mode
     }
 
     private companion object {
