@@ -214,6 +214,8 @@ class NativeHomeTest {
         f.home.update(f.tab)
         f.finishRead()
         f.activity.openCapsule()
+        // The capsule takes focus in a composition effect; let it run, as frames do on a device.
+        compose.waitForIdle()
         f.vb.controlsHost.current = 1
         runBlocking { f.activity.showPreview(null) }
         assertEquals(View.INVISIBLE, f.vb.nativeHomeContainer.visibility)
