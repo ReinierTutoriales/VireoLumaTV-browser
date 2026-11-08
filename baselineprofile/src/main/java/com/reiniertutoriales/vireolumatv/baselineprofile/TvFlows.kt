@@ -78,8 +78,13 @@ private fun MacrobenchmarkScope.requireGone(selector: BySelector) {
     if (!device.wait(Until.gone(selector), TIMEOUT_MS)) failWithScreen("Control did not close: $selector")
 }
 
+/**
+ * Injects one key. UI Automator reports `false` when the key coincides with a window change (the
+ * menu dialog opening) even though it was delivered; retrying would press twice, so the state
+ * check after each step decides instead.
+ */
 private fun MacrobenchmarkScope.press(key: () -> Boolean) {
-    if (!key()) failWithScreen("Input injection failed")
+    if (!key()) println("Key injection reported false; the next state check decides")
     device.waitForIdle()
 }
 
