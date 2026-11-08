@@ -123,7 +123,8 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
             if (event.keyCode == KeyEvent.KEYCODE_DPAD_UP && event.action == KeyEvent.ACTION_DOWN &&
                 event.repeatCount == 0 && pointerController.position.y <= 12 * resources.displayMetrics.density) {
                 stopPointer()
-                rootView.findViewById<View>(R.id.address_field)?.requestFocus()
+                // Back to the address above, wherever its host draws it.
+                focusSearch(View.FOCUS_UP)?.requestFocus()
                 return true
             }
             if (remote.dispatchKeyEvent(event)) return true

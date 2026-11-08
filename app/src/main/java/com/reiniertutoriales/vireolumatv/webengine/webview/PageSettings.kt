@@ -33,7 +33,7 @@ internal object PageSettings {
         settings.mediaPlaybackRequiresUserGesture = !config.allowAutoplayMedia
         // Location still needs the user's answer for each request (PagePermissions).
         settings.setGeolocationEnabled(true)
-        // Visible rows already load icons through ViewFaviconLoader with their own bounded cache.
+        // Visible rows already load icons through TvFavicon, backed by Favicons' bounded cache.
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOWNLOAD_FAVICONS_ENABLED)) {
             WebSettingsCompat.setDownloadFaviconsEnabled(settings, false)
         }
