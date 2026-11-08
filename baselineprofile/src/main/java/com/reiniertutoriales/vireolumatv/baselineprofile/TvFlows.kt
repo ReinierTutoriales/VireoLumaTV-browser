@@ -96,10 +96,14 @@ private fun MacrobenchmarkScope.press(key: () -> Boolean) {
  */
 private fun MacrobenchmarkScope.soleFocus(selector: BySelector, timeout: Long): Boolean =
     device.wait(Condition<UiDevice, Boolean> { ui ->
-        val node = ui.findObject(By.copy(selector).focused(true)) ?: return@Condition false
-        var root = node
-        while (true) root = root.parent ?: break
-        root.findObjects(By.focused(true)).size == 1
+        try {
+            val node = ui.findObject(By.copy(selector).focused(true)) ?: return@Condition false
+            var root = node
+            while (true) root = root.parent ?: break
+            root.findObjects(By.focused(true)).size == 1
+        } catch (_: androidx.test.uiautomator.StaleObjectException) {
+            false // Recycled while reading; the next poll reads the new tree.
+        }
     }, timeout) == true
 
 private fun MacrobenchmarkScope.requireFocus(selector: BySelector) {
@@ -109,16 +113,24 @@ private fun MacrobenchmarkScope.requireFocus(selector: BySelector) {
 private fun MacrobenchmarkScope.focus(selector: BySelector, key: () -> Boolean, limit: Int = 12) {
     repeat(limit) {
         if (soleFocus(selector, 300)) return
-        val before = device.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds }
+        val before = focusedIdentity()
         press(key)
         // Wait until the accessibility tree reports the move; a stale read would press again
         // and step past the target on a slow, uncompiled run.
         if (soleFocus(selector, 300)) return
-        device.wait(Condition<UiDevice, Boolean> { ui ->
-            ui.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds } != before
-        }, 1_000L)
+        device.wait(Condition<UiDevice, Boolean> { focusedIdentity() != before }, 1_000L)
     }
     if (!soleFocus(selector, TIMEOUT_MS)) failWithScreen("Expected sole focus not reached: $selector")
+}
+
+/**
+ * The focused node's id and bounds, or null. A scrolling Compose list can recycle the node between
+ * finding and reading it (StaleObjectException); that read counts as no focus yet.
+ */
+private fun MacrobenchmarkScope.focusedIdentity(): Pair<String?, android.graphics.Rect>? = try {
+    device.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds }
+} catch (_: androidx.test.uiautomator.StaleObjectException) {
+    null
 }
 
 private fun MacrobenchmarkScope.openCapsule() {
