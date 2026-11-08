@@ -38,7 +38,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowToast
@@ -68,11 +67,11 @@ class SettingsTabsTest {
         blocker.clear()
     }
 
-    private fun show() {
+    private fun show(aboutContext: android.content.Context = compose.activity) {
         lateinit var general: GeneralPage
         compose.runOnUiThread {
             general = GeneralPage(compose.activity, BrowserSettings(), blocker, MainScope(), onBlockerChanged = {})
-            about = AboutPage(compose.activity, MainScope(), onDone = {})
+            about = AboutPage(aboutContext, MainScope(), onDone = {})
         }
         compose.setContent { VireoTvTheme { SettingsContent(general, about) } }
     }
@@ -153,7 +152,11 @@ class SettingsTabsTest {
 
     @Config(sdk = [25])
     @Test fun retryingADownloadedUpdateUsesTheSameFileWithoutCheckingTheNetwork() {
-        show()
+        // Records the installer request; the test has no package installer to resolve it.
+        val started = mutableListOf<Intent>()
+        show(object : ContextWrapper(compose.activity) {
+            override fun startActivity(intent: Intent) { started += intent }
+        })
         val apk = File(compose.activity.cacheDir, "updates/retry.apk").apply {
             parentFile!!.mkdirs(); writeText("verified by download before it reaches this state")
         }
@@ -164,8 +167,7 @@ class SettingsTabsTest {
             idle()
             compose.waitForIdle()
             assertEquals("No failure reported", null, ShadowToast.getTextOfLatestToast())
-            val intent = Shadows.shadowOf(compose.activity).nextStartedActivity
-                ?: Shadows.shadowOf(RuntimeEnvironment.getApplication()).nextStartedActivity
+            val intent = started.single()
             assertEquals(Intent.ACTION_VIEW, intent.action)
             assertEquals("application/vnd.android.package-archive", intent.type)
             assertEquals("content", intent.data!!.scheme)

@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -229,10 +230,15 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         if (browser.vb.controlsOverlay.isVisible) browser.closeCapsule()
     }
 
-    /** Focuses the search field; before the first composition the request waits for it. */
+    /**
+     * Focuses the search field. Before the first composition the request waits for it; while Home
+     * is being shown again in the same frame (after the capsule closes) it is retried once laid out.
+     */
     fun focusContent(): Boolean {
-        if (root == null) return false
-        if (runCatching { searchFocus.requestFocus() }.isFailure) pendingFocus = true
+        val view = root ?: return false
+        val done = runCatching { searchFocus.requestFocus(FocusDirection.Enter) }
+        if (done.isFailure) pendingFocus = true
+        else if (done.getOrNull() == false) view.post { if (root === view) runCatching { searchFocus.requestFocus(FocusDirection.Enter) } }
         return true
     }
 
