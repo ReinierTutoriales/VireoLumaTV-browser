@@ -89,20 +89,37 @@ private fun MacrobenchmarkScope.press(key: () -> Boolean) {
     device.waitForIdle()
 }
 
+/**
+ * True once [selector] is the only focused node of its window. Under load Compose can report the
+ * previous node as focused for a moment too; acting on such a read sends OK to the wrong control.
+ * Other windows keep their own focused View (the capsule behind the menu dialog), so the check
+ * stays within the target's window.
+ */
+private fun MacrobenchmarkScope.soleFocus(selector: BySelector, timeout: Long): Boolean =
+    device.wait(Condition<UiDevice, Boolean> { ui ->
+        val node = ui.findObject(By.copy(selector).focused(true)) ?: return@Condition false
+        var root = node
+        while (true) root = root.parent ?: break
+        root.findObjects(By.focused(true)).size == 1
+    }, timeout) == true
+
+private fun MacrobenchmarkScope.requireFocus(selector: BySelector) {
+    if (!soleFocus(selector, TIMEOUT_MS)) failWithScreen("Expected sole focus not found: $selector")
+}
+
 private fun MacrobenchmarkScope.focus(selector: BySelector, key: () -> Boolean, limit: Int = 12) {
-    val target = By.copy(selector).focused(true)
     repeat(limit) {
-        if (device.hasObject(target)) return
+        if (soleFocus(selector, 300)) return
         val before = device.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds }
         press(key)
         // Wait until the accessibility tree reports the move; a stale read would press again
         // and step past the target on a slow, uncompiled run.
-        if (device.wait(Until.hasObject(target), 300)) return
+        if (soleFocus(selector, 300)) return
         device.wait(Condition<UiDevice, Boolean> { ui ->
             ui.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds } != before
         }, 1_000L)
     }
-    requireNode(target)
+    if (!soleFocus(selector, TIMEOUT_MS)) failWithScreen("Expected sole focus not reached: $selector")
 }
 
 private fun MacrobenchmarkScope.openCapsule() {
@@ -114,7 +131,7 @@ private fun MacrobenchmarkScope.openCapsule() {
     repeat(3) {
         press { device.pressBack() }
         if (device.wait(Until.hasObject(By.res("menu_button")), 2_000)) {
-            requireNode(By.res(Pattern.compile("back_button|home_button")).focused(true))
+            requireFocus(By.res(Pattern.compile("back_button|home_button")))
             return
         }
     }
@@ -128,7 +145,7 @@ private fun MacrobenchmarkScope.focusAddress() {
         press { device.pressDPadUp() }
     }
     focus(By.res("home_search"), { device.pressDPadLeft() })
-    requireNode(By.res("home_search").focused(true).clickable(true))
+    requireFocus(By.res("home_search").clickable(true))
 }
 
 /** Every enabled command is reached in both directions; focus alone must not invoke it. */
@@ -137,11 +154,11 @@ internal fun MacrobenchmarkScope.traverseCapsule() {
     val commands = listOf("refresh_button", "home_button", "blocker_button", "menu_button")
     for (tag in commands) {
         press { device.pressDPadRight() }
-        requireNode(By.res(tag).focused(true))
+        requireFocus(By.res(tag))
     }
     for (tag in commands.dropLast(1).reversed() + "home_search") {
         press { device.pressDPadLeft() }
-        requireNode(By.res(tag).focused(true))
+        requireFocus(By.res(tag))
     }
     requireGone(By.res("menu_history"))
 }
@@ -150,29 +167,29 @@ private fun MacrobenchmarkScope.openMenu() {
     focusAddress()
     focus(By.res("menu_button"), { device.pressDPadRight() })
     press { device.pressDPadCenter() }
-    requireNode(By.res("menu_history").focused(true))
+    requireFocus(By.res("menu_history"))
 }
 
 internal fun MacrobenchmarkScope.openAndCloseMenu() {
     openMenu()
     for (entry in MENU_ENTRIES.drop(1)) {
         press { device.pressDPadDown() }
-        requireNode(By.res("menu_$entry").focused(true))
+        requireFocus(By.res("menu_$entry"))
     }
     for (entry in MENU_ENTRIES.dropLast(1).reversed()) {
         press { device.pressDPadUp() }
-        requireNode(By.res("menu_$entry").focused(true))
+        requireFocus(By.res("menu_$entry"))
     }
     press { device.pressBack() }
     requireGone(By.res("menu_history"))
-    requireNode(By.res("menu_button").focused(true))
+    requireFocus(By.res("menu_button"))
 }
 
 internal fun MacrobenchmarkScope.openAndCloseSettings() {
     openMenu()
     for (entry in MENU_ENTRIES.drop(1).take(4)) {
         press { device.pressDPadDown() }
-        requireNode(By.res("menu_$entry").focused(true))
+        requireFocus(By.res("menu_$entry"))
     }
     press { device.pressDPadCenter() }
     requireNode(By.res(packageName, "general_page_tab"))
@@ -189,7 +206,7 @@ internal fun MacrobenchmarkScope.openAndCloseSettings() {
     repeat(8) { press { device.pressDPadUp() } }
     press { device.pressBack() }
     requireGone(By.res(packageName, "general_page_tab"))
-    requireNode(By.res("menu_button").focused(true))
+    requireFocus(By.res("menu_button"))
     requireNode(HOME_SEARCH)
 }
 
@@ -199,13 +216,13 @@ internal fun MacrobenchmarkScope.openAndCloseSettings() {
  */
 private fun MacrobenchmarkScope.step(expected: BySelector, key: () -> Boolean) {
     press(key)
-    requireNode(By.copy(expected).focused(true))
+    if (!soleFocus(expected, TIMEOUT_MS)) failWithScreen("D-pad step did not land on $expected")
 }
 
 private fun MacrobenchmarkScope.focusFirstTab() {
     focusAddress()
     press { device.pressDPadDown() }
-    requireNode(TAB_CONTROL.focused(true))
+    requireFocus(TAB_CONTROL)
     focus(FIRST_TAB, { device.pressDPadLeft() })
 }
 
