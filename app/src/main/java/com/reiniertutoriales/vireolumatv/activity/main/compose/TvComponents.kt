@@ -25,8 +25,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import com.reiniertutoriales.vireolumatv.R
 
 /*
  * Shared TV controls. Foundation's clickable handles D-pad OK, touch, mouse and pointer-remote
@@ -63,6 +66,7 @@ fun TvListRow(
     enabled: Boolean = true,
     onLongClick: (() -> Unit)? = null,
     role: Role = Role.Button,
+    leadingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
@@ -85,6 +89,7 @@ fun TvListRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(18.dp),
     ) {
+        leadingContent?.invoke()
         if (symbol != null) TvSymbolIcon(symbol, Modifier.size(26.dp), tint = content)
         Column(Modifier.weight(1f)) {
             Text(title, color = content, fontSize = 17.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -161,4 +166,11 @@ fun TvTextField(
             }
         },
     )
+}
+
+/** A day heading in a dated list; read as a heading and never a focus stop. */
+@Composable
+fun TvDayHeader(text: String, modifier: Modifier = Modifier) {
+    Text(text, color = colorResource(R.color.brand), fontSize = 14.sp,
+        modifier = modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp).semantics { heading() })
 }

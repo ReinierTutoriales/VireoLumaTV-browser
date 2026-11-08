@@ -21,12 +21,6 @@
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textColor">@color/on_control</item>
     </style>
-    <style name="TextAppearance.Vireo.Overline" parent="TextAppearance.AppCompat">
-        <item name="android:textSize">14sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">@color/brand</item>
-        <item name="android:letterSpacing">0.04</item>
-    </style>
 
     <!-- Round icon button: 48 dp target, grows 1.1x and inverts on focus. -->
     <style name="Widget.Vireo.IconButton" parent="Widget.AppCompat.ImageButton">
