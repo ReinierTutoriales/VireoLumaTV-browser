@@ -16,6 +16,9 @@ interface PageWindow {
     // Navigation and page state
 
     /** Opens [url] in a tab after this one; [load] starts loading at once. */
+    /** The browser's controls own focus (the capsule is open): a page being shown must not take it. */
+    val controlsHaveFocus: Boolean
+
     fun openInNewTab(url: String, load: Boolean): PageEngine?
     /** True keeps the page from loading [url] itself: it is not a web address. */
     fun interceptNavigation(url: String): Boolean

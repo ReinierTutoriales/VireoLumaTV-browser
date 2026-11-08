@@ -45,26 +45,26 @@ class BrowserNavigationTest {
         assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
     }
 
-    @Test fun focusTakenBehindTheOpenCapsuleReturnsToItsCommands() = Fixture().use { f ->
+    @Test fun aPageShownBehindTheOpenCapsuleDoesNotTakeFocus() = Fixture().use { f ->
+        val window = TabWindow(f.activity, f.tab)
+        assertFalse(window.controlsHaveFocus)
         f.activity.openCapsule()
-        // Focus starts in the capsule's host, as after opening it.
-        f.vb.controlsHost.layout(0, 0, 1280, 120)
-        f.vb.controlsHost.isFocusableInTouchMode = true
-        assertTrue(f.vb.controlsHost.requestFocus())
-        val before = f.vb.controlsHost.commandFocusRequests
-        // A View behind the capsule takes focus without a key press (Home added on first start).
-        assertTrue(f.page.requestFocus())
-        assertEquals(before + 1, f.vb.controlsHost.commandFocusRequests)
+        assertTrue("Engines must leave focus to the open capsule", window.controlsHaveFocus)
+        f.activity.closeCapsule()
+        assertFalse(window.controlsHaveFocus)
     }
 
-    @Test fun focusOnThePageWithTheCapsuleClosedIsLeftAlone() = Fixture().use { f ->
-        val other = View(f.activity).apply { isFocusableInTouchMode = true }
-        f.vb.pageContainer.addView(other)
+    @Test fun arrowSearchStopsAtTheCapsuleEdge() = Fixture().use { f ->
+        f.activity.openCapsule()
+        // A focusable View of the page behind the capsule, below the controls.
+        val behind = View(f.activity).apply { isFocusable = true; isFocusableInTouchMode = true }
+        f.vb.pageContainer.addView(behind, android.widget.FrameLayout.LayoutParams(400, 200, android.view.Gravity.BOTTOM))
         relayout(f)
-        val before = f.vb.controlsHost.commandFocusRequests
-        assertTrue(other.requestFocus())
-        assertTrue(f.page.requestFocus())
-        assertEquals(before, f.vb.controlsHost.commandFocusRequests)
+        f.vb.controlsHost.layout(0, 0, 600, 120)
+        f.vb.controlsHost.isFocusableInTouchMode = true
+        assertTrue(f.vb.controlsHost.requestFocus())
+        assertNull("Arrow search must not leave the capsule for the page behind it",
+            f.vb.controlsHost.focusSearch(f.vb.controlsHost, View.FOCUS_DOWN))
     }
 
     private fun tabCommand(activity: MainActivity, command: com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand) {

@@ -129,7 +129,9 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
         cursor.pointerEnabled = true
         view.usePointer(true)
         view.isFocusableInTouchMode = true
-        view.requestFocus()
+        // Shown behind the open capsule (tab switch, close, add), the page waits for the capsule
+        // to close; taking focus would send the remote's keys to the page behind the controls.
+        if (!window.controlsHaveFocus) view.requestFocus()
         cursor.pointerController.onHold = ::openPointerMenuAt
         cursor.pointerController.fadeIn()
         resume()

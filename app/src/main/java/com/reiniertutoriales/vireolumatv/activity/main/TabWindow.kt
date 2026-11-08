@@ -176,6 +176,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
     override val blocksAds: Boolean get() = tab.adblock ?: browser.config.adBlockEnabled
 
     /** The home page may show dialogs; other pages follow their site's pop-up level. */
+    override val controlsHaveFocus: Boolean get() = browser.capsuleOpen
     override val blocksDialogs: Boolean get() = tab.url != Config.HOME_PAGE_URL && blocksNewWindow(dialog = true, userGesture = false)
 
     private fun blocksNewWindow(dialog: Boolean, userGesture: Boolean): Boolean = when (tabs.popupBlockingLevel(tab)) {

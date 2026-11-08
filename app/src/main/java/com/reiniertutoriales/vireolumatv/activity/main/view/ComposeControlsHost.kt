@@ -2,6 +2,8 @@ package com.reiniertutoriales.vireolumatv.activity.main.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -144,7 +146,19 @@ class ComposeControlsHost @JvmOverloads constructor(
 
     fun requestCommandFocus() { focusRequest.value += 1 }
 
-    /** Number of command-focus requests, for tests of the activity's focus guard. */
-    @androidx.annotation.VisibleForTesting
-    internal val commandFocusRequests: Int get() = focusRequest.value
+    /**
+     * Arrow keys stop at the capsule's edges. Past a Compose edge Android continues the search
+     * among Views and would focus Home or the page behind the capsule. Leaving it is explicit:
+     * Down from the tab row closes it, and the address field focuses its suggestions.
+     */
+    override fun focusSearch(focused: View?, direction: Int): View? {
+        val next = super.focusSearch(focused, direction) ?: return null
+        val capsule = parent as? ViewGroup ?: return next
+        var ancestor: android.view.ViewParent? = next.parent
+        while (ancestor != null) {
+            if (ancestor === capsule) return next
+            ancestor = ancestor.parent
+        }
+        return null
+    }
 }
