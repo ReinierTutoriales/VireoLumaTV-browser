@@ -223,7 +223,7 @@ jobs:
           ln -s 22.0 "$ANDROID_HOME/cmdline-tools/latest"
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
       - name: Start minified APK and preserve installed data
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
           api-level: ${{ matrix.api }}
           target: google_apis
