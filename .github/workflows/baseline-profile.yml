@@ -71,6 +71,7 @@ jobs:
           path: |
             baselineprofile/build/reports/androidTests/
             baselineprofile/build/outputs/androidTest-results/
+            baselineprofile/build/intermediates/managed_device_android_test_additional_output/
           if-no-files-found: ignore
           retention-days: 7
 

@@ -33,6 +33,7 @@ internal fun resetBrowserData() {
 
 /** The launcher path restores Home without appending a deep-link tab on every iteration. */
 internal fun MacrobenchmarkScope.startOnHome() {
+    InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
     startActivityAndWait()
     waitForHome()
 }
@@ -42,7 +43,11 @@ internal fun MacrobenchmarkScope.waitForHome() {
     val deadline = SystemClock.uptimeMillis() + TIMEOUT_MS
     while (SystemClock.uptimeMillis() < deadline) {
         device.findObject(By.res("android", "button2"))
-            ?.takeIf { it.applicationPackage == packageName }?.click()
+            ?.takeIf { it.applicationPackage == packageName }?.let { notice ->
+                notice.click()
+                // UiObject2.click injects touch; restore the remote's input mode after the notice.
+                InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
+            }
         if (device.wait(Until.hasObject(HOME_SEARCH), 500)) {
             device.waitForIdle()
             return
