@@ -66,26 +66,38 @@ fun TvTabStrip(
             val interaction = remember(tab) { MutableInteractionSource() }
             val focused by interaction.collectIsFocusedAsState()
             val hovered by interaction.collectIsHoveredAsState()
+            val closeInteraction = remember(tab) { MutableInteractionSource() }
+            val closeFocused by closeInteraction.collectIsFocusedAsState()
+            val closeHovered by closeInteraction.collectIsHoveredAsState()
             LaunchedEffect(focused) { if (focused) onFocus(index) }
+            // The pill is not a focus target: the title and its X are sibling targets, so D-pad
+            // Right moves title -> X -> next title. A nested X lies inside the title's bounds and
+            // two-dimensional focus search would skip it.
             Row(
                 modifier = Modifier.defaultMinSize(minHeight = 48.dp)
-                    .background(if (focused) Color(0xFF262626) else if (selected == index) Color(0xFF171717) else TvControlColors.surface(false, hovered), shape)
-                    .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
-                    .testTag("tab_${index}_${System.identityHashCode(tab)}")
-                    .semantics { role = Role.Tab; this.selected = selected == index }
-                    .combinedClickable(interactionSource = interaction, indication = null,
-                        onClick = { onActivate(index) }, onLongClick = { onOptions(tab) })
-                    .padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                    .background(
+                        if (focused || closeFocused) Color(0xFF262626) else if (selected == index) Color(0xFF171717)
+                        else TvControlColors.surface(false, hovered || closeHovered),
+                        shape,
+                    )
+                    .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(tab.title.ifBlank { tab.url }.ifBlank { newTab },
-                    color = Color.White, fontSize = 15.sp, maxLines = 1,
-                    overflow = TextOverflow.Ellipsis)
-                val closeInteraction = remember(tab) { MutableInteractionSource() }
-                val closeFocused by closeInteraction.collectIsFocusedAsState()
-                val closeHovered by closeInteraction.collectIsHoveredAsState()
                 Box(
-                    modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                    modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                        .testTag("tab_${index}_${System.identityHashCode(tab)}")
+                        .semantics { role = Role.Tab; this.selected = selected == index }
+                        .combinedClickable(interactionSource = interaction, indication = null,
+                            onClick = { onActivate(index) }, onLongClick = { onOptions(tab) })
+                        .padding(start = 14.dp, end = 6.dp),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    Text(tab.title.ifBlank { tab.url }.ifBlank { newTab },
+                        color = Color.White, fontSize = 15.sp, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                }
+                Box(
+                    modifier = Modifier.padding(end = 4.dp).defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                         .background(if (closeFocused) Color(0xFF383838) else if (closeHovered) TvControlColors.Hovered else Color.Transparent, shape)
                         .border(if (closeFocused) 2.dp else if (closeHovered) 1.dp else 0.dp, TvControlColors.border(closeFocused, closeHovered), shape)
                         .testTag("tab_close_$index")
