@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.SemanticsMatcher
@@ -12,6 +13,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.test.platform.app.InstrumentationRegistry
@@ -133,5 +136,19 @@ class MainSettingsFocusTest {
         compose.onNodeWithTag("llWebEngineDebug").performScrollTo().performClick()
         assertFalse(blocker.config.pageDebugging)
         assertEquals(listOf(false), debugCalls)
+    }
+
+    @Test fun tappingTrackCanRestoreInitialValueAfterRemoteAdjustment() {
+        val min = com.reiniertutoriales.vireolumatv.Config.POINTER_PERCENT_MIN
+        blocker.config.pointerSpeedPercent = min
+        show()
+        val slider = compose.onNodeWithTag("sbCursorMaxSpeed")
+        slider.requestFocus()
+        slider.performKeyInput { pressKey(Key.DirectionRight) }
+        assertEquals(min + 5, blocker.config.pointerSpeedPercent)
+        // mdpi fixture: 16 px row padding followed by the 160 px track.
+        slider.performTouchInput { click(Offset(width - 176f + 0.1f, centerY)) }
+        compose.waitForIdle()
+        assertEquals(min, blocker.config.pointerSpeedPercent)
     }
 }
