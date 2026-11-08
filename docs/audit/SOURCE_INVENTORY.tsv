@@ -245,8 +245,8 @@ app/src/main/res/drawable/bg_row.xml	PROPIO
 app/src/main/res/drawable/bg_scrim_top.xml	PROPIO
 app/src/main/res/drawable/bg_side_panel.xml	PROPIO
 app/src/main/res/drawable/bg_tab_close.xml	ELIMINADO
-app/src/main/res/drawable/bg_toast.xml	PROPIO
-app/src/main/res/drawable/cursor_menu_bg.xml	PROPIO
+app/src/main/res/drawable/bg_toast.xml	ELIMINADO
+app/src/main/res/drawable/cursor_menu_bg.xml	ELIMINADO
 app/src/main/res/drawable/ic_add.xml	MODIFICADO
 app/src/main/res/drawable/ic_back.xml	MODIFICADO
 app/src/main/res/drawable/ic_block.xml	MODIFICADO
@@ -285,7 +285,7 @@ app/src/main/res/layout/dialog_check_item.xml	PROPIO
 app/src/main/res/layout/dialog_choice_item.xml	PROPIO
 app/src/main/res/layout/dialog_favorite_editor.xml	ELIMINADO
 app/src/main/res/layout/dialog_list_item.xml	PROPIO
-app/src/main/res/layout/dialog_shortcut_key.xml	PROPIO
+app/src/main/res/layout/dialog_shortcut_key.xml	ELIMINADO
 app/src/main/res/layout/download_row.xml	ELIMINADO
 app/src/main/res/layout/downloads_screen.xml	ELIMINADO
 app/src/main/res/layout/favorite_row.xml	ELIMINADO
@@ -294,12 +294,12 @@ app/src/main/res/layout/history_screen.xml	ELIMINADO
 app/src/main/res/layout/native_home_tile.xml	ELIMINADO
 app/src/main/res/layout/native_home.xml	ELIMINADO
 app/src/main/res/layout/panel_favorites.xml	ELIMINADO
-app/src/main/res/layout/pointer_menu.xml	PROPIO
+app/src/main/res/layout/pointer_menu.xml	ELIMINADO
 app/src/main/res/layout/settings_general.xml	ELIMINADO
 app/src/main/res/layout/settings_screen.xml	ELIMINADO
 app/src/main/res/layout/tab_chip.xml	ELIMINADO
 app/src/main/res/layout/tab_strip.xml	ELIMINADO
-app/src/main/res/layout/toast_bar.xml	PROPIO
+app/src/main/res/layout/toast_bar.xml	ELIMINADO
 app/src/main/res/layout/view_address_suggestion.xml	PROPIO
 app/src/main/res/layout/view_menu_entry.xml	ELIMINADO
 app/src/main/res/layout/view_setting_button.xml	ELIMINADO

@@ -99,7 +99,6 @@ class HistoryListTest {
 
         list.remove(a)
 
-        adapter
         assertEquals("Offset for the next page must equal the stored rows still listed", 1L, list.rowCount)
     }
 }
