@@ -346,6 +346,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         // Home, the window's default focus); that focus returns to the capsule's first command.
         vb.root.viewTreeObserver.addOnGlobalFocusChangeListener { _, focused ->
             if (overlayVisible && focused != null && !vb.controlsOverlay.holds(focused) && !vb.pointerMenu.holds(focused)) {
+                // TEMPORARY diagnosis: identify the caller that moves focus behind the capsule.
+                Log.w(TAG, "FOCUS-GUARD ${focused.javaClass.name} id=${runCatching { resources.getResourceEntryName(focused.id) }.getOrNull()}", Throwable())
                 vb.controlsHost.requestCommandFocus()
             }
         }
