@@ -82,7 +82,9 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvAddr
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserAction.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserCommandBar.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserShell.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvComponents.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvControlColors.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvDialog.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbol.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvTabStrip.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/VireoTvTheme.kt	PROPIO
@@ -348,6 +350,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserDownloa
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserNavigationTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserUiSnapshotTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/CommandBarFocusTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvDialogTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbolTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/DarkInterfaceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteDraftTest.kt	PROPIO

@@ -1,6 +1,5 @@
 package com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings
 
-import androidx.appcompat.app.AlertDialog
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -17,6 +16,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.AdBlocker
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.BrowserSettings
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsRows.Companion.reveal
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.utils.AppLanguages
@@ -156,7 +156,7 @@ class GeneralPage @JvmOverloads constructor(
                 Engines.setPageDebugging(false)
                 return@toggle
             }
-            AlertDialog.Builder(context)
+            TvDialog.Builder(context)
                 .setTitle(R.string.warning_title)
                 .setMessage(R.string.settings_debugging_warning)
                 .setPositiveButton(android.R.string.ok) { _, _ ->

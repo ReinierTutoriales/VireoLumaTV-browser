@@ -2,12 +2,12 @@ package com.reiniertutoriales.vireolumatv.activity
 
 import android.app.Dialog
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 
 /** The manifest places this window and its WebView in the private process. */
 class PrivateBrowserActivity : MainActivity() {
@@ -29,7 +29,7 @@ class PrivateBrowserActivity : MainActivity() {
 
 /** FragmentManager restores the notice across recreation instead of opening a second dialog. */
 class PrivateSessionNotice : DialogFragment() {
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = AlertDialog.Builder(requireContext())
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = TvDialog.Builder(requireContext())
         .setTitle(R.string.menu_private)
         .setMessage(R.string.private_explained)
         .setPositiveButton(android.R.string.ok, null)

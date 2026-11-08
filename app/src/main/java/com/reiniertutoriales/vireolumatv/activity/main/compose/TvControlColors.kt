@@ -11,6 +11,8 @@ internal object TvControlColors {
     val Hovered = Color(0xFF151515)
     val Focused = Color(0xFF202020)
     val Pressed = Color(0xFF343434)
+    /** The current item of a list (selected tab, chosen option) while not focused. */
+    val Selected = Color(0xFF171717)
     val BorderIdle = Color.DarkGray
     val BorderHovered = Color.Gray
     val BorderFocused = Color.White

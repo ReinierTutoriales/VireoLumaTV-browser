@@ -42,6 +42,16 @@
         <item name="buttonBarNeutralButtonStyle">@style/Widget.Vireo.DialogButton</item>
     </style>
 
+    <!-- TvDialog: a floating window whose Compose content draws its own panel. -->
+    <style name="TvDialog" parent="android:Theme.Material.Dialog.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowMinWidthMajor">0%</item>
+        <item name="android:windowMinWidthMinor">0%</item>
+        <item name="android:backgroundDimAmount">0.7</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
+    </style>
+
     <!-- A panel along the end edge of the screen (the application menu). -->
     <style name="SidePanel" parent="Theme.AppCompat.Dialog">
         <item name="android:fontFamily">sans-serif</item>

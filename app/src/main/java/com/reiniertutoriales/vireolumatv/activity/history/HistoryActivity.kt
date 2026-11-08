@@ -5,13 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import com.reiniertutoriales.vireolumatv.databinding.HistoryScreenBinding
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
@@ -94,7 +94,7 @@ class HistoryActivity : AppCompatActivity() {
     private fun confirmDelete(all: Boolean) {
         val selection = adapter.selectedItems
         if (adapter.rowCount == 0L || (!all && selection.isEmpty())) return
-        AlertDialog.Builder(this)
+        TvDialog.Builder(this)
             .setTitle(R.string.action_delete)
             .setMessage(if (all) R.string.history_delete_all else R.string.history_delete_selected)
             .setPositiveButton(android.R.string.ok) { _, _ ->

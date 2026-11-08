@@ -10,7 +10,6 @@ import android.os.Environment
 import android.view.Gravity
 import android.view.View
 import android.widget.PopupMenu
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
@@ -19,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import com.reiniertutoriales.vireolumatv.databinding.DownloadsScreenBinding
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.service.downloads.DownloadFiles
@@ -116,7 +116,7 @@ open class DownloadsActivity : AppCompatActivity() {
         if (ApkInstaller.canInstall(this)) return ApkInstaller.launch(this, download)
         val explanation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) R.string.install_allow_this_app
             else R.string.install_allow_unknown_sources
-        AlertDialog.Builder(this)
+        TvDialog.Builder(this)
             .setTitle(R.string.app_name)
             .setMessage(explanation)
             .setPositiveButton(android.R.string.ok) { _, _ -> launch(ApkInstaller.permissionSettings(this), R.string.system_settings_unavailable) }

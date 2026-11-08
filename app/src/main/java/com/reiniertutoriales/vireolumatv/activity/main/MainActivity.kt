@@ -27,7 +27,6 @@ import android.webkit.WebStorage
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
@@ -43,6 +42,7 @@ import com.reiniertutoriales.vireolumatv.activity.PrivateBrowserActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesPanel
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
@@ -501,7 +501,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             getString(R.string.tab_action_close),
             getString(R.string.tab_action_favorite),
         )
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        TvDialog.Builder(this)
             .setTitle(R.string.tabs_title)
             .setItems(actions) { _, which ->
                 when (which) {
@@ -609,7 +609,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) Application.getProcessName() else packageName
 
     private fun showNoWebViewDialog() {
-        val dialog = AlertDialog.Builder(this)
+        val dialog = TvDialog.Builder(this)
             .setTitle(R.string.webview_missing_title)
             .setCancelable(false)
             .setMessage(R.string.error_no_webview)
@@ -628,7 +628,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val provider = runCatching { WebViewCompat.getCurrentWebViewPackage(this) }.getOrNull() ?: return
         val notice = WebViewFreshness.pendingNotice(config.prefs, provider, System.currentTimeMillis()) ?: return
         WebViewFreshness.noticeShown(config.prefs, notice)
-        val dialog = AlertDialog.Builder(this)
+        val dialog = TvDialog.Builder(this)
             .setTitle(R.string.warning_title)
             .setMessage(R.string.webview_outdated)
             .setNegativeButton(android.R.string.ok, null)
@@ -711,7 +711,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val tab = tabStore.currentTab.value ?: return
         val state = getString(blockerStatusLabel(tab))
         // A dialog message would hide the list, so the status is the title.
-        AlertDialog.Builder(this)
+        TvDialog.Builder(this)
             .setTitle(resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds))
             .setItems(arrayOf(
                 getString(R.string.blocker_toggle),
@@ -752,7 +752,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val site = tabStore.siteSettingsFor(tab, false)
         val level = site?.popupBlockLevel ?: SiteSettings.DEFAULT_POPUP_POLICY
         val host = site?.hostName ?: runCatching { URL(tab.url).host }.getOrDefault("")
-        AlertDialog.Builder(this)
+        TvDialog.Builder(this)
             .setTitle(getString(R.string.popups_title, host))
             .setSingleChoiceItems(R.array.popups_levels, level) { dialog, choice ->
                 lifecycleScope.launch {

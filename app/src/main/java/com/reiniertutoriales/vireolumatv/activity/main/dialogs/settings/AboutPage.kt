@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
-import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -16,6 +15,7 @@ import com.reiniertutoriales.vireolumatv.BuildConfig
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.PrivateBrowserActivity
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
 import com.reiniertutoriales.vireolumatv.utils.activity
 import com.reiniertutoriales.vireolumatv.webengine.Engines
@@ -87,7 +87,7 @@ class AboutPage @JvmOverloads constructor(
     }
 
     private fun confirmUpdate(release: ReleaseUpdater.Release) {
-        AlertDialog.Builder(context)
+        TvDialog.Builder(context)
             .setTitle(R.string.update_available_title)
             .setMessage(context.getString(R.string.update_available_message, release.version))
             .setPositiveButton(R.string.action_update) { _, _ -> downloadAndInstall(release) }

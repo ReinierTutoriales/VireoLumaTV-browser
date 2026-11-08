@@ -3,11 +3,11 @@ package com.reiniertutoriales.vireolumatv.activity
 import android.app.Application
 import android.content.DialogInterface
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config as BrowserConfig
 import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,8 +37,8 @@ class PrivateSessionNoticeTest {
             val fragments = restored.get().supportFragmentManager.fragments.filterIsInstance<PrivateSessionNotice>()
             assertEquals(1, fragments.size)
             assertFalse(settings.privateHintSeen)
-            (fragments.single().requireDialog() as AlertDialog)
-                .getButton(DialogInterface.BUTTON_NEUTRAL).performClick()
+            (fragments.single().requireDialog() as TvDialog)
+                .press(DialogInterface.BUTTON_NEUTRAL)
             org.robolectric.shadows.ShadowLooper.idleMainLooper()
             assertTrue(settings.privateHintSeen)
         } finally { restored.pause().stop().destroy() }
