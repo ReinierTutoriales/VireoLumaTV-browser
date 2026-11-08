@@ -195,9 +195,6 @@
     <string name="download_time_limit">Android ha interrotto i download: è stato raggiunto il limite di tempo in background.</string>
     <string name="tab_action_new">Nuova scheda accanto</string>
     <string name="tab_action_close">Chiudi questa scheda</string>
-    <string name="tab_action_close_all">Chiudi tutte le schede</string>
-    <string name="tab_action_move_left">Sposta la scheda a sinistra</string>
-    <string name="tab_action_move_right">Sposta la scheda a destra</string>
     <string name="tab_action_favorite">Aggiungi la scheda ai preferiti</string>
     <string name="download_failed">Non riuscito</string>
     <string name="system_settings_unavailable">Impossibile aprire le impostazioni di Android.</string>

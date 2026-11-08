@@ -3,7 +3,6 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.app.Application
 import android.content.res.Configuration
 import com.reiniertutoriales.vireolumatv.R
-import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabStrip
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -19,8 +18,9 @@ import java.util.Locale
 class TabActionsLocalesTest {
     @Test fun everyLanguageOffersEveryTabOptionAndPopupLevel() {
         val app = RuntimeEnvironment.getApplication()
-        val labels = TabStrip.TabAction.entries.map { it.label } +
-            listOf(R.string.favorite_added, R.string.favorite_exists, R.string.favorite_not_web)
+        // The tab options dialog (MainActivity.showTabOptions) and its results.
+        val labels = listOf(R.string.tab_action_new, R.string.tab_action_close, R.string.tab_action_favorite,
+            R.string.favorite_added, R.string.favorite_exists, R.string.favorite_not_web)
         val popups = app.resources.getStringArray(R.array.popups_levels)
         assertEquals("One label per stored pop-up level", 4, popups.size)
         for (tag in listOf("de", "es", "fa", "it", "iw", "pl", "ru", "uk", "vi", "zh-TW", "zh")) {

@@ -112,9 +112,9 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/AddressSu
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/BrowserControls.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/ComposeControlsHost.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/PointerMenu.kt	REESCRITO
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabChips.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabChips.kt	ELIMINADO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabCommand.kt	PROPIO
-app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabStrip.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabStrip.kt	ELIMINADO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/VisitLog.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/PrivateBrowserActivity.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/adblock/AdblockCache.kt	PROPIO
@@ -238,7 +238,7 @@ app/src/main/res/drawable/bg_panel.xml	PROPIO
 app/src/main/res/drawable/bg_row.xml	PROPIO
 app/src/main/res/drawable/bg_scrim_top.xml	PROPIO
 app/src/main/res/drawable/bg_side_panel.xml	PROPIO
-app/src/main/res/drawable/bg_tab_close.xml	PROPIO
+app/src/main/res/drawable/bg_tab_close.xml	ELIMINADO
 app/src/main/res/drawable/bg_toast.xml	PROPIO
 app/src/main/res/drawable/cursor_menu_bg.xml	PROPIO
 app/src/main/res/drawable/ic_add.xml	MODIFICADO
@@ -291,8 +291,8 @@ app/src/main/res/layout/panel_favorites.xml	PROPIO
 app/src/main/res/layout/pointer_menu.xml	PROPIO
 app/src/main/res/layout/settings_general.xml	PROPIO
 app/src/main/res/layout/settings_screen.xml	PROPIO
-app/src/main/res/layout/tab_chip.xml	PROPIO
-app/src/main/res/layout/tab_strip.xml	PROPIO
+app/src/main/res/layout/tab_chip.xml	ELIMINADO
+app/src/main/res/layout/tab_strip.xml	ELIMINADO
 app/src/main/res/layout/toast_bar.xml	PROPIO
 app/src/main/res/layout/view_address_suggestion.xml	PROPIO
 app/src/main/res/layout/view_menu_entry.xml	ELIMINADO
@@ -377,8 +377,8 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabActionsLoca
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabRestoreFallbackTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/TabStripKeysTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/ToolbarStateTest.kt	PROPIO
-app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabRowsTest.kt	PROPIO
-app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsDiffTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabRowsTest.kt	ELIMINADO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/view/tabs/TabsDiffTest.kt	ELIMINADO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/VisitHistoryTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/WindowBackgroundTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/PrivateSessionNoticeTest.kt	PROPIO

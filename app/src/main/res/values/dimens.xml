@@ -15,8 +15,6 @@
     <dimen name="corner_panel">28dp</dimen>
 
     <!-- Four tabs and the new-tab control fit between the safe margins (960 - 2 x 48 dp). -->
-    <dimen name="tab_width">188dp</dimen>
-    <dimen name="tab_height">48dp</dimen>
 
     <!-- Home shortcut grid: one column per this width, between two and six columns. -->
     <dimen name="home_tile_min_width">180dp</dimen>

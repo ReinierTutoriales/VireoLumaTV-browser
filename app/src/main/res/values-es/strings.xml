@@ -195,9 +195,6 @@
     <string name="download_time_limit">Android detuvo las descargas: se alcanzó el límite de tiempo en segundo plano.</string>
     <string name="tab_action_new">Nueva pestaña al lado</string>
     <string name="tab_action_close">Cerrar esta pestaña</string>
-    <string name="tab_action_close_all">Cerrar todas las pestañas</string>
-    <string name="tab_action_move_left">Mover pestaña a la izquierda</string>
-    <string name="tab_action_move_right">Mover pestaña a la derecha</string>
     <string name="tab_action_favorite">Añadir la pestaña a favoritos</string>
     <string name="download_failed">Falló</string>
     <string name="system_settings_unavailable">No se pudieron abrir los ajustes de Android.</string>

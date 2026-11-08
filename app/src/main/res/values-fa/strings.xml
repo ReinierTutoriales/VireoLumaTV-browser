@@ -193,9 +193,6 @@
     <string name="download_time_limit">اندروید بارگیری‌ها را متوقف کرد: محدودیت زمانی پس‌زمینه به پایان رسید.</string>
     <string name="tab_action_new">زبانهٔ جدید در کنار آن</string>
     <string name="tab_action_close">بستن این زبانه</string>
-    <string name="tab_action_close_all">بستن همهٔ زبانه‌ها</string>
-    <string name="tab_action_move_left">جابه‌جایی زبانه به چپ</string>
-    <string name="tab_action_move_right">جابه‌جایی زبانه به راست</string>
     <string name="tab_action_favorite">افزودن زبانه به علاقه‌مندی‌ها</string>
     <string name="download_failed">ناموفق</string>
     <string name="system_settings_unavailable">تنظیمات Android باز نشد.</string>

@@ -193,9 +193,6 @@
     <string name="download_time_limit">Android hat die Downloads gestoppt: Das Zeitlimit im Hintergrund wurde erreicht.</string>
     <string name="tab_action_new">Neuer Tab daneben</string>
     <string name="tab_action_close">Diesen Tab schließen</string>
-    <string name="tab_action_close_all">Alle Tabs schließen</string>
-    <string name="tab_action_move_left">Tab nach links verschieben</string>
-    <string name="tab_action_move_right">Tab nach rechts verschieben</string>
     <string name="tab_action_favorite">Tab zu Favoriten hinzufügen</string>
     <string name="download_failed">Fehlgeschlagen</string>
     <string name="system_settings_unavailable">Die Android-Einstellungen konnten nicht geöffnet werden.</string>

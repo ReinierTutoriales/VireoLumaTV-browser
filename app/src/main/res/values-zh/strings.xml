@@ -191,9 +191,6 @@
     <string name="download_time_limit">Android 已停止下载：已达到后台运行时间限制。</string>
     <string name="tab_action_new">在旁边新建标签页</string>
     <string name="tab_action_close">关闭此标签页</string>
-    <string name="tab_action_close_all">关闭所有标签页</string>
-    <string name="tab_action_move_left">将标签页向左移动</string>
-    <string name="tab_action_move_right">将标签页向右移动</string>
     <string name="tab_action_favorite">将标签页添加到收藏夹</string>
     <string name="download_failed">失败</string>
     <string name="system_settings_unavailable">无法打开 Android 设置。</string>

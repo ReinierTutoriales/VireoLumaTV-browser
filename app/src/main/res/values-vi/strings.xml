@@ -191,9 +191,6 @@
     <string name="download_time_limit">Android đã dừng tải xuống vì đã đạt giới hạn thời gian chạy nền.</string>
     <string name="tab_action_new">Thẻ mới bên cạnh</string>
     <string name="tab_action_close">Đóng thẻ này</string>
-    <string name="tab_action_close_all">Đóng mọi thẻ</string>
-    <string name="tab_action_move_left">Di chuyển thẻ sang trái</string>
-    <string name="tab_action_move_right">Di chuyển thẻ sang phải</string>
     <string name="tab_action_favorite">Thêm thẻ vào mục yêu thích</string>
     <string name="download_failed">Thất bại</string>
     <string name="system_settings_unavailable">Không mở được phần cài đặt Android.</string>
