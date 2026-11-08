@@ -52,12 +52,15 @@ no demuestra por sí sola una mejora en esta app.
 
 ## Dependencias contrastadas el 8 de noviembre de 2026
 
-Las versiones directas consultadas coinciden con las publicaciones estables de
-los proveedores; no se cambian números ni se introducen previews.
+Las versiones directas consultadas se contrastan con las publicaciones estables de
+los proveedores. Core pasa a 1.19.1 por la corrección de compatibilidad de lint con
+AGP 9.5; se declara `core` directamente, porque desde 1.19 las extensiones Kotlin
+están integradas y `core-ktx` es un artefacto vacío de compatibilidad
+([notas oficiales](https://developer.android.com/jetpack/androidx/releases/core#1.19.1)).
 
 | Grupo | Versiones fijadas y contrastadas | Fuente |
 | --- | --- | --- |
-| AndroidX | Activity (activity-compose) 1.13.0; Core KTX 1.19.0; WebKit 1.18.0; Lifecycle 2.11.0; Room3 3.0.3; SQLite 2.7.1. AppCompat, Fragment y RecyclerView retirados (8 nov.) | [AndroidX](https://developer.android.com/jetpack/androidx/versions) |
+| AndroidX | Activity (activity-compose) 1.13.0; Core 1.19.1; WebKit 1.18.0; Lifecycle 2.11.0; Room3 3.0.3; SQLite 2.7.1. AppCompat, Fragment y RecyclerView retirados (8 nov.) | [AndroidX](https://developer.android.com/jetpack/androidx/versions) |
 | Compose para TV | Compose BOM 2026.09.00 (ui, foundation); TV Material 1.1.0 | [Compose](https://developer.android.com/develop/ui/compose/bom), [Compose for TV](https://developer.android.com/jetpack/androidx/releases/tv) |
 | Perfiles y métricas | ProfileInstaller 1.4.1; Metrics 1.0.0; Benchmark 1.5.0 | [AndroidX](https://developer.android.com/jetpack/androidx/versions) |
 | Kotlin | Kotlin 2.4.21; Coroutines 1.11.0; KSP 2.3.13 | [Kotlin](https://kotlinlang.org/docs/releases.html), [Coroutines](https://github.com/Kotlin/kotlinx.coroutines/releases), [KSP](https://github.com/google/ksp/releases) |

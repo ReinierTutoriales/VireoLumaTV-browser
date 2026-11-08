@@ -10,7 +10,7 @@ kotlin = "2.4.21"
 ksp = "2.3.13"
 
 activity = "1.13.0"
-core = "1.19.0"
+core = "1.19.1"
 webkit = "1.18.0"
 coroutines-android = "1.11.0"
 lifecycle-runtime-ktx = "2.11.0"
@@ -31,7 +31,7 @@ robolectric = "4.17"
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 
 # AndroidX
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
+androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
