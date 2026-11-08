@@ -33,7 +33,8 @@ internal fun resetBrowserData() {
 
 /** The launcher path restores Home without appending a deep-link tab on every iteration. */
 internal fun MacrobenchmarkScope.startOnHome() {
-    InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
+    // A real navigation key establishes remote input mode before the app requests focus.
+    press { device.pressDPadUp() }
     startActivityAndWait()
     waitForHome()
 }
@@ -44,9 +45,12 @@ internal fun MacrobenchmarkScope.waitForHome() {
     while (SystemClock.uptimeMillis() < deadline) {
         device.findObject(By.res("android", "button2"))
             ?.takeIf { it.applicationPackage == packageName }?.let { notice ->
-                notice.click()
-                // UiObject2.click injects touch; restore the remote's input mode after the notice.
-                InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
+                val dismiss = By.res("android", "button2").focused(true)
+                press { device.pressDPadDown() }
+                if (!device.hasObject(dismiss)) press { device.pressDPadLeft() }
+                if (!device.hasObject(dismiss)) press { device.pressDPadRight() }
+                requireNode(dismiss)
+                press { device.pressDPadCenter() }
             }
         if (device.wait(Until.hasObject(HOME_SEARCH), 500)) {
             device.waitForIdle()
@@ -57,6 +61,9 @@ internal fun MacrobenchmarkScope.waitForHome() {
 }
 
 private fun MacrobenchmarkScope.failWithScreen(message: String): Nothing {
+    println("Focus at failure: " + device.findObjects(By.focused(true)).joinToString {
+        "id=${it.resourceName}, class=${it.className}, clickable=${it.isClickable}, bounds=${it.visibleBounds}"
+    })
     val media = InstrumentationRegistry.getInstrumentation().context.externalMediaDirs.first()
     val output = File(media, "additional_test_output").apply { mkdirs() }
     device.dumpWindowHierarchy(File(output, "missing-${System.currentTimeMillis()}.xml"))
