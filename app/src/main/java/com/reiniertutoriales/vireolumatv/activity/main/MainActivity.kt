@@ -43,6 +43,7 @@ import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesPanel
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
@@ -777,7 +778,7 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
         val now = SystemClock.uptimeMillis()
         if (now - lastBlockedNotice < BLOCKED_NOTICE_INTERVAL_MS) return
         lastBlockedNotice = now
-        ToastBar.showBottomRight(vb.browserRoot, R.drawable.ic_block,
+        ToastBar.showBottomRight(vb.browserRoot, TvSymbol.Block,
             getString(if (newTab) R.string.popups_window_blocked else R.string.popups_dialog_blocked))
     }
 
