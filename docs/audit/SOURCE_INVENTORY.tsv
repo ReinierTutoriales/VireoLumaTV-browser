@@ -347,6 +347,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrandResources
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserDownloadsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserNavigationTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserUiSnapshotTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/CommandBarFocusTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbolTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/DarkInterfaceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/favorites/FavoriteDraftTest.kt	PROPIO

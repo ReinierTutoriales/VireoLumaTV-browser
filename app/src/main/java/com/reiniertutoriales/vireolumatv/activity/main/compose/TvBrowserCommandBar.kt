@@ -12,6 +12,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -61,6 +63,21 @@ fun TvBrowserCommandBar(
             if (back.enabled) backFocus.requestFocus() else homeFocus.requestFocus()
         }
     }
+    // A history update can disable Back or Forward while it holds focus; the platform would then
+    // move focus to the first focusable View behind the capsule. Keep it on Home instead.
+    val holder = remember { mutableStateOf<String?>(null) }
+    val holderDisabled = (holder.value == BACK && !back.enabled) || (holder.value == FORWARD && !forward.enabled)
+    LaunchedEffect(holderDisabled) {
+        if (holderDisabled) {
+            holder.value = null
+            homeFocus.requestFocus()
+        }
+    }
+    // Focus left while still enabled means the user moved it; a disabled command keeps the record.
+    fun tracked(name: String, enabled: Boolean) = Modifier.onFocusChanged { state ->
+        if (state.isFocused) holder.value = name
+        else if (holder.value == name && enabled) holder.value = null
+    }
     Row(
         modifier = modifier.semantics { testTagsAsResourceId = true }.focusGroup().focusRestorer().background(Color.Black).padding(horizontal = if (address == null) 0.dp else 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -78,8 +95,8 @@ fun TvBrowserCommandBar(
                 modifier = Modifier.weight(1f),
             )
         }
-        CommandAction(back, Modifier.focusRequester(backFocus))
-        CommandAction(forward)
+        CommandAction(back, tracked(BACK, back.enabled).focusRequester(backFocus))
+        CommandAction(forward, tracked(FORWARD, forward.enabled))
         CommandAction(refresh)
         CommandAction(home, Modifier.focusRequester(homeFocus))
         TvBlockerAction(
@@ -196,3 +213,6 @@ fun TvConnectedBrowserCommandBar(
         modifier = modifier,
     )
 }
+
+private const val BACK = "back"
+private const val FORWARD = "forward"
