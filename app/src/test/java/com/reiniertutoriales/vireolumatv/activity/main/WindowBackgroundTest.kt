@@ -32,7 +32,7 @@ class WindowBackgroundTest {
             attributes.recycle()
             val color = ContextCompat.getColor(activity, R.color.background)
             for (layout in listOf(R.layout.browser_window, R.layout.history_screen,
-                R.layout.downloads_screen, R.layout.settings_screen)) {
+                R.layout.downloads_screen)) {
                 val root = activity.layoutInflater.inflate(layout, null)
                 assertNull("Only the window draws the base background: $layout", root.background)
                 if (layout == R.layout.browser_window) {

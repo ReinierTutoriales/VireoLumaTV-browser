@@ -2,80 +2,80 @@ package com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings
 
 import android.content.Context
 import android.content.Intent
-import android.util.AttributeSet
-import android.view.LayoutInflater
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.ScrollView
+import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.BuildConfig
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.PrivateBrowserActivity
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvListRow
 import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
-import com.reiniertutoriales.vireolumatv.utils.activity
+import com.reiniertutoriales.vireolumatv.utils.toast
 import com.reiniertutoriales.vireolumatv.webengine.Engines
 import kotlinx.coroutines.CancellationException
-import java.io.File
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.reiniertutoriales.vireolumatv.utils.toast
+import java.io.File
 
-/** Application identity, license, versions, links and updates. */
-class AboutPage @JvmOverloads constructor(
-        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : ScrollView(context, attrs, defStyleAttr) {
-
-    /** Closes the settings; called before a link opens in a browser tab. */
-    var onDone: (() -> Unit)? = null
-    private var updateButton: Button? = null
+/** Application identity, license, versions, links and updates. [onDone] closes the settings. */
+class AboutPage(private val context: Context, private val scope: CoroutineScope, private val onDone: () -> Unit) {
+    /** True while an update check, download or install runs; the button ignores presses meanwhile. */
+    var updating by mutableStateOf(false)
+        private set
     private var pendingUpdate: File? = null
 
-    init {
-        val rows = SettingsRows(LayoutInflater.from(context).inflate(R.layout.settings_general, this, true)
-            .findViewById<LinearLayout>(R.id.settingsList))
-        rows.info(context.getString(R.string.app_name), sizeSp = 20f)
-        rows.info(context.getString(R.string.about_tagline))
-        rows.value(context.getString(R.string.about_source), null, R.id.rowProjectSource) { open(SOURCES_URL) }
-        rows.info(context.getString(R.string.about_version, BuildConfig.VERSION_NAME))
-        rows.info(context.getString(R.string.about_build, BuildConfig.FLAVOR, "WebView"))
-        rows.info(context.getString(R.string.about_engine, Engines.version))
-        rows.value(context.getString(R.string.about_license), null, R.id.rowLicense) { open(LICENSE_URL) }
-        rows.value(context.getString(R.string.about_privacy), null, R.id.rowPrivacyPolicy) { open(PRIVACY_URL) }
+    @Composable
+    fun Content() = Column {
+        SettingsInfo(stringResource(R.string.app_name), sizeSp = 20)
+        SettingsInfo(stringResource(R.string.about_tagline))
+        SettingsValue(stringResource(R.string.about_source), null, "rowProjectSource") { open(SOURCES_URL) }
+        SettingsInfo(stringResource(R.string.about_version, BuildConfig.VERSION_NAME))
+        SettingsInfo(stringResource(R.string.about_build, BuildConfig.FLAVOR, "WebView"))
+        SettingsInfo(stringResource(R.string.about_engine, Engines.version))
+        SettingsValue(stringResource(R.string.about_license), null, "rowLicense") { open(LICENSE_URL) }
+        SettingsValue(stringResource(R.string.about_privacy), null, "rowPrivacyPolicy") { open(PRIVACY_URL) }
         if (BuildConfig.BUILT_IN_AUTO_UPDATE) {
-            updateButton = rows.button(R.string.action_update, R.id.btnCheckUpdate) { checkForUpdates() }
+            // Stays enabled while busy so focus does not jump; whileUpdating ignores the extra press.
+            TvListRow(stringResource(R.string.action_update),
+                modifier = Modifier.testTag("btnCheckUpdate"), onClick = ::checkForUpdates)
         }
     }
 
     /** Opens [url] in a browser tab of the current mode, closing the settings first. */
     private fun open(url: String) {
-        onDone?.invoke()
+        onDone()
         val target = if (AppContext.config.privateBrowsing)
             PrivateBrowserActivity::class.java else MainActivity::class.java
-        activity?.startActivity(Intent(activity, target).setData(url.toUri()))
+        context.startActivity(Intent(context, target).setData(url.toUri()))
     }
 
-    /** Runs [work] with the update button disabled, so a second press cannot start it twice. */
-    private fun whileUpdating(work: suspend () -> Unit) {
-        val owner = activity as? LifecycleOwner ?: return
-        updateButton?.isEnabled = false
-        owner.lifecycleScope.launch {
+    /** Runs [work] while [updating], so a second press cannot start it twice. */
+    internal fun whileUpdating(work: suspend () -> Unit) {
+        if (updating) return
+        updating = true
+        scope.launch {
             try {
                 work()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
                 context.toast(R.string.update_failed)
-            } finally { updateButton?.isEnabled = true }
+            } finally { updating = false }
         }
     }
 
-    private fun checkForUpdates() = whileUpdating {
+    internal fun checkForUpdates() = whileUpdating {
         // Returning from unknown-source settings should retry the verified file, not download it again.
         pendingUpdate?.takeIf { it.isFile }?.let {
             ReleaseUpdater.install(context, it)
@@ -85,6 +85,9 @@ class AboutPage @JvmOverloads constructor(
         val release = withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() }
         if (release == null) context.toast(R.string.update_none) else confirmUpdate(release)
     }
+
+    /** For tests: a file downloaded and verified earlier, as after returning from the installer. */
+    internal fun setPendingUpdate(file: File?) { pendingUpdate = file }
 
     private fun confirmUpdate(release: ReleaseUpdater.Release) {
         TvDialog.Builder(context)

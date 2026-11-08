@@ -191,7 +191,7 @@ internal fun MacrobenchmarkScope.openAndCloseSettings() {
         requireFocus(By.res("menu_$entry"))
     }
     press { device.pressDPadCenter() }
-    requireNode(By.res(packageName, "general_page_tab"))
+    requireNode(By.res("general_page_tab"))
     requireGone(By.res("menu_settings"))
     val initial = requireNode(By.focused(true))
     val initialBounds = initial.visibleBounds
@@ -204,7 +204,7 @@ internal fun MacrobenchmarkScope.openAndCloseSettings() {
     repeat(7) { press { device.pressDPadDown() } }
     repeat(8) { press { device.pressDPadUp() } }
     press { device.pressBack() }
-    requireGone(By.res(packageName, "general_page_tab"))
+    requireGone(By.res("general_page_tab"))
     requireFocus(By.res("menu_button"))
     requireNode(HOME_SEARCH)
 }

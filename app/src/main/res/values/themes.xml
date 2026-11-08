@@ -76,15 +76,15 @@
         <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
 
-    <!-- Full-window dialogs that draw their own panel (settings). -->
-    <style name="SettingsScreen" parent="Theme.AppCompat.Dialog">
+    <!-- Full-window Compose dialog that draws its own panel (settings). -->
+    <style name="SettingsScreen" parent="android:Theme.Material.Dialog.NoActionBar">
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:colorBackground">@color/background</item>
         <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowBackground">@color/background</item>
-        <item name="windowNoTitle">true</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowAnimationStyle">@style/SettingsScreenAnimation</item>
         <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>

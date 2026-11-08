@@ -48,7 +48,7 @@ private val RowShape = RoundedCornerShape(12.dp)
 
 /**
  * One row of a TV list: optional leading symbol, a title, an optional supporting line and an
- * optional trailing text. [onLongClick] keeps the long-press options of the remote.
+ * optional trailing text or control. [onLongClick] keeps the long-press options of the remote.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -62,6 +62,8 @@ fun TvListRow(
     selected: Boolean = false,
     enabled: Boolean = true,
     onLongClick: (() -> Unit)? = null,
+    role: Role = Role.Button,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
@@ -75,7 +77,7 @@ fun TvListRow(
                 interactionSource = interaction,
                 indication = null,
                 enabled = enabled,
-                role = Role.Button,
+                role = role,
                 onLongClick = onLongClick,
                 onClick = onClick,
             )
@@ -91,6 +93,7 @@ fun TvListRow(
             }
         }
         if (!trailing.isNullOrEmpty()) Text(trailing, color = Color.Gray, fontSize = 14.sp, maxLines = 1)
+        trailingContent?.invoke()
     }
 }
 

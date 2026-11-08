@@ -189,6 +189,8 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
         /** Options with the current one marked; focus starts on it. */
         fun setSingleChoiceItems(@ArrayRes options: Int, checkedItem: Int, listener: DialogInterface.OnClickListener?) =
             setItems(options, listener).also { checked = checkedItem }
+        fun setSingleChoiceItems(options: Array<out CharSequence>, checkedItem: Int, listener: DialogInterface.OnClickListener?) =
+            setItems(options, listener).also { checked = checkedItem }
         fun setFields(vararg field: Field) = apply { fields = field.toList() }
         fun setPositiveButton(@StringRes text: Int, listener: DialogInterface.OnClickListener?) =
             setPositiveButton(context.getText(text), listener)
