@@ -69,8 +69,8 @@ son negros, con texto claro, foco diferenciado y fuente sans-serif del sistema;
 Inicio no ofrece una variante clara. «Oscurecer las páginas web» depende solo de su ajuste
 (activado por defecto), ya no del modo noche del sistema. Pendiente de validación en Android TV.
 
-**Inicio nativo (revisión en curso, 2026-11-03):** búsqueda, tarjetas y edición usan Views/AppCompat
-con RecyclerView; el documento interno vacío conserva el historial y las claves de localStorage existentes.
+**Inicio nativo (revisión en curso, 2026-11-03; en Compose desde 2026-11-08):** búsqueda, tarjetas y edición se dibujan
+en Compose; el documento interno vacío conserva el historial y las claves de localStorage existentes.
 El acceso a ese almacén se verifica contra la URL interna exacta antes de ejecutar y al recibir la respuesta;
 ningún sitio recibe un puente nuevo. Favoritos se conserva en ambos modos; localStorage sigue usando
 el perfil WebView aislado de cada modo. El foco no abre el teclado:
@@ -105,6 +105,15 @@ Los controles del navegador son una capa superior sobre un degradado, dentro de 
 lateral a la derecha con icono por entrada; Atrás lo cierra sin elegir. La vista previa de otra pestaña
 ocupa la pantalla detrás de los controles, sin recortar. Las acciones y el orden de foco
 (N01–N06) conservan las correcciones posteriores de controles deshabilitados y cierre de pestañas. Pendiente de validación en Android TV.
+
+**Interfaz en Compose (2026-11-08, plan integral del propietario):** Ajustes, Inicio, Favoritos, Historial,
+Descargas, diálogos, sugerencias, menú del puntero, aviso y atajo de tecla se dibujan con Compose y TV
+Material sobre ComponentActivity/ComponentDialog; ya no hay AppCompat, Fragment ni RecyclerView. Se
+conservan los contratos anteriores: el foco no ejecuta acciones ni abre el teclado (OK edita los textos
+en un diálogo o en el campo), Atrás cierra antes la selección o el diálogo, las pestañas de Ajustes solo
+cambian al activarse y los textos se aplican al cerrar. El idioma usa LocaleManager en Android 13+ y,
+antes, un valor propio que se aplica en cada contexto base, migrando una vez el registro de AppCompat.
+Con dos teclas de dirección el puntero no va más rápido en diagonal. Pendiente de validación en Android TV.
 
 Estos recorridos deben seguir funcionando después de cada cambio que toque
 MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
