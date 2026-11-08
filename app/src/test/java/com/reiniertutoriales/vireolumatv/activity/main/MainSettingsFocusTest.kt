@@ -144,6 +144,10 @@ class MainSettingsFocusTest {
         show()
         val slider = compose.onNodeWithTag("sbCursorMaxSpeed")
         slider.requestFocus()
+        // Start the lazily installed pointer handler before the value changes.
+        slider.performTouchInput { click(Offset(width - 176f + 0.1f, centerY)) }
+        compose.waitForIdle()
+        assertEquals(min, blocker.config.pointerSpeedPercent)
         slider.performKeyInput { pressKey(Key.DirectionRight) }
         assertEquals(min + 5, blocker.config.pointerSpeedPercent)
         // mdpi fixture: 16 px row padding followed by the 160 px track.
