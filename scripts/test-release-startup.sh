@@ -46,8 +46,25 @@ trap 'capture' ERR
 external_font_kill() {
   adb logcat -d | grep -q "Killing ${app_pid}:${package}/.*depends on provider com.google.android.gms/.fonts.provider.FontsProvider"
 }
+# Install post-processing (replace broadcasts, runtime permission grants) can stop a process launched
+# right after `adb install`: seen as "pkg removed" (API 28) and "changed gids" (API 37). Wait for the
+# broadcast queues first (shell command from API 26; older images wait a fixed time instead).
+settle_install() {
+  timeout 60s adb shell am wait-for-broadcast-idle >/dev/null 2>&1 || sleep 5
+}
+install_settle_kill() {
+  adb logcat -d | grep -qE "Force stopping ${package} .*: pkg removed|Killing [0-9]+:${package}/.*: permission grant or revoke changed gids"
+}
 launch() {
   if attempt_launch; then return 0; fi
+  # Only these exact system reasons are retried, once; an app crash still fails the scenario.
+  if install_settle_kill; then
+    echo "Install post-processing stopped the app in $scenario; relaunching once"
+    cp "$report/$scenario-logcat.txt" "$report/$scenario-install-kill-logcat.txt" 2>/dev/null || true
+    settle_install
+    attempt_launch
+    return
+  fi
   if [ -n "$app_pid" ] && external_font_kill; then
     echo "Play Services restart killed the WebView font client in $scenario; relaunching once"
     cp "$report/$scenario-logcat.txt" "$report/$scenario-provider-kill-logcat.txt" 2>/dev/null || true
@@ -147,8 +164,20 @@ PYXML
 # The old APK can initialize storage without rendering the broken home template.
 scenario=baseline
 adb install --no-incremental "$baseline"
-adb shell am start -W -n "$package/.activity.main.MainActivity" -d https://startup.invalid/ > "$report/baseline-launch.txt" || true
-sleep 10
+settle_install
+# Wait for the database the published version creates on first start, not a fixed time; a launch
+# stopped by install post-processing is started again.
+baseline_ready=0
+for attempt in 1 2 3; do
+  adb shell am start -W -n "$package/.activity.main.MainActivity" -d https://startup.invalid/ > "$report/baseline-launch.txt" || true
+  for wait in $(seq 1 15); do
+    if adb shell test -f "/data/data/$package/databases/main.db"; then baseline_ready=1; break 2; fi
+    sleep 2
+  done
+done
+[ "$baseline_ready" = 1 ] || { echo "The published version never created its database" >&2; capture; exit 1; }
+# Let its first transactions finish before stopping it.
+sleep 5
 adb shell am force-stop "$package"
 adb pull "/data/data/$package/databases" "$report/before" >/dev/null
 # Seed real schema-20 data left by the published version, including WAL if present.
@@ -165,6 +194,7 @@ adb push "$report/before/main.db" "/data/data/$package/databases/main.db" >/dev/
 adb shell chown "$database_uid:$database_uid" "/data/data/$package/databases/main.db"
 scenario=upgrade
 adb install --no-incremental -r "$candidate"
+settle_install
 launch
 adb shell am force-stop "$package"
 adb pull "/data/data/$package/databases" "$report/after" >/dev/null
@@ -177,6 +207,7 @@ PY
 scenario=fresh
 adb uninstall "$package"
 adb install --no-incremental "$candidate"
+settle_install
 launch
 scenario=cold
 launch
