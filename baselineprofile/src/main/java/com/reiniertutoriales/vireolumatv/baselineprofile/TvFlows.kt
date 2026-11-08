@@ -85,18 +85,19 @@ private fun MacrobenchmarkScope.focus(selector: BySelector, key: () -> Boolean, 
 }
 
 private fun MacrobenchmarkScope.openCapsule() {
+    if (device.hasObject(By.res("menu_button"))) {
+        // A selected Tab can have remote focus without an accessibility click action.
+        requireNode(By.focused(true).focusable(true))
+        return
+    }
     repeat(3) {
-        if (device.hasObject(By.res("menu_button"))) {
-            // An already-open capsule may have a selected Tab focused. Accessibility omits
-            // its click action, while the remote can still focus and activate it with OK.
-            requireNode(By.focused(true).focusable(true))
+        press { device.pressBack() }
+        if (device.wait(Until.hasObject(By.res("menu_button")), 2_000)) {
+            requireNode(By.res(Pattern.compile("back_button|home_button")).focused(true))
             return
         }
-        press { device.pressBack() }
-        device.wait(Until.hasObject(By.res("menu_button")), 2_000)
     }
-    requireNode(By.res("menu_button"))
-    requireNode(By.res(Pattern.compile("back_button|home_button")).focused(true))
+    failWithScreen("Back did not open the capsule")
 }
 
 /** Reach the address with the remote, without activating the editor. */
