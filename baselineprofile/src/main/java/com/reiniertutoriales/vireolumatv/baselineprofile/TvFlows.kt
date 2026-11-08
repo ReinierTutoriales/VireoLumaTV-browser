@@ -5,6 +5,7 @@ import androidx.benchmark.macro.MacrobenchmarkScope
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
+import androidx.test.uiautomator.Condition
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
@@ -89,11 +90,19 @@ private fun MacrobenchmarkScope.press(key: () -> Boolean) {
 }
 
 private fun MacrobenchmarkScope.focus(selector: BySelector, key: () -> Boolean, limit: Int = 12) {
+    val target = By.copy(selector).focused(true)
     repeat(limit) {
-        if (device.hasObject(By.copy(selector).focused(true))) return
+        if (device.hasObject(target)) return
+        val before = device.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds }
         press(key)
+        // Wait until the accessibility tree reports the move; a stale read would press again
+        // and step past the target on a slow, uncompiled run.
+        if (device.wait(Until.hasObject(target), 300)) return
+        device.wait(Condition<UiDevice, Boolean> { ui ->
+            ui.findObject(By.focused(true))?.let { it.resourceName to it.visibleBounds } != before
+        }, 1_000L)
     }
-    requireNode(By.copy(selector).focused(true))
+    requireNode(target)
 }
 
 private fun MacrobenchmarkScope.openCapsule() {
