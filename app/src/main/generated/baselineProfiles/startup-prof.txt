@@ -3118,6 +3118,7 @@ HSPLandroidx/compose/runtime/composer/GroupKind$Companion;-><init>(Lkotlin/jvm/i
 HSPLandroidx/compose/runtime/composer/GroupKind$Companion;->getGroup-9udXigM()I
 HSPLandroidx/compose/runtime/composer/GroupKind$Companion;->getNode-9udXigM()I
 HSPLandroidx/compose/runtime/composer/GroupKind$Companion;->getReusableNode-9udXigM()I
+Landroidx/compose/runtime/composer/GroupSourceInformation;
 Landroidx/compose/runtime/composer/RememberManager;
 Landroidx/compose/runtime/composer/gapbuffer/GapAnchor;
 HSPLandroidx/compose/runtime/composer/gapbuffer/GapAnchor;-><clinit>()V
@@ -3129,6 +3130,7 @@ HSPLandroidx/compose/runtime/composer/gapbuffer/GapAnchor;->toIndexFor(Landroidx
 HSPLandroidx/compose/runtime/composer/gapbuffer/GapAnchor;->toIndexFor(Landroidx/compose/runtime/composer/gapbuffer/SlotWriter;)I
 Landroidx/compose/runtime/composer/gapbuffer/GapAnchorKt;
 HSPLandroidx/compose/runtime/composer/gapbuffer/GapAnchorKt;->asGapAnchor(Landroidx/compose/runtime/Anchor;)Landroidx/compose/runtime/composer/gapbuffer/GapAnchor;
+Landroidx/compose/runtime/composer/gapbuffer/GapGroupSourceInformation;
 Landroidx/compose/runtime/composer/gapbuffer/KeyInfo;
 HSPLandroidx/compose/runtime/composer/gapbuffer/KeyInfo;-><clinit>()V
 HSPLandroidx/compose/runtime/composer/gapbuffer/KeyInfo;-><init>(ILjava/lang/Object;III)V
