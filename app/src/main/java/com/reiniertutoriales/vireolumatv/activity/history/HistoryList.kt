@@ -26,15 +26,17 @@ class HistoryList {
 
     val selectedItems: List<HistoryItem> get() = realItems.filter { it.selected }
 
-    var selectionMode by mutableStateOf(false)
-        private set
+    private var selecting by mutableStateOf(false)
 
-    fun setSelectionMode(on: Boolean) {
-        if (selectionMode == on) return
-        selectionMode = on
-        if (!on) realItems.forEach { it.selected = false }
-        revision++
-    }
+    /** Rows are being picked for deletion; leaving the mode clears the selection. */
+    var selectionMode: Boolean
+        get() = selecting
+        set(on) {
+            if (selecting == on) return
+            selecting = on
+            if (!on) realItems.forEach { it.selected = false }
+            revision++
+        }
 
     fun addItems(items: List<HistoryItem>) {
         if (items.isEmpty()) return

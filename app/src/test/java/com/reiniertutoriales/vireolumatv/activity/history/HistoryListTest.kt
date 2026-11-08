@@ -57,10 +57,10 @@ class HistoryListTest {
     @Test
     fun leavingMultiselectClearsSelection() {
         val list = newList().apply { addItems(listOf(item(day, "a"))) }
-        list.setSelectionMode(true)
+        list.selectionMode = true
         list.toggleSelection(list.rows.first { !it.isDayHeader })
 
-        list.setSelectionMode(false)
+        list.selectionMode = false
 
         assertTrue(list.selectedItems.isEmpty())
     }

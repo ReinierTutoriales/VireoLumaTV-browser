@@ -87,7 +87,7 @@ class HistoryActivity : ComponentActivity() {
     }
 
     private fun setSelectionMode(on: Boolean) {
-        list.setSelectionMode(on)
+        list.selectionMode = on
         leaveSelection.isEnabled = on
     }
 
