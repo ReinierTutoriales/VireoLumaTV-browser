@@ -489,10 +489,7 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
             engine?.canGoBack == true -> engine.back()
             goHomeIfNoHistory -> navigate(browserSettings.homePage)
             vb.controlsOverlay.isVisible -> closeCapsule()
-            else -> {
-                openCapsule()
-                capsuleFromBack = overlayVisible
-            }
+            else -> openCapsule()
         }
     }
 
@@ -952,7 +949,10 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
                 tabStore.currentTab.value?.engine?.setPointerMode(true)
                 backPresses.holdBGoesBack = false
             }
-            else -> openCapsule()
+            else -> {
+                openCapsule()
+                capsuleFromBack = overlayVisible
+            }
         }
     }
 
