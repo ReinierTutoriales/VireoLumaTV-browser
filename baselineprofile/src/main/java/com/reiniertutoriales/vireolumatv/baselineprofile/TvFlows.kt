@@ -193,6 +193,15 @@ internal fun MacrobenchmarkScope.openAndCloseSettings() {
     requireNode(HOME_SEARCH)
 }
 
+/**
+ * One D-pad step that must land on [expected]. Each step waits for its own result, so queued
+ * presses never overshoot while accessibility lags on a loaded emulator, and the order is checked.
+ */
+private fun MacrobenchmarkScope.step(expected: BySelector, key: () -> Boolean) {
+    press(key)
+    requireNode(By.copy(expected).focused(true))
+}
+
 private fun MacrobenchmarkScope.focusFirstTab() {
     focusAddress()
     press { device.pressDPadDown() }
@@ -205,7 +214,9 @@ internal fun MacrobenchmarkScope.openSwitchAndCloseTab() {
     focusFirstTab()
     val originalTab = requireNotNull(requireNode(FIRST_TAB).resourceName)
     requireGone(SECOND_TAB)
-    focus(By.res("new_tab_button"), { device.pressDPadRight() })
+    // Title -> its X -> "+": the X of each tab is a D-pad stop of its own.
+    step(By.res("tab_close_0")) { device.pressDPadRight() }
+    step(By.res("new_tab_button")) { device.pressDPadRight() }
     press { device.pressDPadCenter() }
     waitForHome()
     openCapsule()
@@ -216,7 +227,9 @@ internal fun MacrobenchmarkScope.openSwitchAndCloseTab() {
     openCapsule()
     requireNode(By.res(originalTab).selected(true))
     focusFirstTab()
-    focus(By.res("tab_close_1"), { device.pressDPadRight() })
+    step(By.res("tab_close_0")) { device.pressDPadRight() }
+    step(SECOND_TAB) { device.pressDPadRight() }
+    step(By.res("tab_close_1")) { device.pressDPadRight() }
     press { device.pressDPadCenter() }
     requireGone(SECOND_TAB)
     requireNode(By.res(originalTab).selected(true))
