@@ -35,8 +35,10 @@ class BrowserNavigationTest {
     @Test fun downFromTheCommandHostDoesNotCloseTheCapsule() = Fixture().use { f ->
         f.activity.openCapsule()
         // Exercise window dispatch with focus in the host, outside the tab focus group.
+        // This View-only fixture has no Compose frame to give its host a measured height.
+        f.vb.controlsHost.layout(0, 0, 1280, 120)
         f.vb.controlsHost.isFocusableInTouchMode = true
-        assertTrue(f.vb.controlsHost.requestFocus())
+        assertTrue("The laid-out command host must take focus", f.vb.controlsHost.requestFocus())
         assertTrue(f.vb.controlsHost.hasFocus())
         f.activity.onAttachedToWindow()
         f.activity.window.callback.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
