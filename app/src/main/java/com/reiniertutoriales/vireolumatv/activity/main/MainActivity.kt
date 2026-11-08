@@ -631,6 +631,9 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             .setTitle(R.string.warning_title)
             .setMessage(R.string.webview_outdated)
             .setNegativeButton(android.R.string.ok, null)
+            .setOnDismissListener {
+                if (overlayVisible) vb.controlsHost.requestCommandFocus()
+            }
         storeIntent(provider.packageName)?.let { store ->
             dialog.setPositiveButton(R.string.action_open_store) { _, _ -> openStore(store) }
         }
@@ -960,7 +963,10 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
             tabStore.currentTab.value?.engine?.closeFullscreen()
             return
         }
-        if (overlayVisible) return
+        if (overlayVisible) {
+            vb.controlsHost.takeFocus()
+            return
+        }
         overlayVisible = true
         previewGeneration++
         vb.controlsOverlay.animate().cancel()
