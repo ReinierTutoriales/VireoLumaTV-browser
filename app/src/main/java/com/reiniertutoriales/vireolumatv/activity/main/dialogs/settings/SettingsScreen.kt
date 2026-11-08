@@ -13,6 +13,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -124,7 +125,8 @@ internal fun SettingsContent(general: GeneralPage, about: AboutPage) {
             .padding(start = dimensionResource(R.dimen.safe_horizontal), end = dimensionResource(R.dimen.safe_horizontal),
                 top = dimensionResource(R.dimen.safe_vertical)),
     ) {
-        Row(Modifier.focusRestorer(requesters.getValue(page)).padding(vertical = 4.dp),
+        // One focus group: Up from the page returns to the tab focused last, else the shown one.
+        Row(Modifier.focusRestorer(requesters.getValue(page)).focusGroup().padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SettingsTab.entries.forEach { tab ->
                 SettingsTabChip(tab, tab == page, Modifier.focusRequester(requesters.getValue(tab))) { page = tab }

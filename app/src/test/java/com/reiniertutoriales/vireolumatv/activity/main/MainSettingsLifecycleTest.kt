@@ -2,9 +2,13 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.content.DialogInterface
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -12,6 +16,7 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
@@ -77,11 +82,11 @@ class MainSettingsLifecycleTest {
             settings.setHomePageProperties(com.reiniertutoriales.vireolumatv.Config.HomePageMode.CUSTOM, "https://saved.example/")
             page = GeneralPage(compose.activity, settings, model, MainScope(), onBlockerChanged = {})
         }
-        compose.setContent { VireoTvTheme { page.Content() } }
+        compose.setContent { VireoTvTheme { Column(Modifier.verticalScroll(rememberScrollState())) { page.Content() } } }
         try {
             val source = model.config.blockListUrl.value
-            compose.onNodeWithTag("etCustomHomePageUrl").assertIsDisplayed()
-            compose.onNodeWithTag("etAdBlockerListUrl").performClick()
+            compose.onNodeWithTag("etCustomHomePageUrl").performScrollTo().assertIsDisplayed()
+            compose.onNodeWithTag("etAdBlockerListUrl").performScrollTo().performClick()
             compose.runOnUiThread {
                 val editor = ShadowDialog.getLatestDialog() as TvDialog
                 editor.setFieldValue(0, "https://lists.example/filters.txt")

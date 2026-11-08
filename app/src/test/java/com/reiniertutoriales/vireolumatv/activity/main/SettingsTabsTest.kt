@@ -163,7 +163,9 @@ class SettingsTabsTest {
             activate("btnCheckUpdate")
             idle()
             compose.waitForIdle()
-            val intent = Shadows.shadowOf(RuntimeEnvironment.getApplication()).nextStartedActivity
+            assertEquals("No failure reported", null, ShadowToast.getTextOfLatestToast())
+            val intent = Shadows.shadowOf(compose.activity).nextStartedActivity
+                ?: Shadows.shadowOf(RuntimeEnvironment.getApplication()).nextStartedActivity
             assertEquals(Intent.ACTION_VIEW, intent.action)
             assertEquals("application/vnd.android.package-archive", intent.type)
             assertEquals("content", intent.data!!.scheme)

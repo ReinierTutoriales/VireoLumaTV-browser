@@ -11,6 +11,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.test.platform.app.InstrumentationRegistry
@@ -106,7 +107,7 @@ class MainSettingsFocusTest {
     @Test fun activatingARowFlipsItsSwitchAndStoresTheSettingAtOnce() {
         show()
         val autoplay = blocker.config.allowAutoplayMedia
-        compose.onNodeWithTag("llAllowAutoplayMedia").performClick()
+        compose.onNodeWithTag("llAllowAutoplayMedia").performScrollTo().performClick()
         assertEquals(!autoplay, blocker.config.allowAutoplayMedia)
         compose.onNodeWithTag("llAllowAutoplayMedia")
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.ToggleableState, ToggleableState(!autoplay)))
@@ -121,7 +122,7 @@ class MainSettingsFocusTest {
         assertEquals(min + 8, blocker.config.pointerSpeedPercent)
         assertEquals("sbCursorMaxSpeed", focusedTag())
         // Left and Right adjust the value and never move focus; the range is a hard limit.
-        compose.onNode(isFocused()).performKeyInput { repeat(3) { pressKey(Key.DirectionLeft) } }
+        repeat(3) { compose.onNode(isFocused()).performKeyInput { pressKey(Key.DirectionLeft) } }
         assertEquals(min, blocker.config.pointerSpeedPercent)
         assertEquals("sbCursorMaxSpeed", focusedTag())
     }
@@ -129,7 +130,7 @@ class MainSettingsFocusTest {
     @Test fun turningDebuggingOffClosesItForPagesAlreadyOpen() {
         blocker.config.pageDebugging = true
         show()
-        compose.onNodeWithTag("llWebEngineDebug").performClick()
+        compose.onNodeWithTag("llWebEngineDebug").performScrollTo().performClick()
         assertFalse(blocker.config.pageDebugging)
         assertEquals(listOf(false), debugCalls)
     }
