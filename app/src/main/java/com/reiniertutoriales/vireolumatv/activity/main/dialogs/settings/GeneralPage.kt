@@ -1,5 +1,6 @@
 package com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings
 
+import android.app.Activity
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
@@ -122,7 +123,9 @@ class GeneralPage(
 
             SettingsSection(R.string.settings_section_display)
             SettingsChoice(context, R.string.settings_language, "spAppLanguage",
-                AppLanguages.names(context.getString(R.string.language_system)), AppLanguages.chosen()) { AppLanguages.choose(it) }
+                AppLanguages.names(context.getString(R.string.language_system)), AppLanguages.chosen(context)) { position ->
+                (context as? Activity)?.let { AppLanguages.choose(it, position) }
+            }
             SettingsToggle(R.string.settings_darken_pages, "llWebViewAlgorithmicDarkening", darken) {
                 darken = it; config.darkenPages = it
             }

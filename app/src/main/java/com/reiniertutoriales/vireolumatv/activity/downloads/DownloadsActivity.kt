@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.downloads
 
 import android.app.DownloadManager
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -64,6 +65,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.service.downloads.DownloadFiles
 import com.reiniertutoriales.vireolumatv.utils.ApkInstaller
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.utils.toast
 import kotlinx.coroutines.launch
@@ -86,6 +88,8 @@ open class DownloadsActivity : ComponentActivity() {
     /** Focus goes to the list once, when its first rows arrive. */
     private var focusOnLoad = true
     private val privateSession: Boolean get() = this is IncognitoDownloadsActivity
+
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguages.localized(newBase))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

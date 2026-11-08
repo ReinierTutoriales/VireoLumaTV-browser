@@ -1,7 +1,7 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import org.junit.Assert.assertNotNull
@@ -20,7 +20,7 @@ class WindowBackgroundTest {
      * overlays, which hide the page, keep their own. Compose screens draw no full-screen fill.
      */
     @Test fun windowOwnsTheOpaqueBackdropAndOnlyOverlaysPaintTheirOwn() {
-        val owner = Robolectric.buildActivity(AppCompatActivity::class.java)
+        val owner = Robolectric.buildActivity(ComponentActivity::class.java)
         owner.get().setTheme(R.style.AppTheme)
         owner.setup()
         try {

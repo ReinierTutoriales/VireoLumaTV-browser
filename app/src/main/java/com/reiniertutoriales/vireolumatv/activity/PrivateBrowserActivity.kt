@@ -1,8 +1,10 @@
 package com.reiniertutoriales.vireolumatv.activity
 
-import android.app.Dialog
 import android.os.Bundle
-import androidx.fragment.app.DialogFragment
+import androidx.activity.ComponentActivity
+import androidx.core.os.bundleOf
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
@@ -13,26 +15,39 @@ import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 class PrivateBrowserActivity : MainActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!isFinishing && !config.privateHintSeen &&
-            supportFragmentManager.findFragmentByTag(PRIVATE_NOTICE) == null) {
-            PrivateSessionNotice().show(supportFragmentManager, PRIVATE_NOTICE)
-        }
+        if (!isFinishing) PrivateSessionNotice.attach(this)
     }
 
     override fun onDestroy() {
         if (isFinishing) VireoLumaTVApp.instance.exitProcessOnFinish = true
         super.onDestroy()
     }
-
-    private companion object { const val PRIVATE_NOTICE = "private-session-notice" }
 }
 
-/** FragmentManager restores the notice across recreation instead of opening a second dialog. */
-class PrivateSessionNotice : DialogFragment() {
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = TvDialog.Builder(requireContext())
-        .setTitle(R.string.menu_private)
-        .setMessage(R.string.private_explained)
-        .setPositiveButton(android.R.string.ok, null)
-        .setNeutralButton(R.string.action_dont_show_again) { _, _ -> AppContext.config.privateHintSeen = true }
-        .create()
+/**
+ * Explains private mode until the user chooses not to see it again. A notice open when the screen
+ * is recreated comes back once, through the saved state; one already closed does not.
+ */
+object PrivateSessionNotice {
+    private const val KEY = "private-session-notice"
+    private const val SHOWING = "showing"
+
+    /** Call from onCreate, after super.onCreate. Returns the notice when one is shown. */
+    fun attach(activity: ComponentActivity): TvDialog? {
+        val registry = activity.savedStateRegistry
+        val restored = registry.consumeRestoredStateForKey(KEY)
+        var dialog: TvDialog? = null
+        registry.registerSavedStateProvider(KEY) { bundleOf(SHOWING to (dialog?.isShowing == true)) }
+        activity.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_DESTROY) dialog?.dismiss()
+        })
+        if (AppContext.config.privateHintSeen || (restored != null && !restored.getBoolean(SHOWING))) return null
+        dialog = TvDialog.Builder(activity)
+            .setTitle(R.string.menu_private)
+            .setMessage(R.string.private_explained)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.action_dont_show_again) { _, _ -> AppContext.config.privateHintSeen = true }
+            .show()
+        return dialog
+    }
 }

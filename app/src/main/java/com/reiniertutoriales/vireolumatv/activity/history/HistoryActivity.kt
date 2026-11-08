@@ -48,6 +48,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.compose.TvTextButton
 import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
 import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import kotlinx.coroutines.launch
 import java.text.DateFormat
@@ -72,6 +73,8 @@ class HistoryActivity : ComponentActivity() {
     private val leaveSelection = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() = setSelectionMode(false)
     }
+
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguages.localized(newBase))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

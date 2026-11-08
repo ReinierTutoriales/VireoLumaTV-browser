@@ -154,13 +154,18 @@ class SettingsTabsTest {
     @Test fun retryingADownloadedUpdateUsesTheSameFileWithoutCheckingTheNetwork() {
         // Records the installer request; the test has no package installer to resolve it.
         val started = mutableListOf<Intent>()
-        show(object : ContextWrapper(compose.activity) {
+        val recorder = object : ContextWrapper(compose.activity) {
             override fun startActivity(intent: Intent) { started += intent }
-        })
+        }
+        show(recorder)
         val apk = File(compose.activity.cacheDir, "updates/retry.apk").apply {
             parentFile!!.mkdirs(); writeText("verified by download before it reaches this state")
         }
         try {
+            // The install path itself, outside the screen, so a failure names its cause.
+            val direct = runCatching { ReleaseUpdater.install(recorder, apk) }
+            assertTrue("Install path: ${direct.exceptionOrNull()}", direct.isSuccess)
+            started.clear()
             about.setPendingUpdate(apk)
             activate("about_page_tab")
             activate("btnCheckUpdate")

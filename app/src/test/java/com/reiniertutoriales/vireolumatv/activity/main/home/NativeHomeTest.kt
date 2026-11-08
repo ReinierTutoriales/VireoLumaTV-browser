@@ -221,6 +221,8 @@ class NativeHomeTest {
         f.activity.closeCapsule()
         compose.waitForIdle()
         assertEquals(View.VISIBLE, f.vb.nativeHomeContainer.visibility)
+        val holder = compose.activity.window.decorView.findFocus()
+        assertTrue("Home holds the window focus, not $holder", holder != null && f.vb.nativeHomeContainer.hasFocus())
         compose.onNodeWithTag("home_page_search").assertIsFocused()
         assertSame(f.tab, f.tabs.currentTab.value)
     }

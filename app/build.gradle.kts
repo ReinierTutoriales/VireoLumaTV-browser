@@ -167,10 +167,9 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.tv.material)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.webkit)
-    implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     // Installs the bundled baseline profile so Android compiles startup and common paths ahead of time.
     implementation(libs.androidx.profileinstaller)

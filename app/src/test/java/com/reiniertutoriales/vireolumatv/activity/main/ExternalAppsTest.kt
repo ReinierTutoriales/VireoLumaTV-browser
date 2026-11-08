@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.content.DialogInterface
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
@@ -22,7 +22,7 @@ import org.robolectric.shadows.ShadowLooper
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class ExternalAppsTest {
-    private val controller = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
+    private val controller = Robolectric.buildActivity(ComponentActivity::class.java).apply {
         get().setTheme(R.style.AppTheme)
         setup()
     }

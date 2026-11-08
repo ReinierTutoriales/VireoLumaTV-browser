@@ -1,6 +1,6 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
@@ -20,7 +20,7 @@ import org.robolectric.annotation.Config
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class ToolbarStateTest {
     @Test fun toolbarHostUsesOnlyOneComposeViewAndAcceptsBrowserState() {
-        val owner = Robolectric.buildActivity(AppCompatActivity::class.java)
+        val owner = Robolectric.buildActivity(ComponentActivity::class.java)
         owner.get().setTheme(R.style.AppTheme)
         owner.setup()
         try {

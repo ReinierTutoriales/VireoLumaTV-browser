@@ -2,7 +2,7 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.content.DialogInterface
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
@@ -21,7 +21,7 @@ import org.robolectric.shadows.ShadowLooper
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class HttpAuthPromptsTest {
-    private val activity = Robolectric.buildActivity(AppCompatActivity::class.java)
+    private val activity = Robolectric.buildActivity(ComponentActivity::class.java)
         .apply { get().setTheme(R.style.AppTheme) }.setup().get()
     private val prompts = HttpAuthPrompts { activity }
 

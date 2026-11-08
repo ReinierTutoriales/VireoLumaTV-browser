@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.ConnectivityManager
@@ -27,7 +28,7 @@ import android.webkit.WebStorage
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
@@ -56,6 +57,7 @@ import com.reiniertutoriales.vireolumatv.model.SiteSettings
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.Favicons
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.Shortcuts
+import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 import com.reiniertutoriales.vireolumatv.utils.BackPresses
 import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
@@ -90,7 +92,7 @@ import kotlin.system.exitProcess
  * [BrowserDownloads] and other apps through [ExternalApps]. Private mode runs as
  * [PrivateBrowserActivity] in its own process.
  */
-open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
+open class MainActivity : ComponentActivity(), BrowserControls.Callback {
     internal lateinit var vb: BrowserWindowBinding
     internal lateinit var tabStore: TabStore
     internal lateinit var browserSettings: BrowserSettings
@@ -115,6 +117,8 @@ open class MainActivity : AppCompatActivity(), BrowserControls.Callback {
     private var lastBlockedNotice = 0L
     private var suggestionsLookup: Job? = null
     internal var nativeHome: NativeHome? = null
+
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguages.localized(newBase))
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -54,7 +54,7 @@ class ToastBar private constructor(context: Context, val symbol: TvSymbol, val m
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         TvSymbolIcon(symbol, Modifier.size(24.dp), tint = colorResource(R.color.brand))
-                        Text(message, color = colorResource(R.color.on_control), fontSize = 18.sp, maxLines = 2,
+                        Text(message, color = colorResource(R.color.on_surface), fontSize = 18.sp, maxLines = 2,
                             overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 360.dp))
                     }
                 }

@@ -6,12 +6,10 @@ import android.graphics.Color
 import android.graphics.Paint
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
-import androidx.appcompat.content.res.AppCompatResources
 import android.view.View
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.recyclerview.widget.RecyclerView
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.graphics.toArgb
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TvControlColors
 import com.reiniertutoriales.vireolumatv.Config as BrowserConfig
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
@@ -47,9 +45,7 @@ class BrowserUiSnapshotTest {
     private fun capture(name: String, fontScale: Float = 1f) {
         val previousScale = RuntimeEnvironment.getApplication().resources.configuration.fontScale
         RuntimeEnvironment.setFontScale(fontScale)
-        val previousMode = AppCompatDelegate.getDefaultNightMode()
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        val host = Robolectric.buildActivity(AppCompatActivity::class.java).apply {
+        val host = Robolectric.buildActivity(ComponentActivity::class.java).apply {
             get().setTheme(R.style.AppTheme)
             setup()
         }
@@ -95,7 +91,6 @@ class BrowserUiSnapshotTest {
             tabs.currentTab.value = null
             tabs.openTabs.clear()
             host.pause().stop().destroy()
-            AppCompatDelegate.setDefaultNightMode(previousMode)
             RuntimeEnvironment.setFontScale(previousScale)
         }
     }
@@ -112,14 +107,14 @@ class BrowserUiSnapshotTest {
         }
     }
 
-    private fun verifyStates(activity: AppCompatActivity, name: String) {
-        val labels = listOf("Normal", "Foco", "Pulsado", "Abierta", "Inactivo")
-        val enabled = android.R.attr.state_enabled
-        val focused = android.R.attr.state_focused
-        val pressed = android.R.attr.state_pressed
-        val selected = android.R.attr.state_selected
-        val states = listOf(intArrayOf(enabled), intArrayOf(enabled, focused),
-            intArrayOf(enabled, focused, pressed), intArrayOf(enabled, selected), intArrayOf(-enabled))
+    private fun verifyStates(activity: ComponentActivity, name: String) {
+        val labels = listOf("Normal", "Foco", "Pulsado", "Abierta", "Puntero")
+        // The states every Compose control draws (TvControlColors), side by side in one sample.
+        val surfaces = listOf(TvControlColors.surface(focused = false, hovered = false),
+            TvControlColors.surface(focused = true, hovered = false),
+            TvControlColors.surface(focused = true, hovered = false, pressed = true),
+            TvControlColors.Selected,
+            TvControlColors.surface(focused = false, hovered = true)).map { it.toArgb() }
         val sample = Bitmap.createBitmap(600, 104, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(sample)
         canvas.drawColor(ContextCompat.getColor(activity, R.color.background))
@@ -127,21 +122,18 @@ class BrowserUiSnapshotTest {
             color = ContextCompat.getColor(activity, R.color.on_surface)
             textSize = 16f
         }
-        val centers = mutableSetOf<Int>()
-        for ((index, state) in states.withIndex()) {
-            val drawable = AppCompatResources.getDrawable(activity, R.drawable.bg_chip)!!.mutate()
-            drawable.state = state
-            drawable.setBounds(12 + index * 120, 12, 108 + index * 120, 60)
-            drawable.draw(canvas)
-            centers.add(sample.getPixel(60 + index * 120, 36))
+        val fill = Paint(Paint.ANTI_ALIAS_FLAG)
+        for ((index, surface) in surfaces.withIndex()) {
+            fill.color = surface
+            canvas.drawRoundRect(12f + index * 120, 12f, 108f + index * 120, 60f, 12f, 12f, fill)
             canvas.drawText(labels[index], 12f + index * 120, 88f, labelPaint)
         }
-        assertEquals("Normal/focus/pressed/open/disabled must remain visually distinct", 5, centers.size)
+        assertEquals("Normal/focus/pressed/selected/hover must remain visually distinct", 5, surfaces.toSet().size)
         fun color(id: Int) = ContextCompat.getColor(activity, id)
         // Text and icons on every surface they are drawn on, including the inverted focus.
         for ((content, surface) in listOf(R.color.on_surface to R.color.surface_variant,
-            R.color.on_surface to R.color.brand_container, R.color.on_surface to R.color.surface,
-            R.color.inverse_on_surface to R.color.inverse_surface, R.color.on_surface to R.color.background)) {
+            R.color.on_surface to R.color.surface_high, R.color.on_surface to R.color.surface,
+            R.color.on_surface to R.color.background)) {
             assertTrue("Contrast ${activity.resources.getResourceEntryName(content)} on " +
                 activity.resources.getResourceEntryName(surface),
                 ColorUtils.calculateContrast(color(content), color(surface)) >= 4.5)
@@ -149,7 +141,7 @@ class BrowserUiSnapshotTest {
         assertTrue("Secondary text contrast", ColorUtils.calculateContrast(
             color(R.color.on_surface_variant), color(R.color.surface)) >= 4.5)
         assertTrue("Focus is visible against the controls' surroundings", ColorUtils.calculateContrast(
-            color(R.color.inverse_surface), color(R.color.surface_variant)) >= 3.0)
+            TvControlColors.BorderFocused.toArgb(), color(R.color.surface_variant)) >= 3.0)
         File("build/reports/ui/browser-states-$name.png").outputStream().use {
             assertTrue(sample.compress(Bitmap.CompressFormat.PNG, 100, it))
         }

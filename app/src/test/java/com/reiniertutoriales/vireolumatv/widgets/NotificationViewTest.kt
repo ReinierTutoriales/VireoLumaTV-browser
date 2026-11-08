@@ -1,7 +1,7 @@
 package com.reiniertutoriales.vireolumatv.widgets
 
 import android.widget.RelativeLayout
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
@@ -18,7 +18,7 @@ import org.robolectric.shadows.ShadowLooper
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class NotificationViewTest {
     @Test fun aNewMessageReplacesTheOldOneWhichLeavesWithoutFocus() {
-        val activity = Robolectric.buildActivity(AppCompatActivity::class.java).apply { get().setTheme(R.style.AppTheme) }.setup().get()
+        val activity = Robolectric.buildActivity(ComponentActivity::class.java).apply { get().setTheme(R.style.AppTheme) }.setup().get()
         val root = RelativeLayout(activity)
         activity.setContentView(root)
         ToastBar.showBottomRight(root, TvSymbol.Block, "first")
