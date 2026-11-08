@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -131,6 +132,7 @@ private fun SwitchMark(checked: Boolean) {
 internal fun SettingsSlider(@StringRes title: Int, tag: String, min: Int, max: Int, value: Int, step: Int,
                             label: (Int) -> String, onChanged: (Int) -> Unit) {
     fun set(next: Int) = next.coerceIn(min, max).let { if (it != value) onChanged(it) }
+    val currentSet = rememberUpdatedState<(Int) -> Unit> { set(it) }
     TvListRow(
         title = stringResource(title),
         trailing = label(value),
@@ -152,7 +154,7 @@ internal fun SettingsSlider(@StringRes title: Int, tag: String, min: Int, max: I
         trailingContent = {
             val fraction = (value - min).toFloat() / (max - min)
             Box(Modifier.width(160.dp).height(24.dp).pointerInput(min, max) {
-                detectTapGestures { offset -> set(min + Math.round(offset.x / size.width * (max - min))) }
+                detectTapGestures { offset -> currentSet.value(min + Math.round(offset.x / size.width * (max - min))) }
             }, contentAlignment = Alignment.CenterStart) {
                 val shape = RoundedCornerShape(3.dp)
                 Box(Modifier.fillMaxWidth().height(6.dp).background(Color.DarkGray, shape))
