@@ -261,6 +261,7 @@ HSPLandroidx/appcompat/app/AppCompatDelegate$$ExternalSyntheticLambda0;->run()V
 Landroidx/appcompat/app/AppCompatDelegate$Api24Impl;
 HSPLandroidx/appcompat/app/AppCompatDelegate$Api24Impl;->localeListForLanguageTags(Ljava/lang/String;)Landroid/os/LocaleList;
 Landroidx/appcompat/app/AppCompatDelegate$Api33Impl;
+HSPLandroidx/appcompat/app/AppCompatDelegate$Api33Impl;->localeManagerGetApplicationLocales(Ljava/lang/Object;)Landroid/os/LocaleList;
 HSPLandroidx/appcompat/app/AppCompatDelegate$Api33Impl;->localeManagerSetApplicationLocales(Ljava/lang/Object;Landroid/os/LocaleList;)V
 Landroidx/appcompat/app/AppCompatDelegate$SerialExecutor;
 HSPLandroidx/appcompat/app/AppCompatDelegate$SerialExecutor;-><init>(Ljava/util/concurrent/Executor;)V
@@ -297,6 +298,7 @@ HSPLandroidx/appcompat/app/AppCompatDelegateImpl;->ensureSubDecor()V
 HSPLandroidx/appcompat/app/AppCompatDelegateImpl;->ensureWindow()V
 HSPLandroidx/appcompat/app/AppCompatDelegateImpl;->getActivityHandlesConfigChangesFlags(Landroid/content/Context;)I
 HSPLandroidx/appcompat/app/AppCompatDelegateImpl;->getConfigurationLocales(Landroid/content/res/Configuration;)Landroidx/core/os/LocaleListCompat;
+HSPLandroidx/appcompat/app/AppCompatDelegateImpl;->getContextForDelegate()Landroid/content/Context;
 HSPLandroidx/appcompat/app/AppCompatDelegateImpl;->getLocalNightMode()I
 HSPLandroidx/appcompat/app/AppCompatDelegateImpl;->getPanelState(IZ)Landroidx/appcompat/app/AppCompatDelegateImpl$PanelFeatureState;
 HSPLandroidx/appcompat/app/AppCompatDelegateImpl;->getSupportActionBar()Landroidx/appcompat/app/ActionBar;
@@ -671,14 +673,17 @@ HSPLandroidx/collection/ArraySet;->iterator()Ljava/util/Iterator;
 HSPLandroidx/collection/ArraySet;->setArray$collection([Ljava/lang/Object;)V
 HSPLandroidx/collection/ArraySet;->setHashes$collection([I)V
 HSPLandroidx/collection/ArraySet;->set_size$collection(I)V
+HSPLandroidx/collection/ArraySet;->valueAt(I)Ljava/lang/Object;
 Landroidx/collection/ArraySet$ElementIterator;
 HSPLandroidx/collection/ArraySet$ElementIterator;-><init>(Landroidx/collection/ArraySet;)V
+HSPLandroidx/collection/ArraySet$ElementIterator;->elementAt(I)Ljava/lang/Object;
 Landroidx/collection/ArraySetKt;
 HSPLandroidx/collection/ArraySetKt;->allocArrays(Landroidx/collection/ArraySet;I)V
 HSPLandroidx/collection/ArraySetKt;->indexOf(Landroidx/collection/ArraySet;Ljava/lang/Object;I)I
 Landroidx/collection/IndexBasedArrayIterator;
 HSPLandroidx/collection/IndexBasedArrayIterator;-><init>(I)V
 HSPLandroidx/collection/IndexBasedArrayIterator;->hasNext()Z
+HSPLandroidx/collection/IndexBasedArrayIterator;->next()Ljava/lang/Object;
 Landroidx/collection/IntIntMap;
 HSPLandroidx/collection/IntIntMap;-><init>()V
 HSPLandroidx/collection/IntIntMap;-><init>(Lkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -3118,7 +3123,6 @@ HSPLandroidx/compose/runtime/composer/GroupKind$Companion;-><init>(Lkotlin/jvm/i
 HSPLandroidx/compose/runtime/composer/GroupKind$Companion;->getGroup-9udXigM()I
 HSPLandroidx/compose/runtime/composer/GroupKind$Companion;->getNode-9udXigM()I
 HSPLandroidx/compose/runtime/composer/GroupKind$Companion;->getReusableNode-9udXigM()I
-Landroidx/compose/runtime/composer/GroupSourceInformation;
 Landroidx/compose/runtime/composer/RememberManager;
 Landroidx/compose/runtime/composer/gapbuffer/GapAnchor;
 HSPLandroidx/compose/runtime/composer/gapbuffer/GapAnchor;-><clinit>()V
@@ -3130,7 +3134,6 @@ HSPLandroidx/compose/runtime/composer/gapbuffer/GapAnchor;->toIndexFor(Landroidx
 HSPLandroidx/compose/runtime/composer/gapbuffer/GapAnchor;->toIndexFor(Landroidx/compose/runtime/composer/gapbuffer/SlotWriter;)I
 Landroidx/compose/runtime/composer/gapbuffer/GapAnchorKt;
 HSPLandroidx/compose/runtime/composer/gapbuffer/GapAnchorKt;->asGapAnchor(Landroidx/compose/runtime/Anchor;)Landroidx/compose/runtime/composer/gapbuffer/GapAnchor;
-Landroidx/compose/runtime/composer/gapbuffer/GapGroupSourceInformation;
 Landroidx/compose/runtime/composer/gapbuffer/KeyInfo;
 HSPLandroidx/compose/runtime/composer/gapbuffer/KeyInfo;-><clinit>()V
 HSPLandroidx/compose/runtime/composer/gapbuffer/KeyInfo;-><init>(ILjava/lang/Object;III)V
@@ -7028,6 +7031,8 @@ HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion;-><init>(Lkotlin/j
 Landroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;
 HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;-><clinit>()V
 HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;-><init>()V
+HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;->compare(Landroidx/compose/ui/node/LayoutNode;Landroidx/compose/ui/node/LayoutNode;)I
+HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;->compare(Ljava/lang/Object;Ljava/lang/Object;)I
 Landroidx/compose/ui/node/OutOfFrameExecutor;
 Landroidx/compose/ui/node/OwnedLayer;
 Landroidx/compose/ui/node/Owner;
@@ -7165,7 +7170,6 @@ HSPLandroidx/compose/ui/platform/AndroidComposeView;->boundsUpdatesAccessibility
 HSPLandroidx/compose/ui/platform/AndroidComposeView;->boundsUpdatesContentCaptureEventLoop(Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 HSPLandroidx/compose/ui/platform/AndroidComposeView;->calculateMatrixToWindow-58bKbWc([F)V
 HSPLandroidx/compose/ui/platform/AndroidComposeView;->childSizeCanAffectParentSize(Landroidx/compose/ui/node/LayoutNode;)Z
-HSPLandroidx/compose/ui/platform/AndroidComposeView;->clearChildInvalidObservations(Landroid/view/ViewGroup;)V
 HSPLandroidx/compose/ui/platform/AndroidComposeView;->clearOwnerFocus()V
 HSPLandroidx/compose/ui/platform/AndroidComposeView;->convertMeasureSpec-I7RO_PI(I)J
 HSPLandroidx/compose/ui/platform/AndroidComposeView;->createLayer(Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/graphics/layer/GraphicsLayer;)Landroidx/compose/ui/node/OwnedLayer;
@@ -8159,10 +8163,8 @@ HSPLandroidx/compose/ui/semantics/SemanticsNode;->isMergingSemanticsOfDescendant
 HSPLandroidx/compose/ui/semantics/SemanticsNode;->isTransparent$ui()Z
 HSPLandroidx/compose/ui/semantics/SemanticsNode;->unmergedChildren$ui(Ljava/util/List;ZZ)Ljava/util/List;
 Landroidx/compose/ui/semantics/SemanticsNode$$ExternalSyntheticLambda0;
-HSPLandroidx/compose/ui/semantics/SemanticsNode$$ExternalSyntheticLambda0;-><init>(Landroidx/compose/ui/semantics/Role;)V
 HSPLandroidx/compose/ui/semantics/SemanticsNode$$ExternalSyntheticLambda0;->invoke(Ljava/lang/Object;)Ljava/lang/Object;
 Landroidx/compose/ui/semantics/SemanticsNode$$ExternalSyntheticLambda1;
-HSPLandroidx/compose/ui/semantics/SemanticsNode$$ExternalSyntheticLambda1;-><init>(Ljava/lang/String;)V
 HSPLandroidx/compose/ui/semantics/SemanticsNode$$ExternalSyntheticLambda1;->invoke(Ljava/lang/Object;)Ljava/lang/Object;
 Landroidx/compose/ui/semantics/SemanticsNode$fakeSemanticsNode$fakeNode$1;
 HSPLandroidx/compose/ui/semantics/SemanticsNode$fakeSemanticsNode$fakeNode$1;-><init>(Lkotlin/jvm/functions/Function1;)V
