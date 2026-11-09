@@ -24,13 +24,7 @@ internal object AdblockRequestClassifier {
         fun header(name: String): String? = headers.entries.firstOrNull { it.key.equals(name, true) }?.value
         // Accept can contain HTML, XML, images and */* together: it is not a resource type by itself.
         val accepted = header("Accept")?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
-        // WebView asks before Chromium's network service adds Sec-Fetch-Dest (services/network/
-        // url_loader.cc), so page requests rarely carry it. Chromium's frame Accept
-        // (content/common/content_constants_internal.h) starts "text/html,application/xhtml+xml"
-        // and is sent only for navigations: below the main frame, that is an iframe.
-        if (accepted != null && accepted.size > 1 && accepted[0] == "text/html" && accepted[1] == "application/xhtml+xml") {
-            return "subdocument"
-        }
+        // Explicit destination takes precedence over Accept; a subresource may advertise HTML.
         when (header("Sec-Fetch-Dest")?.lowercase(Locale.ROOT)) {
             "document", "iframe", "frame" -> return "subdocument"
             "script", "worker", "sharedworker", "serviceworker" -> return "script"
@@ -40,6 +34,10 @@ internal object AdblockRequestClassifier {
             "audio", "video", "track" -> return "media"
             "object", "embed" -> return "object"
             "empty" -> return "xhr"
+        }
+        if (header("Sec-Fetch-Dest").isNullOrBlank() && accepted != null && accepted.size > 1 &&
+            accepted[0] == "text/html" && accepted[1] == "application/xhtml+xml") {
+            return "subdocument"
         }
         if (header("X-Requested-With").equals("XMLHttpRequest", true)) return "xhr"
         val extension = url.lastPathSegment?.substringAfterLast('.', "")?.lowercase(Locale.ROOT)
