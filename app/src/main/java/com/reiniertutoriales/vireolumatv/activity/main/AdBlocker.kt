@@ -651,7 +651,8 @@ class AdBlocker @JvmOverloads constructor(
         // another WebView thread is running.
         key?.let { current.decisions.get(it) }?.let { return it }
         val result = try {
-            // adblock-rust is Sync: WebView worker threads match in parallel.
+            // adblock-rust is Sync: no lock here. It serializes checks internally, which the
+            // decision cache above keeps off the path of repeated requests.
             if (current.blocker.isConcurrent) current.blocker.verdict(url, type, baseUri, method)
             else synchronized(current.lock) { current.blocker.verdict(url, type, baseUri, method) }
         } catch (e: Exception) {
