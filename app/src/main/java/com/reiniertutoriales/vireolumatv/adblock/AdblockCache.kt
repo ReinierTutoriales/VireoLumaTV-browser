@@ -12,8 +12,18 @@ internal object AdblockCache {
      */
     const val REVISION = "v5"
 
-    fun sourceKey(url: String): String = MessageDigest.getInstance("SHA-256")
-        .digest(url.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+    private val HEX = "0123456789abcdef".toCharArray()
+
+    fun sourceKey(url: String): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(url.toByteArray(Charsets.UTF_8))
+        val hex = CharArray(digest.size * 2)
+        for (i in digest.indices) {
+            val value = digest[i].toInt() and 0xff
+            hex[i * 2] = HEX[value ushr 4]
+            hex[i * 2 + 1] = HEX[value and 0x0f]
+        }
+        return String(hex)
+    }
 
     fun fileFor(directory: File, engine: ContentBlockerEngine, url: String): File =
         File(directory, "$REVISION-${sourceKey(url)}-${engine.cacheFileName}")

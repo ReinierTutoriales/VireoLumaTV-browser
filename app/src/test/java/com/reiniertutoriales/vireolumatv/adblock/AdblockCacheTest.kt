@@ -16,6 +16,23 @@ class AdblockCacheTest {
         override fun deserialize(file: File): ContentBlocker? = null
     }
 
+    @Test fun cacheKeyMatchesCanonicalSha256IncludingNonAsciiSources() {
+        assertEquals(
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            AdblockCache.sourceKey("")
+        )
+        assertEquals(
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+            AdblockCache.sourceKey("abc")
+        )
+        val unicode = "https://example.test/lista-español"
+        val expected = java.security.MessageDigest.getInstance("SHA-256")
+            .digest(unicode.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+        assertEquals(expected, AdblockCache.sourceKey(unicode))
+        assertEquals(64, AdblockCache.sourceKey(unicode).length)
+    }
+
     @Test fun subscriptionsWithCollidingJavaHashesNeverShareCaches() {
         val first = "https://example.test/Aa"
         val second = "https://example.test/BB"
