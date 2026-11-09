@@ -177,7 +177,9 @@ fn gate(texts: &[[String; 2]]) -> [String; 2] {
     let mut out: [String; 2] = Default::default();
     for text in texts {
         for (side, part) in out.iter_mut().zip(text) {
-            for line in part.lines().filter(|line| !line.contains("badfilter")) {
+            for line in part.lines().filter(|line| !line.rsplit_once('$').is_some_and(|(_, options)| {
+                options.split(',').any(|option| option.split('=').next() == Some("badfilter"))
+            })) {
                 side.push_str(line);
                 side.push('\n');
             }
@@ -380,7 +382,7 @@ mod tests {
     }
 
     #[test]
-    fn gates_keep_badfilter_text_in_url_patterns() {
+    fn gates_keep_badfilter_text_in_patterns_and_domains() {
         for rules in [
             "/badfilter/$script,to=com|~good.com\n/other/$script,to=com|~other.com",
             "/badfilter/$script,to=~good.com\n/other/$script,to=~other.com",
