@@ -36,6 +36,20 @@ class RustAdBlockEngineTest {
 
     private fun ContentBlocker.decision(url: String, type: String) = check(Uri.parse(url), type, page)
 
+    @Test fun shouldBlockMatchesCheckForSiteContextAndAfterRelease() {
+        val blocker = engine.compile("||tracker.example^\\$3p")!!
+        val target = Uri.parse("https://tracker.example/pixel.gif")
+        val sameSite = Uri.parse("https://tracker.example/")
+        val thirdParty = Uri.parse("https://stream.example/")
+        try {
+            assertEquals(blocker.check(target, "image", thirdParty) != ContentBlocker.ALLOW,
+                blocker.shouldBlock(target, "image", "stream.example"))
+            assertEquals(blocker.check(target, "image", sameSite) != ContentBlocker.ALLOW,
+                blocker.shouldBlock(target, "image", "tracker.example"))
+        } finally { blocker.release() }
+        assertFalse(blocker.shouldBlock(target, "image", "stream.example"))
+    }
+
     @Test fun uBlockSyntaxBlocksRedirectsAndHonoursExceptions() {
         assertTrue("host library must be loaded", RustAdblock.isAvailable)
         val blocker = engine.compile(rules)!!
