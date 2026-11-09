@@ -5,6 +5,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.performKeyInput
@@ -57,6 +58,17 @@ class CommandBarFocusTest {
         val host = openCapsuleWithHistory()
         compose.runOnIdle { host.updateNavigation(back = true, forward = false) }
         compose.onNodeWithTag("back_button").assertIsFocused()
+    }
+
+    @Test fun runningDownloadsAreAnnouncedOnTheMenuButtonAndClearedAfterwards() {
+        val host = openCapsuleWithHistory()
+        val app = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
+        compose.runOnIdle { host.showDownloads(2) }
+        compose.onNodeWithTag("menu_button").assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription,
+            listOf(app.resources.getQuantityString(com.reiniertutoriales.vireolumatv.R.plurals.nav_menu_downloads, 2, 2))))
+        compose.runOnIdle { host.showDownloads(0) }
+        compose.onNodeWithTag("menu_button").assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription,
+            listOf(app.getString(com.reiniertutoriales.vireolumatv.R.string.nav_menu))))
     }
 
     private fun tab(index: Int) = SemanticsMatcher("tab $index") {

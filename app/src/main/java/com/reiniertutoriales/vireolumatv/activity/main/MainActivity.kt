@@ -42,6 +42,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.PrivateBrowserActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
+import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
@@ -161,6 +162,7 @@ open class MainActivity : ComponentActivity() {
     }
 
     private fun observeModels() {
+        ScreenModels.get(TransferBoard::class, this).transfers.observe(this) { vb.controlsHost.showDownloads(it.size) }
         browserSettings.keepScreenOn.observe(lifecycle) { on ->
             if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
