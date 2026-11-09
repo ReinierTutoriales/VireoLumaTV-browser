@@ -1,6 +1,8 @@
 # Native UI modernization policy
 
-Status: target architecture; migration is not complete.
+Status: browser controls, menus, settings and dialogs use Compose. Physical TV
+acceptance and performance measurements remain pending; source migration alone
+does not complete the gates below.
 
 ## Architecture
 - Jetpack Compose is the sole target UI layer for toolbar, tabs, menus, settings, dialogs and browser controls.
@@ -40,6 +42,6 @@ Status: target architecture; migration is not complete.
 ## Execution
 1. Done: one typed icon catalog (`TvSymbol`) with one renderer over the local Rounded vectors; the third-party font wrapper (PR #232) was rejected.
 2. Done: Compose text and icons use TV Material (`androidx.tv:tv-material`); `compose.material3` is not a dependency.
-3. Finish Compose migration of menus, settings and dialogs.
+3. Done in #236: menus, settings and dialogs use Compose; AppCompat, Fragment and RecyclerView were removed. The remaining `browser_window.xml` hosts the browser surface and Compose containers.
 4. Optimize D-pad, transitions, recomposition, Baseline Profiles, memory and latency with the `Benchmark` workflow as evidence.
 5. Remove obsolete code, complete regression gates and publish a verified release.

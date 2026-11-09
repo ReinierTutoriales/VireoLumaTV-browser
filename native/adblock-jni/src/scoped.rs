@@ -59,6 +59,10 @@ impl<T: Default> Keyed<T> {
         Keyed { exact: HashMap::new(), entity: HashMap::new() }
     }
 
+    fn values_mut(&mut self) -> impl Iterator<Item = &mut T> {
+        self.exact.values_mut().chain(self.entity.values_mut())
+    }
+
     fn entry(&mut self, key: &str) -> &mut T {
         match key.strip_suffix(".*") {
             Some(name) => self.entity.entry(name.to_owned()).or_default(),
@@ -93,6 +97,14 @@ struct Bucket {
     engine: Engine,
 }
 
+/// Buckets under one `to=` or page key. With several, [any] holds all their rules and the buckets
+/// only run when it matches: most requests to a `.com` host match none of the ~10 `to=com` buckets.
+#[derive(Default)]
+struct Group {
+    buckets: Vec<usize>,
+    any: Option<Engine>,
+}
+
 pub struct Scoped {
     /// Rules with only positive `to=` entries, one engine per entry: any match found through the
     /// request host's keys is valid. Most are regex rules (`to=com`, `to=top`) that adblock-rust
@@ -100,10 +112,10 @@ pub struct Scoped {
     direct: Keyed<Option<Engine>>,
     buckets: Vec<Bucket>,
     /// Buckets with positive and `~`negated `to=` entries, by positive entry.
-    by_host: Keyed<Vec<usize>>,
+    by_host: Keyed<Group>,
     /// `*` rules by page (`domain=`/`from=` entry): without a URL token adblock-rust would test
     /// them on every request, so only the buckets of the page host's keys run.
-    by_page: Keyed<Vec<usize>>,
+    by_page: Keyed<Group>,
     /// Buckets with only `~`negated entries and a URL pattern; they allow almost every host, so
     /// they only run when [others_any], all their rules in one engine, matches the request.
     others: Vec<usize>,
@@ -156,6 +168,24 @@ fn split(line: &str) -> Option<(String, Hosts, Option<Vec<String>>)> {
         list.dedup();
     }
     Some((rule, hosts, wildcard.then_some(pages)))
+}
+
+/// Rules of several buckets in one text, for an engine that only says whether any of them can
+/// match. Without their hostname options, a `$badfilter` of one bucket could cancel the same rule
+/// of another, so those are left out: the gate may match more often, never less.
+fn gate(texts: &[[String; 2]]) -> [String; 2] {
+    let mut out: [String; 2] = Default::default();
+    for text in texts {
+        for (side, part) in out.iter_mut().zip(text) {
+            for line in part.lines().filter(|line| !line.rsplit_once('$').is_some_and(|(_, options)| {
+                options.split(',').any(|option| option.split('=').next() == Some("badfilter"))
+            })) {
+                side.push_str(line);
+                side.push('\n');
+            }
+        }
+    }
+    out
 }
 
 /// `##`, `#@#`, `#?#`, `#$#`, `#%#` and `##+js(...)` (as FilterListPreprocessor.isCosmetic).
@@ -223,7 +253,7 @@ impl Scoped {
             engine.use_resource_storage(Shared(storage.clone()));
             engine
         };
-        let others_any = (!others_text.iter().all(String::is_empty)).then(|| engine(others_text));
+        let others_any = (!others_text.iter().all(String::is_empty)).then(|| engine(gate(&[others_text])));
         let mut scoped = Scoped {
             direct: Keyed::new(), buckets: Vec::new(), by_host: Keyed::new(), by_page: Keyed::new(),
             others: Vec::new(), others_any, source,
@@ -231,20 +261,28 @@ impl Scoped {
         for (entry, text) in direct {
             *scoped.direct.entry(&entry) = Some(engine(text));
         }
+        let mut bucket_texts = Vec::with_capacity(texts.len());
         for ((hosts, wildcard), (text, pages)) in texts {
             let index = scoped.buckets.len();
             let keys = if wildcard { pages } else { hosts.to.clone() };
             let index_map = if wildcard { &mut scoped.by_page } else { &mut scoped.by_host };
             for key in keys {
-                let list = index_map.entry(&key);
-                if list.last() != Some(&index) {
-                    list.push(index);
+                let group = index_map.entry(&key);
+                if group.buckets.last() != Some(&index) {
+                    group.buckets.push(index);
                 }
             }
             if !wildcard && hosts.to.is_empty() {
                 scoped.others.push(index);
             }
-            scoped.buckets.push(Bucket { hosts, engine: engine(text) });
+            scoped.buckets.push(Bucket { hosts, engine: engine(text.clone()) });
+            bucket_texts.push(text);
+        }
+        for group in scoped.by_host.values_mut().chain(scoped.by_page.values_mut()) {
+            if group.buckets.len() > 1 {
+                let texts: Vec<_> = group.buckets.iter().map(|&i| bucket_texts[i].clone()).collect();
+                group.any = Some(engine(gate(&texts)));
+            }
         }
         Some(scoped)
     }
@@ -274,12 +312,17 @@ impl Scoped {
             if let Some(engine) = engine { consider(engine.check_network_request(request)) }
         });
         let mut candidates = Vec::new();
-        self.by_host.each(host, |list| candidates.extend_from_slice(list));
+        let mut add = |group: &Group| {
+            if group.any.as_ref().is_none_or(|any| any.check_network_request(request).should_block()) {
+                candidates.extend_from_slice(&group.buckets);
+            }
+        };
+        self.by_host.each(host, &mut add);
+        if !self.by_page.exact.is_empty() || !self.by_page.entity.is_empty() {
+            self.by_page.each(&page_host.to_ascii_lowercase(), &mut add);
+        }
         if self.others_any.as_ref().is_some_and(|any| any.check_network_request(request).should_block()) {
             candidates.extend_from_slice(&self.others);
-        }
-        if !self.by_page.exact.is_empty() || !self.by_page.entity.is_empty() {
-            self.by_page.each(&page_host.to_ascii_lowercase(), |list| candidates.extend_from_slice(list));
         }
         candidates.sort_unstable();
         candidates.dedup();
@@ -336,5 +379,41 @@ mod tests {
         found.clear();
         keyed.each("myjapscan.foo", |keys| found.extend(keys.iter().copied()));
         assert!(found.is_empty());
+    }
+
+    #[test]
+    fn gates_keep_badfilter_text_in_patterns_and_domains() {
+        for rules in [
+            "/badfilter/$script,to=com|~good.com\n/other/$script,to=com|~other.com",
+            "/badfilter/$script,to=~good.com\n/other/$script,to=~other.com",
+            "*$script,to=com|~good.com,domain=badfilter.test\n*$script,to=com|~other.com,domain=badfilter.test",
+        ] {
+            for trusted in [false, true] {
+                let mut source = String::new();
+                collect(rules, trusted, &mut source);
+                let scoped = Scoped::build(source, |_| ParseOptions::default(), Vec::new()).unwrap();
+                let request = Request::new("https://cdn.example.com/badfilter/a.js", "https://badfilter.test/", "script", "GET").unwrap();
+                assert!(scoped.check(&request, "badfilter.test").is_some_and(|result| result.should_block()), "trusted={trusted}: {rules}");
+            }
+        }
+    }
+
+    #[test]
+    fn a_shared_key_gate_never_hides_a_bucket_match() {
+        // Two buckets under `com`; the second disables its own `/ads/` with `$badfilter`.
+        let mut source = String::new();
+        collect("/ads/$script,to=com|~good.com\n/track/$script,to=com|~good.com\n/ads/$script,to=com|~other.com\n/ads/$script,to=com|~other.com,badfilter\n", false, &mut source);
+        let scoped = Scoped::build(source, |_| ParseOptions::default(), Vec::new()).unwrap();
+        assert!(scoped.by_host.exact["com"].any.is_some());
+        let blocks = |url: &str| {
+            let request = Request::new(url, "https://site.test/", "script", "GET").unwrap();
+            scoped.check(&request, "site.test").is_some_and(|result| result.should_block())
+        };
+        assert!(blocks("https://cdn.example.com/ads/a.js"));
+        assert!(blocks("https://cdn.other.com/ads/a.js"));
+        assert!(!blocks("https://cdn.good.com/ads/a.js"));
+        assert!(blocks("https://cdn.example.com/track/a.js"));
+        assert!(!blocks("https://cdn.example.com/app/a.js"));
+        assert!(!blocks("https://cdn.example.net/ads/a.js"));
     }
 }

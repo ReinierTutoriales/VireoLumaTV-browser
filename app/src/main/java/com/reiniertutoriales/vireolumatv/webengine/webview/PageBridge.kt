@@ -1,11 +1,11 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Base64
 import android.webkit.JavascriptInterface
+import androidx.core.net.toUri
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.Download
 import com.reiniertutoriales.vireolumatv.utils.FileNames
@@ -54,7 +54,7 @@ internal object FilterBridgeUrlPolicy {
 
     fun isWebFrame(url: String?): Boolean {
         if (url.isNullOrBlank() || url.length > MAX_URL) return false
-        val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return false
+        val uri = runCatching { url.toUri() }.getOrNull() ?: return false
         return uri.isHierarchical &&
             (uri.scheme.equals("http", ignoreCase = true) || uri.scheme.equals("https", ignoreCase = true)) &&
             !uri.host.isNullOrBlank()
