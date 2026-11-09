@@ -17,8 +17,9 @@ class BrandResourcesTest {
     @Test fun launcherAndBannerHaveConsistentLogicalSizes() {
         val app = RuntimeEnvironment.getApplication()
         val icon = app.getDrawable(R.drawable.ic_launcher)!!
-        assertEquals(48, icon.intrinsicWidth)
-        assertEquals(48, icon.intrinsicHeight)
+        // TV-LB: the TV launcher icon is at least 160 x 160 px at xhdpi, i.e. 80 x 80 dp.
+        assertEquals(80, icon.intrinsicWidth)
+        assertEquals(80, icon.intrinsicHeight)
         val banner = app.getDrawable(R.drawable.banner)!!
         // Android TV specifies 320 x 180 px at xhdpi, i.e. 160 x 90 dp.
         assertEquals(160, banner.intrinsicWidth)

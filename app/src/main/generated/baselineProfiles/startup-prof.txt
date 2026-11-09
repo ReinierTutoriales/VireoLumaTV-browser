@@ -4471,8 +4471,6 @@ HSPLandroidx/compose/runtime/snapshots/SnapshotDoubleIndexHeap;->swap(II)V
 Landroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;-><clinit>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;-><init>([J)V
-HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;->add(J)V
-HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;->toArray()[J
 Landroidx/compose/runtime/snapshots/SnapshotIdSet;
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet;-><clinit>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet;-><init>(JJJ[J)V
@@ -4487,10 +4485,8 @@ HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet$Companion;-><init>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet$Companion;-><init>(Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet$Companion;->getEMPTY()Landroidx/compose/runtime/snapshots/SnapshotIdSet;
 Landroidx/compose/runtime/snapshots/SnapshotId_jvmKt;
-HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->binarySearch([JJ)I
 HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->snapshotIdArrayWithCapacity(I)[J
 HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->toSnapshotId(I)J
-HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->withIdRemovedAt([JI)[J
 Landroidx/compose/runtime/snapshots/SnapshotKt;
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;-><clinit>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->access$advanceGlobalSnapshot()V
@@ -16057,7 +16053,6 @@ HSPLkotlinx/coroutines/CoroutineExceptionHandler$DefaultImpls;->get(Lkotlinx/cor
 Lkotlinx/coroutines/CoroutineExceptionHandler$Key;
 HSPLkotlinx/coroutines/CoroutineExceptionHandler$Key;-><clinit>()V
 HSPLkotlinx/coroutines/CoroutineExceptionHandler$Key;-><init>()V
-Lkotlinx/coroutines/CoroutineExceptionHandlerKt;
 Lkotlinx/coroutines/CoroutineId;
 Lkotlinx/coroutines/CoroutineScope;
 Lkotlinx/coroutines/CoroutineScopeKt;
@@ -17014,7 +17009,6 @@ HSPLkotlinx/coroutines/internal/Segment;-><clinit>()V
 HSPLkotlinx/coroutines/internal/Segment;-><init>(JLkotlinx/coroutines/internal/Segment;I)V
 HSPLkotlinx/coroutines/internal/Segment;->getCleanedAndPointers$volatile$FU()Ljava/util/concurrent/atomic/AtomicIntegerFieldUpdater;
 HSPLkotlinx/coroutines/internal/Segment;->onSlotCleaned()V
-Lkotlinx/coroutines/internal/StackTraceRecoveryKt;
 Lkotlinx/coroutines/internal/Symbol;
 HSPLkotlinx/coroutines/internal/Symbol;-><init>(Ljava/lang/String;)V
 Lkotlinx/coroutines/internal/SystemPropsKt;

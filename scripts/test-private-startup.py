@@ -63,13 +63,18 @@ def tap(node):
 if adb('shell', 'pidof', package) != normal_pid:
     raise AssertionError('Normal process changed before private-mode check')
 
-for attempt in range(2):
-    adb('shell', 'input', 'keyevent', '4')
-    root = snapshot(f'reset-{attempt}')
-    if root and any(matches_id(node, 'home_page_search') and node.get('focused') == 'true'
-                    for node in root.iter('node')):
-        break
-else:
+def home_search_focused(root):
+    return root is not None and any(matches_id(node, 'home_page_search') and node.get('focused') == 'true'
+                                    for node in root.iter('node'))
+
+
+# No Back here: Back on Home opens the capsule and a second one leaves the app (N08, TV-DB).
+# The first D-pad key leaves touch mode and gives the default focus (the Home search).
+root = snapshot('reset-0')
+if not home_search_focused(root):
+    adb('shell', 'input', 'keyevent', '20')
+    root = snapshot('reset-1')
+if not home_search_focused(root):
     print('NOTE: Home search did not regain focus before opening private mode (transitional)', file=sys.stderr)
 
 adb('shell', 'input', 'keyevent', '19')  # Up from Home opens the capsule.

@@ -396,6 +396,31 @@ class BrowserNavigationTest {
         assertTrue(f.vb.pageContainer.pointerEnabled)
     }
 
+    @Test fun backAtTheRootLeavesAfterOpeningTheCapsuleAndOtherwiseClosesIt() = Fixture().use { f ->
+        // N08 / TV-DB: page → Back opens the capsule → Back leaves when there is no history.
+        f.canGoBack = false
+        f.activity.consumeBack()
+        assertEquals(View.VISIBLE, f.vb.controlsOverlay.visibility)
+        assertFalse(f.activity.isFinishing)
+        f.activity.consumeBack()
+        assertTrue("Back at the root must reach the launcher", f.activity.isFinishing)
+    }
+
+    @Test fun backOnACapsuleWithHistoryOrOpenedOtherwiseOnlyClosesIt() = Fixture().use { f ->
+        f.canGoBack = true
+        f.activity.consumeBack()
+        f.activity.consumeBack()
+        assertEquals("With history, the capsule's Back button goes back; Back closes", View.INVISIBLE,
+            f.vb.controlsOverlay.visibility)
+        assertFalse(f.activity.isFinishing)
+        // A capsule opened by the menu or Up is never an exit, even at the root.
+        f.canGoBack = false
+        f.activity.openCapsule()
+        f.activity.consumeBack()
+        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
+        assertFalse(f.activity.isFinishing)
+    }
+
     @Test fun aLateSecondFullscreenEndChangesNothing() = Fixture().use { f ->
         val callback = TabWindow(f.activity, f.tab)
         val engine = WebViewPageEngine(f.tab).apply { window = callback }
