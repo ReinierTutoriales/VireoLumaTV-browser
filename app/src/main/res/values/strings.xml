@@ -214,7 +214,6 @@
     <string name="home_shortcuts">Shortcuts</string>
     <string name="home_add">Add shortcut</string>
     <string name="home_edit">Edit</string>
-    <string name="home_edit_label">Edit shortcuts</string>
     <string name="home_done">Done</string>
     <string name="home_save_failed">Could not save.</string>
     <string name="home_edit_prompt">Edit the address. Leave it empty to remove the shortcut.</string>

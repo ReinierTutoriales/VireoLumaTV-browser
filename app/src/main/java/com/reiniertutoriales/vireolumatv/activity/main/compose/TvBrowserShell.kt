@@ -38,6 +38,7 @@ fun TvBrowserShell(
     blockerDescription: String,
     blockerReady: Boolean,
     focusRequest: Int,
+    downloadsInProgress: Int,
     // Tab strip
     tabs: List<BrowserTab>,
     selectedTab: Int,
@@ -71,6 +72,7 @@ fun TvBrowserShell(
             blockerDescription = blockerDescription,
             blockerReady = blockerReady,
             focusRequest = focusRequest,
+            downloadsInProgress = downloadsInProgress,
             modifier = Modifier.fillMaxWidth(),
         )
         TvTabStrip(

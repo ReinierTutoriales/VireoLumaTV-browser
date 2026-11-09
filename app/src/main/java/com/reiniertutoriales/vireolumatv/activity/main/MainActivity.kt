@@ -42,6 +42,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.PrivateBrowserActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
+import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
@@ -49,7 +50,6 @@ import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.Favorit
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
 import com.reiniertutoriales.vireolumatv.activity.main.home.NativeHome
-import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
 import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
 import com.reiniertutoriales.vireolumatv.model.Favorite
@@ -92,7 +92,7 @@ import kotlin.system.exitProcess
  * [BrowserDownloads] and other apps through [ExternalApps]. Private mode runs as
  * [PrivateBrowserActivity] in its own process.
  */
-open class MainActivity : ComponentActivity(), BrowserControls.Callback {
+open class MainActivity : ComponentActivity() {
     internal lateinit var vb: BrowserWindowBinding
     internal lateinit var tabStore: TabStore
     internal lateinit var browserSettings: BrowserSettings
@@ -162,6 +162,7 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
     }
 
     private fun observeModels() {
+        ScreenModels.get(TransferBoard::class, this).transfers.observe(this) { vb.controlsHost.showDownloads(it.size) }
         browserSettings.keepScreenOn.observe(lifecycle) { on ->
             if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -352,7 +353,6 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
         }
         vb.controlsHost.onCancelAddress = { onAddressInputCancelled() }
         vb.controlsHost.onAddressDraftChanged = { onAddressTyped(it) }
-        vb.controlsHost.onAddressEditingChanged = { active -> if (active) onAddressEditing() }
         vb.controlsHost.onFocusSuggestions = { focusSuggestions() }
         vb.vSuggestions.onPick = { vb.controlsHost.submit(it.url) }
         // One action contract for both the current View controls and future Compose controls.
@@ -368,7 +368,7 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
         vb.controlsHost.bindActions(actions)
     }
 
-    override fun showAppMenu() = AppMenuPanel(this, appMenuEntries(), ::runAppMenuEntry).show()
+    fun showAppMenu() = AppMenuPanel(this, appMenuEntries(), ::runAppMenuEntry).show()
 
     private fun runAppMenuEntry(entry: AppMenuEntry) = when (entry) {
         AppMenuEntry.HISTORY -> showHistory()
@@ -432,14 +432,14 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
 
     // Address field
 
-    override fun search(text: String) = navigate(AddressInput.resolve(text, config.searchAddress.value))
+    fun search(text: String) = navigate(AddressInput.resolve(text, config.searchAddress.value))
 
-    override fun onUrlInputDone() {
+    fun onUrlInputDone() {
         closeSuggestions()
         closeCapsule()
     }
 
-    override fun onAddressTyped(text: String) {
+    fun onAddressTyped(text: String) {
         suggestionsLookup?.cancel()
         suggestionsLookup = lifecycleScope.launch {
             delay(SUGGESTIONS_DELAY_MS) // One lookup when typing pauses, not one per key.
@@ -449,12 +449,12 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
         }
     }
 
-    override fun focusSuggestions(): Boolean = vb.vSuggestions.hasSuggestions &&
+    fun focusSuggestions(): Boolean = vb.vSuggestions.hasSuggestions &&
         if (vb.pageContainer.pointerEnabled) vb.vSuggestions.focusPointer() else vb.vSuggestions.focusFirst()
 
-    override fun suggestionsHaveFocus(): Boolean = vb.vSuggestions.hasFocus()
+    fun suggestionsHaveFocus(): Boolean = vb.vSuggestions.hasFocus()
 
-    override fun onAddressInputCancelled() = closeSuggestions()
+    fun onAddressInputCancelled() = closeSuggestions()
 
     /** Suggestions take the tab strip's place while there are any, so the capsule does not grow. */
     private fun showSuggestions(suggestions: List<AddressSuggestion>) {
@@ -926,7 +926,6 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
      * Back closes the innermost thing open: pointer menu, fullscreen, typing, capsule, grab mode,
      * D-pad mode (before any web history, as its help promises); else opens the capsule.
      */
-    @VisibleForTesting
     internal fun consumeBack() {
         val pointer = vb.pageContainer.pointerController
         when {
@@ -972,7 +971,6 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
      * Opens the capsule over the page with focus on Back (Home when Back is unavailable). The shown
      * tab stays live behind it; another tab selected in the strip is previewed by its picture.
      */
-    @VisibleForTesting
     internal fun openCapsule() {
         if (isFullscreen) {
             tabStore.currentTab.value?.engine?.closeFullscreen()
@@ -1047,7 +1045,6 @@ open class MainActivity : ComponentActivity(), BrowserControls.Callback {
      * the shown page. A tab only previewed in the strip is not opened: OK on it does that
      * (onTitleSelected); Back, Down or a touch return to the tab that was shown.
      */
-    @VisibleForTesting
     internal fun closeCapsule() {
         val wasVisible = overlayVisible
         overlayVisible = false

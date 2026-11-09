@@ -15,7 +15,6 @@ import androidx.compose.ui.test.requestFocus
 import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.view.AddressSuggestionsView
-import com.reiniertutoriales.vireolumatv.activity.main.view.BrowserControls
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -65,23 +64,6 @@ class AddressSuggestionsFocusTest {
         show(view, emptyList())
         assertEquals(View.GONE, view.visibility)
         assertFalse(view.hasSuggestions)
-    }
-
-    @Test fun rtlToolbarKeepsComposeHostAndDisabledHistoryState() {
-        lateinit var bar: BrowserControls
-        compose.runOnUiThread {
-            bar = BrowserControls(compose.activity).apply {
-                layoutDirection = View.LAYOUT_DIRECTION_RTL
-                updateNavigation(back = false, forward = false)
-            }
-            compose.activity.setContentView(bar)
-        }
-        assertEquals(View.LAYOUT_DIRECTION_RTL, bar.layoutDirection)
-        assertEquals(1, bar.childCount)
-        assertTrue(bar.getChildAt(0) is androidx.compose.ui.platform.ComposeView)
-        assertFalse(bar.snapshot.canGoBack)
-        assertFalse(bar.snapshot.canGoForward)
-        assertFalse(bar.isEditingAddress)
     }
 
     @Test fun refreshedSuggestionsKeepTheFocusedAddressAndDownStopsAtTheLast() {

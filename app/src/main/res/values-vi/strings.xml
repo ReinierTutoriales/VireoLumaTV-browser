@@ -207,7 +207,6 @@
     <string name="home_shortcuts">Lối tắt</string>
     <string name="home_add">Thêm lối tắt</string>
     <string name="home_edit">Sửa</string>
-    <string name="home_edit_label">Sửa lối tắt</string>
     <string name="home_done">Xong</string>
     <string name="home_save_failed">Không lưu được.</string>
     <string name="home_edit_prompt">Sửa địa chỉ. Để trống để xóa lối tắt.</string>

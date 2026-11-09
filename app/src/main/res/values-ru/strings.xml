@@ -213,7 +213,6 @@
     <string name="home_shortcuts">Ярлыки</string>
     <string name="home_add">Добавить ярлык</string>
     <string name="home_edit">Изменить</string>
-    <string name="home_edit_label">Изменить ярлыки</string>
     <string name="home_done">Готово</string>
     <string name="home_save_failed">Не удалось сохранить.</string>
     <string name="home_edit_prompt">Измените адрес. Оставьте поле пустым, чтобы удалить ярлык.</string>

@@ -35,6 +35,14 @@ data class BrowserCommand(
 
 @Composable
 fun TvBrowserCommandBar(
+    back: BrowserCommand,
+    forward: BrowserCommand,
+    refresh: BrowserCommand,
+    home: BrowserCommand,
+    menu: BrowserCommand,
+    blockerEnabled: Boolean,
+    onToggleBlocker: () -> Unit,
+    modifier: Modifier = Modifier,
     address: String? = null,
     onSubmitAddress: (String) -> Unit = {},
     onCancelAddress: () -> Unit = {},
@@ -43,18 +51,10 @@ fun TvBrowserCommandBar(
     onFocusSuggestions: () -> Boolean = { false },
     cancelAddressRequest: Int = 0,
     submitAddressRequest: Pair<Int, String> = 0 to "",
-    back: BrowserCommand,
-    forward: BrowserCommand,
-    refresh: BrowserCommand,
-    home: BrowserCommand,
-    menu: BrowserCommand,
-    blockerEnabled: Boolean,
     blockerDescription: String = "",
     blockerReady: Boolean = false,
     focusRequest: Int = 0,
-    onToggleBlocker: () -> Unit,
     onShowBlockerDetails: (() -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
     val backFocus = remember { FocusRequester() }
     val homeFocus = remember { FocusRequester() }
@@ -175,21 +175,24 @@ fun TvConnectedBrowserCommandBar(
     onAddressDraftChanged: (String) -> Unit,
     onAddressEditingChanged: (Boolean) -> Unit,
     onFocusSuggestions: () -> Boolean,
-    cancelAddressRequest: Int = 0,
-    submitAddressRequest: Pair<Int, String> = 0 to "",
     canGoBack: Boolean,
     canGoForward: Boolean,
     blockerEnabled: Boolean,
+    modifier: Modifier = Modifier,
+    cancelAddressRequest: Int = 0,
+    submitAddressRequest: Pair<Int, String> = 0 to "",
     blockerDescription: String = "",
     blockerReady: Boolean = false,
     focusRequest: Int = 0,
-    modifier: Modifier = Modifier,
+    downloadsInProgress: Int = 0,
 ) {
     val backLabel = androidx.compose.ui.res.stringResource(R.string.nav_back)
     val forwardLabel = androidx.compose.ui.res.stringResource(R.string.nav_forward)
     val reloadLabel = androidx.compose.ui.res.stringResource(R.string.nav_reload)
     val homeLabel = androidx.compose.ui.res.stringResource(R.string.nav_home)
-    val menuLabel = androidx.compose.ui.res.stringResource(R.string.nav_menu)
+    // Running downloads change the menu's icon and spoken label, as before the move to Compose.
+    val menuLabel = if (downloadsInProgress == 0) androidx.compose.ui.res.stringResource(R.string.nav_menu)
+        else androidx.compose.ui.res.pluralStringResource(R.plurals.nav_menu_downloads, downloadsInProgress, downloadsInProgress)
     TvBrowserCommandBar(
         address = address,
         onSubmitAddress = onSubmitAddress,
@@ -203,7 +206,8 @@ fun TvConnectedBrowserCommandBar(
         forward = BrowserCommand(forwardLabel, TvSymbol.Forward, canGoForward, actions.forward, testTag = "forward_button"),
         refresh = BrowserCommand(reloadLabel, TvSymbol.Refresh, onClick = actions.reload, testTag = "refresh_button"),
         home = BrowserCommand(homeLabel, TvSymbol.Home, onClick = actions.home, testTag = "home_button"),
-        menu = BrowserCommand(menuLabel, TvSymbol.More, onClick = actions.menu, testTag = "menu_button"),
+        menu = BrowserCommand(menuLabel, if (downloadsInProgress == 0) TvSymbol.More else TvSymbol.MenuDownloads,
+            onClick = actions.menu, testTag = "menu_button"),
         blockerEnabled = blockerEnabled,
         blockerDescription = blockerDescription,
         blockerReady = blockerReady,

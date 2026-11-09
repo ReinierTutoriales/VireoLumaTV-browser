@@ -30,8 +30,9 @@ class ComposeControlsHost @JvmOverloads constructor(
     private val blockerEnabled = mutableStateOf(false)
     private val blockerDescription = mutableStateOf("")
     private val blockerReady = mutableStateOf(false)
-    private val focusRequest = mutableStateOf(0)
-    private val cancelRequest = mutableStateOf(0)
+    private val focusRequest = mutableIntStateOf(0)
+    private val cancelRequest = mutableIntStateOf(0)
+    private val downloads = mutableIntStateOf(0)
     private val submitRequest = mutableStateOf(0 to "")
     private val editing = mutableStateOf(false)
     private val actions = mutableStateOf<BrowserCommandActions?>(null)
@@ -77,7 +78,7 @@ class ComposeControlsHost @JvmOverloads constructor(
                         onAddressEditingChanged?.invoke(active)
                     },
                     onFocusSuggestions = { onFocusSuggestions?.invoke() == true },
-                    cancelAddressRequest = cancelRequest.value,
+                    cancelAddressRequest = cancelRequest.intValue,
                     submitAddressRequest = submitRequest.value,
                     actions = currentActions,
                     canGoBack = canBack.value,
@@ -85,7 +86,8 @@ class ComposeControlsHost @JvmOverloads constructor(
                     blockerEnabled = blockerEnabled.value,
                     blockerDescription = blockerDescription.value,
                     blockerReady = blockerReady.value,
-                    focusRequest = focusRequest.value,
+                    focusRequest = focusRequest.intValue,
+                    downloadsInProgress = downloads.intValue,
                     tabs = tabs,
                     selectedTab = selectedTab.intValue,
                     onTabFocus = { onTabFocus?.invoke(it) },
@@ -111,6 +113,9 @@ class ComposeControlsHost @JvmOverloads constructor(
 
     fun showBlockerEnabled(enabled: Boolean) { blockerEnabled.value = enabled }
 
+    /** Running downloads, shown on the menu button and in its spoken label. */
+    fun showDownloads(count: Int) { downloads.intValue = count }
+
     fun updateBlockerStatus(description: String, ready: Boolean) {
         blockerDescription.value = description
         blockerReady.value = ready
@@ -127,11 +132,11 @@ class ComposeControlsHost @JvmOverloads constructor(
     }
 
     fun closeAddressEditing() {
-        if (editing.value) cancelRequest.value += 1
+        if (editing.value) cancelRequest.intValue += 1
     }
 
     fun cancelAddressInput() {
-        if (editing.value) cancelRequest.value += 1 else requestCommandFocus()
+        if (editing.value) cancelRequest.intValue += 1 else requestCommandFocus()
     }
 
     fun tintAddress(@Suppress("UNUSED_PARAMETER") color: Int) {
@@ -139,8 +144,8 @@ class ComposeControlsHost @JvmOverloads constructor(
     }
 
     fun takeFocus() {
-        if (!editing.value) focusRequest.value += 1
+        if (!editing.value) focusRequest.intValue += 1
     }
 
-    fun requestCommandFocus() { focusRequest.value += 1 }
+    fun requestCommandFocus() { focusRequest.intValue += 1 }
 }

@@ -211,7 +211,6 @@
     <string name="home_shortcuts">Collegamenti</string>
     <string name="home_add">Aggiungi collegamento</string>
     <string name="home_edit">Modifica</string>
-    <string name="home_edit_label">Modifica collegamenti</string>
     <string name="home_done">Fine</string>
     <string name="home_save_failed">Impossibile salvare.</string>
     <string name="home_edit_prompt">Modifica l\'indirizzo. Lascialo vuoto per rimuovere il collegamento.</string>
