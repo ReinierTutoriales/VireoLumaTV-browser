@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - 'app/src/**'
+      - 'app/src/main/**'
       - 'app/build.gradle.kts'
       - 'baselineprofile/**'
       - 'gradle/**'
