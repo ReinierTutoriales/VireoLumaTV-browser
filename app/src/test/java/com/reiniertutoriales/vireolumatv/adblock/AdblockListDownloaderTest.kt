@@ -118,7 +118,7 @@ class AdblockListDownloaderTest {
     }
 
     @Test fun gzipResponseIsDecodedAndIdentityIsRequested() {
-        val rules = "[Adblock Plus 2.0]\\n" + (1..120).joinToString("\\n") { "||ads$it.test^" }
+        val rules = "[Adblock Plus 2.0]\n" + (1..120).joinToString("\n") { "||ads$it.test^" }
         val bytes = ByteArrayOutputStream().also { out ->
             GZIPOutputStream(out).use { it.write(rules.toByteArray(Charsets.UTF_8)) }
         }.toByteArray()
@@ -137,7 +137,7 @@ class AdblockListDownloaderTest {
     }
 
     @Test fun unsupportedEncodingFallsBackToValidatedMirror() {
-        val rules = "[Adblock Plus 2.0]\\n" + (1..120).joinToString("\\n") { "||ads$it.test^" }
+        val rules = "[Adblock Plus 2.0]\n" + (1..120).joinToString("\n") { "||ads$it.test^" }
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/unsupported") { exchange ->
             val bytes = rules.toByteArray(Charsets.UTF_8)
