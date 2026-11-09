@@ -159,7 +159,9 @@ class HistoryActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth().weight(1f).padding(top = 8.dp).testTag("history_list"),
                 contentPadding = PaddingValues(bottom = dimensionResource(R.dimen.safe_vertical)),
             ) {
-                items(rows, key = { if (it.isDayHeader) "day:${it.time}" else "visit:${it.id}" }) { item ->
+                // contentType lets the list reuse a header's composition only for headers, a row's for rows.
+                items(rows, key = { if (it.isDayHeader) "day:${it.time}" else "visit:${it.id}" },
+                    contentType = { it.isDayHeader }) { item ->
                     if (item.isDayHeader) {
                         TvDayHeader(dayFormat.format(Date(item.time)), Modifier.testTag("history_day_${item.time}"))
                     } else {

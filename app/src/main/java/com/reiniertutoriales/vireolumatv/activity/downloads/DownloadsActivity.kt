@@ -200,7 +200,8 @@ open class DownloadsActivity : ComponentActivity() {
                 contentPadding = PaddingValues(horizontal = dimensionResource(R.dimen.safe_horizontal),
                     vertical = dimensionResource(R.dimen.safe_vertical)),
             ) {
-                items(rows, key = { rowKey(it) }) { item ->
+                // contentType lets the list reuse a header's composition only for headers, a row's for rows.
+                items(rows, key = { rowKey(it) }, contentType = { it.isDayHeader }) { item ->
                     if (item.isDayHeader) {
                         TvDayHeader(dayFormat.format(Date(item.time)))
                     } else {
