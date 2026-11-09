@@ -13,22 +13,22 @@ import androidx.sqlite.execSQL
  */
 internal object SchemaMigrations {
     val FROM_19_TO_20 = object : Migration(19, 20) {
-        override suspend fun migrate(db: SQLiteConnection) {
-            create(db)
-            db.execSQL("""INSERT INTO open_tabs (id, address, title, is_shown, preview_key, icon_key, is_private,
+        override suspend fun migrate(connection: SQLiteConnection) {
+            create(connection)
+            connection.execSQL("""INSERT INTO open_tabs (id, address, title, is_shown, preview_key, icon_key, is_private,
                 sort_order, state_file, blocks_ads, zoom)
                 SELECT id, url, title, selected, thumbnailHash, faviconHash, incognito, position, wv_state_file,
                 adblock, scale FROM tabs""")
-            db.execSQL("""INSERT INTO visits (id, visited_at, title, address, icon)
+            connection.execSQL("""INSERT INTO visits (id, visited_at, title, address, icon)
                 SELECT id, time, title, url, favicon FROM history""")
-            db.execSQL("""INSERT INTO download_entries (id, started_at, file_name, location, address, total_bytes,
+            connection.execSQL("""INSERT INTO download_entries (id, started_at, file_name, location, address, total_bytes,
                 received_bytes)
                 SELECT id, time, filename, filepath, url, size, bytes_received FROM downloads""")
-            db.execSQL("""INSERT INTO site_settings (id, host, popup_policy, icon)
+            connection.execSQL("""INSERT INTO site_settings (id, host, popup_policy, icon)
                 SELECT id, host_name, popup_block_level, favicon FROM hosts""")
-            db.execSQL("""INSERT INTO bookmarks (id, title, address)
+            connection.execSQL("""INSERT INTO bookmarks (id, title, address)
                 SELECT ID, TITLE, URL FROM favorites WHERE URL IS NOT NULL AND HOME_PAGE_BOOKMARK = 0""")
-            for (old in listOf("tabs", "history", "downloads", "hosts", "favorites")) db.execSQL("DROP TABLE `$old`")
+            for (old in listOf("tabs", "history", "downloads", "hosts", "favorites")) connection.execSQL("DROP TABLE `$old`")
         }
     }
 
