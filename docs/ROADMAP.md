@@ -39,7 +39,7 @@ cada versión (rama `preparacion/*`), genera el perfil de arranque solo desde el
 el perfil general desde esos mismos recorridos. Los recorridos exigen foco,
 activación con OK, destino y retorno; el cierre comprueba la identidad superviviente.
 El generador conserva ART entre iteraciones y usa el launcher sin añadir pestañas
-por intents VIEW repetidos. Tras subir perfiles solicita CI y Benchmark sobre el nuevo SHA.
+por intents VIEW repetidos. Publica los perfiles como artefacto; el propietario los incorpora con su commit en el PR de preparación.
 Los eventos del bot no vuelven a generar perfiles.
 
 La revisión del 7 de noviembre contrasta la declaración de puntero con la

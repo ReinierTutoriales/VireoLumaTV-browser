@@ -1,9 +1,8 @@
 name: Baseline profile
 
 # Generated once per version: by hand, or in the release preparation PR (branch `preparacion/*`).
-# Each run takes about 45 minutes and its commit makes CI and Benchmark run again, so ordinary PRs
-# keep the last profile; a changed signature is corrected by hand in the profile files.
-# Generated commits do not recursively regenerate profiles; CI and Benchmark verify their SHA.
+# Profiles are uploaded as artifacts for owner review and signed inclusion in a release PR.
+# Automation never impersonates the repository owner or pushes unsigned commits.
 on:
   workflow_dispatch:
   pull_request:
@@ -20,14 +19,10 @@ on:
       - '.github/workflows/baseline-profile.yml'
 
 permissions:
-  contents: write
-  pull-requests: write
-  actions: write
+  contents: read
 
 concurrency:
-  # The bot's own profile push starts a run that the job skips; give it a group of its own so it
-  # never cancels the generator that pushed it while that one approves the new checks.
-  group: baseline-profile-${{ github.head_ref || github.ref_name }}${{ github.actor == 'github-actions[bot]' && format('-{0}', github.run_id) || '' }}
+  group: baseline-profile-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -37,8 +32,6 @@ jobs:
       (github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'preparacion/')))
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    env:
-      PROFILE_BRANCH: ${{ github.head_ref || github.ref_name }}
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -88,46 +81,3 @@ jobs:
           path: app/src/main/generated/baselineProfiles/
           if-no-files-found: error
 
-      - name: Propose the profile
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          git add app/src/main/generated/baselineProfiles/
-          if git diff --cached --quiet; then echo 'Profile unchanged'; exit 0; fi
-          git config user.name 'ReinierTutoriales'
-          git config user.email '86568548+ReinierTutoriales@users.noreply.github.com'
-          # The runs this push starts on the pull request wait for approval ("action_required") and
-          # leave its checks pending. Approve them so CI and Benchmark run on the new SHA; when none
-          # appear or approval is refused, dispatch both workflows instead.
-          verify() {
-            local ref=$1 sha ids='' approved=0
-            sha=$(git rev-parse HEAD)
-            for attempt in $(seq 1 12); do
-              ids=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${sha}&status=action_required" --jq '.workflow_runs[].id')
-              [ -n "$ids" ] && break
-              sleep 10
-            done
-            for id in $ids; do
-              if gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/approve" >/dev/null; then approved=1; fi
-            done
-            if [ "$approved" = 0 ]; then
-              gh workflow run ci.yml --ref "$ref"
-              gh workflow run benchmark.yml --ref "$ref"
-            fi
-          }
-          # On a working branch the profile joins that branch's pull request instead of a new one.
-          if [ "${PROFILE_BRANCH}" != master ]; then
-            git commit -m 'Actualiza el perfil de referencia'
-            git push origin "HEAD:${PROFILE_BRANCH}"
-            verify "${PROFILE_BRANCH}"
-            exit 0
-          fi
-          branch="baseline-profile/${GITHUB_RUN_ID}"
-          git switch -c "$branch"
-          git commit -m 'Actualiza el perfil de referencia'
-          git push origin "$branch"
-          gh pr create --base "${PROFILE_BRANCH}" --head "$branch" \
-            --title 'Actualiza el perfil de referencia' \
-            --body "Generado por el workflow Baseline profile (run ${GITHUB_RUN_ID}) en un emulador Pixel 6, API 34." \
-            || echo 'Pull request not created: the profile is in the artifact and on branch '"$branch"
-          verify "$branch"
