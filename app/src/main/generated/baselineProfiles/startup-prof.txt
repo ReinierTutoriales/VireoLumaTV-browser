@@ -4474,8 +4474,6 @@ HSPLandroidx/compose/runtime/snapshots/SnapshotDoubleIndexHeap;->swap(II)V
 Landroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;-><clinit>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;-><init>([J)V
-HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;->add(J)V
-HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;->toArray()[J
 Landroidx/compose/runtime/snapshots/SnapshotIdSet;
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet;-><clinit>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet;-><init>(JJJ[J)V
@@ -4490,10 +4488,8 @@ HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet$Companion;-><init>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet$Companion;-><init>(Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet$Companion;->getEMPTY()Landroidx/compose/runtime/snapshots/SnapshotIdSet;
 Landroidx/compose/runtime/snapshots/SnapshotId_jvmKt;
-HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->binarySearch([JJ)I
 HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->snapshotIdArrayWithCapacity(I)[J
 HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->toSnapshotId(I)J
-HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->withIdRemovedAt([JI)[J
 Landroidx/compose/runtime/snapshots/SnapshotKt;
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;-><clinit>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->access$advanceGlobalSnapshot()V
@@ -13016,7 +13012,7 @@ HSPLcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;->access$namesFrom
 HSPLcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;->access$resolveFilterLists(Lcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;Ljava/util/List;)Ljava/util/List;
 HSPLcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;->access$restoreLocalRules(Lcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;Ljava/lang/String;Ljava/util/List;Ljava/io/File;Ljava/io/File;)Lcom/reiniertutoriales/vireolumatv/adblock/ContentBlocker;
 HSPLcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;->access$setLastAttemptUnreachable$p(Lcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;Z)V
-HSPLcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;->buildAuxiliary(Ljava/lang/String;Ljava/util/List;)V
+HPLcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;->buildAuxiliary(Ljava/lang/String;Ljava/util/List;)V
 HSPLcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;->bundledFilters_delegate$lambda$0$0(Ljava/lang/String;)Ljava/io/InputStream;
 HSPLcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;->bundledFilters_delegate$lambda$0()Lcom/reiniertutoriales/vireolumatv/adblock/BundledFilterLists;
 HSPLcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;->bundledList$lambda$0(Lcom/reiniertutoriales/vireolumatv/activity/main/AdBlocker;Ljava/lang/String;)Ljava/lang/String;
@@ -15872,7 +15868,7 @@ HSPLkotlin/text/StringsKt__StringsJVMKt;->replace$default(Ljava/lang/String;Ljav
 HSPLkotlin/text/StringsKt__StringsJVMKt;->replace(Ljava/lang/String;CCZ)Ljava/lang/String;
 HSPLkotlin/text/StringsKt__StringsJVMKt;->replace(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;
 HSPLkotlin/text/StringsKt__StringsJVMKt;->startsWith$default(Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Z
-HSPLkotlin/text/StringsKt__StringsJVMKt;->startsWith(Ljava/lang/String;Ljava/lang/String;Z)Z
+HPLkotlin/text/StringsKt__StringsJVMKt;->startsWith(Ljava/lang/String;Ljava/lang/String;Z)Z
 Lkotlin/text/StringsKt__StringsKt;
 HSPLkotlin/text/StringsKt__StringsKt;->contains$default(Ljava/lang/CharSequence;CZILjava/lang/Object;)Z
 HSPLkotlin/text/StringsKt__StringsKt;->contains$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z

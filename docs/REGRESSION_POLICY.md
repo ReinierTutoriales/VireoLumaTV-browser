@@ -127,7 +127,7 @@ MainActivity, ActionBar, pestañas, cursor, shortcuts o fullscreen.
 | N05 | Vídeo fullscreen → Atrás/control de salida → navegador | Cerrar custom view una vez y mostrar la cápsula en esa misma pulsación; foco en Atrás accionable, acceso a pestañas y retorno al puntero, sin navegar otra URL. Si la página entra en fullscreen con la cápsula abierta, cerrarla para poder restaurar su foco al salir. Otra pulsación de Atrás en los 800 ms siguientes no cierra esa cápsula. |
 | N06 | Pestaña A → preview B → comando de la cápsula | Aplicar al contenido seleccionado B, sin quedarse apuntando a A. |
 | N07 | Diálogo/selector/permiso → cancelar o volver | Resolver callback una vez con su propietario; foco vuelve al lugar correcto. |
-| N08 | Atrás desde raíz | Salida al launcher alcanzable y sin bucle, conservando acceso al menú y comandos inferiores. La secuencia exacta debe especificarse antes de implementarla. |
+| N08 | Atrás desde raíz | Secuencia (2026-11-08, TV-DB): en la página Atrás abre la cápsula; si esa cápsula la abrió Atrás y la pestaña no tiene historial, el siguiente Atrás sale al launcher. Con historial, o con la cápsula abierta de otro modo (menú, Arriba), Atrás la cierra como antes. |
 | N09 | Mando OK, D-pad, pulsación larga, gamepad y puntero | Un gesto físico produce una acción; se conserva selección, scroll y clic en enlaces. |
 | N10 | Incógnito, cambio de modo, muerte/recreación de renderer | Mantener separación de datos y navegación recuperable sin abrir pestañas normales como privadas o viceversa. |
 

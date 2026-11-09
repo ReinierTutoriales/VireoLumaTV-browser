@@ -84,11 +84,12 @@ def save_observations():
 
 # Transitional checks are unchanged; every focus observation is recorded.
 try:
-    for attempt in range(2):
-        key(4)
-        root = snapshot(f'back-{attempt}')
-        if observe(f'back-{attempt}', root, ('home_page_search',)):
-            break
+    # No Back here: Back on Home opens the capsule and a second one leaves the app (N08, TV-DB).
+    # Until a key arrives the window is in touch mode with no focus; the first D-pad key leaves
+    # touch mode and gives the default focus (the Home search) without moving it.
+    if not observe('start', snapshot('start'), ('home_page_search',)):
+        key(20)
+        observe('first-key', snapshot('first-key'), ('home_page_search',))
     key(19)
     observe('capsule', snapshot('capsule'), ('back_button', 'home_button'), strict_when_exported=True)
     key(4)

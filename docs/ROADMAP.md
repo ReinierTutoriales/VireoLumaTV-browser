@@ -66,7 +66,7 @@ están integradas y `core-ktx` es un artefacto vacío de compatibilidad
 | Kotlin | Kotlin 2.4.21; Coroutines 1.11.0; KSP 2.3.13 | [Kotlin](https://kotlinlang.org/docs/releases.html), [Coroutines](https://github.com/Kotlin/kotlinx.coroutines/releases), [KSP](https://github.com/google/ksp/releases) |
 | Build | AGP 9.5.1; Gradle 9.9.0; NDK 30.0.16248370 | [AGP](https://developer.android.com/build/releases/agp-9-5-0-release-notes?hl=en), [Gradle](https://docs.gradle.org/9.9.0/release-notes.html), [NDK](https://developer.android.com/ndk/downloads) |
 | Pruebas | JUnit 4.13.2; Robolectric 4.17; AndroidX Test Ext JUnit 1.3.0 | [JUnit](https://github.com/junit-team/junit4/releases), [Robolectric](https://github.com/robolectric/robolectric/releases), [AndroidX Test](https://developer.android.com/jetpack/androidx/releases/test) |
-| Rust directo | adblock 0.13.5; jni 0.22.4; serde_json 1.0.154 | [adblock](https://github.com/brave/adblock-rust/blob/master/CHANGELOG.md), [jni](https://github.com/jni-rs/jni-rs/releases), [serde_json](https://github.com/serde-rs/json/releases) |
+| Rust directo | rustc 1.99.1 fijado en `rust-toolchain.toml`; adblock 0.13.5; jni 0.22.4; serde_json 1.0.154 | [adblock](https://github.com/brave/adblock-rust/blob/master/CHANGELOG.md), [jni](https://github.com/jni-rs/jni-rs/releases), [serde_json](https://github.com/serde-rs/json/releases) |
 | CI | checkout 7.0.1; setup-java 6.2.0; gradle/actions 6.4.1; upload-artifact 7.0.2; download-artifact 8.0.2; rust-cache 2.9.3; android-emulator-runner 2.38.0; action-gh-release 3.0.4 | Publicaciones oficiales de cada acción en GitHub |
 
 Este contraste cubre versiones directas, no certifica todas las transitivas de

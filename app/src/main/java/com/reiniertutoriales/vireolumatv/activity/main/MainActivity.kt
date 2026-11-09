@@ -937,20 +937,29 @@ open class MainActivity : ComponentActivity() {
             vb.controlsHost.isEditingAddress -> vb.controlsHost.cancelAddressInput()
             // A second press while the video is still coming down (or a remote's double send) must not
             // close the capsule that the first one opened.
-            overlayVisible -> if (SystemClock.uptimeMillis() - fullscreenBackAt >= FULLSCREEN_BACK_SETTLE_MS) closeCapsule()
+            overlayVisible -> if (SystemClock.uptimeMillis() - fullscreenBackAt >= FULLSCREEN_BACK_SETTLE_MS) {
+                // N08: at the root (no history), Back on the capsule that Back opened leaves to the
+                // launcher (TV-DB); otherwise it closes the capsule as before.
+                if (capsuleFromBack && tabStore.currentTab.value?.engine?.canGoBack != true) finish() else closeCapsule()
+            }
             pointer.canGoBackInPage() -> pointer.consumeBack()
             !vb.pageContainer.pointerEnabled -> {
                 // Leaving D-pad mode returns to the pointer on the same page; nothing else happens.
                 tabStore.currentTab.value?.engine?.setPointerMode(true)
                 backPresses.holdBGoesBack = false
             }
-            else -> openCapsule()
+            else -> {
+                openCapsule()
+                capsuleFromBack = overlayVisible
+            }
         }
     }
 
     // The capsule over the page
 
     private var overlayVisible = false
+    /** The open capsule was opened by Back on the page, so a second Back at the root may leave. */
+    private var capsuleFromBack = false
     /** When Back last closed a fullscreen video. */
     private var fullscreenBackAt = Long.MIN_VALUE / 2
     /** Bumped whenever the preview may change, so a slow picture load never shows a stale tab. */
@@ -971,6 +980,7 @@ open class MainActivity : ComponentActivity() {
             vb.controlsHost.takeFocus()
             return
         }
+        capsuleFromBack = false
         overlayVisible = true
         blockFocusBehindCapsule(true)
         previewGeneration++
@@ -1038,6 +1048,7 @@ open class MainActivity : ComponentActivity() {
     internal fun closeCapsule() {
         val wasVisible = overlayVisible
         overlayVisible = false
+        capsuleFromBack = false
         blockFocusBehindCapsule(false)
         vb.pageContainer.onPageTouch = null
         vb.pageContainer.cursorSuppressed = nativeHome?.isVisible == true

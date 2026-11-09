@@ -4060,7 +4060,7 @@ HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->dataIndex(I)I
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->dataIndex([II)I
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->dataIndexToDataAddress(I)I
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->dataIndexToDataAnchor(IIII)I
-HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->endGroup()I
+HPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->endGroup()I
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->endInsert()V
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->ensureStarted(I)V
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->ensureStarted(Landroidx/compose/runtime/composer/gapbuffer/GapAnchor;)V
@@ -4076,8 +4076,8 @@ HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->groupIndexToAddress
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->groupKey(I)I
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->groupObjectKey(I)Ljava/lang/Object;
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->groupSize(I)I
-HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->insertGroups(I)V
-HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->insertSlots(II)V
+HPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->insertGroups(I)V
+HPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->insertSlots(II)V
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->markGroup$default(Landroidx/compose/runtime/composer/gapbuffer/SlotWriter;IILjava/lang/Object;)V
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->markGroup(I)V
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->moveFrom(Landroidx/compose/runtime/composer/gapbuffer/SlotTable;IZ)Ljava/util/List;
@@ -4111,7 +4111,7 @@ HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->sourceInformationOf
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->startData(ILjava/lang/Object;Ljava/lang/Object;)V
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->startGroup()V
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->startGroup(ILjava/lang/Object;)V
-HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->startGroup(ILjava/lang/Object;ZLjava/lang/Object;)V
+HPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->startGroup(ILjava/lang/Object;ZLjava/lang/Object;)V
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->startNode(ILjava/lang/Object;)V
 PLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->trimTailSlots(I)V
 HSPLandroidx/compose/runtime/composer/gapbuffer/SlotWriter;->update(Ljava/lang/Object;)Ljava/lang/Object;
@@ -7577,7 +7577,7 @@ HSPLandroidx/compose/ui/layout/Placeable;->getMeasuredSize-YbymL2g()J
 HSPLandroidx/compose/ui/layout/Placeable;->getMeasuredWidth()I
 HSPLandroidx/compose/ui/layout/Placeable;->getMeasurementConstraints-msEJaDk()J
 HSPLandroidx/compose/ui/layout/Placeable;->getWidth()I
-HSPLandroidx/compose/ui/layout/Placeable;->onMeasuredSizeChanged()V
+HPLandroidx/compose/ui/layout/Placeable;->onMeasuredSizeChanged()V
 HSPLandroidx/compose/ui/layout/Placeable;->setMeasuredSize-ozmzZPI(J)V
 HSPLandroidx/compose/ui/layout/Placeable;->setMeasurementConstraints-BRTryo0(J)V
 Landroidx/compose/ui/layout/Placeable$PlacementScope;
@@ -17810,7 +17810,7 @@ HSPLkotlinx/coroutines/channels/BufferOverflow;-><init>(Ljava/lang/String;I)V
 Lkotlinx/coroutines/channels/BufferedChannel;
 HSPLkotlinx/coroutines/channels/BufferedChannel;-><clinit>()V
 HSPLkotlinx/coroutines/channels/BufferedChannel;-><init>(ILkotlin/jvm/functions/Function1;)V
-PLkotlinx/coroutines/channels/BufferedChannel;->access$findSegmentReceive(Lkotlinx/coroutines/channels/BufferedChannel;JLkotlinx/coroutines/channels/ChannelSegment;)Lkotlinx/coroutines/channels/ChannelSegment;
+HSPLkotlinx/coroutines/channels/BufferedChannel;->access$findSegmentReceive(Lkotlinx/coroutines/channels/BufferedChannel;JLkotlinx/coroutines/channels/ChannelSegment;)Lkotlinx/coroutines/channels/ChannelSegment;
 PLkotlinx/coroutines/channels/BufferedChannel;->access$findSegmentSend(Lkotlinx/coroutines/channels/BufferedChannel;JLkotlinx/coroutines/channels/ChannelSegment;)Lkotlinx/coroutines/channels/ChannelSegment;
 HSPLkotlinx/coroutines/channels/BufferedChannel;->access$getReceiveSegment$volatile$FU()Ljava/util/concurrent/atomic/AtomicReferenceFieldUpdater;
 HSPLkotlinx/coroutines/channels/BufferedChannel;->access$getReceivers$volatile$FU()Ljava/util/concurrent/atomic/AtomicLongFieldUpdater;
