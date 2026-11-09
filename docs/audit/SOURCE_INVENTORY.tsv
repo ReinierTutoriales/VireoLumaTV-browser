@@ -565,3 +565,4 @@ scripts/test-youtube-adblock.cjs	PROPIO
 scripts/ui_control_contract.py	PROPIO
 settings.gradle.kts	REESCRITO
 rust-toolchain.toml	PROPIO
+.claude/settings.json	PROPIO
