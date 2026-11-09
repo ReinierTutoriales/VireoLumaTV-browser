@@ -44,3 +44,32 @@ Every line must be traceable to existing code or a clearly labeled minimal assum
 - Prefer one cohesive multi-file commit over many trivial commits. Avoid repeated status-only reports and documentation-only changes while the requested feature remains disconnected.
 - Check the exact current CI head once, inspect failing logs to identify a reproducible cause, and distinguish transient infrastructure errors from code regressions. Do not rerun unaffected jobs or repeatedly poll without a decision to make.
 - After changes, verify the exact head; report implemented behavior, validation, and remaining gaps precisely. Do not call a component integrated merely because it compiles or exists in the source tree.
+
+## Single-pass edits (lessons from verified failures)
+
+- Before editing, list every consumer of what changes: grep the symbol, its members
+  (including interface default methods), its resource IDs, and its key or event in
+  `app/src`, `scripts/`, `baselineprofile/` and `.github/`. Deleting a type or changing a
+  key's meaning breaks callers the compiler of one module does not see.
+- Scripted edits must anchor on unique surrounding context and assert one match; a
+  first-match replace once landed in the wrong `when` branch. Read the resulting hunk
+  before committing.
+- A changed Kotlin or Compose signature changes its JVM descriptor: update the
+  matching lines in `app/src/main/generated/baselineProfiles/*.txt` (Compose appends
+  `Composer`, `$changed` ints per 10 parameters and `$default` ints per 31), or the
+  method loses ahead-of-time compilation until the profile is regenerated.
+- Chain shell steps with `&&` or `set -e`; a failed `git add` followed by `;` commits
+  the wrong set. Keep a file's trailing newline when rewriting it.
+- Run every check the session can run before pushing (`cargo test --locked`,
+  `python3 -m py_compile`, `git diff --check`, inventory script); leave only Android
+  builds to CI, then check CI once after its usual duration instead of polling.
+- Query the remote (releases, branches, merged PRs) before stating repository facts;
+  the previous turn is not evidence.
+
+## Professional code, not filler
+
+- Match the surrounding naming, structure and comment density. Comments state why
+  (contract, platform fact, measured cost), never what the next line does.
+- No speculative helpers, wrappers, logging or defensive branches the callers do not
+  need; delete code made dead by the change in the same commit.
+- Put measured numbers and the method in the commit or PR, not in the code.
