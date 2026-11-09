@@ -2741,7 +2741,7 @@ Landroidx/compose/runtime/CompositionObserverHolder;
 HSPLandroidx/compose/runtime/CompositionObserverHolder;-><clinit>()V
 HSPLandroidx/compose/runtime/CompositionObserverHolder;-><init>(Landroidx/compose/runtime/tooling/CompositionObserver;ZLandroidx/compose/runtime/CompositionContext;)V
 HSPLandroidx/compose/runtime/CompositionObserverHolder;-><init>(Landroidx/compose/runtime/tooling/CompositionObserver;ZLandroidx/compose/runtime/CompositionContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-HSPLandroidx/compose/runtime/CompositionObserverHolder;->current()Landroidx/compose/runtime/tooling/CompositionObserver;
+HPLandroidx/compose/runtime/CompositionObserverHolder;->current()Landroidx/compose/runtime/tooling/CompositionObserver;
 Landroidx/compose/runtime/CompositionServiceKey;
 Landroidx/compose/runtime/CompositionServices;
 Landroidx/compose/runtime/ComputedProvidableCompositionLocal;
@@ -4533,7 +4533,7 @@ HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->notifyWrite(Landroidx/compos
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->overwritableRecord(Landroidx/compose/runtime/snapshots/StateRecord;Landroidx/compose/runtime/snapshots/StateObject;Landroidx/compose/runtime/snapshots/Snapshot;Landroidx/compose/runtime/snapshots/StateRecord;)Landroidx/compose/runtime/snapshots/StateRecord;
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->overwriteUnusedRecordsLocked(Landroidx/compose/runtime/snapshots/StateObject;)Z
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->processForUnusedRecordsLocked(Landroidx/compose/runtime/snapshots/StateObject;)V
-HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->readable(Landroidx/compose/runtime/snapshots/StateRecord;JLandroidx/compose/runtime/snapshots/SnapshotIdSet;)Landroidx/compose/runtime/snapshots/StateRecord;
+HPLandroidx/compose/runtime/snapshots/SnapshotKt;->readable(Landroidx/compose/runtime/snapshots/StateRecord;JLandroidx/compose/runtime/snapshots/SnapshotIdSet;)Landroidx/compose/runtime/snapshots/StateRecord;
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->readable(Landroidx/compose/runtime/snapshots/StateRecord;Landroidx/compose/runtime/snapshots/StateObject;)Landroidx/compose/runtime/snapshots/StateRecord;
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->releasePinningLocked(I)V
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->resetGlobalSnapshotLocked(Landroidx/compose/runtime/snapshots/GlobalSnapshot;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
@@ -9038,6 +9038,7 @@ Landroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;
 HSPLandroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;->hasCollectionInfo(Landroidx/compose/ui/semantics/SemanticsNode;)Z
 HSPLandroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;->setCollectionInfo(Landroidx/compose/ui/semantics/SemanticsNode;Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat;)V
 HSPLandroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;->setCollectionItemInfo(Landroidx/compose/ui/semantics/SemanticsNode;Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat;)V
+HSPLandroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;->toAccessibilityCollectionInfo(Landroidx/compose/ui/semantics/CollectionInfo;)Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;
 Landroidx/compose/ui/platform/coreshims/AutofillIdCompat;
 HSPLandroidx/compose/ui/platform/coreshims/AutofillIdCompat;-><init>(Landroid/view/autofill/AutofillId;)V
 HSPLandroidx/compose/ui/platform/coreshims/AutofillIdCompat;->toAutofillId()Landroid/view/autofill/AutofillId;
@@ -9110,6 +9111,8 @@ HSPLandroidx/compose/ui/semantics/AppendedSemanticsElement;->update(Landroidx/co
 Landroidx/compose/ui/semantics/CollectionInfo;
 HSPLandroidx/compose/ui/semantics/CollectionInfo;-><clinit>()V
 HSPLandroidx/compose/ui/semantics/CollectionInfo;-><init>(II)V
+HSPLandroidx/compose/ui/semantics/CollectionInfo;->getColumnCount()I
+HSPLandroidx/compose/ui/semantics/CollectionInfo;->getRowCount()I
 Landroidx/compose/ui/semantics/CollectionItemInfo;
 Landroidx/compose/ui/semantics/CoreSemanticsModifierNode;
 HSPLandroidx/compose/ui/semantics/CoreSemanticsModifierNode;-><clinit>()V
@@ -11157,6 +11160,8 @@ Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$Api34Impl;
 HSPLandroidx/core/view/accessibility/AccessibilityNodeInfoCompat$Api34Impl;->getActionScrollInDirection()Landroid/view/accessibility/AccessibilityNodeInfo$AccessibilityAction;
 HSPLandroidx/core/view/accessibility/AccessibilityNodeInfoCompat$Api34Impl;->setAccessibilityDataSensitive(Landroid/view/accessibility/AccessibilityNodeInfo;Z)V
 Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;
+HSPLandroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;-><init>(Ljava/lang/Object;)V
+HSPLandroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;->obtain(IIZI)Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;
 Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$RangeInfoCompat;
 Landroidx/core/view/accessibility/AccessibilityNodeProviderCompat;
 HSPLandroidx/core/view/accessibility/AccessibilityNodeProviderCompat;-><init>()V
@@ -15371,7 +15376,7 @@ HSPLkotlin/coroutines/AbstractCoroutineContextKey;-><init>(Lkotlin/coroutines/Co
 Lkotlin/coroutines/CombinedContext;
 HSPLkotlin/coroutines/CombinedContext;-><init>(Lkotlin/coroutines/CoroutineContext;Lkotlin/coroutines/CoroutineContext$Element;)V
 HSPLkotlin/coroutines/CombinedContext;->fold(Ljava/lang/Object;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
-HPLkotlin/coroutines/CombinedContext;->get(Lkotlin/coroutines/CoroutineContext$Key;)Lkotlin/coroutines/CoroutineContext$Element;
+HSPLkotlin/coroutines/CombinedContext;->get(Lkotlin/coroutines/CoroutineContext$Key;)Lkotlin/coroutines/CoroutineContext$Element;
 HSPLkotlin/coroutines/CombinedContext;->minusKey(Lkotlin/coroutines/CoroutineContext$Key;)Lkotlin/coroutines/CoroutineContext;
 HSPLkotlin/coroutines/CombinedContext;->plus(Lkotlin/coroutines/CoroutineContext;)Lkotlin/coroutines/CoroutineContext;
 Lkotlin/coroutines/Continuation;
@@ -16056,7 +16061,6 @@ HSPLkotlinx/coroutines/CoroutineExceptionHandler$DefaultImpls;->get(Lkotlinx/cor
 Lkotlinx/coroutines/CoroutineExceptionHandler$Key;
 HSPLkotlinx/coroutines/CoroutineExceptionHandler$Key;-><clinit>()V
 HSPLkotlinx/coroutines/CoroutineExceptionHandler$Key;-><init>()V
-Lkotlinx/coroutines/CoroutineExceptionHandlerKt;
 Lkotlinx/coroutines/CoroutineId;
 Lkotlinx/coroutines/CoroutineScope;
 Lkotlinx/coroutines/CoroutineScopeKt;
@@ -17013,7 +17017,6 @@ HSPLkotlinx/coroutines/internal/Segment;-><clinit>()V
 HSPLkotlinx/coroutines/internal/Segment;-><init>(JLkotlinx/coroutines/internal/Segment;I)V
 HSPLkotlinx/coroutines/internal/Segment;->getCleanedAndPointers$volatile$FU()Ljava/util/concurrent/atomic/AtomicIntegerFieldUpdater;
 HSPLkotlinx/coroutines/internal/Segment;->onSlotCleaned()V
-Lkotlinx/coroutines/internal/StackTraceRecoveryKt;
 Lkotlinx/coroutines/internal/Symbol;
 HSPLkotlinx/coroutines/internal/Symbol;-><init>(Ljava/lang/String;)V
 Lkotlinx/coroutines/internal/SystemPropsKt;
