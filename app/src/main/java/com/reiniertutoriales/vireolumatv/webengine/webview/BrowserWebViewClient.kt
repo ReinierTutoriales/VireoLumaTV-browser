@@ -163,8 +163,8 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
 
 /** Reject traversal, encoded separators, queries and fragments before addressing local assets. */
 internal fun safeHomeAssetPath(address: String): String? {
-    val uri = runCatching { Uri.parse(address) }.getOrNull() ?: return null
-    val base = Uri.parse(Config.HOME_PAGE_URL)
+    val uri = runCatching { address.toUri() }.getOrNull() ?: return null
+    val base = Config.HOME_PAGE_URL.toUri()
     if (!uri.scheme.equals(base.scheme, true) || !uri.host.equals(base.host, true) ||
         uri.port != base.port || uri.encodedUserInfo != null ||
         uri.encodedQuery != null || uri.encodedFragment != null) return null
