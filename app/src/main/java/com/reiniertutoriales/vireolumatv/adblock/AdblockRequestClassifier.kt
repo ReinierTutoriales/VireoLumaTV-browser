@@ -22,10 +22,9 @@ internal object AdblockRequestClassifier {
     fun classify(url: Uri, headers: Map<String, String>, mainFrame: Boolean): String {
         if (mainFrame) return "document"
         fun header(name: String): String? = headers.entries.firstOrNull { it.key.equals(name, true) }?.value
-        // Accept can contain HTML, XML, images and */* together: it is not a resource type by itself.
-        val accepted = header("Accept")?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
-        // Explicit destination takes precedence over Accept; a subresource may advertise HTML.
-        when (header("Sec-Fetch-Dest")?.lowercase(Locale.ROOT)) {
+        // Explicit destination takes precedence; avoid parsing Accept on the common path.
+        val destination = header("Sec-Fetch-Dest")
+        when (destination?.lowercase(Locale.ROOT)) {
             "document", "iframe", "frame" -> return "subdocument"
             "script", "worker", "sharedworker", "serviceworker" -> return "script"
             "style" -> return "style"
@@ -35,11 +34,13 @@ internal object AdblockRequestClassifier {
             "object", "embed" -> return "object"
             "empty" -> return "xhr"
         }
-        if (header("Sec-Fetch-Dest").isNullOrBlank() && accepted != null && accepted.size > 1 &&
-            accepted[0] == "text/html" && accepted[1] == "application/xhtml+xml") {
-            return "subdocument"
-        }
+        // Navigation Accept overrides misleading URL extensions without token allocation.
+        val acceptHeader = header("Accept")
+        if (destination.isNullOrBlank() && acceptHeader?.trimStart()?.startsWith(
+                "text/html,application/xhtml+xml", ignoreCase = true
+            ) == true) return "subdocument"
         if (header("X-Requested-With").equals("XMLHttpRequest", true)) return "xhr"
+        // URL extensions are cheaper to inspect than splitting and normalizing Accept.
         val extension = url.lastPathSegment?.substringAfterLast('.', "")?.lowercase(Locale.ROOT)
         when (extension) {
             "js", "mjs" -> return "script"
@@ -48,6 +49,8 @@ internal object AdblockRequestClassifier {
             "woff", "woff2", "ttf", "otf", "eot" -> return "font"
             "mp4", "mov", "avi", "webm", "mp3", "m4a", "ogg", "wav", "m3u8", "mpd" -> return "media"
         }
+        // Accept can mix HTML, images and wildcards; parse only on ambiguous requests.
+        val accepted = header("Accept")?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
         val types = accepted?.filter { it != "*/*" }
         if (types.isNullOrEmpty()) return "unknown"
         if (types.all { it == "application/json" || it.endsWith("+json") }) return "xhr"
