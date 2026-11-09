@@ -63,13 +63,17 @@ def tap(node):
 if adb('shell', 'pidof', package) != normal_pid:
     raise AssertionError('Normal process changed before private-mode check')
 
-for attempt in range(2):
+def home_search_focused(root):
+    return root is not None and any(matches_id(node, 'home_page_search') and node.get('focused') == 'true'
+                                    for node in root.iter('node'))
+
+
+# At most one Back: on Home without history a second Back would leave the app (N08, TV-DB).
+root = snapshot('reset-0')
+if not home_search_focused(root):
     adb('shell', 'input', 'keyevent', '4')
-    root = snapshot(f'reset-{attempt}')
-    if root and any(matches_id(node, 'home_page_search') and node.get('focused') == 'true'
-                    for node in root.iter('node')):
-        break
-else:
+    root = snapshot('reset-1')
+if not home_search_focused(root):
     print('NOTE: Home search did not regain focus before opening private mode (transitional)', file=sys.stderr)
 
 adb('shell', 'input', 'keyevent', '19')  # Up from Home opens the capsule.

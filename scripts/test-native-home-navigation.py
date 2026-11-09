@@ -84,11 +84,10 @@ def save_observations():
 
 # Transitional checks are unchanged; every focus observation is recorded.
 try:
-    for attempt in range(2):
+    # At most one Back: on Home without history a second Back leaves the app (N08, TV-DB).
+    if not observe('back-0', snapshot('back-0'), ('home_page_search',)):
         key(4)
-        root = snapshot(f'back-{attempt}')
-        if observe(f'back-{attempt}', root, ('home_page_search',)):
-            break
+        observe('back-1', snapshot('back-1'), ('home_page_search',))
     key(19)
     observe('capsule', snapshot('capsule'), ('back_button', 'home_button'), strict_when_exported=True)
     key(4)
