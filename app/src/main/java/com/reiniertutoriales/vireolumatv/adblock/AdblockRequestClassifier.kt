@@ -22,10 +22,9 @@ internal object AdblockRequestClassifier {
     fun classify(url: Uri, headers: Map<String, String>, mainFrame: Boolean): String {
         if (mainFrame) return "document"
         fun header(name: String): String? = headers.entries.firstOrNull { it.key.equals(name, true) }?.value
-        // Accept can contain HTML, XML, images and */* together: it is not a resource type by itself.
-        val accepted = header("Accept")?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
-        // Explicit destination takes precedence over Accept; a subresource may advertise HTML.
-        when (header("Sec-Fetch-Dest")?.lowercase(Locale.ROOT)) {
+        // Explicit destination takes precedence; avoid parsing Accept on the common path.
+        val destination = header("Sec-Fetch-Dest")
+        when (destination?.lowercase(Locale.ROOT)) {
             "document", "iframe", "frame" -> return "subdocument"
             "script", "worker", "sharedworker", "serviceworker" -> return "script"
             "style" -> return "style"
@@ -35,7 +34,9 @@ internal object AdblockRequestClassifier {
             "object", "embed" -> return "object"
             "empty" -> return "xhr"
         }
-        if (header("Sec-Fetch-Dest").isNullOrBlank() && accepted != null && accepted.size > 1 &&
+        // Parse Accept only when destination did not decide the type.
+        val accepted = header("Accept")?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
+        if (destination.isNullOrBlank() && accepted != null && accepted.size > 1 &&
             accepted[0] == "text/html" && accepted[1] == "application/xhtml+xml") {
             return "subdocument"
         }
