@@ -14,10 +14,12 @@ use adblock::resources::{PermissionMask, Resource};
 use adblock::Engine;
 use scoped::Scoped;
 use jni::errors::ThrowRuntimeExAndDefault;
-use jni::objects::{JBooleanArray, JByteArray, JClass, JObjectArray, JString};
+use jni::objects::{JBooleanArray, JClass, JObjectArray, JString};
 use std::collections::{HashSet, VecDeque};
+use std::fs::File;
+use std::io::{self, BufWriter, Write};
 use std::sync::{Arc, Mutex};
-use jni::sys::{jint, jlong};
+use jni::sys::{jboolean, jint, jlong};
 use jni::{Env, EnvUnowned};
 
 /// No match.
@@ -84,14 +86,20 @@ impl Blocker {
         self.remember(url, &self.engine.url_cosmetic_resources(url))
     }
 
-    fn serialize(&self) -> Vec<u8> {
+    /// Writes the container part by part: the engine's bytes are not copied into a second buffer.
+    fn write(&self, out: &mut impl Write) -> io::Result<()> {
         let main = self.engine.serialize();
-        let scoped = self.scoped.as_ref().map(Scoped::source).unwrap_or("");
-        let mut out = Vec::with_capacity(MAGIC.len() + 8 + main.len() + scoped.len());
-        out.extend_from_slice(MAGIC);
-        out.extend_from_slice(&(main.len() as u64).to_le_bytes());
-        out.extend_from_slice(&main);
-        out.extend_from_slice(scoped.as_bytes());
+        out.write_all(MAGIC)?;
+        out.write_all(&(main.len() as u64).to_le_bytes())?;
+        out.write_all(&main)?;
+        out.write_all(self.scoped.as_ref().map(Scoped::source).unwrap_or("").as_bytes())?;
+        out.flush()
+    }
+
+    #[cfg(test)]
+    fn serialize(&self) -> Vec<u8> {
+        let mut out = Vec::new();
+        self.write(&mut out).unwrap();
         out
     }
 
@@ -247,32 +255,37 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
         .resolve::<ThrowRuntimeExAndDefault>()
 }
 
+/// Restores a [Blocker] from the cache file at `path`; 0 when it is missing or unusable. The
+/// file is read here, so its several megabytes never pass through the Java heap.
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdblock_nativeDeserialize<'caller>(
     mut unowned: EnvUnowned<'caller>,
     _class: JClass<'caller>,
-    data: JByteArray<'caller>,
+    path: JString<'caller>,
     resources: JString<'caller>,
 ) -> jlong {
     unowned
         .with_env(|env| -> jni::errors::Result<jlong> {
-            let bytes = env.convert_byte_array(&data)?;
+            let Ok(bytes) = std::fs::read(text(env, &path)?) else { return Ok(0) };
             let resources = text(env, &resources)?;
             Ok(Blocker::deserialize(&bytes, &resources).map_or(0, into_handle))
         })
         .resolve::<ThrowRuntimeExAndDefault>()
 }
 
+/// Writes the [Blocker] to the file at `path` (the caller's temporary file, renamed on success).
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdblock_nativeSerialize<'caller>(
     mut unowned: EnvUnowned<'caller>,
     _class: JClass<'caller>,
     handle: jlong,
-) -> JByteArray<'caller> {
+    path: JString<'caller>,
+) -> jboolean {
     unowned
-        .with_env(|env| -> jni::errors::Result<JByteArray<'caller>> {
-            let data = engine(handle).map(|e| e.serialize()).unwrap_or_default();
-            env.byte_array_from_slice(&data)
+        .with_env(|env| -> jni::errors::Result<jboolean> {
+            let Some(blocker) = engine(handle) else { return Ok(false) };
+            let path = text(env, &path)?;
+            Ok(File::create(path).and_then(|file| blocker.write(&mut BufWriter::new(file))).is_ok())
         })
         .resolve::<ThrowRuntimeExAndDefault>()
 }

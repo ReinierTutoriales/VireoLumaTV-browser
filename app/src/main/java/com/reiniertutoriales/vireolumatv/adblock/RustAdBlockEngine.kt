@@ -30,7 +30,7 @@ class RustAdBlockEngine(private val resources: () -> String) : ContentBlockerEng
 
     override fun deserialize(file: File): ContentBlocker? {
         if (!RustAdblock.isAvailable || !file.exists()) return null
-        val handle = RustAdblock.nativeDeserialize(file.readBytes(), resources())
+        val handle = RustAdblock.nativeDeserialize(file.path, resources())
         return if (handle == 0L) null else RustContentBlocker(handle)
     }
 }
@@ -66,11 +66,9 @@ private class RustContentBlocker(private var handle: Long) : ContentBlocker {
         if (handle == 0L) "[]" else RustAdblock.nativeHiddenSelectors(handle, pageUrl, classes, ids)
     }
 
-    override fun serialize(file: File): Boolean {
-        val data = lifecycle.read { if (handle == 0L) ByteArray(0) else RustAdblock.nativeSerialize(handle) }
-        if (data.isEmpty()) return false
-        file.writeBytes(data)
-        return true
+    // The read lock keeps the rules alive while they are written; checks keep running meanwhile.
+    override fun serialize(file: File): Boolean = lifecycle.read {
+        handle != 0L && RustAdblock.nativeSerialize(handle, file.path)
     }
 
     override fun release() = lifecycle.write {
