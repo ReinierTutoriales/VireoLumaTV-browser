@@ -388,11 +388,13 @@ mod tests {
             "/badfilter/$script,to=~good.com\n/other/$script,to=~other.com",
             "*$script,to=com|~good.com,domain=badfilter.test\n*$script,to=com|~other.com,domain=badfilter.test",
         ] {
-            let mut source = String::new();
-            collect(rules, false, &mut source);
-            let scoped = Scoped::build(source, |_| ParseOptions::default(), Vec::new()).unwrap();
-            let request = Request::new("https://cdn.example.com/badfilter/a.js", "https://badfilter.test/", "script", "GET").unwrap();
-            assert!(scoped.check(&request, "badfilter.test").is_some_and(|result| result.should_block()), "{rules}");
+            for trusted in [false, true] {
+                let mut source = String::new();
+                collect(rules, trusted, &mut source);
+                let scoped = Scoped::build(source, |_| ParseOptions::default(), Vec::new()).unwrap();
+                let request = Request::new("https://cdn.example.com/badfilter/a.js", "https://badfilter.test/", "script", "GET").unwrap();
+                assert!(scoped.check(&request, "badfilter.test").is_some_and(|result| result.should_block()), "trusted={trusted}: {rules}");
+            }
         }
     }
 
