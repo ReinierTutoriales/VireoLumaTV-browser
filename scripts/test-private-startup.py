@@ -68,10 +68,11 @@ def home_search_focused(root):
                                     for node in root.iter('node'))
 
 
-# At most one Back: on Home without history a second Back would leave the app (N08, TV-DB).
+# No Back here: Back on Home opens the capsule and a second one leaves the app (N08, TV-DB).
+# The first D-pad key leaves touch mode and gives the default focus (the Home search).
 root = snapshot('reset-0')
 if not home_search_focused(root):
-    adb('shell', 'input', 'keyevent', '4')
+    adb('shell', 'input', 'keyevent', '20')
     root = snapshot('reset-1')
 if not home_search_focused(root):
     print('NOTE: Home search did not regain focus before opening private mode (transitional)', file=sys.stderr)
