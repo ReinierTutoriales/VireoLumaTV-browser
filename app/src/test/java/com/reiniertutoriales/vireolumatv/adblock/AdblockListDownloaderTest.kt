@@ -4,6 +4,8 @@ import com.sun.net.httpserver.HttpServer
 import org.junit.Assert.*
 import org.junit.Test
 import java.net.InetSocketAddress
+import java.io.ByteArrayOutputStream
+import java.util.zip.GZIPOutputStream
 import java.util.concurrent.atomic.AtomicInteger
 
 class AdblockListDownloaderTest {
@@ -114,4 +116,45 @@ class AdblockListDownloaderTest {
             assertTrue(AdblockListDownloader.fetch(listOf(url), true, foreign) is AdblockListDownloader.Result.Downloaded)
         } finally { server.stop(0) }
     }
+
+    @Test fun gzipResponseIsDecodedAndIdentityIsRequested() {
+        val rules = "[Adblock Plus 2.0]\n" + (1..120).joinToString("\n") { "||ads$it.test^" }
+        val bytes = ByteArrayOutputStream().also { out ->
+            GZIPOutputStream(out).use { it.write(rules.toByteArray(Charsets.UTF_8)) }
+        }.toByteArray()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/gzip") { exchange ->
+            assertEquals("identity", exchange.requestHeaders.getFirst("Accept-Encoding"))
+            exchange.responseHeaders.add("Content-Encoding", "gzip")
+            exchange.sendResponseHeaders(200, bytes.size.toLong())
+            exchange.responseBody.use { it.write(bytes) }
+        }
+        server.start()
+        try {
+            val url = "http://127.0.0.1:${server.address.port}/gzip"
+            assertEquals(rules, AdblockListDownloader.download(listOf(url), true))
+        } finally { server.stop(0) }
+    }
+
+    @Test fun unsupportedEncodingFallsBackToValidatedMirror() {
+        val rules = "[Adblock Plus 2.0]\n" + (1..120).joinToString("\n") { "||ads$it.test^" }
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/unsupported") { exchange ->
+            val bytes = rules.toByteArray(Charsets.UTF_8)
+            exchange.responseHeaders.add("Content-Encoding", "br")
+            exchange.sendResponseHeaders(200, bytes.size.toLong())
+            exchange.responseBody.use { it.write(bytes) }
+        }
+        server.createContext("/mirror") { exchange ->
+            val bytes = rules.toByteArray(Charsets.UTF_8)
+            exchange.sendResponseHeaders(200, bytes.size.toLong())
+            exchange.responseBody.use { it.write(bytes) }
+        }
+        server.start()
+        try {
+            val base = "http://127.0.0.1:${server.address.port}"
+            assertEquals(rules, AdblockListDownloader.download(listOf("$base/unsupported", "$base/mirror"), true))
+        } finally { server.stop(0) }
+    }
+
 }
