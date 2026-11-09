@@ -60,7 +60,7 @@ internal object AdblockRequestClassifier {
             "mp4", "mov", "avi", "webm", "mp3", "m4a", "ogg", "wav", "m3u8", "mpd" -> return "media"
         }
         // Accept can mix HTML, images and wildcards; parse only on ambiguous requests.
-        val accepted = header("Accept")?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
+        val accepted = acceptHeader?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
         val types = accepted?.filter { it != "*/*" }
         if (types.isNullOrEmpty()) return "unknown"
         if (types.all { it == "application/json" || it.endsWith("+json") }) return "xhr"
