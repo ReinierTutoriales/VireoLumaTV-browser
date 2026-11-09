@@ -36,9 +36,19 @@ internal object AdblockRequestClassifier {
         }
         // Navigation Accept overrides misleading URL extensions without token allocation.
         val acceptHeader = header("Accept")
-        if (destination.isNullOrBlank() && acceptHeader?.trimStart()?.startsWith(
-                "text/html,application/xhtml+xml", ignoreCase = true
-            ) == true) return "subdocument"
+        if (destination.isNullOrBlank() && acceptHeader != null) {
+            val firstComma = acceptHeader.indexOf(',')
+            if (firstComma >= 0) {
+                val secondComma = acceptHeader.indexOf(',', firstComma + 1).let {
+                    if (it < 0) acceptHeader.length else it
+                }
+                val first = acceptHeader.substring(0, firstComma).substringBefore(';').trim()
+                val second = acceptHeader.substring(firstComma + 1, secondComma).substringBefore(';').trim()
+                if (first.equals("text/html", true) && second.equals("application/xhtml+xml", true)) {
+                    return "subdocument"
+                }
+            }
+        }
         if (header("X-Requested-With").equals("XMLHttpRequest", true)) return "xhr"
         // URL extensions are cheaper to inspect than splitting and normalizing Accept.
         val extension = url.lastPathSegment?.substringAfterLast('.', "")?.lowercase(Locale.ROOT)
