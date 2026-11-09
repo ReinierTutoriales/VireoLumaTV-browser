@@ -34,8 +34,8 @@ Perfetto, Macrobenchmark y DevTools cuando haya acceso a equipos reales.
 El workflow `Benchmark`, manual y automático en PRs que afectan app/build/mediciones, ejecuta en emulador el arranque en frío y el tiempo
 de fotograma de los recorridos del mando (cápsula, menú, pestañas y Ajustes), sin
 compilar y con el perfil incluido. Compara variantes del mismo commit; no mide un TV.
-El workflow `Baseline profile`, manual y automático para cambios de app/recorridos
-en PRs del propio repositorio, genera el perfil de arranque solo desde el arranque y
+El workflow `Baseline profile`, manual y automático solo en el PR de preparación de
+cada versión (rama `preparacion/*`), genera el perfil de arranque solo desde el arranque y
 el perfil general desde esos mismos recorridos. Los recorridos exigen foco,
 activación con OK, destino y retorno; el cierre comprueba la identidad superviviente.
 El generador conserva ART entre iteraciones y usa el launcher sin añadir pestañas

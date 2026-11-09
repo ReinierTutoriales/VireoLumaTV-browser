@@ -1,6 +1,8 @@
 name: Baseline profile
 
-# Generate after app/journey changes in same-repository PRs, or manually.
+# Generated once per version: by hand, or in the release preparation PR (branch `preparacion/*`).
+# Each run takes about 45 minutes and its commit makes CI and Benchmark run again, so ordinary PRs
+# keep the last profile; a changed signature is corrected by hand in the profile files.
 # Generated commits do not recursively regenerate profiles; CI and Benchmark verify their SHA.
 on:
   workflow_dispatch:
@@ -30,7 +32,9 @@ concurrency:
 
 jobs:
   generate:
-    if: github.actor != 'github-actions[bot]' && (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: >-
+      github.actor != 'github-actions[bot]' && (github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'preparacion/')))
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
