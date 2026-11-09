@@ -1,7 +1,9 @@
 //! JNI bridge between VireoLumaTV and Brave's adblock-rust engine.
 //!
 //! The engine is created once per filter-list generation and shared by every WebView thread:
-//! with the "single-thread" feature disabled `adblock::Engine` is `Sync`, so checks need no lock.
+//! with the "single-thread" feature disabled `adblock::Engine` is `Sync`, so callers need no lock
+//! of their own. adblock-rust still serializes each network check on its internal regex-manager
+//! mutex (adblock 0.13.5 `Blocker::borrow_regex_manager`): checks are thread-safe, not parallel.
 //! Handles are raw pointers to boxed [Blocker]s owned by `com.reiniertutoriales.vireolumatv.adblock.RustAdblock`.
 
 mod scoped;
@@ -136,18 +138,18 @@ struct Builder {
     set: FilterSet,
     scoped: String,
     resources: Vec<Resource>,
+    /// Names and aliases of the shipped resources, for [without_unknown_redirects].
+    known: HashSet<String>,
 }
 
 impl Builder {
     fn new(resources: Vec<Resource>) -> Self {
-        Builder { set: FilterSet::new(false), scoped: String::new(), resources }
+        let known = resources.iter().flat_map(|r| std::iter::once(&r.name).chain(&r.aliases)).cloned().collect();
+        Builder { set: FilterSet::new(false), scoped: String::new(), resources, known }
     }
 
     fn add(&mut self, list: String, trusted: bool) {
-        let known: HashSet<&str> = self.resources.iter()
-            .flat_map(|r| std::iter::once(r.name.as_str()).chain(r.aliases.iter().map(String::as_str)))
-            .collect();
-        let list = without_unknown_redirects(list, &known);
+        let list = without_unknown_redirects(list, &self.known);
         scoped::collect(&list, trusted, &mut self.scoped);
         self.set.add_filter_list(list, options(trusted));
     }
@@ -198,7 +200,7 @@ fn redirect_target(option: &str) -> Option<&str> {
 /// Drops network rules whose `$redirect` resource is not shipped. adblock-rust would still block the
 /// request with no replacement (a hard error for players expecting e.g. the IMA SDK); uBlock Origin
 /// discards such filters instead, so the request goes through.
-fn without_unknown_redirects(list: String, known: &HashSet<&str>) -> String {
+fn without_unknown_redirects(list: String, known: &HashSet<String>) -> String {
     if !list.contains("redirect") {
         return list;
     }
