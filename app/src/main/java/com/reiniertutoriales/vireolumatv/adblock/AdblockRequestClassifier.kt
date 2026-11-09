@@ -34,13 +34,8 @@ internal object AdblockRequestClassifier {
             "object", "embed" -> return "object"
             "empty" -> return "xhr"
         }
-        // Parse Accept only when destination did not decide the type.
-        val accepted = header("Accept")?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
-        if (destination.isNullOrBlank() && accepted != null && accepted.size > 1 &&
-            accepted[0] == "text/html" && accepted[1] == "application/xhtml+xml") {
-            return "subdocument"
-        }
         if (header("X-Requested-With").equals("XMLHttpRequest", true)) return "xhr"
+        // URL extensions are cheaper to inspect than splitting and normalizing Accept.
         val extension = url.lastPathSegment?.substringAfterLast('.', "")?.lowercase(Locale.ROOT)
         when (extension) {
             "js", "mjs" -> return "script"
@@ -48,6 +43,12 @@ internal object AdblockRequestClassifier {
             "png", "jpg", "jpeg", "webp", "svg", "gif", "bmp", "tiff", "ico", "avif" -> return "image"
             "woff", "woff2", "ttf", "otf", "eot" -> return "font"
             "mp4", "mov", "avi", "webm", "mp3", "m4a", "ogg", "wav", "m3u8", "mpd" -> return "media"
+        }
+        // Accept can mix HTML, images and wildcards; parse only on ambiguous requests.
+        val accepted = header("Accept")?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
+        if (destination.isNullOrBlank() && accepted != null && accepted.size > 1 &&
+            accepted[0] == "text/html" && accepted[1] == "application/xhtml+xml") {
+            return "subdocument"
         }
         val types = accepted?.filter { it != "*/*" }
         if (types.isNullOrEmpty()) return "unknown"
