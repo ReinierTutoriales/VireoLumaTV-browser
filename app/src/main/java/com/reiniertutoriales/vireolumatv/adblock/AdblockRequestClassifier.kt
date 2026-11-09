@@ -22,6 +22,15 @@ internal object AdblockRequestClassifier {
     fun classify(url: Uri, headers: Map<String, String>, mainFrame: Boolean): String {
         if (mainFrame) return "document"
         fun header(name: String): String? = headers.entries.firstOrNull { it.key.equals(name, true) }?.value
+        // Accept can contain HTML, XML, images and */* together: it is not a resource type by itself.
+        val accepted = header("Accept")?.split(',')?.map { it.substringBefore(';').trim().lowercase(Locale.ROOT) }
+        // WebView asks before Chromium's network service adds Sec-Fetch-Dest (services/network/
+        // url_loader.cc), so page requests rarely carry it. Chromium's frame Accept
+        // (content/common/content_constants_internal.h) starts "text/html,application/xhtml+xml"
+        // and is sent only for navigations: below the main frame, that is an iframe.
+        if (accepted != null && accepted.size > 1 && accepted[0] == "text/html" && accepted[1] == "application/xhtml+xml") {
+            return "subdocument"
+        }
         when (header("Sec-Fetch-Dest")?.lowercase(Locale.ROOT)) {
             "document", "iframe", "frame" -> return "subdocument"
             "script", "worker", "sharedworker", "serviceworker" -> return "script"
@@ -41,17 +50,14 @@ internal object AdblockRequestClassifier {
             "woff", "woff2", "ttf", "otf", "eot" -> return "font"
             "mp4", "mov", "avi", "webm", "mp3", "m4a", "ogg", "wav", "m3u8", "mpd" -> return "media"
         }
-        // Accept can contain HTML, XML, images and */* together: it is not a resource type.
-        val accepted = header("Accept")?.split(',')?.map {
-            it.substringBefore(';').trim().lowercase(Locale.ROOT)
-        }?.filter { it != "*/*" }
-        if (accepted.isNullOrEmpty()) return "unknown"
-        if (accepted.all { it == "application/json" || it.endsWith("+json") }) return "xhr"
-        if (accepted.all { it.startsWith("image/") }) return "image"
-        if (accepted.all { it == "text/css" }) return "style"
-        if (accepted.all { it == "application/javascript" || it == "text/javascript" }) return "script"
-        if (accepted.all { it.startsWith("audio/") || it.startsWith("video/") }) return "media"
-        if (accepted.all { it == "text/html" || it == "application/xhtml+xml" }) return "subdocument"
+        val types = accepted?.filter { it != "*/*" }
+        if (types.isNullOrEmpty()) return "unknown"
+        if (types.all { it == "application/json" || it.endsWith("+json") }) return "xhr"
+        if (types.all { it.startsWith("image/") }) return "image"
+        if (types.all { it == "text/css" }) return "style"
+        if (types.all { it == "application/javascript" || it == "text/javascript" }) return "script"
+        if (types.all { it.startsWith("audio/") || it.startsWith("video/") }) return "media"
+        if (types.all { it == "text/html" || it == "application/xhtml+xml" }) return "subdocument"
         return "unknown"
     }
 }

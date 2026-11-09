@@ -14,11 +14,22 @@ class AdblockRequestClassifierTest {
     private fun classify(path: String, headers: Map<String, String> = emptyMap(), main: Boolean = false) =
         AdblockRequestClassifier.classify(Uri.parse("https://example.test$path"), headers, main)
 
-    @Test fun mixedNavigationAcceptDoesNotTurnADocumentIntoAnImage() {
-        val headers = mapOf("Accept" to "text/html,application/xhtml+xml,image/avif,image/webp,*/*;q=0.8")
-        assertEquals("document", classify("/", headers, true))
-        assertEquals("unknown", classify("/", headers))
-        assertEquals("script", classify("/ad.MJS?image=.png", headers))
+    @Test fun navigationAcceptMakesAnIframeWhateverItsAddressAndNeverAnImage() {
+        // Chromium's frame Accept values, with and without JPEG XL and signed exchanges.
+        val frames = listOf(
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8," +
+                "application/signed-exchange;v=b3;q=0.7",
+        )
+        for (accept in frames) {
+            val headers = mapOf("accept" to accept)
+            assertEquals("document", classify("/", headers, true))
+            assertEquals("subdocument", classify("/", headers))
+            assertEquals("subdocument", classify("/ad.MJS?image=.png", headers))
+        }
+        // Only that navigation form counts: a single HTML type keeps the earlier order.
+        assertEquals("script", classify("/ad.js", mapOf("Accept" to "text/html")))
     }
 
     @Test fun destinationWinsOverUrlAndHeaderNamesAreCaseInsensitive() {
