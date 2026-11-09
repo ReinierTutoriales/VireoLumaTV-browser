@@ -2,8 +2,8 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.content.Context
 import android.net.http.SslError
-import android.text.TextUtils
 import androidx.core.net.toUri
+import androidx.core.text.htmlEncode
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.utils.AppLanguages
 
@@ -36,7 +36,7 @@ internal object CertificateWarningPage {
 
     /** Replaces each `{{name}}` with its escaped value; unknown names become empty. */
     fun fill(template: String, values: Map<String, String>): String =
-        PLACEHOLDER.replace(template) { TextUtils.htmlEncode(values[it.groupValues[1]].orEmpty()) }
+        PLACEHOLDER.replace(template) { values[it.groupValues[1]].orEmpty().htmlEncode() }
 
     fun describe(primaryError: Int): Int = when (primaryError) {
         SslError.SSL_EXPIRED -> R.string.cert_expired

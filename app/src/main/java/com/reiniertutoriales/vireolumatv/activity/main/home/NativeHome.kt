@@ -77,6 +77,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.createBitmap
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.tv.material3.MaterialTheme
@@ -252,7 +254,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         val width = maxOf(1, (view.width * scale).toInt())
         val height = maxOf(1, (view.height * scale).toInt())
         val bitmap = reuse?.takeIf { !it.isRecycled && it.width == width && it.height == height }
-            ?: try { Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565) } catch (_: OutOfMemoryError) { return null }
+            ?: try { createBitmap(width, height, Bitmap.Config.RGB_565) } catch (_: OutOfMemoryError) { return null }
         view.draw(Canvas(bitmap).apply { scale(scale, scale) })
         return bitmap
     }
@@ -429,7 +431,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     }
 
     private fun notice(text: String) = browser.toast(text)
-    private fun label(url: String) = android.net.Uri.parse(url).host ?: url
+    private fun label(url: String) = url.toUri().host ?: url
 
     @Composable
     private fun HomeContent() {
@@ -578,7 +580,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             editing && tile.movable -> stringResource(R.string.home_edit_item).replace("%s", tile.title)
             else -> tile.title
         }
-        val favicon = tile.url?.let { android.net.Uri.parse(it).host }?.let(Favicons::cached)
+        val favicon = tile.url?.let { it.toUri().host }?.let(Favicons::cached)
         Column(
             Modifier.testTag("home_tile_${tile.key}").padding(6.dp).fillMaxWidth()
                 .alpha(if (tile.hidden || !tile.enabled) .5f else 1f)
