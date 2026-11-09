@@ -7,6 +7,7 @@
 mod scoped;
 
 use adblock::blocker::BlockerResult;
+use adblock::cosmetic_filter_cache::UrlSpecificResources;
 use adblock::lists::{FilterSet, ParseOptions};
 use adblock::request::Request;
 use adblock::resources::{PermissionMask, Resource};
@@ -14,7 +15,8 @@ use adblock::Engine;
 use scoped::Scoped;
 use jni::errors::ThrowRuntimeExAndDefault;
 use jni::objects::{JBooleanArray, JByteArray, JClass, JObjectArray, JString};
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
+use std::sync::{Arc, Mutex};
 use jni::sys::{jint, jlong};
 use jni::{Env, EnvUnowned};
 
@@ -38,12 +40,50 @@ fn text(env: &Env, value: &JString) -> jni::errors::Result<String> {
 struct Blocker {
     engine: Engine,
     scoped: Option<Scoped>,
+    /// Recent documents' generic-hiding inputs, newest first (see [Blocker::page]).
+    pages: Mutex<VecDeque<(String, Arc<PageHiding>)>>,
 }
+
+/// What generic hiding needs from a document's cosmetic resources: `$generichide` and the
+/// `#@#.class` / `#@###id` exceptions. A page sends its classes in many batches; without this
+/// each batch recomputed every cosmetic resource of the URL (about 13 times the selector lookup).
+struct PageHiding {
+    generichide: bool,
+    exceptions: HashSet<String>,
+}
+
+/// Documents remembered per rule generation: the frames of a page and a few recent pages.
+const PAGES: usize = 16;
 
 /// Serialized [Blocker]: magic, main engine length (u64 LE), main engine, scoped rule source.
 const MAGIC: &[u8; 5] = b"VIRO1";
 
 impl Blocker {
+    fn new(engine: Engine, scoped: Option<Scoped>) -> Self {
+        Blocker { engine, scoped, pages: Mutex::new(VecDeque::with_capacity(PAGES)) }
+    }
+
+    /// Keeps the generic-hiding inputs of `resources`, computed for `url`.
+    fn remember(&self, url: &str, resources: &UrlSpecificResources) -> Arc<PageHiding> {
+        let page = Arc::new(PageHiding { generichide: resources.generichide, exceptions: resources.exceptions.clone() });
+        let mut pages = self.pages.lock().unwrap_or_else(|e| e.into_inner());
+        pages.retain(|(known, _)| known != url);
+        pages.truncate(PAGES - 1);
+        pages.push_front((url.to_owned(), Arc::clone(&page)));
+        page
+    }
+
+    /// Generic-hiding inputs for `url`, from [remember] or computed once.
+    fn page(&self, url: &str) -> Arc<PageHiding> {
+        {
+            let pages = self.pages.lock().unwrap_or_else(|e| e.into_inner());
+            if let Some((_, page)) = pages.iter().find(|(known, _)| known == url) {
+                return Arc::clone(page);
+            }
+        }
+        self.remember(url, &self.engine.url_cosmetic_resources(url))
+    }
+
     fn serialize(&self) -> Vec<u8> {
         let main = self.engine.serialize();
         let scoped = self.scoped.as_ref().map(Scoped::source).unwrap_or("");
@@ -63,7 +103,7 @@ impl Blocker {
         let mut engine = Engine::default();
         engine.deserialize(main).ok()?;
         load_resources(&mut engine, resources);
-        Some(Blocker { engine, scoped: Scoped::build(source, options, parse_resources(resources)) })
+        Some(Blocker::new(engine, Scoped::build(source, options, parse_resources(resources))))
     }
 
     /// Main blocks win; exceptions lift scoped rules unless a matching rule is important.
@@ -108,7 +148,7 @@ impl Builder {
         let scoped = Scoped::build(self.scoped, options, self.resources.clone());
         let mut engine = Engine::new_with_filter_set(self.set);
         engine.use_resources(self.resources);
-        Blocker { engine, scoped }
+        Blocker::new(engine, scoped)
     }
 }
 
@@ -323,6 +363,8 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
             let json = match engine(handle) {
                 Some(engine) => {
                     let resources = engine.engine.url_cosmetic_resources(&url);
+                    // The page asks for its generic hiding next: keep what that needs.
+                    engine.remember(&url, &resources);
                     serde_json::json!({
                         "hide": resources.hide_selectors,
                         "procedural": resources.procedural_actions,
@@ -336,6 +378,16 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
             env.new_string(json)
         })
         .resolve::<ThrowRuntimeExAndDefault>()
+}
+
+/// Generic hiding selectors for the space-separated `classes` and `ids` found in the page at `url`.
+fn hidden_selectors(engine: &Blocker, url: &str, classes: &str, ids: &str) -> Vec<String> {
+    // Exceptions (`#@#.class`) and `$generichide` are per page.
+    let page = engine.page(url);
+    if page.generichide {
+        return Vec::new();
+    }
+    engine.engine.hidden_class_id_selectors(classes.split_ascii_whitespace(), ids.split_ascii_whitespace(), &page.exceptions)
 }
 
 /// Generic `##.class` / `###id` hiding rules for the classes and ids found in a page, as a JSON
@@ -352,22 +404,7 @@ pub extern "system" fn Java_com_reiniertutoriales_vireolumatv_adblock_RustAdbloc
     unowned
         .with_env(|env| -> jni::errors::Result<JString<'caller>> {
             let (url, classes, ids) = (text(env, &url)?, text(env, &classes)?, text(env, &ids)?);
-            let selectors = match engine(handle) {
-                Some(engine) => {
-                    // Exceptions (`#@#.class`) and `$generichide` are per page.
-                    let page = engine.engine.url_cosmetic_resources(&url);
-                    if page.generichide {
-                        Vec::new()
-                    } else {
-                        engine.engine.hidden_class_id_selectors(
-                            classes.split_ascii_whitespace(),
-                            ids.split_ascii_whitespace(),
-                            &page.exceptions,
-                        )
-                    }
-                }
-                None => Vec::new(),
-            };
+            let selectors = engine(handle).map_or_else(Vec::new, |engine| hidden_selectors(engine, &url, &classes, &ids));
             env.new_string(serde_json::Value::from(selectors).to_string())
         })
         .resolve::<ThrowRuntimeExAndDefault>()
@@ -510,5 +547,30 @@ mod tests {
         assert_eq!(verdict(&engine, "https://cdn.test/v/1", page, "xmlhttprequest", "POST"), "");
         assert_eq!(verdict(&engine, "https://api.test/log", page, "xmlhttprequest", "post"), VERDICT_BLOCK);
         assert_eq!(verdict(&engine, "https://api.test/log", page, "xmlhttprequest", "GET"), "");
+    }
+
+    #[test]
+    fn generic_hiding_reuses_the_page_exceptions_and_stays_bounded() {
+        let engine = engine_for("##.ad\n##.promo\n###banner\nsite.test#@#.promo\n@@||quiet.test^$generichide");
+        let hidden = |url: &str| {
+            let mut found = hidden_selectors(&engine, url, "ad promo other", "banner");
+            found.sort();
+            found
+        };
+        // The answer for each page is the same whether it is computed or remembered.
+        for _ in 0..2 {
+            assert_eq!(hidden("https://site.test/"), vec!["#banner", ".ad"]);
+            assert_eq!(hidden("https://other.test/"), vec!["#banner", ".ad", ".promo"]);
+            assert!(hidden("https://quiet.test/").is_empty());
+        }
+        // The page filters request seeds the same entry.
+        let url = "https://seeded.test/";
+        engine.remember(url, &engine.engine.url_cosmetic_resources(url));
+        assert_eq!(hidden(url), vec!["#banner", ".ad", ".promo"]);
+        for i in 0..PAGES * 2 {
+            hidden(&format!("https://p{i}.test/"));
+        }
+        assert_eq!(engine.pages.lock().unwrap().len(), PAGES);
+        assert_eq!(hidden("https://site.test/"), vec!["#banner", ".ad"]);
     }
 }
