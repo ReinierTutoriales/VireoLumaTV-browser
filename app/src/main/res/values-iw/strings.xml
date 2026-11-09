@@ -211,7 +211,6 @@
     <string name="home_shortcuts">קיצורי דרך</string>
     <string name="home_add">הוספת קיצור דרך</string>
     <string name="home_edit">עריכה</string>
-    <string name="home_edit_label">עריכת קיצורי הדרך</string>
     <string name="home_done">סיום</string>
     <string name="home_save_failed">לא ניתן היה לשמור.</string>
     <string name="home_edit_prompt">יש לערוך את הכתובת. השארתה ריקה תסיר את קיצור הדרך.</string>

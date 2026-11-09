@@ -207,7 +207,6 @@
     <string name="home_shortcuts">快捷方式</string>
     <string name="home_add">添加快捷方式</string>
     <string name="home_edit">编辑</string>
-    <string name="home_edit_label">编辑快捷方式</string>
     <string name="home_done">完成</string>
     <string name="home_save_failed">无法保存。</string>
     <string name="home_edit_prompt">编辑地址。留空即可删除此快捷方式。</string>

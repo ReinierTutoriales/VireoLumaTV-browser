@@ -209,7 +209,6 @@
     <string name="home_shortcuts">میان‌برها</string>
     <string name="home_add">افزودن میان‌بر</string>
     <string name="home_edit">ویرایش</string>
-    <string name="home_edit_label">ویرایش میان‌برها</string>
     <string name="home_done">تمام</string>
     <string name="home_save_failed">ذخیره نشد.</string>
     <string name="home_edit_prompt">نشانی را ویرایش کنید. برای حذف میان‌بر، آن را خالی بگذارید.</string>

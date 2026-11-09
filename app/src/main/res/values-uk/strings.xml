@@ -213,7 +213,6 @@
     <string name="home_shortcuts">Ярлики</string>
     <string name="home_add">Додати ярлик</string>
     <string name="home_edit">Змінити</string>
-    <string name="home_edit_label">Змінити ярлики</string>
     <string name="home_done">Готово</string>
     <string name="home_save_failed">Не вдалося зберегти.</string>
     <string name="home_edit_prompt">Змініть адресу. Залиште поле порожнім, щоб видалити ярлик.</string>

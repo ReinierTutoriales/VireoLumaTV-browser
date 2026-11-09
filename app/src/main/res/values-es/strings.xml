@@ -211,7 +211,6 @@
     <string name="home_shortcuts">Accesos</string>
     <string name="home_add">Añadir acceso</string>
     <string name="home_edit">Editar</string>
-    <string name="home_edit_label">Editar accesos</string>
     <string name="home_done">Listo</string>
     <string name="home_save_failed">No se pudo guardar.</string>
     <string name="home_edit_prompt">Edita la dirección. Déjala vacía para eliminar el acceso.</string>

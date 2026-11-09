@@ -213,7 +213,6 @@
     <string name="home_shortcuts">Skróty</string>
     <string name="home_add">Dodaj skrót</string>
     <string name="home_edit">Edytuj</string>
-    <string name="home_edit_label">Edytuj skróty</string>
     <string name="home_done">Gotowe</string>
     <string name="home_save_failed">Nie udało się zapisać.</string>
     <string name="home_edit_prompt">Edytuj adres. Zostaw pusty, aby usunąć skrót.</string>

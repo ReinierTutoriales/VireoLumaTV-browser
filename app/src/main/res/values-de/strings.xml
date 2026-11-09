@@ -209,7 +209,6 @@
     <string name="home_shortcuts">Verknüpfungen</string>
     <string name="home_add">Verknüpfung hinzufügen</string>
     <string name="home_edit">Bearbeiten</string>
-    <string name="home_edit_label">Verknüpfungen bearbeiten</string>
     <string name="home_done">Fertig</string>
     <string name="home_save_failed">Speichern nicht möglich.</string>
     <string name="home_edit_prompt">Adresse bearbeiten. Leer lassen, um die Verknüpfung zu entfernen.</string>
