@@ -70,7 +70,8 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
 
-        <meta-data android:name="android.software.leanback.supports_touch" android:value="true" />
+        <!-- Pointer remotes: native cursor and touch mode (developer.android.com/training/tv/get-started/controllers). -->
+        <property android:name="android.software.leanback.supports_touch" android:value="true" />
 
         <activity
             android:name=".activity.main.MainActivity"
