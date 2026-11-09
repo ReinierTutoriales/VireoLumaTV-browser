@@ -14,6 +14,8 @@ import org.junit.Before
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [28])
 class DownloadUtilsGuessFileNameTest {
+    // A fixed table: Robolectric's API 31+ MIME data maps text/plain to csv, unlike devices.
+    @Suppress("DEPRECATION")
     @Before fun mimeTypes() {
         shadowOf(MimeTypeMap.getSingleton()).apply {
             addExtensionMimeTypeMapping("pdf", "application/pdf")
