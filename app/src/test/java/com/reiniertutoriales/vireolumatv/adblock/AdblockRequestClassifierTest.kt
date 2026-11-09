@@ -32,6 +32,16 @@ class AdblockRequestClassifierTest {
         assertEquals("script", classify("/ad.js", mapOf("Accept" to "text/html")))
     }
 
+    @Test fun parameterizedNavigationAcceptWinsOverMisleadingScriptExtension() {
+        val headers = mapOf("Accept" to
+            "text/html;q=0.9, application/xhtml+xml;q=0.8, image/avif,*/*;q=0.5")
+        assertEquals("subdocument", classify("/tracking.js", headers))
+        assertEquals("script", classify("/tracking.js",
+            headers + ("Sec-Fetch-Dest" to "script")))
+        assertEquals("script", classify("/tracking.js",
+            mapOf("Accept" to "text/html;q=0.9, application/json")))
+    }
+
     @Test fun destinationWinsOverUrlAndHeaderNamesAreCaseInsensitive() {
         assertEquals("script", classify("/ads.png", mapOf("sec-fetch-dest" to "script", "accept" to "image/webp")))
         assertEquals("subdocument", classify("/ads.js", mapOf("Sec-Fetch-Dest" to "iframe")))
