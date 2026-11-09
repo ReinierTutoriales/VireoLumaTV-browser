@@ -4039,6 +4039,7 @@ HSPLandroidx/compose/runtime/external/kotlinx/collections/immutable/implementati
 HSPLandroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;->insertEntryAt(ILjava/lang/Object;Ljava/lang/Object;)Landroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;
 HSPLandroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;->keyAtIndex(I)Ljava/lang/Object;
 HSPLandroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;->makeNode(ILjava/lang/Object;Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;ILandroidx/compose/runtime/external/kotlinx/collections/immutable/internal/MutabilityOwnership;)Landroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;
+HSPLandroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;->moveEntryToNode(IIILjava/lang/Object;Ljava/lang/Object;I)Landroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;
 HSPLandroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;->mutableInsertEntryAt(ILjava/lang/Object;Ljava/lang/Object;Landroidx/compose/runtime/external/kotlinx/collections/immutable/internal/MutabilityOwnership;)Landroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;
 HSPLandroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;->mutableMoveEntryToNode(IIILjava/lang/Object;Ljava/lang/Object;ILandroidx/compose/runtime/external/kotlinx/collections/immutable/internal/MutabilityOwnership;)Landroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;
 HSPLandroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;->mutablePut(ILjava/lang/Object;Ljava/lang/Object;ILandroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/PersistentHashMapBuilder;)Landroidx/compose/runtime/external/kotlinx/collections/immutable/implementations/immutableMap/TrieNode;
@@ -4472,8 +4473,6 @@ HSPLandroidx/compose/runtime/snapshots/SnapshotDoubleIndexHeap;->swap(II)V
 Landroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;-><clinit>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;-><init>([J)V
-HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;->add(J)V
-HSPLandroidx/compose/runtime/snapshots/SnapshotIdArrayBuilder;->toArray()[J
 Landroidx/compose/runtime/snapshots/SnapshotIdSet;
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet;-><clinit>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet;-><init>(JJJ[J)V
@@ -4488,10 +4487,8 @@ HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet$Companion;-><init>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet$Companion;-><init>(Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 HSPLandroidx/compose/runtime/snapshots/SnapshotIdSet$Companion;->getEMPTY()Landroidx/compose/runtime/snapshots/SnapshotIdSet;
 Landroidx/compose/runtime/snapshots/SnapshotId_jvmKt;
-HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->binarySearch([JJ)I
 HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->snapshotIdArrayWithCapacity(I)[J
 HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->toSnapshotId(I)J
-HSPLandroidx/compose/runtime/snapshots/SnapshotId_jvmKt;->withIdRemovedAt([JI)[J
 Landroidx/compose/runtime/snapshots/SnapshotKt;
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;-><clinit>()V
 HSPLandroidx/compose/runtime/snapshots/SnapshotKt;->access$advanceGlobalSnapshot()V
@@ -8026,6 +8023,8 @@ HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion;-><init>(Lkotlin/j
 Landroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;
 HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;-><clinit>()V
 HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;-><init>()V
+HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;->compare(Landroidx/compose/ui/node/LayoutNode;Landroidx/compose/ui/node/LayoutNode;)I
+HSPLandroidx/compose/ui/node/OnPositionedDispatcher$Companion$DepthComparator;->compare(Ljava/lang/Object;Ljava/lang/Object;)I
 Landroidx/compose/ui/node/OutOfFrameExecutor;
 Landroidx/compose/ui/node/OwnedLayer;
 Landroidx/compose/ui/node/Owner;
@@ -9040,7 +9039,6 @@ Landroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;
 HSPLandroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;->hasCollectionInfo(Landroidx/compose/ui/semantics/SemanticsNode;)Z
 HSPLandroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;->setCollectionInfo(Landroidx/compose/ui/semantics/SemanticsNode;Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat;)V
 HSPLandroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;->setCollectionItemInfo(Landroidx/compose/ui/semantics/SemanticsNode;Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat;)V
-HSPLandroidx/compose/ui/platform/accessibility/CollectionInfo_androidKt;->toAccessibilityCollectionInfo(Landroidx/compose/ui/semantics/CollectionInfo;)Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;
 Landroidx/compose/ui/platform/coreshims/AutofillIdCompat;
 HSPLandroidx/compose/ui/platform/coreshims/AutofillIdCompat;-><init>(Landroid/view/autofill/AutofillId;)V
 HSPLandroidx/compose/ui/platform/coreshims/AutofillIdCompat;->toAutofillId()Landroid/view/autofill/AutofillId;
@@ -9113,8 +9111,6 @@ HSPLandroidx/compose/ui/semantics/AppendedSemanticsElement;->update(Landroidx/co
 Landroidx/compose/ui/semantics/CollectionInfo;
 HSPLandroidx/compose/ui/semantics/CollectionInfo;-><clinit>()V
 HSPLandroidx/compose/ui/semantics/CollectionInfo;-><init>(II)V
-HSPLandroidx/compose/ui/semantics/CollectionInfo;->getColumnCount()I
-HSPLandroidx/compose/ui/semantics/CollectionInfo;->getRowCount()I
 Landroidx/compose/ui/semantics/CollectionItemInfo;
 Landroidx/compose/ui/semantics/CoreSemanticsModifierNode;
 HSPLandroidx/compose/ui/semantics/CoreSemanticsModifierNode;-><clinit>()V
@@ -11162,8 +11158,6 @@ Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$Api34Impl;
 HSPLandroidx/core/view/accessibility/AccessibilityNodeInfoCompat$Api34Impl;->getActionScrollInDirection()Landroid/view/accessibility/AccessibilityNodeInfo$AccessibilityAction;
 HSPLandroidx/core/view/accessibility/AccessibilityNodeInfoCompat$Api34Impl;->setAccessibilityDataSensitive(Landroid/view/accessibility/AccessibilityNodeInfo;Z)V
 Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;
-HSPLandroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;-><init>(Ljava/lang/Object;)V
-HSPLandroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;->obtain(IIZI)Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$CollectionInfoCompat;
 Landroidx/core/view/accessibility/AccessibilityNodeInfoCompat$RangeInfoCompat;
 Landroidx/core/view/accessibility/AccessibilityNodeProviderCompat;
 HSPLandroidx/core/view/accessibility/AccessibilityNodeProviderCompat;-><init>()V
@@ -15093,7 +15087,7 @@ HSPLkotlin/collections/AbstractMap$Companion;-><init>()V
 HSPLkotlin/collections/AbstractMap$Companion;-><init>(Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 Lkotlin/collections/AbstractMutableList;
 HSPLkotlin/collections/AbstractMutableList;-><init>()V
-HSPLkotlin/collections/AbstractMutableList;->size()I
+HPLkotlin/collections/AbstractMutableList;->size()I
 Lkotlin/collections/AbstractMutableMap;
 HSPLkotlin/collections/AbstractMutableMap;-><init>()V
 HSPLkotlin/collections/AbstractMutableMap;->size()I
@@ -16068,6 +16062,7 @@ HSPLkotlinx/coroutines/CoroutineExceptionHandler$DefaultImpls;->get(Lkotlinx/cor
 Lkotlinx/coroutines/CoroutineExceptionHandler$Key;
 HSPLkotlinx/coroutines/CoroutineExceptionHandler$Key;-><clinit>()V
 HSPLkotlinx/coroutines/CoroutineExceptionHandler$Key;-><init>()V
+Lkotlinx/coroutines/CoroutineExceptionHandlerKt;
 Lkotlinx/coroutines/CoroutineId;
 Lkotlinx/coroutines/CoroutineScope;
 Lkotlinx/coroutines/CoroutineScopeKt;
@@ -17024,6 +17019,7 @@ HSPLkotlinx/coroutines/internal/Segment;-><clinit>()V
 HSPLkotlinx/coroutines/internal/Segment;-><init>(JLkotlinx/coroutines/internal/Segment;I)V
 HSPLkotlinx/coroutines/internal/Segment;->getCleanedAndPointers$volatile$FU()Ljava/util/concurrent/atomic/AtomicIntegerFieldUpdater;
 HSPLkotlinx/coroutines/internal/Segment;->onSlotCleaned()V
+Lkotlinx/coroutines/internal/StackTraceRecoveryKt;
 Lkotlinx/coroutines/internal/Symbol;
 HSPLkotlinx/coroutines/internal/Symbol;-><init>(Ljava/lang/String;)V
 Lkotlinx/coroutines/internal/SystemPropsKt;
