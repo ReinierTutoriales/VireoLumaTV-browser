@@ -22,8 +22,10 @@ internal object RustAdblock {
 
     /** [trusted] (same order as [lists]) marks the lists allowed to use `trusted-*` scriptlets. */
     @JvmStatic external fun nativeCompile(lists: Array<String>, trusted: BooleanArray, resources: String): Long
-    @JvmStatic external fun nativeDeserialize(data: ByteArray, resources: String): Long
-    @JvmStatic external fun nativeSerialize(handle: Long): ByteArray
+    /** Reads the cache file natively, so it never passes through the Java heap; 0 if unusable. */
+    @JvmStatic external fun nativeDeserialize(path: String, resources: String): Long
+    /** Writes the rules to [path] natively; false if they could not be written. */
+    @JvmStatic external fun nativeSerialize(handle: Long, path: String): Boolean
     @JvmStatic external fun nativeDestroy(handle: Long)
     @JvmStatic external fun nativeCheck(handle: Long, url: String, source: String, type: String): Int
     /** "" allows the request, "!" blocks it, anything else is the `data:` URL of its `$redirect` resource. */
