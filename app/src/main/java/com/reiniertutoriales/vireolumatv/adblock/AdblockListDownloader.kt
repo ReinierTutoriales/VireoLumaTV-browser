@@ -4,6 +4,7 @@ import com.reiniertutoriales.vireolumatv.utils.BoundedReader
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.zip.GZIPInputStream
 
 /** A rejected primary must not disable blocking when a verified list mirror is available. */
 internal object AdblockListDownloader {
@@ -48,8 +49,8 @@ internal object AdblockListDownloader {
                 connection.useCaches = false
                 connection.setRequestProperty("User-Agent", "VireoLumaTV/1.0 (filter list updater)")
                 connection.setRequestProperty("Accept", "text/plain")
-                // No Accept-Encoding: HttpURLConnection then requests gzip and decompresses it
-                // transparently, which cuts the ~3.7 MB default lists to under 1 MB on the wire.
+                // Request identity encoding: no implicit gzip assumption or compressed-size bypass.
+                connection.setRequestProperty("Accept-Encoding", "identity")
                 val conditional = cached != null && cached.url == url
                 if (conditional) {
                     cached.etag?.let { connection.setRequestProperty("If-None-Match", it) }
@@ -65,7 +66,13 @@ internal object AdblockListDownloader {
                     if (code != HttpURLConnection.HTTP_OK) {
                         throw IOException("Filter server returned HTTP $code")
                     }
-                    val text = BoundedReader(connection.inputStream.bufferedReader(Charsets.UTF_8),
+                    val encoding = connection.getHeaderField("Content-Encoding")?.trim()?.lowercase()
+                    val textStream = when (encoding) {
+                        null, "", "identity" -> connection.inputStream
+                        "gzip" -> GZIPInputStream(connection.inputStream)
+                        else -> throw IOException("Unsupported filter list encoding: $encoding")
+                    }
+                    val text = BoundedReader(textStream.bufferedReader(Charsets.UTF_8),
                         MAX_TEXT_CHARS).use { it.readText() }
                     if (!AdblockFilterListValidator.isValid(text, requiresAdblockHeader)) {
                         throw IOException("Server did not return a valid filter list")
