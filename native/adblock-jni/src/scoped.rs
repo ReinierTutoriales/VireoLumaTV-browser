@@ -380,6 +380,21 @@ mod tests {
     }
 
     #[test]
+    fn gates_keep_badfilter_text_in_url_patterns() {
+        for rules in [
+            "/badfilter/$script,to=com|~good.com\n/other/$script,to=com|~other.com",
+            "/badfilter/$script,to=~good.com\n/other/$script,to=~other.com",
+            "*$script,to=com|~good.com,domain=badfilter.test\n*$script,to=com|~other.com,domain=badfilter.test",
+        ] {
+            let mut source = String::new();
+            collect(rules, false, &mut source);
+            let scoped = Scoped::build(source, |_| ParseOptions::default(), Vec::new()).unwrap();
+            let request = Request::new("https://cdn.example.com/badfilter/a.js", "https://badfilter.test/", "script", "GET").unwrap();
+            assert!(scoped.check(&request, "badfilter.test").is_some_and(|result| result.should_block()), "{rules}");
+        }
+    }
+
+    #[test]
     fn a_shared_key_gate_never_hides_a_bucket_match() {
         // Two buckets under `com`; the second disables its own `/ads/` with `$badfilter`.
         let mut source = String::new();
