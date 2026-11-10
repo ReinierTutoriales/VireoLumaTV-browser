@@ -235,7 +235,10 @@ androidComponents {
 
 tasks.withType<Test>().configureEach {
     if (providers.environmentVariable("CI").isPresent) {
-        testLogging { events("started", "passed", "skipped", "failed") }
+        testLogging {
+            events("started", "passed", "skipped", "failed")
+            showStandardStreams = true
+        }
         timeout.set(Duration.ofMinutes(10))
     }
     dependsOn(buildRustAdblockHost)

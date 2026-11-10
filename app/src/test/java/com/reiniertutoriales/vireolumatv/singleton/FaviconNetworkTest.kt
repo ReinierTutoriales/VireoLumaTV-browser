@@ -16,12 +16,15 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config as RobolectricConfig
 import java.net.InetSocketAddress
 import java.net.URL
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(RobolectricTestRunner::class)
 @RobolectricConfig(application = Application::class, sdk = [28])
 class FaviconNetworkTest {
-    @Test fun repeatedAndConcurrentMissingIconsHaveAFixedRequestBudget() = runBlocking {
+    @Test(timeout = 60_000) fun repeatedAndConcurrentMissingIconsHaveAFixedRequestBudget() = runBlocking {
         val app = RuntimeEnvironment.getApplication()
         val config = Config(app.getSharedPreferences("favicon-network-test", 0)).apply { privateBrowsing = true }
         AppContext.init(app, config)
@@ -42,6 +45,7 @@ class FaviconNetworkTest {
             exchange.responseBody.use { if (page) it.write(html) }
         }
         server.start()
+        val watchdog = dumpThreadsIfStalled()
         try {
             val url = "http://127.0.0.1:${server.address.port}/"
             (1..16).map { async { assertNull(Favicons.get(url)) } }.awaitAll()
@@ -49,10 +53,10 @@ class FaviconNetworkTest {
             repeat(10) { assertNull(Favicons.get(url)) }
             assertEquals("One HTML request and at most three distinct icon attempts", 4, requests.get())
             assertEquals("Do not fetch a manifest when HTML supplies usable candidates", 0, manifests.get())
-        } finally { server.stop(0); Favicons.clear() }
+        } finally { watchdog.shutdownNow(); server.stop(0); Favicons.clear() }
     }
 
-    @Test
+    @Test(timeout = 60_000)
     @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
     fun appIconLoaderWorksWithoutWebViewFaviconCallbacks() = runBlocking {
         val app = RuntimeEnvironment.getApplication()
@@ -76,6 +80,7 @@ class FaviconNetworkTest {
             exchange.responseBody.use { it.write(payload) }
         }
         server.start()
+        val watchdog = dumpThreadsIfStalled()
         try {
             val url = "http://127.0.0.1:${server.address.port}/"
             val icon = requireNotNull(Favicons.get(url))
@@ -84,8 +89,19 @@ class FaviconNetworkTest {
             assertEquals(android.graphics.Color.RED, icon.getPixel(0, 0))
             assertSame(icon, Favicons.get(url))
             assertEquals("Only the app loader fetched the icon once", 1, icons.get())
-        } finally { server.stop(0); Favicons.clear() }
+        } finally { watchdog.shutdownNow(); server.stop(0); Favicons.clear() }
     }
+
+    private fun dumpThreadsIfStalled(): ScheduledExecutorService =
+        Executors.newSingleThreadScheduledExecutor { task ->
+            Thread(task, "favicon-test-watchdog").apply { isDaemon = true }
+        }.apply {
+            schedule({
+                Thread.getAllStackTraces().forEach { (thread, stack) ->
+                    System.err.println("Favicon stall: ${thread.name} ${thread.state}\n${stack.joinToString("\n")}")
+                }
+            }, 30, TimeUnit.SECONDS)
+        }
 
     @Test fun htmlAndManifestCandidateStorageIsBounded() {
         val extractor = IconFinder()
