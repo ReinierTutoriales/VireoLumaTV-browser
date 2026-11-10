@@ -2,10 +2,17 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.model.Download
+import com.reiniertutoriales.vireolumatv.webengine.PageWindow
+import android.view.KeyEvent
+import java.io.File
+import java.lang.reflect.Proxy
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -182,4 +189,110 @@ class PrivilegedPageActionsTest {
         ShadowLooper.idleMainLooper()
         assertEquals(1, replies)
     }
+
+    private fun captureDownloads(engine: WebViewPageEngine, downloads: MutableList<Download>) {
+        engine.window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
+            arrayOf(PageWindow::class.java)) { _, method, arguments ->
+            if (method.name == "download") downloads += arguments!![0] as Download
+            null
+        } as PageWindow
+    }
+
+    private fun queueCompletedTransfer(actions: PrivilegedPageActions, currentDocument: () -> String?): File {
+        val document = "original-document"
+        val url = "blob:https://site.test/id"
+        val spoolDirectory = File(VireoLumaTVApp.instance.cacheDir, "blob-spool")
+        val previousFiles = spoolDirectory.listFiles().orEmpty().toSet()
+        fun acknowledged(message: DownloadMessage): String {
+            val answers = mutableListOf<String>()
+            actions.onDownloadMessage(message, document, currentDocument) { answers += it }
+            worker.submit {}.get(5, TimeUnit.SECONDS)
+            ShadowLooper.idleMainLooper()
+            assertEquals("Every accepted protocol step gets one acknowledgement", 1, answers.size)
+            return answers.single()
+        }
+        UserActivation.onKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER))
+        UserActivation.onKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER))
+        val begin = acknowledged(DownloadMessage.Begin(url, "one-byte.bin")).split('\n')
+        assertEquals(listOf("begin", url), begin.take(2))
+        val token = begin.last()
+        assertTrue("A real activation must open the transfer", token.isNotEmpty())
+        assertEquals(DownloadMessage.sizeReply(token, true),
+            acknowledged(DownloadMessage.Size(token, 1, "application/octet-stream")))
+        assertEquals(DownloadMessage.chunkReply(token, 1),
+            acknowledged(DownloadMessage.Chunk(token, 0, "AQ==")))
+        val spool = (spoolDirectory.listFiles().orEmpty().toSet() - previousFiles).single()
+        assertTrue("The accepted chunk is backed by a file", spool.isFile)
+        actions.onDownloadMessage(DownloadMessage.Done(token, url), document, currentDocument) {
+            error("Done has no acknowledgement")
+        }
+        worker.submit {}.get(5, TimeUnit.SECONDS)
+        assertTrue("Completed payload must stay alive until main-thread delivery", spool.isFile)
+        return spool
+    }
+
+    private fun assertAdmissionReusable(actions: PrivilegedPageActions) {
+        var replies = 0
+        actions.onDownloadMessage(DownloadMessage.Size("unknown", 1, "text/plain"), "new-document", { "new-document" }) {
+            replies++
+        }
+        worker.submit {}.get(5, TimeUnit.SECONDS)
+        ShadowLooper.idleMainLooper()
+        assertEquals("Completed delivery releases the page and process admission permits", 1, replies)
+    }
+
+    @Test fun invalidatingACompletedTransferBeforeDeliveryClosesItsPayload() {
+        val engine = WebViewPageEngine(BrowserTab())
+        val actions = engine.privileged
+        val downloads = mutableListOf<Download>()
+        captureDownloads(engine, downloads)
+        var document = "original-document"
+        try {
+            val spool = queueCompletedTransfer(actions) { document }
+            assertTrue("The main-thread delivery is still pending", downloads.isEmpty())
+            document = "replacement-document"
+            actions.invalidateTransfers()
+            assertTrue("The completed stream is owned by its queued delivery", spool.isFile)
+            ShadowLooper.idleMainLooper()
+            assertTrue("The replacement document must not receive the old download", downloads.isEmpty())
+            assertFalse("Discarding the completed stream deletes its spool", spool.exists())
+            assertAdmissionReusable(actions)
+        } finally {
+            actions.invalidateTransfers()
+            ShadowLooper.idleMainLooper()
+            downloads.forEach { it.discardPayload() }
+            engine.window = null
+        }
+    }
+
+    @Test fun aCompletedTransferIsDeliveredOnceAndItsConsumerClosesThePayload() {
+        val engine = WebViewPageEngine(BrowserTab())
+        val actions = engine.privileged
+        val downloads = mutableListOf<Download>()
+        captureDownloads(engine, downloads)
+        try {
+            val spool = queueCompletedTransfer(actions) { "original-document" }
+            assertTrue("The worker cannot call the window before main-thread delivery", downloads.isEmpty())
+            ShadowLooper.idleMainLooper()
+            assertEquals(1, downloads.size)
+            val download = downloads.single()
+            assertEquals("blob:https://site.test/id", download.url)
+            assertEquals("one-byte.bin", download.filename)
+            assertEquals(1L, download.size)
+            assertEquals("application/octet-stream", download.mimeType)
+            assertTrue("The receiving consumer owns the live payload", spool.isFile)
+            download.stream!!.use { assertArrayEquals(byteArrayOf(1), it.readBytes()) }
+            download.stream = null
+            assertFalse("Closing the consumed payload deletes its spool", spool.exists())
+            ShadowLooper.idleMainLooper()
+            assertEquals("The completed download cannot be delivered twice", 1, downloads.size)
+            assertAdmissionReusable(actions)
+        } finally {
+            actions.invalidateTransfers()
+            ShadowLooper.idleMainLooper()
+            downloads.forEach { it.discardPayload() }
+            engine.window = null
+        }
+    }
+
 }
