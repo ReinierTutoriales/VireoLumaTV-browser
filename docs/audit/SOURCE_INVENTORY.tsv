@@ -362,6 +362,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserDownloa
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserNavigationTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserUiSnapshotTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/CommandBarFocusTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/UpdateCheckTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvDialogTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbolTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/DarkInterfaceTest.kt	PROPIO
