@@ -122,8 +122,12 @@ class ComposeControlsHost @JvmOverloads constructor(
     }
 
     fun setTabs(list: List<BrowserTab>, selected: Int) {
-        tabs.clear()
-        tabs.addAll(list)
+        // Avoid invalidating the entire Compose tab row when only selection changes.
+        // Compare identity: BrowserTab is a mutable model, not an immutable UI value.
+        if (tabs.size != list.size || tabs.indices.any { tabs[it] !== list[it] }) {
+            tabs.clear()
+            tabs.addAll(list)
+        }
         selectedTab.intValue = selected
     }
 
