@@ -31,7 +31,9 @@ integración y entradas adversariales; no cambia motor, datos, versión ni firma
 - Ventana compacta: la fila de comandos permite desplazarse y recuperar mediante
   D-pad el último comando sin reducir su objetivo táctil.
 - Selector: el resultado conserva su propietario; una segunda solicitud no lo
-  sustituye y navegar o destruir la página cancela su callback una vez.
+  sustituye y navegar o destruir la página cancela su callback una vez. Sólo
+  acepta URI de contenido de proveedores externos; rechaza rutas directas y
+  proveedores del propio UID, también en selecciones múltiples.
 - Descargas: Referer elimina credenciales y fragmento, se limita al origen para
   otro origen y se omite de HTTPS a HTTP, también tras redirecciones. Se aplica
   un valor seguro predeterminado; no se conoce la Referrer-Policy de la página.

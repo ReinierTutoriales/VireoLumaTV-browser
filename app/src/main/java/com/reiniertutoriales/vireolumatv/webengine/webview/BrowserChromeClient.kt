@@ -101,7 +101,18 @@ internal class BrowserChromeClient(private val view: BrowserWebView) : WebChrome
     fun onFilePicked(resultCode: Int, data: android.content.Intent?) {
         val waiting = filePicked ?: return
         filePicked = null
-        waiting.onReceiveValue(FileChooserParams.parseResult(resultCode, data))
+        val files = FileChooserParams.parseResult(resultCode, data)
+        waiting.onReceiveValue(files?.takeIf { it.isNotEmpty() && it.all(::isExternalContentUri) })
+    }
+
+    /** A picker is another app: it must not select files using this app's own permissions. */
+    private fun isExternalContentUri(uri: Uri?): Boolean {
+        if (uri?.scheme != "content" || !uri.isHierarchical) return false
+        val authority = uri.authority?.substringAfterLast('@')?.takeIf { it.isNotEmpty() } ?: return false
+        val context = view.context
+        if (authority.equals(context.packageName + ".provider", ignoreCase = true)) return false
+        val provider = context.packageManager.resolveContentProvider(authority, 0)
+        return provider?.applicationInfo?.uid != context.applicationInfo.uid
     }
 
     /** A chooser belongs to one document, never the page that replaces it. */

@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.app.Activity
 import android.content.Intent
+import android.content.ClipData
 import android.net.Uri
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -118,6 +119,27 @@ class FileChooserTest {
         assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
         val ownFile = Uri.parse("content://0@${app.packageName}.provider/verified_updates/update.apk")
         engine.onFilePicked(Activity.RESULT_OK, Intent().setData(ownFile))
+        assertEquals(listOf<List<Uri>?>(null), answer.results)
+    }
+
+    @Test fun multipleExternalDocumentsAreDeliveredTogetherOnce() = withPage { engine, page ->
+        val answer = Answer()
+        val first = Uri.parse("content://documents/first")
+        val second = Uri.parse("content://documents/second")
+        val selection = ClipData.newRawUri("files", first).apply { addItem(ClipData.Item(second)) }
+        assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
+        engine.onFilePicked(Activity.RESULT_OK, Intent().setClipData(selection))
+        engine.onFilePicked(Activity.RESULT_OK, Intent().setData(second))
+        assertEquals(listOf(listOf(first, second)), answer.results)
+    }
+
+    @Test fun onePrivateUriRejectsTheEntirePickerResult() = withPage { engine, page ->
+        val answer = Answer()
+        val selection = ClipData.newRawUri("files", Uri.parse("content://documents/first")).apply {
+            addItem(ClipData.Item(Uri.fromFile(File(RuntimeEnvironment.getApplication().filesDir, "secret"))))
+        }
+        assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
+        engine.onFilePicked(Activity.RESULT_OK, Intent().setClipData(selection))
         assertEquals(listOf<List<Uri>?>(null), answer.results)
     }
 }
