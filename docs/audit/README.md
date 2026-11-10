@@ -30,6 +30,12 @@ integración y entradas adversariales; no cambia motor, datos, versión ni firma
   la ventana. Se conserva la comprobación con texto ampliado.
 - Ventana compacta: la fila de comandos permite desplazarse y recuperar mediante
   D-pad el último comando sin reducir su objetivo táctil.
+- Pestañas: el máximo incluye título y cierre, conservando el límite de 188 dp y
+  el objetivo de cierre de 48 dp del contrato del proyecto. No son un ancho
+  universal recomendado por Google. El cierre comparte centro vertical con el
+  título y tiene espaciado interior simétrico. Se omite el borde en reposo:
+  `border(0.dp)` dibujaba una línea de un píxel. La captura previa medía 284 px
+  para la pestaña larga en el lienzo mdpi de 960 px y mostraba ese borde interior.
 - Sugerencias: la lista se desplaza dentro de su altura disponible; seis resultados
   de dos líneas con texto al 150 % conservan el acceso con D-pad y puntero. La
   [prueba de reproducción](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/42917807057)
@@ -55,6 +61,8 @@ en una TV física siguen pendientes. No se ha publicado una versión por esta re
 
 Fuentes: [entrada TV](https://developer.android.com/training/tv/get-started/controllers),
 [layouts TV](https://developer.android.com/design/ui/tv/guides/styles/layouts),
+[pestañas TV](https://developer.android.com/design/ui/tv/guides/components/tabs),
+[bordes Compose](https://developer.android.com/reference/kotlin/androidx/compose/foundation/border.modifier),
 [selector WebView](https://developer.android.com/reference/android/webkit/WebChromeClient#onShowFileChooser(android.webkit.WebView,%20android.webkit.ValueCallback%3Candroid.net.Uri[]%3E,%20android.webkit.WebChromeClient.FileChooserParams)),
 [Referer HTTP](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.1.3).
 

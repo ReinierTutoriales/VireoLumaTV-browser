@@ -48,7 +48,7 @@ data class ChromeMetrics(
             top = if (width >= EXPANDED) 24.dp else 8.dp,
             body = 16.sp,
             label = 14.sp,
-            tabMaxWidth = if (width >= EXPANDED) 240.dp else 180.dp,
+            tabMaxWidth = if (width >= EXPANDED) 188.dp else 180.dp,
             stacked = width < MEDIUM,
         )
 
