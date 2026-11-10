@@ -135,7 +135,7 @@ open class MainActivity : ComponentActivity() {
             return
         }
         visitLog = ScreenModels.get(VisitLog::class, this)
-        if (incognito) visitLog.preparePrivateWindow()
+        if (incognito) visitLog.preparePrivateWindow() else visitLog.discardStalePrivateData()
         browserSettings = ScreenModels.get(BrowserSettings::class, this)
         adBlocker = ScreenModels.get(AdBlocker::class, this)
         val filters = adBlocker
