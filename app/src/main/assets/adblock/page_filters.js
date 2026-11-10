@@ -5,14 +5,17 @@
 // resource templates, so nothing here uses eval() and page CSP cannot block it. The scriptlets
 // below are written for VireoLumaTV from the behaviour documented in the uBlock Origin wiki
 // ("Resources Library"); they accept the same names and arguments as the filter lists.
-(function applyPageFilters(attempt) {
+(function applyPageFilters(attempt, bridge) {
     'use strict';
+    // Capture the browser's bridge and remove it from the page's global scope, so page scripts can
+    // neither detect the browser by it nor query the filter engine. Retries reuse the capture.
+    bridge = bridge || window.VireoLumaTVApp;
+    try { delete window.VireoLumaTVApp; } catch (_) {}
     if (window.__vireoPageFilters || window.__vireoPageFiltersWaiting) return;
     // Browser markers are not enumerable, so detectors that list window keys do not see them.
     function mark(name, value) {
         try { Object.defineProperty(window, name, { value: value, writable: true, configurable: true }); } catch (_) {}
     }
-    var bridge = window.VireoLumaTVApp;
     if (!bridge || typeof bridge.pageFilters !== 'function') return;
     var href = String(location.href);
     if (!/^https?:/.test(href)) return;
@@ -43,7 +46,7 @@
             mark('__vireoPageFiltersWaiting', true);
             setTimeout(function () {
                 mark('__vireoPageFiltersWaiting', false);
-                applyPageFilters(attempt + 1);
+                applyPageFilters(attempt + 1, bridge);
             }, Math.min(100 * Math.pow(2, attempt), 5000));
         }
         return;

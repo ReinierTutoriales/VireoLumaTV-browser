@@ -36,8 +36,12 @@ internal object AdblockListDownloader {
         }
     }
 
+    /** Plain-HTTP loopback servers exist only in the JVM unit tests, whose Gradle task sets this property. */
+    internal const val TEST_LOOPBACK_PROPERTY = "vireo.test.loopbackFilters"
+
     private fun isTestLoopback(url: URL): Boolean =
-        url.protocol == "http" && url.host in setOf("127.0.0.1", "localhost", "::1")
+        System.getProperty(TEST_LOOPBACK_PROPERTY) == "true" &&
+            url.protocol == "http" && url.host in setOf("127.0.0.1", "localhost", "::1")
 
     fun fetch(urls: List<String>, requiresAdblockHeader: Boolean, cached: Validators?): Result {
         var failure: Exception? = null

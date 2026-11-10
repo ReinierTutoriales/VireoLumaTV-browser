@@ -203,6 +203,14 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         searchError = null
     }
 
+    /** Back inside Home: leaves tile editing; false when Home has nothing of its own to close. */
+    fun consumeBack(): Boolean {
+        if (root == null || !editing) return false
+        editing = false
+        render()
+        return true
+    }
+
     /**
      * Moves Home below the open capsule, so the address row and tabs never cover its title and
      * search field; back in place when the capsule closes.

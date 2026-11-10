@@ -256,6 +256,7 @@ class BrowserNavigationTest {
                 "setOnline" -> { online += args!![0] as Boolean; null }
                 "load" -> { loadedUrl = args!![0] as String; null }
                 "preview" -> { thumbnailRenders++; thumbnail }
+                "getShowsCertificateWarning" -> false
                 else -> null
             }
         } as PageEngine

@@ -59,14 +59,13 @@ class BrowserUiSnapshotTest {
         tabs.currentTab.value = tabs.openTabs[0]
         val vb = BrowserWindowBinding.inflate(activity.layoutInflater)
         try {
-            vb.controlsHost.updateBlockerStatus("Shield active", true)
-            // blocker status is owned by Compose state
+            vb.controlsHost.showBlocker(enabled = true, description = "Shield active")
             vb.pageContainer.setBackgroundColor(Color.rgb(100, 116, 139))
             vb.tabPreview.visibility = View.GONE
             vb.pointerMenu.visibility = View.INVISIBLE
             vb.loadProgress.visibility = View.GONE
             vb.startupSpinner.visibility = View.GONE
-            vb.controlsHost.showAddress("https://example.test/documentacion/una-direccion-larga")
+            vb.controlsHost.showAddress(BrowserTab(url = "https://example.test/documentacion/una-direccion-larga"))
             vb.controlsHost.updateNavigation(back = true, forward = false)
             activity.setContentView(vb.root)
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),

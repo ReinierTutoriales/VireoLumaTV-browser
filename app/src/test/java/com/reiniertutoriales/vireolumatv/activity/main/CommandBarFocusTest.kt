@@ -7,7 +7,10 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.isFocused
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -18,6 +21,10 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
 import com.reiniertutoriales.vireolumatv.activity.main.view.ComposeControlsHost
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.webengine.PageEngine
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,5 +96,94 @@ class CommandBarFocusTest {
         compose.onNodeWithTag("tab_close_1").assertIsFocused()
         compose.onNode(isFocused()).performKeyInput { pressKey(Key.DirectionRight) }
         compose.onNodeWithTag("new_tab_button").assertIsFocused()
+    }
+
+    @Test fun aRenamedTabIsRedrawnWithoutReplacingTheTab() {
+        val tab = BrowserTab(title = "Uno")
+        val host = openCapsuleWithHistory(listOf(tab))
+        compose.runOnIdle {
+            tab.title = "Dos"
+            host.setTabs(listOf(tab), 0)
+        }
+        compose.onNode(tab(0)).assertTextContains("Dos")
+        // A tab without a title shows its address.
+        compose.runOnIdle {
+            tab.title = ""
+            tab.url = "https://example.test/"
+            host.setTabs(listOf(tab), 0)
+        }
+        compose.onNode(tab(0)).assertTextContains("https://example.test/")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test fun closingAFocusedTabLeavesFocusOnTheSelectedTab() {
+        val tabs = mutableListOf(BrowserTab(title = "Uno"), BrowserTab(title = "Dos"), BrowserTab(title = "Tres"))
+        val host = openCapsuleWithHistory(tabs.toList())
+        compose.runOnIdle {
+            host.onTabClose = { closed ->
+                tabs.remove(closed)
+                host.setTabs(tabs.toList(), 0)
+                host.focusTab(0)
+            }
+        }
+        compose.onNodeWithTag("tab_close_1").requestFocus()
+        compose.onNode(isFocused()).performKeyInput { pressKey(Key.DirectionCenter) }
+        compose.onNode(tab(0)).assertIsFocused()
+        compose.onNode(tab(0)).assertTextContains("Uno")
+        compose.onNode(tab(1)).assertTextContains("Tres")
+    }
+
+    @Test fun suggestionsTakeTheTabRowsPlaceAndItsReturnKeepsFocus() {
+        val host = openCapsuleWithHistory(listOf(BrowserTab(title = "Uno"), BrowserTab(title = "Dos")))
+        compose.runOnIdle { host.showTabStrip(false) }
+        compose.onNodeWithTag("new_tab_button").assertDoesNotExist()
+        compose.runOnIdle {
+            // A request made while the row is hidden must not pull focus when it returns.
+            host.focusTab(1)
+            host.showTabStrip(true)
+        }
+        compose.onNodeWithTag("new_tab_button").assertExists()
+        compose.onNodeWithTag("back_button").assertIsFocused()
+    }
+
+    // A TV-sized window: on the default phone width the address field has no room left.
+    @Config(qualifiers = "w960dp-h540dp-mdpi")
+    @Test fun backWhileEditingLeavesFocusOnTheAddress() {
+        val host = openCapsuleWithHistory()
+        compose.onNodeWithTag("home_search").performClick()
+        compose.runOnIdle { assertTrue(host.isEditingAddress) }
+        compose.runOnIdle { host.cancelAddressInput() }
+        compose.runOnIdle { assertFalse(host.isEditingAddress) }
+        compose.onNodeWithTag("home_search").assertIsFocused()
+    }
+
+    // A TV-sized window: on the default phone width the address field has no room left.
+    @Config(qualifiers = "w960dp-h540dp-mdpi")
+    @Test fun closingTheCapsuleEndsEditingWithoutTakingFocus() {
+        val host = openCapsuleWithHistory()
+        compose.onNodeWithTag("home_search").performClick()
+        compose.runOnIdle { host.closeAddressEditing() }
+        compose.runOnIdle { assertFalse(host.isEditingAddress) }
+        compose.onNode(isFocused()).assertDoesNotExist()
+    }
+
+    @Test fun anAddressShowingTheCertificateWarningIsMarked() {
+        var warning = true
+        val engine = java.lang.reflect.Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+            arrayOf(PageEngine::class.java)) { _, method, _ ->
+            if (method.name == "getShowsCertificateWarning") warning else null
+        } as PageEngine
+        val tab = BrowserTab(url = "https://expired.test/").apply {
+            BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }.set(this, lazyOf(engine))
+        }
+        val host = openCapsuleWithHistory(listOf(tab))
+        val certificate = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>().getString(R.string.cert_invalid)
+        compose.runOnIdle { host.showAddress(tab) }
+        compose.onNodeWithTag("home_search")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, certificate))
+        // Accepting the certificate or leaving the page clears the mark.
+        compose.runOnIdle { warning = false; host.showAddress(tab) }
+        compose.onNodeWithTag("home_search")
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
     }
 }

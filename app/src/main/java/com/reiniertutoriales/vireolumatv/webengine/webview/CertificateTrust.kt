@@ -27,7 +27,7 @@ internal object CertificateTrust {
 
     /**
      * Compares the certificates' DER bytes; their names alone would let another certificate with
-     * the same subject and issuer through. Without access to the bytes, the names are compared.
+     * the same subject and issuer through. Without access to the bytes, comparison fails closed.
      */
     fun isSameCertificate(a: SslCertificate?, b: SslCertificate?): Boolean {
         if (a == null || b == null) return false

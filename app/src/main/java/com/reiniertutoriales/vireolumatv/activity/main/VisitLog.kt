@@ -1,6 +1,7 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.os.Build
+import android.util.Log
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.BuildConfig
 import com.reiniertutoriales.vireolumatv.Config
@@ -9,9 +10,9 @@ import com.reiniertutoriales.vireolumatv.model.HistoryItem
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.IncognitoWebViewData
+import com.reiniertutoriales.vireolumatv.utils.restoreLegacyWebViewBackups
 import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModel
-import com.reiniertutoriales.vireolumatv.utils.deleteDirectory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -83,40 +84,33 @@ class VisitLog : ScreenModel() {
         if (visit.saved) workScope.launch { AppDatabase.db.visitDao().updateTitle(visit.id, visit.title) }
     }
 
-    /**
-     * Gives private mode WebView data of its own: a data directory suffix from Android 9, and
-     * before that a backup of the normal data that [clearPrivateData] puts back.
-     */
+    /** Gives private mode its own WebView data directory; private mode exists only from Android 9. */
     fun preparePrivateWindow() {
-        val app = VireoLumaTVApp.instance
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) return IncognitoWebViewData.configure(app)
-        val (data, cache) = legacyDirectories()
-        val dataBackup = data.backup()
-        if (dataBackup.exists()) return // Already switched.
-        data.renameTo(dataBackup)
-        cache.renameTo(cache.backup())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) IncognitoWebViewData.configure(VireoLumaTVApp.instance)
     }
 
-    fun clearPrivateData() = workScope.launch(Dispatchers.IO) {
+    fun clearPrivateData() = workScope.launch(Dispatchers.IO) { IncognitoWebViewData.clear(VireoLumaTVApp.instance) }
+
+    /**
+     * Normal window start, before any WebView exists: data of a private session the system killed
+     * before [clearPrivateData] is not kept on disk until the next private session.
+     */
+    fun discardStalePrivateData() {
         val app = VireoLumaTVApp.instance
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) return@launch IncognitoWebViewData.clear(app)
-        for (directory in legacyDirectories()) {
-            deleteDirectory(directory)
-            directory.backup().renameTo(directory)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            restoreLegacyWebViewBackups(listOf(File(requireNotNull(app.filesDir.parentFile), WEBVIEW_DATA_DIR),
+                File(app.cacheDir, WEBVIEW_CACHE_DIR)))
+            return
+        }
+        workScope.launch(Dispatchers.IO) {
+            try { IncognitoWebViewData.clear(app) } catch (error: IllegalStateException) { Log.w(TAG, "Private WebView data not cleared", error) }
         }
     }
-
-    private fun legacyDirectories(): List<File> {
-        val app = VireoLumaTVApp.instance
-        return listOf(File(requireNotNull(app.filesDir.parentFile), WEBVIEW_DATA_DIR), File(app.cacheDir, WEBVIEW_CACHE_DIR))
-    }
-
-    private fun File.backup() = File(parentFile, name + BACKUP_SUFFIX)
 
     companion object {
         const val WEBVIEW_DATA_DIR = "app_webview"
         const val WEBVIEW_CACHE_DIR = "WebView"
-        private const val BACKUP_SUFFIX = "_backup"
+        private const val TAG = "VisitLog"
         private const val VISIT_SETTLE_MS = 5_000L
         private const val HISTORY_TRIM_THRESHOLD = 5000
         private const val HISTORY_KEEP_DAYS = 90L

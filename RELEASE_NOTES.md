@@ -1,21 +1,27 @@
-# VireoLumaTV 3.0.0
+# VireoLumaTV 3.0.1
 
-Bloqueador de anuncios más rápido y con mayor cobertura, mando de puntero declarado según la guía oficial de TV y una base de pruebas sin avisos de API obsoleta.
+Actualización de seguridad y privacidad sobre la versión 3.0.0.
 
-## Novedades y correcciones
+## Correcciones
 
-- **Bloqueo de iframes:** los marcos incrustados se reconocen por su cabecera de navegación, con prioridad para `Sec-Fetch-Dest` cuando existe; se aplican las reglas `$subdocument` y `$frame` que antes no los bloqueaban.
-- **Rendimiento del bloqueador:** la ocultación genérica reutiliza las excepciones de cada página, las reglas `$to=` se comprueban con una compuerta por dominio y cada solicitud evita análisis repetidos de `Accept`, `Uri` y claves. Medido en x86, no en TV.
-- **Memoria:** la caché compilada del bloqueador se lee y escribe en Rust, sin pasar por la memoria de Java.
-- **Exactitud:** un `$badfilter` de una regla ya no anula el bloqueo de otra equivalente; la descarga de listas valida su codificación HTTP; lista de sufijos públicos actualizada (psl 2.1.249).
-- **Mando de puntero:** soporte declarado como `<property>` de la aplicación, la forma de la guía oficial de mandos de TV.
-- **Iconos de sitios:** una búsqueda que no puede continuar ya no bloquea las demás.
-- **Mantenimiento:** extensiones de androidx.core, pruebas migradas a las reglas de Compose v2, sin commits automáticos de la integración continua y perfil de arranque generado solo al preparar cada versión.
+- **Seguridad de compilación:** las pruebas habituales ya no necesitan la clave privada de firma de sumas de comprobación. Las acciones de GitHub quedan fijadas a revisiones verificadas y Dependabot vigila sus actualizaciones.
+- **Publicación:** se elimina el lanzamiento automático por creación de ramas. La publicación se solicita manualmente y usa el entorno `release`, cuya aprobación y secretos deben configurarse en GitHub.
+- **Privacidad:** limpieza de datos privados residuales de WebView y recuperación de perfiles normales apartados por versiones antiguas de Android.
+- **Protección contra detección:** el puente de filtros deja de estar expuesto como propiedad global de la página tras la inicialización del script.
+- **Red:** las listas de bloqueo descargadas por la aplicación requieren HTTPS; el acceso HTTP a loopback queda limitado a pruebas.
+- **Certificados:** se aclara que una comparación sin bytes del certificado se rechaza.
+- **Pestañas:** el título y la dirección de una pestaña se actualizan mientras la página carga; al cerrar una pestaña desde su X, el foco queda en la pestaña seleccionada.
+- **Atrás en Inicio:** sale de la aplicación (tras cerrar la edición de accesos, si está abierta), aunque la cápsula esté abierta o la pestaña tenga historial.
+- **Actualizaciones:** la variante generic comprueba sola, como máximo una vez al día y nunca en modo privado, si hay una versión nueva firmada y ofrece instalarla. Lo hace al arrancar, al volver a la app y al recuperar la red; si falla o hay un vídeo a pantalla completa, sigue pendiente.
+- **Certificados:** mientras se muestra la advertencia de certificado, la dirección aparece en rojo y anuncia que el certificado no es válido (la marca se había perdido al pasar la barra a Compose).
+- **Barra de dirección:** las sugerencias vuelven a ocupar el lugar de la fila de pestañas, Arriba desde la primera sugerencia vuelve al texto que se edita y Atrás durante la edición deja el foco en la dirección.
 
 ## Validación
 
-Los cambios integrados pasaron pruebas automáticas (544 pruebas JVM y pruebas Rust), lint, compilaciones, arranques en emuladores API 24, 28, 34 y 37 y Macrobenchmark. La validación física de mando, vídeo y memoria en TV sigue pendiente; no se afirma una mejora de rendimiento en hardware.
+La implementación de seguridad previa a esta preparación de versión pasó CI, pruebas y arranque en emuladores Android API 24, 28, 34 y 37, además de Macrobenchmark, en el commit `366268c0`. La versión 3.0.1 requiere repetir CI sobre su commit definitivo antes de publicar. La validación física de rendimiento y mando en TV sigue pendiente.
 
 ## Instalación
 
-Disponible para Android 7.0 o superior. Instala el APK compatible sobre tu versión actual para conservar tus datos, favoritos y ajustes.
+Compatible con Android 7.0 o superior. El modo incógnito requiere Android 9 o superior. Instala el APK de tu arquitectura sobre la versión existente para conservar los datos normales.
+
+**Seguridad de publicación:** antes de distribuir, configura revisores obligatorios y secretos en el entorno protegido `release` de GitHub.

@@ -42,6 +42,7 @@ class TabRestoreFallbackTest {
                     "getView" -> liveView
                     "restoreHistory" -> { restores++; false }
                     "load" -> { loads.add(args!![0] as String); null }
+                    "getShowsCertificateWarning" -> false
                     else -> null
                 }
             } as PageEngine
@@ -70,6 +71,7 @@ class TabRestoreFallbackTest {
             when (method.name) {
                 "readHistory" -> BundleBytes.decode(args!![0] as ByteArray)
                 "restoreHistory" -> false
+                "getShowsCertificateWarning" -> false
                 else -> null
             }
         } as PageEngine

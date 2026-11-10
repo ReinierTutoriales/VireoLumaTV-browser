@@ -10,37 +10,34 @@ import androidx.compose.ui.unit.dp
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 
 /**
- * Unified Compose shell for the browser controls overlay.
- *
- * Groups the command bar and tab strip under one focus group so the entire
- * capsule can be hosted by a single ComposeView. Browser operations (navigation,
- * WebView, tabs, blocking) remain owned by the activity.
- *
- * This is the first step toward a fully Compose window: the shell can later
- * absorb suggestions, the home surface, and the page host without changing
- * the command contracts already used by CI and the activity.
+ * The browser controls overlay: the command row and, unless address suggestions take its place,
+ * the tab strip, in one focus group. Browser operations (navigation, WebView, tabs, blocking)
+ * remain owned by the activity.
  */
 @Composable
 fun TvBrowserShell(
-    // Command bar
+    // Command row
     address: String,
+    addressWarning: Boolean,
     onSubmitAddress: (String) -> Unit,
     onCancelAddress: () -> Unit,
     onAddressDraftChanged: (String) -> Unit,
     onAddressEditingChanged: (Boolean) -> Unit,
     onFocusSuggestions: () -> Boolean,
-    cancelAddressRequest: Int,
+    cancelAddressRequest: Pair<Int, Boolean>,
     submitAddressRequest: Pair<Int, String>,
+    editorFocusRequest: Int,
     actions: BrowserCommandActions,
     canGoBack: Boolean,
     canGoForward: Boolean,
     blockerEnabled: Boolean,
     blockerDescription: String,
-    blockerReady: Boolean,
     focusRequest: Int,
     downloadsInProgress: Int,
     // Tab strip
-    tabs: List<BrowserTab>,
+    tabs: List<TabChip>,
+    tabsVisible: Boolean,
+    tabFocusRequest: Pair<Int, Int>,
     selectedTab: Int,
     onTabFocus: (Int) -> Unit,
     onTabActivate: (Int) -> Unit,
@@ -56,9 +53,10 @@ fun TvBrowserShell(
             .focusGroup()
             .padding(bottom = 8.dp),
     ) {
-        TvConnectedBrowserCommandBar(
+        TvBrowserCommandBar(
             actions = actions,
             address = address,
+            addressWarning = addressWarning,
             onSubmitAddress = onSubmitAddress,
             onCancelAddress = onCancelAddress,
             onAddressDraftChanged = onAddressDraftChanged,
@@ -66,27 +64,30 @@ fun TvBrowserShell(
             onFocusSuggestions = onFocusSuggestions,
             cancelAddressRequest = cancelAddressRequest,
             submitAddressRequest = submitAddressRequest,
+            editorFocusRequest = editorFocusRequest,
             canGoBack = canGoBack,
             canGoForward = canGoForward,
             blockerEnabled = blockerEnabled,
             blockerDescription = blockerDescription,
-            blockerReady = blockerReady,
             focusRequest = focusRequest,
             downloadsInProgress = downloadsInProgress,
             modifier = Modifier.fillMaxWidth(),
         )
-        TvTabStrip(
-            tabs = tabs,
-            selected = selectedTab,
-            onFocus = onTabFocus,
-            onActivate = onTabActivate,
-            onClose = onTabClose,
-            onOptions = onTabOptions,
-            onAdd = onAddTab,
-            onFocusWithinChanged = onTabStripFocusChanged,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-        )
+        if (tabsVisible) {
+            TvTabStrip(
+                tabs = tabs,
+                selected = selectedTab,
+                onFocus = onTabFocus,
+                onActivate = onTabActivate,
+                onClose = onTabClose,
+                onOptions = onTabOptions,
+                onAdd = onAddTab,
+                onFocusWithinChanged = onTabStripFocusChanged,
+                focusRequest = tabFocusRequest,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+            )
+        }
     }
 }

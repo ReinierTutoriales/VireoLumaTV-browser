@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.res.stringResource
 import androidx.tv.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,9 +45,10 @@ import androidx.compose.ui.platform.testTag
 import com.reiniertutoriales.vireolumatv.R
 
 /**
- * Two explicit modes prevent D-pad focus from opening the IME.
- * A real editable text field is only mounted after the user activates the address.
- * No keyboard or focus side effects occur during composition.
+ * Two explicit modes prevent D-pad focus from opening the IME: a real editable text field is only
+ * mounted after the user activates the address. [cancelRequest] (count, restore focus) ends editing;
+ * Back restores focus to the address, closing the capsule does not. A new [editorFocusRequest]
+ * returns focus to the text being edited. No keyboard or focus side effects occur during composition.
  */
 @Composable
 fun TvAddressField(
@@ -57,22 +59,27 @@ fun TvAddressField(
     onDraftChanged: (String) -> Unit = {},
     onEditingChanged: (Boolean) -> Unit = {},
     onFocusSuggestions: () -> Boolean = { false },
-    cancelRequest: Int = 0,
+    cancelRequest: Pair<Int, Boolean> = 0 to false,
     submitRequest: Pair<Int, String> = 0 to "",
+    editorFocusRequest: Int = 0,
+    warning: Boolean = false,
 ) {
     var editing by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf(address) }
     val editorFocus = remember { FocusRequester() }
+    var refocusAddress by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val shape = RoundedCornerShape(10.dp)
     val hint = stringResource(R.string.address_hint)
-    fun cancelEditing() {
+    val certificateWarning = stringResource(R.string.cert_invalid)
+    fun cancelEditing(restoreFocus: Boolean) {
         editing = false
         onEditingChanged(false)
         draft = address
         keyboard?.hide()
         focusManager.clearFocus()
+        refocusAddress = restoreFocus
         onCancel()
     }
     fun submitEditing() {
@@ -86,9 +93,11 @@ fun TvAddressField(
         }
     }
 
-    // Requests from the host are explicit: the hidden legacy EditText is not authoritative.
     LaunchedEffect(cancelRequest) {
-        if (cancelRequest > 0 && editing) cancelEditing()
+        if (cancelRequest.first > 0 && editing) cancelEditing(cancelRequest.second)
+    }
+    LaunchedEffect(editorFocusRequest) {
+        if (editorFocusRequest > 0 && editing) runCatching { editorFocus.requestFocus() }
     }
     LaunchedEffect(submitRequest) {
         if (submitRequest.first > 0 && editing) {
@@ -130,7 +139,7 @@ fun TvAddressField(
                     when {
                         event.type == KeyEventType.KeyUp &&
                             (event.key == Key.Escape || event.key == Key.Back) -> {
-                            cancelEditing()
+                            cancelEditing(restoreFocus = true)
                             true
                         }
                         event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown ->
@@ -141,16 +150,27 @@ fun TvAddressField(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         )
     } else {
+        val addressFocus = remember { FocusRequester() }
+        LaunchedEffect(refocusAddress) {
+            if (refocusAddress) {
+                refocusAddress = false
+                runCatching { addressFocus.requestFocus() }
+            }
+        }
         val interaction = remember { MutableInteractionSource() }
         val focused by interaction.collectIsFocusedAsState()
         val hovered by interaction.collectIsHoveredAsState()
         Box(
             modifier = modifier
                 .testTag("home_search")
+                .focusRequester(addressFocus)
                 .fillMaxWidth()
                 .background(TvControlColors.surface(focused, hovered), shape)
                 .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
-                .semantics { contentDescription = hint }
+                .semantics {
+                    contentDescription = hint
+                    if (warning) stateDescription = certificateWarning
+                }
                 .clickable(interactionSource = interaction, indication = null) {
                     draft = address
                     editing = true
@@ -160,10 +180,17 @@ fun TvAddressField(
         ) {
             Text(
                 text = address.ifBlank { hint },
-                color = if (address.isBlank()) Color.Gray else Color.White,
+                color = when {
+                    address.isBlank() -> Color.Gray
+                    // The page is the certificate warning for this address.
+                    warning -> CertificateWarningColor
+                    else -> Color.White
+                },
                 fontSize = 17.sp,
                 maxLines = 1,
             )
         }
     }
 }
+
+private val CertificateWarningColor = Color(0xFFF87171)

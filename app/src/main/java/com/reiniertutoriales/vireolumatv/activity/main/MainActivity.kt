@@ -29,7 +29,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.activity.ComponentActivity
-import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -75,6 +74,9 @@ import com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewFreshness
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import com.reiniertutoriales.vireolumatv.widgets.ToastBar
+import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
+import com.reiniertutoriales.vireolumatv.utils.UpdateSchedule
+import com.reiniertutoriales.vireolumatv.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -135,7 +137,7 @@ open class MainActivity : ComponentActivity() {
             return
         }
         visitLog = ScreenModels.get(VisitLog::class, this)
-        if (incognito) visitLog.preparePrivateWindow()
+        if (incognito) visitLog.preparePrivateWindow() else visitLog.discardStalePrivateData()
         browserSettings = ScreenModels.get(BrowserSettings::class, this)
         adBlocker = ScreenModels.get(AdBlocker::class, this)
         val filters = adBlocker
@@ -168,7 +170,7 @@ open class MainActivity : ComponentActivity() {
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
         tabStore.currentTab.observe(this) { tab ->
-            vb.controlsHost.showAddress(tab?.url.orEmpty())
+            vb.controlsHost.showAddress(tab)
             publishShownSite()
             if (tab == null) nativeHome?.hide() else onPageViewChanged(tab)
         }
@@ -198,6 +200,63 @@ open class MainActivity : ComponentActivity() {
         }
         val shown = tabStore.currentTab.value
         if (shown == null || shown.url == browserSettings.homePage) openCapsule()
+        startupDone = true
+        checkForUpdateIfDue()
+    }
+
+    @VisibleForTesting internal var updateCheck: Job? = null
+    private var updateOffer: TvDialog? = null
+    @VisibleForTesting internal var startupDone = false
+
+    /**
+     * The generic build looks for a newer signed release by itself once a day, never in private
+     * mode. It runs after start-up, on every return to the screen and when the network comes back;
+     * a check that fails, or whose offer would cover a fullscreen video, stays due. Updating still
+     * asks first, and installing goes through the system installer.
+     */
+    @VisibleForTesting
+    internal fun checkForUpdateIfDue(fetch: suspend () -> ReleaseUpdater.Release? = ReleaseUpdater::fetchNewerRelease) {
+        if (!BuildConfig.BUILT_IN_AUTO_UPDATE || config.privateBrowsing || !startupDone) return
+        if (updateCheck?.isActive == true || updateOffer?.isShowing == true) return
+        if (!UpdateSchedule.isDue(config.prefs, System.currentTimeMillis())) return
+        updateCheck = lifecycleScope.launch {
+            val release = try {
+                withContext(Dispatchers.IO) { fetch() }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Log.w(TAG, "Automatic update check failed", error)
+                return@launch
+            }
+            if (release != null && (isFullscreen || isFinishing || isDestroyed)) return@launch
+            UpdateSchedule.checked(config.prefs, System.currentTimeMillis())
+            if (release != null) offerUpdate(release)
+        }
+    }
+
+    private fun offerUpdate(release: ReleaseUpdater.Release) {
+        updateOffer = TvDialog.Builder(this)
+            .setTitle(R.string.update_available_title)
+            .setMessage(getString(R.string.update_available_message, release.version))
+            .setPositiveButton(R.string.action_update) { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        val apk = withContext(Dispatchers.IO) { ReleaseUpdater.download(this@MainActivity, release) }
+                        ReleaseUpdater.install(this@MainActivity, apk)
+                    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Log.w(TAG, "Update download failed", error)
+                        toast(R.string.update_failed)
+                    }
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .setOnDismissListener {
+                updateOffer = null
+                if (overlayVisible) vb.controlsHost.requestCommandFocus()
+            }
+            .show()
     }
 
     @SuppressLint("MissingSuperCall")
@@ -249,6 +308,7 @@ open class MainActivity : ComponentActivity() {
         tabStore.currentTab.value?.engine?.resume()
         // A TV app stays alive for days: the start-up check alone would never refresh the filter lists.
         adBlocker.updateIfDue()
+        checkForUpdateIfDue()
     }
 
     override fun onPause() {
@@ -340,6 +400,7 @@ open class MainActivity : ComponentActivity() {
             engine?.onNetworkRestored()
             // A TV often starts before Wi-Fi: fetch the filter lists as soon as it connects.
             adBlocker.updateIfDue(networkRestored = true)
+            checkForUpdateIfDue()
         }
     }
 
@@ -355,7 +416,7 @@ open class MainActivity : ComponentActivity() {
         vb.controlsHost.onAddressDraftChanged = { onAddressTyped(it) }
         vb.controlsHost.onFocusSuggestions = { focusSuggestions() }
         vb.vSuggestions.onPick = { vb.controlsHost.submit(it.url) }
-        // One action contract for both the current View controls and future Compose controls.
+        vb.vSuggestions.onExitUp = { vb.controlsHost.focusAddressEditor() }
         val actions = com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions(
             back = { closeCapsule(); navigateBack() },
             forward = { closeCapsule(); tabStore.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } },
@@ -459,8 +520,7 @@ open class MainActivity : ComponentActivity() {
     /** Suggestions take the tab strip's place while there are any, so the capsule does not grow. */
     private fun showSuggestions(suggestions: List<AddressSuggestion>) {
         vb.vSuggestions.show(suggestions)
-        // Tab strip visibility is owned by the Compose shell; suggestions overlay is separate.
-        // vb.controlsHost.isVisible = suggestions.isEmpty()
+        vb.controlsHost.showTabStrip(suggestions.isEmpty())
     }
 
     private fun closeSuggestions() {
@@ -471,7 +531,6 @@ open class MainActivity : ComponentActivity() {
     // Navigation
 
     fun navigate(url: String) {
-        vb.controlsHost.tintAddress(ContextCompat.getColor(this, R.color.on_surface))
         val tab = tabStore.currentTab.value
         if (tab == null) {
             openInNewTab(url, 0, closeCapsuleAfter = true, navigateImmediately = true)
@@ -536,7 +595,7 @@ open class MainActivity : ComponentActivity() {
 
     /** Focus moved to another tab: show its address and, a moment later, its preview. */
     private fun previewFocusedTab(tab: BrowserTab?) {
-        vb.controlsHost.showAddress(tab?.url.orEmpty())
+        vb.controlsHost.showAddress(tab)
         previewGeneration++
         mainThread.removeCallbacks(showFocusedPreview)
         focusedPreviewTab = tab
@@ -577,14 +636,15 @@ open class MainActivity : ComponentActivity() {
         val current = tabStore.currentTab.value
         vb.controlsHost.current = tabs.indexOf(current).coerceAtLeast(0)
         if (keepCapsule) {
-            // Showing the neighbour focused its page behind the capsule; keys must stay in the strip.
-            vb.controlsHost.requestFocus()
+            // Showing the neighbour focused its page behind the capsule: focus goes back to the strip,
+            // on the tab now selected, instead of wherever the removed one leaves it.
+            vb.controlsHost.focusTab(vb.controlsHost.current)
             previewGeneration++
             mainThread.removeCallbacks(showFocusedPreview)
             focusedPreviewTab = null
-            vb.controlsHost.showAddress(current?.url.orEmpty())
+            vb.controlsHost.showAddress(current)
             lifecycleScope.launch { showPreview(current) }
-            vb.controlsHost.post { if (overlayVisible) vb.controlsHost.requestFocus() }
+            vb.controlsHost.post { if (overlayVisible) vb.controlsHost.focusTab(vb.controlsHost.current) }
         } else closeCapsule()
     }
 
@@ -669,7 +729,7 @@ open class MainActivity : ComponentActivity() {
         val index = tabStore.openTabs.indexOf(shown)
         if (shown == null || index < 0) return commitStripSelection()
         vb.controlsHost.current = index
-        vb.controlsHost.showAddress(shown.url)
+        vb.controlsHost.showAddress(shown)
     }
 
     /** Commits the tab the strip shows as selected, or opens one when the strip points past the tabs. */
@@ -705,11 +765,8 @@ open class MainActivity : ComponentActivity() {
 
     internal fun updateAdblockStatus(tab: BrowserTab) {
         val state = getString(blockerStatusLabel(tab))
-        vb.controlsHost.showBlockerEnabled(tab.adblock ?: config.adBlockEnabled)
-        vb.controlsHost.updateBlockerStatus(
-            resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds),
-            (tab.adblock ?: config.adBlockEnabled) && ::adBlocker.isInitialized && adBlocker.hasActiveRules,
-        )
+        vb.controlsHost.showBlocker(tab.adblock ?: config.adBlockEnabled,
+            resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds))
     }
 
     private fun showBlockerDetails() {
@@ -923,8 +980,9 @@ open class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Back closes the innermost thing open: pointer menu, fullscreen, typing, capsule, grab mode,
-     * D-pad mode (before any web history, as its help promises); else opens the capsule.
+     * Back closes the innermost thing open: pointer menu, fullscreen, typing, Home's tile editing;
+     * on Home it then leaves the app; elsewhere capsule, grab mode, D-pad mode (before any web
+     * history, as its help promises); else opens the capsule.
      */
     internal fun consumeBack() {
         val pointer = vb.pageContainer.pointerController
@@ -935,6 +993,11 @@ open class MainActivity : ComponentActivity() {
                 tabStore.currentTab.value?.engine?.closeFullscreen()
             }
             vb.controlsHost.isEditingAddress -> vb.controlsHost.cancelAddressInput()
+            nativeHome?.consumeBack() == true -> Unit
+            // N08: Home is the app's root screen, so Back there leaves to the launcher whatever the
+            // tab's web history, unless the capsule is previewing another tab (Back returns to Home).
+            nativeHome?.isVisible == true && (!overlayVisible || tabAtStripSelection() === tabStore.currentTab.value) &&
+                SystemClock.uptimeMillis() - fullscreenBackAt >= FULLSCREEN_BACK_SETTLE_MS -> finish()
             // A second press while the video is still coming down (or a remote's double send) must not
             // close the capsule that the first one opened.
             overlayVisible -> if (SystemClock.uptimeMillis() - fullscreenBackAt >= FULLSCREEN_BACK_SETTLE_MS) {

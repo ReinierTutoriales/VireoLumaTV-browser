@@ -62,4 +62,22 @@ class IncognitoWebViewSessionTest {
         session.configure(context) { retried = true }
         assertTrue(retried)
     }
+
+    @Test fun legacyBackupReplacesDeadPrivateSessionAndIsOptional() {
+        val context = RuntimeEnvironment.getApplication()
+        val root = requireNotNull(context.filesDir.parentFile)
+        val data = File(root, "app_webview").apply { mkdirs() }
+        File(data, "cookie").writeText("private")
+        File(root, "app_webview_backup").apply { mkdirs() }.let { File(it, "cookie").writeText("normal") }
+        val cache = File(context.cacheDir, "WebView").apply { mkdirs() }
+        File(cache, "entry").writeText("normal-without-backup")
+
+        restoreLegacyWebViewBackups(listOf(data, cache))
+
+        assertEquals("normal", File(data, "cookie").readText())
+        assertFalse(File(root, "app_webview_backup").exists())
+        assertEquals("normal-without-backup", File(cache, "entry").readText())
+        restoreLegacyWebViewBackups(listOf(data, cache))
+        assertEquals("normal", File(data, "cookie").readText())
+    }
 }

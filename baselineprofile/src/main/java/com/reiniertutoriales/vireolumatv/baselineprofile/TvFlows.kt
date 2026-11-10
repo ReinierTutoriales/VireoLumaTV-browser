@@ -139,13 +139,17 @@ private fun MacrobenchmarkScope.openCapsule() {
         requireNode(By.focused(true).focusable(true))
         return
     }
-    // One press only: on Home without history a second Back leaves the app (N08, TV-DB).
-    press { device.pressBack() }
-    if (device.wait(Until.hasObject(By.res("menu_button")), 5_000)) {
-        requireFocus(By.res(Pattern.compile("back_button|home_button")))
-        return
+    // On Home, Back leaves the app (N08): Up climbs to its search and then opens the capsule.
+    // Elsewhere one Back opens it, and a second one at the root would leave.
+    val onHome = device.hasObject(HOME_SEARCH)
+    repeat(if (onHome) 4 else 1) {
+        press { if (onHome) device.pressDPadUp() else device.pressBack() }
+        if (device.wait(Until.hasObject(By.res("menu_button")), if (onHome) 1_500 else 5_000)) {
+            requireFocus(By.res(Pattern.compile("back_button|home_button")))
+            return
+        }
     }
-    failWithScreen("Back did not open the capsule")
+    failWithScreen(if (onHome) "Up from Home did not open the capsule" else "Back did not open the capsule")
 }
 
 /** Reach the address with the remote, without activating the editor. */

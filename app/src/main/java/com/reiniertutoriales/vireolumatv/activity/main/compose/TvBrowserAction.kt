@@ -2,18 +2,18 @@ package com.reiniertutoriales.vireolumatv.activity.main.compose
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.tv.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -21,22 +21,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.foundation.border
-import androidx.compose.foundation.background
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import com.reiniertutoriales.vireolumatv.R
 
 /**
- * Reusable AMOLED action for remote-control navigation.
- * Bundled vector drawables remain local: no fonts, network or Play Services.
+ * Icon-only AMOLED action for remote-control navigation; [label] is its spoken name.
  * Callers own the action and browser state; this component never touches WebView.
  */
 @Composable
@@ -47,7 +42,6 @@ fun TvBrowserAction(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     tint: Color = Color.White,
-    showLabel: Boolean = true,
     onLongClick: (() -> Unit)? = null,
     testTag: String? = null,
 ) {
@@ -60,10 +54,10 @@ fun TvBrowserAction(
         label = "tv-action-surface",
     )
     val shape = RoundedCornerShape(10.dp)
-    Row(
+    Box(
         modifier = modifier
             .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
-            .defaultMinSize(minHeight = 48.dp)
+            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
             .semantics { contentDescription = label; role = Role.Button }
             .clip(shape)
             .background(surface)
@@ -76,17 +70,13 @@ fun TvBrowserAction(
                 onLongClick = onLongClick,
                 onLongClickLabel = if (onLongClick != null) stringResource(R.string.control_more_options, label) else null,
             )
-            .padding(horizontal = if (showLabel) 14.dp else 12.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(12.dp),
+        contentAlignment = Alignment.Center,
     ) {
         TvSymbolIcon(
             symbol = symbol,
             tint = if (enabled) tint else Color.Gray,
             modifier = Modifier.size(28.dp),
         )
-        if (showLabel) {
-            Text(label, color = if (enabled) Color.White else Color.Gray, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
     }
 }

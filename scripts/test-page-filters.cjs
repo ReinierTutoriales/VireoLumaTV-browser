@@ -59,6 +59,7 @@ function page(filters, host = 'stream.example', setup = '') {
     delayed.flush();
     vm.runInContext(`
         assert.equal(filterReads, 2);
+        assert.equal('VireoLumaTVApp' in window, false);
         assert.equal(window.__vireoPageFilters, true);
         assert.match(document.adoptedStyleSheets[0].css, /late-ad/);
     `, delayed);

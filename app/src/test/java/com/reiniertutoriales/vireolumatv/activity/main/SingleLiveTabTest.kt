@@ -52,6 +52,7 @@ class SingleLiveTabTest {
                                 null
                             }
                             "load" -> { loads++; null }
+                            "getShowsCertificateWarning" -> false
                             else -> null
                         }
                     } as PageEngine

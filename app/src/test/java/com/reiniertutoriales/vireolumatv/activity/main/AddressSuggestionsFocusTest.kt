@@ -14,7 +14,11 @@ import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import android.widget.LinearLayout
+import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
 import com.reiniertutoriales.vireolumatv.activity.main.view.AddressSuggestionsView
+import com.reiniertutoriales.vireolumatv.activity.main.view.ComposeControlsHost
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -96,5 +100,39 @@ class AddressSuggestionsFocusTest {
         view.onPick = { picked += it.url }
         compose.onNodeWithTag("suggestion_${second.url}").performClick()
         assertEquals(listOf(second.url), picked)
+    }
+
+    @Test fun upFromTheFirstSuggestionReturnsToTheAddressBeingEdited() {
+        lateinit var host: ComposeControlsHost
+        lateinit var view: AddressSuggestionsView
+        compose.runOnUiThread {
+            host = ComposeControlsHost(compose.activity).apply {
+                bindActions(BrowserCommandActions({}, {}, {}, {}, {}, {}, {}))
+                setTabs(listOf(BrowserTab(title = "Uno")), 0)
+            }
+            view = AddressSuggestionsView(compose.activity)
+            view.onExitUp = { host.focusAddressEditor() }
+            host.onFocusSuggestions = { view.focusFirst() }
+            compose.activity.setContentView(LinearLayout(compose.activity).apply {
+                orientation = LinearLayout.VERTICAL
+                addView(host)
+                addView(view)
+            })
+        }
+        compose.waitForIdle()
+        compose.onNodeWithTag("home_search").performClick()
+        compose.runOnIdle { assertTrue(host.isEditingAddress) }
+        show(view, listOf(first, second))
+        compose.runOnUiThread { assertTrue(view.focusFirst()) }
+        compose.waitForIdle()
+        assertEquals("suggestion_${first.url}", focusedTag())
+
+        compose.onNode(isFocused()).performKeyInput { pressKey(Key.DirectionUp) }
+        compose.waitForIdle()
+        assertEquals("home_search", focusedTag())
+        compose.runOnIdle {
+            assertTrue("Up keeps the edit open", host.isEditingAddress)
+            assertFalse(view.hasFocus())
+        }
     }
 }

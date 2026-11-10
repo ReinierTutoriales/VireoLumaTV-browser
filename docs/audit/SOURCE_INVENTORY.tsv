@@ -10,6 +10,7 @@ docs/superpowers/plans/2026-11-07-tv-audit-corrections.md	PROPIO
 .agents/skills/tv-ui/SKILL.md	PROPIO
 .agents/skills/webview-evidence-optimization/SKILL.md	PROPIO
 .gitattributes	PROPIO
+.github/dependabot.yml	PROPIO
 .github/ISSUE_TEMPLATE/bug_report.md	REESCRITO
 .github/ISSUE_TEMPLATE/feature_request.md	REESCRITO
 .github/pull_request_template.md	PROPIO
@@ -178,6 +179,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/utils/NetworkWatcher.kt	PROP
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/observable/LiveList.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/observable/LiveValue.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdater.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/UpdateSchedule.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/RemoteInput.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/Toasts.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ViewFaviconLoader.kt	ELIMINADO
@@ -360,6 +362,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserDownloa
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserNavigationTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserUiSnapshotTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/CommandBarFocusTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/UpdateCheckTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvDialogTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbolTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/DarkInterfaceTest.kt	PROPIO
@@ -439,6 +442,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/utils/IncognitoWebViewSessio
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/NetworkWatcherTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/observable/LiveValueTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdaterTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/UpdateScheduleTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ReservedKeysTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/SameLocalDayTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobSpoolTest.kt	PROPIO

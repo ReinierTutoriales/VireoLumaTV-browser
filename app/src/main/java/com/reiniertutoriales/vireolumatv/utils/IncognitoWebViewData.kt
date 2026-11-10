@@ -34,3 +34,17 @@ internal object IncognitoWebViewData {
     fun configure(context: Context) = session.configure(context, WebView::setDataDirectorySuffix)
     fun clear(context: Context) = session.clear(context)
 }
+
+/**
+ * Up to 2.0.19 private mode also ran before Android 9 by renaming each normal WebView directory
+ * to "<name>_backup"; a private session killed before it renamed them back left its own data in
+ * their place. Puts every backup back over that data; a directory without a backup is untouched.
+ */
+internal fun restoreLegacyWebViewBackups(directories: List<File>) {
+    for (directory in directories) {
+        val backup = File(directory.parentFile, directory.name + "_backup")
+        if (!backup.exists()) continue
+        if (directory.exists() && !directory.deleteRecursively()) continue
+        backup.renameTo(directory)
+    }
+}

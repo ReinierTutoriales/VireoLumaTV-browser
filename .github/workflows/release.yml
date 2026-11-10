@@ -1,7 +1,6 @@
 name: Release
 
 on:
-  create:
   workflow_dispatch:
     inputs:
       version:
@@ -25,18 +24,19 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
+    if: github.ref == 'refs/heads/master'
+    environment: release
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      VERSION: ${{ inputs.version || github.event.ref }}
+      VERSION: ${{ inputs.version }}
       GH_TOKEN: ${{ github.token }}
       EXPECTED_CERT_SHA256: 7485dc06a3e9b12528679ff8c5f8d06b308300ff454fce8f9f0193e66adf051f
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Validate version and refuse existing releases
         run: |
-          # A create event gives "release/X.Y.Z"; a manual entry may carry the full branch ref.
+          # Accept "X.Y.Z", "release/X.Y.Z" or "refs/heads/release/X.Y.Z" as manual input.
           VERSION="${VERSION#refs/heads/}"
           VERSION="${VERSION#release/}"
           [[ "$VERSION" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]
@@ -46,21 +46,18 @@ jobs:
             echo 'Release already exists; refusing to replace it.'
             exit 1
           fi
-          if [[ "$GITHUB_EVENT_NAME" == create ]]; then
-            [[ "$GITHUB_REF" == "refs/heads/release/$VERSION" ]]
-          fi
           if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
             echo 'Tag already exists; refusing to move it.'
             exit 1
           fi
-      - uses: actions/setup-java@v6.2.0
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:
           java-version: '21'
           distribution: 'temurin'
-      - uses: Swatinem/rust-cache@v2.9.3
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: native/adblock-jni
-      - uses: gradle/actions/setup-gradle@v6.4.1
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           cache-provider: basic
       - name: Decode release keystore
@@ -91,7 +88,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Verify signed release startup before publication
-        uses: reactivecircus/android-emulator-runner@v2.38.0
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 34
           target: google_apis
@@ -100,7 +97,7 @@ jobs:
           script: bash scripts/test-release-startup.sh "$(find app/build/outputs/apk/generic/release -name '*x86_64*.apk' -type f)" baseline.apk
       - name: Upload signed startup evidence
         if: always()
-        uses: actions/upload-artifact@v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: signed-release-startup
           path: startup-report/
@@ -192,14 +189,14 @@ jobs:
                       assert digest == 'sha256:' + hashlib.sha256(path.read_bytes()).hexdigest(), str(path)
           PY
       - name: Save earlier release archive
-        uses: actions/upload-artifact@v7.0.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: VireoLumaTV-before-${{ env.VERSION }}
           path: previous-releases/
           if-no-files-found: error
           retention-days: 90
       - name: Create release
-        uses: softprops/action-gh-release@v3.0.4
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: v${{ env.VERSION }}
           target_commitish: ${{ github.sha }}
@@ -208,9 +205,6 @@ jobs:
           prerelease: ${{ inputs.prerelease == 'pre-release' }}
           fail_on_unmatched_files: true
           files: dist/*
-      - name: Remove completed publication branch
-        if: github.event_name == 'create'
-        run: git push --force-with-lease="$GITHUB_REF:$GITHUB_SHA" origin ":$GITHUB_REF"
       - name: Remove signing material
         if: always()
         run: rm -f "$RUNNER_TEMP/release.jks" "$RUNNER_TEMP/release-signing-key.pem"
