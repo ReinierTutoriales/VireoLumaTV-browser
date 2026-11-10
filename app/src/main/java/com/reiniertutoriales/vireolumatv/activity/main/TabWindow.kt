@@ -254,26 +254,36 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         tabs.openTabs.firstOrNull { it.engine.ownsView(view) }?.let(browser::closeTab)
     }
 
-    // Whether the system bars showed before the video (null outside fullscreen): only then are
-    // they shown again, so another window mode keeps its own state.
-    private var systemBarsBeforeFullscreen: Boolean? = null
+    // Visibility is per inset type: status and navigation bars can have different states.
+    private var systemBarsBeforeFullscreen: Int? = null
+    private var systemBarsBehaviorBeforeFullscreen = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
     private var keepScreenOnBeforeFullscreen = false
 
     // Fullscreen
 
     override fun onEnterFullscreen() {
         if (systemBarsBeforeFullscreen != null) return
-        val decor = browser.window.decorView
-        systemBarsBeforeFullscreen = ViewCompat.getRootWindowInsets(decor)?.isVisible(WindowInsetsCompat.Type.systemBars()) ?: false
-        keepScreenOnBeforeFullscreen = browser.window.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0
+        val window = browser.window
+        val decor = window.decorView
+        val controller = WindowCompat.getInsetsController(window, decor)
+        val insets = ViewCompat.getRootWindowInsets(decor)
+        var remaining = WindowInsetsCompat.Type.systemBars()
+        var visible = 0
+        while (remaining != 0) {
+            val type = Integer.lowestOneBit(remaining)
+            if (insets?.isVisible(type) == true) visible = visible or type
+            remaining = remaining xor type
+        }
+        systemBarsBeforeFullscreen = visible
+        systemBarsBehaviorBeforeFullscreen = controller.systemBarsBehavior
+        keepScreenOnBeforeFullscreen = window.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0
         // A player may enter fullscreen while the capsule is open. Close it now so the
         // fullscreen exit can reopen it and restore focus to an actionable control.
         if (vb.controlsOverlay.isVisible) browser.closeCapsule()
-        val window = browser.window
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // androidx.core maps this to WindowInsetsController on API 30+ and to the immersive
         // system UI flags below it.
-        WindowCompat.getInsetsController(window, decor).apply {
+        controller.apply {
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             hide(WindowInsetsCompat.Type.systemBars())
         }
@@ -285,10 +295,14 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         if (!keepScreenOnBeforeFullscreen && !browser.config.keepScreenOn) {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
-        val barsShown = systemBarsBeforeFullscreen
+        val visible = systemBarsBeforeFullscreen
         systemBarsBeforeFullscreen = null
-        if (barsShown == true) {
-            WindowCompat.getInsetsController(window, window.decorView).show(WindowInsetsCompat.Type.systemBars())
+        if (visible != null) {
+            WindowCompat.getInsetsController(window, window.decorView).apply {
+                systemBarsBehavior = systemBarsBehaviorBeforeFullscreen
+                show(visible)
+                hide(WindowInsetsCompat.Type.systemBars() and visible.inv())
+            }
         }
         browser.isFullscreen = false
         if (restoreControls && isShownTab && !browser.isFinishing && !browser.isDestroyed) browser.openCapsule()
