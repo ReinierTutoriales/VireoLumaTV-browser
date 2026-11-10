@@ -2,6 +2,9 @@ package com.reiniertutoriales.vireolumatv.activity.main.compose
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertWidthIsEqualTo
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
@@ -75,5 +78,12 @@ class ChromeMetricsTest {
         assertEquals(48.dp, back.bottom - back.top)
         assertTrue("Address above the commands", address.bottom <= back.top)
         assertTrue("Address spans the row", address.right - address.left > 300.dp)
+    }
+
+    @Config(qualifiers = "w320dp-h640dp-mdpi")
+    @Test fun aCompactWindowKeepsTheLastCommandReachableAtItsFullTouchSize() {
+        showBar()
+        compose.onNodeWithTag("menu_button").performScrollTo()
+            .assertIsDisplayed().assertWidthIsEqualTo(48.dp)
     }
 }
