@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Validate version and refuse existing releases
         run: |
-          # A create event gives "release/X.Y.Z"; a manual entry may carry the full branch ref.
+          # Accept "X.Y.Z", "release/X.Y.Z" or "refs/heads/release/X.Y.Z" as manual input.
           VERSION="${VERSION#refs/heads/}"
           VERSION="${VERSION#release/}"
           [[ "$VERSION" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]

@@ -10,6 +10,7 @@ docs/superpowers/plans/2026-11-07-tv-audit-corrections.md	PROPIO
 .agents/skills/tv-ui/SKILL.md	PROPIO
 .agents/skills/webview-evidence-optimization/SKILL.md	PROPIO
 .gitattributes	PROPIO
+.github/dependabot.yml	PROPIO
 .github/ISSUE_TEMPLATE/bug_report.md	REESCRITO
 .github/ISSUE_TEMPLATE/feature_request.md	REESCRITO
 .github/pull_request_template.md	PROPIO
