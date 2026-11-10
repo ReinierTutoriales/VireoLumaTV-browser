@@ -3,12 +3,15 @@ package com.reiniertutoriales.vireolumatv.activity.main.compose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -19,7 +22,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.unit.dp
 import com.reiniertutoriales.vireolumatv.R
 
 /** The capsule's commands; the activity owns navigation and WebView. */
@@ -83,14 +85,10 @@ fun TvBrowserCommandBar(
     // Running downloads change the menu's icon and spoken label.
     val menuLabel = if (downloadsInProgress == 0) stringResource(R.string.nav_menu)
         else pluralStringResource(R.plurals.nav_menu_downloads, downloadsInProgress, downloadsInProgress)
-    Row(
-        modifier = modifier.semantics { testTagsAsResourceId = true }.focusGroup().focusRestorer()
-            .background(Color.Black).padding(horizontal = 24.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    val metrics = LocalChromeMetrics.current
+    val addressField: @Composable (Modifier) -> Unit = { fieldModifier ->
         TvAddressField(
             address = address,
-            warning = addressWarning,
             onSubmit = onSubmitAddress,
             onCancel = onCancelAddress,
             onDraftChanged = onAddressDraftChanged,
@@ -99,8 +97,11 @@ fun TvBrowserCommandBar(
             cancelRequest = cancelAddressRequest,
             submitRequest = submitAddressRequest,
             editorFocusRequest = editorFocusRequest,
-            modifier = Modifier.weight(1f),
+            warning = addressWarning,
+            modifier = fieldModifier,
         )
+    }
+    val commands: @Composable () -> Unit = {
         TvBrowserAction(stringResource(R.string.nav_back), TvSymbol.Back, actions.back,
             tracked(BACK, canGoBack).focusRequester(backFocus), enabled = canGoBack, testTag = "back_button")
         TvBrowserAction(stringResource(R.string.nav_forward), TvSymbol.Forward, actions.forward,
@@ -118,6 +119,22 @@ fun TvBrowserCommandBar(
         )
         TvBrowserAction(menuLabel, if (downloadsInProgress == 0) TvSymbol.More else TvSymbol.MenuDownloads,
             actions.menu, testTag = "menu_button")
+    }
+    val container = modifier.semantics { testTagsAsResourceId = true }.focusGroup().focusRestorer()
+        .background(Color.Black)
+        .padding(start = metrics.edge, end = metrics.edge, top = metrics.top, bottom = metrics.gap)
+    val spacing = Arrangement.spacedBy(metrics.gap)
+    if (metrics.stacked) {
+        // A narrow window has no room for the address beside six commands: it takes its own row.
+        Column(container, verticalArrangement = spacing) {
+            addressField(Modifier.fillMaxWidth())
+            Row(horizontalArrangement = spacing, verticalAlignment = Alignment.CenterVertically) { commands() }
+        }
+    } else {
+        Row(container, horizontalArrangement = spacing, verticalAlignment = Alignment.CenterVertically) {
+            addressField(Modifier.weight(1f))
+            commands()
+        }
     }
 }
 

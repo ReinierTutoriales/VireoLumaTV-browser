@@ -29,17 +29,17 @@ import java.io.File
 
 /** Native Android drawing of the real XML; deliberately no network page or WebView renderer. */
 @RunWith(RobolectricTestRunner::class)
-@Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
+@Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-television-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class BrowserUiSnapshotTest {
     // The interface is dark only; a light system mode must not change it.
-    @Test @Config(qualifiers = "w960dp-h540dp-notnight-mdpi")
+    @Test @Config(qualifiers = "w960dp-h540dp-television-notnight-mdpi")
     fun controlsWithLightSystemMode() = capture("system-light")
 
-    @Test @Config(qualifiers = "w960dp-h540dp-night-mdpi")
+    @Test @Config(qualifiers = "w960dp-h540dp-television-night-mdpi")
     fun controlsWithDarkSystemMode() = capture("system-dark")
 
-    @Test @Config(qualifiers = "w960dp-h540dp-notnight-mdpi")
+    @Test @Config(qualifiers = "w960dp-h540dp-television-notnight-mdpi")
     fun enlargedTextControls() = capture("large-text", 1.5f)
 
     private fun capture(name: String, fontScale: Float = 1f) {

@@ -51,7 +51,7 @@ fun TvBrowserShell(
         modifier = modifier
             .fillMaxWidth()
             .focusGroup()
-            .padding(bottom = 8.dp),
+            .padding(bottom = 6.dp),
     ) {
         TvBrowserCommandBar(
             actions = actions,
@@ -86,7 +86,7 @@ fun TvBrowserShell(
                 focusRequest = tabFocusRequest,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp),
+                    .padding(top = 6.dp),
             )
         }
     }

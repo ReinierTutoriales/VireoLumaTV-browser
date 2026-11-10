@@ -81,6 +81,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/AppMenu.kt	PRO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/BlockerIndicator.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserDownloads.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserSettings.kt	REESCRITO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/ChromeMetrics.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvAddressField.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserAction.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvBrowserCommandBar.kt	PROPIO
@@ -363,6 +364,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserNavigat
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/BrowserUiSnapshotTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/CommandBarFocusTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/UpdateCheckTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/ChromeMetricsTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvDialogTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/compose/TvSymbolTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/DarkInterfaceTest.kt	PROPIO

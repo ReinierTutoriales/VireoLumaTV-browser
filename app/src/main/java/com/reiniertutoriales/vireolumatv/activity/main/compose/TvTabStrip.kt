@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.res.stringResource
@@ -40,7 +42,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 
@@ -70,6 +71,7 @@ fun TvTabStrip(
     onFocusWithinChanged: (Boolean) -> Unit = {},
     focusRequest: Pair<Int, Int> = 0 to 0,
 ) {
+    val metrics = LocalChromeMetrics.current
     val shape = RoundedCornerShape(12.dp)
     val titleFocus = remember { HashMap<BrowserTab, FocusRequester>() }
     // A request made while the strip was hidden is stale when it comes back: start from the current one.
@@ -85,8 +87,9 @@ fun TvTabStrip(
     Row(
         modifier = modifier.semantics { testTagsAsResourceId = true }.background(Color.Black).horizontalScroll(rememberScrollState())
             .onFocusChanged { onFocusWithinChanged(it.hasFocus) }
-            .focusGroup().padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            // Inside the scroll: the first tab lines up with the address, later ones may scroll to the edge.
+            .focusGroup().padding(horizontal = metrics.edge, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(metrics.gap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         tabs.forEachIndexed { index, chip ->
@@ -108,7 +111,7 @@ fun TvTabStrip(
             // Right moves title -> X -> next title. A nested X lies inside the title's bounds and
             // two-dimensional focus search would skip it.
             Row(
-                modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                modifier = Modifier.heightIn(min = metrics.control)
                     .background(
                         if (focused || closeFocused) Color(0xFF262626) else if (selected == index) Color(0xFF171717)
                         else TvControlColors.surface(false, hovered || closeHovered),
@@ -118,7 +121,7 @@ fun TvTabStrip(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
-                    modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                    modifier = Modifier.heightIn(min = metrics.control).widthIn(max = metrics.tabMaxWidth)
                         .testTag("tab_${index}_${System.identityHashCode(tab)}")
                         .focusRequester(focus)
                         .semantics { role = Role.Tab; this.selected = selected == index }
@@ -128,11 +131,11 @@ fun TvTabStrip(
                     contentAlignment = Alignment.CenterStart,
                 ) {
                     Text(chip.label.ifBlank { newTab },
-                        color = Color.White, fontSize = 15.sp, maxLines = 1,
+                        color = Color.White, fontSize = metrics.label, maxLines = 1,
                         overflow = TextOverflow.Ellipsis)
                 }
                 Box(
-                    modifier = Modifier.padding(end = 4.dp).defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                    modifier = Modifier.padding(end = 4.dp).sizeIn(minWidth = metrics.control, minHeight = metrics.control)
                         .background(if (closeFocused) Color(0xFF383838) else if (closeHovered) TvControlColors.Hovered else Color.Transparent, shape)
                         .border(if (closeFocused) 2.dp else if (closeHovered) 1.dp else 0.dp, TvControlColors.border(closeFocused, closeHovered), shape)
                         .testTag("tab_close_$index")
@@ -148,7 +151,7 @@ fun TvTabStrip(
                     TvSymbolIcon(
                         symbol = TvSymbol.TabClose,
                         tint = Color.White,
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(metrics.icon),
                     )
                 }
             }
@@ -158,7 +161,7 @@ fun TvTabStrip(
         val addFocused by addInteraction.collectIsFocusedAsState()
         val addHovered by addInteraction.collectIsHoveredAsState()
         Box(
-            modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+            modifier = Modifier.sizeIn(minWidth = metrics.control, minHeight = metrics.control)
                 .background(if (addFocused) Color(0xFF292929) else TvControlColors.surface(false, addHovered), shape)
                 .border(if (addFocused) 2.dp else 1.dp, TvControlColors.border(addFocused, addHovered), shape)
                 .testTag("new_tab_button")
@@ -169,7 +172,7 @@ fun TvTabStrip(
             TvSymbolIcon(
                 symbol = TvSymbol.Add,
                 tint = Color.White,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(metrics.icon),
             )
         }
     }

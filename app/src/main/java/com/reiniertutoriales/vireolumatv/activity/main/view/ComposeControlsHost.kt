@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
+import com.reiniertutoriales.vireolumatv.activity.main.compose.ProvideChromeMetrics
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TabChip
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvBrowserShell
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
@@ -69,6 +70,7 @@ class ComposeControlsHost @JvmOverloads constructor(
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setContent {
                 val currentActions = actions.value ?: return@setContent
+                ProvideChromeMetrics {
                 TvBrowserShell(
                     address = address.value,
                     addressWarning = addressWarning.value,
@@ -101,6 +103,7 @@ class ComposeControlsHost @JvmOverloads constructor(
                     onAddTab = { onAddTab?.invoke() },
                     onTabStripFocusChanged = { tabStripHasFocus = it },
                 )
+                }
             }
         }
         addView(compose, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))

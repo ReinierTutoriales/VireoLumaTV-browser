@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.activity.main.AddressSuggestion
+import com.reiniertutoriales.vireolumatv.activity.main.compose.LocalChromeMetrics
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvListRow
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
 import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
@@ -121,7 +122,9 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
     private fun Rows() {
         val items = shown
         val focus = requesters
-        Column(Modifier.semantics { testTagsAsResourceId = true }) {
+        // The panel spans the window; its rows line up with the address, inside the safe margins.
+        val metrics = LocalChromeMetrics.current
+        Column(Modifier.semantics { testTagsAsResourceId = true }.padding(horizontal = metrics.edge, vertical = 12.dp)) {
             items.forEachIndexed { index, suggestion ->
                 TvListRow(
                     title = suggestion.title,

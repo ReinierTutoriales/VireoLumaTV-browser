@@ -168,7 +168,7 @@ internal fun FavoritesContent(
         }
         Box(Modifier.fillMaxWidth().weight(1f).padding(top = 16.dp)) {
             if (items != null && items.isEmpty() && !busy) {
-                Text(stringResource(R.string.favorites_empty), color = colorResource(R.color.on_surface_variant), fontSize = 18.sp,
+                Text(stringResource(R.string.favorites_empty), color = colorResource(R.color.on_surface_variant), fontSize = 16.sp,
                     modifier = Modifier.align(Alignment.Center).padding(24.dp).testTag("favorites_empty"))
             }
             LazyColumn(Modifier.fillMaxSize().testTag("favorites_list")) {

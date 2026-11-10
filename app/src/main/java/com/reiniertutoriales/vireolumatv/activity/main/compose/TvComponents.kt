@@ -72,9 +72,10 @@ fun TvListRow(
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val hovered by interaction.collectIsHoveredAsState()
+    val metrics = LocalChromeMetrics.current
     val content = if (enabled) MaterialTheme.colorScheme.onSurface else Color.Gray
     Row(
-        modifier = modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp)
+        modifier = modifier.fillMaxWidth().defaultMinSize(minHeight = metrics.row)
             .background(if (selected && !focused) TvControlColors.Selected else TvControlColors.surface(focused, hovered), RowShape)
             .border(if (focused) 2.dp else 0.dp, TvControlColors.border(focused, hovered), RowShape)
             .combinedClickable(
@@ -87,17 +88,17 @@ fun TvListRow(
             )
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(18.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         leadingContent?.invoke()
-        if (symbol != null) TvSymbolIcon(symbol, Modifier.size(26.dp), tint = content)
+        if (symbol != null) TvSymbolIcon(symbol, Modifier.size(metrics.icon), tint = content)
         Column(Modifier.weight(1f)) {
-            Text(title, color = content, fontSize = 17.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(title, color = content, fontSize = metrics.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (!supporting.isNullOrEmpty()) {
-                Text(supporting, color = Color.Gray, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(supporting, color = Color.Gray, fontSize = metrics.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
-        if (!trailing.isNullOrEmpty()) Text(trailing, color = Color.Gray, fontSize = 14.sp, maxLines = 1)
+        if (!trailing.isNullOrEmpty()) Text(trailing, color = Color.Gray, fontSize = metrics.label, maxLines = 1)
         trailingContent?.invoke()
     }
 }
@@ -108,17 +109,18 @@ fun TvTextButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val hovered by interaction.collectIsHoveredAsState()
+    val metrics = LocalChromeMetrics.current
     val shape = RoundedCornerShape(10.dp)
     Box(
-        modifier = modifier.defaultMinSize(minWidth = 96.dp, minHeight = 48.dp)
+        modifier = modifier.defaultMinSize(minWidth = 96.dp, minHeight = metrics.control)
             .background(TvControlColors.surface(focused, hovered), shape)
             .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
             .combinedClickable(interactionSource = interaction, indication = null, enabled = enabled,
                 role = Role.Button, onClick = onClick)
-            .padding(horizontal = 18.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, color = if (enabled) MaterialTheme.colorScheme.onSurface else Color.Gray, fontSize = 16.sp, maxLines = 1)
+        Text(text, color = if (enabled) MaterialTheme.colorScheme.onSurface else Color.Gray, fontSize = metrics.label, maxLines = 1)
     }
 }
 
@@ -138,13 +140,14 @@ fun TvTextField(
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val hovered by interaction.collectIsHoveredAsState()
+    val metrics = LocalChromeMetrics.current
     val shape = RoundedCornerShape(10.dp)
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
         interactionSource = interaction,
-        textStyle = TextStyle(color = Color.White, fontSize = 17.sp),
+        textStyle = TextStyle(color = Color.White, fontSize = metrics.body),
         cursorBrush = SolidColor(Color.White),
         visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = when {
@@ -155,13 +158,13 @@ fun TvTextField(
         modifier = modifier.fillMaxWidth().semantics { contentDescription = hint },
         decorationBox = { inner ->
             Box(
-                Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp)
+                Modifier.fillMaxWidth().defaultMinSize(minHeight = metrics.row)
                     .background(TvControlColors.surface(focused, hovered), shape)
                     .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
                     .padding(horizontal = 14.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
-                if (value.isEmpty()) Text(hint, color = Color.Gray, fontSize = 17.sp, maxLines = 1)
+                if (value.isEmpty()) Text(hint, color = Color.Gray, fontSize = metrics.body, maxLines = 1)
                 inner()
             }
         },
