@@ -128,7 +128,7 @@ class FileChooserTest {
         val second = Uri.parse("content://documents/second")
         val selection = ClipData.newRawUri("files", first).apply { addItem(ClipData.Item(second)) }
         assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
-        engine.onFilePicked(Activity.RESULT_OK, Intent().setClipData(selection))
+        engine.onFilePicked(Activity.RESULT_OK, Intent().apply { clipData = selection })
         engine.onFilePicked(Activity.RESULT_OK, Intent().setData(second))
         assertEquals(listOf(listOf(first, second)), answer.results)
     }
@@ -139,7 +139,7 @@ class FileChooserTest {
             addItem(ClipData.Item(Uri.fromFile(File(RuntimeEnvironment.getApplication().filesDir, "secret"))))
         }
         assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
-        engine.onFilePicked(Activity.RESULT_OK, Intent().setClipData(selection))
+        engine.onFilePicked(Activity.RESULT_OK, Intent().apply { clipData = selection })
         assertEquals(listOf<List<Uri>?>(null), answer.results)
     }
 }
