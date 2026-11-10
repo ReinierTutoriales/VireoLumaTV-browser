@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
+import androidx.activity.result.contract.ActivityResultContracts
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
@@ -14,12 +15,25 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.Implements
+import org.robolectric.annotation.Implementation
 import java.lang.reflect.Proxy
 import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = VireoLumaTVApp::class, sdk = [28])
+@Config(application = VireoLumaTVApp::class, sdk = [28], shadows = [FileChooserTest.ChooserParamsShadow::class])
 class FileChooserTest {
+    // Framework parseResult delegates to the Chromium provider, which Robolectric does not load.
+    @Implements(WebChromeClient.FileChooserParams::class)
+    class ChooserParamsShadow {
+        companion object {
+            @JvmStatic @Implementation
+            fun parseResult(resultCode: Int, data: Intent?): Array<Uri>? =
+                ActivityResultContracts.GetMultipleContents().parseResult(resultCode, data)
+                    .toTypedArray().takeIf { it.isNotEmpty() }
+        }
+    }
+
     private class Answer : ValueCallback<Array<Uri>> {
         val results = mutableListOf<List<Uri>?>()
         override fun onReceiveValue(value: Array<Uri>?) { results += value?.toList() }
