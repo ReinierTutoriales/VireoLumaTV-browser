@@ -77,7 +77,7 @@ fun TvListRow(
     Row(
         modifier = modifier.fillMaxWidth().defaultMinSize(minHeight = metrics.row)
             .background(if (selected && !focused) TvControlColors.Selected else TvControlColors.surface(focused, hovered), RowShape)
-            .border(if (focused) 2.dp else 0.dp, TvControlColors.border(focused, hovered), RowShape)
+            .then(if (focused) Modifier.border(2.dp, TvControlColors.border(focused, hovered), RowShape) else Modifier)
             .combinedClickable(
                 interactionSource = interaction,
                 indication = null,

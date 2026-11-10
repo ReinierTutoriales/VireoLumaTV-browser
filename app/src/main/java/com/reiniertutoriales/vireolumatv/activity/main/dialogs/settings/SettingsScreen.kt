@@ -156,7 +156,8 @@ private fun SettingsTabChip(tab: SettingsTab, selected: Boolean, modifier: Modif
         modifier.testTag(tab.tag).semantics { this.selected = selected }
             .defaultMinSize(minWidth = 120.dp, minHeight = 48.dp)
             .background(if (selected && !focused) TvControlColors.Selected else TvControlColors.surface(focused, hovered), shape)
-            .border(if (focused) 2.dp else if (selected) 1.dp else 0.dp, TvControlColors.border(focused, hovered || selected), shape)
+            .then(if (focused || selected) Modifier.border(if (focused) 2.dp else 1.dp,
+                TvControlColors.border(focused, hovered || selected), shape) else Modifier)
             .clickable(interactionSource = interaction, indication = null, role = Role.Tab, onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
