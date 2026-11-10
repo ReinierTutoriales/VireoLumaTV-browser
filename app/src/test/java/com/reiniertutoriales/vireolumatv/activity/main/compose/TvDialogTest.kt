@@ -107,7 +107,12 @@ class TvDialogTest {
         idle()
     }
 
-    @Test fun theHeldKeyThatOpenedTheDialogChoosesNothing() {
+    @Test fun theHeldKeyThatOpenedTheDialogChoosesNothing() = heldKeyChoosesNothing(KeyEvent.KEYCODE_DPAD_CENTER)
+    @Test fun heldEnterChoosesNothingUntilANewPress() = heldKeyChoosesNothing(KeyEvent.KEYCODE_ENTER)
+    @Test fun heldNumpadEnterChoosesNothingUntilANewPress() = heldKeyChoosesNothing(KeyEvent.KEYCODE_NUMPAD_ENTER)
+    @Test fun heldSpaceChoosesNothingUntilANewPress() = heldKeyChoosesNothing(KeyEvent.KEYCODE_SPACE)
+
+    private fun heldKeyChoosesNothing(code: Int) {
         val chosen = mutableListOf<Int>()
         lateinit var dialog: TvDialog
         compose.runOnUiThread {
@@ -117,9 +122,9 @@ class TvDialogTest {
         compose.onNodeWithTag("dialog_item_0").assertIsFocused()
         // The long press that opened it: the remote keeps repeating, then the key is released.
         compose.runOnUiThread {
-            key(dialog, KeyEvent.ACTION_DOWN, repeat = 3)
-            key(dialog, KeyEvent.ACTION_DOWN, repeat = 4)
-            key(dialog, KeyEvent.ACTION_UP, repeat = 0)
+            key(dialog, KeyEvent.ACTION_DOWN, repeat = 3, code)
+            key(dialog, KeyEvent.ACTION_DOWN, repeat = 4, code)
+            key(dialog, KeyEvent.ACTION_UP, repeat = 0, code)
         }
         compose.runOnIdle {
             assertEquals(emptyList<Int>(), chosen)
@@ -127,8 +132,8 @@ class TvDialogTest {
         }
         // A new press chooses as usual.
         compose.runOnUiThread {
-            key(dialog, KeyEvent.ACTION_DOWN, repeat = 0)
-            key(dialog, KeyEvent.ACTION_UP, repeat = 0)
+            key(dialog, KeyEvent.ACTION_DOWN, repeat = 0, code)
+            key(dialog, KeyEvent.ACTION_UP, repeat = 0, code)
         }
         compose.runOnIdle {
             assertEquals(listOf(0), chosen)
