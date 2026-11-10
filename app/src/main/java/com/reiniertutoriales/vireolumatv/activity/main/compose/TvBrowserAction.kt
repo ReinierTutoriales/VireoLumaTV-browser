@@ -10,9 +10,8 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,11 +52,12 @@ fun TvBrowserAction(
         targetValue = TvControlColors.surface(focused, hovered, pressed),
         label = "tv-action-surface",
     )
+    val metrics = LocalChromeMetrics.current
     val shape = RoundedCornerShape(10.dp)
     Box(
         modifier = modifier
             .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
-            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+            .sizeIn(minWidth = metrics.control, minHeight = metrics.control)
             .semantics { contentDescription = label; role = Role.Button }
             .clip(shape)
             .background(surface)
@@ -69,14 +69,13 @@ fun TvBrowserAction(
                 onClick = onClick,
                 onLongClick = onLongClick,
                 onLongClickLabel = if (onLongClick != null) stringResource(R.string.control_more_options, label) else null,
-            )
-            .padding(12.dp),
+            ),
         contentAlignment = Alignment.Center,
     ) {
         TvSymbolIcon(
             symbol = symbol,
             tint = if (enabled) tint else Color.Gray,
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(metrics.icon),
         )
     }
 }

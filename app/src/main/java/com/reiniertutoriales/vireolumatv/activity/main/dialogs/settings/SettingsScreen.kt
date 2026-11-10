@@ -161,7 +161,7 @@ private fun SettingsTabChip(tab: SettingsTab, selected: Boolean, modifier: Modif
             .padding(horizontal = 20.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(stringResource(tab.label), fontSize = 17.sp,
+        Text(stringResource(tab.label), fontSize = 16.sp,
             color = if (selected || focused) MaterialTheme.colorScheme.onSurface else Color.Gray)
     }
 }

@@ -14,6 +14,11 @@ description: Use for UI, focus, navigation, or layout work. Ensures polished And
 - The current UI uses one top capsule and tabs. Apply N01–N10 from
   `docs/REGRESSION_POLICY.md`; do not revive the removed bottom toolbar.
 - Record what still needs a real remote/device check. Do not invent UI behaviors.
+- Take sizes from `ChromeMetrics` (TV Material 3 tokens and the 48/24 dp TV safe
+  margins, chosen from the window size), not new literal dp/sp values.
+- A long press opens UI while the key is still held: the new window receives its
+  repeats and release. Test a dialog or panel opened that way with repeat > 0 and
+  the release, as `TvDialogTest` does (2026-11-10).
 
 ## Recheck the interaction that actually failed
 

@@ -20,6 +20,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.res.stringResource
 import androidx.tv.material3.Text
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.DisposableEffect
@@ -40,7 +43,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.testTag
 import com.reiniertutoriales.vireolumatv.R
 
@@ -70,6 +72,7 @@ fun TvAddressField(
     var refocusAddress by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val metrics = LocalChromeMetrics.current
     val shape = RoundedCornerShape(10.dp)
     val hint = stringResource(R.string.address_hint)
     val certificateWarning = stringResource(R.string.cert_invalid)
@@ -125,7 +128,7 @@ fun TvAddressField(
             value = draft,
             onValueChange = { draft = it; onDraftChanged(it) },
             singleLine = true,
-            textStyle = TextStyle(color = Color.White, fontSize = 17.sp),
+            textStyle = TextStyle(color = Color.White, fontSize = metrics.body),
             cursorBrush = androidx.compose.ui.graphics.SolidColor(Color.White),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go, keyboardType = KeyboardType.Uri),
             keyboardActions = KeyboardActions(onGo = { submitEditing() }),
@@ -147,7 +150,10 @@ fun TvAddressField(
                         else -> false
                     }
                 }
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .heightIn(min = metrics.control),
+            decorationBox = { field ->
+                Box(Modifier.padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) { field() }
+            },
         )
     } else {
         val addressFocus = remember { FocusRequester() }
@@ -176,7 +182,9 @@ fun TvAddressField(
                     editing = true
                     onEditingChanged(true)
                 }
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .heightIn(min = metrics.control)
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.CenterStart,
         ) {
             Text(
                 text = address.ifBlank { hint },
@@ -186,8 +194,9 @@ fun TvAddressField(
                     warning -> CertificateWarningColor
                     else -> Color.White
                 },
-                fontSize = 17.sp,
+                fontSize = metrics.body,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
