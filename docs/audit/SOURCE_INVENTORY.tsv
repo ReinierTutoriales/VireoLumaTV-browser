@@ -179,6 +179,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/utils/NetworkWatcher.kt	PROP
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/observable/LiveList.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/observable/LiveValue.kt	REESCRITO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdater.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/UpdateSchedule.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/RemoteInput.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/Toasts.kt	PROPIO
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/ViewFaviconLoader.kt	ELIMINADO
@@ -440,6 +441,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/utils/IncognitoWebViewSessio
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/NetworkWatcherTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/observable/LiveValueTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ReleaseUpdaterTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/UpdateScheduleTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/ReservedKeysTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/SameLocalDayTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/BlobSpoolTest.kt	PROPIO
