@@ -11,6 +11,8 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -124,7 +126,9 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
         val focus = requesters
         // The panel spans the window; its rows line up with the address, inside the safe margins.
         val metrics = LocalChromeMetrics.current
-        Column(Modifier.semantics { testTagsAsResourceId = true }.padding(horizontal = metrics.edge, vertical = 12.dp)) {
+        Column(Modifier.semantics { testTagsAsResourceId = true }
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = metrics.edge, vertical = 12.dp)) {
             items.forEachIndexed { index, suggestion ->
                 TvListRow(
                     title = suggestion.title,

@@ -30,6 +30,10 @@ integración y entradas adversariales; no cambia motor, datos, versión ni firma
   la ventana. Se conserva la comprobación con texto ampliado.
 - Ventana compacta: la fila de comandos permite desplazarse y recuperar mediante
   D-pad el último comando sin reducir su objetivo táctil.
+- Sugerencias: la lista se desplaza dentro de su altura disponible; seis resultados
+  de dos líneas con texto al 150 % conservan el acceso con D-pad y puntero. La
+  [prueba de reproducción](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/42917807057)
+  falló al intentar alcanzar el sexto resultado; las otras 601 pruebas pasaron.
 - Selector: el resultado conserva su propietario; una segunda solicitud no lo
   sustituye y navegar o destruir la página cancela su callback una vez. Sólo
   acepta URI de contenido de proveedores externos; rechaza rutas directas y
