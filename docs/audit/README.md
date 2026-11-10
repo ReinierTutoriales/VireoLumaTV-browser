@@ -19,6 +19,39 @@ APK contents. Use the successful run for the exact source SHA being reviewed.
 Generated APK licenses are compared with the canonical root license files.
 Physical validation is deferred by the owner; CI does not establish device performance.
 
+## Revisión del 10 de noviembre de 2026 (PR #264)
+
+Base: `master` `1bfae18`; PR original `2b1af14`. La revisión añade comprobaciones de
+integración y entradas adversariales; no cambia motor, datos, versión ni firma.
+
+- Cápsula: los márgenes XML se sumaban a los de Compose. La captura anterior no
+  enlazaba las acciones y podía pasar sin dibujar controles. Las capturas ahora
+  exigen controles y pestañas visibles, sin solapamiento, y márgenes relativos a
+  la ventana. Se conserva la comprobación con texto ampliado.
+- Ventana compacta: la fila de comandos permite desplazarse y recuperar mediante
+  D-pad el último comando sin reducir su objetivo táctil.
+- Selector: el resultado conserva su propietario; una segunda solicitud no lo
+  sustituye y navegar o destruir la página cancela su callback una vez.
+- Descargas: Referer elimina credenciales y fragmento, se limita al origen para
+  otro origen y se omite de HTTPS a HTTP, también tras redirecciones. Se aplica
+  un valor seguro predeterminado; no se conoce la Referrer-Policy de la página.
+- Blob: la admisión limita peticiones pendientes por página y por proceso, tanto
+  en el trabajador como en las respuestas al hilo principal. Las pruebas incluyen
+  saturación, recuperación, cancelación y entrega de una transferencia completa.
+
+La [ejecución de reproducción](https://github.com/ReinierTutoriales/VireoLumaTV-browser/actions/runs/42915590028)
+detectó los márgenes duplicados, capturas sin controles, Referer y cola sin límite.
+El parser de resultados del selector requiere un sustituto de plataforma en
+Robolectric: esas pruebas no ejecutan el proveedor Chromium real.
+Los resultados finales se registran en el PR para su SHA exacto; una reproducción
+fallida no acredita la corrección. Mando, vídeo, proveedor WebView y rendimiento
+en una TV física siguen pendientes. No se ha publicado una versión por esta revisión.
+
+Fuentes: [entrada TV](https://developer.android.com/training/tv/get-started/controllers),
+[layouts TV](https://developer.android.com/design/ui/tv/guides/styles/layouts),
+[selector WebView](https://developer.android.com/reference/android/webkit/WebChromeClient#onShowFileChooser(android.webkit.WebView,%20android.webkit.ValueCallback%3Candroid.net.Uri[]%3E,%20android.webkit.WebChromeClient.FileChooserParams)),
+[Referer HTTP](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.1.3).
+
 ## Historical source migration record
 
 Closed on 2026-11-01 at `66459a60`, measured with
