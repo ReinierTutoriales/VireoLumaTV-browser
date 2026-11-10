@@ -13,6 +13,8 @@ import org.robolectric.annotation.Config
 import java.io.File
 import java.io.InputStream
 import java.net.InetSocketAddress
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicReference
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
@@ -81,6 +83,75 @@ class DownloadTransferTest {
         FileTransfer(info, "test", recorder).run()
         assertEquals(1, recorder.errors)
         assertEquals(MAX_REDIRECTS + 1, hits)
+    }
+
+    @Test fun sameOriginDownloadPreservesPathAndQueryWithoutCredentialsOrFragment() {
+        val received = AtomicReference<String>()
+        server.createContext("/file") {
+            received.set(it.requestHeaders.getFirst("Referer"))
+            it.reply(200, "payload")
+        }
+        val info = download("same-origin.txt", "/file").apply {
+            referer = base.replace("http://", "http://user:password@") + "/watch?id=42#secret"
+        }
+        val recorder = Recorder()
+        FileTransfer(info, "test", recorder).run()
+        assertEquals(1, recorder.done)
+        assertEquals("$base/watch?id=42", received.get())
+    }
+
+    @Test fun crossOriginDownloadSendsOnlyTheSourceOrigin() {
+        val received = AtomicReference<String>()
+        server.createContext("/file") {
+            received.set(it.requestHeaders.getFirst("Referer"))
+            it.reply(200, "payload")
+        }
+        val info = download("cross-origin.txt", "/file").apply {
+            referer = "http://user:password@source.example:8080/private?token=secret#fragment"
+        }
+        val recorder = Recorder()
+        FileTransfer(info, "test", recorder).run()
+        assertEquals(1, recorder.done)
+        assertEquals("http://source.example:8080/", received.get())
+    }
+
+    @Test fun securePageDownloadToPlainHttpOmitsReferer() {
+        val received = AtomicReference<String>("not requested")
+        server.createContext("/file") {
+            received.set(it.requestHeaders.getFirst("Referer"))
+            it.reply(200, "payload")
+        }
+        val info = download("downgrade.txt", "/file").apply {
+            referer = "https://source.example/private?token=secret#fragment"
+        }
+        val recorder = Recorder()
+        FileTransfer(info, "test", recorder).run()
+        assertEquals(1, recorder.done)
+        assertNull(received.get())
+    }
+
+    @Test fun redirectsReevaluateRefererForEachDestinationOrigin() {
+        val other = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply { start() }
+        try {
+            val received = CopyOnWriteArrayList<String>()
+            server.createContext("/start") {
+                received.add(it.requestHeaders.getFirst("Referer") ?: "absent")
+                it.reply(302, location = "http://127.0.0.1:${other.address.port}/final")
+            }
+            other.createContext("/final") {
+                received.add(it.requestHeaders.getFirst("Referer") ?: "absent")
+                it.reply(200, "payload")
+            }
+            val info = download("redirect-referer.txt", "/start").apply {
+                referer = "$base/watch?token=secret#fragment"
+            }
+            val recorder = Recorder()
+            FileTransfer(info, "test", recorder).run()
+            assertEquals(1, recorder.done)
+            assertEquals(listOf("$base/watch?token=secret", "$base/"), received.toList())
+        } finally {
+            other.stop(0)
+        }
     }
 
     @Test fun cancellingMidTransferRemovesThePartialFileBeforeReporting() {

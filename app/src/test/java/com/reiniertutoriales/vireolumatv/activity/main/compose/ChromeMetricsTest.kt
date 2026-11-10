@@ -5,6 +5,13 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.requestFocus
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.input.key.Key
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
@@ -85,5 +92,17 @@ class ChromeMetricsTest {
         showBar()
         compose.onNodeWithTag("menu_button").performScrollTo()
             .assertIsDisplayed().assertWidthIsEqualTo(48.dp)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Config(qualifiers = "w320dp-h640dp-mdpi")
+    @Test fun dpadFocusBringsTheLastCompactCommandIntoView() {
+        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
+        showBar()
+        compose.onNodeWithTag("back_button").requestFocus()
+        for (tag in listOf("back_button", "forward_button", "refresh_button", "home_button", "blocker_button")) {
+            compose.onNodeWithTag(tag).assertIsFocused().performKeyInput { pressKey(Key.DirectionRight) }
+        }
+        compose.onNodeWithTag("menu_button").assertIsFocused().assertIsDisplayed().assertWidthIsEqualTo(48.dp)
     }
 }
