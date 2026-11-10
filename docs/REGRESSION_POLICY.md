@@ -101,7 +101,7 @@ Validación física pendiente.
 AppCompat, sin dependencias nuevas. El foco invierte el control (superficie clara, contenido oscuro) y lo
 escala 1,1 (botones), 1,05 (pestañas y botones de texto) o 1,025 (filas), según el sistema de foco de TV.
 Los controles del navegador son una capa superior sobre un degradado, dentro de los márgenes seguros de
-48/27 dp; las pestañas son píldoras de 188 dp (caben cuatro y «+»). El menú de aplicación es un panel
+48/27 dp; las pestañas reparten el ancho entre los márgenes para que quepan cuatro y «+» (198 dp en 960 dp), con la altura y el objetivo de foco de los comandos (40 dp en TV, 48 dp táctil; 2026-11-10). El menú de aplicación es un panel
 lateral a la derecha con icono por entrada; Atrás lo cierra sin elegir. La vista previa de otra pestaña
 ocupa la pantalla detrás de los controles, sin recortar. Las acciones y el orden de foco
 (N01–N06) conservan las correcciones posteriores de controles deshabilitados y cierre de pestañas. Pendiente de validación en Android TV.

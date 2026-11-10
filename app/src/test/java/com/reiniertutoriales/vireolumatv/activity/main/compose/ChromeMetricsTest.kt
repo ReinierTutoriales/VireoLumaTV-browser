@@ -40,7 +40,9 @@ class ChromeMetricsTest {
         assertEquals(24.dp, tv.top)
         assertEquals(16.sp, tv.body)
         assertEquals(14.sp, tv.label)
-        assertEquals(188.dp, tv.tabMaxWidth)
+        // (960 - 2 x 48 - 40 - 4 x 8) / 4: four tabs and «+» fit inside the safe margins.
+        assertEquals(198.dp, tv.tabMaxWidth)
+        assertEquals(144.dp, ChromeMetrics.forWindow(360.dp, television = false).tabMaxWidth)
         assertFalse(tv.stacked)
     }
 

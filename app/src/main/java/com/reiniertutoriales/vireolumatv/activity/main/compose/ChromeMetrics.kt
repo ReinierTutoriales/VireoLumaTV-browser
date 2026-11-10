@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
  * body and label text) and the TV layout guide (48 dp side and 24 dp top safe margins on the
  * 960 x 540 dp canvas). A remote focuses but does not touch, so 40 dp targets apply on a TV;
  * other devices keep the 48 dp touch target. Narrow windows put the address above the commands.
+ * Tabs share the strip so four of them and «+» fit (REGRESSION_POLICY); a narrow window scrolls them.
  * Text is in sp, so the system text scale still applies; heights are minimums that grow with it.
  */
 @Immutable
@@ -35,22 +36,28 @@ data class ChromeMetrics(
     val stacked: Boolean,
 ) {
     companion object {
-        fun forWindow(width: Dp, television: Boolean) = ChromeMetrics(
-            control = if (television) 40.dp else 48.dp,
-            icon = if (television) 20.dp else 24.dp,
-            row = 48.dp,
-            gap = 8.dp,
-            edge = when {
+        fun forWindow(width: Dp, television: Boolean): ChromeMetrics {
+            val control = if (television) 40.dp else 48.dp
+            val gap = 8.dp
+            val edge = when {
                 width >= EXPANDED -> 48.dp
                 width >= MEDIUM -> 24.dp
                 else -> 16.dp
-            },
+            }
+            return ChromeMetrics(
+            control = control,
+            icon = if (television) 20.dp else 24.dp,
+            row = 48.dp,
+            gap = gap,
+            edge = edge,
             top = if (width >= EXPANDED) 24.dp else 8.dp,
             body = 16.sp,
             label = 14.sp,
-            tabMaxWidth = if (width >= EXPANDED) 188.dp else 180.dp,
+            // Four tabs and «+» with their gaps fill the width inside the safe margins.
+            tabMaxWidth = maxOf((width - edge * 2 - control - gap * 4) / 4, control * 3),
             stacked = width < MEDIUM,
-        )
+            )
+        }
 
         // Window size class width breakpoints.
         private val MEDIUM = 600.dp

@@ -73,8 +73,8 @@ fun TvTabStrip(
     focusRequest: Pair<Int, Int> = 0 to 0,
 ) {
     val metrics = LocalChromeMetrics.current
-    val tabHeight = maxOf(metrics.control, 48.dp)
-    val shape = RoundedCornerShape(12.dp)
+    // Same height, corners and focus target as the command row: one control size for the capsule.
+    val shape = RoundedCornerShape(10.dp)
     val titleFocus = remember { HashMap<BrowserTab, FocusRequester>() }
     // A request made while the strip was hidden is stale when it comes back: start from the current one.
     val handledFocus = remember { intArrayOf(focusRequest.first) }
@@ -113,7 +113,7 @@ fun TvTabStrip(
             // Right moves title -> X -> next title. A nested X lies inside the title's bounds and
             // two-dimensional focus search would skip it.
             Row(
-                modifier = Modifier.heightIn(min = tabHeight).widthIn(max = metrics.tabMaxWidth)
+                modifier = Modifier.heightIn(min = metrics.control).widthIn(max = metrics.tabMaxWidth)
                     .background(
                         if (focused || closeFocused) Color(0xFF262626) else if (selected == index) Color(0xFF171717)
                         else TvControlColors.surface(false, hovered || closeHovered),
@@ -124,7 +124,7 @@ fun TvTabStrip(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
-                    modifier = Modifier.heightIn(min = tabHeight).weight(1f, fill = false)
+                    modifier = Modifier.heightIn(min = metrics.control).weight(1f, fill = false)
                         .testTag("tab_${index}_${System.identityHashCode(tab)}")
                         .focusRequester(focus)
                         .semantics { role = Role.Tab; this.selected = selected == index }
@@ -138,7 +138,7 @@ fun TvTabStrip(
                         overflow = TextOverflow.Ellipsis)
                 }
                 Box(
-                    modifier = Modifier.sizeIn(minWidth = tabHeight, minHeight = tabHeight)
+                    modifier = Modifier.sizeIn(minWidth = metrics.control, minHeight = metrics.control)
                         .testTag("tab_close_$index")
                         .semantics { role = Role.Button; contentDescription = closeTab }
                         .combinedClickable(

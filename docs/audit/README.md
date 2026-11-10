@@ -30,9 +30,10 @@ integración y entradas adversariales; no cambia motor, datos, versión ni firma
   la ventana. Se conserva la comprobación con texto ampliado.
 - Ventana compacta: la fila de comandos permite desplazarse y recuperar mediante
   D-pad el último comando sin reducir su objetivo táctil.
-- Pestañas: el máximo incluye título y cierre, conservando el límite de 188 dp y
-  el objetivo de cierre de 48 dp del contrato del proyecto. No son un ancho
-  universal recomendado por Google. El cierre comparte centro vertical con el
+- Pestañas: el máximo incluye título y cierre y se calcula desde la ventana para
+  que quepan cuatro pestañas y «+» (198 dp en 960 dp). Pestañas, cierre y «+»
+  usan la altura de los comandos (40 dp en TV, 48 dp táctil); Google no fija un
+  ancho de pestaña de navegador TV. El cierre comparte centro vertical con el
   título y tiene espaciado interior simétrico. Se omite el borde en reposo:
   `border(0.dp)` dibujaba una línea de un píxel. La captura previa medía 284 px
   para la pestaña larga en el lienzo mdpi de 960 px y mostraba ese borde interior.
