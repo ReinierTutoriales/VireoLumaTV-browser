@@ -200,35 +200,42 @@ open class MainActivity : ComponentActivity() {
         }
         val shown = tabStore.currentTab.value
         if (shown == null || shown.url == browserSettings.homePage) openCapsule()
+        startupDone = true
         checkForUpdateIfDue()
     }
 
-    private var updateCheck: Job? = null
+    @VisibleForTesting internal var updateCheck: Job? = null
+    private var updateOffer: TvDialog? = null
+    @VisibleForTesting internal var startupDone = false
 
     /**
      * The generic build looks for a newer signed release by itself once a day, never in private
-     * mode; a check that fails (no network yet) is retried when the network returns. Updating still
+     * mode. It runs after start-up, on every return to the screen and when the network comes back;
+     * a check that fails, or whose offer would cover a fullscreen video, stays due. Updating still
      * asks first, and installing goes through the system installer.
      */
-    private fun checkForUpdateIfDue() {
-        if (!BuildConfig.BUILT_IN_AUTO_UPDATE || config.privateBrowsing || updateCheck?.isActive == true) return
+    @VisibleForTesting
+    internal fun checkForUpdateIfDue(fetch: suspend () -> ReleaseUpdater.Release? = ReleaseUpdater::fetchNewerRelease) {
+        if (!BuildConfig.BUILT_IN_AUTO_UPDATE || config.privateBrowsing || !startupDone) return
+        if (updateCheck?.isActive == true || updateOffer?.isShowing == true) return
         if (!UpdateSchedule.isDue(config.prefs, System.currentTimeMillis())) return
         updateCheck = lifecycleScope.launch {
             val release = try {
-                withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() }
+                withContext(Dispatchers.IO) { fetch() }
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
                 Log.w(TAG, "Automatic update check failed", error)
                 return@launch
             }
+            if (release != null && (isFullscreen || isFinishing || isDestroyed)) return@launch
             UpdateSchedule.checked(config.prefs, System.currentTimeMillis())
-            if (release != null && !isFinishing && !isDestroyed) offerUpdate(release)
+            if (release != null) offerUpdate(release)
         }
     }
 
     private fun offerUpdate(release: ReleaseUpdater.Release) {
-        TvDialog.Builder(this)
+        updateOffer = TvDialog.Builder(this)
             .setTitle(R.string.update_available_title)
             .setMessage(getString(R.string.update_available_message, release.version))
             .setPositiveButton(R.string.action_update) { _, _ ->
@@ -245,7 +252,10 @@ open class MainActivity : ComponentActivity() {
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)
-            .setOnDismissListener { if (overlayVisible) vb.controlsHost.requestCommandFocus() }
+            .setOnDismissListener {
+                updateOffer = null
+                if (overlayVisible) vb.controlsHost.requestCommandFocus()
+            }
             .show()
     }
 
@@ -298,6 +308,7 @@ open class MainActivity : ComponentActivity() {
         tabStore.currentTab.value?.engine?.resume()
         // A TV app stays alive for days: the start-up check alone would never refresh the filter lists.
         adBlocker.updateIfDue()
+        checkForUpdateIfDue()
     }
 
     override fun onPause() {
@@ -389,7 +400,7 @@ open class MainActivity : ComponentActivity() {
             engine?.onNetworkRestored()
             // A TV often starts before Wi-Fi: fetch the filter lists as soon as it connects.
             adBlocker.updateIfDue(networkRestored = true)
-            if (tabStore.loaded) checkForUpdateIfDue()
+            checkForUpdateIfDue()
         }
     }
 
