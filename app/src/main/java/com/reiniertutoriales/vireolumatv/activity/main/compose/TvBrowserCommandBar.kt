@@ -2,6 +2,8 @@ package com.reiniertutoriales.vireolumatv.activity.main.compose
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -128,7 +130,8 @@ fun TvBrowserCommandBar(
         // A narrow window has no room for the address beside six commands: it takes its own row.
         Column(container, verticalArrangement = spacing) {
             addressField(Modifier.fillMaxWidth())
-            Row(horizontalArrangement = spacing, verticalAlignment = Alignment.CenterVertically) { commands() }
+            Row(Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = spacing, verticalAlignment = Alignment.CenterVertically) { commands() }
         }
     } else {
         Row(container, horizontalArrangement = spacing, verticalAlignment = Alignment.CenterVertically) {
