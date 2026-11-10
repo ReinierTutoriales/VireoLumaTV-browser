@@ -170,7 +170,7 @@ open class MainActivity : ComponentActivity() {
             else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
         tabStore.currentTab.observe(this) { tab ->
-            vb.controlsHost.showAddress(tab?.url.orEmpty())
+            vb.controlsHost.showAddress(tab)
             publishShownSite()
             if (tab == null) nativeHome?.hide() else onPageViewChanged(tab)
         }
@@ -584,7 +584,7 @@ open class MainActivity : ComponentActivity() {
 
     /** Focus moved to another tab: show its address and, a moment later, its preview. */
     private fun previewFocusedTab(tab: BrowserTab?) {
-        vb.controlsHost.showAddress(tab?.url.orEmpty())
+        vb.controlsHost.showAddress(tab)
         previewGeneration++
         mainThread.removeCallbacks(showFocusedPreview)
         focusedPreviewTab = tab
@@ -631,7 +631,7 @@ open class MainActivity : ComponentActivity() {
             previewGeneration++
             mainThread.removeCallbacks(showFocusedPreview)
             focusedPreviewTab = null
-            vb.controlsHost.showAddress(current?.url.orEmpty())
+            vb.controlsHost.showAddress(current)
             lifecycleScope.launch { showPreview(current) }
             vb.controlsHost.post { if (overlayVisible) vb.controlsHost.focusTab(vb.controlsHost.current) }
         } else closeCapsule()
@@ -718,7 +718,7 @@ open class MainActivity : ComponentActivity() {
         val index = tabStore.openTabs.indexOf(shown)
         if (shown == null || index < 0) return commitStripSelection()
         vb.controlsHost.current = index
-        vb.controlsHost.showAddress(shown.url)
+        vb.controlsHost.showAddress(shown)
     }
 
     /** Commits the tab the strip shows as selected, or opens one when the strip points past the tabs. */

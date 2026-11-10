@@ -46,6 +46,7 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
     private val adblockEnabled get() = tab.adblock ?: AppContext.config.adBlockEnabled
 
     override val url: String? get() = webView?.url
+    override val showsCertificateWarning get() = webView?.shownCertificateError() != null
 
     override var userAgent: String? = null
         set(value) {

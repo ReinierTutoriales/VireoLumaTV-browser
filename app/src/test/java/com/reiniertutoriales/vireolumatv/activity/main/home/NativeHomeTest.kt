@@ -343,6 +343,7 @@ class NativeHomeTest {
                 "getUrl" -> web.address
                 "getCanGoBack", "getCanGoForward" -> false
                 "load" -> { loadedUrl = args!![0] as String; null }
+                "getShowsCertificateWarning" -> false
                 else -> null
             }
         } as PageEngine

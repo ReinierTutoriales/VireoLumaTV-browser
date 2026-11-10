@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.res.stringResource
 import androidx.tv.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,6 +62,7 @@ fun TvAddressField(
     cancelRequest: Pair<Int, Boolean> = 0 to false,
     submitRequest: Pair<Int, String> = 0 to "",
     editorFocusRequest: Int = 0,
+    warning: Boolean = false,
 ) {
     var editing by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf(address) }
@@ -70,6 +72,7 @@ fun TvAddressField(
     val focusManager = LocalFocusManager.current
     val shape = RoundedCornerShape(10.dp)
     val hint = stringResource(R.string.address_hint)
+    val certificateWarning = stringResource(R.string.cert_invalid)
     fun cancelEditing(restoreFocus: Boolean) {
         editing = false
         onEditingChanged(false)
@@ -164,7 +167,10 @@ fun TvAddressField(
                 .fillMaxWidth()
                 .background(TvControlColors.surface(focused, hovered), shape)
                 .border(if (focused) 2.dp else 1.dp, TvControlColors.border(focused, hovered), shape)
-                .semantics { contentDescription = hint }
+                .semantics {
+                    contentDescription = hint
+                    if (warning) stateDescription = certificateWarning
+                }
                 .clickable(interactionSource = interaction, indication = null) {
                     draft = address
                     editing = true
@@ -174,10 +180,17 @@ fun TvAddressField(
         ) {
             Text(
                 text = address.ifBlank { hint },
-                color = if (address.isBlank()) Color.Gray else Color.White,
+                color = when {
+                    address.isBlank() -> Color.Gray
+                    // The page is the certificate warning for this address.
+                    warning -> CertificateWarningColor
+                    else -> Color.White
+                },
                 fontSize = 17.sp,
                 maxLines = 1,
             )
         }
     }
 }
+
+private val CertificateWarningColor = Color(0xFFF87171)

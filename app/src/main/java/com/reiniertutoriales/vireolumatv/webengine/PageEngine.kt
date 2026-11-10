@@ -14,6 +14,8 @@ import android.view.ViewGroup
 interface PageEngine {
     /** The address shown now, or null without a live view. */
     val url: String?
+    /** The page on screen is the certificate warning for the address being loaded. */
+    val showsCertificateWarning: Boolean
     /** A custom user agent; null uses the engine's own. */
     var userAgent: String?
     val view: View?

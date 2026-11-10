@@ -62,6 +62,7 @@ class CursorMenuFocusTest {
             when (method.name) {
                 "getView" -> page
                 "setPointerMode" -> { directMode = args!![0] == false; null }
+                "getShowsCertificateWarning" -> false
                 else -> null
             }
         } as PageEngine

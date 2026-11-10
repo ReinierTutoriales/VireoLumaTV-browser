@@ -18,6 +18,7 @@ import com.reiniertutoriales.vireolumatv.model.BrowserTab
 fun TvBrowserShell(
     // Command row
     address: String,
+    addressWarning: Boolean,
     onSubmitAddress: (String) -> Unit,
     onCancelAddress: () -> Unit,
     onAddressDraftChanged: (String) -> Unit,
@@ -55,6 +56,7 @@ fun TvBrowserShell(
         TvBrowserCommandBar(
             actions = actions,
             address = address,
+            addressWarning = addressWarning,
             onSubmitAddress = onSubmitAddress,
             onCancelAddress = onCancelAddress,
             onAddressDraftChanged = onAddressDraftChanged,

@@ -21,6 +21,8 @@ import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
 import com.reiniertutoriales.vireolumatv.activity.main.view.ComposeControlsHost
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.R
+import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -163,5 +165,25 @@ class CommandBarFocusTest {
         compose.runOnIdle { host.closeAddressEditing() }
         compose.runOnIdle { assertFalse(host.isEditingAddress) }
         compose.onNode(isFocused()).assertDoesNotExist()
+    }
+
+    @Test fun anAddressShowingTheCertificateWarningIsMarked() {
+        var warning = true
+        val engine = java.lang.reflect.Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+            arrayOf(PageEngine::class.java)) { _, method, _ ->
+            if (method.name == "getShowsCertificateWarning") warning else null
+        } as PageEngine
+        val tab = BrowserTab(url = "https://expired.test/").apply {
+            BrowserTab::class.java.getDeclaredField("engine\$delegate").apply { isAccessible = true }.set(this, lazyOf(engine))
+        }
+        val host = openCapsuleWithHistory(listOf(tab))
+        val certificate = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>().getString(R.string.cert_invalid)
+        compose.runOnIdle { host.showAddress(tab) }
+        compose.onNodeWithTag("home_search")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, certificate))
+        // Accepting the certificate or leaving the page clears the mark.
+        compose.runOnIdle { warning = false; host.showAddress(tab) }
+        compose.onNodeWithTag("home_search")
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
     }
 }

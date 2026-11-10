@@ -23,6 +23,7 @@ class ComposeControlsHost @JvmOverloads constructor(
 ) : FrameLayout(context, attrs) {
 
     private val address = mutableStateOf("")
+    private val addressWarning = mutableStateOf(false)
     private val canBack = mutableStateOf(false)
     private val canForward = mutableStateOf(false)
     private val blockerEnabled = mutableStateOf(false)
@@ -70,6 +71,7 @@ class ComposeControlsHost @JvmOverloads constructor(
                 val currentActions = actions.value ?: return@setContent
                 TvBrowserShell(
                     address = address.value,
+                    addressWarning = addressWarning.value,
                     onSubmitAddress = { onSubmitAddress?.invoke(it) },
                     onCancelAddress = { onCancelAddress?.invoke() },
                     onAddressDraftChanged = { onAddressDraftChanged?.invoke(it) },
@@ -106,7 +108,11 @@ class ComposeControlsHost @JvmOverloads constructor(
 
     fun bindActions(value: BrowserCommandActions) { actions.value = value }
 
-    fun showAddress(text: String) { address.value = text }
+    /** Shows [tab]'s address, marked when its page is the certificate warning. */
+    fun showAddress(tab: BrowserTab?) {
+        address.value = tab?.url.orEmpty()
+        addressWarning.value = tab?.engine?.showsCertificateWarning == true
+    }
 
     fun updateNavigation(back: Boolean, forward: Boolean) {
         canBack.value = back

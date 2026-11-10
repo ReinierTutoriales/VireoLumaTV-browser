@@ -65,7 +65,7 @@ class BrowserUiSnapshotTest {
             vb.pointerMenu.visibility = View.INVISIBLE
             vb.loadProgress.visibility = View.GONE
             vb.startupSpinner.visibility = View.GONE
-            vb.controlsHost.showAddress("https://example.test/documentacion/una-direccion-larga")
+            vb.controlsHost.showAddress(BrowserTab(url = "https://example.test/documentacion/una-direccion-larga"))
             vb.controlsHost.updateNavigation(back = true, forward = false)
             activity.setContentView(vb.root)
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),

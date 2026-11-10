@@ -138,7 +138,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
                 if (isShownTab) browser.publishShownSite()
             }
         }
-        if (browser.tabAtStripSelection() === tab) vb.controlsHost.showAddress(tab.url)
+        if (browser.tabAtStripSelection() === tab) vb.controlsHost.showAddress(tab)
     }
 
     private val capturePreview = Runnable {
