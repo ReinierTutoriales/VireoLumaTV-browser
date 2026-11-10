@@ -74,6 +74,9 @@ import com.reiniertutoriales.vireolumatv.webengine.webview.ServiceWorkerFilter
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewFreshness
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import com.reiniertutoriales.vireolumatv.widgets.ToastBar
+import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
+import com.reiniertutoriales.vireolumatv.utils.UpdateSchedule
+import com.reiniertutoriales.vireolumatv.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -197,6 +200,53 @@ open class MainActivity : ComponentActivity() {
         }
         val shown = tabStore.currentTab.value
         if (shown == null || shown.url == browserSettings.homePage) openCapsule()
+        checkForUpdateIfDue()
+    }
+
+    private var updateCheck: Job? = null
+
+    /**
+     * The generic build looks for a newer signed release by itself once a day, never in private
+     * mode; a check that fails (no network yet) is retried when the network returns. Updating still
+     * asks first, and installing goes through the system installer.
+     */
+    private fun checkForUpdateIfDue() {
+        if (!BuildConfig.BUILT_IN_AUTO_UPDATE || config.privateBrowsing || updateCheck?.isActive == true) return
+        if (!UpdateSchedule.isDue(config.prefs, System.currentTimeMillis())) return
+        updateCheck = lifecycleScope.launch {
+            val release = try {
+                withContext(Dispatchers.IO) { ReleaseUpdater.fetchNewerRelease() }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Log.w(TAG, "Automatic update check failed", error)
+                return@launch
+            }
+            UpdateSchedule.checked(config.prefs, System.currentTimeMillis())
+            if (release != null && !isFinishing && !isDestroyed) offerUpdate(release)
+        }
+    }
+
+    private fun offerUpdate(release: ReleaseUpdater.Release) {
+        TvDialog.Builder(this)
+            .setTitle(R.string.update_available_title)
+            .setMessage(getString(R.string.update_available_message, release.version))
+            .setPositiveButton(R.string.action_update) { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        val apk = withContext(Dispatchers.IO) { ReleaseUpdater.download(this@MainActivity, release) }
+                        ReleaseUpdater.install(this@MainActivity, apk)
+                    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Log.w(TAG, "Update download failed", error)
+                        toast(R.string.update_failed)
+                    }
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .setOnDismissListener { if (overlayVisible) vb.controlsHost.requestCommandFocus() }
+            .show()
     }
 
     @SuppressLint("MissingSuperCall")
@@ -339,6 +389,7 @@ open class MainActivity : ComponentActivity() {
             engine?.onNetworkRestored()
             // A TV often starts before Wi-Fi: fetch the filter lists as soon as it connects.
             adBlocker.updateIfDue(networkRestored = true)
+            if (tabStore.loaded) checkForUpdateIfDue()
         }
     }
 

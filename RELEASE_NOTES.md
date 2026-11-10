@@ -11,6 +11,8 @@ Actualización de seguridad y privacidad sobre la versión 3.0.0.
 - **Red:** las listas de bloqueo descargadas por la aplicación requieren HTTPS; el acceso HTTP a loopback queda limitado a pruebas.
 - **Certificados:** se aclara que una comparación sin bytes del certificado se rechaza.
 - **Pestañas:** el título y la dirección de una pestaña se actualizan mientras la página carga; al cerrar una pestaña desde su X, el foco queda en la pestaña seleccionada.
+- **Atrás en Inicio:** sale de la aplicación (tras cerrar la edición de accesos, si está abierta), aunque la cápsula esté abierta o la pestaña tenga historial.
+- **Actualizaciones:** la variante generic comprueba sola, como máximo una vez al día y nunca en modo privado, si hay una versión nueva firmada y ofrece instalarla; si no hay red al arrancar, reintenta al recuperarla.
 - **Barra de dirección:** las sugerencias vuelven a ocupar el lugar de la fila de pestañas, Arriba desde la primera sugerencia vuelve al texto que se edita y Atrás durante la edición deja el foco en la dirección.
 
 ## Validación
