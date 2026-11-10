@@ -29,7 +29,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.activity.ComponentActivity
-import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -355,7 +354,7 @@ open class MainActivity : ComponentActivity() {
         vb.controlsHost.onAddressDraftChanged = { onAddressTyped(it) }
         vb.controlsHost.onFocusSuggestions = { focusSuggestions() }
         vb.vSuggestions.onPick = { vb.controlsHost.submit(it.url) }
-        // One action contract for both the current View controls and future Compose controls.
+        vb.vSuggestions.onExitUp = { vb.controlsHost.focusAddressEditor() }
         val actions = com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions(
             back = { closeCapsule(); navigateBack() },
             forward = { closeCapsule(); tabStore.currentTab.value?.engine?.let { if (it.canGoForward) it.forward() } },
@@ -459,8 +458,7 @@ open class MainActivity : ComponentActivity() {
     /** Suggestions take the tab strip's place while there are any, so the capsule does not grow. */
     private fun showSuggestions(suggestions: List<AddressSuggestion>) {
         vb.vSuggestions.show(suggestions)
-        // Tab strip visibility is owned by the Compose shell; suggestions overlay is separate.
-        // vb.controlsHost.isVisible = suggestions.isEmpty()
+        vb.controlsHost.showTabStrip(suggestions.isEmpty())
     }
 
     private fun closeSuggestions() {
@@ -471,7 +469,6 @@ open class MainActivity : ComponentActivity() {
     // Navigation
 
     fun navigate(url: String) {
-        vb.controlsHost.tintAddress(ContextCompat.getColor(this, R.color.on_surface))
         val tab = tabStore.currentTab.value
         if (tab == null) {
             openInNewTab(url, 0, closeCapsuleAfter = true, navigateImmediately = true)
@@ -577,14 +574,15 @@ open class MainActivity : ComponentActivity() {
         val current = tabStore.currentTab.value
         vb.controlsHost.current = tabs.indexOf(current).coerceAtLeast(0)
         if (keepCapsule) {
-            // Showing the neighbour focused its page behind the capsule; keys must stay in the strip.
-            vb.controlsHost.requestFocus()
+            // Showing the neighbour focused its page behind the capsule: focus goes back to the strip,
+            // on the tab now selected, instead of wherever the removed one leaves it.
+            vb.controlsHost.focusTab(vb.controlsHost.current)
             previewGeneration++
             mainThread.removeCallbacks(showFocusedPreview)
             focusedPreviewTab = null
             vb.controlsHost.showAddress(current?.url.orEmpty())
             lifecycleScope.launch { showPreview(current) }
-            vb.controlsHost.post { if (overlayVisible) vb.controlsHost.requestFocus() }
+            vb.controlsHost.post { if (overlayVisible) vb.controlsHost.focusTab(vb.controlsHost.current) }
         } else closeCapsule()
     }
 
@@ -705,11 +703,8 @@ open class MainActivity : ComponentActivity() {
 
     internal fun updateAdblockStatus(tab: BrowserTab) {
         val state = getString(blockerStatusLabel(tab))
-        vb.controlsHost.showBlockerEnabled(tab.adblock ?: config.adBlockEnabled)
-        vb.controlsHost.updateBlockerStatus(
-            resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds),
-            (tab.adblock ?: config.adBlockEnabled) && ::adBlocker.isInitialized && adBlocker.hasActiveRules,
-        )
+        vb.controlsHost.showBlocker(tab.adblock ?: config.adBlockEnabled,
+            resources.getQuantityString(R.plurals.blocker_summary, tab.blockedAds, state, tab.blockedAds))
     }
 
     private fun showBlockerDetails() {

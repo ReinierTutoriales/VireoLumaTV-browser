@@ -9,15 +9,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
+import com.reiniertutoriales.vireolumatv.activity.main.compose.TabChip
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvBrowserShell
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 
 /**
- * Single Compose host for the browser controls overlay.
- *
- * Replaces the previous pair of FrameLayouts (BrowserControls + TabStrip).
- * The activity talks to this host with the same method names it used before;
- * the shell owns presentation and focus.
+ * Single Compose host for the browser controls overlay: the activity pushes browser state and
+ * one-shot requests here, and the shell owns presentation and focus.
  */
 class ComposeControlsHost @JvmOverloads constructor(
     context: Context,
@@ -29,16 +27,19 @@ class ComposeControlsHost @JvmOverloads constructor(
     private val canForward = mutableStateOf(false)
     private val blockerEnabled = mutableStateOf(false)
     private val blockerDescription = mutableStateOf("")
-    private val blockerReady = mutableStateOf(false)
     private val focusRequest = mutableIntStateOf(0)
-    private val cancelRequest = mutableIntStateOf(0)
+    /** (count, restore focus to the address): Back restores it, closing the capsule does not. */
+    private val cancelRequest = mutableStateOf(0 to false)
+    private val editorFocusRequest = mutableIntStateOf(0)
     private val downloads = mutableIntStateOf(0)
     private val submitRequest = mutableStateOf(0 to "")
     private val editing = mutableStateOf(false)
     private val actions = mutableStateOf<BrowserCommandActions?>(null)
 
-    private val tabs = mutableStateListOf<BrowserTab>()
+    private val tabs = mutableStateListOf<TabChip>()
     private val selectedTab = mutableIntStateOf(0)
+    private val tabsVisible = mutableStateOf(true)
+    private val tabFocusRequest = mutableStateOf(0 to 0)
 
     /** Window-level Down handling applies only to the tab row, not the command row. */
     var tabStripHasFocus: Boolean = false
@@ -55,10 +56,9 @@ class ComposeControlsHost @JvmOverloads constructor(
     var onAddressEditingChanged: ((Boolean) -> Unit)? = null
     var onFocusSuggestions: (() -> Boolean)? = null
 
-    /** Mirrors the old BrowserControls.isEditingAddress for existing call sites. */
     val isEditingAddress: Boolean get() = editing.value
 
-    /** Mirrors the old TabStrip.current. */
+    /** The tab the strip shows as selected. */
     var current: Int
         get() = selectedTab.intValue
         set(value) { selectedTab.intValue = value }
@@ -78,17 +78,19 @@ class ComposeControlsHost @JvmOverloads constructor(
                         onAddressEditingChanged?.invoke(active)
                     },
                     onFocusSuggestions = { onFocusSuggestions?.invoke() == true },
-                    cancelAddressRequest = cancelRequest.intValue,
+                    cancelAddressRequest = cancelRequest.value,
+                    editorFocusRequest = editorFocusRequest.intValue,
                     submitAddressRequest = submitRequest.value,
                     actions = currentActions,
                     canGoBack = canBack.value,
                     canGoForward = canForward.value,
                     blockerEnabled = blockerEnabled.value,
                     blockerDescription = blockerDescription.value,
-                    blockerReady = blockerReady.value,
                     focusRequest = focusRequest.intValue,
                     downloadsInProgress = downloads.intValue,
                     tabs = tabs,
+                    tabsVisible = tabsVisible.value,
+                    tabFocusRequest = tabFocusRequest.value,
                     selectedTab = selectedTab.intValue,
                     onTabFocus = { onTabFocus?.invoke(it) },
                     onTabActivate = { onTabActivate?.invoke(it) },
@@ -111,40 +113,61 @@ class ComposeControlsHost @JvmOverloads constructor(
         canForward.value = forward
     }
 
-    fun showBlockerEnabled(enabled: Boolean) { blockerEnabled.value = enabled }
 
     /** Running downloads, shown on the menu button and in its spoken label. */
     fun showDownloads(count: Int) { downloads.intValue = count }
 
-    fun updateBlockerStatus(description: String, ready: Boolean) {
+    /** The shield's state and its spoken status. */
+    fun showBlocker(enabled: Boolean, description: String) {
+        blockerEnabled.value = enabled
         blockerDescription.value = description
-        blockerReady.value = ready
     }
 
+    /**
+     * Publishes the open tabs. Each is snapshotted as a [TabChip], so a changed title or address is
+     * redrawn, and only the chips that differ are replaced: a selection change recomposes no tab.
+     */
     fun setTabs(list: List<BrowserTab>, selected: Int) {
-        // Avoid invalidating the entire Compose tab row when only selection changes.
-        // Compare identity: BrowserTab is a mutable model, not an immutable UI value.
-        if (tabs.size != list.size || tabs.indices.any { tabs[it] !== list[it] }) {
+        val chips = list.map(::TabChip)
+        if (tabs.size != chips.size) {
             tabs.clear()
-            tabs.addAll(list)
+            tabs.addAll(chips)
+        } else {
+            chips.forEachIndexed { index, chip -> if (tabs[index] != chip) tabs[index] = chip }
         }
         selectedTab.intValue = selected
+    }
+
+    /** Moves focus to the title of the tab at [index], once it is composed. */
+    fun focusTab(index: Int) {
+        tabFocusRequest.value = (tabFocusRequest.value.first + 1) to index
+    }
+
+    /** Address suggestions take the tab row's place while there are any, so the capsule does not grow. */
+    fun showTabStrip(visible: Boolean) {
+        tabsVisible.value = visible
+        if (!visible) tabStripHasFocus = false
+    }
+
+    /** Returns focus to the address being edited, e.g. Up from the first suggestion; false when not editing. */
+    fun focusAddressEditor(): Boolean {
+        if (!editing.value) return false
+        editorFocusRequest.intValue += 1
+        return true
     }
 
     fun submit(text: String) {
         if (editing.value) submitRequest.value = (submitRequest.value.first + 1) to text
     }
 
+    /** Ends editing without moving focus: the capsule is opening or closing. */
     fun closeAddressEditing() {
-        if (editing.value) cancelRequest.intValue += 1
+        if (editing.value) cancelRequest.value = (cancelRequest.value.first + 1) to false
     }
 
+    /** Back: ends editing and leaves focus on the address, or focuses the commands when not editing. */
     fun cancelAddressInput() {
-        if (editing.value) cancelRequest.intValue += 1 else requestCommandFocus()
-    }
-
-    fun tintAddress(@Suppress("UNUSED_PARAMETER") color: Int) {
-        // Address color is owned by the Compose theme.
+        if (editing.value) cancelRequest.value = (cancelRequest.value.first + 1) to true else requestCommandFocus()
     }
 
     fun takeFocus() {

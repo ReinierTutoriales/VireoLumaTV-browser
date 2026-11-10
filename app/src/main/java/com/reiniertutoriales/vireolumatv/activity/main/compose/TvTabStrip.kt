@@ -19,10 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.res.stringResource
 import androidx.tv.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.key
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.Modifier
@@ -40,10 +44,22 @@ import androidx.compose.ui.unit.sp
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 
-/** Native Compose TV tab strip; browser operations stay in the host. */
+/**
+ * What the strip draws for one tab. [BrowserTab] is mutable and not observable, so the host passes a
+ * new value whenever the label changes; equality compares the tab by identity and the label by value.
+ */
+@Immutable
+data class TabChip(val tab: BrowserTab, val label: String) {
+    constructor(tab: BrowserTab) : this(tab, tab.title.ifBlank { tab.url })
+}
+
+/**
+ * Native Compose TV tab strip; browser operations stay in the host. A new [focusRequest] value
+ * (count, index) moves focus to that tab's title, e.g. after the focused tab was closed.
+ */
 @Composable
 fun TvTabStrip(
-    tabs: List<BrowserTab>,
+    tabs: List<TabChip>,
     selected: Int,
     onFocus: (Int) -> Unit,
     onActivate: (Int) -> Unit,
@@ -52,8 +68,18 @@ fun TvTabStrip(
     onAdd: () -> Unit,
     modifier: Modifier = Modifier,
     onFocusWithinChanged: (Boolean) -> Unit = {},
+    focusRequest: Pair<Int, Int> = 0 to 0,
 ) {
     val shape = RoundedCornerShape(12.dp)
+    val titleFocus = remember { HashMap<BrowserTab, FocusRequester>() }
+    // A request made while the strip was hidden is stale when it comes back: start from the current one.
+    val handledFocus = remember { intArrayOf(focusRequest.first) }
+    LaunchedEffect(focusRequest) {
+        if (focusRequest.first == handledFocus[0]) return@LaunchedEffect
+        handledFocus[0] = focusRequest.first
+        val target = tabs.getOrNull(focusRequest.second)?.tab ?: return@LaunchedEffect
+        titleFocus[target]?.let { runCatching { it.requestFocus() } }
+    }
     val newTab = stringResource(R.string.tabs_new)
     val closeTab = stringResource(R.string.menu_close_tab)
     Row(
@@ -63,8 +89,14 @@ fun TvTabStrip(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        tabs.forEachIndexed { index, tab ->
+        tabs.forEachIndexed { index, chip ->
+            val tab = chip.tab
             key(tab) {
+            val focus = remember { FocusRequester() }
+            DisposableEffect(tab) {
+                titleFocus[tab] = focus
+                onDispose { titleFocus.remove(tab) }
+            }
             val interaction = remember(tab) { MutableInteractionSource() }
             val focused by interaction.collectIsFocusedAsState()
             val hovered by interaction.collectIsHoveredAsState()
@@ -88,13 +120,14 @@ fun TvTabStrip(
                 Box(
                     modifier = Modifier.defaultMinSize(minHeight = 48.dp)
                         .testTag("tab_${index}_${System.identityHashCode(tab)}")
+                        .focusRequester(focus)
                         .semantics { role = Role.Tab; this.selected = selected == index }
                         .combinedClickable(interactionSource = interaction, indication = null,
                             onClick = { onActivate(index) }, onLongClick = { onOptions(tab) })
                         .padding(start = 14.dp, end = 6.dp),
                     contentAlignment = Alignment.CenterStart,
                 ) {
-                    Text(tab.title.ifBlank { tab.url }.ifBlank { newTab },
+                    Text(chip.label.ifBlank { newTab },
                         color = Color.White, fontSize = 15.sp, maxLines = 1,
                         overflow = TextOverflow.Ellipsis)
                 }

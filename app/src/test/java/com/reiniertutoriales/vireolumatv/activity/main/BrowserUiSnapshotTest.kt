@@ -59,8 +59,7 @@ class BrowserUiSnapshotTest {
         tabs.currentTab.value = tabs.openTabs[0]
         val vb = BrowserWindowBinding.inflate(activity.layoutInflater)
         try {
-            vb.controlsHost.updateBlockerStatus("Shield active", true)
-            // blocker status is owned by Compose state
+            vb.controlsHost.showBlocker(enabled = true, description = "Shield active")
             vb.pageContainer.setBackgroundColor(Color.rgb(100, 116, 139))
             vb.tabPreview.visibility = View.GONE
             vb.pointerMenu.visibility = View.INVISIBLE

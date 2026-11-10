@@ -22,7 +22,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.testTag
@@ -40,8 +42,8 @@ import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
 
 /**
  * Suggestions under the address while it is edited, drawn in Compose. D-pad Down from the address
- * enters the list ([focusFirst]), Up from the first row returns to it, and Down stops at the last
- * row so focus never leaves an edit half-way. OK opens the suggestion through [onPick]. Focus
+ * enters the list ([focusFirst]), Up from the first row returns to it through [onExitUp], and Down
+ * stops at the last row so focus never leaves an edit half-way. OK opens the suggestion through [onPick]. Focus
  * follows the focused address when the results change. With the pointer, this view draws its own
  * pointer over the rows ([focusPointer]).
  */
@@ -49,6 +51,8 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
     FrameLayout(context, attrs) {
 
     var onPick: ((AddressSuggestion) -> Unit)? = null
+    /** Returns focus to the address being edited; true when it did. */
+    var onExitUp: (() -> Boolean)? = null
     private val pointer = lazy { PointerController(context, this).also { it.resize(width, height) } }
     internal val pointerController by pointer
     private var pointerMode = false
@@ -127,8 +131,16 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
                     modifier = Modifier.padding(bottom = 2.dp).testTag("suggestion_${suggestion.url}")
                         .focusRequester(focus[index])
                         .onFocusChanged { if (it.isFocused) focusedUrl = suggestion.url }
-                        // Down stops at the last row, so focus never leaves an edit half-way.
-                        .onPreviewKeyEvent { index == items.lastIndex && it.key == Key.DirectionDown },
+                        .onPreviewKeyEvent { event ->
+                            when {
+                                // Down stops at the last row, so focus never leaves an edit half-way.
+                                index == items.lastIndex && event.key == Key.DirectionDown -> true
+                                // Up from the first row goes back to the address, not to the row above it.
+                                index == 0 && event.key == Key.DirectionUp && event.type == KeyEventType.KeyDown ->
+                                    onExitUp?.invoke() == true
+                                else -> false
+                            }
+                        },
                 )
             }
         }
@@ -156,8 +168,7 @@ class AddressSuggestionsView @JvmOverloads constructor(context: Context, attrs: 
             if (event.keyCode == KeyEvent.KEYCODE_DPAD_UP && event.action == KeyEvent.ACTION_DOWN &&
                 event.repeatCount == 0 && pointerController.position.y <= 12 * resources.displayMetrics.density) {
                 stopPointer()
-                // Back to the address above, wherever its host draws it.
-                focusSearch(View.FOCUS_UP)?.requestFocus()
+                if (onExitUp?.invoke() != true) focusSearch(View.FOCUS_UP)?.requestFocus()
                 return true
             }
             if (remote.dispatchKeyEvent(event)) return true
