@@ -15,6 +15,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import java.lang.reflect.Proxy
+import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
@@ -77,5 +78,32 @@ class FileChooserTest {
         assertEquals(listOf<List<Uri>?>(null), answer.results)
         engine.onFilePicked(Activity.RESULT_OK, Intent().setData(Uri.parse("content://picker/late")))
         assertEquals(1, answer.results.size)
+    }
+
+    @Test fun aPickerCannotReturnTheAppsPrivateFilesToAWebPage() = withPage { engine, page ->
+        val app = RuntimeEnvironment.getApplication<VireoLumaTVApp>()
+        val answer = Answer()
+        assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
+        val privateFile = Uri.fromFile(File(app.filesDir, "../shared_prefs/settings.xml"))
+        engine.onFilePicked(Activity.RESULT_OK, Intent().setData(privateFile))
+        assertEquals(listOf<List<Uri>?>(null), answer.results)
+    }
+
+    @Test fun aPickerCannotUseTheAppsOwnProviderToUploadAnUpdatePackage() = withPage { engine, page ->
+        val app = RuntimeEnvironment.getApplication<VireoLumaTVApp>()
+        val answer = Answer()
+        assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
+        val ownFile = Uri.parse("content://${app.packageName}.provider/verified_updates/update.apk")
+        engine.onFilePicked(Activity.RESULT_OK, Intent().setData(ownFile))
+        assertEquals(listOf<List<Uri>?>(null), answer.results)
+    }
+
+    @Test fun aPickerCannotBypassTheOwnProviderCheckWithAUserId() = withPage { engine, page ->
+        val app = RuntimeEnvironment.getApplication<VireoLumaTVApp>()
+        val answer = Answer()
+        assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
+        val ownFile = Uri.parse("content://0@${app.packageName}.provider/verified_updates/update.apk")
+        engine.onFilePicked(Activity.RESULT_OK, Intent().setData(ownFile))
+        assertEquals(listOf<List<Uri>?>(null), answer.results)
     }
 }
