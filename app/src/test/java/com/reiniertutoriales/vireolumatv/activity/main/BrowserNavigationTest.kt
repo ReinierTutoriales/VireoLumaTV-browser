@@ -10,6 +10,8 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.activity.ComponentActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.cancel
 import com.reiniertutoriales.vireolumatv.R
@@ -377,6 +379,16 @@ class BrowserNavigationTest {
         f.key(f.vb.pageContainer, KeyEvent.KEYCODE_DPAD_CENTER)
         assertEquals(listOf(KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_CENTER), keys)
         engine.closeFullscreen()
+    }
+
+    @Test fun fullscreenExitRestoresThePreviousSystemBarsBehavior() = Fixture().use { f ->
+        val controller = WindowCompat.getInsetsController(f.activity.window, f.activity.window.decorView)
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+        val callback = TabWindow(f.activity, f.tab)
+        callback.onEnterFullscreen()
+        assertEquals(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE, controller.systemBarsBehavior)
+        callback.onExitFullscreen(restoreControls = false)
+        assertEquals(WindowInsetsControllerCompat.BEHAVIOR_DEFAULT, controller.systemBarsBehavior)
     }
 
     @Test fun fullscreenExitKeepsDirectDpadNavigation() = Fixture().use { f ->

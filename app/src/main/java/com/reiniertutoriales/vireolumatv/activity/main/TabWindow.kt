@@ -13,6 +13,10 @@ import android.webkit.MimeTypeMap
 import android.widget.FrameLayout
 import android.widget.PopupMenu
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.reiniertutoriales.vireolumatv.Config
@@ -249,25 +253,39 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         tabs.openTabs.firstOrNull { it.engine.ownsView(view) }?.let(browser::closeTab)
     }
 
-    // Preserve the exact pre-video system UI state; it may belong to another window mode.
-    private var systemUiBeforeFullscreen: Int? = null
+    // Visibility is per inset type: status and navigation bars can have different states.
+    private var systemBarsBeforeFullscreen: Int? = null
+    private var systemBarsBehaviorBeforeFullscreen = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
     private var keepScreenOnBeforeFullscreen = false
 
     // Fullscreen
 
     override fun onEnterFullscreen() {
-        if (systemUiBeforeFullscreen != null) return
-        systemUiBeforeFullscreen = browser.window.decorView.systemUiVisibility
-        keepScreenOnBeforeFullscreen = browser.window.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0
+        if (systemBarsBeforeFullscreen != null) return
+        val window = browser.window
+        val decor = window.decorView
+        val controller = WindowCompat.getInsetsController(window, decor)
+        val insets = ViewCompat.getRootWindowInsets(decor)
+        var remaining = WindowInsetsCompat.Type.systemBars()
+        var visible = 0
+        while (remaining != 0) {
+            val type = Integer.lowestOneBit(remaining)
+            if (insets?.isVisible(type) == true) visible = visible or type
+            remaining = remaining xor type
+        }
+        systemBarsBeforeFullscreen = visible
+        systemBarsBehaviorBeforeFullscreen = controller.systemBarsBehavior
+        keepScreenOnBeforeFullscreen = window.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0
         // A player may enter fullscreen while the capsule is open. Close it now so the
         // fullscreen exit can reopen it and restore focus to an actionable control.
         if (vb.controlsOverlay.isVisible) browser.closeCapsule()
-        val window = browser.window
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        @Suppress("DEPRECATION") // The insets API needs API 30; these flags work on every supported TV.
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or
-            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        // androidx.core maps this to WindowInsetsController on API 30+ and to the immersive
+        // system UI flags below it.
+        controller.apply {
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            hide(WindowInsetsCompat.Type.systemBars())
+        }
         browser.isFullscreen = true
     }
 
@@ -276,11 +294,14 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         if (!keepScreenOnBeforeFullscreen && !browser.config.keepScreenOn) {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
-        val previousUi = systemUiBeforeFullscreen
-        systemUiBeforeFullscreen = null
-        if (previousUi != null) {
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = previousUi
+        val visible = systemBarsBeforeFullscreen
+        systemBarsBeforeFullscreen = null
+        if (visible != null) {
+            WindowCompat.getInsetsController(window, window.decorView).apply {
+                systemBarsBehavior = systemBarsBehaviorBeforeFullscreen
+                show(visible)
+                hide(WindowInsetsCompat.Type.systemBars() and visible.inv())
+            }
         }
         browser.isFullscreen = false
         if (restoreControls && isShownTab && !browser.isFinishing && !browser.isDestroyed) browser.openCapsule()
