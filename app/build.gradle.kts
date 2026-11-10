@@ -1,4 +1,5 @@
 import java.io.File
+import java.time.Duration
 import javax.inject.Inject
 import org.gradle.process.ExecOperations
 
@@ -235,7 +236,7 @@ androidComponents {
 tasks.withType<Test>().configureEach {
     if (providers.environmentVariable("CI").isPresent) {
         testLogging { events("started", "passed", "skipped", "failed") }
-        timeout.set(java.time.Duration.ofMinutes(10))
+        timeout.set(Duration.ofMinutes(10))
     }
     dependsOn(buildRustAdblockHost)
     val hostLib = buildRustAdblockHost.flatMap { it.outputDir.file("libvireoadblock.so") }
