@@ -1,27 +1,25 @@
-# VireoLumaTV 3.0.1
+# VireoLumaTV 3.0.2
 
-Actualización de seguridad y privacidad sobre la versión 3.0.0.
+Interfaz adaptada a las medidas de TV Material 3 y correcciones de mando, archivos y descargas sobre la versión 3.0.1.
+
+## Interfaz
+
+- **Medidas oficiales y adaptables:** botones de 40 dp con iconos de 20 dp, filas de 48 dp y texto de 16/14 sp según TV Material 3. Márgenes seguros de 48 dp a los lados y 24 dp arriba. Las medidas se eligen según la ventana: en pantallas táctiles los objetivos siguen siendo de 48 dp y en ventanas estrechas la dirección pasa encima de los comandos. El texto respeta la escala del sistema.
+- **Pestañas:** pestaña, cierre y «+» tienen la misma altura que los comandos; el ancho se reparte para que quepan cuatro pestañas y «+». Sin borde fino en reposo.
+- **Sugerencias:** la lista se desplaza dentro del espacio disponible y todas las sugerencias siguen accesibles con el mando o el puntero, también con texto ampliado.
+- **Ventanas estrechas:** la fila de comandos se desplaza y el último comando sigue alcanzable con el mando.
 
 ## Correcciones
 
-- **Seguridad de compilación:** las pruebas habituales ya no necesitan la clave privada de firma de sumas de comprobación. Las acciones de GitHub quedan fijadas a revisiones verificadas y Dependabot vigila sus actualizaciones.
-- **Publicación:** se elimina el lanzamiento automático por creación de ramas. La publicación se solicita manualmente y usa el entorno `release`, cuya aprobación y secretos deben configurarse en GitHub.
-- **Privacidad:** limpieza de datos privados residuales de WebView y recuperación de perfiles normales apartados por versiones antiguas de Android.
-- **Protección contra detección:** el puente de filtros deja de estar expuesto como propiedad global de la página tras la inicialización del script.
-- **Red:** las listas de bloqueo descargadas por la aplicación requieren HTTPS; el acceso HTTP a loopback queda limitado a pruebas.
-- **Certificados:** se aclara que una comparación sin bytes del certificado se rechaza.
-- **Pestañas:** el título y la dirección de una pestaña se actualizan mientras la página carga; al cerrar una pestaña desde su X, el foco queda en la pestaña seleccionada.
-- **Atrás en Inicio:** sale de la aplicación (tras cerrar la edición de accesos, si está abierta), aunque la cápsula esté abierta o la pestaña tenga historial.
-- **Actualizaciones:** la variante generic comprueba sola, como máximo una vez al día y nunca en modo privado, si hay una versión nueva firmada y ofrece instalarla. Lo hace al arrancar, al volver a la app y al recuperar la red; si falla o hay un vídeo a pantalla completa, sigue pendiente.
-- **Certificados:** mientras se muestra la advertencia de certificado, la dirección aparece en rojo y anuncia que el certificado no es válido (la marca se había perdido al pasar la barra a Compose).
-- **Barra de dirección:** las sugerencias vuelven a ocupar el lugar de la fila de pestañas, Arriba desde la primera sugerencia vuelve al texto que se edita y Atrás durante la edición deja el foco en la dirección.
+- **Pulsación larga:** mantener OK sobre una pestaña, el escudo o una descarga abre sus opciones sin ejecutar la primera al soltar el botón.
+- **Selector de archivos:** queda vinculado a la página que lo pidió y se cancela al navegar o cerrarla. Solo acepta archivos de proveedores de contenido externos y rechaza rutas directas o archivos privados de la aplicación.
+- **Descargas:** la cabecera Referer elimina credenciales y fragmentos, se reduce al origen entre sitios distintos y se omite al pasar de HTTPS a HTTP, también tras redirecciones.
+- **Descargas blob:** se limita el número de transferencias pendientes por página y en total para no agotar memoria.
 
 ## Validación
 
-La implementación de seguridad previa a esta preparación de versión pasó CI, pruebas y arranque en emuladores Android API 24, 28, 34 y 37, además de Macrobenchmark, en el commit `366268c0`. La versión 3.0.1 requiere repetir CI sobre su commit definitivo antes de publicar. La validación física de rendimiento y mando en TV sigue pendiente.
+CI, pruebas y arranque en emuladores Android API 24, 28, 34 y 37, además de Macrobenchmark, en el commit de esta versión. La validación física en dispositivos sigue pendiente.
 
 ## Instalación
 
-Compatible con Android 7.0 o superior. El modo incógnito requiere Android 9 o superior. Instala el APK de tu arquitectura sobre la versión existente para conservar los datos normales.
-
-**Seguridad de publicación:** antes de distribuir, configura revisores obligatorios y secretos en el entorno protegido `release` de GitHub.
+Compatible con Android 7.0 o superior. El modo incógnito requiere Android 9 o superior. Instala el APK de tu arquitectura sobre la versión existente para conservar los datos.
