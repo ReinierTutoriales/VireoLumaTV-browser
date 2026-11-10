@@ -1,7 +1,6 @@
 name: Release
 
 on:
-  create:
   workflow_dispatch:
     inputs:
       version:
@@ -25,11 +24,11 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || (github.event.ref_type == 'branch' && startsWith(github.event.ref, 'release/'))
+    environment: release
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      VERSION: ${{ inputs.version || github.event.ref }}
+      VERSION: ${{ inputs.version }}
       GH_TOKEN: ${{ github.token }}
       EXPECTED_CERT_SHA256: 7485dc06a3e9b12528679ff8c5f8d06b308300ff454fce8f9f0193e66adf051f
     steps:
@@ -45,9 +44,6 @@ jobs:
           if gh api "repos/$GITHUB_REPOSITORY/releases/tags/v$VERSION" >/dev/null 2>&1; then
             echo 'Release already exists; refusing to replace it.'
             exit 1
-          fi
-          if [[ "$GITHUB_EVENT_NAME" == create ]]; then
-            [[ "$GITHUB_REF" == "refs/heads/release/$VERSION" ]]
           fi
           if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
             echo 'Tag already exists; refusing to move it.'
@@ -208,9 +204,6 @@ jobs:
           prerelease: ${{ inputs.prerelease == 'pre-release' }}
           fail_on_unmatched_files: true
           files: dist/*
-      - name: Remove completed publication branch
-        if: github.event_name == 'create'
-        run: git push --force-with-lease="$GITHUB_REF:$GITHUB_SHA" origin ":$GITHUB_REF"
       - name: Remove signing material
         if: always()
         run: rm -f "$RUNNER_TEMP/release.jks" "$RUNNER_TEMP/release-signing-key.pem"
