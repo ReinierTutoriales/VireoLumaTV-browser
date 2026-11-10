@@ -14,6 +14,9 @@ import java.io.IOException
 import java.security.SecureRandom
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.Semaphore
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -70,6 +73,7 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
     private val main = Handler(Looper.getMainLooper())
     private val random = SecureRandom()
     private val generation = AtomicLong(0)
+    private val messagePending = AtomicBoolean(false)
 
     /** Invalidate queued messages and release the spool when its owning WebView dies. */
     fun invalidateTransfers() {
@@ -100,46 +104,71 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
      * main thread, the latter to drop a finished file whose page has meanwhile changed origin.
      */
     fun onDownloadMessage(request: DownloadMessage, document: String, currentDocument: () -> String?, reply: (String) -> Unit) {
+        // The script waits for each acknowledgement. Ignore unsolicited overlap before retaining
+        // its chunk or reply; the permit covers both the worker and the main-thread delivery.
+        if (!messagePending.compareAndSet(false, true)) return
+        if (!blobSlots.tryAcquire()) { messagePending.set(false); return }
         val acceptedGeneration = generation.get()
-        blobThread.execute {
-            if (generation.get() != acceptedGeneration) return@execute
-            val answer = when (request) {
-                is DownloadMessage.Begin -> DownloadMessage.beginReply(request.url,
-                    if (request.url.startsWith("blob:", ignoreCase = true))
-                        blobs.begin(request.url, request.fileName, document, UserActivation::consume)
-                    else "")
-                is DownloadMessage.Size ->
-                    DownloadMessage.sizeReply(request.token, blobs.accept(request.token, request.bytes, request.mimeType))
-                is DownloadMessage.Chunk -> DownloadMessage.chunkReply(request.token, decode(request.base64)
-                    ?.let { blobs.append(request.token, request.offset, it) }
-                    ?: (-1L).also { blobs.cancel(request.token) })
-                is DownloadMessage.Done -> { finish(request, document, currentDocument, acceptedGeneration); null }
-                is DownloadMessage.Cancel -> { blobs.cancel(request.token); null }
+        try {
+            blobThread.execute {
+                var deliveryPending = false
+                try {
+                    if (generation.get() != acceptedGeneration) return@execute
+                    val answer = when (request) {
+                        is DownloadMessage.Begin -> DownloadMessage.beginReply(request.url,
+                            if (request.url.startsWith("blob:", ignoreCase = true))
+                                blobs.begin(request.url, request.fileName, document, UserActivation::consume)
+                            else "")
+                        is DownloadMessage.Size ->
+                            DownloadMessage.sizeReply(request.token, blobs.accept(request.token, request.bytes, request.mimeType))
+                        is DownloadMessage.Chunk -> DownloadMessage.chunkReply(request.token, decode(request.base64)
+                            ?.let { blobs.append(request.token, request.offset, it) }
+                            ?: (-1L).also { blobs.cancel(request.token) })
+                        is DownloadMessage.Done -> {
+                            deliveryPending = finish(request, document, currentDocument, acceptedGeneration)
+                            null
+                        }
+                        is DownloadMessage.Cancel -> { blobs.cancel(request.token); null }
+                    }
+                    // Teardown may race a chunk already executing on this worker.
+                    if (generation.get() != acceptedGeneration) {
+                        blobs.cancelAll()
+                        return@execute
+                    }
+                    if (answer != null) deliveryPending = main.post {
+                        try {
+                            if (generation.get() == acceptedGeneration) reply(answer)
+                        } finally { releaseMessage() }
+                    }
+                } finally { if (!deliveryPending) releaseMessage() }
             }
-            // Teardown may race a chunk already executing on this worker.
-            if (generation.get() != acceptedGeneration) {
-                blobs.cancelAll()
-                return@execute
-            }
-            if (answer != null) main.post {
-                if (generation.get() == acceptedGeneration) reply(answer)
-            }
+        } catch (_: RejectedExecutionException) {
+            releaseMessage()
         }
     }
 
-    private fun finish(request: DownloadMessage.Done, document: String, currentDocument: () -> String?, acceptedGeneration: Long) {
-        val completed = blobs.finish(request.token, request.url, document) ?: return
+    private fun releaseMessage() {
+        blobSlots.release()
+        messagePending.set(false)
+    }
+
+    private fun finish(request: DownloadMessage.Done, document: String, currentDocument: () -> String?, acceptedGeneration: Long): Boolean {
+        val completed = blobs.finish(request.token, request.url, document) ?: return false
         val ticket = completed.ticket
         val name = FileNames.sanitizeFileName(ticket.fileName) ?: FileNames.guessFileName(ticket.url, null, ticket.mimeType)
-        main.post {
-            val window = engine.window
-            if (generation.get() != acceptedGeneration || window == null || currentDocument() != ticket.page) {
-                try { completed.bytes.close() } catch (_: IOException) { }
-                return@post
-            }
-            window.download(Download(ticket.url, name, null, Download.AfterDownload.NOP, ticket.mimeType,
-                null, null, completed.bytes, ticket.size))
+        val posted = main.post {
+            try {
+                val window = engine.window
+                if (generation.get() != acceptedGeneration || window == null || currentDocument() != ticket.page) {
+                    try { completed.bytes.close() } catch (_: IOException) { }
+                    return@post
+                }
+                window.download(Download(ticket.url, name, null, Download.AfterDownload.NOP, ticket.mimeType,
+                    null, null, completed.bytes, ticket.size))
+            } finally { releaseMessage() }
         }
+        if (!posted) try { completed.bytes.close() } catch (_: IOException) { }
+        return posted
     }
 
     private fun decode(base64: String): ByteArray? =
@@ -150,6 +179,8 @@ internal class PrivilegedPageActions(private val engine: WebViewPageEngine) {
 
     private companion object {
         const val SPOOL_DIR = "blob-spool"
+        // At most eight retained base64 chunks (512 KiB decoded each), across all page instances.
+        private val blobSlots = Semaphore(8)
         /** One thread for every tab: blob steps are short, ordered, and only one transfer runs per tab. */
         val blobThread: ExecutorService = Executors.newSingleThreadExecutor { Thread(it, "VireoBlob").apply { isDaemon = true } }
     }

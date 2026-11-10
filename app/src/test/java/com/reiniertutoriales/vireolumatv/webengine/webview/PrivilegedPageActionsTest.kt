@@ -6,6 +6,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -92,5 +93,93 @@ class PrivilegedPageActionsTest {
             actions.invalidateTransfers()
             ShadowLooper.idleMainLooper()
         }
+    }
+
+    @Test fun deliveringAReplyAdmitsTheNextProtocolStep() {
+        val actions = PrivilegedPageActions(WebViewPageEngine(BrowserTab()))
+        var replies = 0
+        repeat(16) {
+            actions.onDownloadMessage(DownloadMessage.Size("unknown", 1, "text/plain"), "page", { "page" }) { replies++ }
+            worker.submit {}.get(5, TimeUnit.SECONDS)
+            ShadowLooper.idleMainLooper()
+        }
+        assertEquals("Both page and global permits are reusable after acknowledgement", 16, replies)
+    }
+
+    @Test fun invalidationDropsAPendingReplyAndReturnsItsAdmissionPermit() {
+        val actions = PrivilegedPageActions(WebViewPageEngine(BrowserTab()))
+        var replies = 0
+        repeat(16) {
+            actions.onDownloadMessage(DownloadMessage.Size("unknown", 1, "text/plain"), "page", { "page" }) { replies++ }
+            worker.submit {}.get(5, TimeUnit.SECONDS)
+            actions.invalidateTransfers()
+            ShadowLooper.idleMainLooper()
+        }
+        assertEquals(0, replies)
+        actions.onDownloadMessage(DownloadMessage.Size("unknown", 1, "text/plain"), "new-page", { "new-page" }) { replies++ }
+        worker.submit {}.get(5, TimeUnit.SECONDS)
+        ShadowLooper.idleMainLooper()
+        assertEquals("Invalidated deliveries must not consume the admission budget forever", 1, replies)
+    }
+
+    @Test fun invalidationBeforeTheWorkerStartsAlsoReturnsItsAdmissionPermit() {
+        val actions = PrivilegedPageActions(WebViewPageEngine(BrowserTab()))
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val blocker = worker.submit { entered.countDown(); check(release.await(10, TimeUnit.SECONDS)) }
+        var replies = 0
+        try {
+            assertTrue(entered.await(5, TimeUnit.SECONDS))
+            actions.onDownloadMessage(DownloadMessage.Size("unknown", 1, "text/plain"), "page", { "page" }) { replies++ }
+            actions.invalidateTransfers()
+            release.countDown()
+            blocker.get(5, TimeUnit.SECONDS)
+            worker.submit {}.get(5, TimeUnit.SECONDS)
+            ShadowLooper.idleMainLooper()
+            assertEquals(0, replies)
+            actions.onDownloadMessage(DownloadMessage.Size("unknown", 1, "text/plain"), "new-page", { "new-page" }) { replies++ }
+            worker.submit {}.get(5, TimeUnit.SECONDS)
+            ShadowLooper.idleMainLooper()
+            assertEquals("The generation check must release its skipped worker step", 1, replies)
+        } finally {
+            release.countDown()
+            blocker.get(5, TimeUnit.SECONDS)
+            worker.submit {}.get(5, TimeUnit.SECONDS)
+            actions.invalidateTransfers()
+            ShadowLooper.idleMainLooper()
+        }
+    }
+
+    @Test fun aReplyExceptionStillReturnsItsAdmissionPermit() {
+        val actions = PrivilegedPageActions(WebViewPageEngine(BrowserTab()))
+        repeat(16) {
+            actions.onDownloadMessage(DownloadMessage.Size("unknown", 1, "text/plain"), "page", { "page" }) {
+                throw IllegalStateException("Reply channel is closed")
+            }
+            worker.submit {}.get(5, TimeUnit.SECONDS)
+            assertThrows(IllegalStateException::class.java) { ShadowLooper.idleMainLooper() }
+        }
+        var replies = 0
+        actions.onDownloadMessage(DownloadMessage.Size("unknown", 1, "text/plain"), "page", { "page" }) { replies++ }
+        worker.submit {}.get(5, TimeUnit.SECONDS)
+        ShadowLooper.idleMainLooper()
+        assertEquals("A failed reply must not leave the page or process saturated", 1, replies)
+    }
+
+    @Test fun stepsWithoutRepliesAlsoReturnTheirAdmissionPermit() {
+        val actions = PrivilegedPageActions(WebViewPageEngine(BrowserTab()))
+        repeat(16) {
+            actions.onDownloadMessage(DownloadMessage.Cancel("unknown"), "page", { "page" }) { error("Cancel has no reply") }
+            worker.submit {}.get(5, TimeUnit.SECONDS)
+            actions.onDownloadMessage(DownloadMessage.Done("unknown", "blob:https://site.test/id"), "page", { "page" }) {
+                error("Done has no reply")
+            }
+            worker.submit {}.get(5, TimeUnit.SECONDS)
+        }
+        var replies = 0
+        actions.onDownloadMessage(DownloadMessage.Size("unknown", 1, "text/plain"), "page", { "page" }) { replies++ }
+        worker.submit {}.get(5, TimeUnit.SECONDS)
+        ShadowLooper.idleMainLooper()
+        assertEquals(1, replies)
     }
 }
