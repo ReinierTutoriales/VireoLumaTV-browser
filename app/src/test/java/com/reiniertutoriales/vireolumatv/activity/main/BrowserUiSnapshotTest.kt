@@ -24,6 +24,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.assertIsNotFocused
 import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -31,6 +32,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
+import kotlin.math.roundToInt
 
 /** Robolectric drawing of the XML host and bound Compose controls; no WebView renderer. */
 @RunWith(RobolectricTestRunner::class)
@@ -85,6 +87,13 @@ class BrowserUiSnapshotTest {
             vb.root.refreshDrawableState()
             val bitmap = Bitmap.createBitmap(960, 540, Bitmap.Config.ARGB_8888)
             vb.root.draw(Canvas(bitmap))
+            val close = compose.onNodeWithTag("tab_close_0").assertIsNotFocused().fetchSemanticsNode().boundsInWindow
+            val origin = IntArray(2)
+            vb.root.getLocationInWindow(origin)
+            val edgeX = (close.left - origin[0]).roundToInt()
+            val centerY = (close.center.y - origin[1]).roundToInt()
+            assertEquals("The resting close target has no inner outline", bitmap.getPixel(edgeX + 2, centerY),
+                bitmap.getPixel(edgeX, centerY))
             val output = File("build/reports/ui/browser-$name.png")
             output.parentFile!!.mkdirs()
             output.outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
@@ -125,6 +134,9 @@ class BrowserUiSnapshotTest {
             compose.onNodeWithTag(tag).assertTextContains(tab.title)
             val title = bounds(tag)
             val close = bounds("tab_close_$index")
+            assertTrue("A tab including its close target stays compact", close.right - title.left <= 188f * density + 0.5f)
+            assertTrue("The close target keeps its 48 dp minimum", close.width >= 48f * density && close.height >= 48f * density)
+            assertEquals("Title and close target share a vertical center", title.center.y, close.center.y, 0.5f)
             assertTrue("Tabs are below commands", title.top >= commandBottom && close.top >= commandBottom)
             assertTrue("Tab titles and close targets do not overlap", previousRight <= title.left && title.right <= close.left)
             previousRight = close.right

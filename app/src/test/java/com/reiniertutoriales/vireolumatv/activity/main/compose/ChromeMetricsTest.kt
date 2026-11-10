@@ -40,6 +40,7 @@ class ChromeMetricsTest {
         assertEquals(24.dp, tv.top)
         assertEquals(16.sp, tv.body)
         assertEquals(14.sp, tv.label)
+        assertEquals(188.dp, tv.tabMaxWidth)
         assertFalse(tv.stacked)
     }
 
