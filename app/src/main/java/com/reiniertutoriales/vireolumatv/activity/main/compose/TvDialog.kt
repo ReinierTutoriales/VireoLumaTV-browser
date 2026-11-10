@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main.compose
 
 import android.content.Context
 import android.content.DialogInterface
+import android.view.KeyEvent
 import androidx.activity.ComponentDialog
 import androidx.annotation.ArrayRes
 import androidx.annotation.StringRes
@@ -71,6 +72,24 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     /** Why the positive button was refused; shown under the fields until the text changes. */
     var error by mutableStateOf<CharSequence?>(null)
         private set
+
+    /** Confirm keys whose press began in this dialog; see [dispatchKeyEvent]. */
+    private val confirmKeysDown = HashSet<Int>()
+
+    /**
+     * A dialog opened by a long press appears while the remote key is still held: its repeats and
+     * release would reach the focused option, which Compose's clickable would run. As a View does,
+     * a confirm key only acts here when its press began here (repeat count 0).
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode in ConfirmKeys) when (event.action) {
+            KeyEvent.ACTION_DOWN ->
+                if (event.repeatCount == 0) confirmKeysDown += event.keyCode
+                else if (event.keyCode !in confirmKeysDown) return true
+            KeyEvent.ACTION_UP -> if (!confirmKeysDown.remove(event.keyCode)) return true
+        }
+        return super.dispatchKeyEvent(event)
+    }
 
     init {
         setContentView(ComposeView(context).apply {
@@ -242,3 +261,8 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
 
 /** Readable on the black panel (contrast above 4.5:1). */
 private val ErrorColor = Color(0xFFFF8A80)
+
+/** The keys Compose's clickable treats as a press: DPAD centre, Enter, numpad Enter and Space. */
+private val ConfirmKeys = setOf(
+    KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_SPACE,
+)

@@ -1,6 +1,7 @@
 package com.reiniertutoriales.vireolumatv.activity.main.compose
 
 import android.content.DialogInterface
+import android.os.SystemClock
 import android.os.Looper
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
@@ -98,5 +99,40 @@ class TvDialogTest {
         compose.onNodeWithTag("dialog_field_0").assertIsFocused()
         compose.runOnUiThread { dialog.press(DialogInterface.BUTTON_POSITIVE) }
         assertEquals("ana" to "secret", read)
+    }
+
+    private fun key(dialog: TvDialog, action: Int, repeat: Int, code: Int = KeyEvent.KEYCODE_DPAD_CENTER) {
+        val now = SystemClock.uptimeMillis()
+        dialog.window!!.decorView.dispatchKeyEvent(KeyEvent(now, now, action, code, repeat))
+        idle()
+    }
+
+    @Test fun theHeldKeyThatOpenedTheDialogChoosesNothing() {
+        val chosen = mutableListOf<Int>()
+        lateinit var dialog: TvDialog
+        compose.runOnUiThread {
+            dialog = TvDialog.Builder(compose.activity)
+                .setItems(arrayOf("New tab", "Close tab")) { _, which -> chosen += which }.show()
+        }
+        compose.onNodeWithTag("dialog_item_0").assertIsFocused()
+        // The long press that opened it: the remote keeps repeating, then the key is released.
+        compose.runOnUiThread {
+            key(dialog, KeyEvent.ACTION_DOWN, repeat = 3)
+            key(dialog, KeyEvent.ACTION_DOWN, repeat = 4)
+            key(dialog, KeyEvent.ACTION_UP, repeat = 0)
+        }
+        compose.runOnIdle {
+            assertEquals(emptyList<Int>(), chosen)
+            assertTrue("The options stay open", dialog.isShowing)
+        }
+        // A new press chooses as usual.
+        compose.runOnUiThread {
+            key(dialog, KeyEvent.ACTION_DOWN, repeat = 0)
+            key(dialog, KeyEvent.ACTION_UP, repeat = 0)
+        }
+        compose.runOnIdle {
+            assertEquals(listOf(0), chosen)
+            assertFalse(dialog.isShowing)
+        }
     }
 }
