@@ -81,7 +81,7 @@ class FileChooserTest {
     }
 
     @Test fun aPickerCannotReturnTheAppsPrivateFilesToAWebPage() = withPage { engine, page ->
-        val app = RuntimeEnvironment.getApplication<VireoLumaTVApp>()
+        val app = RuntimeEnvironment.getApplication()
         val answer = Answer()
         assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
         val privateFile = Uri.fromFile(File(app.filesDir, "../shared_prefs/settings.xml"))
@@ -90,7 +90,7 @@ class FileChooserTest {
     }
 
     @Test fun aPickerCannotUseTheAppsOwnProviderToUploadAnUpdatePackage() = withPage { engine, page ->
-        val app = RuntimeEnvironment.getApplication<VireoLumaTVApp>()
+        val app = RuntimeEnvironment.getApplication()
         val answer = Answer()
         assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
         val ownFile = Uri.parse("content://${app.packageName}.provider/verified_updates/update.apk")
@@ -99,7 +99,7 @@ class FileChooserTest {
     }
 
     @Test fun aPickerCannotBypassTheOwnProviderCheckWithAUserId() = withPage { engine, page ->
-        val app = RuntimeEnvironment.getApplication<VireoLumaTVApp>()
+        val app = RuntimeEnvironment.getApplication()
         val answer = Answer()
         assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
         val ownFile = Uri.parse("content://0@${app.packageName}.provider/verified_updates/update.apk")

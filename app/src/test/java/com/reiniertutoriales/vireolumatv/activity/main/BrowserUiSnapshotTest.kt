@@ -19,8 +19,12 @@ import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import kotlinx.coroutines.cancel
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Rule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertIsDisplayed
+import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -32,6 +36,8 @@ import java.io.File
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-television-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class BrowserUiSnapshotTest {
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
+
     // The interface is dark only; a light system mode must not change it.
     @Test @Config(qualifiers = "w960dp-h540dp-television-notnight-mdpi")
     fun controlsWithLightSystemMode() = capture("system-light")
@@ -42,14 +48,13 @@ class BrowserUiSnapshotTest {
     @Test @Config(qualifiers = "w960dp-h540dp-television-notnight-mdpi")
     fun enlargedTextControls() = capture("large-text", 1.5f)
 
-    private fun capture(name: String, fontScale: Float = 1f) {
+    @Test fun integratedControlsUseTheScreenSafeMargins() = capture("integration", bindControls = true)
+
+    private fun capture(name: String, fontScale: Float = 1f, bindControls: Boolean = false) {
         val previousScale = RuntimeEnvironment.getApplication().resources.configuration.fontScale
         RuntimeEnvironment.setFontScale(fontScale)
-        val host = Robolectric.buildActivity(ComponentActivity::class.java).apply {
-            get().setTheme(R.style.AppTheme)
-            setup()
-        }
-        val activity = host.get()
+        val activity = compose.activity
+        activity.setTheme(R.style.AppTheme)
         val tabs = ScreenModels.get(TabStore::class, activity)
         tabs.workScope.cancel()
         tabs.openTabs.clear()
@@ -59,6 +64,10 @@ class BrowserUiSnapshotTest {
         tabs.currentTab.value = tabs.openTabs[0]
         val vb = BrowserWindowBinding.inflate(activity.layoutInflater)
         try {
+            if (bindControls) {
+                vb.controlsHost.bindActions(BrowserCommandActions({}, {}, {}, {}, {}, {}, {}))
+                vb.controlsHost.setTabs(tabs.openTabs.toList(), 0)
+            }
             vb.controlsHost.showBlocker(enabled = true, description = "Shield active")
             vb.pageContainer.setBackgroundColor(Color.rgb(100, 116, 139))
             vb.tabPreview.visibility = View.GONE
@@ -71,6 +80,17 @@ class BrowserUiSnapshotTest {
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, 960, 540)
+            compose.waitForIdle()
+            compose.onNodeWithTag("home_search").assertIsDisplayed()
+            compose.onNodeWithTag("menu_button").assertIsDisplayed()
+            if (bindControls) {
+                val origin = IntArray(2)
+                vb.root.getLocationInWindow(origin)
+                val address = compose.onNodeWithTag("home_search").fetchSemanticsNode().positionInWindow
+                val density = activity.resources.displayMetrics.density
+                assertEquals("Address screen left safe margin", 48f * density, address.x - origin[0], 0.5f)
+                assertEquals("Address screen top safe margin", 24f * density, address.y - origin[1], 0.5f)
+            }
             vb.controlsHost.takeFocus()
             vb.root.refreshDrawableState()
             val bitmap = Bitmap.createBitmap(960, 540, Bitmap.Config.ARGB_8888)
@@ -89,7 +109,6 @@ class BrowserUiSnapshotTest {
             vb.root.removeAllViews()
             tabs.currentTab.value = null
             tabs.openTabs.clear()
-            host.pause().stop().destroy()
             RuntimeEnvironment.setFontScale(previousScale)
         }
     }
