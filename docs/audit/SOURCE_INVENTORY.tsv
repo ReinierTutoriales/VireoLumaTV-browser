@@ -572,3 +572,4 @@ scripts/ui_control_contract.py	PROPIO
 settings.gradle.kts	REESCRITO
 rust-toolchain.toml	PROPIO
 .claude/settings.json	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/FileChooserTest.kt	PROPIO

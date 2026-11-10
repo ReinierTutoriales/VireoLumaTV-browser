@@ -1,0 +1,81 @@
+package com.reiniertutoriales.vireolumatv.webengine.webview
+
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
+import com.reiniertutoriales.vireolumatv.model.BrowserTab
+import com.reiniertutoriales.vireolumatv.webengine.PageWindow
+import org.junit.Assert.*
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+import java.lang.reflect.Proxy
+
+@RunWith(RobolectricTestRunner::class)
+@Config(application = VireoLumaTVApp::class, sdk = [28])
+class FileChooserTest {
+    private class Answer : ValueCallback<Array<Uri>> {
+        val results = mutableListOf<List<Uri>?>()
+        override fun onReceiveValue(value: Array<Uri>?) { results += value?.toList() }
+    }
+
+    private val params = object : WebChromeClient.FileChooserParams() {
+        override fun getMode() = MODE_OPEN
+        override fun getAcceptTypes() = arrayOf("*/*")
+        override fun isCaptureEnabled() = false
+        override fun getTitle(): CharSequence? = null
+        override fun getFilenameHint(): String? = null
+        override fun createIntent() = Intent(Intent.ACTION_GET_CONTENT).setType("*/*")
+    }
+
+    private fun withPage(test: (WebViewPageEngine, BrowserWebView) -> Unit) {
+        val engine = WebViewPageEngine(BrowserTab())
+        engine.window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
+            arrayOf(PageWindow::class.java)) { _, method, _ ->
+            when (method.name) {
+                "pickFile" -> true
+                else -> null
+            }
+        } as PageWindow
+        try { test(engine, engine.createView(RuntimeEnvironment.getApplication()) as BrowserWebView) }
+        finally { engine.detach(destroyView = true) }
+    }
+
+    @Test fun aSecondChooserCannotReplaceTheOwnerOfThePendingResult() = withPage { engine, page ->
+        val first = Answer()
+        val second = Answer()
+        val chrome = page.webChromeClient!!
+        assertTrue(chrome.onShowFileChooser(page, first, params))
+        // Android still owns the first picker. Reject a second request without retargeting it.
+        assertFalse(chrome.onShowFileChooser(page, second, params))
+        val selected = Uri.parse("content://picker/first")
+        engine.onFilePicked(Activity.RESULT_OK, Intent().setData(selected))
+        assertEquals(listOf(listOf(selected)), first.results)
+        assertTrue(second.results.isEmpty())
+        engine.onFilePicked(Activity.RESULT_CANCELED, null)
+        assertEquals(1, first.results.size)
+    }
+
+    @Test fun destroyingThePageCancelsItsPendingChooserExactlyOnce() = withPage { engine, page ->
+        val answer = Answer()
+        assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
+        engine.detach(destroyView = true)
+        assertEquals(listOf<List<Uri>?>(null), answer.results)
+        engine.onFilePicked(Activity.RESULT_OK, Intent().setData(Uri.parse("content://picker/late")))
+        assertEquals(1, answer.results.size)
+    }
+
+    @Test fun navigatingAwayCancelsTheOldDocumentsChooser() = withPage { engine, page ->
+        val answer = Answer()
+        assertTrue(page.webChromeClient!!.onShowFileChooser(page, answer, params))
+        page.onDocumentStarted("https://other.test/")
+        assertEquals(listOf<List<Uri>?>(null), answer.results)
+        engine.onFilePicked(Activity.RESULT_OK, Intent().setData(Uri.parse("content://picker/late")))
+        assertEquals(1, answer.results.size)
+    }
+}
