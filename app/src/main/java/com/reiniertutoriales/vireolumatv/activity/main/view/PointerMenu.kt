@@ -193,7 +193,7 @@ class PointerMenu @JvmOverloads constructor(context: Context, attrs: AttributeSe
         Box(
             modifier.align(alignment).testTag(tag).size(48.dp)
                 .background(TvControlColors.surface(focused, hovered), CircleShape)
-                .border(if (focused) 2.dp else 0.dp, TvControlColors.border(focused, hovered), CircleShape)
+                .then(if (focused) Modifier.border(2.dp, TvControlColors.border(focused, hovered), CircleShape) else Modifier)
                 .semantics { contentDescription = description }
                 .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick),
             contentAlignment = Alignment.Center,
