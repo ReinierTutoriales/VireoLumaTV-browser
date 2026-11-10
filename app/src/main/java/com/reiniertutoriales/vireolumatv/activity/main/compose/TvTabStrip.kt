@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.Modifier
@@ -63,13 +64,14 @@ fun TvTabStrip(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         tabs.forEachIndexed { index, tab ->
+            key(tab) {
             val interaction = remember(tab) { MutableInteractionSource() }
             val focused by interaction.collectIsFocusedAsState()
             val hovered by interaction.collectIsHoveredAsState()
             val closeInteraction = remember(tab) { MutableInteractionSource() }
             val closeFocused by closeInteraction.collectIsFocusedAsState()
             val closeHovered by closeInteraction.collectIsHoveredAsState()
-            LaunchedEffect(focused) { if (focused) onFocus(index) }
+            LaunchedEffect(focused, index) { if (focused) onFocus(index) }
             // The pill is not a focus target: the title and its X are sibling targets, so D-pad
             // Right moves title -> X -> next title. A nested X lies inside the title's bounds and
             // two-dimensional focus search would skip it.
@@ -116,6 +118,7 @@ fun TvTabStrip(
                         modifier = Modifier.size(24.dp),
                     )
                 }
+            }
             }
         }
         val addInteraction = remember { MutableInteractionSource() }
