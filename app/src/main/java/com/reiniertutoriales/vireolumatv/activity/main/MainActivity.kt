@@ -106,9 +106,16 @@ open class MainActivity : ComponentActivity() {
     internal val external by lazy { ExternalApps(this) }
     internal var isFullscreen = false
 
-    /** Delivered to the current instance even after the window was recreated. */
+    /** The engine that launched the outstanding picker; tab selection cannot transfer ownership. */
+    internal var filePickerOwner: PageEngine? = null
     internal val filePickerResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        tabStore.currentTab.value?.engine?.onFilePicked(result.resultCode, result.data)
+        onFilePicked(result.resultCode, result.data)
+    }
+
+    internal fun onFilePicked(resultCode: Int, data: Intent?) {
+        val owner = filePickerOwner ?: return
+        filePickerOwner = null
+        owner.onFilePicked(resultCode, data)
     }
     private val historyPick = registerForActivityResult(HistoryActivity.PickAddress) { address ->
         if (address == null) return@registerForActivityResult
@@ -345,6 +352,7 @@ open class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        filePickerOwner = null
         nativeHome?.hide()
         nativeHome = null
         if (ServiceWorkerFilter.policy === serviceWorkerPolicy) ServiceWorkerFilter.policy = null

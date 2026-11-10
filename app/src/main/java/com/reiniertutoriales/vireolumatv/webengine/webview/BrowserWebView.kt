@@ -194,6 +194,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     }
 
     internal fun onDocumentStarted(url: String) {
+        chromeClient.cancelFileChooser()
         currentOriginalUrl = url.toUri()
         // Refresh cached policy before the fallback injection, so a changed setting
         // cannot inject the previous document policy on older WebView providers.
@@ -266,6 +267,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     }
 
     override fun destroy() {
+        chromeClient.cancelFileChooser()
         engine.privileged.invalidateTransfers()
         destroyed.set(true)
         pendingBlockedAds.set(0)

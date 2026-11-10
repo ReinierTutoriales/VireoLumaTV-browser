@@ -34,6 +34,23 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class BrowserNavigationTest {
+    @Test fun filePickerResultsStayWithTheirOwnerAfterATabChange() = Fixture().use { f ->
+        f.tabs.workScope.cancel()
+        f.activity.filePickerOwner = f.engine
+        f.tabs.currentTab.value = BrowserTab(url = "https://other.test/")
+        f.activity.onFilePicked(android.app.Activity.RESULT_OK, null)
+        assertEquals(listOf(android.app.Activity.RESULT_OK), f.fileResults)
+        assertNull(f.activity.filePickerOwner)
+        f.activity.onFilePicked(android.app.Activity.RESULT_CANCELED, null)
+        assertEquals(1, f.fileResults.size)
+    }
+
+    @Test fun anOutstandingPickerRejectsAnotherTabsRequest() = Fixture().use { f ->
+        f.activity.filePickerOwner = f.engine
+        assertFalse(TabWindow(f.activity, BrowserTab()).pickFile(android.content.Intent()))
+        assertSame(f.engine, f.activity.filePickerOwner)
+    }
+
     @Test fun downFromTheCommandHostDoesNotCloseTheCapsule() = Fixture().use { f ->
         f.activity.openCapsule()
         // Exercise window dispatch with focus in the host, outside the tab focus group.
@@ -233,6 +250,7 @@ class BrowserNavigationTest {
         var restoredNetwork = 0
         val online = mutableListOf<Boolean>()
         var thumbnailRenders = 0
+        val fileResults = mutableListOf<Int>()
         var loadedUrl: String? = null
         var pageUrl: String? = null
         val thumbnail = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
@@ -255,6 +273,7 @@ class BrowserNavigationTest {
                 "back" -> { wentBack++; null }
                 "reload" -> { refreshed++; null }
                 "onNetworkRestored" -> { restoredNetwork++; null }
+                "onFilePicked" -> { fileResults += args!![0] as Int; null }
                 "setOnline" -> { online += args!![0] as Boolean; null }
                 "load" -> { loadedUrl = args!![0] as String; null }
                 "preview" -> { thumbnailRenders++; thumbnail }
