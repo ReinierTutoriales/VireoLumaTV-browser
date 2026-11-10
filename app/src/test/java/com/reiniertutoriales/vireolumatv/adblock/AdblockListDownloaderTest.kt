@@ -57,6 +57,28 @@ class AdblockListDownloaderTest {
         }
     }
 
+    @Test fun loopbackCleartextIsRejectedOutsideUnitTests() {
+        val calls = AtomicInteger()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/list") { exchange ->
+            calls.incrementAndGet()
+            val body = "[Adblock Plus 2.0]\n||ads.test^".toByteArray()
+            exchange.sendResponseHeaders(200, body.size.toLong())
+            exchange.responseBody.use { it.write(body) }
+        }
+        server.start()
+        val previous = System.clearProperty(AdblockListDownloader.TEST_LOOPBACK_PROPERTY)
+        try {
+            assertThrows(java.io.IOException::class.java) {
+                AdblockListDownloader.download(listOf("http://127.0.0.1:${server.address.port}/list"), true)
+            }
+            assertEquals(0, calls.get())
+        } finally {
+            previous?.let { System.setProperty(AdblockListDownloader.TEST_LOOPBACK_PROPERTY, it) }
+            server.stop(0)
+        }
+    }
+
     @Test fun deniedOrInvalidPrimaryUsesValidatedMirrorWithIdentifiedUserAgent() {
         val primaryCalls = AtomicInteger()
         val mirrorCalls = AtomicInteger()

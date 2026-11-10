@@ -237,4 +237,6 @@ tasks.withType<Test>().configureEach {
     val hostLib = buildRustAdblockHost.flatMap { it.outputDir.file("libvireoadblock.so") }
     inputs.files(hostLib)
     doFirst { systemProperty("vireo.adblock.hostLib", hostLib.get().asFile.absolutePath) }
+    // AdblockListDownloader accepts plain-HTTP loopback test servers only with this property.
+    systemProperty("vireo.test.loopbackFilters", "true")
 }
