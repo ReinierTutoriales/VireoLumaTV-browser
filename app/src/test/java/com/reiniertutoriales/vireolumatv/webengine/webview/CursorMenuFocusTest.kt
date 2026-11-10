@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.isFocused
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey

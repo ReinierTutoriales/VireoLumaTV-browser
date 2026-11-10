@@ -66,9 +66,18 @@ class ApkInstallerTest {
     }
 
     @Test fun theCopiedSessionIsCommittedAndSuccessIsSilent() {
+        // Only a committed session finishes; the system then answers its status receiver.
+        val finished = mutableListOf<Boolean>()
+        installer.registerSessionCallback(object : PackageInstaller.SessionCallback() {
+            override fun onCreated(sessionId: Int) {}
+            override fun onBadgingChanged(sessionId: Int) {}
+            override fun onActiveChanged(sessionId: Int, active: Boolean) {}
+            override fun onProgressChanged(sessionId: Int, progress: Float) {}
+            override fun onFinished(sessionId: Int, success: Boolean) { finished += success }
+        })
         ApkInstaller.launch(app, download(sharedApk("done.apk").absolutePath), now)
-        // Only a committed session has a status receiver for the system to answer.
-        shadowOf(installer).setSessionSucceeds(installer.allSessions.single().sessionId)
+        ShadowLooper.idleMainLooper()
+        assertEquals(listOf(true), finished)
         ApkInstaller.Result().onReceive(app, Intent().putExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_SUCCESS))
         ShadowLooper.idleMainLooper()
         assertNull(ShadowToast.getLatestToast())

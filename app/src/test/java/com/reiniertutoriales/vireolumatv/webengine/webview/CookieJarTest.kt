@@ -15,6 +15,8 @@ import org.robolectric.annotation.Config
 @Config(application = Application::class, sdk = [34])
 class CookieJarTest {
     /** Answers removeAllCookies later, as WebView does, and records the order of the calls. */
+    // The constructor is deprecated for apps, which use getInstance(); a test double must subclass.
+    @Suppress("DEPRECATION")
     private class Deferred(private val real: CookieManager) : CookieManager() {
         val calls = mutableListOf<String>()
         var pending: android.webkit.ValueCallback<Boolean>? = null

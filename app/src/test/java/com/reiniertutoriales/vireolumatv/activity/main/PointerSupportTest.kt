@@ -1,6 +1,5 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
-import android.content.pm.PackageManager
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -26,6 +25,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.w3c.dom.Element
+import java.io.File
+import javax.xml.parsers.DocumentBuilderFactory
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
@@ -54,11 +56,17 @@ class PointerSupportTest {
         compose.runOnIdle { assertEquals(false, host.tabStripHasFocus) }
     }
 
-    @Suppress("DEPRECATION")
-    @Test fun packageDeclaresPointerSupportAsApplicationMetadata() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val info = context.packageManager.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-        assertTrue(info.metaData?.getBoolean("android.software.leanback.supports_touch") == true)
+    // The official form is an application <property> (Robolectric does not implement getProperty).
+    @Test fun manifestDeclaresPointerSupportAsApplicationProperty() {
+        val manifest = DocumentBuilderFactory.newInstance().apply { isNamespaceAware = true }
+            .newDocumentBuilder().parse(File("src/main/AndroidManifest.xml"))
+        val android = "http://schemas.android.com/apk/res/android"
+        val properties = manifest.getElementsByTagName("property")
+        val declared = (0 until properties.length).map { properties.item(it) as Element }.filter {
+            it.parentNode.nodeName == "application" &&
+                it.getAttributeNS(android, "name") == "android.software.leanback.supports_touch"
+        }
+        assertEquals(listOf("true"), declared.map { it.getAttributeNS(android, "value") })
     }
 
     @Test @Config(qualifiers = "es")
