@@ -19,6 +19,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.ProtocolException
+import java.net.URI
 import java.net.URL
 import java.security.cert.CertificateException
 import javax.net.ssl.SSLPeerUnverifiedException
@@ -196,7 +197,7 @@ class FileTransfer internal constructor(
         setRequestProperty("Accept-Encoding", "identity")
         userAgent?.let { setRequestProperty("User-Agent", it) }
         job.mimeType?.takeIf { it != "application/octet-stream" }?.let { setRequestProperty("Accept", it) }
-        job.referer?.let { setRequestProperty("Referer", it) }
+        downloadReferer(job.referer, url)?.let { setRequestProperty("Referer", it) }
         CookieManager.getInstance().getCookie(url.toString())?.let { setRequestProperty("Cookie", it) }
         if (from > 0) {
             setRequestProperty("Range", "bytes=$from-")
@@ -258,6 +259,24 @@ class FileTransfer internal constructor(
         val REDIRECTS = setOf(301, 302, 303, 307, 308)
         val WEB_SCHEMES = setOf("http", "https")
         private val CONTENT_RANGE = Regex("""bytes\s+(\d+)-(\d+)/(\d+|\*)""", RegexOption.IGNORE_CASE)
+
+        /** Safe default when the page's Referrer-Policy is unavailable: strict-origin-when-cross-origin. */
+        internal fun downloadReferer(source: String?, destination: URL): String? {
+            val page = source?.let { runCatching { URI(it) }.getOrNull() } ?: return null
+            val scheme = page.scheme?.lowercase() ?: return null
+            val host = page.host?.lowercase()?.takeIf { it.isNotEmpty() } ?: return null
+            if (scheme !in WEB_SCHEMES || destination.protocol !in WEB_SCHEMES ||
+                page.port !in -1..65535 || (scheme == "https" && destination.protocol == "http")) return null
+            val defaultPort = if (scheme == "https") 443 else 80
+            val port = page.port.takeIf { it != -1 } ?: defaultPort
+            val origin = "$scheme://$host" + (if (port == defaultPort) "" else ":$port")
+            val destinationPort = destination.port.takeIf { it != -1 } ?: destination.defaultPort
+            val sameOrigin = scheme == destination.protocol && host.equals(destination.host, true) &&
+                port == destinationPort
+            if (!sameOrigin) return "$origin/"
+            return origin + page.rawPath.orEmpty().ifEmpty { "/" } +
+                (page.rawQuery?.let { "?$it" } ?: "")
+        }
 
         /** A strong ETag, else Last-Modified: the validators If-Range accepts (RFC 9110 13.1.5). */
         fun strongValidator(connection: HttpURLConnection): String? =
