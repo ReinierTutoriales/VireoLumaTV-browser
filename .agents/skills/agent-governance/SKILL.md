@@ -17,6 +17,7 @@ Hard constraints that override convenience:
 - Do not insert AI names, tool names, or third-party identities into commit messages, trailers (`Signed-off-by`, `Co-authored-by`), or file metadata.
 - Commit messages must describe the change factually; do not attribute the work to an agent.
 - Agent environments can sign commits through a global Git config (`commit.gpgsign`, an agent key). Before the first commit run `git config --show-origin --get-regexp 'user\.|gpg|sign'`; set `commit.gpgsign=false` in the repository and check `git cat-file -p HEAD` has no `gpgsig` before pushing (2026-11-10).
+- Some agent sessions append an attribution footer to PR descriptions and comments written through their GitHub proxy, whatever the text sent. Re-read the body after writing; if a footer appears, stop writing PR text from that session and report it to the owner (2026-11-10).
 
 ## Owner decisions
 - Ask the owner before implementing, integrating or changing any behavior that was not
