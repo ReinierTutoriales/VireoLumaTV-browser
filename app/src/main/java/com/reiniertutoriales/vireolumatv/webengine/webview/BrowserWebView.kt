@@ -179,7 +179,6 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
 
     /** Replaces the page with the certificate warning, which can offer to trust [error] once. */
     internal fun showCertificateErrorPage(error: SslError) {
-        window?.onCertificateError()
         lastSSLError = error
         val url = "$APP_SCHEME$WARNING_HOST?type=$WARNING_CERT_PATH&url=" +
             URLEncoder.encode(error.url, "UTF-8")

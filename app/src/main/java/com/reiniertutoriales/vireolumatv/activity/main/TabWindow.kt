@@ -152,7 +152,6 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         }
     }
 
-    override fun onCertificateError() = vb.controlsHost.tintAddress(browser.getColor(R.color.error))
 
     override fun onRendererGone() {
         if (isShownTab) browser.changeTab(tab)

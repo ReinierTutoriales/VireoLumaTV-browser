@@ -27,7 +27,6 @@ interface PageWindow {
     fun onTitle(title: String)
     fun onIcon(icon: Bitmap)
     fun onScale(scale: Float)
-    fun onCertificateError()
     /** The page's renderer died; the engine has already dropped its view. */
     fun onRendererGone()
 
