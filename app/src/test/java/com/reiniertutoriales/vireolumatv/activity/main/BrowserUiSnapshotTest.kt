@@ -23,6 +23,7 @@ import org.junit.Rule
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import com.reiniertutoriales.vireolumatv.activity.main.compose.BrowserCommandActions
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -31,7 +32,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
 
-/** Native Android drawing of the real XML; deliberately no network page or WebView renderer. */
+/** Robolectric drawing of the XML host and bound Compose controls; no WebView renderer. */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-television-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -48,9 +49,9 @@ class BrowserUiSnapshotTest {
     @Test @Config(qualifiers = "w960dp-h540dp-television-notnight-mdpi")
     fun enlargedTextControls() = capture("large-text", 1.5f)
 
-    @Test fun integratedControlsUseTheScreenSafeMargins() = capture("integration", bindControls = true)
+    @Test fun integratedControlsUseTheScreenSafeMargins() = capture("integration")
 
-    private fun capture(name: String, fontScale: Float = 1f, bindControls: Boolean = false) {
+    private fun capture(name: String, fontScale: Float = 1f) {
         val previousScale = RuntimeEnvironment.getApplication().resources.configuration.fontScale
         RuntimeEnvironment.setFontScale(fontScale)
         val activity = compose.activity
@@ -64,10 +65,8 @@ class BrowserUiSnapshotTest {
         tabs.currentTab.value = tabs.openTabs[0]
         val vb = BrowserWindowBinding.inflate(activity.layoutInflater)
         try {
-            if (bindControls) {
-                vb.controlsHost.bindActions(BrowserCommandActions({}, {}, {}, {}, {}, {}, {}))
-                vb.controlsHost.setTabs(tabs.openTabs.toList(), 0)
-            }
+            vb.controlsHost.bindActions(BrowserCommandActions({}, {}, {}, {}, {}, {}, {}))
+            vb.controlsHost.setTabs(tabs.openTabs.toList(), 0)
             vb.controlsHost.showBlocker(enabled = true, description = "Shield active")
             vb.pageContainer.setBackgroundColor(Color.rgb(100, 116, 139))
             vb.tabPreview.visibility = View.GONE
@@ -80,31 +79,17 @@ class BrowserUiSnapshotTest {
             vb.root.measure(View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(540, View.MeasureSpec.EXACTLY))
             vb.root.layout(0, 0, 960, 540)
+            compose.runOnIdle { vb.controlsHost.takeFocus() }
             compose.waitForIdle()
-            compose.onNodeWithTag("home_search").assertIsDisplayed()
-            compose.onNodeWithTag("menu_button").assertIsDisplayed()
-            if (bindControls) {
-                val origin = IntArray(2)
-                vb.root.getLocationInWindow(origin)
-                val address = compose.onNodeWithTag("home_search").fetchSemanticsNode().positionInWindow
-                val density = activity.resources.displayMetrics.density
-                assertEquals("Address screen left safe margin", 48f * density, address.x - origin[0], 0.5f)
-                assertEquals("Address screen top safe margin", 24f * density, address.y - origin[1], 0.5f)
-            }
-            vb.controlsHost.takeFocus()
+            verifyGeometry(vb, tabs.openTabs.toList())
             vb.root.refreshDrawableState()
             val bitmap = Bitmap.createBitmap(960, 540, Bitmap.Config.ARGB_8888)
             vb.root.draw(Canvas(bitmap))
             val output = File("build/reports/ui/browser-$name.png")
             output.parentFile!!.mkdirs()
             output.outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
-            assertTrue("Native drawing must include browser controls", bitmap.getPixel(40, 40) !=
-                Color.rgb(100, 116, 139))
             bitmap.recycle()
-            // address is owned by Compose state
-            // navigation state is owned by Compose
-            verifyGeometry(vb, fontScale)
-            verifyStates(activity, name)
+            verifyPalette(activity, name)
         } finally {
             vb.root.removeAllViews()
             tabs.currentTab.value = null
@@ -112,22 +97,44 @@ class BrowserUiSnapshotTest {
             RuntimeEnvironment.setFontScale(previousScale)
         }
     }
-    private fun verifyGeometry(vb: BrowserWindowBinding, fontScale: Float) {
-        // Compose owns command geometry. Android View IDs for tabs are no longer present.
-        for (width in listOf(720, 960, 1280)) {
-            vb.root.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(width * 9 / 16, View.MeasureSpec.EXACTLY))
-            vb.root.layout(0, 0, width, width * 9 / 16)
-            assertTrue("Compose toolbar must fit the viewport", vb.controlsHost.width <= width)
-            assertTrue("Compose toolbar must remain attached", vb.controlsHost.childCount == 1)
-            // Tab strip is now a Compose host; legacy View measurements are omitted.
-            assertTrue("Tab strip host must remain attached", vb.controlsHost.childCount >= 0)
+    private fun verifyGeometry(vb: BrowserWindowBinding, tabs: List<BrowserTab>) {
+        val origin = IntArray(2)
+        vb.root.getLocationInWindow(origin)
+        val density = vb.root.resources.displayMetrics.density
+        fun bounds(tag: String): androidx.compose.ui.geometry.Rect {
+            val node = compose.onNodeWithTag(tag).assertIsDisplayed().fetchSemanticsNode()
+            val bounds = node.boundsInWindow.translate(-origin[0].toFloat(), -origin[1].toFloat())
+            assertTrue("$tag has a nonempty target", bounds.width > 0f && bounds.height > 0f)
+            assertTrue("$tag fits the screen", bounds.left >= 0f && bounds.top >= 0f &&
+                bounds.right <= vb.root.width && bounds.bottom <= vb.root.height)
+            return bounds
         }
+        val address = bounds("home_search")
+        assertEquals("Address screen left safe margin", 48f * density, address.left, 0.5f)
+        assertEquals("Address screen top safe margin", 24f * density, address.top, 0.5f)
+        val commands = listOf("back_button", "forward_button", "refresh_button", "home_button",
+            "blocker_button", "menu_button").map(::bounds)
+        assertTrue("Address precedes commands", address.right <= commands.first().left)
+        commands.zipWithNext().forEach { (left, right) ->
+            assertTrue("Command targets do not overlap", left.right <= right.left)
+        }
+        val commandBottom = maxOf(address.bottom, commands.maxOf { it.bottom })
+        var previousRight = 0f
+        tabs.forEachIndexed { index, tab ->
+            val tag = "tab_${index}_${System.identityHashCode(tab)}"
+            compose.onNodeWithTag(tag).assertTextContains(tab.title)
+            val title = bounds(tag)
+            val close = bounds("tab_close_$index")
+            assertTrue("Tabs are below commands", title.top >= commandBottom && close.top >= commandBottom)
+            assertTrue("Tab titles and close targets do not overlap", previousRight <= title.left && title.right <= close.left)
+            previousRight = close.right
+        }
+        assertTrue("Add tab follows the open tabs", previousRight <= bounds("new_tab_button").left)
     }
 
-    private fun verifyStates(activity: ComponentActivity, name: String) {
+    private fun verifyPalette(activity: ComponentActivity, name: String) {
         val labels = listOf("Normal", "Foco", "Pulsado", "Abierta", "Puntero")
-        // The states every Compose control draws (TvControlColors), side by side in one sample.
+        // Synthetic palette swatches, not screenshots of controls in interaction states.
         val surfaces = listOf(TvControlColors.surface(focused = false, hovered = false),
             TvControlColors.surface(focused = true, hovered = false),
             TvControlColors.surface(focused = true, hovered = false, pressed = true),
@@ -146,9 +153,9 @@ class BrowserUiSnapshotTest {
             canvas.drawRoundRect(12f + index * 120, 12f, 108f + index * 120, 60f, 12f, 12f, fill)
             canvas.drawText(labels[index], 12f + index * 120, 88f, labelPaint)
         }
-        assertEquals("Normal/focus/pressed/selected/hover must remain visually distinct", 5, surfaces.toSet().size)
+        assertEquals("Normal/focus/pressed/selected/hover palette colors must differ", 5, surfaces.toSet().size)
         fun color(id: Int) = ContextCompat.getColor(activity, id)
-        // Text and icons on every surface they are drawn on, including the inverted focus.
+        // Resource palette contrast; this does not inspect rendered text or icons.
         for ((content, surface) in listOf(R.color.on_surface to R.color.surface_variant,
             R.color.on_surface to R.color.surface_high, R.color.on_surface to R.color.surface,
             R.color.on_surface to R.color.background)) {
