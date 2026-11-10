@@ -97,7 +97,7 @@ object Favicons {
         val privateMode = AppContext.config.privateBrowsing
         val icon = try {
             val row = if (privateMode) null else withContext(Dispatchers.IO) { store.find(host) }
-            stored(row) ?: network.withPermit { fromSite(url) }?.also { if (!privateMode) save(host, it, row) }
+            stored(row) ?: fromSite(url)?.also { if (!privateMode) save(host, it, row) }
         } catch (error: CancellationException) {
             throw error
         } catch (error: Exception) {
@@ -116,8 +116,12 @@ object Favicons {
         }
     }
 
-    /** The first decodable of the site's few candidates closest to [PREFERRED_SIDE]. */
-    private suspend fun fromSite(url: URL): Bitmap? = withContext(Dispatchers.IO) {
+    /**
+     * The first decodable of the site's few candidates closest to [PREFERRED_SIDE]. The network
+     * permit is taken and released on the IO thread: a caller that cannot resume (a busy main
+     * thread, a stopped composition) never keeps it from other lookups.
+     */
+    private suspend fun fromSite(url: URL): Bitmap? = withContext(Dispatchers.IO) { network.withPermit {
         // A page can list hundreds of duplicates, or SVGs that cannot be decoded here.
         val candidates = extractor.iconsFromAddress(url)
             .filter { it.src.length <= MAX_ICON_URL && isWeb(it.src) && !it.type.equals("image/svg+xml", ignoreCase = true) }
@@ -137,7 +141,7 @@ object Favicons {
             bytes?.let(::decode)?.let { return@withContext it }
         }
         null
-    }
+    } }
 
     private fun isWeb(address: String) =
         runCatching { URL(address).protocol.lowercase(Locale.ROOT) in setOf("http", "https") }.getOrDefault(false)

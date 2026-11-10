@@ -6,6 +6,10 @@ import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.utils.IconFinder
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.async
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -16,15 +20,15 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config as RobolectricConfig
 import java.net.InetSocketAddress
 import java.net.URL
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(RobolectricTestRunner::class)
 @RobolectricConfig(application = Application::class, sdk = [28])
 class FaviconNetworkTest {
-    @Test(timeout = 60_000) fun repeatedAndConcurrentMissingIconsHaveAFixedRequestBudget() = runBlocking {
+    @Test fun repeatedAndConcurrentMissingIconsHaveAFixedRequestBudget() = runBlocking {
         val app = RuntimeEnvironment.getApplication()
         val config = Config(app.getSharedPreferences("favicon-network-test", 0)).apply { privateBrowsing = true }
         AppContext.init(app, config)
@@ -45,7 +49,6 @@ class FaviconNetworkTest {
             exchange.responseBody.use { if (page) it.write(html) }
         }
         server.start()
-        val watchdog = dumpThreadsIfStalled()
         try {
             val url = "http://127.0.0.1:${server.address.port}/"
             (1..16).map { async { assertNull(Favicons.get(url)) } }.awaitAll()
@@ -53,10 +56,10 @@ class FaviconNetworkTest {
             repeat(10) { assertNull(Favicons.get(url)) }
             assertEquals("One HTML request and at most three distinct icon attempts", 4, requests.get())
             assertEquals("Do not fetch a manifest when HTML supplies usable candidates", 0, manifests.get())
-        } finally { watchdog.shutdownNow(); server.stop(0); Favicons.clear() }
+        } finally { server.stop(0); Favicons.clear() }
     }
 
-    @Test(timeout = 60_000)
+    @Test
     @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
     fun appIconLoaderWorksWithoutWebViewFaviconCallbacks() = runBlocking {
         val app = RuntimeEnvironment.getApplication()
@@ -80,7 +83,6 @@ class FaviconNetworkTest {
             exchange.responseBody.use { it.write(payload) }
         }
         server.start()
-        val watchdog = dumpThreadsIfStalled()
         try {
             val url = "http://127.0.0.1:${server.address.port}/"
             val icon = requireNotNull(Favicons.get(url))
@@ -89,19 +91,8 @@ class FaviconNetworkTest {
             assertEquals(android.graphics.Color.RED, icon.getPixel(0, 0))
             assertSame(icon, Favicons.get(url))
             assertEquals("Only the app loader fetched the icon once", 1, icons.get())
-        } finally { watchdog.shutdownNow(); server.stop(0); Favicons.clear() }
+        } finally { server.stop(0); Favicons.clear() }
     }
-
-    private fun dumpThreadsIfStalled(): ScheduledExecutorService =
-        Executors.newSingleThreadScheduledExecutor { task ->
-            Thread(task, "favicon-test-watchdog").apply { isDaemon = true }
-        }.apply {
-            schedule({
-                Thread.getAllStackTraces().forEach { (thread, stack) ->
-                    System.err.println("Favicon stall: ${thread.name} ${thread.state}\n${stack.joinToString("\n")}")
-                }
-            }, 30, TimeUnit.SECONDS)
-        }
 
     @Test fun htmlAndManifestCandidateStorageIsBounded() {
         val extractor = IconFinder()
@@ -109,5 +100,35 @@ class FaviconNetworkTest {
         assertEquals(32, extractor.iconsFromDocument(URL("https://test.example"), html.reader().buffered()).first.size)
         val manifest = "{\"icons\":[" + (1..1000).joinToString(",") { "{\"src\":\"/$it.png\"}" } + "]}"
         assertEquals(32, extractor.iconsFromManifest(URL("https://test.example/manifest.json"), manifest.reader()).size)
+    }
+
+    @Test fun aCallerThatCannotResumeDoesNotKeepANetworkPermit() = runBlocking {
+        val app = RuntimeEnvironment.getApplication()
+        AppContext.init(app, Config(app.getSharedPreferences("favicon-permit-test", 0)).apply { privateBrowsing = true })
+        Favicons.clear()
+        val pages = AtomicInteger()
+        // Any loopback host reaches it, so each lookup below is a different site.
+        val server = HttpServer.create(InetSocketAddress(0), 0)
+        server.createContext("/") { exchange ->
+            if (exchange.requestURI.path == "/") pages.incrementAndGet()
+            exchange.sendResponseHeaders(404, -1)
+            exchange.close()
+        }
+        server.start()
+        val port = server.address.port
+        val caller = Executors.newSingleThreadExecutor()
+        val release = CountDownLatch(1)
+        try {
+            // Two lookups, one per network permit, whose caller is then kept busy, as a stopped
+            // composition or a blocked main thread would be.
+            val stalled = CoroutineScope(caller.asCoroutineDispatcher())
+            for (host in listOf("127.0.0.1", "localhost")) stalled.launch { Favicons.get("http://$host:$port/") }
+            caller.execute { release.await() }
+            while (pages.get() < 2) Thread.sleep(10)
+            withTimeout(10_000) { assertNull(Favicons.get("http://127.0.0.2:$port/")) }
+        } finally {
+            release.countDown(); caller.shutdown(); caller.awaitTermination(10, TimeUnit.SECONDS)
+            server.stop(0); Favicons.clear()
+        }
     }
 }
