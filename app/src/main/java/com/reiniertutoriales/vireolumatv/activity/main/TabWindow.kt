@@ -88,18 +88,24 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     override fun requestPermissions(permissions: Array<String>): Int = browser.requestPagePermissions(permissions)
 
-    override fun pickFile(intent: Intent): Boolean = try {
-        browser.filePickerResult.launch(intent)
-        true
-    } catch (_: ActivityNotFoundException) {
-        // Pickers often declare no specific types yet accept any: try once more with */*.
-        try {
-            browser.filePickerResult.launch(intent.setType("*/*"))
+    override fun pickFile(intent: Intent): Boolean {
+        if (browser.filePickerOwner != null) return false
+        browser.filePickerOwner = tab.engine
+        val shown = try {
+            browser.filePickerResult.launch(intent)
             true
         } catch (_: ActivityNotFoundException) {
-            browser.applicationContext.toast(browser.getString(R.string.error_no_file_picker))
-            false
+            // Pickers often declare no specific types yet accept any: try once more with */*.
+            try {
+                browser.filePickerResult.launch(intent.setType("*/*"))
+                true
+            } catch (_: ActivityNotFoundException) {
+                browser.applicationContext.toast(browser.getString(R.string.error_no_file_picker))
+                false
+            }
         }
+        if (!shown) browser.filePickerOwner = null
+        return shown
     }
 
     override fun interceptNavigation(url: String): Boolean {

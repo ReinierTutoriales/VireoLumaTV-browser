@@ -90,6 +90,7 @@ internal class BrowserChromeClient(private val view: BrowserWebView) : WebChrome
     }
 
     override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri>>, fileChooserParams: FileChooserParams): Boolean {
+        if (filePicked != null) return false
         filePicked = filePathCallback
         val shown = window?.pickFile(fileChooserParams.createIntent()) == true
         if (!shown) filePicked = null
@@ -101,6 +102,13 @@ internal class BrowserChromeClient(private val view: BrowserWebView) : WebChrome
         val waiting = filePicked ?: return
         filePicked = null
         waiting.onReceiveValue(FileChooserParams.parseResult(resultCode, data))
+    }
+
+    /** A chooser belongs to one document, never the page that replaces it. */
+    fun cancelFileChooser() {
+        val waiting = filePicked ?: return
+        filePicked = null
+        waiting.onReceiveValue(null)
     }
 
     override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
