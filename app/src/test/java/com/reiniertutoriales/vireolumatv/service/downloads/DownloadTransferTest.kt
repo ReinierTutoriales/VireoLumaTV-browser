@@ -13,6 +13,7 @@ import org.robolectric.annotation.Config
 import java.io.File
 import java.io.InputStream
 import java.net.InetSocketAddress
+import java.net.URL
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
 
@@ -151,6 +152,24 @@ class DownloadTransferTest {
             assertEquals(listOf("$base/watch?token=secret", "$base/"), received.toList())
         } finally {
             other.stop(0)
+        }
+    }
+
+    @Test fun refererTreatsDefaultPortsAsTheSameOriginAndPreservesEscapedPaths() {
+        assertEquals("https://example.test/watch%2Fvideo?q=a%26b", FileTransfer.downloadReferer(
+            "https://user:secret@EXAMPLE.test:443/watch%2Fvideo?q=a%26b#private",
+            URL("https://example.test/file")))
+        assertEquals("http://[::1]:8080/watch", FileTransfer.downloadReferer(
+            "http://user:secret@[::1]:8080/watch#private", URL("http://[::1]:8080/file")))
+        assertEquals("https://example.test/", FileTransfer.downloadReferer(
+            "https://example.test/private?q=secret", URL("https://example.test:8443/file")))
+    }
+
+    @Test fun nonWebMalformedAndMissingReferersAreOmitted() {
+        val destination = URL("https://example.test/file")
+        for (source in listOf(null, "", "relative/path", "file:///private/file", "about:blank",
+            "https://example.test/path\r\nInjected: secret", "https://example.test:70000/path")) {
+            assertNull(source, FileTransfer.downloadReferer(source, destination))
         }
     }
 
