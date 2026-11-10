@@ -73,9 +73,6 @@
         android:background="@drawable/bg_scrim_top"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:paddingStart="@dimen/safe_horizontal"
-        android:paddingTop="@dimen/safe_vertical"
-        android:paddingEnd="@dimen/safe_horizontal"
         android:paddingBottom="48dp">
 
         <com.reiniertutoriales.vireolumatv.activity.main.view.ComposeControlsHost
