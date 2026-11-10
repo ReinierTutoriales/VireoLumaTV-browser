@@ -918,8 +918,9 @@ open class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Back closes the innermost thing open: pointer menu, fullscreen, typing, capsule, grab mode,
-     * D-pad mode (before any web history, as its help promises); else opens the capsule.
+     * Back closes the innermost thing open: pointer menu, fullscreen, typing, Home's tile editing;
+     * on Home it then leaves the app; elsewhere capsule, grab mode, D-pad mode (before any web
+     * history, as its help promises); else opens the capsule.
      */
     internal fun consumeBack() {
         val pointer = vb.pageContainer.pointerController
@@ -930,6 +931,11 @@ open class MainActivity : ComponentActivity() {
                 tabStore.currentTab.value?.engine?.closeFullscreen()
             }
             vb.controlsHost.isEditingAddress -> vb.controlsHost.cancelAddressInput()
+            nativeHome?.consumeBack() == true -> Unit
+            // N08: Home is the app's root screen, so Back there leaves to the launcher whatever the
+            // tab's web history, unless the capsule is previewing another tab (Back returns to Home).
+            nativeHome?.isVisible == true && (!overlayVisible || tabAtStripSelection() === tabStore.currentTab.value) &&
+                SystemClock.uptimeMillis() - fullscreenBackAt >= FULLSCREEN_BACK_SETTLE_MS -> finish()
             // A second press while the video is still coming down (or a remote's double send) must not
             // close the capsule that the first one opened.
             overlayVisible -> if (SystemClock.uptimeMillis() - fullscreenBackAt >= FULLSCREEN_BACK_SETTLE_MS) {

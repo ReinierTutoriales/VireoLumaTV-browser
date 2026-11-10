@@ -12,6 +12,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.isFocusable
 import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -286,6 +287,47 @@ class NativeHomeTest {
             scripts += script
             callback = resultCallback
         }
+    }
+
+    @Test fun backOnHomeLeavesTheApp() = Fixture().use { f ->
+        f.home.update(f.tab)
+        f.finishRead()
+        f.activity.consumeBack()
+        assertTrue("Back on Home reaches the launcher", f.activity.isFinishing)
+    }
+
+    @Test fun backOnHomeWithTheStartupCapsuleOpenLeavesTheApp() = Fixture().use { f ->
+        f.home.update(f.tab)
+        f.finishRead()
+        f.activity.openCapsule()
+        compose.waitForIdle()
+        f.activity.consumeBack()
+        assertTrue("A capsule opened at startup on Home must not need extra presses", f.activity.isFinishing)
+    }
+
+    @Test fun backOnHomeFirstLeavesTileEditingThenTheApp() = Fixture().use { f ->
+        f.home.update(f.tab)
+        f.finishRead()
+        compose.onNodeWithTag("home_tile_edit").performClick()
+        f.drain()
+        f.activity.consumeBack()
+        f.drain()
+        assertFalse(f.activity.isFinishing)
+        compose.onNodeWithTag("home_tile_edit").assertTextContains(compose.activity.getString(R.string.home_edit))
+        f.activity.consumeBack()
+        assertTrue(f.activity.isFinishing)
+    }
+
+    @Test fun backWhileTheCapsulePreviewsAnotherTabReturnsToHome() = Fixture().use { f ->
+        f.home.update(f.tab)
+        f.finishRead()
+        f.activity.openCapsule()
+        compose.waitForIdle()
+        f.vb.controlsHost.current = 1
+        f.activity.consumeBack()
+        assertFalse(f.activity.isFinishing)
+        assertEquals(View.INVISIBLE, f.vb.controlsOverlay.visibility)
+        assertSame(f.tab, f.tabs.currentTab.value)
     }
 
     private inner class Fixture : AutoCloseable {
