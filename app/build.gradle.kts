@@ -233,6 +233,9 @@ androidComponents {
 }
 
 tasks.withType<Test>().configureEach {
+    if (providers.environmentVariable("CI").isPresent) {
+        testLogging { events("started", "passed", "skipped", "failed") }
+    }
     dependsOn(buildRustAdblockHost)
     val hostLib = buildRustAdblockHost.flatMap { it.outputDir.file("libvireoadblock.so") }
     inputs.files(hostLib)
