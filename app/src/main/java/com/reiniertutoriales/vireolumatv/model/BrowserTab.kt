@@ -11,12 +11,15 @@ import androidx.room3.Entity
 import androidx.room3.Ignore
 import androidx.room3.PrimaryKey
 import com.reiniertutoriales.vireolumatv.AppContext
+import com.reiniertutoriales.vireolumatv.BuildConfig
 import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 import com.reiniertutoriales.vireolumatv.utils.md5Name
 import com.reiniertutoriales.vireolumatv.webengine.Engines
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.DataInputStream
+import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
@@ -56,6 +59,9 @@ data class BrowserTab(
     @Ignore val persistenceRevision = AtomicLong(0)
     /** The last address WebView asked to load in this tab. */
     @Ignore var lastLoadingUrl: String? = null
+    /** Explicit navigation supersedes a pending asynchronous history restore. Main-thread only. */
+    @Ignore var navigationRevision = 0L
+    @Ignore var historyRestorePending = false
     @Ignore var blockedAds = 0
     @Ignore var blockedPopups = 0
     /** The last answer about this tab's site; read and written on the main thread only. */
@@ -74,14 +80,13 @@ data class BrowserTab(
     override fun hashCode(): Int = System.identityHashCode(this)
 
     /** Restores the engine from the kept or stored state; false means the address must be loaded. */
-    fun restorePage(): Boolean {
+    fun restorePage(state: Any? = savedState): Boolean {
         if (rendererLost) return false
         return try {
-            val state = savedState ?: stateFile()?.takeIf { it.exists() }?.readBytes()?.let(engine::readHistory)
-                ?: return false
+            if (state == null) return false
             val restored = engine.restoreHistory(state)
-            // Keep the snapshot only once the engine accepted it; the file stays until the next save replaces it.
-            savedState = if (restored) state else null
+            // An unsaved memory snapshot stays until its atomic write succeeds.
+            if (!restored && savedState === state) savedState = null
             restored
         } catch (error: Exception) {
             savedState = null
@@ -90,18 +95,36 @@ data class BrowserTab(
         }
     }
 
+    /** Disk and Parcel work only; the caller runs this on IO, then restores WebView on Main. */
+    fun readStoredHistory(): Any? = try {
+        stateFile()?.takeIf { it.isFile }?.let { file ->
+            val length = file.length()
+            if (length !in 1..(Int.MAX_VALUE - 8).toLong()) null else file.inputStream().use { input ->
+                // One exact-sized array: avoid a growing buffer plus a second full copy.
+                val bytes = ByteArray(length.toInt())
+                DataInputStream(input).readFully(bytes)
+                if (input.read() != -1) throw IOException("Tab state changed while being read")
+                engine.readHistory(bytes)
+            }
+        }
+    } catch (error: Exception) {
+        Log.w(TAG, "Could not read tab state; loading the saved address", error)
+        null
+    }
+
     /**
      * Writes [savedState] to this tab's own state file, atomically. A name from an older version,
      * which duplicate tabs may share, is replaced by a new one instead of being overwritten.
      */
-    fun saveHistoryFile() {
-        val state = savedState ?: return
+    fun saveHistoryFile(): Boolean {
+        val state = savedState ?: return false
         val prefix = if (incognito) "private-tab-" else "tab-"
         val name = wvStateFileName?.takeIf { it.startsWith(prefix) } ?: prefix + UUID.randomUUID()
         val bytes = if (state is Bundle) BundleBytes.encode(state) else state.toString().toByteArray(Charsets.UTF_8)
+        if (BuildConfig.DEBUG) Log.d(TAG, "Encoded tab history: ${bytes.size} bytes")
         try {
             val directory = File(AppContext.context.filesDir, HISTORY_DIR)
-            if (!directory.isDirectory && !directory.mkdir()) return
+            if (!directory.isDirectory && !directory.mkdir()) return false
             val file = AtomicFile(File(directory, name))
             val output = file.startWrite()
             try {
@@ -112,8 +135,10 @@ data class BrowserTab(
                 throw error
             }
             wvStateFileName = name
+            return true
         } catch (error: Exception) {
             Log.w(TAG, "Could not save tab state", error)
+            return false
         }
     }
 
@@ -130,6 +155,8 @@ data class BrowserTab(
     }
 
     fun onPause() {
+        // A new view waiting for its history has no replacement history to persist yet.
+        if (historyRestorePending) return
         savedState = engine.saveHistory()
     }
 

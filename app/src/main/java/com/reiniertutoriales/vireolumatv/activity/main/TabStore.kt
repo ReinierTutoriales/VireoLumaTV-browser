@@ -17,6 +17,7 @@ import com.reiniertutoriales.vireolumatv.utils.observable.LiveList
 import com.reiniertutoriales.vireolumatv.utils.observable.LiveValue
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
@@ -40,6 +41,8 @@ class TabStore : ScreenModel() {
     /** Orders saves and deletions; held only around the IO part. */
     @VisibleForTesting internal val storage = Mutex()
     private var loadedIncognito = config.privateBrowsing
+    @VisibleForTesting internal var restoreJob: Job? = null
+        private set
 
     init {
         // A tab's stored position is its place in the list; reordering stores the new places.
@@ -79,18 +82,22 @@ class TabStore : ScreenModel() {
     suspend fun saveTab(tab: BrowserTab) {
         val revision = tab.persistenceRevision.incrementAndGet()
         val snapshot = tab.copy().apply { savedState = tab.savedState }
+        var historyWritten = false
         withContext(Dispatchers.IO + NonCancellable) {
             storage.withLock {
                 if (tab.closed || revision != tab.persistenceRevision.get()) return@withLock
                 snapshot.id = tab.id
-                snapshot.saveHistoryFile()
+                historyWritten = snapshot.saveHistoryFile()
                 tab.wvStateFileName = snapshot.wvStateFileName
                 tab.id = AppDatabase.db.tabDao().save(snapshot)
             }
         }
+        if (historyWritten && !tab.closed && revision == tab.persistenceRevision.get() &&
+            tab.savedState === snapshot.savedState) tab.savedState = null
     }
 
     fun onCloseTab(tab: BrowserTab) {
+        if (currentTab.value === tab) restoreJob?.cancel()
         tab.closed = true
         tab.engine.detach(destroyView = true)
         openTabs.remove(tab)
@@ -103,6 +110,7 @@ class TabStore : ScreenModel() {
     }
 
     fun onCloseOthers() = workScope.launch {
+        restoreJob?.cancel()
         val closing = openTabs.toList()
         for (tab in closing) {
             tab.closed = true
@@ -121,6 +129,7 @@ class TabStore : ScreenModel() {
 
     /** The window is going away: every WebView is destroyed, the tabs stay open. */
     fun onDetachActivity() {
+        restoreJob?.cancel()
         for (tab in openTabs) tab.engine.detach(destroyView = true)
     }
 
@@ -139,6 +148,7 @@ class TabStore : ScreenModel() {
     ) {
         val previous = currentTab.value
         if (previous === newTab && newTab.engine.view != null) return
+        restoreJob?.cancel()
         if (previous !== newTab) {
             openTabs.forEach { it.selected = false }
             previous?.let { old ->
@@ -151,9 +161,12 @@ class TabStore : ScreenModel() {
         }
         releaseBackgroundWebViews(newTab)
         var needsLoad = false
-        if (newTab.engine.view == null) {
-            webViewProvider(newTab) ?: return
-            needsLoad = !newTab.restorePage()
+        var readFromDisk = false
+        if (newTab.engine.view == null || newTab.historyRestorePending) {
+            if (newTab.engine.view == null) webViewProvider(newTab) ?: return
+            readFromDisk = !newTab.rendererLost && newTab.savedState == null && newTab.wvStateFileName != null
+            newTab.historyRestorePending = readFromDisk
+            if (!readFromDisk) needsLoad = !newTab.restorePage()
         }
         newTab.engine.attach(window, webViewParent)
         if (needsLoad && loadInitialUrl) {
@@ -161,6 +174,21 @@ class TabStore : ScreenModel() {
             newTab.rendererLost = false
         }
         newTab.engine.setOnline(VireoLumaTVApp.instance.hasInternet())
+        if (readFromDisk) {
+            val view = newTab.engine.view
+            val navigation = newTab.navigationRevision
+            restoreJob = workScope.launch {
+                val state = withContext(Dispatchers.IO) { storage.withLock { newTab.readStoredHistory() } }
+                // A switch, close, teardown or explicit navigation supersedes this disk read.
+                if (newTab.closed || currentTab.value !== newTab || newTab.engine.view !== view ||
+                    newTab.navigationRevision != navigation || newTab.engine.url != null) return@launch
+                newTab.historyRestorePending = false
+                if (!newTab.restorePage(state) && loadInitialUrl) {
+                    newTab.engine.load(newTab.url)
+                    newTab.rendererLost = false
+                }
+            }
+        }
     }
 
     /**

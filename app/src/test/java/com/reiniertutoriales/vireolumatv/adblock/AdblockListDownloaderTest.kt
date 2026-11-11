@@ -139,14 +139,14 @@ class AdblockListDownloaderTest {
         } finally { server.stop(0) }
     }
 
-    @Test fun gzipResponseIsDecodedAndIdentityIsRequested() {
+    @Test fun gzipResponseIsDecodedAndGzipIsRequested() {
         val rules = "[Adblock Plus 2.0]\n" + (1..120).joinToString("\n") { "||ads$it.test^" }
         val bytes = ByteArrayOutputStream().also { out ->
             GZIPOutputStream(out).use { it.write(rules.toByteArray(Charsets.UTF_8)) }
         }.toByteArray()
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/gzip") { exchange ->
-            assertEquals("identity", exchange.requestHeaders.getFirst("Accept-Encoding"))
+            assertEquals("gzip", exchange.requestHeaders.getFirst("Accept-Encoding"))
             exchange.responseHeaders.add("Content-Encoding", "gzip")
             exchange.sendResponseHeaders(200, bytes.size.toLong())
             exchange.responseBody.use { it.write(bytes) }
@@ -155,6 +155,29 @@ class AdblockListDownloaderTest {
         try {
             val url = "http://127.0.0.1:${server.address.port}/gzip"
             assertEquals(rules, AdblockListDownloader.download(listOf(url), true))
+        } finally { server.stop(0) }
+    }
+
+    @Test fun oversizedGzipCannotReplaceTheValidatedMirror() {
+        val rules = "[Adblock Plus 2.0]\n" + (1..120).joinToString("\n") { "||ads$it.test^" }
+        val oversized = ByteArrayOutputStream().also { out ->
+            GZIPOutputStream(out).use { it.write(ByteArray(8 * 1024 * 1024 + 1) { 65 }) }
+        }.toByteArray()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/oversized") { exchange ->
+            exchange.responseHeaders.add("Content-Encoding", "gzip")
+            exchange.sendResponseHeaders(200, oversized.size.toLong())
+            exchange.responseBody.use { it.write(oversized) }
+        }
+        server.createContext("/mirror") { exchange ->
+            val bytes = rules.toByteArray()
+            exchange.sendResponseHeaders(200, bytes.size.toLong())
+            exchange.responseBody.use { it.write(bytes) }
+        }
+        server.start()
+        try {
+            val base = "http://127.0.0.1:${server.address.port}"
+            assertEquals(rules, AdblockListDownloader.download(listOf("$base/oversized", "$base/mirror"), true))
         } finally { server.stop(0) }
     }
 

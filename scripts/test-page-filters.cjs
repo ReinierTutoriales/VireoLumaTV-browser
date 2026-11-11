@@ -255,6 +255,75 @@ function page(filters, host = 'stream.example', setup = '') {
     batched.flush();
     vm.runInContext(`assert.equal(lookups.length, 2); assert.equal(lookups[1].classes, 'new-ad');`, batched);
 
+    // A large real-DOM traversal yields and never materializes the entire subtree as a NodeList.
+    let sliced = page({hide: [], script: ''}, 'stream.example', `
+        var visited = 0, names = [];
+        var root = {nodeType: 1, id: '', classList: [], querySelectorAll() { throw Error('Full subtree scan'); }};
+        var children = Array.from({length: 1000}, (_, i) => ({nodeType: 1, id: '', classList: ['slot-' + i]}));
+        document.documentElement = root;
+        document.readyState = 'complete';
+        document.createNodeIterator = function () {
+            var index = 0;
+            return {nextNode() { visited++; return children[index++]; }};
+        };
+        VireoLumaTVApp.hiddenSelectors = function (url, classes) { names.push(...classes.split(' ')); return '[]'; };
+    `);
+    vm.runInContext(`assert.ok(visited <= 256); assert.ok(names.length < 1000);`, sliced);
+    sliced.flush();
+    vm.runInContext(`assert.equal(new Set(names).size, 1000);`, sliced);
+
+    // Model live DOM traversal, including NodeIterator's pre-removal adjustment.
+    let removal = page({hide: [], script: ''}, 'stream.example', `
+        var names = [], iterators = [];
+        var root = {nodeType: 1, id: '', classList: []};
+        var children = Array.from({length: 1000}, (_, i) => ({nodeType: 1, id: '', classList: ['slot-' + i], parentElement: root}));
+        document.documentElement = root; document.readyState = 'complete';
+        function after(reference) {
+            if (reference === root) return children[0] || null;
+            return reference.parentElement === root ? children[children.indexOf(reference) + 1] || null : null;
+        }
+        document.createTreeWalker = function () {
+            var reference = root;
+            return {nextNode() { return reference = after(reference); }};
+        };
+        document.createNodeIterator = function () {
+            var iterator = {reference: root, before: true,
+                nextNode() {
+                    if (this.before) { this.before = false; return this.reference; }
+                    var next = after(this.reference);
+                    if (next) this.reference = next;
+                    return next;
+                }};
+            iterators.push(iterator); return iterator;
+        };
+        function removeCurrent() {
+            var current = iterators.length ? iterators[0].reference : children[254];
+            var index = children.indexOf(current);
+            assert.ok(index >= 0);
+            iterators.forEach(function (iterator) {
+                if (iterator.reference === current) { iterator.reference = children[index - 1] || root; iterator.before = false; }
+            });
+            children.splice(index, 1); current.parentElement = null;
+            observers[0].fn([{type: 'childList', addedNodes: [], removedNodes: [current]}]);
+        }
+        VireoLumaTVApp.hiddenSelectors = function (url, classes) { names.push(...classes.split(' ')); return '[]'; };
+    `);
+    vm.runInContext(`assert.ok(names.length < 1000); removeCurrent();`, removal);
+    removal.flush();
+    vm.runInContext(`assert.equal(new Set(names).size, 1000, 'removing current node must not drop later siblings');`, removal);
+
+    // Every procedural rule still runs, but a batch yields after at most sixteen rules.
+    let proceduralBatch = page({procedural: Array.from({length: 40}, (_, i) => JSON.stringify({
+        selector: [{type: 'css-selector', arg: '.slot-' + i}, {type: 'has-text', arg: 'ad'}]
+    }))}, 'stream.example', `
+        var queries = [];
+        document.documentElement = {};
+        document.querySelectorAll = function (query) { queries.push(query); return []; };
+    `);
+    vm.runInContext(`__ready(); assert.ok(queries.length > 0 && queries.length <= 16);`, proceduralBatch);
+    proceduralBatch.flush();
+    vm.runInContext(`assert.equal(queries.length, 40); assert.equal(new Set(queries).size, 40);`, proceduralBatch);
+
     // Frames inserted by the named method get this window's wrapped functions (fetch, and
     // XMLHttpRequest for ".prototype"); cross-origin frames and other nodes are left alone.
     let multi = page({ script: call('trusted-prevent-dom-bypass', 'Node.prototype.appendChild', 'fetch JSON.parse') }, 'stream.example', `

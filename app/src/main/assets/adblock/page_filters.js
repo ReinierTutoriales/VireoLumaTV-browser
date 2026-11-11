@@ -1778,13 +1778,36 @@
     var procedural = (Array.isArray(data.procedural) ? data.procedural : []).slice(0, 512)
         .map(function (entry) { return compileProcedural(entry, extraCss); }).filter(Boolean);
     if (procedural.length) {
-        var runProcedural = function () { procedural.forEach(function (f) { try { f(); } catch (_) {} }); };
+        var procedureIndex = 0, procedureTimer = false, procedureDirty = false;
+        var clock = typeof performance === 'object' && typeof performance.now === 'function' ?
+            function () { return performance.now(); } : function () { return Date.now(); };
+        // Yield between rules; an individual DOM query cannot be interrupted by JavaScript.
+        var runProcedural = function () {
+            procedureTimer = false;
+            var deadline = clock() + 4, count = 0;
+            do {
+                try { procedural[procedureIndex++](); } catch (_) {}
+                count++;
+            } while (procedureIndex < procedural.length && count < 16 && clock() < deadline);
+            if (procedureIndex < procedural.length) {
+                procedureTimer = true;
+                setTimeout(runProcedural, 16);
+            } else {
+                procedureIndex = 0;
+                if (procedureDirty) {
+                    procedureDirty = false;
+                    procedureTimer = true;
+                    setTimeout(runProcedural, 200);
+                }
+            }
+        };
         onReady(function () {
             runProcedural();
             if (typeof MutationObserver !== 'function') return;
             // Batched: at most one pass per 200 ms however busy the page is.
             var pending = false;
             new MutationObserver(function () {
+                if (procedureTimer) { procedureDirty = true; return; }
                 if (pending) return;
                 pending = true;
                 setTimeout(function () { pending = false; runProcedural(); }, 200);
@@ -1836,6 +1859,9 @@
     if (!data.generichide && typeof bridge.hiddenSelectors === 'function') {
         var seenClasses = new Set(), seenIds = new Set(), budget = 4000;
         var newClasses = [], newIds = [], queue = new Map(), scheduled = false, genericSheet = null, genericStyle = null;
+        var genericWork = [], genericCursor = 0;
+        var genericClock = typeof performance === 'object' && typeof performance.now === 'function' ?
+            function () { return performance.now(); } : function () { return Date.now(); };
         var collect = function (el) {
             var id = el.id;
             if (typeof id === 'string' && id && !seenIds.has(id) && seenIds.size < budget && !/\s/.test(id)) {
@@ -1864,18 +1890,41 @@
         };
         var flushGeneric = function () {
             scheduled = false;
-            var nodes = queue; queue = new Map();
+            // Finish the current bounded set before accepting more work; the pending
+            // mutation map remains capped while a large subtree is traversed.
+            var nodes = genericCursor < genericWork.length ? new Map() : queue;
+            if (nodes === queue) queue = new Map();
             nodes.forEach(function (subtree, node) {
                 // An ancestor scan already includes this element and its descendants.
                 for (var parent = node.parentElement; parent; parent = parent.parentElement) {
                     if (nodes.get(parent) === true) return;
                 }
-                collect(node);
-                if (subtree && node.querySelectorAll) {
-                    var inner = node.querySelectorAll('[id],[class]');
-                    for (var k = 0; k < inner.length; k++) collect(inner[k]);
-                }
+                // NodeIterator adjusts its reference when the page removes a node between
+                // batches; TreeWalker would stop at a detached current node.
+                var iterator = subtree && typeof document.createNodeIterator === 'function' ?
+                    document.createNodeIterator(node, 1) : null;
+                var fallback = !iterator && subtree && node.querySelectorAll ? node.querySelectorAll('[id],[class]') : [];
+                genericWork.push({node: iterator ? null : node, iterator: iterator, fallback: fallback, index: 0});
             });
+            var deadline = genericClock() + 4, visited = 0;
+            while (genericCursor < genericWork.length && visited < 256 && genericClock() < deadline) {
+                var work = genericWork[genericCursor];
+                if (work.node) { collect(work.node); work.node = null; visited++; }
+                var next = work.iterator ? work.iterator.nextNode() : work.fallback[work.index++];
+                if (next) { collect(next); visited++; }
+                else genericCursor++;
+                if (seenClasses.size >= budget && seenIds.size >= budget) {
+                    genericCursor = genericWork.length;
+                    break;
+                }
+            }
+            if (genericCursor < genericWork.length) {
+                scheduled = true;
+                setTimeout(flushGeneric, 16);
+            } else {
+                genericWork = []; genericCursor = 0;
+                if (queue.size) { scheduled = true; setTimeout(flushGeneric, 16); }
+            }
             if (!newClasses.length && !newIds.length) return;
             var result = [];
             try { result = JSON.parse(bridge.hiddenSelectors(href, newClasses.join(' '), newIds.join(' ')) || '[]'); } catch (_) {}
@@ -1884,6 +1933,16 @@
         };
         var enqueue = function (node, subtree) {
             if (!node || node.nodeType !== 1) return;
+            // Collapse a mutation burst to a resumable document walk instead of retaining
+            // an unbounded number of node references before the next batch.
+            if (queue.size >= 256 && document.documentElement) {
+                queue.clear();
+                queue.set(document.documentElement, true);
+            }
+            if (queue.get(document.documentElement) === true) {
+                if (!scheduled) { scheduled = true; setTimeout(flushGeneric, 250); }
+                return;
+            }
             queue.set(node, queue.get(node) === true || subtree);
             if (!scheduled) { scheduled = true; setTimeout(flushGeneric, 250); }
         };
