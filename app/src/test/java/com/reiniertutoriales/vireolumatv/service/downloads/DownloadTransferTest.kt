@@ -78,12 +78,12 @@ class DownloadTransferTest {
 
     @Test fun redirectsMayUpgradeToHttpsButNeverDowngradeToHttp() {
         val secure = java.net.URL("https://files.example/start")
-        assertEquals("https://files.example/a.bin", Transfer.redirectTarget(secure, "/a.bin").toString())
-        assertEquals(null, Transfer.redirectTarget(secure, "http://files.example/a.bin"))
+        assertEquals("https://files.example/a.bin", FileTransfer.redirectTarget(secure, "/a.bin").toString())
+        assertEquals(null, FileTransfer.redirectTarget(secure, "http://files.example/a.bin"))
         assertEquals("https://cdn.example/a.bin",
-            Transfer.redirectTarget(java.net.URL("http://files.example/start"), "https://cdn.example/a.bin").toString())
-        assertEquals(null, Transfer.redirectTarget(secure, "ftp://files.example/a.bin"))
-        assertEquals(null, Transfer.redirectTarget(secure, null))
+            FileTransfer.redirectTarget(java.net.URL("http://files.example/start"), "https://cdn.example/a.bin").toString())
+        assertEquals(null, FileTransfer.redirectTarget(secure, "ftp://files.example/a.bin"))
+        assertEquals(null, FileTransfer.redirectTarget(secure, null))
     }
 
     @Test fun endlessRedirectsStopAfterTheLimit() {
