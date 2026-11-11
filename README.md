@@ -1,5 +1,7 @@
 # VireoLumaTV
 
+<img src="assets/brand/logo.svg" width="160" alt="VLTV — VireoLumaTV">
+
 Un navegador web pensado para tu televisor, desarrollado por **ReinierTutoriales**.
 
 VireoLumaTV te permite navegar en Android TV, Google TV y TV boxes compatibles con el mando o un gamepad. Reúne tus páginas, favoritos y descargas en una interfaz oscura y sencilla.

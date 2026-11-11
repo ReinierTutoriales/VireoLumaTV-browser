@@ -27,7 +27,7 @@ fun TvFavicon(url: String?, modifier: Modifier = Modifier, tint: Color = Color.W
     if (!home && url != null) LaunchedEffect(url) { icon = Favicons.get(url) }
     val loaded = icon
     when {
-        home -> Image(painterResource(R.drawable.ic_launcher), contentDescription = null, modifier = modifier)
+        home -> Image(painterResource(R.drawable.brand_symbol), contentDescription = null, modifier = modifier)
         loaded != null -> Image(loaded.asImageBitmap(), contentDescription = null, modifier = modifier)
         else -> TvSymbolIcon(TvSymbol.Globe, modifier, tint = tint)
     }
