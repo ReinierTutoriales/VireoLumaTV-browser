@@ -212,20 +212,37 @@ open class MainActivity : ComponentActivity() {
     }
 
     @VisibleForTesting internal var updateCheck: Job? = null
+    @VisibleForTesting internal var updateTimer: Job? = null
+        private set
+    @VisibleForTesting internal var updateForeground = false
+    @VisibleForTesting internal var pendingUpdate: ReleaseUpdater.Release? = null
+        private set
     private var updateOffer: TvDialog? = null
     @VisibleForTesting internal var startupDone = false
 
     /**
      * The generic build looks for a newer signed release by itself once a day, never in private
      * mode. It runs after start-up, on every return to the screen and when the network comes back;
-     * a check that fails, or whose offer would cover a fullscreen video, stays due. Updating still
-     * asks first, and installing goes through the system installer.
+     * the next due check runs while the screen stays active. Failures retry after an hour.
+     * A release found during fullscreen/background waits in memory until it can be offered;
+     * the timestamp is committed only after that offer, so recreation cannot lose it for a day.
+     * Updating still asks first, and installing goes through the system installer.
      */
     @VisibleForTesting
     internal fun checkForUpdateIfDue(fetch: suspend () -> ReleaseUpdater.Release? = ReleaseUpdater::fetchNewerRelease) {
         if (!BuildConfig.BUILT_IN_AUTO_UPDATE || config.privateBrowsing || !startupDone) return
+        if (pendingUpdate != null) {
+            showPendingUpdate()
+            return
+        }
         if (updateCheck?.isActive == true || updateOffer?.isShowing == true) return
-        if (!UpdateSchedule.isDue(config.prefs, System.currentTimeMillis())) return
+        val wait = UpdateSchedule.delayUntilDue(config.prefs, System.currentTimeMillis())
+        if (wait > 0L) {
+            scheduleUpdateCheck(wait, fetch)
+            return
+        }
+        updateTimer?.cancel()
+        updateTimer = null
         updateCheck = lifecycleScope.launch {
             val release = try {
                 withContext(Dispatchers.IO) { fetch() }
@@ -233,12 +250,55 @@ open class MainActivity : ComponentActivity() {
                 throw cancelled
             } catch (error: Exception) {
                 Log.w(TAG, "Automatic update check failed", error)
+                scheduleUpdateCheck(UpdateSchedule.RETRY_MS, fetch)
                 return@launch
             }
-            if (release != null && (isFullscreen || isFinishing || isDestroyed)) return@launch
-            UpdateSchedule.checked(config.prefs, System.currentTimeMillis())
-            if (release != null) offerUpdate(release)
+            if (release == null) {
+                UpdateSchedule.checked(config.prefs, System.currentTimeMillis())
+                scheduleUpdateCheck(UpdateSchedule.INTERVAL_MS, fetch)
+            } else {
+                pendingUpdate = release
+                showPendingUpdate()
+            }
         }
+    }
+
+    /** One cancellable timer, scoped to the foreground activity; never a background service. */
+    @VisibleForTesting
+    internal fun scheduleUpdateCheck(waitMs: Long, fetch: suspend () -> ReleaseUpdater.Release? = ReleaseUpdater::fetchNewerRelease) {
+        updateTimer?.cancel()
+        updateTimer = null
+        if (!updateForeground || !BuildConfig.BUILT_IN_AUTO_UPDATE || config.privateBrowsing || !startupDone) return
+        updateTimer = lifecycleScope.launch {
+            delay(waitMs.coerceAtLeast(1L))
+            updateTimer = null
+            checkForUpdateIfDue(fetch)
+        }
+    }
+
+    internal fun stopUpdateTimer() {
+        updateForeground = false
+        updateTimer?.cancel()
+        updateTimer = null
+    }
+
+    @VisibleForTesting
+    internal fun showPendingUpdate(show: (ReleaseUpdater.Release) -> Unit = ::offerUpdate): Boolean {
+        val release = pendingUpdate ?: return false
+        if (!updateForeground || !startupDone || config.privateBrowsing || isFullscreen ||
+            isFinishing || isDestroyed || updateOffer?.isShowing == true) return false
+        show(release)
+        pendingUpdate = null
+        UpdateSchedule.checked(config.prefs, System.currentTimeMillis())
+        scheduleUpdateCheck(UpdateSchedule.INTERVAL_MS)
+        return true
+    }
+
+    internal fun onUpdateOfferDismissed() {
+        updateOffer = null
+        if (overlayVisible) vb.controlsHost.requestCommandFocus()
+        // Pause or a due timer may have removed the timer while this dialog was open.
+        if (updateForeground) checkForUpdateIfDue()
     }
 
     private fun offerUpdate(release: ReleaseUpdater.Release) {
@@ -259,10 +319,7 @@ open class MainActivity : ComponentActivity() {
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)
-            .setOnDismissListener {
-                updateOffer = null
-                if (overlayVisible) vb.controlsHost.requestCommandFocus()
-            }
+            .setOnDismissListener { onUpdateOfferDismissed() }
             .show()
     }
 
@@ -301,6 +358,7 @@ open class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        updateForeground = true
         if (!networkCallbackRegistered) {
             try {
                 // The callback reports the current network at once; it then counts as restored.
@@ -319,6 +377,7 @@ open class MainActivity : ComponentActivity() {
     }
 
     override fun onPause() {
+        stopUpdateTimer()
         if (networkCallbackRegistered) {
             networkCallbackRegistered = false
             try {

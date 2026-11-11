@@ -10,6 +10,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.core.net.toUri
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.BuildConfig
@@ -34,6 +37,7 @@ class AboutPage(private val context: Context, private val scope: CoroutineScope,
     var updating by mutableStateOf(false)
         private set
     private var pendingUpdate: File? = null
+    private var updateDialog: TvDialog? = null
 
     @Composable
     fun Content() = Column {
@@ -48,7 +52,9 @@ class AboutPage(private val context: Context, private val scope: CoroutineScope,
         if (BuildConfig.BUILT_IN_AUTO_UPDATE) {
             // Stays enabled while busy so focus does not jump; whileUpdating ignores the extra press.
             TvListRow(stringResource(R.string.action_update),
-                modifier = Modifier.testTag("btnCheckUpdate"), onClick = ::checkForUpdates)
+                supporting = if (updating) stringResource(R.string.update_in_progress) else null,
+                modifier = Modifier.testTag("btnCheckUpdate").semantics { liveRegion = LiveRegionMode.Polite },
+                onClick = ::checkForUpdates)
         }
     }
 
@@ -89,12 +95,18 @@ class AboutPage(private val context: Context, private val scope: CoroutineScope,
     /** For tests: a file downloaded and verified earlier, as after returning from the installer. */
     internal fun setPendingUpdate(file: File?) { pendingUpdate = file }
 
+    internal fun close() {
+        updateDialog?.dismiss()
+        updateDialog = null
+    }
+
     private fun confirmUpdate(release: ReleaseUpdater.Release) {
-        TvDialog.Builder(context)
+        updateDialog = TvDialog.Builder(context)
             .setTitle(R.string.update_available_title)
             .setMessage(context.getString(R.string.update_available_message, release.version))
             .setPositiveButton(R.string.action_update) { _, _ -> downloadAndInstall(release) }
             .setNegativeButton(android.R.string.cancel, null)
+            .setOnDismissListener { updateDialog = null }
             .show()
     }
 

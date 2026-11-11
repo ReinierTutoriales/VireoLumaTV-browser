@@ -24,11 +24,14 @@ import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.AboutPage
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.GeneralPage
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsContent
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
+import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.singleton.shortcuts.RemoteShortcut
 import com.reiniertutoriales.vireolumatv.utils.ReleaseUpdater
 import com.reiniertutoriales.vireolumatv.webengine.EngineBackend
 import com.reiniertutoriales.vireolumatv.webengine.Engines
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.CompletableDeferred
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -38,6 +41,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowToast
@@ -99,6 +103,73 @@ class SettingsTabsTest {
     }
 
     private fun idle() = Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    @Test fun closingSettingsCancelsPendingWorkBeforeItCanShowAResult() {
+        val restore = ScreenModels.replaceForTest(AdBlocker::class, blocker)
+        val result = CompletableDeferred<Unit>()
+        var delivered = false
+        try {
+            compose.runOnUiThread {
+                val screen = SettingsScreen(compose.activity, BrowserSettings())
+                screen.show()
+                screen.about.whileUpdating { result.await(); delivered = true }
+                assertTrue(screen.about.updating)
+                screen.dismiss()
+                result.complete(Unit)
+            }
+            idle()
+            assertFalse("A closed screen cannot deliver a late result", delivered)
+        } finally { restore() }
+    }
+
+    @Test fun busyUpdateRemainsFocusedAndReportsItsState() {
+        show()
+        activate("about_page_tab")
+        val result = CompletableDeferred<Unit>()
+        compose.onNodeWithTag("btnCheckUpdate").requestFocus()
+        compose.runOnUiThread { about.whileUpdating { result.await() } }
+        compose.onNodeWithTag("btnCheckUpdate").assertIsFocused()
+            .assertTextContains(compose.activity.getString(R.string.update_in_progress))
+        compose.runOnUiThread { result.complete(Unit) }
+        idle()
+        compose.onNodeWithTag("btnCheckUpdate").assertTextContains(compose.activity.getString(R.string.action_update))
+    }
+
+    @Test fun destroyingTheOwnerCancelsWorkEvenWithoutDismissingSettings() {
+        val restore = ScreenModels.replaceForTest(AdBlocker::class, blocker)
+        val controller = Robolectric.buildActivity(ComponentActivity::class.java)
+            .apply { get().setTheme(R.style.AppTheme) }.setup()
+        val result = CompletableDeferred<Unit>()
+        var delivered = false
+        var screen: SettingsScreen? = null
+        try {
+            compose.runOnUiThread {
+                val dialog = SettingsScreen(controller.get(), BrowserSettings())
+                screen = dialog
+                dialog.show()
+                dialog.about.whileUpdating { result.await(); delivered = true }
+                assertTrue(dialog.about.updating)
+                controller.pause().stop().destroy()
+                result.complete(Unit)
+            }
+            idle()
+            assertFalse("The activity still owns cancellation", delivered)
+        } finally {
+            screen?.let { dialog -> compose.runOnUiThread { dialog.dismiss() } }
+            restore()
+        }
+    }
+
+    @Config(qualifiers = "w360dp-h540dp-mdpi")
+    @Test fun narrowWindowCanReachEveryTabWithTheRemote() {
+        show()
+        compose.onNodeWithTag("general_page_tab").performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag("shortcuts_page_tab").assertIsFocused().assertIsDisplayed()
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag("about_page_tab").assertIsFocused().assertIsDisplayed()
+            .performKeyInput { pressKey(Key.DirectionCenter) }
+        compose.onNodeWithTag("rowLicense").assertIsDisplayed()
+    }
 
     @Test fun focusAloneNeverSwitchesThePageAndReturningKeepsUnsavedValues() {
         show()

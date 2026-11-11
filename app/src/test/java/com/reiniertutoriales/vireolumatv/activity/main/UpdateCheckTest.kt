@@ -11,6 +11,8 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertSame
+import java.util.concurrent.TimeUnit
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -37,6 +39,10 @@ class UpdateCheckTest {
 
     private fun check(result: () -> ReleaseUpdater.Release?) {
         activity.checkForUpdateIfDue { fetches++; result() }
+        waitForCheck()
+    }
+
+    private fun waitForCheck() {
         repeat(200) {
             if (activity.updateCheck?.isActive != true) return
             Thread.sleep(5)
@@ -76,5 +82,80 @@ class UpdateCheckTest {
         check { ReleaseUpdater.Release("99.0.0", "app.apk", "https://example.test/app.apk", "0".repeat(64)) }
         assertEquals(1, fetches)
         assertTrue(due)
+    }
+
+    @Test fun fullscreenOfferIsRetainedAndShownOnceWithoutAnotherFetch() {
+        val release = ReleaseUpdater.Release("99.0.0", "app.apk", "https://example.test/app.apk", "0".repeat(64))
+        activity.isFullscreen = true
+        activity.updateForeground = true
+        check { release }
+        assertSame(release, activity.pendingUpdate)
+        check { error("Cached release must not be fetched again") }
+        var offers = 0
+        assertFalse(activity.showPendingUpdate { offers++ })
+        activity.isFullscreen = false
+        assertTrue(activity.showPendingUpdate { assertSame(release, it); offers++ })
+        assertFalse(activity.showPendingUpdate { offers++ })
+        assertEquals(1, offers)
+        assertEquals(1, fetches)
+        assertFalse(due)
+        assertTrue(activity.updateTimer?.isActive == true)
+    }
+
+    @Test fun aBackgroundResultWaitsForForegroundAndPrivateModeCannotShowIt() {
+        val release = ReleaseUpdater.Release("99.0.0", "app.apk", "https://example.test/app.apk", "0".repeat(64))
+        check { release }
+        assertFalse(activity.showPendingUpdate { error("Background offer") })
+        assertSame(release, activity.pendingUpdate)
+        assertTrue(due)
+        activity.updateForeground = true
+        AppContext.config.privateBrowsing = true
+        assertFalse(activity.showPendingUpdate { error("Private offer") })
+        AppContext.config.privateBrowsing = false
+        assertTrue(activity.showPendingUpdate { assertSame(release, it) })
+        assertFalse(due)
+    }
+
+    @Test fun dueTimerChecksWhileForegroundAndPauseCancelsTheNextTimer() {
+        activity.updateForeground = true
+        activity.scheduleUpdateCheck(10L) { fetches++; null }
+        shadowOf(Looper.getMainLooper()).idleFor(11L, TimeUnit.MILLISECONDS)
+        waitForCheck()
+        assertEquals(1, fetches)
+        val next = requireNotNull(activity.updateTimer)
+        assertTrue(next.isActive)
+        activity.stopUpdateTimer()
+        assertTrue(next.isCancelled)
+        assertFalse(activity.updateForeground)
+        activity.scheduleUpdateCheck(10L) { error("Paused check") }
+        assertEquals(null, activity.updateTimer)
+    }
+
+    @Test fun aFailedForegroundCheckSchedulesABoundedRetry() {
+        activity.updateForeground = true
+        check { throw java.io.IOException("offline") }
+        assertTrue(due)
+        assertTrue(activity.updateTimer?.isActive == true)
+        assertTrue(UpdateSchedule.RETRY_MS > 0L && UpdateSchedule.RETRY_MS < UpdateSchedule.INTERVAL_MS)
+    }
+
+    @Test fun dismissAfterPauseRearmsOneTimerWithoutRefetchingTheOfferedRelease() {
+        activity.updateForeground = true
+        activity.isFullscreen = true
+        check { ReleaseUpdater.Release("99.0.0", "app.apk", "https://example.test/app.apk", "0".repeat(64)) }
+        activity.isFullscreen = false
+        assertTrue(activity.showPendingUpdate {})
+        val beforePause = requireNotNull(activity.updateTimer)
+        activity.stopUpdateTimer()
+        assertTrue(beforePause.isCancelled)
+        activity.updateForeground = true
+        activity.onUpdateOfferDismissed()
+        val afterDismiss = requireNotNull(activity.updateTimer)
+        assertTrue(afterDismiss.isActive)
+        assertEquals(1, fetches)
+        activity.onUpdateOfferDismissed()
+        assertTrue(afterDismiss.isCancelled)
+        assertTrue(activity.updateTimer?.isActive == true)
+        assertEquals(1, fetches)
     }
 }

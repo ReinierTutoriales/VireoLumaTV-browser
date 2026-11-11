@@ -110,7 +110,7 @@ class GeneralPage(
                 onBlockerChanged()
             }
             if (adBlock) {
-                blockerChanges.let { SettingsInfo(blockerState(), Modifier.testTag("tvAdBlockerListInfo")) }
+                BlockerStatus()
                 // Stays in place while busy so focus does not move; a second press is ignored.
                 TvListRow(stringResource(R.string.blocker_update_lists), symbol = TvSymbol.Refresh,
                     modifier = Modifier.testTag("btnAdBlockerUpdate"), onClick = {
@@ -124,7 +124,11 @@ class GeneralPage(
             SettingsSection(R.string.settings_section_display)
             SettingsChoice(context, R.string.settings_language, "spAppLanguage",
                 AppLanguages.names(context.getString(R.string.language_system)), AppLanguages.chosen(context)) { position ->
-                (context as? Activity)?.let { AppLanguages.choose(it, position) }
+                (context as? Activity)?.let {
+                    // Changing locales recreates the activity without closing this dialog first.
+                    save()
+                    AppLanguages.choose(it, position)
+                }
             }
             SettingsToggle(R.string.settings_darken_pages, "llWebViewAlgorithmicDarkening", darken) {
                 darken = it; config.darkenPages = it
@@ -195,6 +199,11 @@ class GeneralPage(
             config.blockListRetryAt = 0L
             config.blockListUrl.value = source
         }
+    }
+
+    @Composable
+    private fun BlockerStatus() {
+        blockerChanges.let { SettingsInfo(blockerState(), Modifier.testTag("tvAdBlockerListInfo")) }
     }
 
     private fun blockerState(): String {
