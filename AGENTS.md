@@ -3,6 +3,11 @@
 ## Project
 Simple WebView-only Android TV browser optimized for remote control and low-memory devices using Android System WebView.
 
+## Product name (owner decision, 2026-11-11)
+- **VireoLumaTV** is the official application and project name. **VLTV** is only its initials, used in the logo; never interpret it as a rename or separate brand.
+- Use VireoLumaTV in app labels, repository descriptions and release titles. The logo may use VLTV; the small favicon may use the bird alone. Keep the initials unchanged across languages.
+- Preserve this naming contract in future branding work; see `assets/brand/README.md`.
+
 ## Stack
 - Kotlin / Android (WebView)
 - Gradle Kotlin DSL

@@ -1,6 +1,8 @@
 # VireoLumaTV
 
-<img src="assets/brand/logo.svg" width="160" alt="VLTV — VireoLumaTV">
+<img src="assets/brand/logo.svg" width="160" alt="Logotipo de VireoLumaTV con las iniciales VLTV">
+
+**VLTV son las iniciales de VireoLumaTV**, utilizadas en el logotipo. El nombre de la aplicación y del proyecto es **VireoLumaTV**.
 
 Un navegador web pensado para tu televisor, desarrollado por **ReinierTutoriales**.
 
