@@ -78,9 +78,20 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
         }
 
     override fun load(url: String) { tab.navigationRevision++; webView?.loadUrl(url) }
-    override fun reload() { tab.navigationRevision++; webView?.reload() }
-    override fun back() { tab.navigationRevision++; webView?.let { view -> meaningfulBackOffset(view)?.let(view::goBackOrForward) } }
-    override fun forward() { tab.navigationRevision++; webView?.goForward() }
+    override fun reload() {
+        val view = webView ?: return
+        tab.navigationRevision++
+        // Reload can be requested while the disk history is still being read.
+        if (view.url == null) view.loadUrl(tab.url) else view.reload()
+    }
+    override fun back() { webView?.let { view -> meaningfulBackOffset(view)?.let { offset ->
+        tab.navigationRevision++
+        view.goBackOrForward(offset)
+    } } }
+    override fun forward() { webView?.takeIf { it.canGoForward() }?.let {
+        tab.navigationRevision++
+        it.goForward()
+    } }
     override fun zoom(closer: Boolean) { webView?.run { if (closer) zoomIn() else zoomOut() } }
     override fun setOnline(online: Boolean) { webView?.setNetworkAvailable(online) }
     internal val networkFailure = NetworkFailure()

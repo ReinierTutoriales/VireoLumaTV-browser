@@ -58,7 +58,11 @@ class TabRestoreFallbackTest {
         assertTrue("Asynchronous restoration must complete", done())
     }
 
-    @Test fun diskReadRunsOffMainAndCannotReplaceExplicitNavigation() {
+    @Test fun diskReadRunsOffMainAndOnlyRestoresWithoutNewNavigation() {
+        for (navigate in listOf(false, true)) verifyDiskRestore(navigate)
+    }
+
+    private fun verifyDiskRestore(navigate: Boolean) {
         val app = RuntimeEnvironment.getApplication()
         val started = CountDownLatch(1)
         val release = CountDownLatch(1)
@@ -92,12 +96,11 @@ class TabRestoreFallbackTest {
             model.changeTab(tab, { View(app).also { liveView = it } }, FrameLayout(app), window)
             drainUntil { started.count == 0L }
             assertEquals(0, restored.get())
-            tab.navigationRevision++
+            if (navigate) tab.navigationRevision++
             release.countDown()
             drainUntil { finished.get() }
-            model.onDetachActivity()
-            shadowOf(Looper.getMainLooper()).idle()
-            assertEquals(0, restored.get())
+            drainUntil { model.restoreJob?.isCompleted == true }
+            assertEquals(if (navigate) 0 else 1, restored.get())
         } finally { release.countDown(); model.clear(); file.delete() }
     }
 

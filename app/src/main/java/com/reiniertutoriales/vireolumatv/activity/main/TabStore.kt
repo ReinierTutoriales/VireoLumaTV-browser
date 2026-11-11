@@ -41,7 +41,8 @@ class TabStore : ScreenModel() {
     /** Orders saves and deletions; held only around the IO part. */
     @VisibleForTesting internal val storage = Mutex()
     private var loadedIncognito = config.privateBrowsing
-    private var restoreJob: Job? = null
+    @VisibleForTesting internal var restoreJob: Job? = null
+        private set
 
     init {
         // A tab's stored position is its place in the list; reordering stores the new places.
