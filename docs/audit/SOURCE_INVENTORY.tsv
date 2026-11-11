@@ -589,3 +589,5 @@ assets/brand/logo.svg	PROPIO
 scripts/generate-brand-assets.py	PROPIO
 assets/brand/logo-readme-light.svg	PROPIO
 assets/brand/logo-readme-dark.svg	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/LocalNetworkPrompt.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/LocalNetworkAccessTest.kt	PROPIO
