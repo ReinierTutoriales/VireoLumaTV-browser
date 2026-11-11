@@ -322,6 +322,17 @@ https://developer.android.com/reference/android/media/MediaCodecInfo .
 Prueba física con mando/teclado/proveedor WebView pendiente.
 
 
+## Aviso de actualizaciones de la aplicación
+
+La variante `generic` comprueba nuevas releases firmadas cada 24 horas. Mientras
+la ventana está activa, un único temporizador dispara la siguiente comprobación;
+se cancela al pausar y se recalcula al volver. Un fallo reintenta a la hora, además
+de los disparadores de conectividad/primer plano. Una release detectada durante
+fullscreen o en segundo plano se conserva hasta poder mostrar el diálogo al salir
+del vídeo o volver a la app. No se retrasa otra comprobación 24 horas hasta mostrar
+ese aviso; una recreación anterior vuelve a comprobar. No se consulta ni muestra
+en incógnito, `google` o `foss`, ni se instala sin aceptación del usuario.
+
 ## Base de filtros sin conexión y trabajo repetido
 
 En primera instalación o si faltan textos válidos, la suscripción predeterminada

@@ -311,6 +311,8 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         }
         browser.isFullscreen = false
         if (restoreControls && isShownTab && !browser.isFinishing && !browser.isDestroyed) browser.openCapsule()
+        // Let tab switching and focus restoration finish before opening another window.
+        ui.post { browser.showPendingUpdate() }
     }
 
     // Pointer menu and link actions
