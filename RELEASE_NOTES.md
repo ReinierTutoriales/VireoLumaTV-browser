@@ -1,28 +1,13 @@
-# VireoLumaTV 3.0.3
+# VireoLumaTV 3.0.4
 
-Correcciones de actualizaciones y Ajustes, y reducción de trabajo en la restauración de pestañas y el bloqueo de contenido.
+Nueva identidad visual de VireoLumaTV.
 
-## Actualizaciones
+## Identidad
 
-- El aviso de una versión nueva se conserva durante el vídeo a pantalla completa o mientras la app está en segundo plano y se presenta al volver al navegador.
-- La comprobación diaria también funciona si la app permanece abierta. Los errores se reintentan después de una hora; el temporizador se detiene en segundo plano.
-- La descarga sigue requiriendo confirmación y verificando la firma de los hashes y la suma del APK antes de abrir el instalador del sistema.
-
-## Ajustes y Acerca de
-
-- Cerrar Ajustes cancela las operaciones pendientes e impide que aparezcan después sus diálogos. La destrucción de la actividad también cancela el trabajo.
-- Cambiar idioma guarda primero los textos pendientes, incluidas las direcciones personalizadas.
-- La actualización manual muestra su estado sin perder el foco del mando.
-- Las pestañas se desplazan cuando no caben y los márgenes siguen las medidas adaptables de la interfaz.
-- Ajustar el puntero ya no vuelve a formatear el estado del bloqueador.
-
-## Pestañas y bloqueo de contenido
-
-- La lectura y decodificación del historial guardado se realizan fuera del hilo principal; la restauración de WebView conserva el hilo que exige Android y descarta resultados de navegaciones anteriores.
-- Los estados de pestaña se liberan tras confirmar su persistencia, conservando el modo de una WebView activa.
-- Los filtros procedurales reparten el trabajo en pasadas limitadas y la búsqueda de clases e identificadores evita recorrer todo el documento de una vez.
-- Las listas de filtros admiten gzip con el límite de descompresión existente. Las descargas reanudables conservan su tratamiento de Range.
-- Gradle actualizado a 9.9.1.
+- Icono y banner nuevos en el lanzador de Android TV y Google TV, con el ave y las iniciales VLTV. En Android 8 o superior usan capas adaptativas; en Android 7, recursos vectoriales.
+- Acerca de muestra el logotipo junto al nombre de la aplicación.
+- El acceso a Inicio en las pestañas usa el ave de la nueva identidad.
+- El color de acento de la interfaz pasa del verde al azul hielo del logotipo. Las superficies negras y los colores del escudo y de error no cambian.
 
 ## Validación e instalación
 
