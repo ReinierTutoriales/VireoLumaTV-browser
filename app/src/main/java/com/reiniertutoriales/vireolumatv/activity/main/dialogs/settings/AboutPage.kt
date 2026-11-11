@@ -2,14 +2,21 @@ package com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
+import com.reiniertutoriales.vireolumatv.activity.main.compose.LocalChromeMetrics
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -41,8 +48,15 @@ class AboutPage(private val context: Context, private val scope: CoroutineScope,
 
     @Composable
     fun Content() = Column {
-        SettingsInfo(stringResource(R.string.app_name), sizeSp = 20)
-        SettingsInfo(stringResource(R.string.about_tagline))
+        val metrics = LocalChromeMetrics.current
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(metrics.gap)) {
+            Image(painterResource(R.drawable.brand_logo), contentDescription = null,
+                modifier = Modifier.size(metrics.control * 2))
+            Column {
+                SettingsInfo(stringResource(R.string.app_name), sizeSp = 20)
+                SettingsInfo(stringResource(R.string.about_tagline))
+            }
+        }
         SettingsValue(stringResource(R.string.about_source), null, "rowProjectSource") { open(SOURCES_URL) }
         SettingsInfo(stringResource(R.string.about_version, BuildConfig.VERSION_NAME))
         SettingsInfo(stringResource(R.string.about_build, BuildConfig.FLAVOR, "WebView"))

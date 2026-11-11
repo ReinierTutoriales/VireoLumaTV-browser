@@ -68,6 +68,7 @@ jobs:
       - name: Unit tests
         run: |
           python scripts/check-source-inventory.py
+          python scripts/generate-brand-assets.py --check
           python scripts/refresh-bundled-filters.py
           node scripts/test-home-page-security.cjs
           python scripts/test-apk-provenance.py

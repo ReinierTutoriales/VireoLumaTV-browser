@@ -106,6 +106,8 @@ lateral a la derecha con icono por entrada; Atrás lo cierra sin elegir. La vist
 ocupa la pantalla detrás de los controles, sin recortar. Las acciones y el orden de foco
 (N01–N06) conservan las correcciones posteriores de controles deshabilitados y cierre de pestañas. Pendiente de validación en Android TV.
 
+**Identidad VLTV (2026-11-11):** el maestro aprobado vive en `assets/brand/logo.svg`, con copia de referencia fuera del APK. Los iconos y el banner se generan como vectores nativos, con capas adaptativas desde API 26 y recursos escalables para API 24/25. El favicon interno utiliza solo el ave; Acerca de muestra la marca completa. El escudo conserva verde/rojo y las superficies AMOLED siguen negras.
+
 **Interfaz en Compose (2026-11-08, plan integral del propietario):** Ajustes, Inicio, Favoritos, Historial,
 Descargas, diálogos, sugerencias, menú del puntero, aviso y atajo de tecla se dibujan con Compose y TV
 Material sobre ComponentActivity/ComponentDialog; ya no hay AppCompat, Fragment ni RecyclerView. Se

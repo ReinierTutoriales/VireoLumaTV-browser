@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 
 REMOVED_ASSETS = (
+    'pages/home/logo.png',
     'pages/home/favicons/bing.png', 'pages/home/favicons/custom.png',
     'pages/home/favicons/ddg.png', 'pages/home/favicons/google.png',
     'pages/home/favicons/startpage.png', 'pages/home/favicons/yahoo.png',
