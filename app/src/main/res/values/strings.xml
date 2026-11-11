@@ -130,6 +130,7 @@
     <string name="update_available_title">Update available</string>
     <string name="update_available_message">Version %s is available.</string>
     <string name="update_none">VireoLumaTV is up to date</string>
+    <string name="update_in_progress">Updating…</string>
     <string name="update_failed">Could not check for or install the update</string>
     <string name="settings_tab_general">General</string>
     <string name="settings_tab_shortcuts">Shortcuts</string>

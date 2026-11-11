@@ -14,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -43,14 +44,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.tv.material3.MaterialTheme
@@ -60,8 +59,14 @@ import com.reiniertutoriales.vireolumatv.activity.main.AdBlocker
 import com.reiniertutoriales.vireolumatv.activity.main.BrowserSettings
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvControlColors
+import com.reiniertutoriales.vireolumatv.activity.main.compose.LocalChromeMetrics
 import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 /** The settings pages, in tab order. */
 internal enum class SettingsTab(@StringRes val label: Int, val tag: String) {
@@ -77,7 +82,8 @@ internal enum class SettingsTab(@StringRes val label: Int, val tag: String) {
  */
 class SettingsScreen(context: Context, model: BrowserSettings) : ComponentDialog(context, R.style.SettingsScreen) {
     private val activity = context.activity()
-    private val scope = (activity as LifecycleOwner).lifecycleScope
+    private val scope = CoroutineScope(SupervisorJob(
+        (activity as LifecycleOwner).lifecycleScope.coroutineContext[Job]) + Dispatchers.Main.immediate)
     internal val general = GeneralPage(context, model, ScreenModels.get(AdBlocker::class, activity), scope,
         onBlockerChanged = { (activity as? MainActivity)?.refreshAdblockSettings() })
     internal val about = AboutPage(context, scope, onDone = ::dismiss)
@@ -96,6 +102,8 @@ class SettingsScreen(context: Context, model: BrowserSettings) : ComponentDialog
     }
 
     override fun dismiss() {
+        scope.cancel()
+        about.close()
         super.dismiss()
         previousFocus?.takeIf { it.isAttachedToWindow && it.isFocusable && it.isShown }?.requestFocus()
         previousFocus = null
@@ -118,15 +126,16 @@ private fun Context.activity(): Activity {
 internal fun SettingsContent(general: GeneralPage, about: AboutPage) {
     var page by remember { mutableStateOf(SettingsTab.GENERAL) }
     val context = LocalContext.current
+    val metrics = LocalChromeMetrics.current
     val requesters = remember { SettingsTab.entries.associateWith { FocusRequester() } }
     Column(
         // The window draws the black backdrop (SettingsScreen style); no second full-screen fill.
         Modifier.semantics { testTagsAsResourceId = true }.fillMaxSize()
-            .padding(start = dimensionResource(R.dimen.safe_horizontal), end = dimensionResource(R.dimen.safe_horizontal),
-                top = dimensionResource(R.dimen.safe_vertical)),
+            .padding(start = metrics.edge, end = metrics.edge, top = metrics.top),
     ) {
         // One focus group: Up from the page returns to the tab focused last, else the shown one.
-        Row(Modifier.focusRestorer(requesters.getValue(page)).focusGroup().padding(vertical = 4.dp),
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+            .focusRestorer(requesters.getValue(page)).focusGroup().padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SettingsTab.entries.forEach { tab ->
                 SettingsTabChip(tab, tab == page, Modifier.focusRequester(requesters.getValue(tab))) { page = tab }
@@ -152,9 +161,10 @@ private fun SettingsTabChip(tab: SettingsTab, selected: Boolean, modifier: Modif
     val focused by interaction.collectIsFocusedAsState()
     val hovered by interaction.collectIsHoveredAsState()
     val shape = RoundedCornerShape(24.dp)
+    val metrics = LocalChromeMetrics.current
     Box(
         modifier.testTag(tab.tag).semantics { this.selected = selected }
-            .defaultMinSize(minWidth = 120.dp, minHeight = 48.dp)
+            .defaultMinSize(minWidth = 120.dp, minHeight = metrics.row)
             .background(if (selected && !focused) TvControlColors.Selected else TvControlColors.surface(focused, hovered), shape)
             .then(if (focused || selected) Modifier.border(if (focused) 2.dp else 1.dp,
                 TvControlColors.border(focused, hovered || selected), shape) else Modifier)
@@ -162,7 +172,7 @@ private fun SettingsTabChip(tab: SettingsTab, selected: Boolean, modifier: Modif
             .padding(horizontal = 20.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(stringResource(tab.label), fontSize = 16.sp,
+        Text(stringResource(tab.label), fontSize = metrics.body,
             color = if (selected || focused) MaterialTheme.colorScheme.onSurface else Color.Gray)
     }
 }

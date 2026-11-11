@@ -129,6 +129,7 @@
     <string name="update_available_title">Actualización disponible</string>
     <string name="update_available_message">La versión %s está disponible.</string>
     <string name="update_none">VireoLumaTV está actualizado</string>
+    <string name="update_in_progress">Actualizando…</string>
     <string name="update_failed">No se pudo comprobar ni instalar la actualización</string>
     <string name="settings_tab_general">General</string>
     <string name="settings_tab_shortcuts">Atajos</string>

@@ -102,4 +102,28 @@ class MainSettingsLifecycleTest {
             model.clear()
         }
     }
+
+    @Test fun changingLanguageSavesPendingTextBeforeActivityRecreation() {
+        val model = AdBlocker(autoLoad = false)
+        lateinit var page: GeneralPage
+        compose.runOnUiThread {
+            page = GeneralPage(compose.activity, BrowserSettings(), model, MainScope(), onBlockerChanged = {})
+        }
+        compose.setContent { VireoTvTheme { Column(Modifier.verticalScroll(rememberScrollState())) { page.Content() } } }
+        try {
+            compose.onNodeWithTag("etAdBlockerListUrl").performScrollTo().performClick()
+            compose.runOnUiThread {
+                val editor = ShadowDialog.getLatestDialog() as TvDialog
+                editor.setFieldValue(0, "https://lists.example/language.txt")
+                editor.press(DialogInterface.BUTTON_POSITIVE)
+            }
+            compose.onNodeWithTag("spAppLanguage").performScrollTo().performClick()
+            compose.runOnUiThread {
+                val language = ShadowDialog.getLatestDialog() as TvDialog
+                val current = com.reiniertutoriales.vireolumatv.utils.AppLanguages.chosen(compose.activity)
+                language.choose(if (current == 0) 1 else 0)
+                assertEquals("https://lists.example/language.txt", model.config.blockListUrl.value)
+            }
+        } finally { model.clear() }
+    }
 }

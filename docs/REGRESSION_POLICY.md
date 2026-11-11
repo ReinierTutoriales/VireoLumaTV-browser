@@ -113,6 +113,10 @@ conservan los contratos anteriores: el foco no ejecuta acciones ni abre el tecla
 en un diálogo o en el campo), Atrás cierra antes la selección o el diálogo, las pestañas de Ajustes solo
 cambian al activarse y los textos se aplican al cerrar. El idioma usa LocaleManager en Android 13+ y,
 antes, un valor propio que se aplica en cada contexto base, migrando una vez el registro de AppCompat.
+Antes de cambiar idioma se guardan los textos pendientes. Las operaciones de Ajustes pertenecen al
+ciclo de vida de su diálogo: cerrarlo cancela el trabajo pendiente y cierra la confirmación de
+actualización. La fila de actualización conserva el foco e informa cuando está ocupada; las pestañas
+se desplazan horizontalmente cuando no caben en el ancho disponible.
 Con dos teclas de dirección el puntero no va más rápido en diagonal. Pendiente de validación en Android TV.
 
 Estos recorridos deben seguir funcionando después de cada cambio que toque
