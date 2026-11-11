@@ -149,9 +149,9 @@ class FileTransfer internal constructor(
                     code == HttpURLConnection.HTTP_PARTIAL && resume && validRange(connection, offset, job.size) ->
                         return receive(connection, startOver = false)
                     code in REDIRECTS -> {
-                        // Followed here so that an http → https redirect works too; other schemes are refused.
-                        val next = connection.getHeaderField("Location")?.let { URL(url, it) }
-                        if (next == null || next.protocol !in WEB_SCHEMES || ++redirects > MAX_REDIRECTS) {
+                        // Followed here so that an http → https redirect works too.
+                        val next = redirectTarget(url, connection.getHeaderField("Location"))
+                        if (next == null || ++redirects > MAX_REDIRECTS) {
                             return Outcome.Failed(code, connection.responseMessage.orEmpty())
                         }
                         url = next
@@ -258,6 +258,16 @@ class FileTransfer internal constructor(
     internal companion object {
         val REDIRECTS = setOf(301, 302, 303, 307, 308)
         val WEB_SCHEMES = setOf("http", "https")
+        /**
+         * Where a download redirect may lead: http(s) only, and never from https to plain http,
+         * whose file could be altered in transit unnoticed.
+         */
+        internal fun redirectTarget(from: URL, location: String?): URL? {
+            val next = location?.let { runCatching { URL(from, it) }.getOrNull() } ?: return null
+            if (next.protocol !in WEB_SCHEMES) return null
+            return next.takeUnless { from.protocol == "https" && next.protocol == "http" }
+        }
+
         private val CONTENT_RANGE = Regex("""bytes\s+(\d+)-(\d+)/(\d+|\*)""", RegexOption.IGNORE_CASE)
 
         /** Safe default when the page's Referrer-Policy is unavailable: strict-origin-when-cross-origin. */
