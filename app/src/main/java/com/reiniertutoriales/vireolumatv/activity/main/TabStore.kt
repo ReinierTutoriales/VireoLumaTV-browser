@@ -162,9 +162,10 @@ class TabStore : ScreenModel() {
         releaseBackgroundWebViews(newTab)
         var needsLoad = false
         var readFromDisk = false
-        if (newTab.engine.view == null) {
-            webViewProvider(newTab) ?: return
+        if (newTab.engine.view == null || newTab.historyRestorePending) {
+            if (newTab.engine.view == null) webViewProvider(newTab) ?: return
             readFromDisk = !newTab.rendererLost && newTab.savedState == null && newTab.wvStateFileName != null
+            newTab.historyRestorePending = readFromDisk
             if (!readFromDisk) needsLoad = !newTab.restorePage()
         }
         newTab.engine.attach(window, webViewParent)
@@ -181,6 +182,7 @@ class TabStore : ScreenModel() {
                 // A switch, close, teardown or explicit navigation supersedes this disk read.
                 if (newTab.closed || currentTab.value !== newTab || newTab.engine.view !== view ||
                     newTab.navigationRevision != navigation || newTab.engine.url != null) return@launch
+                newTab.historyRestorePending = false
                 if (!newTab.restorePage(state) && loadInitialUrl) {
                     newTab.engine.load(newTab.url)
                     newTab.rendererLost = false

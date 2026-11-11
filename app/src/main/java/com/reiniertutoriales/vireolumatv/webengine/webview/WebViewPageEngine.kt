@@ -77,19 +77,24 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
             webView = it
         }
 
-    override fun load(url: String) { tab.navigationRevision++; webView?.loadUrl(url) }
+    private fun invalidateHistoryRestore() {
+        tab.navigationRevision++
+        tab.historyRestorePending = false
+    }
+
+    override fun load(url: String) { invalidateHistoryRestore(); webView?.loadUrl(url) }
     override fun reload() {
         val view = webView ?: return
-        tab.navigationRevision++
+        invalidateHistoryRestore()
         // Reload can be requested while the disk history is still being read.
         if (view.url == null) view.loadUrl(tab.url) else view.reload()
     }
     override fun back() { webView?.let { view -> meaningfulBackOffset(view)?.let { offset ->
-        tab.navigationRevision++
+        invalidateHistoryRestore()
         view.goBackOrForward(offset)
     } } }
     override fun forward() { webView?.takeIf { it.canGoForward() }?.let {
-        tab.navigationRevision++
+        invalidateHistoryRestore()
         it.goForward()
     } }
     override fun zoom(closer: Boolean) { webView?.run { if (closer) zoomIn() else zoomOut() } }

@@ -79,10 +79,11 @@ Gradle/Cargo ni sustituye compilación y pruebas sobre el commit integrado.
   sigue en Main. Cambiar/cerrar pestaña, destruir la ventana o navegar invalida el
   resultado pendiente. Se conserva la política de una WebView y la excepción del popup.
 - Los snapshots se liberan solo después de una escritura atómica correcta y si
-  siguen siendo la misma revisión. La lectura rechaza estados mayores de 16 MiB
-  sin borrar el archivo; ese límite defensivo no representa una medición de uso normal.
+  siguen siendo la misma revisión. Una vista pendiente de restauración no sustituye
+  el historial por un snapshot vacío. Debug registra el tamaño codificado para
+  definir presupuestos con datos; no se impone un tope nuevo de historial.
 - Filtros procedurales: cesión entre reglas (16 reglas/4 ms por lote, sin poder
-  interrumpir una consulta individual). Filtros genéricos: TreeWalker en lotes y
+  interrumpir una consulta individual). Filtros genéricos: NodeIterator en lotes y
   cola de mutaciones acotada. No se atribuye una mejora porcentual sin medición.
 - Listas: gzip explícito con límite de texto descomprimido; descargas Range sin cambios.
   Diagnóstico de arranque WebView solo en debug. TLS, largeHeap y política de vídeo conservados.

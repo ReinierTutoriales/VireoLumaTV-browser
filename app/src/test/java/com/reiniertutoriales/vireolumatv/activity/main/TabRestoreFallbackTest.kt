@@ -104,18 +104,46 @@ class TabRestoreFallbackTest {
         } finally { release.countDown(); model.clear(); file.delete() }
     }
 
-    @Test fun oversizedDiskStateIsNotDecodedOrDeleted() {
+    @Test fun emptyDiskStateIsNotDecodedOrDeleted() {
         val app = RuntimeEnvironment.getApplication()
         val engine = Proxy.newProxyInstance(PageEngine::class.java.classLoader,
             arrayOf(PageEngine::class.java)) { _, method, _ ->
-            if (method.name == "readHistory") error("Oversized state must not reach decoder") else null
+            if (method.name == "readHistory") error("Empty state must not reach decoder") else null
         } as PageEngine
         val tab = tabWithEngine(engine).apply { wvStateFileName = "tab-oversized-test" }
         val file = File(app.filesDir, "${BrowserTab.HISTORY_DIR}/${tab.wvStateFileName}")
         file.parentFile!!.mkdirs()
-        java.io.RandomAccessFile(file, "rw").use { it.setLength(16L * 1024 * 1024 + 1) }
+        file.writeBytes(byteArrayOf())
         try { assertNull(tab.readStoredHistory()); assertTrue(file.exists()) }
         finally { file.delete() }
+    }
+
+    @Test fun pendingDiskRestoreCannotOverwriteHistoryWithTheNewBlankView() {
+        val engine = Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+            arrayOf(PageEngine::class.java)) { _, method, _ ->
+            if (method.name == "saveHistory") error("Pending blank view must not replace saved history") else null
+        } as PageEngine
+        val state = Bundle().apply { putString("history", "original") }
+        val tab = tabWithEngine(engine).apply { savedState = state; historyRestorePending = true }
+        tab.onPause()
+        assertSame(state, tab.savedState)
+    }
+
+    @Test fun reloadDuringDiskRestoreLoadsTheSavedUrlButUnavailableBackDoesNotCancelRestore() {
+        val tab = BrowserTab(url = "https://saved.test/reload")
+        val engine = tab.engine as WebViewPageEngine
+        try {
+            engine.createView(RuntimeEnvironment.getApplication())
+            tab.historyRestorePending = true
+            engine.back()
+            engine.forward()
+            assertTrue(tab.historyRestorePending)
+            assertEquals(0L, tab.navigationRevision)
+            engine.reload()
+            assertFalse(tab.historyRestorePending)
+            assertEquals(1L, tab.navigationRevision)
+            assertEquals(tab.url, engine.url)
+        } finally { engine.detach(destroyView = true) }
     }
     private fun tabWithEngine(engine: PageEngine, privateMode: Boolean = false) =
         BrowserTab(url = "https://saved.test/page", incognito = privateMode).apply {

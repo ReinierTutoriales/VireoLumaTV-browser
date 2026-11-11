@@ -11,6 +11,7 @@ import androidx.room3.Entity
 import androidx.room3.Ignore
 import androidx.room3.PrimaryKey
 import com.reiniertutoriales.vireolumatv.AppContext
+import com.reiniertutoriales.vireolumatv.BuildConfig
 import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 import com.reiniertutoriales.vireolumatv.utils.md5Name
 import com.reiniertutoriales.vireolumatv.webengine.Engines
@@ -60,6 +61,7 @@ data class BrowserTab(
     @Ignore var lastLoadingUrl: String? = null
     /** Explicit navigation supersedes a pending asynchronous history restore. Main-thread only. */
     @Ignore var navigationRevision = 0L
+    @Ignore var historyRestorePending = false
     @Ignore var blockedAds = 0
     @Ignore var blockedPopups = 0
     /** The last answer about this tab's site; read and written on the main thread only. */
@@ -97,7 +99,7 @@ data class BrowserTab(
     fun readStoredHistory(): Any? = try {
         stateFile()?.takeIf { it.isFile }?.let { file ->
             val length = file.length()
-            if (length !in 1..MAX_HISTORY_BYTES.toLong()) null else file.inputStream().use { input ->
+            if (length !in 1..(Int.MAX_VALUE - 8).toLong()) null else file.inputStream().use { input ->
                 // One exact-sized array: avoid a growing buffer plus a second full copy.
                 val bytes = ByteArray(length.toInt())
                 DataInputStream(input).readFully(bytes)
@@ -119,6 +121,7 @@ data class BrowserTab(
         val prefix = if (incognito) "private-tab-" else "tab-"
         val name = wvStateFileName?.takeIf { it.startsWith(prefix) } ?: prefix + UUID.randomUUID()
         val bytes = if (state is Bundle) BundleBytes.encode(state) else state.toString().toByteArray(Charsets.UTF_8)
+        if (BuildConfig.DEBUG) Log.d(TAG, "Encoded tab history: ${bytes.size} bytes")
         try {
             val directory = File(AppContext.context.filesDir, HISTORY_DIR)
             if (!directory.isDirectory && !directory.mkdir()) return false
@@ -152,6 +155,8 @@ data class BrowserTab(
     }
 
     fun onPause() {
+        // A new view waiting for its history has no replacement history to persist yet.
+        if (historyRestorePending) return
         savedState = engine.saveHistory()
     }
 
@@ -213,7 +218,5 @@ data class BrowserTab(
         private const val PREVIEW_QUALITY = 85
         private const val PREVIEW_MAX_SIDE = 480
         private const val PREVIEW_MAX_BYTES = 2L * 1024 * 1024
-        // A corrupt/oversized state must not grow the heap without a bound. Keep the file intact.
-        private const val MAX_HISTORY_BYTES = 16 * 1024 * 1024
     }
 }

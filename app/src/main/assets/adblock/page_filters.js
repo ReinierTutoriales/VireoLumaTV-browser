@@ -1899,17 +1899,18 @@
                 for (var parent = node.parentElement; parent; parent = parent.parentElement) {
                     if (nodes.get(parent) === true) return;
                 }
-                // TreeWalker avoids materializing a NodeList for the entire subtree.
-                var walker = subtree && typeof document.createTreeWalker === 'function' ?
-                    document.createTreeWalker(node, 1) : null;
-                var fallback = !walker && subtree && node.querySelectorAll ? node.querySelectorAll('[id],[class]') : [];
-                genericWork.push({node: node, walker: walker, fallback: fallback, index: 0});
+                // NodeIterator adjusts its reference when the page removes a node between
+                // batches; TreeWalker would stop at a detached current node.
+                var iterator = subtree && typeof document.createNodeIterator === 'function' ?
+                    document.createNodeIterator(node, 1) : null;
+                var fallback = !iterator && subtree && node.querySelectorAll ? node.querySelectorAll('[id],[class]') : [];
+                genericWork.push({node: iterator ? null : node, iterator: iterator, fallback: fallback, index: 0});
             });
             var deadline = genericClock() + 4, visited = 0;
             while (genericCursor < genericWork.length && visited < 256 && genericClock() < deadline) {
                 var work = genericWork[genericCursor];
                 if (work.node) { collect(work.node); work.node = null; visited++; }
-                var next = work.walker ? work.walker.nextNode() : work.fallback[work.index++];
+                var next = work.iterator ? work.iterator.nextNode() : work.fallback[work.index++];
                 if (next) { collect(next); visited++; }
                 else genericCursor++;
                 if (seenClasses.size >= budget && seenIds.size >= budget) {
