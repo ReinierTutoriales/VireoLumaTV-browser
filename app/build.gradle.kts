@@ -232,6 +232,8 @@ androidComponents {
 }
 
 tasks.withType<Test>().configureEach {
+    // Robolectric SDK 37 initializes file descriptors through OpenJDK SharedSecrets.
+    jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
     dependsOn(buildRustAdblockHost)
     val hostLib = buildRustAdblockHost.flatMap { it.outputDir.file("libvireoadblock.so") }
     inputs.files(hostLib)
