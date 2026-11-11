@@ -32,6 +32,15 @@ Hard constraints that override convenience:
 - A behavior the owner chose stays as it is until the owner decides otherwise; the
   contracts are in `docs/REGRESSION_POLICY.md`.
 
+## Long-running jobs (owner decision, 2026-11-11)
+
+- After a push, PR, merge or workflow dispatch, do not wait, sleep or poll for CI,
+  releases or other remote jobs. Report the SHA, PR and run link, then end the turn;
+  the owner says when it has finished.
+- Read status with one REST call (`commits/{sha}/check-runs`, `actions/runs`) only
+  when the owner asks or when the next action depends on it (merge, release). If it
+  is still running, report that and stop. Fetch failed-job logs only for a failure.
+
 ## Verify before writing
 - Read the relevant source, tests, contracts, and existing documentation before proposing or writing any change.
 - Do not write code, comments, or documentation for the sake of writing.
