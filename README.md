@@ -1,38 +1,66 @@
-# VireoLumaTV
+<p align="center">
+  <img src="assets/brand/logo-readme-light.svg#gh-light-mode-only" width="144" alt="Logotipo de VireoLumaTV con las iniciales VLTV">
+  <img src="assets/brand/logo-readme-dark.svg#gh-dark-mode-only" width="144" alt="Logotipo de VireoLumaTV con las iniciales VLTV">
+</p>
 
-<img src="assets/brand/logo.svg" width="160" alt="Logotipo de VireoLumaTV con las iniciales VLTV">
+<h1 align="center">VireoLumaTV</h1>
+<h3 align="center">La web, desde tu sofá.</h3>
 
-**VLTV son las iniciales de VireoLumaTV**, utilizadas en el logotipo. El nombre de la aplicación y del proyecto es **VireoLumaTV**.
+<p align="center">
+  Tus sitios favoritos en la pantalla grande.<br>
+  Con tu mando. A tu manera.
+</p>
 
-Un navegador web pensado para tu televisor, desarrollado por **ReinierTutoriales**.
+<p align="center">
+  <a href="https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/latest"><strong>Descargar VireoLumaTV</strong></a>
+  &nbsp; · &nbsp;
+  <a href="RELEASE_NOTES.md">Ver novedades</a>
+</p>
 
-VireoLumaTV te permite navegar en Android TV, Google TV y TV boxes compatibles con el mando o un gamepad. Reúne tus páginas, favoritos y descargas en una interfaz oscura y sencilla.
+<p align="center"><sub>Para Android TV, Google TV y TV boxes compatibles.</sub></p>
 
-**[Descargar la última versión](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/latest)**
+---
 
-## Qué ofrece
+### Hecho para el mando
 
-- **Inicio personalizable:** búsqueda, favoritos, accesos directos y acceso a YouTube móvil.
-- **Navegación con mando:** controles visibles, foco destacado y pestañas para cambiar entre páginas.
-- **Bloqueador integrado:** bloqueo de anuncios y ventanas emergentes, con control por sitio.
-- **Búsqueda e historial:** sugerencias de las páginas que ya visitaste.
-- **Descargas:** consulta y administra tus archivos desde la aplicación.
-- **Modo privado:** una opción de navegación separada de tu sesión habitual.
+Abre tus páginas, cambia de pestaña y vuelve a tus favoritos con el mando o un gamepad. Una interfaz oscura que pone la navegación a tu alcance.
 
-## Descargar e instalar
+### Menos interrupciones
 
-Compatible con **Android 7.0 o superior**. En la página de descargas encontrarás estas opciones:
+Un bloqueador integrado para reducir anuncios y ventanas emergentes, con control por sitio. Más espacio para lo que quieres ver.
 
-| APK terminado en | Para qué dispositivo |
+### Todo a mano
+
+Tus favoritos, historial y descargas en un mismo lugar. Y un modo privado para navegar en una sesión separada.
+
+---
+
+<details>
+<summary><strong>Instalación y compatibilidad</strong></summary>
+
+Compatible con **Android 7.0 o superior**.
+
+1. Abre la página de [descargas](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/latest).
+2. Elige el APK para tu dispositivo e instálalo.
+3. Si ya usas VireoLumaTV, actualiza sobre la instalación existente para conservar tus datos.
+
+| APK | Dispositivo |
 | --- | --- |
-| `arm64-v8a.apk` | Dispositivos con Android de 64 bits |
-| `armeabi-v7a.apk` | Dispositivos ARM con Android de 32 bits |
+| `arm64-v8a.apk` | Android de 64 bits |
+| `armeabi-v7a.apk` | Android ARM de 32 bits |
 | `x86_64.apk` | Equipos Intel/AMD y emuladores compatibles |
-
-Descarga el APK correspondiente e instálalo en tu dispositivo. Si ya utilizas VireoLumaTV, actualiza sobre la instalación existente para conservar tus datos; no necesitas desinstalarla.
 
 También puedes buscar actualizaciones desde **Ajustes → Acerca de → Actualizar**.
 
-## Más información
+</details>
 
-[Notas de la versión](RELEASE_NOTES.md) · [Privacidad](PRIVACY.md) · [Licencia](LICENSE.md) · [Avisos de componentes](NOTICE.md)
+<p align="center">
+  <sub>Creado por <strong>ReinierTutoriales</strong>.<br>
+  VLTV son las iniciales de VireoLumaTV, utilizadas en su logotipo.</sub>
+</p>
+
+<p align="center">
+  <a href="PRIVACY.md">Privacidad</a> &nbsp; · &nbsp;
+  <a href="LICENSE.md">Licencia</a> &nbsp; · &nbsp;
+  <a href="NOTICE.md">Componentes</a>
+</p>
