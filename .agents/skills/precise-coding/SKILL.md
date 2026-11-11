@@ -62,7 +62,7 @@ Every line must be traceable to existing code or a clearly labeled minimal assum
   the wrong set. Keep a file's trailing newline when rewriting it.
 - Run every check the session can run before pushing (`cargo test --locked`,
   `python3 -m py_compile`, `git diff --check`, inventory script); leave only Android
-  builds to CI, then check CI once after its usual duration instead of polling.
+  builds to CI; do not wait for it (see `agent-governance`, Long-running jobs).
 - Query the remote (releases, branches, merged PRs) before stating repository facts;
   the previous turn is not evidence.
 
