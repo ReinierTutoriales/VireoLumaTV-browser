@@ -144,8 +144,13 @@ PYXML
         python scripts/capture-webview-memory.py "$report" "$package" "$app_pid" normal-home
         if [ "$(cat "$report/android-api.txt" | tr -d '\r')" -ge 28 ]; then
           python scripts/test-private-startup.py "$report" "$package" "$app_pid" || { capture; return 1; }
-          private_pid=$(adb shell pidof "$package:incognito" | tr -d '\r')
-          python scripts/capture-webview-memory.py "$report" "$package" "$private_pid" private-home
+          # The private-mode check may skip its path (transitional); measure only a process that exists.
+          private_pid=$(adb shell pidof "$package:incognito" | tr -d '\r' || true)
+          if [ -n "$private_pid" ]; then
+            python scripts/capture-webview-memory.py "$report" "$package" "$private_pid" private-home
+          else
+            echo "Private process not started; no private-home memory snapshot" > "$report/private-memory-skipped.txt"
+          fi
         else
           echo "Private browsing intentionally unavailable before API 28" > "$report/private-mode-unsupported.txt"
         fi
