@@ -16,6 +16,8 @@ before integration when the environment supports Android/Rust builds. CI on the
 exact head is the integration gate; report local tests and CI separately.
 
 ## Priorities
+
+- **Mandatory stable updates (owner decision, 2026-11-10):** whenever a newer official stable release is available for a component, dependency or build/CI tool used by this project, update it without asking for routine approval. Newness is sufficient reason to update; consult upstream compatibility and migration notes, adapt consumers, update checksums/lockfiles/provenance and verify the exact resulting SHA. Do not substitute beta/RC/alpha/nightly builds. A reproducible incompatibility or failed check is a blocker to resolve and report, not a reason to silently keep an older stable version. Preserve user data, signing and product contracts; this standing authorization does not publish releases or authorize unrelated behavior changes.
 - Keep the app small, simple, and predictable on low-memory Android TV hardware.
 - WebView only — do not reintroduce GeckoView or multi-engine complexity.
 - Optimize for TV remote navigation, focus, and D-pad usability.

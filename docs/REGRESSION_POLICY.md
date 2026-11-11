@@ -253,8 +253,11 @@ Las guías TV centran la interacción en el foco [O3].
 
 Antes de cada cambio de dependencias y cada release, consultar fuentes
 oficiales actuales. Registrar versión instalada/candidata, canal, cambio útil,
-compatibilidad, validación y revert. Preferir estable; alpha/beta requieren
-motivo concreto y aislamiento. Separar librerías de UI, WebKit, Room y
+compatibilidad, validación y revert. Por instrucción permanente del propietario
+(2026-11-10), actualizar a la última estable oficial disponible sin solicitar
+aprobación rutinaria; su disponibilidad basta para iniciar la actualización.
+Adaptar consumidores y resolver e informar bloqueos demostrados; no sustituir
+estables por alpha/beta/RC/nightly. Separar librerías de UI, WebKit, Room y
 AGP/Kotlin/KSP en cambios distintos salvo versiones técnicamente acopladas.
 No usar rangos dinámicos ni actualizar todo en lote. Una revisión periódica es
 una tarea de mantenimiento propuesta; este documento no crea una automatización.

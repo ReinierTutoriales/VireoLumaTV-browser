@@ -17,6 +17,8 @@ import com.reiniertutoriales.vireolumatv.webengine.Engines
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
@@ -56,6 +58,8 @@ data class BrowserTab(
     @Ignore val persistenceRevision = AtomicLong(0)
     /** The last address WebView asked to load in this tab. */
     @Ignore var lastLoadingUrl: String? = null
+    /** Explicit navigation supersedes a pending asynchronous history restore. Main-thread only. */
+    @Ignore var navigationRevision = 0L
     @Ignore var blockedAds = 0
     @Ignore var blockedPopups = 0
     /** The last answer about this tab's site; read and written on the main thread only. */
@@ -74,14 +78,13 @@ data class BrowserTab(
     override fun hashCode(): Int = System.identityHashCode(this)
 
     /** Restores the engine from the kept or stored state; false means the address must be loaded. */
-    fun restorePage(): Boolean {
+    fun restorePage(state: Any? = savedState): Boolean {
         if (rendererLost) return false
         return try {
-            val state = savedState ?: stateFile()?.takeIf { it.exists() }?.readBytes()?.let(engine::readHistory)
-                ?: return false
+            if (state == null) return false
             val restored = engine.restoreHistory(state)
-            // Keep the snapshot only once the engine accepted it; the file stays until the next save replaces it.
-            savedState = if (restored) state else null
+            // An unsaved memory snapshot stays until its atomic write succeeds.
+            if (!restored && savedState === state) savedState = null
             restored
         } catch (error: Exception) {
             savedState = null
@@ -90,18 +93,36 @@ data class BrowserTab(
         }
     }
 
+    /** Disk and Parcel work only; the caller runs this on IO, then restores WebView on Main. */
+    fun readStoredHistory(): Any? = try {
+        stateFile()?.takeIf { it.isFile && it.length() <= MAX_HISTORY_BYTES }?.inputStream()?.use { input ->
+            val output = ByteArrayOutputStream()
+            val buffer = ByteArray(8192)
+            while (true) {
+                val count = input.read(buffer)
+                if (count < 0) break
+                if (output.size() > MAX_HISTORY_BYTES - count) throw IOException("Tab state exceeds read limit")
+                output.write(buffer, 0, count)
+            }
+            engine.readHistory(output.toByteArray())
+        }
+    } catch (error: Exception) {
+        Log.w(TAG, "Could not read tab state; loading the saved address", error)
+        null
+    }
+
     /**
      * Writes [savedState] to this tab's own state file, atomically. A name from an older version,
      * which duplicate tabs may share, is replaced by a new one instead of being overwritten.
      */
-    fun saveHistoryFile() {
-        val state = savedState ?: return
+    fun saveHistoryFile(): Boolean {
+        val state = savedState ?: return false
         val prefix = if (incognito) "private-tab-" else "tab-"
         val name = wvStateFileName?.takeIf { it.startsWith(prefix) } ?: prefix + UUID.randomUUID()
         val bytes = if (state is Bundle) BundleBytes.encode(state) else state.toString().toByteArray(Charsets.UTF_8)
         try {
             val directory = File(AppContext.context.filesDir, HISTORY_DIR)
-            if (!directory.isDirectory && !directory.mkdir()) return
+            if (!directory.isDirectory && !directory.mkdir()) return false
             val file = AtomicFile(File(directory, name))
             val output = file.startWrite()
             try {
@@ -112,8 +133,10 @@ data class BrowserTab(
                 throw error
             }
             wvStateFileName = name
+            return true
         } catch (error: Exception) {
             Log.w(TAG, "Could not save tab state", error)
+            return false
         }
     }
 
@@ -191,5 +214,7 @@ data class BrowserTab(
         private const val PREVIEW_QUALITY = 85
         private const val PREVIEW_MAX_SIDE = 480
         private const val PREVIEW_MAX_BYTES = 2L * 1024 * 1024
+        // A corrupt/oversized state must not grow the heap without a bound. Keep the file intact.
+        private const val MAX_HISTORY_BYTES = 16 * 1024 * 1024
     }
 }

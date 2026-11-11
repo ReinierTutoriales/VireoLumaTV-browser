@@ -21,7 +21,7 @@ y `native/adblock-jni/Cargo.lock`. No se conserva una cola de cambios del fork.
 
 1. Mantener el inventario y los avisos de componentes coherentes con el árbol actual.
 2. Corregir únicamente defectos reproducibles, con pruebas sobre el SHA que se integra.
-3. Revisar las dependencias por grupos compatibles cuando exista un motivo concreto.
+3. Actualizar componentes, dependencias y herramientas a la última publicación estable oficial disponible, sin solicitar aprobación rutinaria. Adaptar consumidores y verificar compatibilidad, checksums, lockfiles y CI del SHA exacto; resolver e informar bloqueos concretos. Las versiones preliminares no sustituyen a las estables.
 4. Mantener los contratos de navegación, privacidad, descargas, actualización firmada
    y restauración definidos en [la política de regresión](REGRESSION_POLICY.md).
 
@@ -50,7 +50,7 @@ El arranque asíncrono WebView ya existe; no se añaden precargas ni prerender s
 mediciones y revisión de privacidad/bloqueo. La [guía de arranque](https://developer.android.com/develop/ui/views/layout/webapps/optimize-webview-startup)
 no demuestra por sí sola una mejora en esta app.
 
-## Dependencias contrastadas el 8 de noviembre de 2026
+## Dependencias contrastadas el 8 de noviembre de 2026 (Gradle: 10 de noviembre)
 
 Las versiones directas consultadas se contrastan con las publicaciones estables de
 los proveedores. Core pasa a 1.19.1 por la corrección de compatibilidad de lint con
@@ -64,7 +64,7 @@ están integradas y `core-ktx` es un artefacto vacío de compatibilidad
 | Compose para TV | Compose BOM 2026.09.00 (ui, foundation); TV Material 1.1.0 | [Compose](https://developer.android.com/develop/ui/compose/bom), [Compose for TV](https://developer.android.com/jetpack/androidx/releases/tv) |
 | Perfiles y métricas | ProfileInstaller 1.4.1; Metrics 1.0.0; Benchmark 1.5.0 | [AndroidX](https://developer.android.com/jetpack/androidx/versions) |
 | Kotlin | Kotlin 2.4.21; Coroutines 1.11.0; KSP 2.3.13 | [Kotlin](https://kotlinlang.org/docs/releases.html), [Coroutines](https://github.com/Kotlin/kotlinx.coroutines/releases), [KSP](https://github.com/google/ksp/releases) |
-| Build | AGP 9.5.1; Gradle 9.9.0; NDK 30.0.16248370 | [AGP](https://developer.android.com/build/releases/agp-9-5-0-release-notes?hl=en), [Gradle](https://docs.gradle.org/9.9.0/release-notes.html), [NDK](https://developer.android.com/ndk/downloads) |
+| Build | AGP 9.5.1; Gradle 9.9.1; NDK 30.0.16248370 | [AGP](https://developer.android.com/build/releases/agp-9-5-0-release-notes?hl=en), [Gradle](https://docs.gradle.org/9.9.1/release-notes.html), [NDK](https://developer.android.com/ndk/downloads) |
 | Pruebas | JUnit 4.13.2; Robolectric 4.17; AndroidX Test Ext JUnit 1.3.0 | [JUnit](https://github.com/junit-team/junit4/releases), [Robolectric](https://github.com/robolectric/robolectric/releases), [AndroidX Test](https://developer.android.com/jetpack/androidx/releases/test) |
 | Rust directo | rustc 1.99.1 fijado en `rust-toolchain.toml`; adblock 0.13.5; jni 0.22.4; serde_json 1.0.154 | [adblock](https://github.com/brave/adblock-rust/blob/master/CHANGELOG.md), [jni](https://github.com/jni-rs/jni-rs/releases), [serde_json](https://github.com/serde-rs/json/releases) |
 | CI | checkout 7.0.1; setup-java 6.2.0; gradle/actions 6.4.1; upload-artifact 7.0.2; download-artifact 8.0.2; rust-cache 2.9.3; android-emulator-runner 2.38.0; action-gh-release 3.0.4 | Publicaciones oficiales de cada acción en GitHub |
@@ -72,7 +72,23 @@ están integradas y `core-ktx` es un artefacto vacío de compatibilidad
 Este contraste cubre versiones directas, no certifica todas las transitivas de
 Gradle/Cargo ni sustituye compilación y pruebas sobre el commit integrado.
 
-## Integración
+## Revisión de eficiencia del 10 de noviembre de 2026
+
+- Gradle 9.9.1 y wrapper regenerado, contrastados con los checksums oficiales.
+- La lectura/deserialización del historial de disco pasa a IO; restaurar WebView
+  sigue en Main. Cambiar/cerrar pestaña, destruir la ventana o navegar invalida el
+  resultado pendiente. Se conserva la política de una WebView y la excepción del popup.
+- Los snapshots se liberan solo después de una escritura atómica correcta y si
+  siguen siendo la misma revisión. La lectura rechaza estados mayores de 16 MiB
+  sin borrar el archivo; ese límite defensivo no representa una medición de uso normal.
+- Filtros procedurales: cesión entre reglas (16 reglas/4 ms por lote, sin poder
+  interrumpir una consulta individual). Filtros genéricos: TreeWalker en lotes y
+  cola de mutaciones acotada. No se atribuye una mejora porcentual sin medición.
+- Listas: gzip explícito con límite de texto descomprimido; descargas Range sin cambios.
+  Diagnóstico de arranque WebView solo en debug. TLS, largeHeap y política de vídeo conservados.
+- Pendiente: CI del SHA exacto con los nuevos escenarios de restauración, gzip y DOM.
+
+## Integración de cambios
 
 Trabajar en una rama descriptiva desde el `master` remoto actual. Revisar los cambios,
 ejecutar las comprobaciones pertinentes y exigir CI verde sobre el SHA exacto antes

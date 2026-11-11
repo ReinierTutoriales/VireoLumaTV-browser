@@ -53,8 +53,8 @@ internal object AdblockListDownloader {
                 connection.useCaches = false
                 connection.setRequestProperty("User-Agent", "VireoLumaTV/1.0 (filter list updater)")
                 connection.setRequestProperty("Accept", "text/plain")
-                // Request identity encoding: no implicit gzip assumption or compressed-size bypass.
-                connection.setRequestProperty("Accept-Encoding", "identity")
+                // Decode explicitly so the bound below applies to decompressed text.
+                connection.setRequestProperty("Accept-Encoding", "gzip")
                 val conditional = cached != null && cached.url == url
                 if (conditional) {
                     cached.etag?.let { connection.setRequestProperty("If-None-Match", it) }

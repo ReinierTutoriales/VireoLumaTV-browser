@@ -15,7 +15,7 @@ does not complete the gates below.
 1. Prefer official, stable, compatible implementations.
 2. Consider maintained third-party libraries only after checking provenance, license, compatibility, APK/memory impact and measurable value.
 3. Otherwise implement the smallest maintainable in-project alternative.
-- A newer version alone is not justification.
+- A newer official stable version of an existing dependency requires updating without routine approval, following the standing owner instruction in `AGENTS.md`. Review migration requirements and verify consumers; adding a different library still requires justification.
 - Do not call third-party wrappers Google-official.
 - Record dependency versions, licenses, provenance and evaluation results before adoption.
 

@@ -20,6 +20,11 @@ Hard constraints that override convenience:
 - Some agent sessions append an attribution footer to PR descriptions and comments written through their GitHub proxy, whatever the text sent. Re-read the body after writing; if a footer appears, stop writing PR text from that session and report it to the owner (2026-11-10).
 
 ## Owner decisions
+
+- Updating an existing component to the latest official stable release is standing
+  owner authorization: proceed without asking, following `AGENTS.md` and exact-SHA
+  verification. Resolve migration requirements; report concrete blockers. This
+  exception does not authorize unrelated behavior changes or release publication.
 - Ask the owner before implementing, integrating or changing any behavior that was not
   explicitly requested, including follow-up "improvements" found during a task. Present the
   finding and options; wait for the owner's choice.

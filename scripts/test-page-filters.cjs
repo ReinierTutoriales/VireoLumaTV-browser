@@ -255,6 +255,35 @@ function page(filters, host = 'stream.example', setup = '') {
     batched.flush();
     vm.runInContext(`assert.equal(lookups.length, 2); assert.equal(lookups[1].classes, 'new-ad');`, batched);
 
+    // A large real-DOM traversal yields and never materializes the entire subtree as a NodeList.
+    let sliced = page({hide: [], script: ''}, 'stream.example', `
+        var visited = 0, names = [];
+        var root = {nodeType: 1, id: '', classList: [], querySelectorAll() { throw Error('Full subtree scan'); }};
+        var children = Array.from({length: 1000}, (_, i) => ({nodeType: 1, id: '', classList: ['slot-' + i]}));
+        document.documentElement = root;
+        document.readyState = 'complete';
+        document.createTreeWalker = function () {
+            var index = 0;
+            return {nextNode() { visited++; return children[index++]; }};
+        };
+        VireoLumaTVApp.hiddenSelectors = function (url, classes) { names.push(...classes.split(' ')); return '[]'; };
+    `);
+    vm.runInContext(`assert.ok(visited <= 256); assert.ok(names.length < 1000);`, sliced);
+    sliced.flush();
+    vm.runInContext(`assert.equal(new Set(names).size, 1000);`, sliced);
+
+    // Every procedural rule still runs, but a batch yields after at most sixteen rules.
+    let proceduralBatch = page({procedural: Array.from({length: 40}, (_, i) => JSON.stringify({
+        selector: [{type: 'css-selector', arg: '.slot-' + i}, {type: 'has-text', arg: 'ad'}]
+    }))}, 'stream.example', `
+        var queries = [];
+        document.documentElement = {};
+        document.querySelectorAll = function (query) { queries.push(query); return []; };
+    `);
+    vm.runInContext(`__ready(); assert.ok(queries.length > 0 && queries.length <= 16);`, proceduralBatch);
+    proceduralBatch.flush();
+    vm.runInContext(`assert.equal(queries.length, 40); assert.equal(new Set(queries).size, 40);`, proceduralBatch);
+
     // Frames inserted by the named method get this window's wrapped functions (fetch, and
     // XMLHttpRequest for ".prototype"); cross-origin frames and other nodes are left alone.
     let multi = page({ script: call('trusted-prevent-dom-bypass', 'Node.prototype.appendChild', 'fetch JSON.parse') }, 'stream.example', `

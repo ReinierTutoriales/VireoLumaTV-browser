@@ -49,7 +49,15 @@ class VireoLumaTVApp : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) try {
             WebViewCompat.startUpWebView(this, WebViewStartUpConfig.Builder(webViewStartupExecutor).build(),
                 object : WebViewOutcomeReceiver<WebViewStartUpResult, WebViewStartupException> {
-                    override fun onResult(result: WebViewStartUpResult) = Unit
+                    override fun onResult(result: WebViewStartUpResult) {
+                        if (!BuildConfig.DEBUG) return
+                        Log.d(TAG, "WebView startup UI time=${result.totalTimeInUiThreadMillis} ms, " +
+                            "largest task=${result.maxTimePerTaskInUiThreadMillis} ms, " +
+                            "blocking locations=${result.uiThreadBlockingStartUpLocations?.size}")
+                        result.uiThreadBlockingStartUpLocations?.forEach { location ->
+                            Log.d(TAG, "Blocking WebView startup", location.stack)
+                        }
+                    }
                     override fun onError(error: WebViewStartupException) {
                         Log.w(TAG, "Asynchronous WebView startup failed; normal page startup remains available", error)
                     }

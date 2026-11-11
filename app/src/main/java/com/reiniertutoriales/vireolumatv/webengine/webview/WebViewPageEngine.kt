@@ -77,10 +77,10 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
             webView = it
         }
 
-    override fun load(url: String) { webView?.loadUrl(url) }
-    override fun reload() { webView?.reload() }
-    override fun back() { webView?.let { view -> meaningfulBackOffset(view)?.let(view::goBackOrForward) } }
-    override fun forward() { webView?.goForward() }
+    override fun load(url: String) { tab.navigationRevision++; webView?.loadUrl(url) }
+    override fun reload() { tab.navigationRevision++; webView?.reload() }
+    override fun back() { tab.navigationRevision++; webView?.let { view -> meaningfulBackOffset(view)?.let(view::goBackOrForward) } }
+    override fun forward() { tab.navigationRevision++; webView?.goForward() }
     override fun zoom(closer: Boolean) { webView?.run { if (closer) zoomIn() else zoomOut() } }
     override fun setOnline(online: Boolean) { webView?.setNetworkAvailable(online) }
     internal val networkFailure = NetworkFailure()

@@ -1,6 +1,7 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
 import android.os.Bundle
+import android.os.Looper
 import android.view.View
 import android.widget.FrameLayout
 import android.webkit.WebView
@@ -10,6 +11,7 @@ import com.reiniertutoriales.vireolumatv.webengine.PageEngine
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.webengine.webview.WebViewPageEngine
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,11 +21,99 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.io.File
 import java.lang.reflect.Proxy
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import com.reiniertutoriales.vireolumatv.utils.BundleBytes
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class TabRestoreFallbackTest {
+    @Test fun successfulAtomicSaveReleasesOnlyThePersistedSnapshot() = runBlocking {
+        val app = RuntimeEnvironment.getApplication()
+        val model = TabStore()
+        val tab = BrowserTab(url = "https://saved.test/memory").apply {
+            savedState = Bundle().apply { putString("history", "first -> second") }
+        }
+        try {
+            model.saveTab(tab)
+            assertNull(tab.savedState)
+            assertNotNull(tab.wvStateFileName)
+            val state = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { tab.readStoredHistory() } as Bundle
+            assertEquals("first -> second", state.getString("history"))
+        } finally {
+            com.reiniertutoriales.vireolumatv.singleton.AppDatabase.db.tabDao().delete(tab)
+            model.clear()
+            tab.removeFiles()
+        }
+    }
+
+    private fun drainUntil(done: () -> Boolean) {
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5)
+        while (!done() && System.nanoTime() < deadline) {
+            shadowOf(Looper.getMainLooper()).idle()
+            Thread.yield()
+        }
+        assertTrue("Asynchronous restoration must complete", done())
+    }
+
+    @Test fun diskReadRunsOffMainAndCannotReplaceExplicitNavigation() {
+        val app = RuntimeEnvironment.getApplication()
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val finished = AtomicBoolean()
+        val restored = AtomicInteger()
+        var liveView: View? = null
+        val engine = Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+            arrayOf(PageEngine::class.java)) { _, method, args ->
+            when (method.name) {
+                "getView" -> liveView
+                "readHistory" -> {
+                    assertNotEquals(Looper.getMainLooper().thread, Thread.currentThread())
+                    started.countDown()
+                    check(release.await(5, TimeUnit.SECONDS))
+                    BundleBytes.decode(args!![0] as ByteArray).also { finished.set(true) }
+                }
+                "restoreHistory" -> { restored.incrementAndGet(); true }
+                "getShowsCertificateWarning" -> false
+                else -> null
+            }
+        } as PageEngine
+        val tab = tabWithEngine(engine).apply { wvStateFileName = "tab-async-restore-test" }
+        val file = File(app.filesDir, "${BrowserTab.HISTORY_DIR}/${tab.wvStateFileName}")
+        file.parentFile!!.mkdirs()
+        file.writeBytes(BundleBytes.encode(Bundle()))
+        val model = TabStore()
+        model.openTabs.add(tab)
+        val window = Proxy.newProxyInstance(PageWindow::class.java.classLoader,
+            arrayOf(PageWindow::class.java)) { _, _, _ -> null } as PageWindow
+        try {
+            model.changeTab(tab, { View(app).also { liveView = it } }, FrameLayout(app), window)
+            drainUntil { started.count == 0L }
+            assertEquals(0, restored.get())
+            tab.navigationRevision++
+            release.countDown()
+            drainUntil { finished.get() }
+            model.onDetachActivity()
+            shadowOf(Looper.getMainLooper()).idle()
+            assertEquals(0, restored.get())
+        } finally { release.countDown(); model.clear(); file.delete() }
+    }
+
+    @Test fun oversizedDiskStateIsNotDecodedOrDeleted() {
+        val app = RuntimeEnvironment.getApplication()
+        val engine = Proxy.newProxyInstance(PageEngine::class.java.classLoader,
+            arrayOf(PageEngine::class.java)) { _, method, _ ->
+            if (method.name == "readHistory") error("Oversized state must not reach decoder") else null
+        } as PageEngine
+        val tab = tabWithEngine(engine).apply { wvStateFileName = "tab-oversized-test" }
+        val file = File(app.filesDir, "${BrowserTab.HISTORY_DIR}/${tab.wvStateFileName}")
+        file.parentFile!!.mkdirs()
+        java.io.RandomAccessFile(file, "rw").use { it.setLength(16L * 1024 * 1024 + 1) }
+        try { assertNull(tab.readStoredHistory()); assertTrue(file.exists()) }
+        finally { file.delete() }
+    }
     private fun tabWithEngine(engine: PageEngine, privateMode: Boolean = false) =
         BrowserTab(url = "https://saved.test/page", incognito = privateMode).apply {
             BrowserTab::class.java.getDeclaredField("engine\$delegate")
@@ -80,7 +170,7 @@ class TabRestoreFallbackTest {
         file.parentFile!!.mkdirs()
         file.writeBytes(requireNotNull(BundleBytes.encode(Bundle())))
         try {
-            assertFalse(tab.restorePage())
+            assertFalse(tab.restorePage(tab.readStoredHistory()))
             assertEquals("https://saved.test/page", tab.url)
             assertTrue("Restoration failure must not delete persisted user data", file.exists())
         } finally { file.delete() }
