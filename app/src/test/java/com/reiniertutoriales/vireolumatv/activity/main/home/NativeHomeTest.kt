@@ -295,6 +295,8 @@ class NativeHomeTest {
         f.home.update(f.tab)
         val lost = requireNotNull(f.web.callback)
         assertFalse(f.tileEnabled("home_tile_edit"))
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(1_500))
+        assertEquals("A read in progress is not cancelled early", 1, f.web.scripts.size)
         shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(600))
         assertEquals("The unanswered read is sent again", 2, f.web.scripts.size)
         f.finishRead()
@@ -315,7 +317,7 @@ class NativeHomeTest {
         f.home.documentReady(f.tab)
         assertTrue(f.web.scripts.isEmpty())
         f.web.loadProgress = 100
-        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(600))
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(2_100))
         assertEquals(1, f.web.scripts.size)
         f.finishRead()
         assertTrue(f.tileEnabled("home_tile_edit"))

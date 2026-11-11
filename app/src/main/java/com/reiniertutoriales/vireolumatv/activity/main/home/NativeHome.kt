@@ -630,9 +630,9 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     private companion object {
         /** The capsule's own opening time, so Home moves with it. */
         const val CAPSULE_MS = 220L
-        /** Up to 20 s for the internal document to load and answer, as on slow TV chips. */
-        const val READ_RETRY_MS = 500L
-        const val READ_RETRIES = 40
+        /** Longer than a normal read on slow TV chips, so a slow answer is not discarded; 20 s in all. */
+        const val READ_RETRY_MS = 2_000L
+        const val READ_RETRIES = 10
         /** Readable on black (contrast above 4.5:1). */
         val ErrorColor = Color(0xFFFF8A80)
     }
