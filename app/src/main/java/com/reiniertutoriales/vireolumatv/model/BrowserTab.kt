@@ -17,7 +17,7 @@ import com.reiniertutoriales.vireolumatv.webengine.Engines
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.ByteArrayOutputStream
+import java.io.DataInputStream
 import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
@@ -95,16 +95,15 @@ data class BrowserTab(
 
     /** Disk and Parcel work only; the caller runs this on IO, then restores WebView on Main. */
     fun readStoredHistory(): Any? = try {
-        stateFile()?.takeIf { it.isFile && it.length() <= MAX_HISTORY_BYTES }?.inputStream()?.use { input ->
-            val output = ByteArrayOutputStream()
-            val buffer = ByteArray(8192)
-            while (true) {
-                val count = input.read(buffer)
-                if (count < 0) break
-                if (output.size() > MAX_HISTORY_BYTES - count) throw IOException("Tab state exceeds read limit")
-                output.write(buffer, 0, count)
+        stateFile()?.takeIf { it.isFile }?.let { file ->
+            val length = file.length()
+            if (length !in 1..MAX_HISTORY_BYTES.toLong()) null else file.inputStream().use { input ->
+                // One exact-sized array: avoid a growing buffer plus a second full copy.
+                val bytes = ByteArray(length.toInt())
+                DataInputStream(input).readFully(bytes)
+                if (input.read() != -1) throw IOException("Tab state changed while being read")
+                engine.readHistory(bytes)
             }
-            engine.readHistory(output.toByteArray())
         }
     } catch (error: Exception) {
         Log.w(TAG, "Could not read tab state; loading the saved address", error)

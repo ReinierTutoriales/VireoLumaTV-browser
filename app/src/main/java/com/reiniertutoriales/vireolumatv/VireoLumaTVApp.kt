@@ -55,7 +55,7 @@ class VireoLumaTVApp : Application() {
                             "largest task=${result.maxTimePerTaskInUiThreadMillis} ms, " +
                             "blocking locations=${result.uiThreadBlockingStartUpLocations?.size}")
                         result.uiThreadBlockingStartUpLocations?.forEach { location ->
-                            Log.d(TAG, "Blocking WebView startup", location.stack)
+                            Log.d(TAG, "Blocking WebView startup", location.stackInformation)
                         }
                     }
                     override fun onError(error: WebViewStartupException) {
