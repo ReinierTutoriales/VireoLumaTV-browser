@@ -43,6 +43,7 @@ Hard constraints that override convenience:
 - Do not invent APIs, policies, guarantees, or future plans.
 - Prefer editing existing docs over creating new files.
 - Keep documentation short, precise, and consistent with the code and tests.
+- Keep public README copy focused on the reader: identity, benefits and a clear download; put maintenance rules in their dedicated guides and secondary setup details behind expandable sections.
 
 ## Optimal code
 - Prefer the simplest correct solution that matches existing style and patterns.

@@ -6,9 +6,12 @@ The approved identity uses the bird and its VLTV initials in ice blue (`#C7D8EC`
 
 - `approved-source.png`: unchanged approved reference, retained outside the APK.
 - `logo.svg`: production master with outlined lettering, flat sRGB colors and no embedded font or bitmap. The approved contours were traced and cleaned for scalable rendering.
-- `python scripts/generate-brand-assets.py`: regenerate Android resources; `--check` detects drift and runs in CI.
+- `logo-readme-light.svg` / `logo-readme-dark.svg`: transparent, tightly framed variants for the public README, in graphite for light backgrounds and ice blue for dark backgrounds. They preserve the approved outlines.
+- `python scripts/generate-brand-assets.py`: regenerate Android resources and README variants; `--check` detects drift and runs in CI.
 
 Android 7 receives scalable legacy launcher resources (80 × 80 dp icon and 160 × 90 dp banner). Android 8+ receives adaptive foreground/background layers. The launcher mark remains inside the 66 dp circular safe region of its 108 dp layer; the TV banner uses a 16:9 foreground. Android applies its own mask: no black corner pixels, pre-applied shadows or duplicate outlines are baked into the resources. The initials VLTV are identical across app languages.
+
+The public README leads with the transparent logo, product benefits and download link; installation details stay expandable and the explanation of VLTV stays in the footer.
 
 The small in-app favicon uses the bird alone; About and launcher assets use the complete mark. The app accent follows the foreground color. Black AMOLED surfaces and semantic shield/error colors retain their existing behavior.
 

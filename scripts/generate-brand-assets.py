@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate native Android brand resources from the approved SVG outlines."""
+"""Generate Android resources and transparent README logos from the approved SVG."""
 import argparse
 import math
 import re
@@ -66,7 +66,19 @@ def generate():
             f'<?xml version="1.0" encoding="utf-8"?>\n<adaptive-icon xmlns:android="{ANDROID}">\n'
             f'    <background android:drawable="@color/brand_background"/>\n'
             f'    <foreground android:drawable="@drawable/{resource}"/>\n</adaptive-icon>\n')
-    return {RES / path: content for path, content in result.items()}
+    outputs = {RES / path: content for path, content in result.items()}
+    pts = points(lockup)
+    left = math.floor(min(x for x, _ in pts)) - 24
+    top = math.floor(min(y for _, y in pts)) - 24
+    width = math.ceil(max(x for x, _ in pts)) + 24 - left
+    height = math.ceil(max(y for _, y in pts)) + 24 - top
+    for theme, color in [('light', background), ('dark', foreground)]:
+        outlines = ''.join(f'<path fill="{color}" d="{data}"/>\n' for data in paths.values())
+        outputs[ROOT / f'assets/brand/logo-readme-{theme}.svg'] = (
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{left} {top} {width} {height}">\n'
+            '<title>VireoLumaTV — logotipo con las iniciales VLTV</title>\n'
+            + outlines + '</svg>\n')
+    return outputs
 
 
 def main():
