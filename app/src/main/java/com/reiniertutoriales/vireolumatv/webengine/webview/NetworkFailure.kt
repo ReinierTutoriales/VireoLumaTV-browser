@@ -13,8 +13,11 @@ internal class NetworkFailure {
     fun requested() { failedUrl = null }
 
     /** A main-frame load of [url] ended with WebView error [code]. */
-    fun failed(url: String, code: Int) {
-        if (code in NETWORK_ERRORS) failedUrl = url
+    /** Records a network failure, which the caller reports; true when [code] is one. */
+    fun failed(url: String, code: Int): Boolean {
+        if (code !in NETWORK_ERRORS) return false
+        failedUrl = url
+        return true
     }
 
     /** Whether the page on screen, at [shownUrl], is the failed one and should load again; asked once. */

@@ -104,7 +104,8 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
         logStream(request.url) { "transport=${error.errorCode}" }
         if (request.isForMainFrame) {
             topLevel.ended()
-            engine.networkFailure.failed(request.url.toString(), error.errorCode)
+            val url = request.url.toString()
+            if (engine.networkFailure.failed(url, error.errorCode)) window?.onMainFrameNetworkError(url)
         }
         super.onReceivedError(view, request, error)
     }

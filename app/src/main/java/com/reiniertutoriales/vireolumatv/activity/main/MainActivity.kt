@@ -104,6 +104,7 @@ open class MainActivity : ComponentActivity() {
     internal val config = AppContext.config
     internal val downloads by lazy { BrowserDownloads(this, { config.privateBrowsing }, ::onDownloadStarted) }
     internal val external by lazy { ExternalApps(this) }
+    internal val localNetwork by lazy { LocalNetworkPrompt(this) }
     internal var isFullscreen = false
 
     /** The engine that launched the outstanding picker; tab selection cannot transfer ownership. */
@@ -445,6 +446,7 @@ open class MainActivity : ComponentActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (tabStore.currentTab.value?.engine?.onPermissionsResult(requestCode, permissions, grantResults) == true) return
         if (downloads.onPermissionsResult(requestCode, grantResults)) return
+        if (localNetwork.onPermissionsResult(requestCode, grantResults)) return
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
