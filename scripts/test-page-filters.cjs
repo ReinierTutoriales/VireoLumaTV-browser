@@ -255,6 +255,28 @@ function page(filters, host = 'stream.example', setup = '') {
     batched.flush();
     vm.runInContext(`assert.equal(lookups.length, 2); assert.equal(lookups[1].classes, 'new-ad');`, batched);
 
+    // Class or id changes on many elements are read directly and never force a whole-document walk.
+    let churn = page({hide: [], script: ''}, 'stream.example', `
+        var walks = 0, names = [];
+        var root = {nodeType: 1, id: '', classList: []};
+        var nodes = Array.from({length: 300}, (_, i) => ({nodeType: 1, id: '', classList: ['c' + i], parentElement: root}));
+        document.documentElement = root;
+        document.readyState = 'complete';
+        document.createNodeIterator = function (node) {
+            if (node === root) walks++;
+            var done = false;
+            return {nextNode() { if (done) return null; done = true; return node; }};
+        };
+        VireoLumaTVApp.hiddenSelectors = function (url, classes) { names.push(...classes.split(' ').filter(Boolean)); return '[]'; };
+    `);
+    churn.flush();
+    vm.runInContext(`
+        assert.equal(walks, 1);
+        observers[0].fn(nodes.map(function (n) { return {type: 'attributes', target: n}; }));
+    `, churn);
+    churn.flush();
+    vm.runInContext(`assert.equal(walks, 1); assert.equal(new Set(names).size, 300);`, churn);
+
     // A large real-DOM traversal yields and never materializes the entire subtree as a NodeList.
     let sliced = page({hide: [], script: ''}, 'stream.example', `
         var visited = 0, names = [];

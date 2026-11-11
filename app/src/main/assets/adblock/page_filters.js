@@ -1961,7 +1961,13 @@
                 if (seenClasses.size >= budget && seenIds.size >= budget) { observer.disconnect(); return; }
                 for (var m = 0; m < mutations.length; m++) {
                     var mutation = mutations[m];
-                    if (mutation.type === 'attributes') { enqueue(mutation.target, false); continue; }
+                    // One element's class or id: read it now. Queued, frequent class toggles would
+                    // reach the 256-node cap and force repeated whole-document walks.
+                    if (mutation.type === 'attributes') {
+                        if (mutation.target && mutation.target.nodeType === 1) collect(mutation.target);
+                        if (!scheduled) { scheduled = true; setTimeout(flushGeneric, 250); }
+                        continue;
+                    }
                     var added = mutation.addedNodes;
                     for (var a = 0; a < added.length; a++) enqueue(added[a], true);
                 }
