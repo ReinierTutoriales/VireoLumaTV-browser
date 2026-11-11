@@ -594,3 +594,4 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/LocalNetworkAc
 app/src/main/java/com/reiniertutoriales/vireolumatv/utils/OfflineGrace.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/OfflineGraceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/InputBudgetTest.kt	PROPIO
+app/src/main/res/xml/network_security_config.xml	PROPIO

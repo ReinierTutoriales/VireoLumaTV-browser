@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Same policy as before, in the form Android keeps: plain http:// sites must open (this replaces
+  android:usesCleartextTraffic, which Android plans to deprecate) and only system CAs are trusted.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
