@@ -306,6 +306,7 @@ class NativeHomeTest {
         compose.onNodeWithTag("home_tile_edit").performClick()
         f.drain()
         compose.onNodeWithTag("home_tile_edit").assertTextContains(compose.activity.getString(R.string.home_done))
+        Unit
     }
 
     @Test fun aPageFinishedBeforeFullProgressStillReadsOnceLoaded() = Fixture().use { f ->
