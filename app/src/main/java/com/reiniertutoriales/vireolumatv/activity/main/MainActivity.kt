@@ -1143,6 +1143,7 @@ open class MainActivity : ComponentActivity() {
             closeCapsule()
         }
         val previewed = tabAtStripSelection()
+        vb.controlsHost.setTabs(tabStore.openTabs.toList(), vb.controlsHost.current.coerceIn(0, (tabStore.openTabs.size - 1).coerceAtLeast(0)))
         showLivePage(previewed != null && previewed === tabStore.currentTab.value)
         lifecycleScope.launch { showPreview(previewed) }
         vb.controlsHost.closeAddressEditing()

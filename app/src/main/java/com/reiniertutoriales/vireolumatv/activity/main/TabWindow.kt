@@ -79,13 +79,19 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     override fun onProgress(percent: Int) = browser.showLoadProgress(percent)
 
+    private fun refreshTabStrip() {
+        if (vb.controlsOverlay.isVisible) {
+            vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
+        }
+    }
+
     override fun onTitle(title: String) {
         tab.title = title
-        vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
+        refreshTabStrip()
         browser.visitLog.onTabTitle(tab)
     }
 
-    override fun onIcon(icon: Bitmap) = vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
+    override fun onIcon(icon: Bitmap) = refreshTabStrip()
 
     override fun requestPermissions(permissions: Array<String>): Int = browser.requestPagePermissions(permissions)
 
@@ -146,7 +152,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         (tab.engine.url ?: reported)?.let { url ->
             if (tab.url != url) {
                 tab.url = url
-                vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
+                refreshTabStrip()
                 if (isShownTab) browser.publishShownSite()
             }
         }

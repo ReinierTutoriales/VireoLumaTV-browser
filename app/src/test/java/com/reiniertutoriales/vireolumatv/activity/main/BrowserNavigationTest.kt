@@ -509,4 +509,24 @@ class BrowserNavigationTest {
         org.robolectric.Shadows.shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(1_600))
         assertEquals("Deferred preview capture runs once fullscreen exits", 1, f.thumbnailRenders)
     }
+
+    @Test fun hiddenCapsuleDefersTabStripSnapshotsUntilOpened() = Fixture().use { f ->
+        f.vb.controlsHost.setTabs(f.tabs.openTabs.toList(), 0)
+        val callback = TabWindow(f.activity, f.tab)
+        val wasPrivate = f.activity.config.privateBrowsing
+        f.activity.config.privateBrowsing = true
+        try {
+            assertEquals("https://example.test", f.vb.controlsHost.shownTabs.single().label)
+            callback.onTitle("Updated while hidden")
+            callback.onVisited("https://example.test/updated")
+            assertEquals("Hidden capsule avoids rebuilding tab chips on every page callback",
+                "https://example.test", f.vb.controlsHost.shownTabs.single().label)
+            f.activity.openCapsule()
+            val chip = f.vb.controlsHost.shownTabs.single()
+            assertEquals("Updated while hidden", chip.label)
+            assertEquals("https://example.test/updated", f.tab.url)
+        } finally {
+            f.activity.config.privateBrowsing = wasPrivate
+        }
+    }
 }
