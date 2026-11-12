@@ -32,11 +32,15 @@ object FilterListPreprocessor {
 
     fun extract(text: String): Result {
         val popup = StringBuilder()
+        appendPopupRules(text, popup)
+        return Result(popup.toString())
+    }
+
+    internal fun appendPopupRules(text: String, out: StringBuilder) {
         forEachLine(text) { line ->
             if (line.isEmpty() || line[0] == '!' || line[0] == '[' || isCosmetic(line)) return@forEachLine
-            popupLine(line)?.let { popup.append(it).append('\n') }
+            popupLine(line)?.let { out.append(it).append('\n') }
         }
-        return Result(popup.toString())
     }
 
     /** Drops the lines of `!#if` branches that do not apply. Unbalanced directives are tolerated. */
@@ -77,9 +81,11 @@ object FilterListPreprocessor {
         return result
     }
 
+    private val TOKEN_REGEX = Regex("""\(|\)|!|&&|\|\||[A-Za-z0-9_]+""")
+
     /** `!`, `&&`, `||` and parentheses over [environment] tokens; unknown tokens are false. */
     internal fun evaluate(expression: String): Boolean {
-        val tokens = Regex("""\(|\)|!|&&|\|\||[A-Za-z0-9_]+""").findAll(expression).map { it.value }.toList()
+        val tokens = TOKEN_REGEX.findAll(expression).map { it.value }.toList()
         var index = 0
         fun or(): Boolean {
             fun and(): Boolean {
@@ -107,7 +113,7 @@ object FilterListPreprocessor {
         // Regex rules can contain '$' inside the pattern; they are rare in popup sections.
         if (line.startsWith("/") && line.endsWith("/")) return null
         val dollar = line.lastIndexOf('$')
-        if (dollar <= 0 || dollar == line.length - 1) return null
+        if (dollar <= 0 || dollar == line.length - 1 || line.indexOf("popu", dollar + 1) < 0) return null
         val options = line.substring(dollar + 1).split(',')
         if (options.none { it == "popup" || it == "popunder" }) return null
         val rewritten = options.filter { it != "popup" && it != "popunder" && it != "document" && it != "doc" }

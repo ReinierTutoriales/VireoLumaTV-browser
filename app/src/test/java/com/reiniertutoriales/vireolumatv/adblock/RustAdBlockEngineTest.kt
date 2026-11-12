@@ -62,6 +62,10 @@ class RustAdBlockEngineTest {
             assertEquals(ContentBlocker.BLOCK, blocker.decision("https://tracker.example/t.gif", "image"))
             assertEquals(ContentBlocker.ALLOW, blocker.check(Uri.parse("https://tracker.example/t.gif"), "image",
                 Uri.parse("https://tracker.example/")))
+            assertFalse(blocker.verdict(Uri.parse("https://tracker.example/t.gif"), "image",
+                Uri.parse("https://tracker.example/watch?v=123&list=abc#t=10")).blocked)
+            assertTrue(blocker.verdict(Uri.parse("https://tracker.example/t.gif"), "image",
+                Uri.parse("https://stream.example/watch?v=123&list=abc#t=10")).blocked)
             // $redirect: blocked, but the page gets a harmless resource instead of an error.
             assertEquals(ContentBlocker.BLOCK_REDIRECT, blocker.decision("https://cdn.example/ads/loader.js", "script"))
             val js = blocker.verdict(Uri.parse("https://cdn.example/ads/loader.js"), "script", page).redirect!!

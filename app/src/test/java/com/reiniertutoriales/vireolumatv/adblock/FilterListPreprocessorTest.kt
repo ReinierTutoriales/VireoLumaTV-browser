@@ -14,6 +14,7 @@ class FilterListPreprocessorTest {
             @@||ok.test^${'$'}popup
             ||under.test^${'$'}popunder
             ||banner.test^${'$'}image
+            ||cdn.test^${'$'}script,domain=popups.test
             example.test##.ad-box
             ||network.test/#anchor${'$'}popup
             /regex${'$'}popup/
@@ -26,6 +27,10 @@ class FilterListPreprocessorTest {
             "||under.test^${'$'}document",
             "||network.test/#anchor${'$'}document"
         ), result.popupRules.lines().filter { it.isNotEmpty() })
+        val combined = StringBuilder()
+        FilterListPreprocessor.appendPopupRules("||one.test^\$popup", combined)
+        FilterListPreprocessor.appendPopupRules("||two.test^\$popunder,3p", combined)
+        assertEquals("||one.test^\$document\n||two.test^\$document,3p\n", combined.toString())
     }
 
     @Test fun uBlockDirectivesKeepOnlyBranchesForAnAndroidChromiumBrowser() {

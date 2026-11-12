@@ -529,7 +529,7 @@ class AdBlocker @JvmOverloads constructor(
     private fun buildAuxiliary(source: String, texts: List<String>) {
         try {
             val popupRules = StringBuilder()
-            for (text in texts) popupRules.append(FilterListPreprocessor.extract(text).popupRules)
+            for (text in texts) FilterListPreprocessor.appendPopupRules(text, popupRules)
             val popup = if (popupRules.isEmpty()) null else engine.compile(popupRules.toString())
             val popupFile = popupFileFor(source)
             val marker = noPopupMarkerFor(source)
