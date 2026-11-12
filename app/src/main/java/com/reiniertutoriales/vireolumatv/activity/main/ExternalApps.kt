@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.util.Log
 import android.webkit.URLUtil
 import android.widget.Toast
@@ -56,9 +58,36 @@ internal class ExternalApps(private val activity: Activity) {
 
     private fun externalIntent(url: String): Intent? {
         val intent = ExternalWebNavigation.parseIntentUrl(url)
-        if (intent == null || intent.resolveActivity(activity.packageManager)?.packageName == activity.packageName) {
+        val self = activity.packageName
+        if (intent == null || intent.`package` == self) {
             toast(R.string.error_no_app)
             return null
+        }
+        val matches = activity.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        val selfComponents = matches.mapNotNull { info ->
+            info.activityInfo?.takeIf { it.packageName == self }?.let { ComponentName(it.packageName, it.name) }
+        }.distinct()
+        val others = matches.mapNotNull { info ->
+            info.activityInfo?.takeIf { it.packageName != self }?.let { ComponentName(it.packageName, it.name) }
+        }.distinct()
+        val resolved = intent.resolveActivity(activity.packageManager)
+        if (resolved != null && resolved in others) {
+            return intent
+        }
+        if (others.isEmpty() && (selfComponents.isNotEmpty() || resolved?.packageName == self)) {
+            toast(R.string.error_no_app)
+            return null
+        }
+        if (intent.`package` == null && others.isNotEmpty()) {
+            if (others.size == 1) {
+                intent.component = others[0]
+            } else {
+                return Intent.createChooser(intent, null).apply {
+                    if (selfComponents.isNotEmpty()) {
+                        putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, selfComponents.toTypedArray())
+                    }
+                }
+            }
         }
         return intent
     }
