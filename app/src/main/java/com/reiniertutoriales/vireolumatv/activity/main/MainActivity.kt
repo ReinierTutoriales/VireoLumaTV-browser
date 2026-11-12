@@ -62,6 +62,7 @@ import com.reiniertutoriales.vireolumatv.utils.RemoteInput
 import com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels
 import com.reiniertutoriales.vireolumatv.utils.CookiePersistence
 import com.reiniertutoriales.vireolumatv.utils.NetworkWatcher
+import com.reiniertutoriales.vireolumatv.utils.OfflineGrace
 import com.reiniertutoriales.vireolumatv.utils.onAnimationEnd
 import com.reiniertutoriales.vireolumatv.singleton.AppDatabase
 import com.reiniertutoriales.vireolumatv.utils.toast
@@ -459,11 +460,16 @@ open class MainActivity : ComponentActivity() {
     private var networkCallbackRegistered = false
     @VisibleForTesting internal var cookies = CookiePersistence()
     // Replaces the CONNECTIVITY_ACTION broadcast; callbacks arrive on a binder thread.
+    private val onlineState by lazy {
+        OfflineGrace(mainThread, OFFLINE_GRACE_MS) { online ->
+            if (!isDestroyed) tabStore.currentTab.value?.engine?.setOnline(online)
+        }
+    }
     private val networkCallback = NetworkWatcher { online, restored ->
         mainThread.post {
             if (isDestroyed) return@post
+            onlineState.report(online)
             val engine = tabStore.currentTab.value?.engine
-            engine?.setOnline(online)
             if (!restored) return@post
             // A page that failed for lack of network loads again by itself.
             engine?.onNetworkRestored()
@@ -1219,6 +1225,8 @@ open class MainActivity : ComponentActivity() {
         const val WEBVIEW_PACKAGE = "com.google.android.webview"
         /** Codes for page permission requests, above the download queue's. */
         const val PAGE_PERMISSION_REQUESTS_START = 10100
+        /** Longer than a Wi-Fi re-association or a hand-over between networks. */
+        const val OFFLINE_GRACE_MS = 3_000L
         const val SUGGESTIONS_DELAY_MS = 150L
         const val PREVIEW_FOCUS_DELAY_MS = 200L
         const val OVERLAY_OPEN_MS = 220L
