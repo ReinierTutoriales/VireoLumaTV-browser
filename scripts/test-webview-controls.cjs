@@ -19,6 +19,15 @@ const media = (overrides = {}) => ({tag: 'video', currentTime: 0, paused: false,
     pause() { this.pauses++; this.paused = true; }, ...overrides});
 (async () => {
     const buffering = media(); items = [buffering];
+    sandbox.vireoLumaTVPlay();
+    assert.equal(buffering.plays, 0, 'dedicated play must not restart an already playing video');
+    sandbox.vireoLumaTVPause();
+    assert.equal(buffering.pauses, 1);
+    sandbox.vireoLumaTVPause();
+    assert.equal(buffering.pauses, 1, 'dedicated pause must not pause an already paused video');
+    sandbox.vireoLumaTVPlay();
+    assert.equal(buffering.plays, 1);
+    buffering.paused = false; buffering.plays = 0; buffering.pauses = 0;
     sandbox.vireoLumaTVTogglePlayback();
     assert.equal(buffering.pauses, 1); assert.equal(buffering.plays, 0);
     const rejected = media({paused: true, play() { this.plays++; return Promise.reject(new Error('blocked')); }});

@@ -129,6 +129,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
     override fun media(command: MediaCommand) {
         val call = when (command) {
             MediaCommand.PLAY_PAUSE -> "vireoLumaTVTogglePlayback()"
+            MediaCommand.PLAY -> "vireoLumaTVPlay()"
+            MediaCommand.PAUSE -> "vireoLumaTVPause()"
             MediaCommand.STOP -> "vireoLumaTVStopPlayback()"
             MediaCommand.REWIND -> "vireoLumaTVRewind()"
             MediaCommand.FAST_FORWARD -> "vireoLumaTVFastForward()"

@@ -89,8 +89,26 @@ class Shortcuts internal constructor(private val prefs: SharedPreferences) {
     /** Key events from the activity window; a fired shortcut runs on the next UI turn. */
     fun handle(event: KeyEvent, mainActivity: MainActivity, tab: BrowserTab?): Boolean {
         val result = onKeyEvent(event)
-        result.fire?.let { shortcut -> mainThread.post { process(shortcut, mainActivity, tab) } }
-        return result.consumed
+        if (result.consumed) {
+            result.fire?.let { shortcut -> mainThread.post { process(shortcut, mainActivity, tab) } }
+            return true
+        }
+        val media = defaultMediaCommand(event) ?: return false
+        if (event.action == KeyEvent.ACTION_UP && event.repeatCount == 0) {
+            mainThread.post { tab?.engine?.media(media) }
+        }
+        return true
+    }
+
+    internal fun defaultMediaCommand(event: KeyEvent): MediaCommand? {
+        if (event.modifiers != 0 || binding(RemoteShortcut.PLAY_PAUSE) != KeyBinding(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)) {
+            return null
+        }
+        return when (KeyBinding.codeOf(event)) {
+            KeyEvent.KEYCODE_MEDIA_PLAY -> MediaCommand.PLAY
+            KeyEvent.KEYCODE_MEDIA_PAUSE -> MediaCommand.PAUSE
+            else -> null
+        }
     }
 
     @UiThread
