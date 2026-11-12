@@ -176,7 +176,9 @@ data class BrowserTab(
                 try {
                     // JPEG encodes an RGB_565 preview several times faster than PNG on TV CPUs; BitmapFactory
                     // reads either, so the ".png" name of older versions is kept.
-                    File(directory, "$name.png").outputStream().use { thumbnail.compress(Bitmap.CompressFormat.JPEG, PREVIEW_QUALITY, it) }
+                    File(directory, "$name.png").outputStream().use {
+                        synchronized(thumbnail) { thumbnail.compress(Bitmap.CompressFormat.JPEG, PREVIEW_QUALITY, it) }
+                    }
                     thumbnailHash = name
                 } catch (error: Exception) {
                     Log.w(TAG, "Could not save the tab preview", error)

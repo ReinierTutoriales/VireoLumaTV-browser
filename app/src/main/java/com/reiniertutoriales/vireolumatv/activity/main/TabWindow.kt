@@ -32,6 +32,7 @@ import com.reiniertutoriales.vireolumatv.webengine.PagePoint
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 
@@ -151,10 +152,17 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         if (browser.tabAtStripSelection() === tab) vb.controlsHost.showAddress(tab)
     }
 
-    private val capturePreview = Runnable {
+    private var previewJob: Job? = null
+
+    private val capturePreview: Runnable = Runnable {
         if (browser.isFinishing || browser.isDestroyed || tab.closed || !isShownTab ||
             tab.engine.view?.isAttachedToWindow != true) return@Runnable
-        browser.lifecycleScope.launch {
+        if (previewJob?.isActive == true) {
+            ui.removeCallbacks(capturePreview)
+            ui.postDelayed(capturePreview, PREVIEW_DELAY_MS)
+            return@Runnable
+        }
+        previewJob = browser.lifecycleScope.launch {
             val preview = (if (browser.nativeHome?.isVisible == true) browser.nativeHome?.preview(tab.thumbnail)
                 else tab.engine.preview(tab.thumbnail)) ?: return@launch
             tab.refreshPreview(browser, preview)

@@ -283,7 +283,9 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         val height = maxOf(1, (view.height * scale).toInt())
         val bitmap = reuse?.takeIf { !it.isRecycled && it.width == width && it.height == height }
             ?: try { createBitmap(width, height, Bitmap.Config.RGB_565) } catch (_: OutOfMemoryError) { return null }
-        view.draw(Canvas(bitmap).apply { scale(scale, scale) })
+        synchronized(bitmap) {
+            view.draw(Canvas(bitmap).apply { scale(scale, scale) })
+        }
         return bitmap
     }
 

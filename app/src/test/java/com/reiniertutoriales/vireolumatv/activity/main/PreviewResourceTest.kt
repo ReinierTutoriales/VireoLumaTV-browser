@@ -51,4 +51,41 @@ class PreviewResourceTest {
             assertEquals(SiteSettings.DEFAULT_POPUP_POLICY, model.popupBlockingLevel(tab))
         } finally { model.clear() }
     }
+
+    @Test fun refreshPreviewSerializesAccessToTheReusedBitmapBuffer() {
+        val app = RuntimeEnvironment.getApplication()
+        AppContext.init(app, Config(app.getSharedPreferences("preview-sync-test", 0)))
+        val tab = BrowserTab(url = "https://sync.test")
+        val bitmap = Bitmap.createBitmap(64, 64, Bitmap.Config.RGB_565)
+        val lockEntered = java.util.concurrent.CountDownLatch(1)
+        val releaseLock = java.util.concurrent.CountDownLatch(1)
+        val compressed = java.util.concurrent.atomic.AtomicBoolean(false)
+        val holder = Thread {
+            synchronized(bitmap) {
+                lockEntered.countDown()
+                releaseLock.await(5, java.util.concurrent.TimeUnit.SECONDS)
+            }
+        }.apply { start() }
+        val saver = Thread {
+            kotlinx.coroutines.runBlocking {
+                tab.refreshPreview(app, bitmap)
+                compressed.set(true)
+            }
+        }
+        try {
+            assertTrue(lockEntered.await(2, java.util.concurrent.TimeUnit.SECONDS))
+            saver.start()
+            Thread.sleep(50)
+            assertFalse("Compression must wait while the UI thread holds the bitmap lock", compressed.get())
+            releaseLock.countDown()
+            saver.join(3000)
+            assertTrue(compressed.get())
+            assertNotNull(tab.loadPreview())
+        } finally {
+            releaseLock.countDown()
+            holder.join(1000)
+            tab.removeFiles()
+            bitmap.recycle()
+        }
+    }
 }

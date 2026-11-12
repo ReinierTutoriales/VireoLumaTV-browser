@@ -244,11 +244,13 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
                 Log.w(TAG, "No memory for the tab preview", error)
                 return null
             }
-        val canvas = Canvas(preview)
-        val factor = preview.width / width.toFloat()
-        canvas.scale(factor, factor)
-        canvas.translate(-scrollX.toFloat(), -scrollY.toFloat())
-        super.draw(canvas)
+        synchronized(preview) {
+            val canvas = Canvas(preview)
+            val factor = preview.width / width.toFloat()
+            canvas.scale(factor, factor)
+            canvas.translate(-scrollX.toFloat(), -scrollY.toFloat())
+            super.draw(canvas)
+        }
         return preview
     }
 
