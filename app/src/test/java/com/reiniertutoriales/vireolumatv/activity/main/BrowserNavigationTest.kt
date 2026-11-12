@@ -197,6 +197,15 @@ class BrowserNavigationTest {
             override val version = "test"
         })
         try {
+            assertTrue(f.activity.shouldConsumeStartupIntent(null, intent))
+            assertFalse("Process death / recreation must not re-open the initial VIEW intent",
+                f.activity.shouldConsumeStartupIntent(android.os.Bundle(), intent))
+            val fromHistory = android.content.Intent(intent).addFlags(android.content.Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
+            assertFalse("Recents relaunch must not re-open the initial VIEW intent",
+                f.activity.shouldConsumeStartupIntent(null, fromHistory))
+            f.activity.handleIntent(intent)
+            assertNull("Consumed intent data must be cleared so recreation does not reopen the link", intent.data)
+            assertFalse(f.activity.consumeStartupIntent)
             f.activity.handleIntent(intent)
         } finally { restore() }
         assertEquals("https://example.test", f.tab.url)
