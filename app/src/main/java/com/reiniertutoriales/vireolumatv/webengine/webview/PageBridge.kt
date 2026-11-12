@@ -26,8 +26,6 @@ import java.util.concurrent.atomic.AtomicLong
  * Calls arrive on the JavaBridge thread.
  */
 internal open class FilterBridge(protected val engine: WebViewPageEngine) {
-    private val selectorInput = InputBudget(MAX_SELECTOR_INPUT_PER_SECOND)
-
     /** Element hiding and scriptlets for a frame (see page_filters.js). */
     @JavascriptInterface
     fun pageFilters(url: String?): String = if (isFrameUrl(url)) engine.pageFilters(url!!) else ""
@@ -36,7 +34,7 @@ internal open class FilterBridge(protected val engine: WebViewPageEngine) {
     @JavascriptInterface
     fun hiddenSelectors(url: String?, classes: String?, ids: String?): String {
         val found = classes.orEmpty().length + ids.orEmpty().length
-        if (!isFrameUrl(url) || found > MAX_SELECTOR_INPUT || !selectorInput.take(found)) return "[]"
+        if (!isFrameUrl(url) || found > MAX_SELECTOR_INPUT) return "[]"
         return engine.hiddenSelectors(url!!, classes.orEmpty(), ids.orEmpty())
     }
 
@@ -50,30 +48,6 @@ internal open class FilterBridge(protected val engine: WebViewPageEngine) {
 
     private companion object {
         const val MAX_SELECTOR_INPUT = 64 * 1024
-        /**
-         * Any page can call the bridge directly; this caps native lookups at about 64 full-size
-         * calls a second per WebView. page_filters.js sends each name once per frame, far below it.
-         */
-        const val MAX_SELECTOR_INPUT_PER_SECOND = 64 * MAX_SELECTOR_INPUT
-    }
-}
-
-/** Characters allowed per second; calls arrive on the JavaBridge thread. */
-internal class InputBudget(private val perSecond: Int, private val now: () -> Long = SystemClock::elapsedRealtime) {
-    private var windowStart = 0L
-    private var used = 0L
-    private var started = false
-
-    @Synchronized fun take(amount: Int): Boolean {
-        val time = now()
-        if (!started || time - windowStart >= 1_000) {
-            started = true
-            windowStart = time
-            used = 0
-        }
-        if (used + amount > perSecond) return false
-        used += amount
-        return true
     }
 }
 

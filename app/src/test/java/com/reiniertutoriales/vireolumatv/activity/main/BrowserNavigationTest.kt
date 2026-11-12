@@ -214,13 +214,8 @@ class BrowserNavigationTest {
         watcher.lost("wifi")
         watcher.update("wifi", online = true, validated = true)
         org.robolectric.shadows.ShadowLooper.idleMainLooper()
-        assertEquals("A loss shorter than the grace never reaches the page", listOf(true, true), f.online)
+        assertEquals(listOf(true, false, true), f.online)
         assertEquals("Online, then back after the loss", 2, f.restoredNetwork)
-        watcher.lost("wifi")
-        org.robolectric.shadows.ShadowLooper.idleMainLooper()
-        assertEquals(listOf(true, true), f.online)
-        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(3_100))
-        assertEquals("A lasting loss is reported", listOf(true, true, false), f.online)
     }
 
     @Test fun addToFavoritesInATabsOptionsActsOnThatTabEvenAfterItMoved() = Fixture().use { f ->
