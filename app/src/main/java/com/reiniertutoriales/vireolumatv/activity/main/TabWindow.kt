@@ -123,6 +123,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         updateAddress(url)
         tab.blockedAds = 0
         tab.blockedPopups = 0
+        previewDeferredForFullscreen = false
         ui.removeCallbacks(capturePreview)
         // After the address is updated, so redirects look up the right site.
         browser.lifecycleScope.launch { tabs.siteSettingsFor(tab, false) }
@@ -153,10 +154,15 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
     }
 
     private var previewJob: Job? = null
+    private var previewDeferredForFullscreen = false
 
     private val capturePreview: Runnable = Runnable {
         if (browser.isFinishing || browser.isDestroyed || tab.closed || !isShownTab ||
             tab.engine.view?.isAttachedToWindow != true) return@Runnable
+        if (browser.isFullscreen) {
+            previewDeferredForFullscreen = true
+            return@Runnable
+        }
         if (previewJob?.isActive == true) {
             ui.removeCallbacks(capturePreview)
             ui.postDelayed(capturePreview, PREVIEW_DELAY_MS)
@@ -320,6 +326,11 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
             }
         }
         browser.isFullscreen = false
+        if (previewDeferredForFullscreen) {
+            previewDeferredForFullscreen = false
+            ui.removeCallbacks(capturePreview)
+            ui.postDelayed(capturePreview, PREVIEW_DELAY_MS)
+        }
         if (restoreControls && isShownTab && !browser.isFinishing && !browser.isDestroyed) browser.openCapsule()
         // Let tab switching and focus restoration finish before opening another window.
         ui.post { browser.showPendingUpdate() }

@@ -498,4 +498,15 @@ class BrowserNavigationTest {
         assertFalse("A repeated end must not switch D-pad navigation to the pointer", f.vb.pageContainer.pointerEnabled)
         assertEquals("A repeated end must not reopen the capsule", View.INVISIBLE, f.vb.controlsOverlay.visibility)
     }
+
+    @Test fun fullscreenDefersSoftwarePreviewCaptureUntilVideoExits() = Fixture().use { f ->
+        val callback = TabWindow(f.activity, f.tab)
+        callback.onEnterFullscreen()
+        callback.onPageFinished("https://example.test/video")
+        org.robolectric.Shadows.shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(1_600))
+        assertEquals("Software preview capture must not run while fullscreen video plays", 0, f.thumbnailRenders)
+        callback.onExitFullscreen(restoreControls = false)
+        org.robolectric.Shadows.shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(1_600))
+        assertEquals("Deferred preview capture runs once fullscreen exits", 1, f.thumbnailRenders)
+    }
 }
