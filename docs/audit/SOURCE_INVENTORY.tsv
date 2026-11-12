@@ -459,6 +459,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/CursorPoin
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/DownloadMessagesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/FilterBridgeUrlPolicyTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/FullscreenDetachTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/GlobalTimersTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomeFavoritesTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageNetworkTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/HomePageTest.kt	PROPIO

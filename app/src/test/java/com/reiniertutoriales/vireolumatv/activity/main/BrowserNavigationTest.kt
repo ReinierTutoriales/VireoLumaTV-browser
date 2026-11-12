@@ -415,6 +415,22 @@ class BrowserNavigationTest {
         assertEquals(WindowInsetsControllerCompat.BEHAVIOR_DEFAULT, controller.systemBarsBehavior)
     }
 
+    // closeTab() shows the neighbour first and then releases the closed tab, so that tab ends its
+    // fullscreen when it is no longer the shown one: the window must still be restored.
+    @Test fun closingAFullscreenTabRestoresTheWindowAfterTheNeighbourIsShown() = Fixture().use { f ->
+        val window = f.activity.window
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+        val callback = TabWindow(f.activity, f.tab)
+        callback.onEnterFullscreen()
+        f.tabs.currentTab.value = BrowserTab(url = "https://neighbour.test")
+        callback.onExitFullscreen(restoreControls = false)
+        assertFalse(f.activity.isFullscreen)
+        assertEquals("The screen may sleep again", 0,
+            window.attributes.flags and android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        assertEquals(WindowInsetsControllerCompat.BEHAVIOR_DEFAULT, controller.systemBarsBehavior)
+    }
+
     @Test fun fullscreenExitKeepsDirectDpadNavigation() = Fixture().use { f ->
         val callback = TabWindow(f.activity, f.tab)
         val engine = WebViewPageEngine(f.tab).apply { window = callback }

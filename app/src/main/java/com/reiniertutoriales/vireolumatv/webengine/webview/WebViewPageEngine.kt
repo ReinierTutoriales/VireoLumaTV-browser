@@ -116,10 +116,11 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
         }
     }
 
+    // The app leaves the screen. pauseTimers() is global: it stops every WebView's timers, layout and
+    // parsing, so it belongs here and never to a tab that is only set aside or closed.
     override fun pause() {
         webView?.apply {
             onPause()
-            // onPause() alone leaves JavaScript timers running.
             pauseTimers()
         }
     }
@@ -157,7 +158,8 @@ class WebViewPageEngine(val tab: BrowserTab) : PageEngine {
         // Keep browser controls untouched while the tab is being switched.
         exitFullscreen(restoreBrowserControls = false)
         webView?.hideCustomView()
-        pause()
+        // This view only: closing a popup or a background tab must not freeze the page on screen.
+        webView?.onPause()
         (webView?.parent as? ViewGroup)?.removeView(webView)
         window = null
         container?.pointerController?.onHold = null
