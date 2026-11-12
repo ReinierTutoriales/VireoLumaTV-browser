@@ -282,11 +282,45 @@ class NativeHomeTest {
         var callback: ValueCallback<String>? = null
         val scripts = mutableListOf<String>()
         override fun getUrl() = address
-        override fun getProgress() = 100
+        var loadProgress = 100
+        override fun getProgress() = loadProgress
         override fun evaluateJavascript(script: String, resultCallback: ValueCallback<String>?) {
             scripts += script
             callback = resultCallback
         }
+    }
+
+    @Test fun anUnansweredOrEarlyReadIsRetriedSoAddAndEditBecomeUsable() = Fixture().use { f ->
+        // A restored tab: the first read goes to the document being replaced and never answers.
+        f.home.update(f.tab)
+        val lost = requireNotNull(f.web.callback)
+        assertFalse(f.tileEnabled("home_tile_edit"))
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(1_500))
+        assertEquals("A read in progress is not cancelled early", 1, f.web.scripts.size)
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(600))
+        assertEquals("The unanswered read is sent again", 2, f.web.scripts.size)
+        f.finishRead()
+        assertTrue(f.tileEnabled("home_tile_add"))
+        assertTrue(f.tileEnabled("home_tile_edit"))
+        lost.onReceiveValue("{\"raw\":\"[\\\"https://stale.test/\\\"]\",\"hidden\":false}")
+        f.drain()
+        assertFalse("A late answer from the replaced document is ignored", "shortcut:https://stale.test/" in f.home.tileKeys)
+        compose.onNodeWithTag("home_tile_edit").performClick()
+        f.drain()
+        compose.onNodeWithTag("home_tile_edit").assertTextContains(compose.activity.getString(R.string.home_done))
+        Unit
+    }
+
+    @Test fun aPageFinishedBeforeFullProgressStillReadsOnceLoaded() = Fixture().use { f ->
+        f.web.loadProgress = 80
+        f.home.update(f.tab)
+        f.home.documentReady(f.tab)
+        assertTrue(f.web.scripts.isEmpty())
+        f.web.loadProgress = 100
+        shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(2_100))
+        assertEquals(1, f.web.scripts.size)
+        f.finishRead()
+        assertTrue(f.tileEnabled("home_tile_edit"))
     }
 
     @Test fun backOnHomeLeavesTheApp() = Fixture().use { f ->
@@ -366,6 +400,11 @@ class NativeHomeTest {
             home = NativeHome(activity, vb.nativeHomeContainer)
             activity.nativeHome = home
             compose.waitForIdle()
+        }
+
+        fun tileEnabled(tag: String): Boolean {
+            compose.waitForIdle()
+            return SemanticsProperties.Disabled !in compose.onNodeWithTag(tag).fetchSemanticsNode().config
         }
 
         fun finishRead(json: String = "{\"raw\":\"[]\",\"hidden\":false}") {

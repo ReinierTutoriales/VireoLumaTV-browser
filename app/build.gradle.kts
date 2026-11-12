@@ -232,6 +232,8 @@ androidComponents {
 }
 
 tasks.withType<Test>().configureEach {
+    // Robolectric keeps one Android environment per SDK level in the same JVM; 512 MB is no longer enough.
+    maxHeapSize = "1g"
     // Robolectric SDK 37 initializes file descriptors through OpenJDK SharedSecrets.
     jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
     dependsOn(buildRustAdblockHost)

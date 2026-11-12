@@ -29,6 +29,8 @@ interface PageWindow {
     fun onScale(scale: Float)
     /** The page's renderer died; the engine has already dropped its view. */
     fun onRendererGone()
+    /** The top-level document of [url] failed to load for lack of network. */
+    fun onMainFrameNetworkError(url: String) {}
 
     // What the page asks for
 

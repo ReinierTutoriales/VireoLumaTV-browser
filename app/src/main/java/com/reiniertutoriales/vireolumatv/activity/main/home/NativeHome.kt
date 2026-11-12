@@ -118,6 +118,22 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     private var generation = 0
     private var loaded = false
     private var busy = false
+    private var readRetries = 0
+    /**
+     * The first read can be sent while a restored document is still replacing the previous one;
+     * WebView then never answers it. Until a read succeeds, retry so Add and Edit cannot stay disabled.
+     */
+    private val retryRead = Runnable {
+        val shown = tab ?: return@Runnable
+        if (loaded || root == null) return@Runnable
+        readRetries++
+        if (busy) {
+            // Ignore the unanswered read if it ever arrives.
+            generation++
+            busy = false
+        }
+        documentReady(shown)
+    }
     private var shortcuts = HomeShortcuts()
     private var favorites: List<Tile> = emptyList()
     private var searchFocus = FocusRequester()
@@ -174,13 +190,17 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
 
     /** Re-attempt a storage read after a new internal document has actually committed. */
     fun documentReady(shown: BrowserTab) {
-        if (shown !== tab || loaded || busy || (web?.progress ?: 0) < 100) return
-        storage("") { state -> shortcuts = state; loaded = true; render() }
+        if (shown !== tab || loaded) return
+        if (!busy && (web?.progress ?: 0) >= 100) storage("") { state -> shortcuts = state; loaded = true; render() }
+        host.removeCallbacks(retryRead)
+        if (!loaded && readRetries < READ_RETRIES) host.postDelayed(retryRead, READ_RETRY_MS)
     }
 
     fun hide() {
         if (root == null) return
         generation++
+        host.removeCallbacks(retryRead)
+        readRetries = 0
         dialog?.dismiss()
         dialog = null
         favoritesJob?.cancel()
@@ -610,6 +630,9 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
     private companion object {
         /** The capsule's own opening time, so Home moves with it. */
         const val CAPSULE_MS = 220L
+        /** Longer than a normal read on slow TV chips, so a slow answer is not discarded; 20 s in all. */
+        const val READ_RETRY_MS = 2_000L
+        const val READ_RETRIES = 10
         /** Readable on black (contrast above 4.5:1). */
         val ErrorColor = Color(0xFFFF8A80)
     }

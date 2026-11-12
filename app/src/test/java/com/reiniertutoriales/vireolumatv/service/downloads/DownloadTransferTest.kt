@@ -76,6 +76,32 @@ class DownloadTransferTest {
         assertEquals(false, recorder.fileAtEnd)
     }
 
+    @Test fun aCookieSetOnARedirectJoinsTheBrowserStoreAndOneCookieHeader() {
+        val sent = AtomicReference<List<String>?>()
+        server.createContext("/start") {
+            it.responseHeaders.add("Set-Cookie", "gate=open; Path=/")
+            it.reply(302, location = "/final")
+        }
+        server.createContext("/final") { sent.set(it.requestHeaders["Cookie"]); it.reply(200, "payload") }
+        val info = download("cookie.txt", "/start")
+        android.webkit.CookieManager.getInstance().setCookie(info.url, "session=1")
+        FileTransfer(info, "test", Recorder()).run()
+        val headers = requireNotNull(sent.get())
+        assertEquals("One Cookie header", 1, headers.size)
+        assertTrue(headers[0], "session=1" in headers[0] && "gate=open" in headers[0])
+        assertTrue("gate=open" in android.webkit.CookieManager.getInstance().getCookie(info.url).orEmpty())
+    }
+
+    @Test fun redirectsMayUpgradeToHttpsButNeverDowngradeToHttp() {
+        val secure = java.net.URL("https://files.example/start")
+        assertEquals("https://files.example/a.bin", FileTransfer.redirectTarget(secure, "/a.bin").toString())
+        assertEquals(null, FileTransfer.redirectTarget(secure, "http://files.example/a.bin"))
+        assertEquals("https://cdn.example/a.bin",
+            FileTransfer.redirectTarget(java.net.URL("http://files.example/start"), "https://cdn.example/a.bin").toString())
+        assertEquals(null, FileTransfer.redirectTarget(secure, "ftp://files.example/a.bin"))
+        assertEquals(null, FileTransfer.redirectTarget(secure, null))
+    }
+
     @Test fun endlessRedirectsStopAfterTheLimit() {
         var hits = 0
         server.createContext("/loop") { hits++; it.reply(302, location = "/loop") }

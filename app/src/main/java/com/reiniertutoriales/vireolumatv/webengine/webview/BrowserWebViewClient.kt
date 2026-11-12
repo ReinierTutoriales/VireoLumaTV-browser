@@ -104,7 +104,8 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
         logStream(request.url) { "transport=${error.errorCode}" }
         if (request.isForMainFrame) {
             topLevel.ended()
-            engine.networkFailure.failed(request.url.toString(), error.errorCode)
+            val url = request.url.toString()
+            if (engine.networkFailure.failed(url, error.errorCode)) window?.onMainFrameNetworkError(url)
         }
         super.onReceivedError(view, request, error)
     }
@@ -128,7 +129,7 @@ internal class BrowserWebViewClient(private val view: BrowserWebView) : WebViewC
      * as a page warning.
      */
     override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
-        Log.e(BrowserWebView.TAG, "Certificate error for ${error.url}")
+        Log.e(BrowserWebView.TAG, "Certificate error for ${error.url?.toUri()?.host}")
         val owner = this.view
         val trusted = owner.trustedCertificate
         if (trusted != null && CertificateTrust.mayProceed(trusted, error)) {

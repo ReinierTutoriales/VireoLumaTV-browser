@@ -144,14 +144,15 @@ class FileTransfer internal constructor(
             try {
                 connection = network { connect(url, if (resume) offset else 0) }
                 val code = network { connection.responseCode }
+                keepCookies(url, connection)
                 when {
                     code == HttpURLConnection.HTTP_OK -> return receive(connection, startOver = true)
                     code == HttpURLConnection.HTTP_PARTIAL && resume && validRange(connection, offset, job.size) ->
                         return receive(connection, startOver = false)
                     code in REDIRECTS -> {
-                        // Followed here so that an http → https redirect works too; other schemes are refused.
-                        val next = connection.getHeaderField("Location")?.let { URL(url, it) }
-                        if (next == null || next.protocol !in WEB_SCHEMES || ++redirects > MAX_REDIRECTS) {
+                        // Followed here so that an http → https redirect works too.
+                        val next = redirectTarget(url, connection.getHeaderField("Location"))
+                        if (next == null || ++redirects > MAX_REDIRECTS) {
                             return Outcome.Failed(code, connection.responseMessage.orEmpty())
                         }
                         url = next
@@ -206,6 +207,17 @@ class FileTransfer internal constructor(
         connect()
     }
 
+    /**
+     * Cookies set by a download response, redirects included, join the browser's own store, as
+     * for the page that started it; each request then sends that store's single Cookie header.
+     */
+    private fun keepCookies(url: URL, connection: HttpURLConnection) {
+        val cookies = CookieManager.getInstance()
+        connection.headerFields.forEach { (name, values) ->
+            if (name.equals("Set-Cookie", ignoreCase = true)) values.forEach { cookies.setCookie(url.toString(), it) }
+        }
+    }
+
     /** Writes the body: a whole response replaces what was written, a partial one appends to it. */
     private fun receive(connection: HttpURLConnection, startOver: Boolean): Outcome {
         if (startOver) {
@@ -258,6 +270,16 @@ class FileTransfer internal constructor(
     internal companion object {
         val REDIRECTS = setOf(301, 302, 303, 307, 308)
         val WEB_SCHEMES = setOf("http", "https")
+        /**
+         * Where a download redirect may lead: http(s) only, and never from https to plain http,
+         * whose file could be altered in transit unnoticed.
+         */
+        internal fun redirectTarget(from: URL, location: String?): URL? {
+            val next = location?.let { runCatching { URL(from, it) }.getOrNull() } ?: return null
+            if (next.protocol !in WEB_SCHEMES) return null
+            return next.takeUnless { from.protocol == "https" && next.protocol == "http" }
+        }
+
         private val CONTENT_RANGE = Regex("""bytes\s+(\d+)-(\d+)/(\d+|\*)""", RegexOption.IGNORE_CASE)
 
         /** Safe default when the page's Referrer-Policy is unavailable: strict-origin-when-cross-origin. */

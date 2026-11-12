@@ -167,6 +167,8 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         if (isShownTab) browser.changeTab(tab)
     }
 
+    override fun onMainFrameNetworkError(url: String) = browser.localNetwork.onMainFrameNetworkError(tab, url)
+
     override fun onScale(scale: Float) {
         tab.scale = scale
     }
