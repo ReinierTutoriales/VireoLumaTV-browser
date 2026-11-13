@@ -144,7 +144,12 @@ struct Builder {
 
 impl Builder {
     fn new(resources: Vec<Resource>) -> Self {
-        let known = resources.iter().flat_map(|r| std::iter::once(&r.name).chain(&r.aliases)).cloned().collect();
+        let known = resources
+            .iter()
+            .filter(|r| r.kind.supports_redirect())
+            .flat_map(|r| std::iter::once(&r.name).chain(&r.aliases))
+            .cloned()
+            .collect();
         Builder { set: FilterSet::new(false), scoped: String::new(), resources, known }
     }
 

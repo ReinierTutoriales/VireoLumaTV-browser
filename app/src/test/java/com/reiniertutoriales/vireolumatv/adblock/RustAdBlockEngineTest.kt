@@ -180,22 +180,31 @@ class RustAdBlockEngineTest {
         // would break players waiting for e.g. the IMA SDK.
         val blocker = engine.compile(listOf(
             "||ima.example/sdk.js\$script,redirect=unknown-sdk.js\n||media.example/ad.mp4\$media,redirect=noop-9s.mp4:5\n" +
-                "||imasdk.example/ima3.js\$script,redirect=google-ima.js\n||media.example/ad.mp3\$media,redirect=noopmp3-0.1s",
-            "||known.example/ad.js\$script,redirect=noopjs:5\n||blocked.example^\nexample.test##.redirect-banner"
+                "||imasdk.example/ima3.js\$script,redirect=google-ima.js\n||media.example/ad.mp3\$media,redirect=noopmp3-0.1s\n" +
+                "||popads.example/pop.js\$script,redirect=popads.net.js\n||bab.example/ad.js\$script,redirect=nobab2.js:10\n" +
+                "||dc.example/ad_status.js\$script,redirect=doubleclick_instream_ad_status.js:5\n" +
+                "||vmap.example/vmap.xml\$xhr,redirect=noop-vmap1.0.xml:5",
+            "||known.example/ad.js\$script,redirect=noopjs:5\n||blocked.example^\nexample.test##.redirect-banner\nexample.test##+js(nobab2)"
         ))!!
         try {
             assertEquals(ContentBlocker.ALLOW, blocker.decision("https://ima.example/sdk.js", "script"))
             assertEquals(ContentBlocker.ALLOW, blocker.decision("https://media.example/ad.mp4", "media"))
-            // Shipped stand-ins: the IMA SDK and silent media.
+            // Shipped stand-ins: the IMA SDK, silent media, and dual scriptlet/redirect resources.
             assertEquals(ContentBlocker.BLOCK_REDIRECT, blocker.decision("https://imasdk.example/ima3.js", "script"))
             val ima = blocker.verdict(Uri.parse("https://imasdk.example/ima3.js"), "script", page).redirect!!
             assertTrue(String(android.util.Base64.decode(ima.substringAfter(','), 0)).contains("AdsLoader"))
             val mp3 = blocker.verdict(Uri.parse("https://media.example/ad.mp3"), "media", page).redirect!!
             assertTrue(mp3, mp3.startsWith("data:audio/mp3;base64,"))
+            assertNotNull(blocker.verdict(Uri.parse("https://popads.example/pop.js"), "script", page).redirect)
+            assertNotNull(blocker.verdict(Uri.parse("https://bab.example/ad.js"), "script", page).redirect)
+            assertNotNull(blocker.verdict(Uri.parse("https://dc.example/ad_status.js"), "script", page).redirect)
+            assertNotNull(blocker.verdict(Uri.parse("https://vmap.example/vmap.xml"), "xhr", page).redirect)
             assertEquals(ContentBlocker.BLOCK_REDIRECT, blocker.decision("https://known.example/ad.js", "script"))
             assertEquals(ContentBlocker.BLOCK, blocker.decision("https://blocked.example/x.js", "script"))
-            // Cosmetic lines that merely contain the word are kept.
-            assertTrue(blocker.pageFilters("https://example.test/").contains(".redirect-banner"))
+            // Cosmetic lines that merely contain the word are kept, and dual resources still inject scriptlet markers.
+            val cosmetic = blocker.pageFilters("https://example.test/")
+            assertTrue(cosmetic.contains(".redirect-banner"))
+            assertTrue(cosmetic.contains("[\"nobab\""))
         } finally { blocker.release() }
     }
 
