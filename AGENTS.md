@@ -63,6 +63,13 @@ focus/layout, `code-quality` for refactors, and `agent-governance` before Git
 mutations. Use `source-migration` when replacing inherited code or resources.
 Use `webview-evidence-optimization` for WebView startup, memory, network,
 security, browsing performance and evidence-based platform modernization.
+Use `no-ai-slop` (third-party, MIT; see NOTICE.md) for prose only: documentation,
+RELEASE_NOTES.md, commit and PR text. It does not apply to code, and it never
+overrides the verification rules here: keep exact SHAs, commands, test counts and
+pending items, and keep each text in its own language.
+Codex, Antigravity and GitHub Copilot load `.agents/skills/` natively; Claude Code
+loads `no-ai-slop` through the `.claude/skills/no-ai-slop` symlink. On Windows the
+link needs Git with `core.symlinks=true` and symlink permission.
 After a verified regression or owner correction, apply the feedback loop in
 `agent-governance`: fix and test the cause, retain only a reusable lesson in the
 relevant existing skill, and consult it before the next related change.

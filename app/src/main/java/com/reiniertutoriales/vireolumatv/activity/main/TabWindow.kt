@@ -32,6 +32,7 @@ import com.reiniertutoriales.vireolumatv.webengine.PagePoint
 import com.reiniertutoriales.vireolumatv.webengine.PageWindow
 import com.reiniertutoriales.vireolumatv.webengine.webview.UserActivation
 import com.reiniertutoriales.vireolumatv.widgets.cursor.PointerController
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 
@@ -78,13 +79,19 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
 
     override fun onProgress(percent: Int) = browser.showLoadProgress(percent)
 
+    private fun refreshTabStrip() {
+        if (vb.controlsOverlay.isVisible) {
+            vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
+        }
+    }
+
     override fun onTitle(title: String) {
         tab.title = title
-        vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
+        refreshTabStrip()
         browser.visitLog.onTabTitle(tab)
     }
 
-    override fun onIcon(icon: Bitmap) = vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
+    override fun onIcon(icon: Bitmap) = refreshTabStrip()
 
     override fun requestPermissions(permissions: Array<String>): Int = browser.requestPagePermissions(permissions)
 
@@ -122,6 +129,7 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         updateAddress(url)
         tab.blockedAds = 0
         tab.blockedPopups = 0
+        previewDeferredForFullscreen = false
         ui.removeCallbacks(capturePreview)
         // After the address is updated, so redirects look up the right site.
         browser.lifecycleScope.launch { tabs.siteSettingsFor(tab, false) }
@@ -144,17 +152,29 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
         (tab.engine.url ?: reported)?.let { url ->
             if (tab.url != url) {
                 tab.url = url
-                vb.controlsHost.setTabs(browser.tabStore.openTabs.toList(), browser.tabStore.openTabs.indexOf(tab).coerceAtLeast(0))
+                refreshTabStrip()
                 if (isShownTab) browser.publishShownSite()
             }
         }
         if (browser.tabAtStripSelection() === tab) vb.controlsHost.showAddress(tab)
     }
 
-    private val capturePreview = Runnable {
+    private var previewJob: Job? = null
+    private var previewDeferredForFullscreen = false
+
+    private val capturePreview: Runnable = Runnable {
         if (browser.isFinishing || browser.isDestroyed || tab.closed || !isShownTab ||
             tab.engine.view?.isAttachedToWindow != true) return@Runnable
-        browser.lifecycleScope.launch {
+        if (browser.isFullscreen) {
+            previewDeferredForFullscreen = true
+            return@Runnable
+        }
+        if (previewJob?.isActive == true) {
+            ui.removeCallbacks(capturePreview)
+            ui.postDelayed(capturePreview, PREVIEW_DELAY_MS)
+            return@Runnable
+        }
+        previewJob = browser.lifecycleScope.launch {
             val preview = (if (browser.nativeHome?.isVisible == true) browser.nativeHome?.preview(tab.thumbnail)
                 else tab.engine.preview(tab.thumbnail)) ?: return@launch
             tab.refreshPreview(browser, preview)
@@ -312,6 +332,11 @@ internal class TabWindow(private val browser: MainActivity, private val tab: Bro
             }
         }
         browser.isFullscreen = false
+        if (previewDeferredForFullscreen) {
+            previewDeferredForFullscreen = false
+            ui.removeCallbacks(capturePreview)
+            ui.postDelayed(capturePreview, PREVIEW_DELAY_MS)
+        }
         if (restoreControls && isShownTab && !browser.isFinishing && !browser.isDestroyed) browser.openCapsule()
         // Let tab switching and focus restoration finish before opening another window.
         ui.post { browser.showPendingUpdate() }

@@ -39,6 +39,7 @@ class ComposeControlsHost @JvmOverloads constructor(
     private val actions = mutableStateOf<BrowserCommandActions?>(null)
 
     private val tabs = mutableStateListOf<TabChip>()
+    internal val shownTabs: List<TabChip> get() = tabs
     private val selectedTab = mutableIntStateOf(0)
     private val tabsVisible = mutableStateOf(true)
     private val tabFocusRequest = mutableStateOf(0 to 0)

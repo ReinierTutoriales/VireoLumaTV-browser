@@ -177,6 +177,15 @@
                     if (attempt && typeof attempt.catch === 'function') attempt.catch(function () {});
                 } catch (_) {}
             }
+        } else if (action === 'play') {
+            if (!playing(element)) {
+                try {
+                    var attempt = element.play();
+                    if (attempt && typeof attempt.catch === 'function') attempt.catch(function () {});
+                } catch (_) {}
+            }
+        } else if (action === 'pause') {
+            if (playing(element)) element.pause();
         } else if (action === 'stop') {
             element.pause();
             seek(element, 0);
@@ -188,6 +197,8 @@
     page.vireoLumaTVMedia = currentMedia;
     page.vireoLumaTVSeek = seek;
     page.vireoLumaTVTogglePlayback = function () { command('toggle'); };
+    page.vireoLumaTVPlay = function () { command('play'); };
+    page.vireoLumaTVPause = function () { command('pause'); };
     page.vireoLumaTVStopPlayback = function () { command('stop'); };
     page.vireoLumaTVRewind = function () { command(-10); };
     page.vireoLumaTVFastForward = function () { command(10); };

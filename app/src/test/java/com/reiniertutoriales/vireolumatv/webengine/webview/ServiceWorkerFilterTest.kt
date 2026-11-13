@@ -2,10 +2,13 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.net.Uri
 import android.webkit.WebResourceRequest
+import androidx.webkit.WebViewFeature
 import com.reiniertutoriales.vireolumatv.adblock.AdVerdict
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -114,5 +117,29 @@ class ServiceWorkerFilterTest {
         val rules = Rules()
         assertNull(filter(rules).shouldInterceptRequest(Request("data:text/plain,x", workerHeaders)))
         assertEquals(0, rules.asked.size)
+    }
+
+    @Test fun serviceWorkerSettingsDisableFileAndContentAccessLikePages() {
+        var content = true
+        var file = true
+        ServiceWorkerFilter.sandbox(
+            supportsFeature = { feature ->
+                feature == WebViewFeature.SERVICE_WORKER_CONTENT_ACCESS || feature == WebViewFeature.SERVICE_WORKER_FILE_ACCESS
+            },
+            setAllowContentAccess = { content = it },
+            setAllowFileAccess = { file = it },
+        )
+        assertFalse(content)
+        assertFalse(file)
+
+        content = true
+        file = true
+        ServiceWorkerFilter.sandbox(
+            supportsFeature = { false },
+            setAllowContentAccess = { content = it },
+            setAllowFileAccess = { file = it },
+        )
+        assertTrue(content)
+        assertTrue(file)
     }
 }

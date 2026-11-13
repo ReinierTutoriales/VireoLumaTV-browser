@@ -21,7 +21,11 @@ vm.runInContext(`
     w && w.close();
     assert.equal(w.closed, true);
     assert.equal(w.location.href, 'about:blank');
-    w.document.write('<p>x</p>');
+    w.location = 'https://popunder.example/ad';
+    assert.equal(w.location.href, 'https://popunder.example/ad');
+    w.document.open().write('<p>x</p>');
+    w.document.body.appendChild(w.document.createElement('script'));
+    assert.equal(w.document.readyState, 'complete');
     assert.match(window.open.toString(), /function open/);
     // Detectors read the source through Function.prototype.toString and list window keys.
     assert.equal(Function.prototype.toString.call(window.open).indexOf('function open() { calls++;'), 0);

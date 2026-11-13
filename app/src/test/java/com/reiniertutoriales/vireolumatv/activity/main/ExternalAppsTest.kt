@@ -7,6 +7,7 @@ import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -51,6 +52,61 @@ class ExternalAppsTest {
         ExternalApps(activity).askToOpenInApp("tel:123")
         answer(DialogInterface.BUTTON_NEGATIVE)
         assertNull(shadowOf(activity).nextStartedActivity)
+        controller.pause().stop().destroy()
+    }
+
+    @Test fun openInAppOpensTheSingleOtherAppOrAChooserExcludingThisBrowser() {
+        val pm = shadowOf(activity.packageManager)
+        val selfInfo = android.content.pm.ResolveInfo().apply {
+            activityInfo = android.content.pm.ActivityInfo().apply {
+                packageName = activity.packageName
+                name = MainActivity::class.java.name
+            }
+        }
+        val firstExternal = android.content.pm.ResolveInfo().apply {
+            activityInfo = android.content.pm.ActivityInfo().apply {
+                packageName = "com.example.videoplayer"
+                name = "PlayerActivity"
+            }
+        }
+        val secondExternal = android.content.pm.ResolveInfo().apply {
+            activityInfo = android.content.pm.ActivityInfo().apply {
+                packageName = "com.example.otherbrowser"
+                name = "BrowserActivity"
+            }
+        }
+        val probe = ExternalWebNavigation.parseIntentUrl("https://example.com/watch")!!
+        pm.addResolveInfoForIntent(probe, selfInfo)
+        ExternalApps(activity).openInApp("https://example.com/watch")
+        assertNull("Must not reopen itself when no other app handles the link", shadowOf(activity).nextStartedActivity)
+
+        pm.addResolveInfoForIntent(probe, firstExternal)
+        ExternalApps(activity).openInApp("https://example.com/watch")
+        val single = shadowOf(activity).nextStartedActivity
+        assertEquals(android.content.ComponentName("com.example.videoplayer", "PlayerActivity"), single.component)
+        assertEquals("https://example.com/watch", single.dataString)
+
+        pm.addResolveInfoForIntent(probe, secondExternal)
+        ExternalApps(activity).openInApp("https://example.com/watch")
+        val chooser = shadowOf(activity).nextStartedActivity
+        assertEquals(Intent.ACTION_CHOOSER, chooser.action)
+        @Suppress("DEPRECATION")
+        val excluded = chooser.getParcelableArrayExtra(Intent.EXTRA_EXCLUDE_COMPONENTS)
+        assertEquals(
+            listOf(android.content.ComponentName(activity.packageName, MainActivity::class.java.name)),
+            excluded?.toList()
+        )
+
+        // When another app (e.g. YouTube TV) is the default handler, open it directly without a chooser.
+        val preferredProbe = ExternalWebNavigation.parseIntentUrl("https://video.example/watch")!!
+        pm.addResolveInfoForIntent(preferredProbe, firstExternal)
+        pm.addResolveInfoForIntent(preferredProbe, secondExternal)
+        pm.addResolveInfoForIntent(preferredProbe, selfInfo)
+        ExternalApps(activity).openInApp("https://video.example/watch")
+        val direct = shadowOf(activity).nextStartedActivity
+        assertEquals(Intent.ACTION_VIEW, direct.action)
+        assertNull(direct.component)
+        assertEquals("https://video.example/watch", direct.dataString)
         controller.pause().stop().destroy()
     }
 }

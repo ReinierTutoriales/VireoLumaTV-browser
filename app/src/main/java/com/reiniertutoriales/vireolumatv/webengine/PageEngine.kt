@@ -68,4 +68,4 @@ interface PageEngine {
     fun onPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean
 }
 
-enum class MediaCommand { PLAY_PAUSE, STOP, REWIND, FAST_FORWARD }
+enum class MediaCommand { PLAY_PAUSE, PLAY, PAUSE, STOP, REWIND, FAST_FORWARD }

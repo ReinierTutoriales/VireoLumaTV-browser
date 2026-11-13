@@ -51,6 +51,15 @@ gzip files contain the original UTF-8 source including its attribution headers.
 The application's original code remains separately licensed as described above. Redirect resources and scriptlets written for this application are in
 app/src/main/assets/adblock and app/src/main/assets/surrogates.
 
+## Agent writing skill
+
+`.agents/skills/no-ai-slop/` is an unmodified copy of the no-ai-slop skill by
+Peter Yang, used by contributors' agents to edit prose. It is not part of the app.
+
+- Source: https://github.com/petergyang/no-ai-slop/tree/000650b156983f5159695b441477f4e63b25dc85/skills/no-ai-slop
+- Snapshot commit: `000650b156983f5159695b441477f4e63b25dc85`
+- License: MIT, in `.agents/skills/no-ai-slop/LICENSE`
+
 ## Release sources
 
 Each published release includes RELEASE_SOURCE.txt, identifying the exact application

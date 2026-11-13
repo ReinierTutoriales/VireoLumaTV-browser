@@ -169,6 +169,7 @@ open class MainActivity : ComponentActivity() {
         configureBrowserControls()
         observeModels()
         onBackPressedDispatcher.addCallback(onBackPressedCallback)
+        consumeStartupIntent = shouldConsumeStartupIntent(savedInstanceState, intent)
         loadState()
     }
 
@@ -202,7 +203,7 @@ open class MainActivity : ComponentActivity() {
         if (!isActive) return@launch
         vb.startupSpinner.visibility = View.GONE
         when {
-            ExternalWebNavigation.isAllowed(intent.data) -> handleIntent(intent)
+            consumeStartupIntent && ExternalWebNavigation.isAllowed(intent.data) -> handleIntent(intent)
             tabStore.openTabs.isEmpty() -> openInNewTab(browserSettings.homePage, 0, closeCapsuleAfter = true, navigateImmediately = true)
             // No selected tab only happens after an error; the first one is shown then.
             else -> changeTab(tabStore.openTabs.firstOrNull { it.selected } ?: tabStore.openTabs[0])
@@ -221,6 +222,7 @@ open class MainActivity : ComponentActivity() {
         private set
     private var updateOffer: TvDialog? = null
     @VisibleForTesting internal var startupDone = false
+    @VisibleForTesting internal var consumeStartupIntent = false
 
     /**
      * The generic build looks for a newer signed release by itself once a day, never in private
@@ -329,16 +331,24 @@ open class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (::tabStore.isInitialized && tabStore.loaded && intent.data != null &&
+        consumeStartupIntent = shouldConsumeStartupIntent(null, intent)
+        if (::tabStore.isInitialized && tabStore.loaded && consumeStartupIntent &&
             (!config.adBlockEnabled || adBlocker.initialRulesReady.isCompleted)) handleIntent(intent)
     }
+
+    internal fun shouldConsumeStartupIntent(savedInstanceState: Bundle?, intent: Intent): Boolean =
+        savedInstanceState == null &&
+            (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == 0 &&
+            ExternalWebNavigation.isAllowed(intent.data)
 
     /**
      * An address from another app always opens in a new tab: no extra lets a sender replace the page
      * the user is looking at, which would show the sender's content under the trusted tab.
      */
     internal fun handleIntent(intent: Intent) {
+        consumeStartupIntent = false
         val uri = intent.data
+        intent.data = null
         if (!ExternalWebNavigation.isAllowed(uri)) {
             Log.w(TAG, "Rejected external navigation with scheme ${uri?.scheme}")
             return
@@ -1133,6 +1143,7 @@ open class MainActivity : ComponentActivity() {
             closeCapsule()
         }
         val previewed = tabAtStripSelection()
+        vb.controlsHost.setTabs(tabStore.openTabs.toList(), vb.controlsHost.current.coerceIn(0, (tabStore.openTabs.size - 1).coerceAtLeast(0)))
         showLivePage(previewed != null && previewed === tabStore.currentTab.value)
         lifecycleScope.launch { showPreview(previewed) }
         vb.controlsHost.closeAddressEditing()

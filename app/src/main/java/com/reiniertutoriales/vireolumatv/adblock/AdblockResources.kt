@@ -30,8 +30,10 @@ object AdblockResources {
         "no-window-open-if" to listOf("nowoif", "window.open-defuser", "prevent-window-open"),
         "remove-node-text" to listOf("rmnt"),
         "replace-node-text" to listOf("rpnt", "trusted-rpnt", "trusted-replace-node-text"),
-        "no-fetch-if" to listOf("prevent-fetch", "trusted-prevent-fetch"),
-        "no-xhr-if" to listOf("prevent-xhr", "trusted-prevent-xhr"),
+        "no-fetch-if" to listOf("prevent-fetch"),
+        "trusted-prevent-fetch" to emptyList(),
+        "no-xhr-if" to listOf("prevent-xhr"),
+        "trusted-prevent-xhr" to emptyList(),
         "noeval-if" to listOf("prevent-eval-if"),
         "noeval" to listOf("silent-noeval"),
         "json-prune" to emptyList(),
@@ -124,7 +126,7 @@ object AdblockResources {
         list.put(resource("noop-vast2.xml", listOf("noopvast-2.0"), JSONObject().put("mime", "text/xml"), base64(vast("2.0").toByteArray())))
         list.put(resource("noop-vast3.xml", listOf("noopvast-3.0"), JSONObject().put("mime", "text/xml"), base64(vast("3.0").toByteArray())))
         list.put(resource("noop-vast4.xml", listOf("noopvast-4.0"), JSONObject().put("mime", "text/xml"), base64(vast("4.0").toByteArray())))
-        text("noop-vmap1.xml", "text/xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vmap:VMAP xmlns:vmap=\"http://www.iab.net/videosuite/vmap\" version=\"1.0\"></vmap:VMAP>", "noopvmap-1.0")
+        text("noop-vmap1.xml", "text/xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vmap:VMAP xmlns:vmap=\"http://www.iab.net/videosuite/vmap\" version=\"1.0\"></vmap:VMAP>", "noopvmap-1.0", "noop-vmap1.0.xml")
         binary("1x1.gif", "image/gif", GIF_1X1, "1x1-transparent.gif")
         binary("2x2.png", "image/png", PNG_2X2, "2x2-transparent.png")
         binary("3x2.png", "image/png", PNG_3X2, "3x2-transparent.png")
@@ -145,14 +147,32 @@ object AdblockResources {
         asset("google-analytics_analytics.js", "surrogates/analytics.js", "google-analytics.com/analytics.js", "googletagmanager_gtag.js")
         asset("googletagmanager_gtm.js", "surrogates/gtm.js", "googletagmanager.com/gtm.js")
         text("prebid-ads.js", "application/javascript", "(function(){window.canRunAds=true;window.isAdBlockActive=false;})();")
+        text("doubleclick_instream_ad_status.js", "application/javascript", "window.google_ad_status = 1;\n",
+            "doubleclick.net/instream/ad_status.js")
         text("amazon_apstag.js", "application/javascript", "(function(){var noop=function(){};" +
             "window.apstag={init:noop,setDisplayBids:noop,targetingKeys:function(){return[]}," +
             "fetchBids:function(c,cb){if(typeof cb==='function')setTimeout(function(){cb([])},1)}};})();",
             "amazon-adsystem.com/aax2/amzn_ads.js")
 
+        val redirectScriptlets = mapOf(
+            "popads-dummy" to "try{delete window.PopAds;delete window.popns;" +
+                "Object.defineProperty(window,'PopAds',{value:{}});Object.defineProperty(window,'popns',{value:{}});}catch(_){}",
+            "nofab" to "var s={setOption:function(){return s},check:function(){return false},emitEvent:function(){return s}," +
+                "clearEvent:function(){},onDetected:function(){return s},onNotDetected:function(f){if(typeof f==='function')setTimeout(f,1);return s}}," +
+                "C=function(){return s};['FuckAdBlock','BlockAdBlock','SniffAdBlock'].forEach(function(n){try{Object.defineProperty(window,n,{value:C,configurable:true})}catch(_){}});" +
+                "['fuckAdBlock','blockAdBlock','sniffAdBlock'].forEach(function(n){try{Object.defineProperty(window,n,{value:s,configurable:true})}catch(_){}});",
+            "nobab" to "var s={setOption:function(){return s},check:function(){return false},emitEvent:function(){return s}," +
+                "clearEvent:function(){},onDetected:function(){return s},onNotDetected:function(f){if(typeof f==='function')setTimeout(f,1);return s}}," +
+                "C=function(){return s};['FuckAdBlock','BlockAdBlock','SniffAdBlock'].forEach(function(n){try{Object.defineProperty(window,n,{value:C,configurable:true})}catch(_){}});" +
+                "['fuckAdBlock','blockAdBlock','sniffAdBlock'].forEach(function(n){try{Object.defineProperty(window,n,{value:s,configurable:true})}catch(_){}});"
+        )
+
         for ((name, aliases) in scriptlets) {
             val placeholders = (1..9).joinToString(",") { "\"{{$it}}\"" }
-            val template = "/*@VIREO@*/[\"$name\",[$placeholders]]/*@END@*/"
+            val marker = "/*@VIREO@*/[\"$name\",[$placeholders]]/*@END@*/"
+            val redirectBody = redirectScriptlets[name]
+            val template = if (redirectBody != null) "(function(){$marker;$redirectBody})();" else marker
+            val kind: Any = if (redirectBody != null) JSONObject().put("mime", "application/javascript") else "template"
             val names = (listOf(name) + aliases).flatMap { listOf(it, "$it.js") }.distinct()
             // trusted-* names need the permission that only uBlock Origin's own lists receive
             // (native TRUSTED); their plain aliases keep working from every list.
@@ -160,7 +180,7 @@ object AdblockResources {
             for ((group, permission) in listOf(plain to 0, trusted to TRUSTED_PERMISSION)) {
                 if (group.isEmpty()) continue
                 val primary = if ("$name.js" in group) "$name.js" else group.first { it.endsWith(".js") }
-                list.put(resource(primary, group.filter { it != primary }, "template", base64(template.toByteArray()))
+                list.put(resource(primary, group.filter { it != primary }, kind, base64(template.toByteArray()))
                     .put("permission", permission))
             }
         }

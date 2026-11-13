@@ -85,4 +85,36 @@ class ShortcutMgrTest {
         assertTrue(text, text.startsWith(context.getString(com.reiniertutoriales.vireolumatv.R.string.shortcut_long_press) + " CTRL+"))
         assertTrue("No raw constant names: $text", "KEYCODE_" !in text)
     }
+
+    @Test fun dedicatedPlayAndPauseKeysDispatchThroughHandleAndRespectShortcutChanges() {
+        val shortcuts = manager()
+        val received = mutableListOf<com.reiniertutoriales.vireolumatv.webengine.MediaCommand>()
+        val engine = java.lang.reflect.Proxy.newProxyInstance(
+            com.reiniertutoriales.vireolumatv.webengine.PageEngine::class.java.classLoader,
+            arrayOf(com.reiniertutoriales.vireolumatv.webengine.PageEngine::class.java)
+        ) { _, method, args ->
+            if (method.name == "media") received += args[0] as com.reiniertutoriales.vireolumatv.webengine.MediaCommand
+            null
+        } as com.reiniertutoriales.vireolumatv.webengine.PageEngine
+        val tab = com.reiniertutoriales.vireolumatv.model.BrowserTab()
+        com.reiniertutoriales.vireolumatv.model.BrowserTab::class.java.getDeclaredField("engine\$delegate")
+            .apply { isAccessible = true }.set(tab, lazyOf(engine))
+        val activity = org.robolectric.Robolectric.buildActivity(com.reiniertutoriales.vireolumatv.activity.main.MainActivity::class.java).get()
+
+        assertTrue(shortcuts.handle(key(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY), activity, tab))
+        assertTrue(shortcuts.handle(key(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY), activity, tab))
+        assertTrue(shortcuts.handle(key(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE), activity, tab))
+        assertTrue(shortcuts.handle(key(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PAUSE), activity, tab))
+        org.robolectric.shadows.ShadowLooper.idleMainLooper()
+        assertEquals(
+            listOf(
+                com.reiniertutoriales.vireolumatv.webengine.MediaCommand.PLAY,
+                com.reiniertutoriales.vireolumatv.webengine.MediaCommand.PAUSE,
+            ),
+            received
+        )
+
+        shortcuts.set(RemoteShortcut.PLAY_PAUSE, null)
+        assertEquals(false, shortcuts.handle(key(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY), activity, tab))
+    }
 }

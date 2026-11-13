@@ -197,6 +197,15 @@ class BrowserNavigationTest {
             override val version = "test"
         })
         try {
+            assertTrue(f.activity.shouldConsumeStartupIntent(null, intent))
+            assertFalse("Process death / recreation must not re-open the initial VIEW intent",
+                f.activity.shouldConsumeStartupIntent(android.os.Bundle(), intent))
+            val fromHistory = android.content.Intent(intent).addFlags(android.content.Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY)
+            assertFalse("Recents relaunch must not re-open the initial VIEW intent",
+                f.activity.shouldConsumeStartupIntent(null, fromHistory))
+            f.activity.handleIntent(intent)
+            assertNull("Consumed intent data must be cleared so recreation does not reopen the link", intent.data)
+            assertFalse(f.activity.consumeStartupIntent)
             f.activity.handleIntent(intent)
         } finally { restore() }
         assertEquals("https://example.test", f.tab.url)
@@ -488,5 +497,37 @@ class BrowserNavigationTest {
         engine.exitFullscreen(restoreBrowserControls = true)
         assertFalse("A repeated end must not switch D-pad navigation to the pointer", f.vb.pageContainer.pointerEnabled)
         assertEquals("A repeated end must not reopen the capsule", View.INVISIBLE, f.vb.controlsOverlay.visibility)
+    }
+
+    @Test fun fullscreenDefersSoftwarePreviewCaptureUntilVideoExits() = Fixture().use { f ->
+        val callback = TabWindow(f.activity, f.tab)
+        callback.onEnterFullscreen()
+        callback.onPageFinished("https://example.test/video")
+        org.robolectric.Shadows.shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(1_600))
+        assertEquals("Software preview capture must not run while fullscreen video plays", 0, f.thumbnailRenders)
+        callback.onExitFullscreen(restoreControls = false)
+        org.robolectric.Shadows.shadowOf(Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(1_600))
+        assertEquals("Deferred preview capture runs once fullscreen exits", 1, f.thumbnailRenders)
+    }
+
+    @Test fun hiddenCapsuleDefersTabStripSnapshotsUntilOpened() = Fixture().use { f ->
+        f.vb.controlsHost.setTabs(f.tabs.openTabs.toList(), 0)
+        f.activity.visitLog = com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels.get(VisitLog::class, f.activity)
+        val callback = TabWindow(f.activity, f.tab)
+        val wasPrivate = f.activity.config.privateBrowsing
+        f.activity.config.privateBrowsing = true
+        try {
+            assertEquals("https://example.test", f.vb.controlsHost.shownTabs.single().label)
+            callback.onTitle("Updated while hidden")
+            callback.onVisited("https://example.test/updated")
+            assertEquals("Hidden capsule avoids rebuilding tab chips on every page callback",
+                "https://example.test", f.vb.controlsHost.shownTabs.single().label)
+            f.activity.openCapsule()
+            val chip = f.vb.controlsHost.shownTabs.single()
+            assertEquals("Updated while hidden", chip.label)
+            assertEquals("https://example.test/updated", f.tab.url)
+        } finally {
+            f.activity.config.privateBrowsing = wasPrivate
+        }
     }
 }

@@ -66,6 +66,16 @@ internal class ServiceWorkerFilter(context: Context, private val policy: () -> P
         internal var installed = false
             private set
 
+        /** No access to device files or other apps' content from service workers, matching [PageSettings]. */
+        internal fun sandbox(
+            supportsFeature: (String) -> Boolean = WebViewFeature::isFeatureSupported,
+            setAllowContentAccess: (Boolean) -> Unit,
+            setAllowFileAccess: (Boolean) -> Unit,
+        ) {
+            if (supportsFeature(WebViewFeature.SERVICE_WORKER_CONTENT_ACCESS)) setAllowContentAccess(false)
+            if (supportsFeature(WebViewFeature.SERVICE_WORKER_FILE_ACCESS)) setAllowFileAccess(false)
+        }
+
         /**
          * Registers the process's filter once, on the main thread, after a WebView was created (so
          * the provider and the private data directory are ready). False when the provider cannot
@@ -76,7 +86,13 @@ internal class ServiceWorkerFilter(context: Context, private val policy: () -> P
             return try {
                 if (!WebViewFeature.isFeatureSupported(WebViewFeature.SERVICE_WORKER_BASIC_USAGE) ||
                     !WebViewFeature.isFeatureSupported(WebViewFeature.SERVICE_WORKER_SHOULD_INTERCEPT_REQUEST)) return false
-                ServiceWorkerControllerCompat.getInstance().setServiceWorkerClient(ServiceWorkerFilter(context) { policy })
+                val controller = ServiceWorkerControllerCompat.getInstance()
+                val settings = controller.serviceWorkerWebSettings
+                sandbox(
+                    setAllowContentAccess = { settings.allowContentAccess = it },
+                    setAllowFileAccess = { settings.allowFileAccess = it },
+                )
+                controller.setServiceWorkerClient(ServiceWorkerFilter(context) { policy })
                 installed = true
                 true
             } catch (error: Throwable) {

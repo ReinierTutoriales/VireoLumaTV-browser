@@ -8,9 +8,10 @@ internal object AdblockCache {
     /**
      * Bump when the filter lists, their preprocessing or their compile options change: compiled
      * rules are not revalidated. v4: per-list permission for `trusted-*` scriptlets; v5: native
-     * container with the `$to=`/`$denyallow=` rules.
+     * container with the `$to=`/`$denyallow=` rules; v6: option-only $popup rules and template
+     * resources no longer count as redirect targets.
      */
-    const val REVISION = "v5"
+    const val REVISION = "v6"
 
     private val HEX = "0123456789abcdef".toCharArray()
 
