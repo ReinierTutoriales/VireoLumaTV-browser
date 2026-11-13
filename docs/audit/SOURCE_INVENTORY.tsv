@@ -4,6 +4,9 @@ docs/superpowers/plans/2026-11-07-tv-audit-corrections.md	PROPIO
 
 .agents/skills/agent-governance/SKILL.md	PROPIO
 .agents/skills/code-quality/SKILL.md	PROPIO
+.agents/skills/no-ai-slop/LICENSE	IDENTICO
+.agents/skills/no-ai-slop/SKILL.md	IDENTICO
+.agents/skills/no-ai-slop/eval.md	IDENTICO
 .agents/skills/precise-coding/SKILL.md	PROPIO
 .agents/skills/source-migration/SKILL.md	PROPIO
 .agents/skills/testing-discipline/SKILL.md	PROPIO
