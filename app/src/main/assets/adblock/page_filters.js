@@ -161,9 +161,12 @@
         'true': function () { return true; },
         'null': function () { return null; },
         "''": function () { return ''; },
+        '""': function () { return ''; },
         'emptyStr': function () { return ''; },
         'emptyArr': function () { return []; },
+        '[]': function () { return []; },
         'emptyObj': function () { return {}; },
+        '{}': function () { return {}; },
         'noopFunc': function () { return function () {}; },
         'trueFunc': function () { return function () { return true; }; },
         'falseFunc': function () { return function () { return false; }; },
@@ -348,13 +351,23 @@
 
     scriptlets['addEventListener-defuser'] = function (type, pattern) {
         var reType = toRegex(type), reHandler = toRegex(pattern);
-        var proto = window.EventTarget && EventTarget.prototype;
-        wrapFunction(proto, 'addEventListener', function (target, self, args) {
+        var selector = namedArgs([].slice.call(arguments, 2)).elements;
+        function defuse(target, self, args) {
+            if (selector) {
+                var matched = false;
+                try { matched = self && typeof self.matches === 'function' && self.matches(selector); } catch (_) {}
+                if (!matched) return Reflect_.apply(target, self, args);
+            }
             var handler = args[1];
             var text = stringOf(handler && typeof handler === 'object' ? handler.handleEvent : handler);
             if (reType.test(String(args[0])) && reHandler.test(text)) return undefined;
             return Reflect_.apply(target, self, args);
-        });
+        }
+        var proto = window.EventTarget && EventTarget.prototype;
+        var protoAdd = proto && proto.addEventListener;
+        wrapFunction(proto, 'addEventListener', defuse);
+        if (window.addEventListener && window.addEventListener !== protoAdd) wrapFunction(window, 'addEventListener', defuse);
+        if (document.addEventListener && document.addEventListener !== protoAdd) wrapFunction(document, 'addEventListener', defuse);
     };
 
     function decoyElement() {
@@ -407,16 +420,28 @@
         });
     };
 
-    function nodeTextRewriter(nodeName, pattern, replacement) {
+    function nodeTextRewriter(nodeName, pattern, replacement, extra) {
         var name = String(nodeName || '').toLowerCase();
         if (!name) return;
         var re = toRegex(pattern), global = toRegex(pattern, 'g');
+        var named = namedArgs(extra || []);
+        var includes = (named.includes || named.condition) ? toRegex(named.includes || named.condition) : null;
+        var excludes = named.excludes ? toRegex(named.excludes) : null;
         function handle(node) {
-            if (!node || String(node.nodeName).toLowerCase() !== name) return;
-            var text = node.textContent;
-            if (!text || !re.test(text)) return;
-            node.textContent = replacement === null ? '' : text.replace(global, replacement);
+            if (!node) return;
+            if (String(node.nodeName || '').toLowerCase() === name) {
+                var text = node.textContent;
+                if (text && (!includes || includes.test(text)) && !(excludes && excludes.test(text)) && re.test(text)) {
+                    node.textContent = replacement === null ? '' : text.replace(global, replacement);
+                }
+            }
+            if (typeof node.querySelectorAll === 'function') {
+                var children;
+                try { children = node.querySelectorAll(name); } catch (_) { children = []; }
+                for (var k = 0; k < children.length; k++) handle(children[k]);
+            }
         }
+        onReady(function () { selectAll(name).forEach(handle); });
         if (typeof MutationObserver !== 'function') return;
         new MutationObserver(function (mutations) {
             for (var i = 0; i < mutations.length; i++) {
@@ -425,9 +450,11 @@
             }
         }).observe(document, { childList: true, subtree: true });
     }
-    scriptlets['remove-node-text'] = function (nodeName, pattern) { nodeTextRewriter(nodeName, pattern, null); };
+    scriptlets['remove-node-text'] = function (nodeName, pattern) {
+        nodeTextRewriter(nodeName, pattern, null, [].slice.call(arguments, 2));
+    };
     scriptlets['replace-node-text'] = function (nodeName, pattern, replacement) {
-        nodeTextRewriter(nodeName, pattern, replacement === undefined ? '' : String(replacement));
+        nodeTextRewriter(nodeName, pattern, replacement === undefined ? '' : String(replacement), [].slice.call(arguments, 3));
     };
 
     /** uBO propsToMatch: "url:/re/ method:POST" or a bare URL pattern. */
@@ -449,58 +476,102 @@
         };
     }
 
-    function responseBody(kind) {
-        if (kind === 'emptyObj') return '{}';
-        if (kind === 'emptyArr') return '[]';
-        return '';
+    var warBodies = {
+        'noop.json': '{}', 'noopjson': '{}',
+        'noop.js': '(function(){})();', 'noopjs': '(function(){})();',
+        'googlesyndication_adsbygoogle.js': '(function(){})();',
+        'googletagservices_gpt.js': '(function(){})();',
+        'google-ima.js': '(function(){})();',
+        'doubleclick_instream_ad_status.js': 'window.google_ad_status = 1;\n',
+        'noop-vast2.xml': '<?xml version="1.0" encoding="UTF-8"?><VAST version="2.0"></VAST>',
+        'noop-vast3.xml': '<?xml version="1.0" encoding="UTF-8"?><VAST version="3.0"></VAST>',
+        'noop-vast4.xml': '<?xml version="1.0" encoding="UTF-8"?><VAST version="4.0"></VAST>',
+        'noop-vmap1.xml': '<?xml version="1.0" encoding="UTF-8"?><vmap:VMAP xmlns:vmap="http://www.iab.net/videosuite/vmap" version="1.0"></vmap:VMAP>',
+        'noop-vmap1.0.xml': '<?xml version="1.0" encoding="UTF-8"?><vmap:VMAP xmlns:vmap="http://www.iab.net/videosuite/vmap" version="1.0"></vmap:VMAP>'
+    };
+
+    function responseBody(kind, trusted) {
+        if (!kind) return '';
+        if (kind === 'emptyObj' || kind === '{}') return '{}';
+        if (kind === 'emptyArr' || kind === '[]') return '[]';
+        if (kind === 'true' || kind === 'false') return kind;
+        var lenMatch = /^length:(\d+)(?:-(\d+))?$/.exec(kind);
+        if (lenMatch) {
+            var min = parseInt(lenMatch[1], 10), max = lenMatch[2] ? parseInt(lenMatch[2], 10) : min;
+            var size = Math.min(131072, Math.max(0, min + Math.floor(Math.random() * (Math.max(min, max) - min + 1))));
+            return new Array(size + 1).join('a');
+        }
+        if (typeof kind === 'string' && kind.indexOf('war:') === 0) {
+            var name = kind.slice(4);
+            return Object.prototype.hasOwnProperty.call(warBodies, name) ? warBodies[name] : '';
+        }
+        return trusted ? String(kind) : '';
     }
 
-    scriptlets['no-fetch-if'] = function (props, body) {
-        var matches = requestMatcher(props);
-        wrapFunction(window, 'fetch', function (target, self, args) {
-            var input = args[0], init = args[1] || {};
-            var details = { url: '', method: 'GET' };
-            try {
-                if (input && typeof input === 'object' && 'url' in input) { details.url = input.url; details.method = input.method || 'GET'; }
-                else details.url = String(input);
-                if (init.method) details.method = String(init.method);
-                if (init.body !== undefined) details.body = String(init.body);
-            } catch (_) {}
-            if (matches(details) && typeof Response === 'function') {
-                return Promise.resolve(new Response(responseBody(body), { status: 200, statusText: 'OK' }));
-            }
-            return Reflect_.apply(target, self, args);
-        });
-    };
+    function fetchStubber(trusted) {
+        return function (props, body) {
+            var matches = requestMatcher(props);
+            wrapFunction(window, 'fetch', function (target, self, args) {
+                var input = args[0], init = args[1] || {};
+                var details = { url: '', method: 'GET' };
+                try {
+                    if (input && typeof input === 'object' && 'url' in input) {
+                        details.url = input.url;
+                        details.method = input.method || 'GET';
+                        if (input.mode) details.mode = String(input.mode);
+                        if (input.credentials) details.credentials = String(input.credentials);
+                        if (input.redirect) details.redirect = String(input.redirect);
+                        if (input.cache) details.cache = String(input.cache);
+                    } else details.url = String(input);
+                    if (init.method) details.method = String(init.method);
+                    if (init.body !== undefined) details.body = String(init.body);
+                    if (init.mode) details.mode = String(init.mode);
+                    if (init.credentials) details.credentials = String(init.credentials);
+                    if (init.redirect) details.redirect = String(init.redirect);
+                    if (init.cache) details.cache = String(init.cache);
+                } catch (_) {}
+                if (matches(details) && typeof Response === 'function') {
+                    return Promise.resolve(new Response(responseBody(body, trusted), { status: 200, statusText: 'OK' }));
+                }
+                return Reflect_.apply(target, self, args);
+            });
+        };
+    }
+    scriptlets['no-fetch-if'] = fetchStubber(false);
+    scriptlets['trusted-prevent-fetch'] = fetchStubber(true);
 
-    scriptlets['no-xhr-if'] = function (props, body) {
-        var matches = requestMatcher(props);
-        var proto = window.XMLHttpRequest && XMLHttpRequest.prototype;
-        if (!proto) return;
-        var pending = new WeakMap();
-        wrapFunction(proto, 'open', function (target, self, args) {
-            var details = { method: String(args[0] || 'GET'), url: String(args[1] || '') };
-            if (matches(details)) pending.set(self, true); else pending.delete(self);
-            return Reflect_.apply(target, self, args);
-        });
-        wrapFunction(proto, 'send', function (target, self, args) {
-            if (!pending.has(self)) return Reflect_.apply(target, self, args);
-            var text = responseBody(body);
-            try {
-                defineProperty(self, 'readyState', { value: 4, configurable: true });
-                defineProperty(self, 'status', { value: 200, configurable: true });
-                defineProperty(self, 'statusText', { value: 'OK', configurable: true });
-                defineProperty(self, 'responseText', { value: text, configurable: true });
-                defineProperty(self, 'response', { value: text, configurable: true });
-            } catch (_) {}
-            setTimeout(function () {
-                ['readystatechange', 'load', 'loadend'].forEach(function (type) {
-                    try { self.dispatchEvent(new Event(type)); } catch (_) {}
-                });
-            }, 1);
-            return undefined;
-        });
-    };
+    function xhrStubber(trusted) {
+        return function (props, body) {
+            var matches = requestMatcher(props);
+            var proto = window.XMLHttpRequest && XMLHttpRequest.prototype;
+            if (!proto) return;
+            var pending = new WeakMap();
+            wrapFunction(proto, 'open', function (target, self, args) {
+                var details = { method: String(args[0] || 'GET'), url: String(args[1] || '') };
+                if (matches(details)) pending.set(self, true); else pending.delete(self);
+                return Reflect_.apply(target, self, args);
+            });
+            wrapFunction(proto, 'send', function (target, self, args) {
+                if (!pending.has(self)) return Reflect_.apply(target, self, args);
+                var text = responseBody(body, trusted);
+                try {
+                    defineProperty(self, 'readyState', { value: 4, configurable: true });
+                    defineProperty(self, 'status', { value: 200, configurable: true });
+                    defineProperty(self, 'statusText', { value: 'OK', configurable: true });
+                    defineProperty(self, 'responseText', { value: text, configurable: true });
+                    defineProperty(self, 'response', { value: text, configurable: true });
+                } catch (_) {}
+                setTimeout(function () {
+                    ['readystatechange', 'load', 'loadend'].forEach(function (type) {
+                        try { self.dispatchEvent(new Event(type)); } catch (_) {}
+                    });
+                }, 1);
+                return undefined;
+            });
+        };
+    }
+    scriptlets['no-xhr-if'] = xhrStubber(false);
+    scriptlets['trusted-prevent-xhr'] = xhrStubber(true);
 
     function evalDefuser(needle) {
         var re = toRegex(needle);

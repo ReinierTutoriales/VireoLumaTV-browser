@@ -148,13 +148,16 @@ function page(filters, host = 'stream.example', setup = '') {
     `, c);
 
     // set-constant on existing and later-created chains; type mismatch leaves the property alone.
-    c = page({ script: call('set-constant', 'adblock.detected', 'false') + call('set-constant', 'canRunAds', 'true') + call('set-constant', 'title', '0') },
+    c = page({ script: call('set-constant', 'adblock.detected', 'false') + call('set-constant', 'canRunAds', 'true') +
+        call('set-constant', 'emptyConfig', '{}') + call('set-constant', 'emptyList', '[]') + call('set-constant', 'title', '0') },
         'stream.example', 'window.title = "keep";');
     vm.runInContext(`
         assert.equal(canRunAds, true);
         canRunAds = false; assert.equal(canRunAds, true);
         window.adblock = { detected: true };
         assert.equal(adblock.detected, false);
+        assert.deepEqual(emptyConfig, {});
+        assert.deepEqual(emptyList, []);
         assert.equal(title, 'keep');
     `, c);
 
@@ -207,9 +210,17 @@ function page(filters, host = 'stream.example', setup = '') {
     `, c);
 
     // Network stubs and JSON pruning.
-    c = page({ script: call('no-fetch-if', 'url:/ads/ method:POST') + call('json-prune', 'playerAds adPlacements', '') });
-    const blocked = await vm.runInContext(`fetch('https://x.example/ads/track', { method: 'POST' })`, c);
+    c = page({ script: call('no-fetch-if', 'url:/ads/ method:POST mode:no-cors', 'length:10') +
+        call('no-fetch-if', 'url:/vast/', 'war:noop-vast3.xml') +
+        call('trusted-prevent-fetch', 'url:/custom-stub/', '["4117"]') +
+        call('json-prune', 'playerAds adPlacements', '') });
+    const blocked = await vm.runInContext(`fetch('https://x.example/ads/track', { method: 'POST', mode: 'no-cors' })`, c);
     assert.equal(blocked.status, 200);
+    assert.equal(blocked.body.length, 10);
+    const vastStub = await vm.runInContext(`fetch('https://x.example/vast/ad.xml')`, c);
+    assert.match(vastStub.body, /<VAST version="3\.0"><\/VAST>/);
+    const customStub = await vm.runInContext(`fetch('https://x.example/custom-stub/check')`, c);
+    assert.equal(customStub.body, '["4117"]');
     assert.equal(await vm.runInContext(`fetch('https://x.example/video.m3u8')`, c), 'network');
     vm.runInContext(`
         var parsed = JSON.parse('{"playerAds":[1],"adPlacements":[2],"video":{"id":"x"}}');
@@ -217,15 +228,26 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.equal(parsed.video.id, 'x');
     `, c);
 
-    // remove-node-text acts on scripts added later; cookies/storage only take safe values.
-    c = page({ script: call('remove-node-text', 'script', 'adsbygoogle') + call('set-cookie', 'consent', 'accept') +
+    // remove-node-text acts on scripts added later and honours excludes; addEventListener-defuser honours elements.
+    c = page({ script: call('remove-node-text', 'script', 'adsbygoogle', 'excludes', 'self.__next') +
+        call('addEventListener-defuser', 'click', '', 'elements', '#get-link-button') +
+        call('set-cookie', 'consent', 'accept') +
         call('set-cookie', 'evil', '<script>') + call('set-local-storage-item', 'adblock_seen', 'true') });
     vm.runInContext(`
         var node = { nodeName: 'SCRIPT', textContent: '(adsbygoogle = window.adsbygoogle || []).push({})' };
+        var excluded = { nodeName: 'SCRIPT', textContent: 'self.__next_f.push([1,"adsbygoogle"])' };
         var other = { nodeName: 'SCRIPT', textContent: 'player.load()' };
-        observers[0].fn([{ addedNodes: [node, other] }]);
+        observers[0].fn([{ addedNodes: [node, excluded, other] }]);
         assert.equal(node.textContent, '');
+        assert.equal(excluded.textContent, 'self.__next_f.push([1,"adsbygoogle"])');
         assert.equal(other.textContent, 'player.load()');
+        var blockedBtn = new EventTarget();
+        blockedBtn.matches = function (sel) { return sel === '#get-link-button'; };
+        var allowedBtn = new EventTarget();
+        allowedBtn.matches = function () { return false; };
+        blockedBtn.addEventListener('click', function () {});
+        allowedBtn.addEventListener('click', function () {});
+        assert.deepEqual(listeners, ['click']);
         assert.match(document.cookie, /consent=accept/);
         assert.doesNotMatch(document.cookie, /evil/);
         assert.equal(localStorage.items.adblock_seen, 'true');
