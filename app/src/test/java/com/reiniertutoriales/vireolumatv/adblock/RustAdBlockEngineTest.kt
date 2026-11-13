@@ -204,7 +204,7 @@ class RustAdBlockEngineTest {
             // Cosmetic lines that merely contain the word are kept, and dual resources still inject scriptlet markers.
             val cosmetic = blocker.pageFilters("https://example.test/")
             assertTrue(cosmetic.contains(".redirect-banner"))
-            assertTrue(cosmetic.contains("[\"nobab\""))
+            assertTrue(org.json.JSONObject(cosmetic).getString("script").contains("[\"nobab\""))
         } finally { blocker.release() }
     }
 
