@@ -213,6 +213,7 @@ function page(filters, host = 'stream.example', setup = '') {
     // Network stubs and JSON pruning.
     c = page({ script: call('no-fetch-if', 'url:/ads/ method:POST mode:no-cors', 'length:10') +
         call('no-fetch-if', 'url:/vast/', 'war:noop-vast3.xml') +
+        call('no-fetch-if', 'url:/ima3\\.js/', 'war:google-ima.js') +
         call('trusted-prevent-fetch', 'url:/custom-stub/', '["4117"]') +
         call('json-prune', 'playerAds adPlacements', '') });
     const blocked = await vm.runInContext(`fetch('https://x.example/ads/track', { method: 'POST', mode: 'no-cors' })`, c);
@@ -222,6 +223,7 @@ function page(filters, host = 'stream.example', setup = '') {
     assert.match(vastStub.body, /<VAST version="3\.0"><\/VAST>/);
     const customStub = await vm.runInContext(`fetch('https://x.example/custom-stub/check')`, c);
     assert.equal(customStub.body, '["4117"]');
+    assert.equal(await vm.runInContext(`fetch('https://x.example/ima3.js')`, c), 'network');
     assert.equal(await vm.runInContext(`fetch('https://x.example/video.m3u8')`, c), 'network');
     vm.runInContext(`
         var parsed = JSON.parse('{"playerAds":[1],"adPlacements":[2],"video":{"id":"x"}}');

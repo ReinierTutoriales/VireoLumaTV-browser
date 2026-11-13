@@ -478,7 +478,6 @@
         'noop.js': '(function(){})();', 'noopjs': '(function(){})();',
         'googlesyndication_adsbygoogle.js': '(function(){})();',
         'googletagservices_gpt.js': '(function(){})();',
-        'google-ima.js': '(function(){})();',
         'doubleclick_instream_ad_status.js': 'window.google_ad_status = 1;\n',
         'noop-vast2.xml': '<?xml version="1.0" encoding="UTF-8"?><VAST version="2.0"></VAST>',
         'noop-vast3.xml': '<?xml version="1.0" encoding="UTF-8"?><VAST version="3.0"></VAST>',
@@ -500,7 +499,7 @@
         }
         if (typeof kind === 'string' && kind.indexOf('war:') === 0) {
             var name = kind.slice(4);
-            return Object.prototype.hasOwnProperty.call(warBodies, name) ? warBodies[name] : '';
+            return Object.prototype.hasOwnProperty.call(warBodies, name) ? warBodies[name] : null;
         }
         return trusted ? String(kind) : '';
     }
@@ -528,7 +527,8 @@
                     if (init.cache) details.cache = String(init.cache);
                 } catch (_) {}
                 if (matches(details) && typeof Response === 'function') {
-                    return Promise.resolve(new Response(responseBody(body, trusted), { status: 200, statusText: 'OK' }));
+                    var text = responseBody(body, trusted);
+                    if (text !== null) return Promise.resolve(new Response(text, { status: 200, statusText: 'OK' }));
                 }
                 return Reflect_.apply(target, self, args);
             });
@@ -551,6 +551,7 @@
             wrapFunction(proto, 'send', function (target, self, args) {
                 if (!pending.has(self)) return Reflect_.apply(target, self, args);
                 var text = responseBody(body, trusted);
+                if (text === null) return Reflect_.apply(target, self, args);
                 try {
                     defineProperty(self, 'readyState', { value: 4, configurable: true });
                     defineProperty(self, 'status', { value: 200, configurable: true });
