@@ -512,6 +512,7 @@ class BrowserNavigationTest {
 
     @Test fun hiddenCapsuleDefersTabStripSnapshotsUntilOpened() = Fixture().use { f ->
         f.vb.controlsHost.setTabs(f.tabs.openTabs.toList(), 0)
+        f.activity.visitLog = com.reiniertutoriales.vireolumatv.utils.activemodel.ScreenModels.get(VisitLog::class, f.activity)
         val callback = TabWindow(f.activity, f.tab)
         val wasPrivate = f.activity.config.privateBrowsing
         f.activity.config.privateBrowsing = true
