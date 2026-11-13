@@ -113,7 +113,7 @@ object FilterListPreprocessor {
         // Regex rules can contain '$' inside the pattern; they are rare in popup sections.
         if (line.startsWith("/") && line.endsWith("/")) return null
         val dollar = line.lastIndexOf('$')
-        if (dollar <= 0 || dollar == line.length - 1 || line.indexOf("popu", dollar + 1) < 0) return null
+        if (dollar < 0 || dollar == line.length - 1 || line.indexOf("popu", dollar + 1) < 0) return null
         val options = line.substring(dollar + 1).split(',')
         if (options.none { it == "popup" || it == "popunder" }) return null
         val rewritten = options.filter { it != "popup" && it != "popunder" && it != "document" && it != "doc" }

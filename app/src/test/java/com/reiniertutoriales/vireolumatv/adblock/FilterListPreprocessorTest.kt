@@ -10,6 +10,7 @@ class FilterListPreprocessorTest {
             ! comment ${'$'}popup
             ||popads.test^${'$'}popup
             ||pop.test^${'$'}popup,third-party
+            ${'$'}popup,third-party,domain=stream.test|embed.test
             &popunder=${'$'}popup
             @@||ok.test^${'$'}popup
             ||under.test^${'$'}popunder
@@ -22,6 +23,7 @@ class FilterListPreprocessorTest {
         assertEquals(listOf(
             "||popads.test^${'$'}document",
             "||pop.test^${'$'}document,third-party",
+            "${'$'}document,third-party,domain=stream.test|embed.test",
             "&popunder=${'$'}document",
             "@@||ok.test^${'$'}document",
             "||under.test^${'$'}document",
