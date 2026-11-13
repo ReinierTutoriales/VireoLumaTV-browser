@@ -192,6 +192,20 @@ function page(filters, host = 'stream.example', setup = '') {
         assert.equal(eval('player()'), 'evaluated');
     `, c);
 
+    // no-window-open-if matches joined arguments (such as target '_blank') and auto-closes after delay.
+    c = page({ script: call('no-window-open-if', '_blank', '1') });
+    vm.runInContext(`
+        var w = window.open('https://dynamic.example/path', '_blank', 'width=400');
+        assert.notEqual(w, null);
+        assert.equal(w.closed, false);
+        w.document.body.appendChild(w.document.createElement('div'));
+        w.location = 'https://popunder.example/';
+        assert.equal(w.location.href, 'https://popunder.example/');
+        flush();
+        assert.equal(w.closed, true);
+        assert.equal(window.open('https://allowed.example/path', '_self'), null);
+    `, c);
+
     // Network stubs and JSON pruning.
     c = page({ script: call('no-fetch-if', 'url:/ads/ method:POST') + call('json-prune', 'playerAds adPlacements', '') });
     const blocked = await vm.runInContext(`fetch('https://x.example/ads/track', { method: 'POST' })`, c);

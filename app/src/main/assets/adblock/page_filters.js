@@ -357,24 +357,52 @@
         });
     };
 
-    function decoyWindow(url) {
+    function decoyElement() {
+        return { style: {}, setAttribute: noopFunc, getAttribute: function () { return null; },
+            appendChild: noopFunc, removeChild: noopFunc, addEventListener: noopFunc, removeEventListener: noopFunc };
+    }
+
+    function decoyWindow(url, delay) {
         var closed = false, href2 = url ? String(url) : 'about:blank';
+        var loc = {
+            get href() { return href2; },
+            set href(v) { href2 = String(v); },
+            assign: function (v) { href2 = String(v); },
+            replace: function (v) { href2 = String(v); },
+            reload: noopFunc,
+            toString: function () { return href2; }
+        };
+        var doc = {
+            write: noopFunc, writeln: noopFunc, open: function () { return doc; }, close: noopFunc,
+            createElement: decoyElement, createTextNode: function () { return {}; },
+            getElementById: function () { return null; }, querySelector: function () { return null; },
+            querySelectorAll: function () { return []; },
+            body: decoyElement(), head: decoyElement(), documentElement: decoyElement(),
+            readyState: 'complete', addEventListener: noopFunc, removeEventListener: noopFunc
+        };
         var fake = {
             get closed() { return closed; },
             close: function () { closed = true; },
-            focus: noopFunc, blur: noopFunc, postMessage: noopFunc, opener: window, name: '',
-            location: { href: href2, assign: noopFunc, replace: noopFunc, reload: noopFunc },
-            document: { write: noopFunc, writeln: noopFunc, open: noopFunc, close: noopFunc, body: null },
-            addEventListener: noopFunc, removeEventListener: noopFunc
+            focus: noopFunc, blur: noopFunc, postMessage: noopFunc, stop: noopFunc, print: noopFunc,
+            moveTo: noopFunc, resizeTo: noopFunc, scrollTo: noopFunc,
+            opener: window, name: '', length: 0, frames: [],
+            navigator: window.navigator, screen: window.screen,
+            history: { back: noopFunc, forward: noopFunc, go: noopFunc, pushState: noopFunc, replaceState: noopFunc },
+            get location() { return loc; },
+            set location(v) { href2 = String(v); },
+            document: doc,
+            addEventListener: noopFunc, removeEventListener: noopFunc, dispatchEvent: function () { return true; }
         };
-        fake.window = fake; fake.self = fake;
+        fake.window = fake; fake.self = fake; fake.top = fake;
+        var secs = parseInt(delay, 10);
+        if (secs > 0) setTimeout(function () { closed = true; }, secs * 1000);
         return fake;
     }
 
-    scriptlets['no-window-open-if'] = function (pattern) {
+    scriptlets['no-window-open-if'] = function (pattern, delay) {
         var matches = matcher(pattern);
         wrapFunction(window, 'open', function (target, self, args) {
-            if (matches(args[0] === undefined ? '' : args[0])) return decoyWindow(args[0]);
+            if (matches([].slice.call(args).join(' '))) return decoyWindow(args[0], delay);
             return Reflect_.apply(target, self, args);
         });
     };

@@ -10,19 +10,41 @@
     // Not enumerable: detectors that list window keys must not see the browser's own marker.
     try { Object.defineProperty(window, '__vireoOpenDecoy', { value: true, configurable: true }); } catch (_) { return; }
     function noop() {}
+    function decoyElement() {
+        return { style: {}, setAttribute: noop, getAttribute: function () { return null; },
+            appendChild: noop, removeChild: noop, addEventListener: noop, removeEventListener: noop };
+    }
     function decoy(url) {
         var closed = false;
         var href = url ? String(url) : 'about:blank';
+        var loc = {
+            get href() { return href; },
+            set href(v) { href = String(v); },
+            assign: function (v) { href = String(v); },
+            replace: function (v) { href = String(v); },
+            reload: noop,
+            toString: function () { return href; }
+        };
+        var doc = {
+            write: noop, writeln: noop, open: function () { return doc; }, close: noop,
+            createElement: decoyElement, createTextNode: function () { return {}; },
+            getElementById: function () { return null; }, querySelector: function () { return null; },
+            querySelectorAll: function () { return []; },
+            body: decoyElement(), head: decoyElement(), documentElement: decoyElement(),
+            readyState: 'complete', addEventListener: noop, removeEventListener: noop
+        };
         var fake = {
             get closed() { return closed; },
             close: function () { closed = true; },
             focus: noop, blur: noop, postMessage: noop, stop: noop, print: noop,
             moveTo: noop, resizeTo: noop, scrollTo: noop,
             opener: window, name: '', length: 0, frames: [],
-            location: { href: href, assign: noop, replace: noop, reload: noop, toString: function () { return href; } },
-            document: { write: noop, writeln: noop, open: noop, close: noop, body: null,
-                addEventListener: noop, removeEventListener: noop },
-            addEventListener: noop, removeEventListener: noop
+            navigator: window.navigator, screen: window.screen,
+            history: { back: noop, forward: noop, go: noop, pushState: noop, replaceState: noop },
+            get location() { return loc; },
+            set location(v) { href = String(v); },
+            document: doc,
+            addEventListener: noop, removeEventListener: noop, dispatchEvent: function () { return true; }
         };
         fake.window = fake;
         fake.self = fake;
