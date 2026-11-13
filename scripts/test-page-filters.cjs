@@ -189,6 +189,7 @@ function page(filters, host = 'stream.example', setup = '') {
         target.addEventListener('click', function () { popMagic.go(); });
         target.addEventListener('click', function () { play(); });
         assert.deepEqual(listeners, ['click']);
+        assert.equal(Object.prototype.hasOwnProperty.call(target, 'addEventListener'), false);
         var w = window.open('https://ads.example/pop');
         assert.notEqual(w, null); w.close(); assert.equal(w.closed, true);
         assert.equal(eval('antiAdblock()'), undefined);
@@ -232,7 +233,8 @@ function page(filters, host = 'stream.example', setup = '') {
     c = page({ script: call('remove-node-text', 'script', 'adsbygoogle', 'excludes', 'self.__next') +
         call('addEventListener-defuser', 'click', '', 'elements', '#get-link-button') +
         call('set-cookie', 'consent', 'accept') +
-        call('set-cookie', 'evil', '<script>') + call('set-local-storage-item', 'adblock_seen', 'true') });
+        call('set-cookie', 'evil', '<script>') + call('set-local-storage-item', 'adblock_seen', 'true') },
+        'stream.example', 'delete window.addEventListener; Object.setPrototypeOf(window, EventTarget.prototype);');
     vm.runInContext(`
         var node = { nodeName: 'SCRIPT', textContent: '(adsbygoogle = window.adsbygoogle || []).push({})' };
         var excluded = { nodeName: 'SCRIPT', textContent: 'self.__next_f.push([1,"adsbygoogle"])' };
@@ -248,6 +250,7 @@ function page(filters, host = 'stream.example', setup = '') {
         blockedBtn.addEventListener('click', function () {});
         allowedBtn.addEventListener('click', function () {});
         assert.deepEqual(listeners, ['click']);
+        assert.equal(Object.prototype.hasOwnProperty.call(window, 'addEventListener'), false);
         assert.match(document.cookie, /consent=accept/);
         assert.doesNotMatch(document.cookie, /evil/);
         assert.equal(localStorage.items.adblock_seen, 'true');

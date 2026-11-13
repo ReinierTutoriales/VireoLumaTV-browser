@@ -364,10 +364,7 @@
             return Reflect_.apply(target, self, args);
         }
         var proto = window.EventTarget && EventTarget.prototype;
-        var protoAdd = proto && proto.addEventListener;
         wrapFunction(proto, 'addEventListener', defuse);
-        if (window.addEventListener && window.addEventListener !== protoAdd) wrapFunction(window, 'addEventListener', defuse);
-        if (document.addEventListener && document.addEventListener !== protoAdd) wrapFunction(document, 'addEventListener', defuse);
     };
 
     function decoyElement() {
