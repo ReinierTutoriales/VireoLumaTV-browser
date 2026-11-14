@@ -131,6 +131,8 @@ android {
         }
         create("google") {
             dimension = "distribution"
+            // Same applicationId and code as generic: take generic's baseline profile.
+            matchingFallbacks += "generic"
             buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "false")
         }
         create("foss") {
