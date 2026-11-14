@@ -34,15 +34,15 @@ La mayoría de los navegadores en Android TV son adaptaciones de móvil difícil
 ### Control natural con tu mando o gamepad
 - **Cápsula superior rápida:** escribe una dirección, busca en la web, recarga o cambia de pestaña en pocos toques de cruceta, con una interfaz oscura pensada para pantallas OLED y LED.
 - **Puntero virtual inteligente:** muévelo con fluidez por cualquier página, desplaza el contenido al acercarte a los bordes de la pantalla o activa el **modo agarre** para arrastrar páginas largas como si usaras el dedo.
-- **Menú contextual con pulsación larga:** mantén pulsado `OK` sobre cualquier enlace para abrirlo en una pestaña nueva, en segundo plano, en modo privado o directamente en su aplicación nativa del televisor.
+- **Menú contextual con pulsación larga:** mantén pulsado `OK` sobre cualquier enlace para abrirlo en una pestaña nueva o en otra aplicación del televisor, descargarlo, copiar su dirección o compartirlo.
 
 ### Navegación limpia y sin interrupciones
 - **Escudo integrado desde el primer arranque:** bloquea publicidad, rastreadores, ventanas emergentes y redirecciones intrusivas sin configurar nada, incluso antes de descargar actualizaciones de listas.
 - **Preparado para sitios de vídeo y streaming:** neutraliza avisos anti-bloqueador habituales, limpia anuncios en YouTube y evita que los reproductores fallen cuando bloquean una ventana emergente.
-- **Control por sitio en un toque:** activa o desactiva el escudo para la página que tienes abierta directamente desde la barra superior.
+- **Control por pestaña en un toque:** activa o desactiva el escudo en la pestaña abierta directamente desde la barra superior.
 
 ### Vídeo fluido adaptado a tu televisor
-- **Reproducción sin tirones:** ajusta automáticamente las calidades y formatos de vídeo a lo que tu televisor puede reproducir con fluidez, o fija tú mismo el límite de resolución (`720p`, `1080p`, `4K`) desde Ajustes.
+- **Reproducción sin tirones:** ajusta automáticamente las calidades y formatos de vídeo a lo que tu televisor puede reproducir con fluidez, o fija tú mismo el límite de resolución (`1080p`, `720p` o `480p`) desde Ajustes.
 - **Botones multimedia del mando:** usa `Play/Pausa`, avanzar, retroceder y parar directamente con las teclas físicas del mando.
 - **Pantalla completa sin trampas:** pulsa `Atrás` una sola vez para salir del vídeo a pantalla completa y volver a la página con tus controles listos.
 
@@ -51,13 +51,13 @@ La mayoría de los navegadores en Android TV son adaptaciones de móvil difícil
 - **Pestañas con vista previa:** cambia entre páginas viendo la miniatura real de cada pestaña, mientras el navegador mantiene el consumo de memoria bajo control.
 - **Gestor de descargas con reanudación:** descarga archivos en segundo plano con continuación automática si la conexión se corta.
 - **Modo privado real:** abre pestañas privadas en una sesión separada que borra sus datos, cookies y archivos temporales al cerrarlas.
-- **En tu idioma:** interfaz disponible en español, inglés, portugués, francés, italiano, alemán, ruso, chino, japonés y árabe.
+- **En tu idioma:** interfaz disponible en español, inglés, alemán, italiano, polaco, ruso, ucraniano, persa, hebreo, vietnamita y chino (simplificado y tradicional).
 
 ---
 
 ## Instalación
 
-Compatible con **Android TV, Google TV, Fire TV y TV boxes con Android 7.0 (API 24) o superior**.
+Compatible con **Android TV, Google TV y TV boxes con Android 7.0 (API 24) o superior**.
 
 1. Entra en la página de [**descargas**](https://github.com/ReinierTutoriales/VireoLumaTV-browser/releases/latest).
 2. Descarga el archivo `.apk` correspondiente a tu televisor o TV box e instálalo.
@@ -70,8 +70,8 @@ Compatible con **Android TV, Google TV, Fire TV y TV boxes con Android 7.0 (API 
 
 | Archivo | Dispositivos habituales |
 | --- | --- |
-| **`VireoLumaTV-*-arm64-v8a.apk`** | Televisores y TV boxes modernos de 64 bits (Chromecast con Google TV 4K, Google TV Streamer, Xiaomi TV Box S 2nd Gen, Nvidia Shield Pro, etc.) |
-| **`VireoLumaTV-*-armeabi-v7a.apk`** | Televisores Android TV, Chromecast HD, Fire TV Stick y TV boxes de 32 bits (los más comunes en equipos de 1 GB y 2 GB de RAM) |
+| **`VireoLumaTV-*-arm64-v8a.apk`** | Televisores y TV boxes con sistema Android de 64 bits |
+| **`VireoLumaTV-*-armeabi-v7a.apk`** | Televisores y TV boxes con sistema Android de 32 bits, frecuentes en equipos con poca memoria |
 | **`VireoLumaTV-*-x86_64.apk`** | Equipos con procesador Intel o AMD y emuladores de Android TV en PC |
 
 > **Consejo:** si no estás seguro de cuál usa tu tele, prueba primero **`arm64-v8a`**; si el sistema indica que no es compatible con tu dispositivo, instala **`armeabi-v7a`**.
