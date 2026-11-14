@@ -10,7 +10,8 @@ const sandbox = {isFinite, document: {
 }, addEventListener: (name, fn) => { listeners[name] = fn; }};
 sandbox.window = sandbox;
 vm.createContext(sandbox);
-const source = fs.readFileSync('app/src/main/assets/generic_injects.js', 'utf8');
+const compact = s => s.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('//')).join('\n');
+const source = compact(fs.readFileSync('app/src/main/assets/generic_injects.js', 'utf8'));
 vm.runInContext(source, sandbox);
 const ranges = values => ({length: values.length, start: i => values[i][0], end: i => values[i][1]});
 const media = (overrides = {}) => ({tag: 'video', currentTime: 0, paused: false, ended: false,

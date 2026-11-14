@@ -1,6 +1,7 @@
 package com.reiniertutoriales.vireolumatv.webengine.webview
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.media.MediaCodecInfo
 import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaCodecList
@@ -154,13 +155,28 @@ internal object MediaPolicy {
         return !(name.startsWith("omx.google.") || name.startsWith("c2.android.") ||
             name.startsWith("omx.ffmpeg.") || name.contains(".sw.") || name.endsWith(".sw"))
     }
+
+    @Volatile private var template: String? = null
+    @Volatile private var rendered: Pair<String, String>? = null
+
+    /** Renders `media_policy.js` once per distinct [json] policy across all WebView instances. */
+    internal fun script(context: Context, json: String): String {
+        rendered?.let { (cachedJson, cachedScript) -> if (cachedJson == json) return cachedScript }
+        val base = template ?: synchronized(this) {
+            template ?: AdblockPageController.compact(
+                context.assets.open("media_policy.js").bufferedReader().use { it.readText() }
+            ).also { template = it }
+        }
+        return base.replace("__VIREO_MEDIA_POLICY__", json).also {
+            rendered = json to it
+        }
+    }
 }
 
 /** Registers media_policy.js at document start in every frame and keeps it in sync with settings. */
 internal class MediaPolicyController(private val view: WebView, private val config: Config) {
     private var registration: ScriptHandler? = null
     private var appliedJson: String? = null
-    private var source: String? = null
 
     /** Cheap when nothing changed; call before each navigation so settings apply to the next page. */
     fun refresh() {
@@ -185,9 +201,5 @@ internal class MediaPolicyController(private val view: WebView, private val conf
         registration = null
     }
 
-    private fun script(json: String): String {
-        val template = source ?: view.context.assets.open("media_policy.js").bufferedReader()
-            .use { it.readText() }.also { source = it }
-        return template.replace("__VIREO_MEDIA_POLICY__", json)
-    }
+    private fun script(json: String): String = MediaPolicy.script(view.context, json)
 }

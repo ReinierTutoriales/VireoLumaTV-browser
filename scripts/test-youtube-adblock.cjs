@@ -1,7 +1,8 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const source = fs.readFileSync('app/src/main/assets/youtube_adblock.js', 'utf8');
+const compact = s => s.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('//')).join('\n');
+const source = compact(fs.readFileSync('app/src/main/assets/youtube_adblock.js', 'utf8'));
 function page(host = 'www.youtube.com', protocol = 'https:') {
     const context = vm.createContext({assert, location: {hostname: host, protocol,
         href: protocol + '//' + host + '/watch?v=one'}, URL, console});

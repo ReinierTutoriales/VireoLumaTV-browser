@@ -10,11 +10,14 @@ import androidx.webkit.WebViewFeature
 internal class YouTubeAdblockController(private val view: WebView) {
     private var enabled = false
     private var registration: ScriptHandler? = null
-    private var source: String? = null
-    private fun script(): String = source ?: view.context.assets.open("youtube_adblock.js")
-        .bufferedReader().use { it.readText() }.also { source = it }
+    private fun script(): String = source ?: synchronized(Companion) {
+        source ?: AdblockPageController.compact(
+            view.context.assets.open("youtube_adblock.js").bufferedReader().use { it.readText() }
+        ).also { source = it }
+    }
 
     fun setEnabled(value: Boolean) {
+        if (enabled == value) return
         enabled = value
         if (!value) {
             registration?.remove()
@@ -30,21 +33,22 @@ internal class YouTubeAdblockController(private val view: WebView) {
                 "https://youtube-nocookie.com", "https://*.youtube-nocookie.com"
             ))
         }
-        onPage(view.url)
+        if (isYouTube(view.url)) view.evaluateJavascript(script(), null)
     }
 
     /** Best-effort fallback on old providers; document-start registration handles modern providers. */
     fun onPage(url: String?) {
-        if (enabled && isYouTube(url)) view.evaluateJavascript(script(), null)
+        if (enabled && registration == null && isYouTube(url)) view.evaluateJavascript(script(), null)
     }
 
     fun destroy() {
         registration?.remove()
         registration = null
-        source = null
     }
 
     companion object {
+        @Volatile private var source: String? = null
+
         internal fun isYouTube(url: String?): Boolean {
             val uri = url?.let(Uri::parse) ?: return false
             if (uri.scheme != "https") return false
