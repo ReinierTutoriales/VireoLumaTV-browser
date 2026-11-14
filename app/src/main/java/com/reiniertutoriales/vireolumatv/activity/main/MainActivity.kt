@@ -286,7 +286,6 @@ open class MainActivity : ComponentActivity() {
         updateTimer = null
     }
 
-    @VisibleForTesting
     internal fun showPendingUpdate(show: (ReleaseUpdater.Release) -> Unit = ::offerUpdate): Boolean {
         val release = pendingUpdate ?: return false
         if (!updateForeground || !startupDone || config.privateBrowsing || isFullscreen ||
