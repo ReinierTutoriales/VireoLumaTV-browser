@@ -21,15 +21,13 @@ android {
     }
 
     targetProjectPath = ":app"
-    // Mirrors the app's distributions, so each release variant gets its profile.
+    // The app merges every generated profile into src/main (mergeIntoMain), so one profile serves all
+    // distributions. google is left out: it shares generic's applicationId, and installing both on the
+    // same managed device made the google run start without its Room classes (AppDatabase_Impl).
     flavorDimensions += "distribution"
     productFlavors {
         // Each flavor tells the generator which installed package to profile (foss adds ".foss").
         create("generic") {
-            dimension = "distribution"
-            testInstrumentationRunnerArguments["targetAppId"] = "com.reiniertutoriales.vireolumatv"
-        }
-        create("google") {
             dimension = "distribution"
             testInstrumentationRunnerArguments["targetAppId"] = "com.reiniertutoriales.vireolumatv"
         }

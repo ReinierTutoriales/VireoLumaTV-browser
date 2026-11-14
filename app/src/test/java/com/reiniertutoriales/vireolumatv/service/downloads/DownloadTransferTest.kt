@@ -199,6 +199,32 @@ class DownloadTransferTest {
         }
     }
 
+    @Test fun retriesRateLimitedAndBadGatewayResponsesWithRetryAfterAndCompletes() {
+        var attempts = 0
+        val seenRetryAfter = CopyOnWriteArrayList<String?>()
+        server.createContext("/throttled") {
+            when (++attempts) {
+                1 -> {
+                    it.responseHeaders.add("Retry-After", "5")
+                    it.reply(429)
+                }
+                2 -> it.reply(502)
+                else -> it.reply(200, "recovered-payload")
+            }
+        }
+        val info = download("throttled.txt", "/throttled")
+        val recorder = Recorder()
+        FileTransfer(info, "test", recorder) { _, retryAfter ->
+            seenRetryAfter.add(retryAfter)
+            0L
+        }.run()
+        assertEquals(3, attempts)
+        assertEquals(listOf("5", null), seenRetryAfter.toList())
+        assertEquals(1, recorder.done)
+        assertEquals(0, recorder.errors)
+        assertEquals("recovered-payload", File(info.filepath).readText())
+    }
+
     @Test fun cancellingMidTransferRemovesThePartialFileBeforeReporting() {
         val info = download("partial.bin", "/unused")
         val recorder = Recorder()

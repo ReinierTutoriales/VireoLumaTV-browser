@@ -157,7 +157,8 @@ class FileTransfer internal constructor(
                         }
                         url = next
                     }
-                    code == HttpURLConnection.HTTP_UNAVAILABLE || code == HttpURLConnection.HTTP_GATEWAY_TIMEOUT -> {
+                    code == 429 || code == HttpURLConnection.HTTP_BAD_GATEWAY ||
+                        code == HttpURLConnection.HTTP_UNAVAILABLE || code == HttpURLConnection.HTTP_GATEWAY_TIMEOUT -> {
                         val delay = retryDelay(++retries, connection.getHeaderField("Retry-After"))
                         if (retries >= CONNECT_ATTEMPTS || delay == null) {
                             return Outcome.Failed(code, connection.responseMessage.orEmpty())

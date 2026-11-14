@@ -1,7 +1,8 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const template = fs.readFileSync('app/src/main/assets/media_policy.js', 'utf8');
+const compact = s => s.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('//')).join('\n');
+const template = compact(fs.readFileSync('app/src/main/assets/media_policy.js', 'utf8'));
 
 function page(config, host = 'www.youtube.com') {
     const context = vm.createContext({assert, Promise, location: {hostname: host}});

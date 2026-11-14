@@ -52,7 +52,6 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
     private val adblockPage by lazy { AdblockPageController(this) }
     private val mediaPolicy by lazy { MediaPolicyController(this, config) }
     private var pointerMode = true
-    private var pageScript: String? = null
     internal val usesWebMessageBridge =WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)
 
     /** The address the browser asked for, before redirects; the base for ad and home page rules. */
@@ -217,8 +216,11 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         youtubeAdblock.onPage(url)
     }
 
-    private fun genericJsInjects(): String =
-        pageScript ?: context.assets.open(GENERIC_INJECTS_ASSET).bufferedReader().use { it.readText() }.also { pageScript = it }
+    private fun genericJsInjects(): String = pageScript ?: synchronized(Companion) {
+        pageScript ?: AdblockPageController.compact(
+            context.assets.open(GENERIC_INJECTS_ASSET).bufferedReader().use { it.readText() }
+        ).also { pageScript = it }
+    }
 
     override fun restoreState(inState: Bundle): WebBackForwardList? =
         super.restoreState(inState).also { currentOriginalUrl = url?.toUri() }
@@ -294,6 +296,7 @@ open class BrowserWebView(context: Context, internal val engine: WebViewPageEngi
         private const val GENERIC_INJECTS_ASSET = "generic_injects.js"
         private const val BLOCKED_ADS_REPORT_DELAY_MS = 250L
         private const val PREVIEW_MAX_SIDE = 480f
+        @Volatile private var pageScript: String? = null
     }
 }
 
