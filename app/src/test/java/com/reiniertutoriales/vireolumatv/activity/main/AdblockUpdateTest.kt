@@ -388,6 +388,74 @@ class AdblockUpdateTest {
         }
     }
 
+    @Test fun uboIncludedSubListFallsBackToConfiguredMirrors() {
+        var subListUrls: List<String>? = null
+        val engine = object : ContentBlockerEngine {
+            override val cacheFileName = "sublist-mirror-test.dat"
+            override fun deserialize(file: File): ContentBlocker? = null
+            override fun compile(filterLists: List<String>): ContentBlocker {
+                val combined = filterLists.joinToString("\n")
+                return object : ContentBlocker {
+                    override fun shouldBlock(url: Uri, type: String?, baseHost: String) =
+                        combined.contains("||included-sublist.test^") && url.host == "included-sublist.test"
+                    override fun serialize(file: File): Boolean { file.writeText("ok"); return true }
+                }
+            }
+        }
+        val model = AdBlocker(engine, autoLoad = false)
+        val source = com.reiniertutoriales.vireolumatv.Config.DEFAULT_ADBLOCK_LIST_URL
+        model.bundledList = { null }
+        model.config.blockListUrl.value = source
+        model.fetchList = { urls, _, _ ->
+            val first = urls.first()
+            when {
+                first.endsWith("/filters.txt") -> {
+                    val body = "! Title: uBlock filters\n!#include sub-part.txt\n" +
+                        (1..110).joinToString("\n") { "||ubo-main-$it.test^" }
+                    AdblockListDownloader.Result.Downloaded(body, null, first)
+                }
+                first.endsWith("/sub-part.txt") -> {
+                    subListUrls = urls
+                    AdblockListDownloader.Result.Downloaded("||included-sublist.test^\n", null, urls.last())
+                }
+                else -> {
+                    val body = "[Adblock Plus 2.0]\n! Title: uBlock test\n" +
+                        (1..110).joinToString("\n") { "||list-$it.test^" }
+                    AdblockListDownloader.Result.Downloaded(body, null, first)
+                }
+            }
+        }
+        val dir = VireoLumaTVApp.instance.filesDir
+        val names = listOf("adblock_list_easylist.txt", "adblock_list_easyprivacy.txt", "adblock_list_easylist_spanish.txt",
+            "adblock_list_ubo_filters.txt", "adblock_list_ubo_quick-fixes.txt", "adblock_list_ubo_unbreak.txt", "adblock_list_ubo_badware.txt")
+        try {
+            names.forEach { File(dir, it).delete() }
+            finish(model.loadBlockList(true))
+            val candidates = requireNotNull(subListUrls)
+            assertEquals(
+                listOf(
+                    "https://ublockorigin.github.io/uAssets/filters/sub-part.txt",
+                    "https://ublockorigin.pages.dev/filters/sub-part.txt",
+                    "https://cdn.jsdelivr.net/gh/uBlockOrigin/uAssets@latest/filters/sub-part.txt"
+                ),
+                candidates
+            )
+            assertTrue(model.isAd(Uri.parse("https://included-sublist.test/ad.js"), "script", Uri.parse("https://page.test")))
+        } finally {
+            model.clear()
+            names.forEach { name ->
+                File(dir, name).delete()
+                File(dir, "$name.main").delete()
+                File(dir, "$name.meta").delete()
+            }
+            File(dir, "adblock_list_ubo_filters.txt.inc.sub-part.txt").delete()
+            File(dir, "adblock_list_ubo_filters.txt.inc.sub-part.txt.meta").delete()
+            val cache = AdblockCache.fileFor(dir, engine, source)
+            cache.delete()
+            File(cache.path + ".popup.none").delete()
+        }
+    }
+
     private fun finish(job: Job) {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
         while (!job.isCompleted && System.nanoTime() < deadline) {

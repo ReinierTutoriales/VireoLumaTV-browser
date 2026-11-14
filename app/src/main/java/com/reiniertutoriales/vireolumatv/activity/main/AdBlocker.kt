@@ -426,10 +426,11 @@ class AdBlocker @JvmOverloads constructor(
             val cacheFile = File(VireoLumaTVApp.instance.filesDir, filterList.cacheFileName)
             val validatorsFile = File(cacheFile.path + ".meta")
             val mainFile = mainFileFor(cacheFile)
+            var previous: String? = null
             try {
                 Log.i(TAG, "Downloading adblock list: ${filterList.name}")
                 // The last complete generation (composed text). It stays in place until a new one is saved.
-                val previous = readCachedFilterList(filterList, cacheFile)
+                previous = readCachedFilterList(filterList, cacheFile)
                 // Validators are only sent together with the un-composed main text they describe.
                 val savedValidators = readValidators(validatorsFile)
                 val savedMain = if (previous != null && savedValidators != null) readCachedFilterList(filterList, mainFile) else null
@@ -465,7 +466,7 @@ class AdBlocker @JvmOverloads constructor(
                 }
             } catch (e: Exception) {
                 Log.w(TAG, "Can not download valid adblock list: ${filterList.name}", e)
-                val cachedText = readCachedFilterList(filterList, cacheFile)
+                val cachedText = previous ?: readCachedFilterList(filterList, cacheFile)
                 if (cachedText != null) {
                     Log.i(TAG, "Using cached adblock list text: ${filterList.name}")
                     ResolvedFilterList(filterList, cachedText, FilterListSource.CACHE)
@@ -484,8 +485,17 @@ class AdBlocker @JvmOverloads constructor(
     private fun composeSubLists(filterList: FilterList, cacheFile: File, mainText: String, sourceUrl: String): String {
         if (filterList.uboTitle == null) return mainText
         val base = sourceUrl.substringBeforeLast('/') + "/"
+        val candidateBases = (listOf(sourceUrl, filterList.url) + filterList.mirrors)
+            .map { it.substringBeforeLast('/') + "/" }
+            .distinct()
         return SubListCache(cacheFile.parentFile!!, cacheFile.name).refresh(mainText, base) { url, cached ->
-            fetchList(listOf(url), false, cached)
+            val urls = if (url.startsWith(base)) {
+                val relative = url.removePrefix(base)
+                candidateBases.map { it + relative }
+            } else {
+                listOf(url)
+            }
+            fetchList(urls, false, cached)
         }
     }
 
