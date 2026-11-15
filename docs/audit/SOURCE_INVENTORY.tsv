@@ -600,3 +600,8 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/utils/OfflineGrace.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/utils/OfflineGraceTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/InputBudgetTest.kt	PROPIO
 app/src/main/res/xml/network_security_config.xml	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/utils/QrCode.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/remote/RemoteLinkServer.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/dialogs/remote/RemoteLinkDialog.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/utils/QrCodeTest.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/remote/RemoteLinkServerTest.kt	PROPIO

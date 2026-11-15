@@ -35,6 +35,7 @@ internal enum class AppMenuEntry(@StringRes val label: Int, val symbol: TvSymbol
     HISTORY(R.string.menu_history, TvSymbol.History),
     FAVORITES(R.string.menu_favorites, TvSymbol.Bookmark),
     DOWNLOADS(R.string.menu_downloads, TvSymbol.Download),
+    SEND_FROM_PHONE(R.string.menu_send_from_phone, TvSymbol.Link),
     INCOGNITO(R.string.menu_private, TvSymbol.Private),
     SETTINGS(R.string.menu_settings, TvSymbol.Settings),
     CLOSE_TAB(R.string.menu_close_tab, TvSymbol.TabClose),

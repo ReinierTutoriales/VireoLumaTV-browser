@@ -47,6 +47,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesPanel
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavorites
+import com.reiniertutoriales.vireolumatv.activity.main.dialogs.remote.RemoteLinkDialog
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
 import com.reiniertutoriales.vireolumatv.activity.main.home.NativeHome
 import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand
@@ -221,6 +222,7 @@ open class MainActivity : ComponentActivity() {
     @VisibleForTesting internal var pendingUpdate: ReleaseUpdater.Release? = null
         private set
     private var updateOffer: TvDialog? = null
+    private var remoteLinkDialog: RemoteLinkDialog? = null
     @VisibleForTesting internal var startupDone = false
     @VisibleForTesting internal var consumeStartupIntent = false
 
@@ -423,6 +425,8 @@ open class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         filePickerOwner = null
+        remoteLinkDialog?.dismiss()
+        remoteLinkDialog = null
         nativeHome?.hide()
         nativeHome = null
         if (ServiceWorkerFilter.policy === serviceWorkerPolicy) ServiceWorkerFilter.policy = null
@@ -519,6 +523,7 @@ open class MainActivity : ComponentActivity() {
         AppMenuEntry.HISTORY -> showHistory()
         AppMenuEntry.FAVORITES -> showFavorites()
         AppMenuEntry.DOWNLOADS -> showDownloads()
+        AppMenuEntry.SEND_FROM_PHONE -> showRemoteLink()
         AppMenuEntry.INCOGNITO -> togglePrivateMode()
         AppMenuEntry.SETTINGS -> showSettings()
         AppMenuEntry.CLOSE_TAB -> closeTab(tabStore.currentTab.value)
@@ -566,6 +571,19 @@ open class MainActivity : ComponentActivity() {
     }
 
     fun showSettings() = SettingsScreen(this, browserSettings).show()
+
+    fun showRemoteLink() {
+        if (remoteLinkDialog?.isShowing == true) return
+        remoteLinkDialog = RemoteLinkDialog(this, lifecycleScope, config.searchAddress.value) { url ->
+            openInNewTab(url, tabStore.openTabs.size, closeCapsuleAfter = true, navigateImmediately = true)
+        }.apply {
+            setOnDismissListener {
+                if (remoteLinkDialog === this) remoteLinkDialog = null
+                if (overlayVisible) vb.controlsHost.requestCommandFocus()
+            }
+            show()
+        }
+    }
 
     /** Leaves private mode first (erasing its data) when it is on. */
     fun closeWindow() {

@@ -234,4 +234,12 @@
     <string name="home_add_prompt">Shortcut address (https://…)</string>
     <string name="home_empty_search">Type something to search.</string>
     <string name="settings_slow_frames">Slow frames since the app started: %1$s</string>
+    <string name="menu_send_from_phone">Send from phone</string>
+    <string name="remote_link_title">Send link from phone</string>
+    <string name="remote_link_instructions">Scan the QR code with your phone on the same Wi-Fi network, or open this address in your phone\'s browser:</string>
+    <string name="remote_link_no_network">Connect the TV to your local Wi-Fi or Ethernet network to receive links from a phone.</string>
+    <string name="remote_link_send">Open on TV</string>
+    <string name="remote_link_sent">Sent to the TV.</string>
+    <string name="remote_link_invalid">Enter a valid web address or search.</string>
+    <string name="remote_link_error">Could not reach the TV. Make sure the dialog is still open.</string>
 </resources>

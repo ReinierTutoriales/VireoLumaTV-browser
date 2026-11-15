@@ -231,4 +231,12 @@
     <string name="home_add_prompt">Dirección del acceso (https://…)</string>
     <string name="home_empty_search">Escribe una búsqueda.</string>
     <string name="settings_slow_frames">Fotogramas lentos desde que se abrió la app: %1$s</string>
+    <string name="menu_send_from_phone">Enviar desde el móvil</string>
+    <string name="remote_link_title">Enviar enlace desde el móvil</string>
+    <string name="remote_link_instructions">Escanea el código QR con tu móvil en la misma red Wi-Fi, o abre esta dirección en el navegador de tu móvil:</string>
+    <string name="remote_link_no_network">Conecta la TV a tu red Wi-Fi o Ethernet local para recibir enlaces desde un móvil.</string>
+    <string name="remote_link_send">Abrir en TV</string>
+    <string name="remote_link_sent">Enviado al televisor.</string>
+    <string name="remote_link_invalid">Escribe una dirección web o búsqueda válida.</string>
+    <string name="remote_link_error">No se pudo conectar con la TV. Asegúrate de que el diálogo sigue abierto.</string>
 </resources>
