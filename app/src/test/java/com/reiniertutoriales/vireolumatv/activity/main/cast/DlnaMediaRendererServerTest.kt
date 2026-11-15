@@ -41,6 +41,7 @@ class DlnaMediaRendererServerTest {
         assertEquals(MediaKind.VIDEO, DlnaMediaRendererServer.detectMediaKind("http://192.168.1.5/stream", "<upnp:class>object.item.videoItem</upnp:class>"))
         assertEquals(95, DlnaMediaRendererServer.parseHmsSeconds("00:01:35"))
         assertEquals("01:02:03", DlnaMediaRendererServer.formatHmsSeconds(3723))
+        assertEquals("a&b'c", DlnaMediaRendererServer.xmlUnescape("a&#38;b&#x27;c"))
     }
 
     @Test
@@ -73,15 +74,33 @@ class DlnaMediaRendererServerTest {
             assertTrue(desc.body.contains("urn:schemas-upnp-org:device:MediaRenderer:1"))
             assertTrue(desc.body.contains("<friendlyName>VireoLumaTV</friendlyName>"))
 
-            assertEquals(200, http("GET", "$base/dlna/scpd/avtransport.xml").code)
-            assertEquals(200, http("GET", "$base/dlna/scpd/renderingcontrol.xml").code)
-            assertEquals(200, http("GET", "$base/dlna/scpd/connectionmanager.xml").code)
+            val avScpd = http("GET", "$base/dlna/scpd/avtransport.xml")
+            assertEquals(200, avScpd.code)
+            assertTrue(avScpd.body.contains("<argumentList>"))
+            assertTrue(avScpd.body.contains("<serviceStateTable>"))
+
+            val rcScpd = http("GET", "$base/dlna/scpd/renderingcontrol.xml")
+            assertEquals(200, rcScpd.code)
+            assertTrue(rcScpd.body.contains("<argumentList>"))
+            assertTrue(rcScpd.body.contains("<serviceStateTable>"))
+
+            val cmScpd = http("GET", "$base/dlna/scpd/connectionmanager.xml")
+            assertEquals(200, cmScpd.code)
+            assertTrue(cmScpd.body.contains("<argumentList>"))
+            assertTrue(cmScpd.body.contains("<serviceStateTable>"))
+
+            val subResponse = rawRequest("127.0.0.1", server.httpPort!!, "SUBSCRIBE /dlna/event/avtransport HTTP/1.1\r\nHost: 127.0.0.1\r\nNT: upnp:event\r\nTIMEOUT: Second-1800\r\n\r\n")
+            assertTrue(subResponse.startsWith("HTTP/1.1 200 OK"))
+            assertTrue(subResponse.contains("SID: uuid:"))
+            assertTrue(subResponse.contains("TIMEOUT: Second-1800"))
+            val unsubResponse = rawRequest("127.0.0.1", server.httpPort!!, "UNSUBSCRIBE /dlna/event/avtransport HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n")
+            assertTrue(unsubResponse.startsWith("HTTP/1.1 200 OK"))
 
             val loadSoap = """<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>
                 <u:SetAVTransportURI xmlns:u="urn:schemas-upnp-org:service:AVTransport:1">
                   <InstanceID>0</InstanceID>
-                  <CurrentURI>http://192.168.1.5:8080/song.mp3?a=1&amp;b=2</CurrentURI>
-                  <CurrentURIMetaData>&lt;DIDL-Lite&gt;&lt;item&gt;&lt;dc:title&gt;Mi Canción&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem&lt;/upnp:class&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;</CurrentURIMetaData>
+                  <CurrentURI>http://192.168.1.5:8080/song.mp3?a=1&#38;b=2</CurrentURI>
+                  <CurrentURIMetaData>&lt;DIDL-Lite&gt;&lt;item&gt;&lt;dc:title&gt;Mi Canci&#243;n&lt;/dc:title&gt;&lt;upnp:class&gt;object.item.audioItem&lt;/upnp:class&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;</CurrentURIMetaData>
                 </u:SetAVTransportURI>
             </s:Body></s:Envelope>"""
             val loadRes = soap("$base/dlna/control/avtransport", "urn:schemas-upnp-org:service:AVTransport:1#SetAVTransportURI", loadSoap)
@@ -131,7 +150,15 @@ class DlnaMediaRendererServerTest {
         }
     }
 
-    private data class HttpResult(val code: Int, val body: String)
+    private fun rawRequest(host: String, port: Int, raw: String): String =
+        java.net.Socket(host, port).use { socket ->
+            socket.soTimeout = 2000
+            socket.getOutputStream().write(raw.toByteArray(StandardCharsets.ISO_8859_1))
+            socket.getOutputStream().flush()
+            socket.getInputStream().bufferedReader(StandardCharsets.UTF_8).readText()
+        }
+
+    private data class HttpResult(val code: Int, val body: String, val headers: Map<String, String>)
 
     private fun soap(url: String, soapAction: String, body: String): HttpResult =
         http("POST", url, body, soapAction)
@@ -150,7 +177,10 @@ class DlnaMediaRendererServerTest {
         val code = conn.responseCode
         val stream = if (code in 200..399) conn.inputStream else conn.errorStream
         val text = stream?.bufferedReader(StandardCharsets.UTF_8)?.use { it.readText() }.orEmpty()
+        val headers = conn.headerFields.mapNotNull { (k, v) ->
+            if (k != null && v.isNotEmpty()) k to v.first() else null
+        }.toMap()
         conn.disconnect()
-        return HttpResult(code, text)
+        return HttpResult(code, text, headers)
     }
 }
