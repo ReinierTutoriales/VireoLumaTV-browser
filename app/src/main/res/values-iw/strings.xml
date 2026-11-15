@@ -231,4 +231,9 @@
     <string name="home_empty_search">יש להקליד מה לחפש.</string>
     <string name="settings_slow_frames">פריימים איטיים מאז הפעלת האפליקציה: %1$s</string>
     <string name="update_in_progress">מעדכן…</string>
+    <string name="settings_youtube_cast">מקלט Cast עבור YouTube ו-YouTube Music (בטא)</string>
+    <string name="settings_dlna_renderer">מקלט מדיה DLNA / UPnP</string>
+    <string name="dlna_play">נגן</string>
+    <string name="dlna_pause">השהה</string>
+    <string name="dlna_load_error">לא ניתן לטעון מדיה זו.</string>
 </resources>

@@ -225,4 +225,9 @@
     <string name="home_empty_search">請輸入要搜尋的內容。</string>
     <string name="settings_slow_frames">應用程式啟動後的慢速影格：%1$s</string>
     <string name="update_in_progress">正在更新…</string>
+    <string name="settings_youtube_cast">YouTube 與 YouTube Music 投放接收器（測試版）</string>
+    <string name="settings_dlna_renderer">DLNA / UPnP 媒體接收器</string>
+    <string name="dlna_play">播放</string>
+    <string name="dlna_pause">暫停</string>
+    <string name="dlna_load_error">無法載入此媒體。</string>
 </resources>

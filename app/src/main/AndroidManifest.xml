@@ -11,6 +11,9 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Android 17: pages on the user's own network (router, NAS); asked for after such a page fails. -->
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+    <!-- SSDP multicast discovery for the optional YouTube / YouTube Music Cast receiver. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <!-- Asked for only when a page requests them (PagePermissions). -->
     <uses-permission android:name="android.permission.CAMERA" />

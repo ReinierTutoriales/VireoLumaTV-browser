@@ -229,4 +229,9 @@
     <string name="home_empty_search">Gib einen Suchbegriff ein.</string>
     <string name="settings_slow_frames">Langsame Frames seit App-Start: %1$s</string>
     <string name="update_in_progress">Aktualisierung läuft…</string>
+    <string name="settings_youtube_cast">Cast-Empfänger für YouTube &amp; YouTube Music (Beta)</string>
+    <string name="settings_dlna_renderer">DLNA- / UPnP-Medienempfänger</string>
+    <string name="dlna_play">Wiedergeben</string>
+    <string name="dlna_pause">Pause</string>
+    <string name="dlna_load_error">Dieses Medium konnte nicht geladen werden.</string>
 </resources>
