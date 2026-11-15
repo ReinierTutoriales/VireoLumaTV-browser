@@ -231,4 +231,12 @@
     <string name="home_empty_search">יש להקליד מה לחפש.</string>
     <string name="settings_slow_frames">פריימים איטיים מאז הפעלת האפליקציה: %1$s</string>
     <string name="update_in_progress">מעדכן…</string>
+    <string name="menu_send_from_phone">שליחה מהטלפון</string>
+    <string name="remote_link_title">שליחת קישור מהטלפון</string>
+    <string name="remote_link_instructions">סרקו את קוד ה-QR עם הטלפון באותה רשת Wi-Fi, או פתחו כתובת זו בדפדפן של הטלפון:</string>
+    <string name="remote_link_no_network">חברו את הטלוויזיה לרשת ה-Wi-Fi או ה-Ethernet המקומית כדי לקבל קישורים מטלפון.</string>
+    <string name="remote_link_send">פתיחה בטלוויזיה</string>
+    <string name="remote_link_sent">נשלח לטלוויזיה.</string>
+    <string name="remote_link_invalid">הזינו כתובת אתר או חיפוש תקינים.</string>
+    <string name="remote_link_error">לא ניתן להגיע לטלוויזיה. ודאו שהחלון עדיין פתוח.</string>
 </resources>

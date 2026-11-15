@@ -229,4 +229,12 @@
     <string name="home_empty_search">Gib einen Suchbegriff ein.</string>
     <string name="settings_slow_frames">Langsame Frames seit App-Start: %1$s</string>
     <string name="update_in_progress">Aktualisierung läuft…</string>
+    <string name="menu_send_from_phone">Vom Smartphone senden</string>
+    <string name="remote_link_title">Link vom Smartphone senden</string>
+    <string name="remote_link_instructions">Scanne den QR-Code mit deinem Smartphone im selben WLAN oder öffne diese Adresse im Browser deines Smartphones:</string>
+    <string name="remote_link_no_network">Verbinde den Fernseher mit deinem lokalen WLAN oder Ethernet, um Links vom Smartphone zu empfangen.</string>
+    <string name="remote_link_send">Auf dem TV öffnen</string>
+    <string name="remote_link_sent">An den TV gesendet.</string>
+    <string name="remote_link_invalid">Gib eine gültige Webadresse oder Suche ein.</string>
+    <string name="remote_link_error">TV nicht erreichbar. Stelle sicher, dass der Dialog noch geöffnet ist.</string>
 </resources>

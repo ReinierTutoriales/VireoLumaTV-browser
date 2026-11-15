@@ -39,7 +39,7 @@ class QrCodeTest {
     fun utf8PayloadEncodesWithinByteCapacity() {
         val qr = QrCode.encode("https://ejemplo.com/búsqueda?q=áéíóú")
 
-        assertTrue(qr.size in 21..57)
+        assertTrue(qr.size in 21..41)
         assertEquals(0, (qr.size - 21) % 4)
     }
 
@@ -49,7 +49,7 @@ class QrCodeTest {
             QrCode.encode("")
         }
         assertThrows(IllegalArgumentException::class.java) {
-            QrCode.encode("x".repeat(214))
+            QrCode.encode("x".repeat(107))
         }
     }
 

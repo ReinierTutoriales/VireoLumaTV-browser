@@ -22,6 +22,7 @@ import java.net.InetAddress
 internal class LocalNetworkPrompt(private val activity: MainActivity) {
     private var asked = false
     private var waiting: BrowserTab? = null
+    private var onRemoteLinkResult: ((Boolean) -> Unit)? = null
 
     fun onMainFrameNetworkError(tab: BrowserTab, url: String) {
         if (asked || !LocalNetworkAccess.blocked(activity)) return
@@ -36,12 +37,26 @@ internal class LocalNetworkPrompt(private val activity: MainActivity) {
         }
     }
 
+    /** Requests local-network permission before starting the QR server on Android 17+. */
+    fun ensureForRemoteLink(onResult: (Boolean) -> Unit) {
+        if (!LocalNetworkAccess.blocked(activity)) {
+            onResult(true)
+            return
+        }
+        onRemoteLinkResult = onResult
+        activity.requestPermissions(arrayOf(LocalNetworkAccess.PERMISSION), REQUEST_LOCAL_NETWORK)
+    }
+
     /** True when [requestCode] was this prompt's; a grant reloads the tab that failed. */
     fun onPermissionsResult(requestCode: Int, grantResults: IntArray): Boolean {
         if (requestCode != REQUEST_LOCAL_NETWORK) return false
+        val granted = grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED
+        val remoteCallback = onRemoteLinkResult
+        onRemoteLinkResult = null
+        remoteCallback?.invoke(granted)
         val tab = waiting
         waiting = null
-        if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED && tab != null && !tab.closed) tab.engine.reload()
+        if (granted && tab != null && !tab.closed) tab.engine.reload()
         return true
     }
 

@@ -18,7 +18,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -52,6 +55,7 @@ internal class RemoteLinkDialog(
     context: Context,
     scope: CoroutineScope,
     searchTemplate: String,
+    ensureLocalNetwork: ((Boolean) -> Unit) -> Unit = { it(true) },
     private val onOpenUrl: (String) -> Unit,
 ) : ComponentDialog(context, R.style.TvDialog) {
 
@@ -71,17 +75,31 @@ internal class RemoteLinkDialog(
         onOpenUrl(receivedUrl)
     }
 
-    private val localUrl: String? = server.start()
-    private val qr: QrCode? = localUrl?.let { runCatching { QrCode.encode(it) }.getOrNull() }
+    private var closed = false
+    private var localUrl by mutableStateOf<String?>(null)
+    private var qr by mutableStateOf<QrCode?>(null)
+    private var ready by mutableStateOf(false)
 
     init {
         setContentView(ComposeView(context).apply {
             setContent { VireoTvTheme { Content() } }
         })
-        setOnDismissListener { server.close() }
+        setOnDismissListener {
+            closed = true
+            server.close()
+        }
+        ensureLocalNetwork { granted ->
+            if (!closed && granted) {
+                val startedUrl = server.start()
+                localUrl = startedUrl
+                qr = startedUrl?.let { runCatching { QrCode.encode(it) }.getOrNull() }
+            }
+            ready = true
+        }
     }
 
     override fun onStop() {
+        closed = true
         server.close()
         super.onStop()
     }
@@ -103,12 +121,14 @@ internal class RemoteLinkDialog(
                 fontSize = 22.sp,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
-            if (localUrl != null && qr != null) {
+            val activeUrl = localUrl
+            val activeQr = qr
+            if (activeUrl != null && activeQr != null) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(24.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    QrBox(qr)
+                    QrBox(activeQr)
                     Column(Modifier.weight(1f)) {
                         Text(
                             stringResource(R.string.remote_link_instructions),
@@ -117,7 +137,7 @@ internal class RemoteLinkDialog(
                         )
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            localUrl,
+                            activeUrl,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 13.sp,
                             fontFamily = FontFamily.Monospace,
@@ -128,7 +148,7 @@ internal class RemoteLinkDialog(
                         )
                     }
                 }
-            } else {
+            } else if (ready) {
                 Text(
                     stringResource(R.string.remote_link_no_network),
                     color = Color.LightGray,

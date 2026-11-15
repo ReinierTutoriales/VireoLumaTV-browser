@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.InputStream
@@ -48,6 +48,7 @@ internal class RemoteLinkServer(
     )
 
     val token: String = generateToken()
+    private val serverDispatcher = Dispatchers.IO.limitedParallelism(2)
     private var serverSocket: ServerSocket? = null
     private var acceptJob: Job? = null
     @Volatile private var closed = false
@@ -70,14 +71,18 @@ internal class RemoteLinkServer(
             return null
         }
         serverSocket = socket
-        acceptJob = scope.launch(Dispatchers.IO) {
+        acceptJob = scope.launch(serverDispatcher) {
             while (isActive && !closed && !socket.isClosed) {
                 val client = try {
                     socket.accept()
                 } catch (_: Exception) {
                     break
                 }
-                launch(Dispatchers.IO) { handleClient(client) }
+                launch(serverDispatcher) {
+                    withTimeoutOrNull(REQUEST_TIMEOUT_MS) {
+                        handleClient(client)
+                    } ?: runCatching { client.close() }
+                }
             }
         }
         return url
@@ -98,7 +103,7 @@ internal class RemoteLinkServer(
                 client.soTimeout = SOCKET_TIMEOUT_MS
                 val input = client.getInputStream()
                 val output = client.getOutputStream()
-                val request = readHttpRequest(input) ?: return
+                val request = readHttpRequest(client, input) ?: return
                 when {
                     request.method == "GET" && request.path == "/" -> {
                         val provided = queryParam(request.query, "t")
@@ -146,8 +151,9 @@ internal class RemoteLinkServer(
         val sent = jsEscape(labels.sent)
         val invalid = jsEscape(labels.invalidUrl)
         val err = jsEscape(labels.error)
+        val lang = htmlEscape(Locale.getDefault().toLanguageTag().ifBlank { "en" })
         return """<!DOCTYPE html>
-<html lang="en">
+<html lang="$lang">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -201,6 +207,7 @@ f.addEventListener('submit',async e=>{
     internal companion object {
         private const val TAG = "RemoteLinkServer"
         private const val SOCKET_TIMEOUT_MS = 5_000
+        private const val REQUEST_TIMEOUT_MS = 10_000L
         private const val MAX_HEADER_BYTES = 8 * 1024
         private const val MAX_BODY_BYTES = 8 * 1024
         private const val MAX_INPUT_CHARS = 2048
@@ -265,10 +272,18 @@ f.addEventListener('submit',async e=>{
                 ?: candidates.firstOrNull()
         }
 
-        private fun readHttpRequest(input: InputStream): HttpRequest? {
+        private fun readHttpRequest(socket: Socket, input: InputStream): HttpRequest? {
+            val deadlineNs = System.nanoTime() + REQUEST_TIMEOUT_MS * 1_000_000L
+            fun refreshTimeout(): Boolean {
+                val remainingMs = (deadlineNs - System.nanoTime()) / 1_000_000L
+                if (remainingMs <= 0L) return false
+                socket.soTimeout = remainingMs.coerceAtMost(SOCKET_TIMEOUT_MS.toLong()).toInt()
+                return true
+            }
             val headerBytes = ByteArrayOutputStream()
             var state = 0
             while (headerBytes.size() < MAX_HEADER_BYTES) {
+                if (!refreshTimeout()) return null
                 val b = input.read()
                 if (b == -1) return null
                 headerBytes.write(b)
@@ -303,6 +318,7 @@ f.addEventListener('submit',async e=>{
             val bodyBytes = ByteArray(contentLength)
             var readTotal = 0
             while (readTotal < contentLength) {
+                if (!refreshTimeout()) return null
                 val n = input.read(bodyBytes, readTotal, contentLength - readTotal)
                 if (n < 0) return null
                 readTotal += n

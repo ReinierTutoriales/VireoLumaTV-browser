@@ -233,4 +233,12 @@
     <string name="home_empty_search">Введите запрос.</string>
     <string name="settings_slow_frames">Медленные кадры с запуска приложения: %1$s</string>
     <string name="update_in_progress">Обновление…</string>
+    <string name="menu_send_from_phone">Отправить с телефона</string>
+    <string name="remote_link_title">Отправить ссылку с телефона</string>
+    <string name="remote_link_instructions">Отсканируйте QR-код телефоном в той же сети Wi-Fi или откройте этот адрес в браузере телефона:</string>
+    <string name="remote_link_no_network">Подключите телевизор к локальной сети Wi-Fi или Ethernet, чтобы получать ссылки с телефона.</string>
+    <string name="remote_link_send">Открыть на ТВ</string>
+    <string name="remote_link_sent">Отправлено на ТВ.</string>
+    <string name="remote_link_invalid">Введите действительный веб-адрес или поисковый запрос.</string>
+    <string name="remote_link_error">Не удалось связаться с ТВ. Убедитесь, что окно еще открыто.</string>
 </resources>

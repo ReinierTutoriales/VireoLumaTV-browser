@@ -105,7 +105,7 @@ class RemoteLinkServerTest {
 
             val response = request("POST", "$base/open", body)
             assertEquals(200, response.code)
-            assertTrue(response.body.contains("Sent!"))
+            assertTrue(response.body.contains("\"ok\":true"))
             assertEquals(listOf(target), received)
         } finally {
             server.close()

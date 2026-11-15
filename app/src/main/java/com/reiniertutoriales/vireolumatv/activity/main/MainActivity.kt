@@ -364,6 +364,8 @@ open class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
+        remoteLinkDialog?.dismiss()
+        remoteLinkDialog = null
         downloads.unbind()
         // Home, another app or standby: keep the signed-in sessions in case the power goes next.
         cookies.onLeftScreen(config.privateBrowsing)
@@ -574,7 +576,12 @@ open class MainActivity : ComponentActivity() {
 
     fun showRemoteLink() {
         if (remoteLinkDialog?.isShowing == true) return
-        remoteLinkDialog = RemoteLinkDialog(this, lifecycleScope, config.searchAddress.value) { url ->
+        remoteLinkDialog = RemoteLinkDialog(
+            context = this,
+            scope = lifecycleScope,
+            searchTemplate = config.searchAddress.value,
+            ensureLocalNetwork = localNetwork::ensureForRemoteLink,
+        ) { url ->
             openInNewTab(url, tabStore.openTabs.size, closeCapsuleAfter = true, navigateImmediately = true)
         }.apply {
             setOnDismissListener {

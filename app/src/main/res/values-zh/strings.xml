@@ -227,4 +227,12 @@
     <string name="home_empty_search">请输入要搜索的内容。</string>
     <string name="settings_slow_frames">应用启动以来的慢帧：%1$s</string>
     <string name="update_in_progress">正在更新…</string>
+    <string name="menu_send_from_phone">从手机发送</string>
+    <string name="remote_link_title">从手机发送链接</string>
+    <string name="remote_link_instructions">使用同一 Wi-Fi 网络下的手机扫描二维码，或在手机浏览器中打开此地址：</string>
+    <string name="remote_link_no_network">将电视连接到本地 Wi-Fi 或以太网，以接收来自手机的链接。</string>
+    <string name="remote_link_send">在电视上打开</string>
+    <string name="remote_link_sent">已发送到电视。</string>
+    <string name="remote_link_invalid">请输入有效的网址或搜索内容。</string>
+    <string name="remote_link_error">无法连接到电视。请确保对话框仍处于打开状态。</string>
 </resources>

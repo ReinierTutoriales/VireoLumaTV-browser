@@ -225,4 +225,12 @@
     <string name="home_empty_search">請輸入要搜尋的內容。</string>
     <string name="settings_slow_frames">應用程式啟動後的慢速影格：%1$s</string>
     <string name="update_in_progress">正在更新…</string>
+    <string name="menu_send_from_phone">從手機傳送</string>
+    <string name="remote_link_title">從手機傳送連結</string>
+    <string name="remote_link_instructions">使用同一 Wi-Fi 網路下的手機掃描 QR 碼，或在手機瀏覽器中開啟此網址：</string>
+    <string name="remote_link_no_network">請將電視連接至本地 Wi-Fi 或乙太網路，以接收來自手機的連結。</string>
+    <string name="remote_link_send">在電視上開啟</string>
+    <string name="remote_link_sent">已傳送至電視。</string>
+    <string name="remote_link_invalid">請輸入有效的網址或搜尋內容。</string>
+    <string name="remote_link_error">無法連線至電視。請確認對話方塊仍處於開啟狀態。</string>
 </resources>

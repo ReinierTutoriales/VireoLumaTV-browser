@@ -229,4 +229,12 @@
     <string name="home_empty_search">چیزی برای جست‌وجو بنویسید.</string>
     <string name="settings_slow_frames">فریم‌های کند از زمان باز شدن برنامه: %1$s</string>
     <string name="update_in_progress">در حال به‌روزرسانی…</string>
+    <string name="menu_send_from_phone">ارسال از گوشی</string>
+    <string name="remote_link_title">ارسال پیوند از گوشی</string>
+    <string name="remote_link_instructions">کد QR را با گوشی خود در همان شبکه وای‌فای اسکن کنید یا این نشانی را در مرورگر گوشی باز کنید:</string>
+    <string name="remote_link_no_network">برای دریافت پیوند از گوشی، تلویزیون را به شبکه وای‌فای یا اترنت محلی متصل کنید.</string>
+    <string name="remote_link_send">باز کردن در تلویزیون</string>
+    <string name="remote_link_sent">به تلویزیون ارسال شد.</string>
+    <string name="remote_link_invalid">یک نشانی وب یا عبارت جستجوی معتبر وارد کنید.</string>
+    <string name="remote_link_error">دسترسی به تلویزیون ممکن نشد. مطمئن شوید کادر گفتگو هنوز باز است.</string>
 </resources>

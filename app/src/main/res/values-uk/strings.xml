@@ -233,4 +233,12 @@
     <string name="home_empty_search">Введіть запит.</string>
     <string name="settings_slow_frames">Повільні кадри від запуску застосунку: %1$s</string>
     <string name="update_in_progress">Оновлення…</string>
+    <string name="menu_send_from_phone">Надіслати з телефона</string>
+    <string name="remote_link_title">Надіслати посилання з телефона</string>
+    <string name="remote_link_instructions">Відскануйте QR-код телефоном у тій самій мережі Wi-Fi або відкрийте цю адресу в браузері телефона:</string>
+    <string name="remote_link_no_network">Підключіть телевізор до локальної мережі Wi-Fi або Ethernet, щоб отримувати посилання з телефона.</string>
+    <string name="remote_link_send">Відкрити на ТБ</string>
+    <string name="remote_link_sent">Надіслано на ТБ.</string>
+    <string name="remote_link_invalid">Введіть дійсну вебадресу або пошуковий запит.</string>
+    <string name="remote_link_error">Не вдалося зв'язатися з ТБ. Переконайтеся, що вікно ще відкрите.</string>
 </resources>

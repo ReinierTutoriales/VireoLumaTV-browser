@@ -3,7 +3,7 @@ package com.reiniertutoriales.vireolumatv.utils
 import kotlin.math.abs
 
 /**
- * Pure-Kotlin QR code generator (ISO/IEC 18004, byte mode, error correction level M, versions 1–10).
+ * Pure-Kotlin QR code generator (ISO/IEC 18004, byte mode, error correction level M, versions 1–6).
  * Produces crisp boolean matrices for Compose [androidx.compose.foundation.Canvas] rendering without
  * third-party dependencies.
  */
@@ -24,7 +24,7 @@ internal class QrCode private constructor(val size: Int, private val modules: Bo
             val dataCodewords: Int get() = g1Blocks * g1Data + g2Blocks * g2Data
         }
 
-        // Error correction level M specs for versions 1–10 (ISO/IEC 18004 Table 9).
+        // Error correction level M specs for versions 1–6 (ISO/IEC 18004 Table 9).
         private val VERSIONS = listOf(
             VersionSpec(1, 26, 10, 1, 16),
             VersionSpec(2, 44, 16, 1, 28, alignCenters = intArrayOf(6, 18)),
@@ -32,10 +32,6 @@ internal class QrCode private constructor(val size: Int, private val modules: Bo
             VersionSpec(4, 100, 18, 2, 32, alignCenters = intArrayOf(6, 26)),
             VersionSpec(5, 134, 24, 2, 43, alignCenters = intArrayOf(6, 30)),
             VersionSpec(6, 172, 16, 4, 27, alignCenters = intArrayOf(6, 34)),
-            VersionSpec(7, 196, 18, 4, 31, alignCenters = intArrayOf(6, 22, 38)),
-            VersionSpec(8, 242, 22, 2, 38, 2, 39, alignCenters = intArrayOf(6, 24, 42)),
-            VersionSpec(9, 292, 22, 3, 36, 2, 37, alignCenters = intArrayOf(6, 26, 46)),
-            VersionSpec(10, 346, 26, 4, 43, 1, 44, alignCenters = intArrayOf(6, 28, 50)),
         )
 
         private val GF_EXP = IntArray(512)
