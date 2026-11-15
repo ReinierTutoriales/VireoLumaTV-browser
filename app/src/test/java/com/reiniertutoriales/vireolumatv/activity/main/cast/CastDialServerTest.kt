@@ -97,10 +97,26 @@ class CastDialServerTest {
             assertTrue(launches[1].isMusic)
             request("POST", "$base/apps/YouTube", "pairingCode=pair-101&theme=cl")
             assertFalse(launches[2].isMusic)
+            request("POST", "$base/apps/YouTube?pairingCode=pair-102&theme=m", "")
+            assertEquals("pair-102", launches[3].pairingCode)
+            assertTrue(launches[3].isMusic)
+
+            val runningState = request("GET", "$base/apps/YouTube")
+            assertEquals(200, runningState.code)
+            assertTrue(runningState.body.contains("<state>running</state>"))
+            assertTrue(runningState.body.contains("<link rel=\"run\" href=\"run\"/>"))
+
+            val runEndpoint = request("GET", "$base/apps/YouTube/run")
+            assertEquals(200, runEndpoint.code)
+            assertTrue(runEndpoint.body.contains("<state>running</state>"))
 
             val stop = request("DELETE", "$base/apps/YouTube/run")
             assertEquals(200, stop.code)
             assertEquals(1, stops)
+
+            val stoppedAgain = request("GET", "$base/apps/YouTube")
+            assertEquals(200, stoppedAgain.code)
+            assertTrue(stoppedAgain.body.contains("<state>stopped</state>"))
         } finally {
             server.close()
         }

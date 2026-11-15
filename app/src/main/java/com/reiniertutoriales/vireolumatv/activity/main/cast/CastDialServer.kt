@@ -64,6 +64,7 @@ internal class CastDialServer(
     private var activeHost: String? = null
     private var activeNetIf: NetworkInterface? = null
     @Volatile private var closed = false
+    @Volatile private var appRunning = false
 
     val httpPort: Int?
         get() = serverSocket?.localPort
@@ -224,8 +225,8 @@ internal class CastDialServer(
                             extraHeaders = mapOf("Application-URL" to baseAppUrl),
                         )
                     }
-                    request.method == "GET" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/") -> {
-                        val xml = youtubeAppXml(screenIdProvider())
+                    request.method == "GET" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/" || request.path == "/apps/YouTube/run") -> {
+                        val xml = youtubeAppXml(screenIdProvider(), running = appRunning)
                         writeResponse(
                             output = output,
                             status = 200,
@@ -235,7 +236,7 @@ internal class CastDialServer(
                         )
                     }
                     request.method == "POST" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/") -> {
-                        val params = parseFormUrlEncoded(request.body)
+                        val params = parseFormUrlEncoded(request.query) + parseFormUrlEncoded(request.body)
                         Log.d(
                             TAG,
                             "DIAL launch keys=${params.keys.filter { it != "pairingCode" }} theme=${params["theme"]} clientName=${params["clientName"]}",
@@ -249,6 +250,7 @@ internal class CastDialServer(
                                 params["clientName"]?.contains("music", ignoreCase = true) == true,
                         )
                         onDialLaunch(launch)
+                        appRunning = true
                         writeResponse(
                             output = output,
                             status = 201,
@@ -259,6 +261,7 @@ internal class CastDialServer(
                         )
                     }
                     request.method == "DELETE" && request.path == "/apps/YouTube/run" -> {
+                        appRunning = false
                         onDialStop()
                         writeResponse(output, 200, "OK", "text/plain; charset=utf-8", "")
                     }
@@ -273,6 +276,7 @@ internal class CastDialServer(
     private data class HttpRequest(
         val method: String,
         val path: String,
+        val query: String,
         val body: String,
     )
 
@@ -333,7 +337,9 @@ internal class CastDialServer(
 </root>"""
         }
 
-        internal fun youtubeAppXml(screenId: String?): String {
+        internal fun youtubeAppXml(screenId: String?, running: Boolean = false): String {
+            val state = if (running) "running" else "stopped"
+            val runLink = if (running) "\n  <link rel=\"run\" href=\"run\"/>" else ""
             val extra = if (!screenId.isNullOrBlank()) {
                 "\n  <additionalData>\n    <screenId>${xmlEscape(screenId)}</screenId>\n  </additionalData>"
             } else ""
@@ -341,7 +347,7 @@ internal class CastDialServer(
 <service xmlns="urn:dial-multiscreen-org:schemas:dial" dialVer="2.1">
   <name>YouTube</name>
   <options allowStop="true"/>
-  <state>stopped</state>$extra
+  <state>$state</state>$runLink$extra
 </service>"""
         }
 
@@ -427,6 +433,7 @@ internal class CastDialServer(
             val target = requestLine[1]
             val qIndex = target.indexOf('?')
             val path = if (qIndex >= 0) target.substring(0, qIndex) else target
+            val query = if (qIndex >= 0) target.substring(qIndex + 1) else ""
 
             var contentLength = 0
             for (i in 1 until lines.size) {
@@ -445,7 +452,7 @@ internal class CastDialServer(
                 if (n < 0) return null
                 readTotal += n
             }
-            return HttpRequest(method, path, String(bodyBytes, Charsets.UTF_8))
+            return HttpRequest(method, path, query, String(bodyBytes, Charsets.UTF_8))
         }
 
         private fun writeResponse(

@@ -78,6 +78,7 @@ internal class YouTubeLoungeClient(
     @Volatile private var ofsCounter: Int = 0
     @Volatile private var activePollConnection: HttpURLConnection? = null
     @Volatile private var bindCount = 0
+    @Volatile private var themeSwitchPending = false
 
     /** The lounge only lets in phones whose app matches this theme: "cl" YouTube, "m" YouTube Music. */
     @Volatile var theme: String = THEME_YOUTUBE
@@ -97,9 +98,14 @@ internal class YouTubeLoungeClient(
                     bindAndPoll(store.screenId, token)
                     true
                 }.onFailure { err ->
-                    if (!closed) Log.d(TAG, "Lounge session interrupted", err)
+                    if (!closed && !themeSwitchPending) Log.d(TAG, "Lounge session interrupted", err)
                 }.getOrDefault(false)
                 if (!isActive || closed) break
+                if (themeSwitchPending) {
+                    themeSwitchPending = false
+                    backoffMs = 1_500L
+                    continue
+                }
                 delay(if (ok) 1_000L else backoffMs)
                 if (!ok) backoffMs = (backoffMs * 2).coerceAtMost(30_000L)
             }
@@ -109,8 +115,17 @@ internal class YouTubeLoungeClient(
     fun pairWithCode(pairingCode: String, music: Boolean) {
         if (closed || pairingCode.isBlank()) return
         scope.launch(ioDispatcher) {
+            prepareForDialLaunch(pairingCode, music)
+        }
+    }
+
+    /** Switches theme and registers [pairingCode] (if provided) before DIAL returns 201 Created. */
+    suspend fun prepareForDialLaunch(pairingCode: String?, music: Boolean) {
+        if (closed) return
+        kotlinx.coroutines.withContext(ioDispatcher) {
             runCatching {
                 switchTheme(if (music) THEME_MUSIC else THEME_YOUTUBE)
+                if (pairingCode.isNullOrBlank()) return@runCatching
                 val token = ensureScreenSession() ?: return@runCatching
                 val body = formEncode(
                     "access_type" to "permanent",
@@ -123,7 +138,7 @@ internal class YouTubeLoungeClient(
                 )
                 postForm("$LOUNGE_API/pairing/register_pairing_code", body)
             }.onFailure { err ->
-                Log.w(TAG, "Failed to register pairing code", err)
+                Log.w(TAG, "Failed to prepare DIAL launch", err)
             }
         }
     }
@@ -155,14 +170,21 @@ internal class YouTubeLoungeClient(
 
     /** Rebinds the screen with [wanted] before the phone joins, or the lounge rejects it (unmatchingTheme). */
     private suspend fun switchTheme(wanted: String) {
-        if (theme == wanted) return
+        if (theme == wanted && bindCount > 0) return
         val before = bindCount
+        themeSwitchPending = true
         theme = wanted
-        runCatching { activePollConnection?.disconnect() }
+        val conn = activePollConnection
+        runCatching { conn?.disconnect() }
+        if (conn == null) {
+            listenJob?.cancel()
+            listenJob = null
+            start()
+        }
         var waitedMs = 0L
         while (bindCount == before && waitedMs < THEME_SWITCH_TIMEOUT_MS && !closed) {
-            delay(100)
-            waitedMs += 100
+            delay(50)
+            waitedMs += 50
         }
     }
 
@@ -237,6 +259,9 @@ internal class YouTubeLoungeClient(
     private suspend fun bindAndPoll(screenId: String, loungeToken: String) {
         val rid = ridCounter.incrementAndGet()
         ofsCounter = 0
+        lastAid = 0
+        sid = null
+        gsessionId = null
         val boundTheme = theme
         val initQuery = formEncode(
             "CVER" to "1",
@@ -256,6 +281,7 @@ internal class YouTubeLoungeClient(
         processChunkText(initResponse)
         val currentSid = sid ?: return
         val currentGsid = gsessionId ?: return
+        themeSwitchPending = false
         bindCount++
 
         while (currentCoroutineContext().isActive && !closed && theme == boundTheme) {
