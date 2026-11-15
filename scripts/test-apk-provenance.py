@@ -31,8 +31,8 @@ class PackageAuditTest(unittest.TestCase):
         self.assertEqual([name], audit.class_names(dex_with_class(name)))
         with self.assertRaises(ValueError): audit.class_names(b'not a dex')
 
-    def run_package(self, root, class_name, extras=(), resources='resource string/about_license', root_license=b'reviewed source', baseline=False, missing_baseline=False, manifest='androidx.profileinstaller.ProfileInstallerInitializer'):
-        package = root / 'example.apk'
+    def run_package(self, root, class_name, extras=(), resources='resource string/about_license', root_license=b'reviewed source', baseline=False, missing_baseline=False, manifest='androidx.profileinstaller.ProfileInstallerInitializer', apk_name='example.apk', package_name='com.reiniertutoriales.vireolumatv'):
+        package = root / apk_name
         (root / 'LICENSE.md').write_bytes(root_license)
         with zipfile.ZipFile(package, 'w') as apk:
             apk.writestr('classes.dex', dex_with_class(class_name))
@@ -53,7 +53,7 @@ class PackageAuditTest(unittest.TestCase):
                 if not missing_baseline: apk.writestr('assets/adblock/baseline/test.filterdata', source.read_bytes())
             for name in extras: apk.writestr(name, b'retired')
         def dump(args, **kwargs):
-            if args[2] == 'badging': return "package: name='com.reiniertutoriales.vireolumatv'"
+            if args[2] == 'badging': return f"package: name='{package_name}'"
             if args[2] == 'xmltree': return manifest
             return resources
         with patch.object(audit.subprocess, 'check_output', side_effect=dump):
@@ -100,6 +100,24 @@ class PackageAuditTest(unittest.TestCase):
             self.assertEqual(2, len(report['checks']['issues']))
             self.assertIn('Packaged asset differs from reviewed source: licenses/APP-LICENSE.txt', report['checks']['issues'])
             self.assertIn('Application license differs from root license', report['checks']['issues'])
+
+    def test_expects_test_package_suffix_for_debug_apk(self):
+        with tempfile.TemporaryDirectory() as folder:
+            ok = self.run_package(
+                Path(folder),
+                'Lcom/reiniertutoriales/vireolumatv/Main;',
+                apk_name='app-generic-arm64-v8a-debug.apk',
+                package_name='com.reiniertutoriales.vireolumatv.test',
+            )
+            self.assertEqual([], ok['checks']['issues'])
+        with tempfile.TemporaryDirectory() as folder:
+            bad = self.run_package(
+                Path(folder),
+                'Lcom/reiniertutoriales/vireolumatv/Main;',
+                apk_name='app-generic-arm64-v8a-debug.apk',
+                package_name='com.reiniertutoriales.vireolumatv',
+            )
+            self.assertEqual(['Unexpected applicationId'], bad['checks']['issues'])
 
 
 if __name__ == '__main__': unittest.main()

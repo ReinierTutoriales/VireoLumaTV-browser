@@ -84,7 +84,12 @@ def audit(apk, aapt2, root):
     checks['profile_installer_initializer_present'] = 'androidx.profileinstaller.ProfileInstallerInitializer' in manifest
     if not checks['profile_installer_initializer_present']: issues.append('Profile installer initializer missing')
     checks['package_name'] = re.search(r"package: name='([^']+)'", badging).group(1)
-    if checks['package_name'] != 'com.reiniertutoriales.vireolumatv': issues.append('Unexpected applicationId')
+    expected_package = (
+        'com.reiniertutoriales.vireolumatv.test'
+        if (apk.parent.name == 'debug' or '-debug' in apk.name)
+        else 'com.reiniertutoriales.vireolumatv'
+    )
+    if checks['package_name'] != expected_package: issues.append('Unexpected applicationId')
     for removed in ('anim/infinite_fadeinout_anim', 'menu/menu_link'):
         if removed in resources: issues.append('Retired compiled resource: ' + removed)
     root_license = root / 'LICENSE.md'
