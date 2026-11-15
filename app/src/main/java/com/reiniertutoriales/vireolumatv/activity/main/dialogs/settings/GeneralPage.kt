@@ -18,6 +18,7 @@ import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.AdBlocker
 import com.reiniertutoriales.vireolumatv.activity.main.BrowserSettings
+import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvListRow
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
 import com.reiniertutoriales.vireolumatv.utils.AppLanguages
@@ -55,6 +56,7 @@ class GeneralPage(
     private var adBlock by mutableStateOf(config.adBlockEnabled)
     private var darken by mutableStateOf(config.darkenPages)
     private var autoplay by mutableStateOf(config.allowAutoplayMedia)
+    private var youtubeCast by mutableStateOf(config.youtubeCastEnabled)
     private var videoHeight by mutableIntStateOf(config.videoMaxHeight)
     private var keepScreenOn by mutableStateOf(browserSettings.keepScreenOn.value)
     private var stickMovesPointer by mutableStateOf(!config.ignoreStickAxes)
@@ -135,6 +137,11 @@ class GeneralPage(
             }
             SettingsToggle(R.string.settings_autoplay, "llAllowAutoplayMedia", autoplay) {
                 autoplay = it; config.allowAutoplayMedia = it
+            }
+            SettingsToggle(R.string.settings_youtube_cast, "llYouTubeCastReceiver", youtubeCast) {
+                youtubeCast = it
+                config.youtubeCastEnabled = it
+                (context as? MainActivity)?.syncYouTubeCastState(requestPermissionIfBlocked = it)
             }
             // Read by the document-start script from the next page load. Automatic follows what the
             // hardware decoders handle; no limit keeps only the codecs the TV has no decoder for out.

@@ -43,6 +43,7 @@ import com.reiniertutoriales.vireolumatv.activity.downloads.DownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.IncognitoDownloadsActivity
 import com.reiniertutoriales.vireolumatv.activity.downloads.TransferBoard
 import com.reiniertutoriales.vireolumatv.activity.history.HistoryActivity
+import com.reiniertutoriales.vireolumatv.activity.main.cast.YouTubeCastController
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvDialog
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.FavoritesPanel
@@ -106,6 +107,7 @@ open class MainActivity : ComponentActivity() {
     internal val downloads by lazy { BrowserDownloads(this, { config.privateBrowsing }, ::onDownloadStarted) }
     internal val external by lazy { ExternalApps(this) }
     internal val localNetwork by lazy { LocalNetworkPrompt(this) }
+    private val youtubeCast by lazy { YouTubeCastController(this, config, lifecycleScope) }
     internal var isFullscreen = false
 
     /** The engine that launched the outstanding picker; tab selection cannot transfer ownership. */
@@ -358,10 +360,12 @@ open class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         downloads.bind()
+        syncYouTubeCastState(requestPermissionIfBlocked = false)
     }
 
     override fun onStop() {
         super.onStop()
+        youtubeCast.stop()
         downloads.unbind()
         // Home, another app or standby: keep the signed-in sessions in case the power goes next.
         cookies.onLeftScreen(config.privateBrowsing)
@@ -423,6 +427,7 @@ open class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         filePickerOwner = null
+        youtubeCast.stop()
         nativeHome?.hide()
         nativeHome = null
         if (ServiceWorkerFilter.policy === serviceWorkerPolicy) ServiceWorkerFilter.policy = null
@@ -566,6 +571,24 @@ open class MainActivity : ComponentActivity() {
     }
 
     fun showSettings() = SettingsScreen(this, browserSettings).show()
+
+    internal fun syncYouTubeCastState(requestPermissionIfBlocked: Boolean) {
+        if (!config.youtubeCastEnabled) {
+            youtubeCast.stop()
+            return
+        }
+        if (!LocalNetworkAccess.blocked(this)) {
+            youtubeCast.start()
+        } else if (requestPermissionIfBlocked) {
+            localNetwork.ensureForYouTubeCast { granted ->
+                if (granted && config.youtubeCastEnabled) youtubeCast.start()
+                else if (!granted) {
+                    config.youtubeCastEnabled = false
+                    youtubeCast.stop()
+                }
+            }
+        }
+    }
 
     /** Leaves private mode first (erasing its data) when it is on. */
     fun closeWindow() {

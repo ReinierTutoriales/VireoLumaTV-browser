@@ -24,6 +24,7 @@ class Config(val prefs: SharedPreferences) {
     var allowAutoplayMedia by flag("allow_autoplay_media", false)
     var darkenPages by flag("webview_use_algorithmic_darkening_with_dark_ui_mode", true)
     var pageDebugging by flag("web_engine_debug", false)
+    var youtubeCastEnabled by flag("youtube_cast_enabled", false)
 
     /** Pointer top speed, as a percent of the default derived from the screen width. */
     var pointerSpeedPercent by percent(POINTER_SPEED_KEY)
@@ -33,6 +34,18 @@ class Config(val prefs: SharedPreferences) {
     /** Maximum video height in pixels; 0 lets the site decide. */
     var videoMaxHeight by number("video_max_height", 0)
     var lastVersionCode by number("app_version_code_mark", 0)
+    var youtubeCastUuid: String
+        get() = prefs.getString(YOUTUBE_CAST_UUID_KEY, "") ?: ""
+        set(value) = prefs.edit { putString(YOUTUBE_CAST_UUID_KEY, value) }
+    var youtubeCastScreenId: String
+        get() = prefs.getString(YOUTUBE_CAST_SCREEN_ID_KEY, "") ?: ""
+        set(value) = prefs.edit { putString(YOUTUBE_CAST_SCREEN_ID_KEY, value) }
+    var youtubeCastLoungeToken: String
+        get() = prefs.getString(YOUTUBE_CAST_LOUNGE_TOKEN_KEY, "") ?: ""
+        set(value) = prefs.edit { putString(YOUTUBE_CAST_LOUNGE_TOKEN_KEY, value) }
+    var youtubeCastLoungeTokenExpiryMs: Long
+        get() = prefs.getLong(YOUTUBE_CAST_LOUNGE_EXPIRY_KEY, 0L)
+        set(value) = prefs.edit { putLong(YOUTUBE_CAST_LOUNGE_EXPIRY_KEY, value) }
 
     var homePage: String
         get() = prefs.getString(HOME_PAGE_KEY, HOME_URL_ALIAS) ?: HOME_URL_ALIAS
@@ -114,6 +127,10 @@ class Config(val prefs: SharedPreferences) {
         private const val HOME_PAGE_MODE_KEY = "home_page_mode"
         private const val LEGACY_SEARCH_AS_HOME_KEY = "search_engine_as_home_page"
         private const val DDG_DEFAULT_APPLIED_KEY = "minimal_home_search_migrated"
+        private const val YOUTUBE_CAST_UUID_KEY = "youtube_cast_uuid"
+        private const val YOUTUBE_CAST_SCREEN_ID_KEY = "youtube_cast_screen_id"
+        private const val YOUTUBE_CAST_LOUNGE_TOKEN_KEY = "youtube_cast_lounge_token"
+        private const val YOUTUBE_CAST_LOUNGE_EXPIRY_KEY = "youtube_cast_lounge_expiry_ms"
 
         const val POINTER_PERCENT_MIN = 25
         const val POINTER_PERCENT_MAX = 200

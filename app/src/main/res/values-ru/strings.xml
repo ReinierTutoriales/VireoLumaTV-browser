@@ -233,4 +233,5 @@
     <string name="home_empty_search">Введите запрос.</string>
     <string name="settings_slow_frames">Медленные кадры с запуска приложения: %1$s</string>
     <string name="update_in_progress">Обновление…</string>
+    <string name="settings_youtube_cast">Приёмник Cast для YouTube и YouTube Music (Бета)</string>
 </resources>

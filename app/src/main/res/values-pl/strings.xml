@@ -233,4 +233,5 @@
     <string name="home_empty_search">Wpisz, czego szukasz.</string>
     <string name="settings_slow_frames">Wolne klatki od uruchomienia aplikacji: %1$s</string>
     <string name="update_in_progress">Aktualizowanie…</string>
+    <string name="settings_youtube_cast">Odbiornik Cast dla YouTube i YouTube Music (Beta)</string>
 </resources>
