@@ -57,6 +57,7 @@ internal class YouTubeLoungeClient(
         data class SetVolume(val volume: Int) : LoungeCommand()
         data object Mute : LoungeCommand()
         data object Unmute : LoungeCommand()
+        data object GetNowPlaying : LoungeCommand()
     }
 
     data class PlaybackState(
@@ -75,6 +76,7 @@ internal class YouTubeLoungeClient(
     @Volatile private var gsessionId: String? = null
     @Volatile private var lastAid: Int = 0
     @Volatile private var ofsCounter: Int = 0
+    @Volatile private var activePollConnection: HttpURLConnection? = null
 
     val screenId: String?
         get() = store.screenId.takeIf { it.isNotBlank() }
@@ -120,7 +122,32 @@ internal class YouTubeLoungeClient(
         }
     }
 
+    fun sendNowPlaying(videoId: String?, listId: String?, currentTimeSeconds: Double, stateCode: Int) {
+        if (closed) return
+        val params = buildList {
+            add("req0__sc" to "nowPlaying")
+            if (!videoId.isNullOrBlank()) {
+                add("req0_videoId" to videoId)
+                add("req0_currentTime" to "%.3f".format(currentTimeSeconds))
+                add("req0_state" to stateCode.toString())
+            }
+            if (!listId.isNullOrBlank()) add("req0_listId" to listId)
+        }
+        sendSessionEvent(*params.toTypedArray())
+    }
+
     fun sendPlaybackState(state: PlaybackState) {
+        sendSessionEvent(
+            "req0__sc" to "onStateChange",
+            "req0_currentTime" to "%.3f".format(state.currentTimeSeconds),
+            "req0_duration" to "%.3f".format(state.durationSeconds),
+            "req0_state" to state.stateCode.toString(),
+            "req0_volume" to state.volume.coerceIn(0, 100).toString(),
+            "req0_muted" to state.muted.toString(),
+        )
+    }
+
+    private fun sendSessionEvent(vararg reqParams: Pair<String, String>) {
         val currentSid = sid ?: return
         val currentGsid = gsessionId ?: return
         val token = store.loungeToken.takeIf { it.isNotBlank() } ?: return
@@ -145,16 +172,7 @@ internal class YouTubeLoungeClient(
                     "name" to screenName,
                     "screen_id" to currentScreenId,
                 )
-                val body = formEncode(
-                    "count" to "1",
-                    "ofs" to ofs.toString(),
-                    "req0__sc" to "onStateChange",
-                    "req0_currentTime" to "%.3f".format(state.currentTimeSeconds),
-                    "req0_duration" to "%.3f".format(state.durationSeconds),
-                    "req0_state" to state.stateCode.toString(),
-                    "req0_volume" to state.volume.coerceIn(0, 100).toString(),
-                    "req0_muted" to state.muted.toString(),
-                )
+                val body = formEncode("count" to "1", "ofs" to ofs.toString(), *reqParams)
                 postForm("$LOUNGE_API/bc/bind?$query", body)
             }
         }
@@ -165,6 +183,8 @@ internal class YouTubeLoungeClient(
         closed = true
         listenJob?.cancel()
         listenJob = null
+        runCatching { activePollConnection?.disconnect() }
+        activePollConnection = null
         sid = null
         gsessionId = null
     }
@@ -238,14 +258,16 @@ internal class YouTubeLoungeClient(
                 connectTimeout = 10_000
                 readTimeout = 65_000
             }
+            activePollConnection = conn
             try {
-                if (conn.responseCode !in 200..299) break
+                if (closed || conn.responseCode !in 200..299) break
                 BufferedReader(InputStreamReader(conn.inputStream, StandardCharsets.UTF_8)).use { reader ->
                     parseBrowserChannelStream(reader) { array ->
                         handleEnvelopeArray(array)
                     }
                 }
             } finally {
+                if (activePollConnection === conn) activePollConnection = null
                 conn.disconnect()
             }
         }
@@ -260,7 +282,9 @@ internal class YouTubeLoungeClient(
     }
 
     private fun handleEnvelopeArray(envelope: JSONArray) {
+        if (closed) return
         for (i in 0 until envelope.length()) {
+            if (closed) return
             val item = envelope.optJSONArray(i) ?: continue
             val aid = item.optInt(0, -1)
             if (aid >= 0) lastAid = aid
@@ -271,9 +295,12 @@ internal class YouTubeLoungeClient(
                 "S" -> gsessionId = payload.optString(1).takeIf { it.isNotBlank() } ?: gsessionId
                 else -> {
                     val cmdData = payload.optJSONObject(1)
+                    Log.d(TAG, "Lounge cmd=$cmdName keys=${cmdData?.keys()?.asSequence()?.toList()}")
                     val decoded = decodeLoungeCommand(cmdName, cmdData)
-                    if (decoded != null) {
-                        scope.launch(mainDispatcher) { onCommand(decoded) }
+                    if (decoded != null && !closed) {
+                        scope.launch(mainDispatcher) {
+                            if (!closed) onCommand(decoded)
+                        }
                     }
                 }
             }
@@ -353,12 +380,13 @@ internal class YouTubeLoungeClient(
                 val vol = data?.optString("volume")?.toIntOrNull()
                     ?: data?.optInt("volume", -1)?.takeIf { it in 0..100 }
                     ?: return null
-                val muted = data.optString("muted").equals("true", ignoreCase = true) ||
-                    data.optBoolean("muted", false)
+                val muted = data?.optString("muted").equals("true", ignoreCase = true) ||
+                    data?.optBoolean("muted", false) == true
                 if (muted) LoungeCommand.Mute else LoungeCommand.SetVolume(vol)
             }
             "mute" -> LoungeCommand.Mute
             "unmute" -> LoungeCommand.Unmute
+            "getNowPlaying" -> LoungeCommand.GetNowPlaying
             else -> null
         }
 

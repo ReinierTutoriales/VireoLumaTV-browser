@@ -91,7 +91,7 @@ class MainSettingsFocusTest {
         val expected = listOf(
             "spEngine", "spHomePage",
             "llAdblock", "btnAdBlockerUpdate",
-            "spAppLanguage", "llWebViewAlgorithmicDarkening", "llAllowAutoplayMedia", "spVideoMaxQuality", "llKeepScreenOn",
+            "spAppLanguage", "llWebViewAlgorithmicDarkening", "llAllowAutoplayMedia", "llYouTubeCastReceiver", "spVideoMaxQuality", "llKeepScreenOn",
             "llNavigateWithJoystickAxes", "sbCursorMaxSpeed", "sbCursorAcceleration",
             "etAdBlockerListUrl", "llWebEngineDebug", "btnClearWebCache",
         )

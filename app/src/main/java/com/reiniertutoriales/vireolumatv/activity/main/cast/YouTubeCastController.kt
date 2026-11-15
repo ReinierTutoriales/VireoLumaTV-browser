@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.activity.main.cast
 
 import android.webkit.WebView
 import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
 import com.reiniertutoriales.vireolumatv.activity.main.cast.YouTubeLoungeClient.LoungeCommand
@@ -12,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import org.json.JSONTokener
 import java.net.URLEncoder
 import java.util.UUID
 
@@ -28,6 +30,10 @@ internal class YouTubeCastController(
     private var loungeClient: YouTubeLoungeClient? = null
     private var syncJob: Job? = null
     private var activeCastTab: BrowserTab? = null
+    private var lastVideoId: String? = null
+    private var lastListId: String? = null
+    private var lastCurrentTimeSeconds: Double = 0.0
+    private var lastStateCode: Int = 2
 
     private val sessionStore = object : YouTubeLoungeClient.SessionStore {
         override val deviceUuid: String
@@ -90,8 +96,16 @@ internal class YouTubeCastController(
     private fun handleCommand(cmd: LoungeCommand) {
         when (cmd) {
             is LoungeCommand.SetPlaylist -> {
+                lastVideoId = cmd.videoId
+                lastListId = cmd.listId
+                lastCurrentTimeSeconds = cmd.currentTimeSeconds
+                lastStateCode = 3
+                loungeClient?.sendNowPlaying(cmd.videoId, cmd.listId, cmd.currentTimeSeconds, stateCode = 3)
                 val url = buildWatchUrl(cmd.videoId, cmd.listId, cmd.currentTimeSeconds, cmd.isMusic)
                 openInYouTubeTab(url, cmd.isMusic)
+            }
+            LoungeCommand.GetNowPlaying -> {
+                loungeClient?.sendNowPlaying(lastVideoId, lastListId, lastCurrentTimeSeconds, lastStateCode)
             }
             LoungeCommand.Play -> targetTab()?.let { evaluatePlayerJs(it, "v.play().catch(()=>{})") }
             LoungeCommand.Pause -> targetTab()?.let { evaluatePlayerJs(it, "v.pause()") }
@@ -143,7 +157,6 @@ internal class YouTubeCastController(
             activity.tabStore.currentTab.value
         }
         if (tab != null) {
-            (tab.engine.view as? WebView)?.settings?.mediaPlaybackRequiresUserGesture = false
             activeCastTab = tab
             startSyncLoop(tab)
         }
@@ -171,13 +184,17 @@ internal class YouTubeCastController(
                         "return JSON.stringify({t:v.currentTime||0,d:v.duration||0,p:v.paused,vol:Math.round((v.volume||1)*100),m:!!v.muted})})()",
                 ) { json ->
                     if (json == null || json == "null") return@evaluateJavascript
-                    val raw = runCatching { JSONObject(json.trim('"').replace("\\\"", "\"")) }.getOrNull()
-                        ?: runCatching { JSONObject(json) }.getOrNull()
-                        ?: return@evaluateJavascript
+                    val raw = runCatching {
+                        val decoded = JSONTokener(json).nextValue()
+                        if (decoded is String) JSONObject(decoded) else decoded as? JSONObject
+                    }.getOrNull() ?: return@evaluateJavascript
                     val stateCode = if (raw.optBoolean("p", false)) 2 else 1
+                    val currentTime = raw.optDouble("t", 0.0)
+                    lastCurrentTimeSeconds = currentTime
+                    lastStateCode = stateCode
                     loungeClient?.sendPlaybackState(
                         YouTubeLoungeClient.PlaybackState(
-                            currentTimeSeconds = raw.optDouble("t", 0.0),
+                            currentTimeSeconds = currentTime,
                             durationSeconds = raw.optDouble("d", 0.0),
                             stateCode = stateCode,
                             volume = raw.optInt("vol", 100),

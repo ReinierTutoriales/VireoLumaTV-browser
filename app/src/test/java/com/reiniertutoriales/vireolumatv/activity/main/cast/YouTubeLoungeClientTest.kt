@@ -47,6 +47,7 @@ class YouTubeLoungeClientTest {
         assertEquals(LoungeCommand.Next, YouTubeLoungeClient.decodeLoungeCommand("next", null))
         assertEquals(LoungeCommand.Previous, YouTubeLoungeClient.decodeLoungeCommand("previous", null))
         assertEquals(LoungeCommand.StopVideo, YouTubeLoungeClient.decodeLoungeCommand("stopVideo", null))
+        assertEquals(LoungeCommand.GetNowPlaying, YouTubeLoungeClient.decodeLoungeCommand("getNowPlaying", null))
         assertEquals(
             LoungeCommand.SeekTo(95.0),
             YouTubeLoungeClient.decodeLoungeCommand("seekTo", JSONObject("""{"newTime":"95.0"}""")),

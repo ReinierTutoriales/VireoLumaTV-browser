@@ -236,6 +236,10 @@ internal class CastDialServer(
                     }
                     request.method == "POST" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/") -> {
                         val params = parseFormUrlEncoded(request.body)
+                        Log.d(
+                            TAG,
+                            "DIAL launch keys=${params.keys.filter { it != "pairingCode" }} theme=${params["theme"]} clientName=${params["clientName"]}",
+                        )
                         val launch = DialLaunchRequest(
                             pairingCode = params["pairingCode"]?.takeIf { it.isNotBlank() },
                             videoId = params["v"]?.takeIf { it.isNotBlank() },
