@@ -12,6 +12,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.net.URLEncoder
@@ -64,7 +66,11 @@ internal class YouTubeCastController(
             deviceUuid = sessionStore.deviceUuid,
             screenIdProvider = { lounge.screenId },
             onDialLaunch = { launch ->
-                launch.pairingCode?.let { lounge.pairWithCode(it) }
+                runBlocking {
+                    withTimeoutOrNull(4_000L) {
+                        lounge.prepareForDialLaunch(launch.pairingCode, launch.isMusic)
+                    }
+                }
                 launch.videoId?.let { videoId ->
                     val url = buildWatchUrl(videoId, launch.listId, launch.startSeconds, launch.isMusic)
                     scope.launch { openInYouTubeTab(url, launch.isMusic) }

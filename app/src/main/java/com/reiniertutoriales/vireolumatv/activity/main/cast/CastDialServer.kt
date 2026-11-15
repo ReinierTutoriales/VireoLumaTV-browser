@@ -6,6 +6,7 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -40,6 +41,7 @@ internal class CastDialServer(
     private val hostInterfaceProvider: () -> LocalInterface? = ::findLocalInterface,
     private val onDialLaunch: (DialLaunchRequest) -> Unit,
     private val onDialStop: () -> Unit = {},
+    private val launchRunningWindowMs: Long = LAUNCH_RUNNING_WINDOW_MS,
 ) : Closeable {
 
     data class LocalInterface(
@@ -61,9 +63,11 @@ internal class CastDialServer(
     private var multicastLock: WifiManager.MulticastLock? = null
     private var httpJob: Job? = null
     private var ssdpJob: Job? = null
+    private var runningResetJob: Job? = null
     private var activeHost: String? = null
     private var activeNetIf: NetworkInterface? = null
     @Volatile private var closed = false
+    @Volatile private var appRunning = false
 
     val httpPort: Int?
         get() = serverSocket?.localPort
@@ -96,6 +100,9 @@ internal class CastDialServer(
         httpJob = null
         ssdpJob?.cancel()
         ssdpJob = null
+        runningResetJob?.cancel()
+        runningResetJob = null
+        appRunning = false
         runCatching { serverSocket?.close() }
         serverSocket = null
         runCatching { ssdpSocket?.close() }
@@ -224,8 +231,8 @@ internal class CastDialServer(
                             extraHeaders = mapOf("Application-URL" to baseAppUrl),
                         )
                     }
-                    request.method == "GET" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/") -> {
-                        val xml = youtubeAppXml(screenIdProvider())
+                    request.method == "GET" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/" || request.path == "/apps/YouTube/run") -> {
+                        val xml = youtubeAppXml(screenIdProvider(), running = appRunning)
                         writeResponse(
                             output = output,
                             status = 200,
@@ -235,7 +242,7 @@ internal class CastDialServer(
                         )
                     }
                     request.method == "POST" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/") -> {
-                        val params = parseFormUrlEncoded(request.body)
+                        val params = parseFormUrlEncoded(request.query) + parseFormUrlEncoded(request.body)
                         Log.d(
                             TAG,
                             "DIAL launch keys=${params.keys.filter { it != "pairingCode" }} theme=${params["theme"]} clientName=${params["clientName"]}",
@@ -245,10 +252,16 @@ internal class CastDialServer(
                             videoId = params["v"]?.takeIf { it.isNotBlank() },
                             listId = params["list"]?.takeIf { it.isNotBlank() },
                             startSeconds = params["t"]?.toDoubleOrNull(),
-                            isMusic = params["theme"]?.equals("music", ignoreCase = true) == true ||
+                            isMusic = params["theme"].let { it.equals("m", ignoreCase = true) || it.equals("music", ignoreCase = true) } ||
                                 params["clientName"]?.contains("music", ignoreCase = true) == true,
                         )
                         onDialLaunch(launch)
+                        appRunning = true
+                        runningResetJob?.cancel()
+                        runningResetJob = scope.launch {
+                            delay(launchRunningWindowMs)
+                            appRunning = false
+                        }
                         writeResponse(
                             output = output,
                             status = 201,
@@ -259,6 +272,9 @@ internal class CastDialServer(
                         )
                     }
                     request.method == "DELETE" && request.path == "/apps/YouTube/run" -> {
+                        runningResetJob?.cancel()
+                        runningResetJob = null
+                        appRunning = false
                         onDialStop()
                         writeResponse(output, 200, "OK", "text/plain; charset=utf-8", "")
                     }
@@ -273,6 +289,7 @@ internal class CastDialServer(
     private data class HttpRequest(
         val method: String,
         val path: String,
+        val query: String,
         val body: String,
     )
 
@@ -285,6 +302,7 @@ internal class CastDialServer(
         private const val SSDP_ALL = "ssdp:all"
         private const val SOCKET_TIMEOUT_MS = 5_000
         private const val REQUEST_TIMEOUT_MS = 10_000L
+        private const val LAUNCH_RUNNING_WINDOW_MS = 15_000L
         private const val MAX_HEADER_BYTES = 8 * 1024
         private const val MAX_BODY_BYTES = 8 * 1024
 
@@ -333,7 +351,9 @@ internal class CastDialServer(
 </root>"""
         }
 
-        internal fun youtubeAppXml(screenId: String?): String {
+        internal fun youtubeAppXml(screenId: String?, running: Boolean = false): String {
+            val state = if (running) "running" else "stopped"
+            val runLink = if (running) "\n  <link rel=\"run\" href=\"run\"/>" else ""
             val extra = if (!screenId.isNullOrBlank()) {
                 "\n  <additionalData>\n    <screenId>${xmlEscape(screenId)}</screenId>\n  </additionalData>"
             } else ""
@@ -341,7 +361,7 @@ internal class CastDialServer(
 <service xmlns="urn:dial-multiscreen-org:schemas:dial" dialVer="2.1">
   <name>YouTube</name>
   <options allowStop="true"/>
-  <state>running</state>$extra
+  <state>$state</state>$runLink$extra
 </service>"""
         }
 
@@ -427,6 +447,7 @@ internal class CastDialServer(
             val target = requestLine[1]
             val qIndex = target.indexOf('?')
             val path = if (qIndex >= 0) target.substring(0, qIndex) else target
+            val query = if (qIndex >= 0) target.substring(qIndex + 1) else ""
 
             var contentLength = 0
             for (i in 1 until lines.size) {
@@ -445,7 +466,7 @@ internal class CastDialServer(
                 if (n < 0) return null
                 readTotal += n
             }
-            return HttpRequest(method, path, String(bodyBytes, Charsets.UTF_8))
+            return HttpRequest(method, path, query, String(bodyBytes, Charsets.UTF_8))
         }
 
         private fun writeResponse(

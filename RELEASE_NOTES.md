@@ -1,3 +1,19 @@
+# VireoLumaTV 3.0.10
+
+Corrige el envío desde YouTube Music al TV.
+
+## Enviar desde el teléfono
+
+- En la 3.0.9, el TV aparecía en la lista de YouTube Music, pero al elegirlo no llegaba nada: el servidor de YouTube rechazaba la conexión porque el TV se registraba siempre como YouTube y no como YouTube Music. Ahora el TV se registra con la app que envía, así que lo enviado desde YouTube Music se abre en `music.youtube.com` con tu sesión iniciada.
+- Se puede pasar de YouTube Music a YouTube, y al revés, sin salir del navegador.
+- El emparejamiento termina antes de que el TV confirme al teléfono, y el cambio entre las dos apps ya no espera varios segundos a reconectar.
+
+## Validación e instalación
+
+Las comprobaciones automatizadas cubren pruebas, lint, APK de distribución, conservación de datos al actualizar y arranque en Android API 24, 28, 34 y 37. El rechazo y la corrección se reprodujeron contra el servidor de YouTube simulando el TV y el teléfono. Falta la validación física con un iPhone real.
+
+Compatible con Android 7.0 o superior. El modo incógnito requiere Android 9 o superior. Instala el APK de tu arquitectura sobre la versión existente para conservar los datos.
+
 # VireoLumaTV 3.0.9
 
 El TV puede recibir lo que envíes desde YouTube, YouTube Music o una app DLNA del teléfono. Las dos funciones vienen desactivadas.

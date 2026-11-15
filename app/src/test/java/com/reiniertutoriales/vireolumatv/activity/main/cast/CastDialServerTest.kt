@@ -8,6 +8,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -64,6 +65,7 @@ class CastDialServerTest {
             hostInterfaceProvider = { CastDialServer.LocalInterface("127.0.0.1", loopbackIf) },
             onDialLaunch = { launches.add(it) },
             onDialStop = { stops++ },
+            launchRunningWindowMs = 150L,
         )
         try {
             assertTrue(server.start())
@@ -78,7 +80,8 @@ class CastDialServerTest {
 
             val appState = request("GET", "$base/apps/YouTube")
             assertEquals(200, appState.code)
-            assertTrue(appState.body.contains("<state>running</state>"))
+            // "stopped" makes the phone POST a launch carrying its theme (YouTube or YouTube Music).
+            assertTrue(appState.body.contains("<state>stopped</state>"))
             assertTrue(appState.body.contains("<screenId>screen-xyz</screenId>"))
 
             val launch = request("POST", "$base/apps/YouTube", "pairingCode=pair-99&v=dQw4w9WgXcQ&theme=music&t=15")
@@ -90,9 +93,37 @@ class CastDialServerTest {
             assertEquals(15.0, launches[0].startSeconds!!, 0.01)
             assertTrue(launches[0].isMusic)
 
+            // YouTube Music's lounge theme is "m".
+            request("POST", "$base/apps/YouTube", "pairingCode=pair-100&theme=m")
+            assertTrue(launches[1].isMusic)
+            request("POST", "$base/apps/YouTube", "pairingCode=pair-101&theme=cl")
+            assertFalse(launches[2].isMusic)
+            request("POST", "$base/apps/YouTube?pairingCode=pair-102&theme=m", "")
+            assertEquals("pair-102", launches[3].pairingCode)
+            assertTrue(launches[3].isMusic)
+
+            val runningState = request("GET", "$base/apps/YouTube")
+            assertEquals(200, runningState.code)
+            assertTrue(runningState.body.contains("<state>running</state>"))
+            assertTrue(runningState.body.contains("<link rel=\"run\" href=\"run\"/>"))
+
+            val runEndpoint = request("GET", "$base/apps/YouTube/run")
+            assertEquals(200, runEndpoint.code)
+            assertTrue(runEndpoint.body.contains("<state>running</state>"))
+
             val stop = request("DELETE", "$base/apps/YouTube/run")
             assertEquals(200, stop.code)
             assertEquals(1, stops)
+
+            val stoppedAgain = request("GET", "$base/apps/YouTube")
+            assertEquals(200, stoppedAgain.code)
+            assertTrue(stoppedAgain.body.contains("<state>stopped</state>"))
+
+            // Auto-resets back to "stopped" after the launch window even without DELETE.
+            request("POST", "$base/apps/YouTube", "pairingCode=pair-103&theme=m")
+            assertTrue(request("GET", "$base/apps/YouTube").body.contains("<state>running</state>"))
+            Thread.sleep(250)
+            assertTrue(request("GET", "$base/apps/YouTube").body.contains("<state>stopped</state>"))
         } finally {
             server.close()
         }
