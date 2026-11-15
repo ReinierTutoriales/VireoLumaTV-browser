@@ -231,4 +231,9 @@
     <string name="home_empty_search">Scrivi qualcosa da cercare.</string>
     <string name="settings_slow_frames">Fotogrammi lenti dall\'avvio dell\'app: %1$s</string>
     <string name="update_in_progress">Aggiornamento in corso…</string>
+    <string name="settings_youtube_cast">Ricevitore Cast per YouTube e YouTube Music (Beta)</string>
+    <string name="settings_dlna_renderer">Ricevitore multimediale DLNA / UPnP</string>
+    <string name="dlna_play">Riproduci</string>
+    <string name="dlna_pause">Pausa</string>
+    <string name="dlna_load_error">Impossibile caricare questo contenuto.</string>
 </resources>

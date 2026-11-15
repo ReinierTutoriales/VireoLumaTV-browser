@@ -227,4 +227,9 @@
     <string name="home_empty_search">Hãy nhập nội dung cần tìm.</string>
     <string name="settings_slow_frames">Khung hình chậm từ khi mở ứng dụng: %1$s</string>
     <string name="update_in_progress">Đang cập nhật…</string>
+    <string name="settings_youtube_cast">Bộ thu Cast cho YouTube &amp; YouTube Music (Beta)</string>
+    <string name="settings_dlna_renderer">Bộ thu phương tiện DLNA / UPnP</string>
+    <string name="dlna_play">Phát</string>
+    <string name="dlna_pause">Tạm dừng</string>
+    <string name="dlna_load_error">Không thể tải nội dung này.</string>
 </resources>
