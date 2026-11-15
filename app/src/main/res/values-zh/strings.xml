@@ -228,4 +228,8 @@
     <string name="settings_slow_frames">应用启动以来的慢帧：%1$s</string>
     <string name="update_in_progress">正在更新…</string>
     <string name="settings_youtube_cast">YouTube 与 YouTube Music 投屏接收器（测试版）</string>
+    <string name="settings_dlna_renderer">DLNA / UPnP 媒体接收器</string>
+    <string name="dlna_play">播放</string>
+    <string name="dlna_pause">暂停</string>
+    <string name="dlna_load_error">无法加载此媒体。</string>
 </resources>

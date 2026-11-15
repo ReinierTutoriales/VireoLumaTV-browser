@@ -605,3 +605,7 @@ app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/cast/YouTubeLo
 app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/cast/YouTubeCastController.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/cast/CastDialServerTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/cast/YouTubeLoungeClientTest.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/cast/DlnaMediaRendererServer.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/cast/DlnaPlayerDialog.kt	PROPIO
+app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/cast/DlnaRendererController.kt	PROPIO
+app/src/test/java/com/reiniertutoriales/vireolumatv/activity/main/cast/DlnaMediaRendererServerTest.kt	PROPIO

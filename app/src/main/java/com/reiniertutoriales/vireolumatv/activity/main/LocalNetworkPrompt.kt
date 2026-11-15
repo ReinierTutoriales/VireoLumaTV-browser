@@ -37,8 +37,8 @@ internal class LocalNetworkPrompt(private val activity: MainActivity) {
         }
     }
 
-    /** Requests local-network permission before starting SSDP/DIAL on Android 17+. */
-    fun ensureForYouTubeCast(onResult: (Boolean) -> Unit) {
+    /** Requests local-network permission before starting SSDP/DIAL/DLNA on Android 17+. */
+    fun ensureLocalNetworkPermission(onResult: (Boolean) -> Unit) {
         if (!LocalNetworkAccess.blocked(activity)) {
             onResult(true)
             return

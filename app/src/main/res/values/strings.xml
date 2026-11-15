@@ -235,4 +235,8 @@
     <string name="home_empty_search">Type something to search.</string>
     <string name="settings_slow_frames">Slow frames since the app started: %1$s</string>
     <string name="settings_youtube_cast">YouTube &amp; YouTube Music Cast receiver (Beta)</string>
+    <string name="settings_dlna_renderer">DLNA / UPnP media receiver</string>
+    <string name="dlna_play">Play</string>
+    <string name="dlna_pause">Pause</string>
+    <string name="dlna_load_error">Could not load this media.</string>
 </resources>

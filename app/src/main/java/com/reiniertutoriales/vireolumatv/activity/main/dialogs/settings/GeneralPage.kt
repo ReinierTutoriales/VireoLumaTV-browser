@@ -57,6 +57,7 @@ class GeneralPage(
     private var darken by mutableStateOf(config.darkenPages)
     private var autoplay by mutableStateOf(config.allowAutoplayMedia)
     private var youtubeCast by mutableStateOf(config.youtubeCastEnabled)
+    private var dlnaRenderer by mutableStateOf(config.dlnaRendererEnabled)
     private var videoHeight by mutableIntStateOf(config.videoMaxHeight)
     private var keepScreenOn by mutableStateOf(browserSettings.keepScreenOn.value)
     private var stickMovesPointer by mutableStateOf(!config.ignoreStickAxes)
@@ -142,6 +143,11 @@ class GeneralPage(
                 youtubeCast = it
                 config.youtubeCastEnabled = it
                 (context as? MainActivity)?.syncYouTubeCastState(requestPermissionIfBlocked = it)
+            }
+            SettingsToggle(R.string.settings_dlna_renderer, "llDlnaRenderer", dlnaRenderer) {
+                dlnaRenderer = it
+                config.dlnaRendererEnabled = it
+                (context as? MainActivity)?.syncDlnaRendererState(requestPermissionIfBlocked = it)
             }
             // Read by the document-start script from the next page load. Automatic follows what the
             // hardware decoders handle; no limit keeps only the codecs the TV has no decoder for out.

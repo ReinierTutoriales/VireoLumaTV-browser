@@ -230,4 +230,8 @@
     <string name="settings_slow_frames">فریم‌های کند از زمان باز شدن برنامه: %1$s</string>
     <string name="update_in_progress">در حال به‌روزرسانی…</string>
     <string name="settings_youtube_cast">گیرنده Cast برای YouTube و YouTube Music (آزمایشی)</string>
+    <string name="settings_dlna_renderer">گیرنده رسانه DLNA / UPnP</string>
+    <string name="dlna_play">پخش</string>
+    <string name="dlna_pause">توقف</string>
+    <string name="dlna_load_error">بارگذاری این رسانه ممکن نشد.</string>
 </resources>

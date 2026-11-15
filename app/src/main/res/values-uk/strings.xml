@@ -234,4 +234,8 @@
     <string name="settings_slow_frames">Повільні кадри від запуску застосунку: %1$s</string>
     <string name="update_in_progress">Оновлення…</string>
     <string name="settings_youtube_cast">Приймач Cast для YouTube та YouTube Music (Бета)</string>
+    <string name="settings_dlna_renderer">Медіаприймач DLNA / UPnP</string>
+    <string name="dlna_play">Відтворити</string>
+    <string name="dlna_pause">Пауза</string>
+    <string name="dlna_load_error">Не вдалося завантажити цей файл.</string>
 </resources>

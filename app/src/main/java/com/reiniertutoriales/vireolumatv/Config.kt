@@ -25,6 +25,7 @@ class Config(val prefs: SharedPreferences) {
     var darkenPages by flag("webview_use_algorithmic_darkening_with_dark_ui_mode", true)
     var pageDebugging by flag("web_engine_debug", false)
     var youtubeCastEnabled by flag("youtube_cast_enabled", false)
+    var dlnaRendererEnabled by flag("dlna_renderer_enabled", false)
 
     /** Pointer top speed, as a percent of the default derived from the screen width. */
     var pointerSpeedPercent by percent(POINTER_SPEED_KEY)
@@ -46,6 +47,9 @@ class Config(val prefs: SharedPreferences) {
     var youtubeCastLoungeTokenExpiryMs: Long
         get() = prefs.getLong(YOUTUBE_CAST_LOUNGE_EXPIRY_KEY, 0L)
         set(value) = prefs.edit { putLong(YOUTUBE_CAST_LOUNGE_EXPIRY_KEY, value) }
+    var dlnaRendererUuid: String
+        get() = prefs.getString(DLNA_RENDERER_UUID_KEY, "") ?: ""
+        set(value) = prefs.edit { putString(DLNA_RENDERER_UUID_KEY, value) }
 
     var homePage: String
         get() = prefs.getString(HOME_PAGE_KEY, HOME_URL_ALIAS) ?: HOME_URL_ALIAS
@@ -131,6 +135,7 @@ class Config(val prefs: SharedPreferences) {
         private const val YOUTUBE_CAST_SCREEN_ID_KEY = "youtube_cast_screen_id"
         private const val YOUTUBE_CAST_LOUNGE_TOKEN_KEY = "youtube_cast_lounge_token"
         private const val YOUTUBE_CAST_LOUNGE_EXPIRY_KEY = "youtube_cast_lounge_expiry_ms"
+        private const val DLNA_RENDERER_UUID_KEY = "dlna_renderer_uuid"
 
         const val POINTER_PERCENT_MIN = 25
         const val POINTER_PERCENT_MAX = 200
