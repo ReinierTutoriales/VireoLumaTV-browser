@@ -99,6 +99,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".test"
+        }
         release {
             isMinifyEnabled = true
             // Resources are reached only through R, never by name, so unused ones can go.
