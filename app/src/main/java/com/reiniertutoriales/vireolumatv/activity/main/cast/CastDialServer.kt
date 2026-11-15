@@ -245,7 +245,7 @@ internal class CastDialServer(
                             videoId = params["v"]?.takeIf { it.isNotBlank() },
                             listId = params["list"]?.takeIf { it.isNotBlank() },
                             startSeconds = params["t"]?.toDoubleOrNull(),
-                            isMusic = params["theme"]?.equals("music", ignoreCase = true) == true ||
+                            isMusic = params["theme"].let { it.equals("m", ignoreCase = true) || it.equals("music", ignoreCase = true) } ||
                                 params["clientName"]?.contains("music", ignoreCase = true) == true,
                         )
                         onDialLaunch(launch)
@@ -341,7 +341,7 @@ internal class CastDialServer(
 <service xmlns="urn:dial-multiscreen-org:schemas:dial" dialVer="2.1">
   <name>YouTube</name>
   <options allowStop="true"/>
-  <state>running</state>$extra
+  <state>stopped</state>$extra
 </service>"""
         }
 

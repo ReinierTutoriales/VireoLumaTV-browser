@@ -8,6 +8,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -78,7 +79,8 @@ class CastDialServerTest {
 
             val appState = request("GET", "$base/apps/YouTube")
             assertEquals(200, appState.code)
-            assertTrue(appState.body.contains("<state>running</state>"))
+            // "stopped" makes the phone POST a launch carrying its theme (YouTube or YouTube Music).
+            assertTrue(appState.body.contains("<state>stopped</state>"))
             assertTrue(appState.body.contains("<screenId>screen-xyz</screenId>"))
 
             val launch = request("POST", "$base/apps/YouTube", "pairingCode=pair-99&v=dQw4w9WgXcQ&theme=music&t=15")
@@ -89,6 +91,12 @@ class CastDialServerTest {
             assertEquals("dQw4w9WgXcQ", launches[0].videoId)
             assertEquals(15.0, launches[0].startSeconds!!, 0.01)
             assertTrue(launches[0].isMusic)
+
+            // YouTube Music's lounge theme is "m".
+            request("POST", "$base/apps/YouTube", "pairingCode=pair-100&theme=m")
+            assertTrue(launches[1].isMusic)
+            request("POST", "$base/apps/YouTube", "pairingCode=pair-101&theme=cl")
+            assertFalse(launches[2].isMusic)
 
             val stop = request("DELETE", "$base/apps/YouTube/run")
             assertEquals(200, stop.code)

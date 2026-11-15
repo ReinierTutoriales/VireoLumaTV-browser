@@ -68,6 +68,17 @@ class YouTubeLoungeClientTest {
     }
 
     @Test
+    fun setPlaylistOnAYouTubeMusicScreenOpensYouTubeMusic() {
+        // A theme "m" lounge sends setPlaylist without theme or clientName.
+        val cmd = YouTubeLoungeClient.decodeLoungeCommand(
+            "setPlaylist",
+            JSONObject("""{"currentTime":"0","sourceDeviceType":"REMOTE_CONTROL","videoId":"dQw4w9WgXcQ"}"""),
+            musicScreen = true,
+        ) as LoungeCommand.SetPlaylist
+        assertTrue(cmd.isMusic)
+    }
+
+    @Test
     fun buildsYouTubeAndYouTubeMusicWatchUrls() {
         assertEquals(
             "https://music.youtube.com/watch?v=abc123&list=PL1&t=30s",

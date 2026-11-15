@@ -64,7 +64,7 @@ internal class YouTubeCastController(
             deviceUuid = sessionStore.deviceUuid,
             screenIdProvider = { lounge.screenId },
             onDialLaunch = { launch ->
-                launch.pairingCode?.let { lounge.pairWithCode(it) }
+                launch.pairingCode?.let { lounge.pairWithCode(it, launch.isMusic) }
                 launch.videoId?.let { videoId ->
                     val url = buildWatchUrl(videoId, launch.listId, launch.startSeconds, launch.isMusic)
                     scope.launch { openInYouTubeTab(url, launch.isMusic) }
