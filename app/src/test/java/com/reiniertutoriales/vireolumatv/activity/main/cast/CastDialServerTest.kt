@@ -65,6 +65,7 @@ class CastDialServerTest {
             hostInterfaceProvider = { CastDialServer.LocalInterface("127.0.0.1", loopbackIf) },
             onDialLaunch = { launches.add(it) },
             onDialStop = { stops++ },
+            launchRunningWindowMs = 150L,
         )
         try {
             assertTrue(server.start())
@@ -117,6 +118,12 @@ class CastDialServerTest {
             val stoppedAgain = request("GET", "$base/apps/YouTube")
             assertEquals(200, stoppedAgain.code)
             assertTrue(stoppedAgain.body.contains("<state>stopped</state>"))
+
+            // Auto-resets back to "stopped" after the launch window even without DELETE.
+            request("POST", "$base/apps/YouTube", "pairingCode=pair-103&theme=m")
+            assertTrue(request("GET", "$base/apps/YouTube").body.contains("<state>running</state>"))
+            Thread.sleep(250)
+            assertTrue(request("GET", "$base/apps/YouTube").body.contains("<state>stopped</state>"))
         } finally {
             server.close()
         }

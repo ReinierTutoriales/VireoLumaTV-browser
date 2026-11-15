@@ -6,6 +6,7 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -40,6 +41,7 @@ internal class CastDialServer(
     private val hostInterfaceProvider: () -> LocalInterface? = ::findLocalInterface,
     private val onDialLaunch: (DialLaunchRequest) -> Unit,
     private val onDialStop: () -> Unit = {},
+    private val launchRunningWindowMs: Long = LAUNCH_RUNNING_WINDOW_MS,
 ) : Closeable {
 
     data class LocalInterface(
@@ -61,6 +63,7 @@ internal class CastDialServer(
     private var multicastLock: WifiManager.MulticastLock? = null
     private var httpJob: Job? = null
     private var ssdpJob: Job? = null
+    private var runningResetJob: Job? = null
     private var activeHost: String? = null
     private var activeNetIf: NetworkInterface? = null
     @Volatile private var closed = false
@@ -97,6 +100,9 @@ internal class CastDialServer(
         httpJob = null
         ssdpJob?.cancel()
         ssdpJob = null
+        runningResetJob?.cancel()
+        runningResetJob = null
+        appRunning = false
         runCatching { serverSocket?.close() }
         serverSocket = null
         runCatching { ssdpSocket?.close() }
@@ -251,6 +257,11 @@ internal class CastDialServer(
                         )
                         onDialLaunch(launch)
                         appRunning = true
+                        runningResetJob?.cancel()
+                        runningResetJob = scope.launch {
+                            delay(launchRunningWindowMs)
+                            appRunning = false
+                        }
                         writeResponse(
                             output = output,
                             status = 201,
@@ -261,6 +272,8 @@ internal class CastDialServer(
                         )
                     }
                     request.method == "DELETE" && request.path == "/apps/YouTube/run" -> {
+                        runningResetJob?.cancel()
+                        runningResetJob = null
                         appRunning = false
                         onDialStop()
                         writeResponse(output, 200, "OK", "text/plain; charset=utf-8", "")
@@ -289,6 +302,7 @@ internal class CastDialServer(
         private const val SSDP_ALL = "ssdp:all"
         private const val SOCKET_TIMEOUT_MS = 5_000
         private const val REQUEST_TIMEOUT_MS = 10_000L
+        private const val LAUNCH_RUNNING_WINDOW_MS = 15_000L
         private const val MAX_HEADER_BYTES = 8 * 1024
         private const val MAX_BODY_BYTES = 8 * 1024
 

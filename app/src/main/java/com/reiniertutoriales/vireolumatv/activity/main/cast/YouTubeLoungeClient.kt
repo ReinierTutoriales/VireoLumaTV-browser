@@ -281,8 +281,10 @@ internal class YouTubeLoungeClient(
         processChunkText(initResponse)
         val currentSid = sid ?: return
         val currentGsid = gsessionId ?: return
-        themeSwitchPending = false
-        bindCount++
+        if (theme == boundTheme) {
+            themeSwitchPending = false
+            bindCount++
+        }
 
         while (currentCoroutineContext().isActive && !closed && theme == boundTheme) {
             val pollQuery = formEncode(
