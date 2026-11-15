@@ -241,4 +241,13 @@
     <string name="remote_link_sent">Wysłano na TV.</string>
     <string name="remote_link_invalid">Wpisz prawidłowy adres internetowy lub wyszukiwanie.</string>
     <string name="remote_link_error">Nie można połączyć się z TV. Upewnij się, że okno jest nadal otwarte.</string>
+    <string name="remote_link_unpair">Rozłącz</string>
+    <string name="remote_link_unpaired">Usunięto parowanie. Otwórz ten ekran ponownie, gdy zechcesz sparować telefon.</string>
+    <string name="remote_link_autoplay_hint">Autoodtwarzanie jest wyłączone. Włącz je, aby YouTube Music uruchamiał się automatycznie.</string>
+    <string name="remote_link_enable_autoplay">Włącz autoodtwarzanie</string>
+    <string name="remote_link_shortcut_title">Menu Udostępnij na iPhonie (Skróty)</string>
+    <string name="remote_link_shortcut_steps">1. Otwórz Skróty → włącz Pokazuj w arkuszu udostępniania (adresy URL).\n2. Dodaj Pobierz zawartość URL (POST) z polami formularza t oraz url (Dane wejściowe skrótu).\n3. W YouTube Music stuknij Udostępnij → swój skrót.</string>
+    <string name="remote_link_copy_url">Kopiuj URL</string>
+    <string name="remote_link_copy_token">Kopiuj kod</string>
+    <string name="remote_link_copied">Skopiowano</string>
 </resources>

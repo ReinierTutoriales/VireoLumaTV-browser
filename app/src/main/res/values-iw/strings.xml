@@ -239,4 +239,13 @@
     <string name="remote_link_sent">נשלח לטלוויזיה.</string>
     <string name="remote_link_invalid">הזינו כתובת אתר או חיפוש תקינים.</string>
     <string name="remote_link_error">לא ניתן להגיע לטלוויזיה. ודאו שהחלון עדיין פתוח.</string>
+    <string name="remote_link_unpair">ביטול צימוד</string>
+    <string name="remote_link_unpaired">הצימוד הוסר. פתחו מסך זה שוב כשתרצו לצמד טלפון מחדש.</string>
+    <string name="remote_link_autoplay_hint">הפעלה אוטומטית כבויה. הפעילו אותה כדי ש-YouTube Music יתחיל לנגן אוטומטית.</string>
+    <string name="remote_link_enable_autoplay">הפעלת ניגון אוטומטי</string>
+    <string name="remote_link_shortcut_title">תפריט השיתוף של iPhone (קיצורים)</string>
+    <string name="remote_link_shortcut_steps">1. פתחו את קיצורים ← הפעילו הצג בגיליון השיתוף (כתובות URL).\n2. הוסיפו קבל תוכן של כתובת URL (POST) עם שדות הטופס t ו-url (קלט הקיצור).\n3. ב-YouTube Music הקישו שתף ← הקיצור שלכם.</string>
+    <string name="remote_link_copy_url">העתק URL</string>
+    <string name="remote_link_copy_token">העתק קוד</string>
+    <string name="remote_link_copied">הועתק</string>
 </resources>

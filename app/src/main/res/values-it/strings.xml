@@ -239,4 +239,13 @@
     <string name="remote_link_sent">Inviato alla TV.</string>
     <string name="remote_link_invalid">Inserisci un indirizzo web o una ricerca valida.</string>
     <string name="remote_link_error">Impossibile raggiungere la TV. Assicurati che la finestra sia ancora aperta.</string>
+    <string name="remote_link_unpair">Dissocia</string>
+    <string name="remote_link_unpaired">Associazione rimossa. Riapri questa schermata quando vuoi associare di nuovo un telefono.</string>
+    <string name="remote_link_autoplay_hint">La riproduzione automatica è disattivata. Attivala perché YouTube Music parta da solo.</string>
+    <string name="remote_link_enable_autoplay">Attiva riproduzione automatica</string>
+    <string name="remote_link_shortcut_title">Menu Condividi di iPhone (Comandi)</string>
+    <string name="remote_link_shortcut_steps">1. Apri Comandi → attiva Mostra nel foglio di condivisione (URL).\n2. Aggiungi Ottieni contenuto da URL (POST) con i campi modulo t e url (Input comando rapido).\n3. In YouTube Music tocca Condividi → il tuo comando.</string>
+    <string name="remote_link_copy_url">Copia URL</string>
+    <string name="remote_link_copy_token">Copia codice</string>
+    <string name="remote_link_copied">Copiato</string>
 </resources>

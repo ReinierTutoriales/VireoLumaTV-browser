@@ -235,4 +235,13 @@
     <string name="remote_link_sent">Đã gửi tới TV.</string>
     <string name="remote_link_invalid">Nhập địa chỉ web hoặc nội dung tìm kiếm hợp lệ.</string>
     <string name="remote_link_error">Không thể kết nối tới TV. Hãy đảm bảo hộp thoại vẫn đang mở.</string>
+    <string name="remote_link_unpair">Hủy ghép nối</string>
+    <string name="remote_link_unpaired">Đã xóa ghép nối. Mở lại màn hình này bất cứ khi nào bạn muốn ghép nối lại điện thoại.</string>
+    <string name="remote_link_autoplay_hint">Tự động phát đang tắt. Hãy bật để YouTube Music tự động phát.</string>
+    <string name="remote_link_enable_autoplay">Bật tự động phát</string>
+    <string name="remote_link_shortcut_title">Bảng chia sẻ iPhone (Phím tắt)</string>
+    <string name="remote_link_shortcut_steps">1. Mở Phím tắt → bật Hiển thị trong Bảng chia sẻ (URL).\n2. Thêm Lấy nội dung của URL (POST) với các trường biểu mẫu t và url (Đầu vào phím tắt).\n3. Trong YouTube Music, chạm Chia sẻ → phím tắt của bạn.</string>
+    <string name="remote_link_copy_url">Sao chép URL</string>
+    <string name="remote_link_copy_token">Sao chép mã</string>
+    <string name="remote_link_copied">Đã sao chép</string>
 </resources>

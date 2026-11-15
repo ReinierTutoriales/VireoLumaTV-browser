@@ -42,55 +42,37 @@ import androidx.tv.material3.Text
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvTextButton
 import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
-import com.reiniertutoriales.vireolumatv.activity.main.remote.RemoteLinkServer
 import com.reiniertutoriales.vireolumatv.utils.QrCode
-import kotlinx.coroutines.CoroutineScope
 
 /**
- * Shows a scannable QR code and local address for sending a link from a phone on the same Wi-Fi
- * or LAN. The embedded server runs only while this dialog is open and stops as soon as a valid
- * link arrives or the dialog is dismissed.
+ * Displays the persistent pairing QR code and local address for sending links from a phone
+ * (including iPhone Share Sheet / Shortcuts). The underlying server stays active while the app
+ * is open in the foreground until the user unpairs.
  */
 internal class RemoteLinkDialog(
     context: Context,
-    scope: CoroutineScope,
-    searchTemplate: String,
     ensureLocalNetwork: ((Boolean) -> Unit) -> Unit = { it(true) },
-    private val onOpenUrl: (String) -> Unit,
+    startServer: () -> String?,
+    autoplayEnabled: Boolean = true,
+    private val onEnableAutoplay: () -> Unit = {},
+    private val onUnpair: () -> Unit = {},
 ) : ComponentDialog(context, R.style.TvDialog) {
-
-    private val server = RemoteLinkServer(
-        scope = scope,
-        searchTemplate = searchTemplate,
-        labels = RemoteLinkServer.Labels(
-            title = context.getString(R.string.remote_link_title),
-            hint = context.getString(R.string.address_hint),
-            submit = context.getString(R.string.remote_link_send),
-            sent = context.getString(R.string.remote_link_sent),
-            invalidUrl = context.getString(R.string.remote_link_invalid),
-            error = context.getString(R.string.remote_link_error),
-        ),
-    ) { receivedUrl ->
-        if (isShowing) dismiss()
-        onOpenUrl(receivedUrl)
-    }
 
     private var closed = false
     private var localUrl by mutableStateOf<String?>(null)
     private var qr by mutableStateOf<QrCode?>(null)
     private var ready by mutableStateOf(false)
+    private var unpaired by mutableStateOf(false)
+    private var autoplay by mutableStateOf(autoplayEnabled)
 
     init {
         setContentView(ComposeView(context).apply {
             setContent { VireoTvTheme { Content() } }
         })
-        setOnDismissListener {
-            closed = true
-            server.close()
-        }
+        setOnDismissListener { closed = true }
         ensureLocalNetwork { granted ->
             if (!closed && granted) {
-                val startedUrl = server.start()
+                val startedUrl = startServer()
                 localUrl = startedUrl
                 qr = startedUrl?.let { runCatching { QrCode.encode(it) }.getOrNull() }
             }
@@ -100,7 +82,6 @@ internal class RemoteLinkDialog(
 
     override fun onStop() {
         closed = true
-        server.close()
         super.onStop()
     }
 
@@ -123,40 +104,82 @@ internal class RemoteLinkDialog(
             )
             val activeUrl = localUrl
             val activeQr = qr
-            if (activeUrl != null && activeQr != null) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    QrBox(activeQr)
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            stringResource(R.string.remote_link_instructions),
-                            color = Color.LightGray,
-                            fontSize = 16.sp,
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            activeUrl,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 13.sp,
-                            fontFamily = FontFamily.Monospace,
-                            modifier = Modifier
-                                .background(Color.Black.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 10.dp, vertical = 8.dp)
-                                .testTag("remote_link_url"),
-                        )
+            when {
+                unpaired -> {
+                    Text(
+                        stringResource(R.string.remote_link_unpaired),
+                        color = Color.LightGray,
+                        fontSize = 16.sp,
+                    )
+                }
+                activeUrl != null && activeQr != null -> {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        QrBox(activeQr)
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.remote_link_instructions),
+                                color = Color.LightGray,
+                                fontSize = 16.sp,
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Text(
+                                activeUrl,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 13.sp,
+                                fontFamily = FontFamily.Monospace,
+                                modifier = Modifier
+                                    .background(Color.Black.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 10.dp, vertical = 8.dp)
+                                    .testTag("remote_link_url"),
+                            )
+                            if (!autoplay) {
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    stringResource(R.string.remote_link_autoplay_hint),
+                                    color = Color(0xFFFFD580),
+                                    fontSize = 13.sp,
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                TvTextButton(
+                                    text = stringResource(R.string.remote_link_enable_autoplay),
+                                    onClick = {
+                                        onEnableAutoplay()
+                                        autoplay = true
+                                    },
+                                    modifier = Modifier.testTag("remote_link_autoplay"),
+                                )
+                            }
+                        }
                     }
                 }
-            } else if (ready) {
-                Text(
-                    stringResource(R.string.remote_link_no_network),
-                    color = Color.LightGray,
-                    fontSize = 16.sp,
-                )
+                ready -> {
+                    Text(
+                        stringResource(R.string.remote_link_no_network),
+                        color = Color.LightGray,
+                        fontSize = 16.sp,
+                    )
+                }
             }
             Spacer(Modifier.height(20.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+            ) {
+                if (!unpaired && activeUrl != null) {
+                    TvTextButton(
+                        text = stringResource(R.string.remote_link_unpair),
+                        onClick = {
+                            onUnpair()
+                            unpaired = true
+                            localUrl = null
+                            qr = null
+                        },
+                        modifier = Modifier.testTag("remote_link_unpair"),
+                    )
+                }
                 TvTextButton(
                     text = stringResource(R.string.action_cancel),
                     onClick = { dismiss() },
@@ -172,12 +195,12 @@ internal class RemoteLinkDialog(
         val quietZone = 3
         val total = code.size + quietZone * 2
         Box(
-            Modifier.size(204.dp)
+            Modifier.size(220.dp)
                 .background(Color.White, RoundedCornerShape(12.dp))
-                .padding(12.dp),
+                .padding(10.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Canvas(Modifier.size(180.dp).testTag("remote_link_qr")) {
+            Canvas(Modifier.size(200.dp)) {
                 val cell = size.width / total
                 for (y in 0 until code.size) {
                     for (x in 0 until code.size) {

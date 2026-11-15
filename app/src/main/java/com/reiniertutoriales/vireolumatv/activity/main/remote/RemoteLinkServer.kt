@@ -22,17 +22,20 @@ import java.net.Socket
 import java.net.URLDecoder
 import java.security.MessageDigest
 import java.security.SecureRandom
+import org.json.JSONObject
 import java.util.Locale
 
 /**
- * Ephemeral local HTTP server used only while the "Send from phone" dialog is open.
- * Requires a per-session cryptographic token so other devices on the LAN cannot inject URLs
- * without scanning the QR code, and stops automatically once a valid link is received or closed.
+ * Local HTTP server for receiving links from a paired phone on the same Wi-Fi/LAN while the app
+ * is open. Requires a 96-bit cryptographic token (checked in constant time) and enforces thread
+ * and request-time limits against slow or abusive LAN clients.
  */
 internal class RemoteLinkServer(
     private val scope: CoroutineScope,
     private val searchTemplate: String,
     private val labels: Labels,
+    val token: String = generateToken(),
+    private val preferredPort: Int = 0,
     private val hostAddress: String? = findLocalIpv4Address(),
     private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
     private val onLinkReceived: (String) -> Unit,
@@ -45,14 +48,20 @@ internal class RemoteLinkServer(
         val sent: String,
         val invalidUrl: String,
         val error: String,
+        val shortcutTitle: String = "",
+        val shortcutSteps: String = "",
+        val copyUrl: String = "",
+        val copyToken: String = "",
+        val copied: String = "",
     )
 
-    val token: String = generateToken()
     private val serverDispatcher = Dispatchers.IO.limitedParallelism(2)
     private var serverSocket: ServerSocket? = null
     private var acceptJob: Job? = null
     @Volatile private var closed = false
-    @Volatile private var delivered = false
+
+    val boundPort: Int?
+        get() = serverSocket?.localPort
 
     val url: String?
         get() {
@@ -61,11 +70,22 @@ internal class RemoteLinkServer(
             return "http://$host:$port/?t=$token"
         }
 
+    val openEndpointUrl: String?
+        get() {
+            val host = hostAddress ?: return null
+            val port = serverSocket?.localPort ?: return null
+            return "http://$host:$port/open"
+        }
+
     fun start(): String? {
         if (closed || hostAddress == null) return null
         if (serverSocket != null) return url
         val socket = try {
-            ServerSocket(0)
+            if (preferredPort in 1..65535) {
+                runCatching { ServerSocket(preferredPort) }.getOrElse { ServerSocket(0) }
+            } else {
+                ServerSocket(0)
+            }
         } catch (error: Exception) {
             Log.w(TAG, "Could not bind local server", error)
             return null
@@ -114,8 +134,9 @@ internal class RemoteLinkServer(
                         }
                     }
                     request.method == "POST" && request.path == "/open" -> {
-                        val params = parseFormUrlEncoded(request.body)
-                        if (!tokensEqual(params["t"], token)) {
+                        val params = parseOpenPayload(request.contentType, request.body)
+                        val providedToken = params["t"] ?: request.bearerToken
+                        if (!tokensEqual(providedToken, token)) {
                             writeResponse(output, 403, "Forbidden", "application/json; charset=utf-8", """{"ok":false,"error":"forbidden"}""")
                             return
                         }
@@ -125,7 +146,7 @@ internal class RemoteLinkServer(
                             return
                         }
                         writeResponse(output, 200, "OK", "application/json; charset=utf-8", """{"ok":true}""")
-                        deliverOnce(resolved)
+                        deliverLink(resolved)
                     }
                     else -> writeResponse(output, 404, "Not Found", "text/plain; charset=utf-8", "Not found")
                 }
@@ -135,12 +156,8 @@ internal class RemoteLinkServer(
         }
     }
 
-    private fun deliverOnce(resolvedUrl: String) {
-        synchronized(this) {
-            if (delivered || closed) return
-            delivered = true
-        }
-        close()
+    private fun deliverLink(resolvedUrl: String) {
+        if (closed) return
         scope.launch(mainDispatcher) { onLinkReceived(resolvedUrl) }
     }
 
@@ -151,7 +168,21 @@ internal class RemoteLinkServer(
         val sent = jsEscape(labels.sent)
         val invalid = jsEscape(labels.invalidUrl)
         val err = jsEscape(labels.error)
+        val endpoint = htmlEscape(openEndpointUrl.orEmpty())
+        val shortcutTitle = htmlEscape(labels.shortcutTitle)
+        val shortcutSteps = htmlEscape(labels.shortcutSteps).replace("\n", "<br>")
+        val copyUrl = htmlEscape(labels.copyUrl)
+        val copyToken = htmlEscape(labels.copyToken)
+        val copied = jsEscape(labels.copied)
         val lang = htmlEscape(Locale.getDefault().toLanguageTag().ifBlank { "en" })
+        val shortcutSection = if (shortcutTitle.isNotEmpty() && endpoint.isNotEmpty()) {
+            """<section class="card">
+<h2>$shortcutTitle</h2>
+<p class="steps">$shortcutSteps</p>
+<div class="row"><button type="button" class="sec" onclick="cp('$endpoint',this)">$copyUrl</button><button type="button" class="sec" onclick="cp('$token',this)">$copyToken</button></div>
+<code class="mono">$endpoint</code>
+</section>"""
+        } else ""
         return """<!DOCTYPE html>
 <html lang="$lang">
 <head>
@@ -161,12 +192,18 @@ internal class RemoteLinkServer(
 <style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0b0d10;color:#f3f5f7;font-family:system-ui,-apple-system,sans-serif;padding:20px}
-main{width:100%;max-width:440px;background:#151921;border:1px solid #262c38;border-radius:16px;padding:24px}
+main{width:100%;max-width:460px;background:#151921;border:1px solid #262c38;border-radius:16px;padding:24px}
 h1{margin:0 0 16px;font-size:20px;font-weight:600}
+h2{margin:0 0 8px;font-size:15px;font-weight:600;color:#d6e0ee}
 input{width:100%;padding:14px;border-radius:10px;border:1px solid #353d4d;background:#0b0d10;color:#fff;font-size:16px;margin-bottom:12px}
 button{width:100%;padding:14px;border:0;border-radius:10px;background:#2f80ed;color:#fff;font-size:16px;font-weight:600;cursor:pointer}
 button:disabled{opacity:.6}
-p{margin:14px 0 0;min-height:20px;font-size:14px;color:#9fb0c7}
+.sec{background:#232a37;font-size:14px;padding:10px}
+.row{display:flex;gap:8px;margin-top:12px}
+.card{margin-top:20px;padding-top:16px;border-top:1px solid #262c38}
+.steps{margin:0;font-size:13px;line-height:1.5;color:#b8c4d4}
+.mono{display:block;margin-top:10px;padding:8px 10px;border-radius:8px;background:#0b0d10;color:#9fb0c7;font-size:12px;word-break:break-all}
+p#s{margin:14px 0 0;min-height:20px;font-size:14px;color:#9fb0c7}
 </style>
 </head>
 <body>
@@ -177,9 +214,11 @@ p{margin:14px 0 0;min-height:20px;font-size:14px;color:#9fb0c7}
 <button id="b" type="submit">$submit</button>
 </form>
 <p id="s"></p>
+$shortcutSection
 </main>
 <script>
 const f=document.getElementById('f'),u=document.getElementById('u'),b=document.getElementById('b'),s=document.getElementById('s');
+async function cp(text,btn){const prev=btn.textContent;try{await navigator.clipboard.writeText(text);btn.textContent='$copied'||prev;}catch(_){}setTimeout(()=>{btn.textContent=prev;},1500);}
 f.addEventListener('submit',async e=>{
   e.preventDefault();
   const val=u.value.trim();
@@ -187,7 +226,7 @@ f.addEventListener('submit',async e=>{
   b.disabled=true;s.textContent='';
   try{
     const r=await fetch('/open',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({t:'$token',url:val})});
-    if(r.ok){s.textContent='$sent';u.value='';}
+    if(r.ok){s.textContent='$sent';u.value='';b.disabled=false;}
     else if(r.status===400){s.textContent='$invalid';b.disabled=false;}
     else{s.textContent='$err';b.disabled=false;}
   }catch(_){s.textContent='$err';b.disabled=false;}
@@ -201,6 +240,8 @@ f.addEventListener('submit',async e=>{
         val method: String,
         val path: String,
         val query: String,
+        val contentType: String,
+        val bearerToken: String?,
         val body: String,
     )
 
@@ -212,7 +253,7 @@ f.addEventListener('submit',async e=>{
         private const val MAX_BODY_BYTES = 8 * 1024
         private const val MAX_INPUT_CHARS = 2048
 
-        private fun generateToken(): String {
+        internal fun generateToken(): String {
             val bytes = ByteArray(12)
             SecureRandom().nextBytes(bytes)
             return bytes.joinToString("") { "%02x".format(it) }
@@ -307,11 +348,23 @@ f.addEventListener('submit',async e=>{
             val query = if (qIndex >= 0) target.substring(qIndex + 1) else ""
 
             var contentLength = 0
+            var contentType = ""
+            var bearerToken: String? = null
             for (i in 1 until lines.size) {
                 val line = lines[i]
                 val colon = line.indexOf(':')
-                if (colon > 0 && line.substring(0, colon).trim().equals("Content-Length", ignoreCase = true)) {
-                    contentLength = line.substring(colon + 1).trim().toIntOrNull() ?: return null
+                if (colon <= 0) continue
+                val name = line.substring(0, colon).trim()
+                val value = line.substring(colon + 1).trim()
+                when {
+                    name.equals("Content-Length", ignoreCase = true) -> {
+                        contentLength = value.toIntOrNull() ?: return null
+                    }
+                    name.equals("Content-Type", ignoreCase = true) -> contentType = value
+                    name.equals("Authorization", ignoreCase = true) &&
+                        value.startsWith("Bearer ", ignoreCase = true) -> {
+                        bearerToken = value.substring(7).trim()
+                    }
                 }
             }
             if (contentLength !in 0..MAX_BODY_BYTES) return null
@@ -323,8 +376,23 @@ f.addEventListener('submit',async e=>{
                 if (n < 0) return null
                 readTotal += n
             }
-            return HttpRequest(method, path, query, String(bodyBytes, Charsets.UTF_8))
+            return HttpRequest(method, path, query, contentType, bearerToken, String(bodyBytes, Charsets.UTF_8))
         }
+
+        internal fun parseOpenPayload(contentType: String, body: String): Map<String, String> =
+            if (contentType.lowercase(Locale.ROOT).contains("application/json")) {
+                parseJsonBody(body)
+            } else {
+                parseFormUrlEncoded(body)
+            }
+
+        private fun parseJsonBody(body: String): Map<String, String> = runCatching {
+            val obj = JSONObject(body)
+            buildMap {
+                obj.opt("t")?.let { if (it !== JSONObject.NULL) put("t", it.toString()) }
+                obj.opt("url")?.let { if (it !== JSONObject.NULL) put("url", it.toString()) }
+            }
+        }.getOrDefault(emptyMap())
 
         private fun queryParam(query: String, key: String): String? =
             parseFormUrlEncoded(query)[key]

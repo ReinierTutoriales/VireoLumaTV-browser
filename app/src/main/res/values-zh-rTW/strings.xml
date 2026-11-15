@@ -233,4 +233,13 @@
     <string name="remote_link_sent">已傳送至電視。</string>
     <string name="remote_link_invalid">請輸入有效的網址或搜尋內容。</string>
     <string name="remote_link_error">無法連線至電視。請確認對話方塊仍處於開啟狀態。</string>
+    <string name="remote_link_unpair">取消配對</string>
+    <string name="remote_link_unpaired">已移除配對。需要重新配對手機時，再次開啟此畫面即可。</string>
+    <string name="remote_link_autoplay_hint">自動播放已關閉。請開啟它，讓 YouTube Music 自動開始播放。</string>
+    <string name="remote_link_enable_autoplay">開啟自動播放</string>
+    <string name="remote_link_shortcut_title">iPhone 分享選單（捷徑）</string>
+    <string name="remote_link_shortcut_steps">1. 開啟捷徑 → 開啟在分享表單中顯示（URL）。\n2. 加入取得 URL 的內容（POST），表單欄位為 t 與 url（捷徑輸入）。\n3. 在 YouTube Music 中點一下分享 → 你的捷徑。</string>
+    <string name="remote_link_copy_url">複製 URL</string>
+    <string name="remote_link_copy_token">複製金鑰</string>
+    <string name="remote_link_copied">已複製</string>
 </resources>

@@ -50,6 +50,7 @@ import com.reiniertutoriales.vireolumatv.activity.main.dialogs.favorites.TabFavo
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.remote.RemoteLinkDialog
 import com.reiniertutoriales.vireolumatv.activity.main.dialogs.settings.SettingsScreen
 import com.reiniertutoriales.vireolumatv.activity.main.home.NativeHome
+import com.reiniertutoriales.vireolumatv.activity.main.remote.RemoteLinkServer
 import com.reiniertutoriales.vireolumatv.activity.main.view.tabs.TabCommand
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
 import com.reiniertutoriales.vireolumatv.model.Favorite
@@ -223,6 +224,7 @@ open class MainActivity : ComponentActivity() {
         private set
     private var updateOffer: TvDialog? = null
     private var remoteLinkDialog: RemoteLinkDialog? = null
+    private var remoteLinkServer: RemoteLinkServer? = null
     @VisibleForTesting internal var startupDone = false
     @VisibleForTesting internal var consumeStartupIntent = false
 
@@ -360,12 +362,15 @@ open class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         downloads.bind()
+        if (config.remoteLinkPaired && !LocalNetworkAccess.blocked(this)) ensureRemoteLinkServer()
     }
 
     override fun onStop() {
         super.onStop()
         remoteLinkDialog?.dismiss()
         remoteLinkDialog = null
+        remoteLinkServer?.close()
+        remoteLinkServer = null
         downloads.unbind()
         // Home, another app or standby: keep the signed-in sessions in case the power goes next.
         cookies.onLeftScreen(config.privateBrowsing)
@@ -429,6 +434,8 @@ open class MainActivity : ComponentActivity() {
         filePickerOwner = null
         remoteLinkDialog?.dismiss()
         remoteLinkDialog = null
+        remoteLinkServer?.close()
+        remoteLinkServer = null
         nativeHome?.hide()
         nativeHome = null
         if (ServiceWorkerFilter.policy === serviceWorkerPolicy) ServiceWorkerFilter.policy = null
@@ -578,17 +585,86 @@ open class MainActivity : ComponentActivity() {
         if (remoteLinkDialog?.isShowing == true) return
         remoteLinkDialog = RemoteLinkDialog(
             context = this,
-            scope = lifecycleScope,
-            searchTemplate = config.searchAddress.value,
             ensureLocalNetwork = localNetwork::ensureForRemoteLink,
-        ) { url ->
-            openInNewTab(url, tabStore.openTabs.size, closeCapsuleAfter = true, navigateImmediately = true)
-        }.apply {
+            startServer = {
+                val url = ensureRemoteLinkServer()
+                if (url != null) config.remoteLinkPaired = true
+                url
+            },
+            autoplayEnabled = config.allowAutoplayMedia,
+            onEnableAutoplay = { config.allowAutoplayMedia = true },
+            onUnpair = { unpairRemoteLink() },
+        ).apply {
             setOnDismissListener {
                 if (remoteLinkDialog === this) remoteLinkDialog = null
                 if (overlayVisible) vb.controlsHost.requestCommandFocus()
             }
             show()
+        }
+    }
+
+    private fun ensureRemoteLinkServer(): String? {
+        remoteLinkServer?.url?.let { return it }
+        remoteLinkServer?.close()
+        val token = config.remoteLinkToken.ifEmpty {
+            RemoteLinkServer.generateToken().also { config.remoteLinkToken = it }
+        }
+        val server = RemoteLinkServer(
+            scope = lifecycleScope,
+            searchTemplate = config.searchAddress.value,
+            labels = RemoteLinkServer.Labels(
+                title = getString(R.string.remote_link_title),
+                hint = getString(R.string.address_hint),
+                submit = getString(R.string.remote_link_send),
+                sent = getString(R.string.remote_link_sent),
+                invalidUrl = getString(R.string.remote_link_invalid),
+                error = getString(R.string.remote_link_error),
+                shortcutTitle = getString(R.string.remote_link_shortcut_title),
+                shortcutSteps = getString(R.string.remote_link_shortcut_steps),
+                copyUrl = getString(R.string.remote_link_copy_url),
+                copyToken = getString(R.string.remote_link_copy_token),
+                copied = getString(R.string.remote_link_copied),
+            ),
+            token = token,
+            preferredPort = config.remoteLinkPort,
+        ) { url -> openRemoteLink(url) }
+        val url = server.start()
+        if (url == null) {
+            server.close()
+            remoteLinkServer = null
+            return null
+        }
+        server.boundPort?.let { port ->
+            if (config.remoteLinkPort != port) config.remoteLinkPort = port
+        }
+        remoteLinkServer = server
+        return url
+    }
+
+    private fun unpairRemoteLink() {
+        remoteLinkServer?.close()
+        remoteLinkServer = null
+        config.remoteLinkPaired = false
+        config.remoteLinkToken = RemoteLinkServer.generateToken()
+        config.remoteLinkPort = 0
+    }
+
+    internal fun openRemoteLink(url: String) {
+        if (remoteLinkDialog?.isShowing == true) remoteLinkDialog?.dismiss()
+        val host = runCatching { url.toUri().host }.getOrNull()
+        val existing = if (host != null && host.equals(YOUTUBE_MUSIC_HOST, ignoreCase = true)) {
+            tabStore.openTabs.firstOrNull { tab ->
+                !tab.closed && runCatching {
+                    tab.url.toUri().host?.equals(YOUTUBE_MUSIC_HOST, ignoreCase = true) == true
+                }.getOrDefault(false)
+            }
+        } else null
+        if (existing != null) {
+            if (tabStore.currentTab.value !== existing) changeTab(existing, loadInitialUrl = false)
+            navigate(url)
+            if (vb.controlsOverlay.isVisible) closeCapsule()
+        } else {
+            openInNewTab(url, tabStore.openTabs.size, closeCapsuleAfter = true, navigateImmediately = true)
         }
     }
 
@@ -1270,5 +1346,6 @@ open class MainActivity : ComponentActivity() {
         const val PROGRESS_STALL_MS = 5000L
         // Pop-up and dialog spam must not stack notices on a slow TV.
         const val BLOCKED_NOTICE_INTERVAL_MS = 3000L
+        const val YOUTUBE_MUSIC_HOST = "music.youtube.com"
     }
 }

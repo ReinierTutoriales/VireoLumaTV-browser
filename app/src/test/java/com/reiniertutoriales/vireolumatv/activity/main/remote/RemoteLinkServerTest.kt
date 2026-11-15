@@ -87,7 +87,7 @@ class RemoteLinkServerTest {
     }
 
     @Test
-    fun postValidUrlDeliversLinkAndClosesServer() {
+    fun postValidUrlDeliversMultipleLinksWhileServerStaysOpen() {
         val received = mutableListOf<String>()
         val server =
             RemoteLinkServer(
@@ -100,15 +100,59 @@ class RemoteLinkServerTest {
         try {
             val url = server.start()!!
             val base = url.substringBefore("/?")
-            val target = "https://example.com/watch?v=123"
-            val body = "t=${encode(server.token)}&url=${encode(target)}"
+            val first = "https://music.youtube.com/watch?v=123"
+            val second = "https://music.youtube.com/watch?v=456"
 
-            val response = request("POST", "$base/open", body)
-            assertEquals(200, response.code)
-            assertTrue(response.body.contains("\"ok\":true"))
-            assertEquals(listOf(target), received)
+            val r1 = request("POST", "$base/open", "t=${encode(server.token)}&url=${encode(first)}")
+            assertEquals(200, r1.code)
+            assertTrue(r1.body.contains("\"ok\":true"))
+
+            val r2 = request(
+                method = "POST",
+                targetUrl = "$base/open",
+                formBody = """{"url":"$second"}""",
+                contentType = "application/json; charset=UTF-8",
+                bearerToken = server.token
+            )
+            assertEquals(200, r2.code)
+            assertEquals(listOf(first, second), received)
         } finally {
             server.close()
+        }
+    }
+
+    @Test
+    fun preferredPortAndTokenPersistAcrossRestart() {
+        val token = RemoteLinkServer.generateToken()
+        val first =
+            RemoteLinkServer(
+                scope = scope,
+                searchTemplate = searchTemplate,
+                labels = labels,
+                token = token,
+                preferredPort = 0,
+                hostAddress = "127.0.0.1",
+                mainDispatcher = Dispatchers.Unconfined
+            ) {}
+        val firstUrl = first.start()!!
+        val boundPort = first.boundPort!!
+        first.close()
+
+        val second =
+            RemoteLinkServer(
+                scope = scope,
+                searchTemplate = searchTemplate,
+                labels = labels,
+                token = token,
+                preferredPort = boundPort,
+                hostAddress = "127.0.0.1",
+                mainDispatcher = Dispatchers.Unconfined
+            ) {}
+        try {
+            val secondUrl = second.start()!!
+            assertEquals(firstUrl, secondUrl)
+        } finally {
+            second.close()
         }
     }
 
@@ -178,14 +222,23 @@ class RemoteLinkServerTest {
 
     private data class HttpResult(val code: Int, val body: String)
 
-    private fun request(method: String, targetUrl: String, formBody: String? = null): HttpResult {
+    private fun request(
+        method: String,
+        targetUrl: String,
+        formBody: String? = null,
+        contentType: String = "application/x-www-form-urlencoded; charset=UTF-8",
+        bearerToken: String? = null
+    ): HttpResult {
         val conn = URI.create(targetUrl).toURL().openConnection() as HttpURLConnection
         conn.requestMethod = method
         conn.connectTimeout = 2000
         conn.readTimeout = 2000
+        if (bearerToken != null) {
+            conn.setRequestProperty("Authorization", "Bearer $bearerToken")
+        }
         if (formBody != null) {
             conn.doOutput = true
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+            conn.setRequestProperty("Content-Type", contentType)
             OutputStreamWriter(conn.outputStream, StandardCharsets.UTF_8).use { it.write(formBody) }
         }
         val code = conn.responseCode

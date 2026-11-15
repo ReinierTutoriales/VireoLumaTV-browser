@@ -235,4 +235,13 @@
     <string name="remote_link_sent">已发送到电视。</string>
     <string name="remote_link_invalid">请输入有效的网址或搜索内容。</string>
     <string name="remote_link_error">无法连接到电视。请确保对话框仍处于打开状态。</string>
+    <string name="remote_link_unpair">取消配对</string>
+    <string name="remote_link_unpaired">已移除配对。需要重新配对手机时，再次打开此页面即可。</string>
+    <string name="remote_link_autoplay_hint">自动播放已关闭。请开启它，以便 YouTube Music 自动开始播放。</string>
+    <string name="remote_link_enable_autoplay">开启自动播放</string>
+    <string name="remote_link_shortcut_title">iPhone 共享表单（快捷指令）</string>
+    <string name="remote_link_shortcut_steps">1. 打开快捷指令 → 开启在共享表单中显示（URL）。\n2. 添加获取 URL 内容（POST），表单字段为 t 和 url（快捷指令输入）。\n3. 在 YouTube Music 中轻点共享 → 你的快捷指令。</string>
+    <string name="remote_link_copy_url">复制 URL</string>
+    <string name="remote_link_copy_token">复制密钥</string>
+    <string name="remote_link_copied">已复制</string>
 </resources>

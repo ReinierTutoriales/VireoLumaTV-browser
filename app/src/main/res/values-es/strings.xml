@@ -239,4 +239,13 @@
     <string name="remote_link_sent">Enviado al televisor.</string>
     <string name="remote_link_invalid">Escribe una dirección web o búsqueda válida.</string>
     <string name="remote_link_error">No se pudo conectar con la TV. Asegúrate de que el diálogo sigue abierto.</string>
+    <string name="remote_link_unpair">Desemparejar</string>
+    <string name="remote_link_unpaired">Emparejamiento eliminado. Vuelve a abrir esta pantalla cuando quieras emparejar un móvil.</string>
+    <string name="remote_link_autoplay_hint">La reproducción automática está desactivada. Actívala para que YouTube Music empiece a sonar solo.</string>
+    <string name="remote_link_enable_autoplay">Activar reproducción automática</string>
+    <string name="remote_link_shortcut_title">Hoja de compartir del iPhone (Atajos)</string>
+    <string name="remote_link_shortcut_steps">1. Abre Atajos → activa Mostrar en hoja de compartir (URLs).\n2. Añade Obtener contenido de URL (POST) con los campos t y url (Entrada del atajo).\n3. En YouTube Music pulsa Compartir → tu atajo.</string>
+    <string name="remote_link_copy_url">Copiar URL</string>
+    <string name="remote_link_copy_token">Copiar código</string>
+    <string name="remote_link_copied">Copiado</string>
 </resources>

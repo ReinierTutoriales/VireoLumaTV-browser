@@ -237,4 +237,13 @@
     <string name="remote_link_sent">به تلویزیون ارسال شد.</string>
     <string name="remote_link_invalid">یک نشانی وب یا عبارت جستجوی معتبر وارد کنید.</string>
     <string name="remote_link_error">دسترسی به تلویزیون ممکن نشد. مطمئن شوید کادر گفتگو هنوز باز است.</string>
+    <string name="remote_link_unpair">لغو جفت‌سازی</string>
+    <string name="remote_link_unpaired">جفت‌سازی حذف شد. هر زمان خواستید گوشی دیگری را جفت کنید، دوباره این صفحه را باز کنید.</string>
+    <string name="remote_link_autoplay_hint">پخش خودکار خاموش است. برای پخش خودکار YouTube Music آن را روشن کنید.</string>
+    <string name="remote_link_enable_autoplay">فعال کردن پخش خودکار</string>
+    <string name="remote_link_shortcut_title">منوی اشتراک‌گذاری آیفون (Shortcuts)</string>
+    <string name="remote_link_shortcut_steps">۱. برنامه Shortcuts را باز کنید ← Show in Share Sheet (URLs) را فعال کنید.\n۲. اقدام Get Contents of URL (POST) را با فیلدهای فرم t و url (ورودی میانبر) اضافه کنید.\n۳. در YouTube Music روی Share ← میانبر خود بزنید.</string>
+    <string name="remote_link_copy_url">کپی نشانی</string>
+    <string name="remote_link_copy_token">کپی کد</string>
+    <string name="remote_link_copied">کپی شد</string>
 </resources>

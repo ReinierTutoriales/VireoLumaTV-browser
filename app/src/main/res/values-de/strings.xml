@@ -237,4 +237,13 @@
     <string name="remote_link_sent">An den TV gesendet.</string>
     <string name="remote_link_invalid">Gib eine gültige Webadresse oder Suche ein.</string>
     <string name="remote_link_error">TV nicht erreichbar. Stelle sicher, dass der Dialog noch geöffnet ist.</string>
+    <string name="remote_link_unpair">Entkoppeln</string>
+    <string name="remote_link_unpaired">Kopplung entfernt. Öffne diesen Bildschirm erneut, wenn du wieder ein Smartphone koppeln möchtest.</string>
+    <string name="remote_link_autoplay_hint">Autoplay ist deaktiviert. Aktiviere es, damit YouTube Music automatisch startet.</string>
+    <string name="remote_link_enable_autoplay">Autoplay aktivieren</string>
+    <string name="remote_link_shortcut_title">iPhone-Teilen-Menü (Kurzbefehle)</string>
+    <string name="remote_link_shortcut_steps">1. Öffne Kurzbefehle → aktiviere Im Share-Sheet anzeigen (URLs).\n2. Füge Inhalte von URL abrufen (POST) mit den Formularfeldern t und url (Kurzbefehleingabe) hinzu.\n3. Tippe in YouTube Music auf Teilen → dein Kurzbefehl.</string>
+    <string name="remote_link_copy_url">URL kopieren</string>
+    <string name="remote_link_copy_token">Code kopieren</string>
+    <string name="remote_link_copied">Kopiert</string>
 </resources>
