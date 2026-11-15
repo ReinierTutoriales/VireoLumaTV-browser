@@ -38,6 +38,7 @@ internal class RemoteLinkServer(
     private val preferredPort: Int = 0,
     private val hostAddress: String? = findLocalIpv4Address(),
     private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val onPaired: () -> Unit = {},
     private val onLinkReceived: (String) -> Unit,
 ) : Closeable {
 
@@ -55,10 +56,11 @@ internal class RemoteLinkServer(
         val copied: String = "",
     )
 
-    private val serverDispatcher = Dispatchers.IO.limitedParallelism(2)
+    private val serverDispatcher = Dispatchers.IO.limitedParallelism(4)
     private var serverSocket: ServerSocket? = null
     private var acceptJob: Job? = null
     @Volatile private var closed = false
+    @Volatile private var pairedNotified = false
 
     val boundPort: Int?
         get() = serverSocket?.localPort
@@ -130,6 +132,7 @@ internal class RemoteLinkServer(
                         if (!tokensEqual(provided, token)) {
                             writeResponse(output, 403, "Forbidden", "text/plain; charset=utf-8", "Forbidden")
                         } else {
+                            notifyPairedOnce()
                             writeResponse(output, 200, "OK", "text/html; charset=utf-8", buildPageHtml())
                         }
                     }
@@ -140,6 +143,7 @@ internal class RemoteLinkServer(
                             writeResponse(output, 403, "Forbidden", "application/json; charset=utf-8", """{"ok":false,"error":"forbidden"}""")
                             return
                         }
+                        notifyPairedOnce()
                         val resolved = resolveSubmittedUrl(params["url"].orEmpty(), searchTemplate)
                         if (resolved == null) {
                             writeResponse(output, 400, "Bad Request", "application/json; charset=utf-8", """{"ok":false,"error":"invalid_url"}""")
@@ -154,6 +158,15 @@ internal class RemoteLinkServer(
                 if (!closed) Log.d(TAG, "Remote client request ended", error)
             }
         }
+    }
+
+    private fun notifyPairedOnce() {
+        if (closed || pairedNotified) return
+        synchronized(this) {
+            if (closed || pairedNotified) return
+            pairedNotified = true
+        }
+        scope.launch(mainDispatcher) { onPaired() }
     }
 
     private fun deliverLink(resolvedUrl: String) {
@@ -181,6 +194,7 @@ internal class RemoteLinkServer(
 <p class="steps">$shortcutSteps</p>
 <div class="row"><button type="button" class="sec" onclick="cp('$endpoint',this)">$copyUrl</button><button type="button" class="sec" onclick="cp('$token',this)">$copyToken</button></div>
 <code class="mono">$endpoint</code>
+<code class="mono">$token</code>
 </section>"""
         } else ""
         return """<!DOCTYPE html>
@@ -202,7 +216,7 @@ button:disabled{opacity:.6}
 .row{display:flex;gap:8px;margin-top:12px}
 .card{margin-top:20px;padding-top:16px;border-top:1px solid #262c38}
 .steps{margin:0;font-size:13px;line-height:1.5;color:#b8c4d4}
-.mono{display:block;margin-top:10px;padding:8px 10px;border-radius:8px;background:#0b0d10;color:#9fb0c7;font-size:12px;word-break:break-all}
+.mono{display:block;margin-top:8px;padding:8px 10px;border-radius:8px;background:#0b0d10;color:#9fb0c7;font-size:12px;word-break:break-all;user-select:all;-webkit-user-select:all}
 p#s{margin:14px 0 0;min-height:20px;font-size:14px;color:#9fb0c7}
 </style>
 </head>
@@ -218,7 +232,21 @@ $shortcutSection
 </main>
 <script>
 const f=document.getElementById('f'),u=document.getElementById('u'),b=document.getElementById('b'),s=document.getElementById('s');
-async function cp(text,btn){const prev=btn.textContent;try{await navigator.clipboard.writeText(text);btn.textContent='$copied'||prev;}catch(_){}setTimeout(()=>{btn.textContent=prev;},1500);}
+async function cp(text,btn){
+  const prev=btn.textContent;
+  let ok=false;
+  if(window.isSecureContext&&navigator.clipboard){try{await navigator.clipboard.writeText(text);ok=true;}catch(_){}}
+  if(!ok){
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.focus();ta.select();ta.setSelectionRange(0,text.length);
+    try{ok=document.execCommand('copy');}catch(_){}
+    document.body.removeChild(ta);
+  }
+  if(ok){btn.textContent='$copied'||prev;setTimeout(()=>{btn.textContent=prev;},1500);}
+}
 f.addEventListener('submit',async e=>{
   e.preventDefault();
   const val=u.value.trim();

@@ -240,8 +240,9 @@
     <string name="remote_link_autoplay_hint">Tự động phát đang tắt. Hãy bật để YouTube Music tự động phát.</string>
     <string name="remote_link_enable_autoplay">Bật tự động phát</string>
     <string name="remote_link_shortcut_title">Bảng chia sẻ iPhone (Phím tắt)</string>
-    <string name="remote_link_shortcut_steps">1. Mở Phím tắt → bật Hiển thị trong Bảng chia sẻ (URL).\n2. Thêm Lấy nội dung của URL (POST) với các trường biểu mẫu t và url (Đầu vào phím tắt).\n3. Trong YouTube Music, chạm Chia sẻ → phím tắt của bạn.</string>
+    <string name="remote_link_shortcut_steps">1. Mở Phím tắt → bật Hiển thị trong Bảng chia sẻ (URL).\n2. Thêm Lấy nội dung của URL (POST) với phần thân JSON gồm khóa t và url (Đầu vào phím tắt).\n3. Trong YouTube Music, chạm Chia sẻ → phím tắt của bạn.</string>
     <string name="remote_link_copy_url">Sao chép URL</string>
     <string name="remote_link_copy_token">Sao chép mã</string>
     <string name="remote_link_copied">Đã sao chép</string>
+    <string name="remote_link_address_changed">Địa chỉ TV đã thay đổi. Hãy cập nhật URL trong phím tắt trên iPhone và đặt IP cố định cho TV trong bộ định tuyến (DHCP).</string>
 </resources>

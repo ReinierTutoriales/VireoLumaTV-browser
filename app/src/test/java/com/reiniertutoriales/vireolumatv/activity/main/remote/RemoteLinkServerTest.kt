@@ -57,30 +57,40 @@ class RemoteLinkServerTest {
     }
 
     @Test
-    fun getRequiresMatchingSessionToken() {
+    fun getRequiresMatchingSessionTokenAndMarksPairedOnlyOnValidRequest() {
+        var pairedCount = 0
         val server =
             RemoteLinkServer(
                 scope = scope,
                 searchTemplate = searchTemplate,
                 labels = labels,
                 hostAddress = "127.0.0.1",
-                mainDispatcher = Dispatchers.Unconfined
+                mainDispatcher = Dispatchers.Unconfined,
+                onPaired = { pairedCount++ },
             ) {}
         try {
             val url = server.start()
             assertNotNull(url)
+            assertEquals(0, pairedCount)
             val base = url!!.substringBefore("/?")
 
             val missingToken = request("GET", "$base/")
             assertEquals(403, missingToken.code)
+            assertEquals(0, pairedCount)
 
             val wrongToken = request("GET", "$base/?t=invalid")
             assertEquals(403, wrongToken.code)
+            assertEquals(0, pairedCount)
 
             val validToken = request("GET", url)
             assertEquals(200, validToken.code)
+            assertEquals(1, pairedCount)
             assertTrue(validToken.body.contains("<form"))
             assertTrue(validToken.body.contains(server.token))
+            assertTrue(validToken.body.contains("execCommand('copy')"))
+
+            request("GET", url)
+            assertEquals(1, pairedCount)
         } finally {
             server.close()
         }

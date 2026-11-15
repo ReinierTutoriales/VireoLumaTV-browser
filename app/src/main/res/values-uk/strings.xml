@@ -240,14 +240,15 @@
     <string name="remote_link_send">Відкрити на ТБ</string>
     <string name="remote_link_sent">Надіслано на ТБ.</string>
     <string name="remote_link_invalid">Введіть дійсну вебадресу або пошуковий запит.</string>
-    <string name="remote_link_error">Не вдалося зв'язатися з ТБ. Переконайтеся, що вікно ще відкрите.</string>
+    <string name="remote_link_error">Не вдалося зв\'язатися з ТБ. Переконайтеся, що вікно ще відкрите.</string>
     <string name="remote_link_unpair">Від’єднати</string>
     <string name="remote_link_unpaired">Парування видалено. Відкрийте цей екран знову, коли захочете під’єднати телефон.</string>
     <string name="remote_link_autoplay_hint">Автовідтворення вимкнено. Увімкніть його, щоб YouTube Music починав грати автоматично.</string>
     <string name="remote_link_enable_autoplay">Увімкнути автовідтворення</string>
     <string name="remote_link_shortcut_title">Меню «Поділитися» на iPhone (Команди)</string>
-    <string name="remote_link_shortcut_steps">1. Відкрийте Команди → увімкніть «Показувати на аркуші поширення» (URL).\n2. Додайте «Отримати вміст URL» (POST) із полями форми t та url (Вхідні дані).\n3. У YouTube Music натисніть «Поділитися» → ваша команда.</string>
+    <string name="remote_link_shortcut_steps">1. Відкрийте Команди → увімкніть «Показувати на аркуші поширення» (URL).\n2. Додайте «Отримати вміст URL» (POST) із тілом JSON і ключами t та url (Вхідні дані).\n3. У YouTube Music натисніть «Поділитися» → ваша команда.</string>
     <string name="remote_link_copy_url">Копіювати URL</string>
     <string name="remote_link_copy_token">Копіювати код</string>
     <string name="remote_link_copied">Скопійовано</string>
+    <string name="remote_link_address_changed">Адреса ТБ змінилася. Оновіть URL у команді на iPhone та зарезервуйте IP цього ТБ у роутері (DHCP), щоб вона не змінювалася.</string>
 </resources>

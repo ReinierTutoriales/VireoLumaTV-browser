@@ -246,8 +246,9 @@
     <string name="remote_link_autoplay_hint">Автовоспроизведение выключено. Включите его, чтобы YouTube Music начинал играть автоматически.</string>
     <string name="remote_link_enable_autoplay">Включить автовоспроизведение</string>
     <string name="remote_link_shortcut_title">Меню «Поделиться» на iPhone (Команды)</string>
-    <string name="remote_link_shortcut_steps">1. Откройте Команды → включите «На листе Поделиться» (URL).\n2. Добавьте «Получить содержимое URL» (POST) с полями формы t и url (Входные данные).\n3. В YouTube Music нажмите «Поделиться» → ваша команда.</string>
+    <string name="remote_link_shortcut_steps">1. Откройте Команды → включите «На листе Поделиться» (URL).\n2. Добавьте «Получить содержимое URL» (POST) с телом JSON и ключами t и url (Входные данные).\n3. В YouTube Music нажмите «Поделиться» → ваша команда.</string>
     <string name="remote_link_copy_url">Копировать URL</string>
     <string name="remote_link_copy_token">Копировать код</string>
     <string name="remote_link_copied">Скопировано</string>
+    <string name="remote_link_address_changed">Адрес ТВ изменился. Обновите URL в команде на iPhone и зарезервируйте IP этого ТВ в роутере (DHCP), чтобы он оставался постоянным.</string>
 </resources>

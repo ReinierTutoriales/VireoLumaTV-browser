@@ -225,6 +225,7 @@ open class MainActivity : ComponentActivity() {
     private var updateOffer: TvDialog? = null
     private var remoteLinkDialog: RemoteLinkDialog? = null
     private var remoteLinkServer: RemoteLinkServer? = null
+    private var remoteLinkEndpointChanged = false
     @VisibleForTesting internal var startupDone = false
     @VisibleForTesting internal var consumeStartupIntent = false
 
@@ -586,17 +587,18 @@ open class MainActivity : ComponentActivity() {
         remoteLinkDialog = RemoteLinkDialog(
             context = this,
             ensureLocalNetwork = localNetwork::ensureForRemoteLink,
-            startServer = {
-                val url = ensureRemoteLinkServer()
-                if (url != null) config.remoteLinkPaired = true
-                url
-            },
+            startServer = { ensureRemoteLinkServer() },
             autoplayEnabled = config.allowAutoplayMedia,
+            endpointChanged = { remoteLinkEndpointChanged },
             onEnableAutoplay = { config.allowAutoplayMedia = true },
             onUnpair = { unpairRemoteLink() },
         ).apply {
             setOnDismissListener {
                 if (remoteLinkDialog === this) remoteLinkDialog = null
+                if (!config.remoteLinkPaired) {
+                    remoteLinkServer?.close()
+                    remoteLinkServer = null
+                }
                 if (overlayVisible) vb.controlsHost.requestCommandFocus()
             }
             show()
@@ -609,7 +611,8 @@ open class MainActivity : ComponentActivity() {
         val token = config.remoteLinkToken.ifEmpty {
             RemoteLinkServer.generateToken().also { config.remoteLinkToken = it }
         }
-        val server = RemoteLinkServer(
+        lateinit var server: RemoteLinkServer
+        server = RemoteLinkServer(
             scope = lifecycleScope,
             searchTemplate = config.searchAddress.value,
             labels = RemoteLinkServer.Labels(
@@ -627,6 +630,10 @@ open class MainActivity : ComponentActivity() {
             ),
             token = token,
             preferredPort = config.remoteLinkPort,
+            onPaired = {
+                config.remoteLinkPaired = true
+                server.openEndpointUrl?.let { config.remoteLinkLastEndpoint = it }
+            },
         ) { url -> openRemoteLink(url) }
         val url = server.start()
         if (url == null) {
@@ -637,6 +644,13 @@ open class MainActivity : ComponentActivity() {
         server.boundPort?.let { port ->
             if (config.remoteLinkPort != port) config.remoteLinkPort = port
         }
+        val currentEndpoint = server.openEndpointUrl.orEmpty()
+        remoteLinkEndpointChanged = config.remoteLinkPaired &&
+            config.remoteLinkLastEndpoint.isNotEmpty() &&
+            currentEndpoint != config.remoteLinkLastEndpoint
+        if (config.remoteLinkPaired && currentEndpoint.isNotEmpty()) {
+            config.remoteLinkLastEndpoint = currentEndpoint
+        }
         remoteLinkServer = server
         return url
     }
@@ -644,9 +658,11 @@ open class MainActivity : ComponentActivity() {
     private fun unpairRemoteLink() {
         remoteLinkServer?.close()
         remoteLinkServer = null
+        remoteLinkEndpointChanged = false
         config.remoteLinkPaired = false
         config.remoteLinkToken = RemoteLinkServer.generateToken()
         config.remoteLinkPort = 0
+        config.remoteLinkLastEndpoint = ""
     }
 
     internal fun openRemoteLink(url: String) {

@@ -54,6 +54,7 @@ internal class RemoteLinkDialog(
     ensureLocalNetwork: ((Boolean) -> Unit) -> Unit = { it(true) },
     startServer: () -> String?,
     autoplayEnabled: Boolean = true,
+    private val endpointChanged: () -> Boolean = { false },
     private val onEnableAutoplay: () -> Unit = {},
     private val onUnpair: () -> Unit = {},
 ) : ComponentDialog(context, R.style.TvDialog) {
@@ -135,6 +136,14 @@ internal class RemoteLinkDialog(
                                     .padding(horizontal = 10.dp, vertical = 8.dp)
                                     .testTag("remote_link_url"),
                             )
+                            if (endpointChanged()) {
+                                Spacer(Modifier.height(10.dp))
+                                Text(
+                                    stringResource(R.string.remote_link_address_changed),
+                                    color = Color(0xFFFFD580),
+                                    fontSize = 13.sp,
+                                )
+                            }
                             if (!autoplay) {
                                 Spacer(Modifier.height(12.dp))
                                 Text(

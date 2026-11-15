@@ -238,8 +238,9 @@
     <string name="remote_link_autoplay_hint">自動播放已關閉。請開啟它，讓 YouTube Music 自動開始播放。</string>
     <string name="remote_link_enable_autoplay">開啟自動播放</string>
     <string name="remote_link_shortcut_title">iPhone 分享選單（捷徑）</string>
-    <string name="remote_link_shortcut_steps">1. 開啟捷徑 → 開啟在分享表單中顯示（URL）。\n2. 加入取得 URL 的內容（POST），表單欄位為 t 與 url（捷徑輸入）。\n3. 在 YouTube Music 中點一下分享 → 你的捷徑。</string>
+    <string name="remote_link_shortcut_steps">1. 開啟捷徑 → 開啟在分享表單中顯示（URL）。\n2. 加入取得 URL 的內容（POST），使用 JSON 本文，鍵為 t 與 url（捷徑輸入）。\n3. 在 YouTube Music 中點一下分享 → 你的捷徑。</string>
     <string name="remote_link_copy_url">複製 URL</string>
     <string name="remote_link_copy_token">複製金鑰</string>
     <string name="remote_link_copied">已複製</string>
+    <string name="remote_link_address_changed">電視網址已變更。請更新 iPhone 捷徑中的 URL，並在路由器（DHCP）中為此電視保留固定 IP。</string>
 </resources>

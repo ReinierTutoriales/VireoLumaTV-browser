@@ -242,8 +242,9 @@
     <string name="remote_link_autoplay_hint">پخش خودکار خاموش است. برای پخش خودکار YouTube Music آن را روشن کنید.</string>
     <string name="remote_link_enable_autoplay">فعال کردن پخش خودکار</string>
     <string name="remote_link_shortcut_title">منوی اشتراک‌گذاری آیفون (Shortcuts)</string>
-    <string name="remote_link_shortcut_steps">۱. برنامه Shortcuts را باز کنید ← Show in Share Sheet (URLs) را فعال کنید.\n۲. اقدام Get Contents of URL (POST) را با فیلدهای فرم t و url (ورودی میانبر) اضافه کنید.\n۳. در YouTube Music روی Share ← میانبر خود بزنید.</string>
+    <string name="remote_link_shortcut_steps">۱. برنامه Shortcuts را باز کنید ← Show in Share Sheet (URLs) را فعال کنید.\n۲. اقدام Get Contents of URL (POST) را با بدنه JSON و کلیدهای t و url (ورودی میانبر) اضافه کنید.\n۳. در YouTube Music روی Share ← میانبر خود بزنید.</string>
     <string name="remote_link_copy_url">کپی نشانی</string>
     <string name="remote_link_copy_token">کپی کد</string>
     <string name="remote_link_copied">کپی شد</string>
+    <string name="remote_link_address_changed">نشانی تلویزیون تغییر کرده است. نشانی را در میانبر آیفون به‌روزرسانی کنید و IP این تلویزیون را در روتر (DHCP) رزرو کنید تا ثابت بماند.</string>
 </resources>

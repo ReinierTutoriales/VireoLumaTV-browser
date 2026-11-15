@@ -240,8 +240,9 @@
     <string name="remote_link_autoplay_hint">自动播放已关闭。请开启它，以便 YouTube Music 自动开始播放。</string>
     <string name="remote_link_enable_autoplay">开启自动播放</string>
     <string name="remote_link_shortcut_title">iPhone 共享表单（快捷指令）</string>
-    <string name="remote_link_shortcut_steps">1. 打开快捷指令 → 开启在共享表单中显示（URL）。\n2. 添加获取 URL 内容（POST），表单字段为 t 和 url（快捷指令输入）。\n3. 在 YouTube Music 中轻点共享 → 你的快捷指令。</string>
+    <string name="remote_link_shortcut_steps">1. 打开快捷指令 → 开启在共享表单中显示（URL）。\n2. 添加获取 URL 内容（POST），使用 JSON 请求体，键为 t 和 url（快捷指令输入）。\n3. 在 YouTube Music 中轻点共享 → 你的快捷指令。</string>
     <string name="remote_link_copy_url">复制 URL</string>
     <string name="remote_link_copy_token">复制密钥</string>
     <string name="remote_link_copied">已复制</string>
+    <string name="remote_link_address_changed">电视地址已更改。请更新 iPhone 快捷指令中的 URL，并在路由器（DHCP）中为此电视保留固定 IP。</string>
 </resources>

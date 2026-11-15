@@ -38,6 +38,9 @@ class Config(val prefs: SharedPreferences) {
     var remoteLinkToken: String
         get() = prefs.getString(REMOTE_LINK_TOKEN_KEY, "") ?: ""
         set(value) = prefs.edit { putString(REMOTE_LINK_TOKEN_KEY, value) }
+    var remoteLinkLastEndpoint: String
+        get() = prefs.getString(REMOTE_LINK_LAST_ENDPOINT_KEY, "") ?: ""
+        set(value) = prefs.edit { putString(REMOTE_LINK_LAST_ENDPOINT_KEY, value) }
 
     var homePage: String
         get() = prefs.getString(HOME_PAGE_KEY, HOME_URL_ALIAS) ?: HOME_URL_ALIAS
@@ -120,6 +123,7 @@ class Config(val prefs: SharedPreferences) {
         private const val LEGACY_SEARCH_AS_HOME_KEY = "search_engine_as_home_page"
         private const val DDG_DEFAULT_APPLIED_KEY = "minimal_home_search_migrated"
         private const val REMOTE_LINK_TOKEN_KEY = "remote_link_token"
+        private const val REMOTE_LINK_LAST_ENDPOINT_KEY = "remote_link_last_endpoint"
 
         const val POINTER_PERCENT_MIN = 25
         const val POINTER_PERCENT_MAX = 200

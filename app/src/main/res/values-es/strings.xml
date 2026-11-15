@@ -244,8 +244,9 @@
     <string name="remote_link_autoplay_hint">La reproducción automática está desactivada. Actívala para que YouTube Music empiece a sonar solo.</string>
     <string name="remote_link_enable_autoplay">Activar reproducción automática</string>
     <string name="remote_link_shortcut_title">Hoja de compartir del iPhone (Atajos)</string>
-    <string name="remote_link_shortcut_steps">1. Abre Atajos → activa Mostrar en hoja de compartir (URLs).\n2. Añade Obtener contenido de URL (POST) con los campos t y url (Entrada del atajo).\n3. En YouTube Music pulsa Compartir → tu atajo.</string>
+    <string name="remote_link_shortcut_steps">1. Abre Atajos → activa Mostrar en hoja de compartir (URLs).\n2. Añade Obtener contenido de URL (POST) con cuerpo JSON y las claves t y url (Entrada del atajo).\n3. En YouTube Music pulsa Compartir → tu atajo.</string>
     <string name="remote_link_copy_url">Copiar URL</string>
     <string name="remote_link_copy_token">Copiar código</string>
     <string name="remote_link_copied">Copiado</string>
+    <string name="remote_link_address_changed">La dirección del TV cambió. Actualiza la URL en tu atajo del iPhone y reserva la IP de este TV en tu router (DHCP) para que no cambie.</string>
 </resources>

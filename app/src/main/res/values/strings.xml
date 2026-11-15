@@ -247,8 +247,9 @@
     <string name="remote_link_autoplay_hint">Autoplay is off. Turn it on so YouTube Music starts playing automatically.</string>
     <string name="remote_link_enable_autoplay">Enable autoplay</string>
     <string name="remote_link_shortcut_title">iPhone Share Sheet (Shortcuts)</string>
-    <string name="remote_link_shortcut_steps">1. Open Shortcuts → enable Show in Share Sheet (URLs).\n2. Add Get Contents of URL (POST) with form fields t and url (Shortcut Input).\n3. In YouTube Music, tap Share → your shortcut.</string>
+    <string name="remote_link_shortcut_steps">1. Open Shortcuts → enable Show in Share Sheet (URLs).\n2. Add Get Contents of URL (POST) with JSON body keys t and url (Shortcut Input).\n3. In YouTube Music, tap Share → your shortcut.</string>
     <string name="remote_link_copy_url">Copy URL</string>
     <string name="remote_link_copy_token">Copy token</string>
     <string name="remote_link_copied">Copied</string>
+    <string name="remote_link_address_changed">The TV address changed. Update the URL in your iPhone shortcut and reserve this TV\'s IP in your router (DHCP) so it stays fixed.</string>
 </resources>
