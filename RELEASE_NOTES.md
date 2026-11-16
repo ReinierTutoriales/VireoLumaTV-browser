@@ -1,3 +1,21 @@
+# VireoLumaTV 3.0.12
+
+El receptor de YouTube y YouTube Music está reescrito como port del protocolo de yt-cast-receiver, un receptor de código abierto que funciona con las dos apps.
+
+## Enviar desde el teléfono
+
+- En la 3.0.11 el iPhone se conectaba al TV pero no recibía las respuestas que espera (qué suena, en qué estado está, si hay pista anterior o siguiente), y el envío no llegaba a reproducirse. Ahora el TV contesta a cada pregunta del teléfono igual que la referencia.
+- Los parámetros de la sesión y las respuestas DIAL son los que usa la referencia.
+- Las sesiones de YouTube y de YouTube Music siguen abiertas a la vez. Lo enviado desde YouTube Music se abre en `music.youtube.com` con tu sesión iniciada, y lo enviado desde YouTube, en `www.youtube.com`.
+- Desde el teléfono se puede pausar, reanudar, saltar a otra posición, pasar de pista y cambiar el volumen. Si la página pasa sola a otra canción, el teléfono lo ve.
+- Si el teléfono se desconecta, lo que suena en el TV sigue reproduciéndose.
+
+## Validación e instalación
+
+Las comprobaciones automatizadas cubren pruebas, lint, APK de distribución, conservación de datos al actualizar y arranque en Android API 24, 28, 34 y 37. El código del receptor se probó contra el servidor de YouTube con un teléfono simulado, para YouTube y para YouTube Music: emparejamiento, conexión, respuestas del TV y reproducción. Falta la validación física con un iPhone real.
+
+Compatible con Android 7.0 o superior. El modo incógnito requiere Android 9 o superior. Instala el APK de tu arquitectura sobre la versión existente para conservar los datos.
+
 # VireoLumaTV 3.0.11
 
 Rehace la recepción desde YouTube y YouTube Music siguiendo el protocolo de un receptor que ya funciona con las dos apps.

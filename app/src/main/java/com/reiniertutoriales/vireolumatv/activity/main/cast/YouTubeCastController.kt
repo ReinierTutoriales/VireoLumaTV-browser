@@ -5,14 +5,15 @@ import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.activity.main.MainActivity
-import com.reiniertutoriales.vireolumatv.activity.main.cast.YouTubeLoungeClient.LoungeCommand
 import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -20,155 +21,121 @@ import java.net.URLEncoder
 import java.util.UUID
 
 /**
- * Coordinates local DIAL discovery, YouTube Lounge remote commands, and WebView playback on
- * `youtube.com` / `music.youtube.com` while the app is open in the foreground.
+ * Android side of the YouTube / YouTube Music cast receiver: DIAL discovery, one lounge session per
+ * sender app, and the WebView tab that plays what is cast. Works while the app is in the foreground.
  */
 internal class YouTubeCastController(
     private val activity: MainActivity,
     private val config: Config,
     private val scope: CoroutineScope,
-) {
+) : CastPlayer {
     private var dialServer: CastDialServer? = null
-    private var lounges: List<YouTubeLoungeClient> = emptyList()
-    /** The lounge of the phone that cast last; replies go there. */
-    @Volatile private var loungeClient: YouTubeLoungeClient? = null
-    private var syncJob: Job? = null
+    private var sessions: Map<String, LoungeSession> = emptyMap()
+    private var receiver: YouTubeCastReceiver? = null
+    private var observeJob: Job? = null
     private var activeCastTab: BrowserTab? = null
-    private var lastVideoId: String? = null
-    private var lastListId: String? = null
-    private var lastCurrentTimeSeconds: Double = 0.0
-    private var lastStateCode: Int = 2
 
     private val deviceUuid: String
         get() = config.youtubeCastUuid.ifBlank {
             UUID.randomUUID().toString().also { config.youtubeCastUuid = it }
         }
 
-    private val youtubeStore = object : YouTubeLoungeClient.SessionStore {
-        override val deviceUuid: String get() = this@YouTubeCastController.deviceUuid
-        override var screenId: String
-            get() = config.youtubeCastScreenId
-            set(value) { config.youtubeCastScreenId = value }
-        override var loungeToken: String
-            get() = config.youtubeCastLoungeToken
-            set(value) { config.youtubeCastLoungeToken = value }
-        override var loungeTokenExpiryMs: Long
-            get() = config.youtubeCastLoungeTokenExpiryMs
-            set(value) { config.youtubeCastLoungeTokenExpiryMs = value }
-    }
-
-    private val musicStore = object : YouTubeLoungeClient.SessionStore {
-        override val deviceUuid: String get() = this@YouTubeCastController.deviceUuid
-        override var screenId: String
-            get() = config.youtubeMusicCastScreenId
-            set(value) { config.youtubeMusicCastScreenId = value }
-        override var loungeToken: String
-            get() = config.youtubeMusicCastLoungeToken
-            set(value) { config.youtubeMusicCastLoungeToken = value }
-        override var loungeTokenExpiryMs: Long
-            get() = config.youtubeMusicCastLoungeTokenExpiryMs
-            set(value) { config.youtubeMusicCastLoungeTokenExpiryMs = value }
-    }
-
     fun start() {
         if (dialServer != null) return
-        // The lounge only admits phones of the screen's theme, so YouTube and YouTube Music each get one.
-        val youtube = newLounge(youtubeStore, YouTubeLoungeClient.THEME_YOUTUBE)
-        val music = newLounge(musicStore, YouTubeLoungeClient.THEME_MUSIC)
+        val receiver = YouTubeCastReceiver(this)
+        val onMessages: (LoungeSession, List<LoungeMessage>, Boolean) -> Unit = { session, messages, initial ->
+            receiver.onMessages(session, messages, initial)
+        }
+        val youtube = LoungeSession(
+            theme = YouTubeCastReceiver.THEME_YOUTUBE,
+            store = object : LoungeSession.ScreenStore {
+                override var screenId: String
+                    get() = config.youtubeCastScreenId
+                    set(value) { config.youtubeCastScreenId = value }
+            },
+            deviceId = deviceUuid,
+            screenName = SCREEN_NAME,
+            scope = scope,
+            onMessages = onMessages,
+        )
+        val music = LoungeSession(
+            theme = YouTubeCastReceiver.THEME_MUSIC,
+            store = object : LoungeSession.ScreenStore {
+                override var screenId: String
+                    get() = config.youtubeMusicCastScreenId
+                    set(value) { config.youtubeMusicCastScreenId = value }
+            },
+            deviceId = deviceUuid,
+            screenName = SCREEN_NAME,
+            scope = scope,
+            onMessages = onMessages,
+        )
+        val bySessionTheme = mapOf(youtube.theme to youtube, music.theme to music)
 
         val dial = CastDialServer(
             context = activity,
             scope = scope,
             deviceUuid = deviceUuid,
+            friendlyName = SCREEN_NAME,
             onDialLaunch = { launch ->
-                val lounge = if (launch.isMusic) music else youtube
-                loungeClient = lounge
-                // Registered before the 201 reply, so the phone finds the screen when it joins.
-                launch.pairingCode?.let { code ->
-                    runBlocking { withTimeoutOrNull(4_000L) { lounge.registerPairingCode(code) } }
+                // Called on a DIAL thread; the reply waits for the pairing code, as in the reference.
+                val session = launch.theme?.let { bySessionTheme[it] }
+                val code = launch.pairingCode
+                if (session == null || code == null) {
+                    false
+                } else {
+                    runBlocking {
+                        withContext(Dispatchers.Main) { receiver.onDialLaunch(session) }
+                        withTimeoutOrNull(PAIRING_TIMEOUT_MS) { session.registerPairingCode(code) } == true
+                    }
                 }
-                launch.videoId?.let { videoId ->
-                    val url = buildWatchUrl(videoId, launch.listId, launch.startSeconds, launch.isMusic)
-                    scope.launch { openInYouTubeTab(url, launch.isMusic) }
-                }
-            },
-            onDialStop = {
-                activeCastTab?.let { tab -> evaluatePlayerJs(tab, "v.pause()") }
-                stopSyncLoop()
             },
         )
         if (!dial.start()) {
             dial.close()
-            youtube.close()
-            music.close()
             return
         }
-        lounges = listOf(youtube, music)
+        youtube.start()
+        music.start()
+        this.receiver = receiver
+        sessions = bySessionTheme
         dialServer = dial
     }
 
-    private fun newLounge(store: YouTubeLoungeClient.SessionStore, theme: String): YouTubeLoungeClient {
-        lateinit var lounge: YouTubeLoungeClient
-        lounge = YouTubeLoungeClient(scope = scope, store = store, theme = theme) { cmd ->
-            loungeClient = lounge
-            handleCommand(cmd)
-        }
-        lounge.start()
-        return lounge
-    }
-
     fun stop() {
-        stopSyncLoop()
+        stopObserving()
         activeCastTab = null
         dialServer?.close()
         dialServer = null
-        lounges.forEach { it.close() }
-        lounges = emptyList()
-        loungeClient = null
+        sessions.values.forEach { it.close() }
+        sessions = emptyMap()
+        receiver = null
     }
 
-    private fun handleCommand(cmd: LoungeCommand) {
-        when (cmd) {
-            is LoungeCommand.SetPlaylist -> {
-                lastVideoId = cmd.videoId
-                lastListId = cmd.listId
-                lastCurrentTimeSeconds = cmd.currentTimeSeconds
-                lastStateCode = 3
-                loungeClient?.sendNowPlaying(cmd.videoId, cmd.listId, cmd.currentTimeSeconds, stateCode = 3)
-                val url = buildWatchUrl(cmd.videoId, cmd.listId, cmd.currentTimeSeconds, cmd.isMusic)
-                openInYouTubeTab(url, cmd.isMusic)
-            }
-            LoungeCommand.GetNowPlaying -> {
-                loungeClient?.sendNowPlaying(lastVideoId, lastListId, lastCurrentTimeSeconds, lastStateCode)
-            }
-            LoungeCommand.Play -> targetTab()?.let { evaluatePlayerJs(it, "v.play().catch(()=>{})") }
-            LoungeCommand.Pause -> targetTab()?.let { evaluatePlayerJs(it, "v.pause()") }
-            is LoungeCommand.SeekTo -> targetTab()?.let {
-                evaluatePlayerJs(it, "v.currentTime=${cmd.newTimeSeconds}")
-            }
-            LoungeCommand.Next -> targetTab()?.let { tab ->
-                evaluateRawJs(
-                    tab,
-                    "(document.querySelector('ytmusic-player-bar .next-button, .ytp-next-button'))?.click()",
-                )
-            }
-            LoungeCommand.Previous -> targetTab()?.let { tab ->
-                evaluateRawJs(
-                    tab,
-                    "(document.querySelector('ytmusic-player-bar .previous-button, .ytp-prev-button'))?.click()",
-                )
-            }
-            LoungeCommand.StopVideo -> {
-                targetTab()?.let { evaluatePlayerJs(it, "v.pause()") }
-                stopSyncLoop()
-            }
-            is LoungeCommand.SetVolume -> targetTab()?.let {
-                val level = (cmd.volume.coerceIn(0, 100) / 100.0)
-                evaluatePlayerJs(it, "v.muted=false;v.volume=$level")
-            }
-            LoungeCommand.Mute -> targetTab()?.let { evaluatePlayerJs(it, "v.muted=true") }
-            LoungeCommand.Unmute -> targetTab()?.let { evaluatePlayerJs(it, "v.muted=false") }
-        }
+    override fun play(video: CastVideo, positionSeconds: Double) {
+        val isMusic = video.theme == YouTubeCastReceiver.THEME_MUSIC
+        openInYouTubeTab(buildWatchUrl(video.id, video.playlistId, positionSeconds, isMusic), isMusic)
+    }
+
+    override fun pause() {
+        targetTab()?.let { evaluatePlayerJs(it, "v.pause()") }
+    }
+
+    override fun resume() {
+        targetTab()?.let { evaluatePlayerJs(it, "v.play().catch(()=>{})") }
+    }
+
+    override fun stopPlayback() {
+        targetTab()?.let { evaluatePlayerJs(it, "v.pause()") }
+    }
+
+    override fun seek(positionSeconds: Double) {
+        targetTab()?.let { evaluatePlayerJs(it, "v.currentTime=$positionSeconds") }
+    }
+
+    override fun setVolume(level: Int, muted: Boolean) {
+        val volume = level.coerceIn(0, 100) / 100.0
+        targetTab()?.let { evaluatePlayerJs(it, "v.volume=$volume;v.muted=$muted") }
     }
 
     private fun openInYouTubeTab(url: String, isMusic: Boolean) {
@@ -192,7 +159,7 @@ internal class YouTubeCastController(
         }
         if (tab != null) {
             activeCastTab = tab
-            startSyncLoop(tab)
+            startObserving(tab)
         }
     }
 
@@ -200,55 +167,59 @@ internal class YouTubeCastController(
         activeCastTab?.takeIf { !it.closed } ?: activity.tabStore.currentTab.value?.takeIf { !it.closed }
 
     private fun evaluatePlayerJs(tab: BrowserTab, statement: String) {
-        evaluateRawJs(tab, "(()=>{const v=document.querySelector('video');if(v){$statement}})()")
+        (tab.engine.view as? WebView)?.evaluateJavascript(
+            "(()=>{const v=document.querySelector('video');if(v){$statement}})()",
+            null,
+        )
     }
 
-    private fun evaluateRawJs(tab: BrowserTab, script: String) {
-        (tab.engine.view as? WebView)?.evaluateJavascript(script, null)
-    }
-
-    private fun startSyncLoop(tab: BrowserTab) {
-        syncJob?.cancel()
-        syncJob = scope.launch {
+    /** Reads the page's video element so senders see the real position, pause state and track. */
+    private fun startObserving(tab: BrowserTab) {
+        observeJob?.cancel()
+        observeJob = scope.launch {
             while (isActive && !tab.closed && activeCastTab === tab) {
-                delay(2_000L)
+                delay((YouTubeCastReceiver.OBSERVE_INTERVAL_S * 1000).toLong())
                 val webView = tab.engine.view as? WebView ?: continue
-                webView.evaluateJavascript(
-                    "(()=>{const v=document.querySelector('video');if(!v)return null;" +
-                        "return JSON.stringify({t:v.currentTime||0,d:v.duration||0,p:v.paused,vol:Math.round((v.volume||1)*100),m:!!v.muted})})()",
-                ) { json ->
-                    if (json == null || json == "null") return@evaluateJavascript
-                    val raw = runCatching {
-                        val decoded = JSONTokener(json).nextValue()
-                        if (decoded is String) JSONObject(decoded) else decoded as? JSONObject
-                    }.getOrNull() ?: return@evaluateJavascript
-                    val stateCode = if (raw.optBoolean("p", false)) 2 else 1
-                    val currentTime = raw.optDouble("t", 0.0)
-                    lastCurrentTimeSeconds = currentTime
-                    lastStateCode = stateCode
-                    loungeClient?.sendPlaybackState(
-                        YouTubeLoungeClient.PlaybackState(
-                            currentTimeSeconds = currentTime,
-                            durationSeconds = raw.optDouble("d", 0.0),
-                            stateCode = stateCode,
-                            volume = raw.optInt("vol", 100),
-                            muted = raw.optBoolean("m", false),
-                        ),
+                webView.evaluateJavascript(OBSERVE_SCRIPT) { json ->
+                    val raw = decodeJson(json) ?: return@evaluateJavascript
+                    receiver?.onPlayerObserved(
+                        positionSeconds = raw.optDouble("t", 0.0),
+                        durationSeconds = raw.optDouble("d", 0.0).takeIf { !it.isNaN() } ?: 0.0,
+                        paused = raw.optBoolean("p", false),
+                        volumeLevel = raw.optInt("vol", 100),
+                        muted = raw.optBoolean("m", false),
+                        pageVideoId = raw.optString("id").takeIf { it.isNotEmpty() },
                     )
                 }
             }
         }
     }
 
-    private fun stopSyncLoop() {
-        syncJob?.cancel()
-        syncJob = null
+    private fun stopObserving() {
+        observeJob?.cancel()
+        observeJob = null
     }
 
     internal companion object {
+        private const val SCREEN_NAME = "VireoLumaTV"
         private const val YOUTUBE_HOST = "www.youtube.com"
         private const val YOUTUBE_MUSIC_HOST = "music.youtube.com"
+        private const val PAIRING_TIMEOUT_MS = 4_000L
+        private const val OBSERVE_SCRIPT =
+            "(()=>{const v=document.querySelector('video');if(!v)return null;" +
+                "const id=new URL(location.href).searchParams.get('v')||'';" +
+                "return JSON.stringify({t:v.currentTime||0,d:v.duration||0,p:v.paused," +
+                "vol:Math.round((v.volume||1)*100),m:!!v.muted,id:id})})()"
 
+        private fun decodeJson(json: String?): JSONObject? {
+            if (json == null || json == "null") return null
+            return runCatching {
+                val decoded = JSONTokener(json).nextValue()
+                if (decoded is String) JSONObject(decoded) else decoded as? JSONObject
+            }.getOrNull()
+        }
+
+        /** Lounge queue ids ("RQ…") are not playlists the site can open, so only real ones go in the URL. */
         internal fun buildWatchUrl(
             videoId: String,
             listId: String?,
@@ -258,7 +229,9 @@ internal class YouTubeCastController(
             val host = if (isMusic) YOUTUBE_MUSIC_HOST else YOUTUBE_HOST
             val params = ArrayList<String>(3)
             params.add("v=${URLEncoder.encode(videoId, "UTF-8")}")
-            if (!listId.isNullOrBlank()) params.add("list=${URLEncoder.encode(listId, "UTF-8")}")
+            if (!listId.isNullOrBlank() && !listId.startsWith("RQ")) {
+                params.add("list=${URLEncoder.encode(listId, "UTF-8")}")
+            }
             if (startSeconds != null && startSeconds >= 1.0) params.add("t=${startSeconds.toInt()}s")
             return "https://$host/watch?${params.joinToString("&")}"
         }

@@ -51,6 +51,38 @@ gzip files contain the original UTF-8 source including its attribution headers.
 The application's original code remains separately licensed as described above. Redirect resources and scriptlets written for this application are in
 app/src/main/assets/adblock and app/src/main/assets/surrogates.
 
+## YouTube cast receiver protocol
+
+The YouTube and YouTube Music cast receiver (`LoungeBindParams.kt`, `LoungeMessage.kt`,
+`LoungeSession.kt`, `YouTubeCastReceiver.kt` and the DIAL responses in `CastDialServer.kt`,
+under `app/src/main/java/com/reiniertutoriales/vireolumatv/activity/main/cast/`) is a Kotlin
+port of the protocol handling in yt-cast-receiver by Patrick Kan, and of the DIAL behavior of
+its peer-dial dependency by Louay Bassbouss (Fraunhofer FOKUS).
+
+- Source: https://github.com/patrickkfkan/yt-cast-receiver (commit `83d61fa`, version 2.1.1)
+- License: MIT (declared in its package.json; the repository has no separate license file).
+  peer-dial is LGPL-3.0; only its observable DIAL responses are reproduced, not its code.
+
+```text
+Copyright (c) Patrick Kan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the Software
+without restriction, including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+```
+
 ## Agent writing skill
 
 `.agents/skills/no-ai-slop/` is an unmodified copy of the no-ai-slop skill by
