@@ -76,6 +76,15 @@ class YouTubeLoungeClientTest {
             musicScreen = true,
         ) as LoungeCommand.SetPlaylist
         assertTrue(cmd.isMusic)
+
+        val setVideo = YouTubeLoungeClient.decodeLoungeCommand(
+            "setVideo",
+            JSONObject("""{"videoIds":"abc123,def456","currentTime":"12"}"""),
+            musicScreen = false,
+        ) as LoungeCommand.SetPlaylist
+        assertEquals("abc123", setVideo.videoId)
+        assertEquals(12.0, setVideo.currentTimeSeconds, 0.01)
+        assertFalse(setVideo.isMusic)
     }
 
     @Test

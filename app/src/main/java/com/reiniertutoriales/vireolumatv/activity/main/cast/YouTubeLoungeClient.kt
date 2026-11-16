@@ -416,8 +416,10 @@ internal class YouTubeLoungeClient(
         private const val THEME_SWITCH_TIMEOUT_MS = 5_000L
 
         internal fun decodeLoungeCommand(name: String, data: JSONObject?, musicScreen: Boolean = false): LoungeCommand? = when (name) {
-            "setPlaylist" -> {
-                val videoId = data?.optString("videoId")?.takeIf { it.isNotBlank() } ?: return null
+            "setPlaylist", "setVideo" -> {
+                val videoId = data?.optString("videoId")?.takeIf { it.isNotBlank() }
+                    ?: data?.optString("videoIds")?.split(',')?.firstOrNull()?.trim()?.takeIf { it.isNotBlank() }
+                    ?: return null
                 val listId = data.optString("listId").takeIf { it.isNotBlank() }
                 val currentTime = data.optString("currentTime").toDoubleOrNull()
                     ?: data.optDouble("currentTime", 0.0).takeIf { !it.isNaN() }
