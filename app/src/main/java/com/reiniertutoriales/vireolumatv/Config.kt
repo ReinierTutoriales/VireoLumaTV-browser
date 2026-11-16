@@ -41,21 +41,9 @@ class Config(val prefs: SharedPreferences) {
     var youtubeCastScreenId: String
         get() = prefs.getString(YOUTUBE_CAST_SCREEN_ID_KEY, "") ?: ""
         set(value) = prefs.edit { putString(YOUTUBE_CAST_SCREEN_ID_KEY, value) }
-    var youtubeCastLoungeToken: String
-        get() = prefs.getString(YOUTUBE_CAST_LOUNGE_TOKEN_KEY, "") ?: ""
-        set(value) = prefs.edit { putString(YOUTUBE_CAST_LOUNGE_TOKEN_KEY, value) }
-    var youtubeCastLoungeTokenExpiryMs: Long
-        get() = prefs.getLong(YOUTUBE_CAST_LOUNGE_EXPIRY_KEY, 0L)
-        set(value) = prefs.edit { putLong(YOUTUBE_CAST_LOUNGE_EXPIRY_KEY, value) }
     var youtubeMusicCastScreenId: String
         get() = prefs.getString(YOUTUBE_MUSIC_CAST_SCREEN_ID_KEY, "") ?: ""
         set(value) = prefs.edit { putString(YOUTUBE_MUSIC_CAST_SCREEN_ID_KEY, value) }
-    var youtubeMusicCastLoungeToken: String
-        get() = prefs.getString(YOUTUBE_MUSIC_CAST_LOUNGE_TOKEN_KEY, "") ?: ""
-        set(value) = prefs.edit { putString(YOUTUBE_MUSIC_CAST_LOUNGE_TOKEN_KEY, value) }
-    var youtubeMusicCastLoungeTokenExpiryMs: Long
-        get() = prefs.getLong(YOUTUBE_MUSIC_CAST_LOUNGE_EXPIRY_KEY, 0L)
-        set(value) = prefs.edit { putLong(YOUTUBE_MUSIC_CAST_LOUNGE_EXPIRY_KEY, value) }
     var dlnaRendererUuid: String
         get() = prefs.getString(DLNA_RENDERER_UUID_KEY, "") ?: ""
         set(value) = prefs.edit { putString(DLNA_RENDERER_UUID_KEY, value) }
@@ -142,11 +130,7 @@ class Config(val prefs: SharedPreferences) {
         private const val DDG_DEFAULT_APPLIED_KEY = "minimal_home_search_migrated"
         private const val YOUTUBE_CAST_UUID_KEY = "youtube_cast_uuid"
         private const val YOUTUBE_CAST_SCREEN_ID_KEY = "youtube_cast_screen_id"
-        private const val YOUTUBE_CAST_LOUNGE_TOKEN_KEY = "youtube_cast_lounge_token"
-        private const val YOUTUBE_CAST_LOUNGE_EXPIRY_KEY = "youtube_cast_lounge_expiry_ms"
         private const val YOUTUBE_MUSIC_CAST_SCREEN_ID_KEY = "youtube_music_cast_screen_id"
-        private const val YOUTUBE_MUSIC_CAST_LOUNGE_TOKEN_KEY = "youtube_music_cast_lounge_token"
-        private const val YOUTUBE_MUSIC_CAST_LOUNGE_EXPIRY_KEY = "youtube_music_cast_lounge_expiry_ms"
         private const val DLNA_RENDERER_UUID_KEY = "dlna_renderer_uuid"
 
         const val POINTER_PERCENT_MIN = 25

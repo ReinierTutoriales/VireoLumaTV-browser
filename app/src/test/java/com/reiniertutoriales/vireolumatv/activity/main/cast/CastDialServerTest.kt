@@ -53,17 +53,30 @@ class CastDialServerTest {
     }
 
     @Test
-    fun dialHttpEndpointsServeDescriptionAppStateAndLaunch() {
+    fun ssdpAnswersTheSameSearchTargetsAsPeerDial() {
+        val uuid = "11111111-2222-3333-4444-555555555555"
+        assertEquals(
+            listOf(
+                "urn:dial-multiscreen-org:service:dial:1",
+                "urn:dial-multiscreen-org:device:dial:1",
+                "upnp:rootdevice",
+                "ssdp:all",
+                "uuid:$uuid",
+            ),
+            CastDialServer.serviceTypes(uuid),
+        )
+    }
+
+    @Test
+    fun dialServesARunningYouTubeAppAndForwardsLaunchThemeAndPairingCode() {
         val loopbackIf = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress())
         val launches = mutableListOf<CastDialServer.DialLaunchRequest>()
-        var stops = 0
         val server = CastDialServer(
             context = ApplicationProvider.getApplicationContext(),
             scope = scope,
             deviceUuid = "11111111-2222-3333-4444-555555555555",
             hostInterfaceProvider = { CastDialServer.LocalInterface("127.0.0.1", loopbackIf) },
-            onDialLaunch = { launches.add(it) },
-            onDialStop = { stops++ },
+            onDialLaunch = { launches.add(it); it.theme == "m" },
         )
         try {
             assertTrue(server.start())
@@ -73,37 +86,32 @@ class CastDialServerTest {
 
             val desc = request("GET", "$base/ssdp/device-desc.xml")
             assertEquals(200, desc.code)
-            assertEquals("$base/apps/", desc.headers["Application-URL"])
+            // No trailing slash: the phone adds "/YouTube" itself.
+            assertEquals("$base/apps", desc.headers["Application-URL"])
             assertTrue(desc.body.contains("<friendlyName>VireoLumaTV</friendlyName>"))
+            assertTrue(desc.body.contains("<URLBase>$base</URLBase>"))
 
             val appState = request("GET", "$base/apps/YouTube")
             assertEquals(200, appState.code)
             assertTrue(appState.body.contains("<state>running</state>"))
-            assertTrue(appState.body.contains("<link rel=\"run\" href=\"run\"/>"))
+            assertTrue(appState.body.contains("<options allowStop=\"false\"/>"))
+            assertTrue(appState.body.contains("<link rel=\"run\" href=\""))
             // Without a screenId the phone must POST a launch that says which app is casting.
             assertFalse(appState.body.contains("screenId"))
+            assertEquals(200, request("GET", "$base/apps//YouTube").code)
 
-            val launch = request("POST", "$base/apps/YouTube", "pairingCode=pair-99&v=dQw4w9WgXcQ&theme=music&t=15")
-            assertEquals(201, launch.code)
-            assertEquals("$base/apps/YouTube/run", launch.headers["LOCATION"])
-            assertEquals(1, launches.size)
-            assertEquals("pair-99", launches[0].pairingCode)
-            assertEquals("dQw4w9WgXcQ", launches[0].videoId)
-            assertEquals(15.0, launches[0].startSeconds!!, 0.01)
-            assertTrue(launches[0].isMusic)
+            val music = request("POST", "$base/apps/YouTube", "pairingCode=pair-1&theme=m&v=abc")
+            assertEquals(200, music.code)
+            assertTrue(music.headers["LOCATION"].orEmpty().startsWith("$base/apps/YouTube/"))
+            assertEquals(CastDialServer.DialLaunchRequest("pair-1", "m"), launches[0])
 
-            // YouTube Music's lounge theme is "m".
-            request("POST", "$base/apps/YouTube", "pairingCode=pair-100&theme=m")
-            assertTrue(launches[1].isMusic)
-            request("POST", "$base/apps/YouTube", "pairingCode=pair-101&theme=cl")
-            assertFalse(launches[2].isMusic)
-            request("POST", "$base/apps/YouTube?pairingCode=pair-102&theme=m", "")
-            assertEquals("pair-102", launches[3].pairingCode)
-            assertTrue(launches[3].isMusic)
+            val youtube = request("POST", "$base/apps/YouTube?pairingCode=pair-2&theme=cl", "")
+            assertEquals(200, youtube.code)
+            assertNull(youtube.headers["LOCATION"])
+            assertEquals(CastDialServer.DialLaunchRequest("pair-2", "cl"), launches[1])
 
-            val stop = request("DELETE", "$base/apps/YouTube/run")
-            assertEquals(200, stop.code)
-            assertEquals(1, stops)
+            assertEquals(405, request("DELETE", "$base/apps/YouTube/run").code)
+            assertEquals(204, request("GET", "$base/apps").code)
         } finally {
             server.close()
         }

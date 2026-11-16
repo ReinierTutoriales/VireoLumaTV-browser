@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.UUID
 
 /**
  * Local DIAL (SSDP + HTTP) responder that advertises VireoLumaTV as a YouTube / YouTube Music
@@ -37,8 +38,8 @@ internal class CastDialServer(
     private val deviceUuid: String,
     private val friendlyName: String = "VireoLumaTV",
     private val hostInterfaceProvider: () -> LocalInterface? = ::findLocalInterface,
-    private val onDialLaunch: (DialLaunchRequest) -> Unit,
-    private val onDialStop: () -> Unit = {},
+    /** Returns whether the launch succeeded (pairing code registered on the theme's session). */
+    private val onDialLaunch: (DialLaunchRequest) -> Boolean,
 ) : Closeable {
 
     data class LocalInterface(
@@ -46,13 +47,14 @@ internal class CastDialServer(
         val networkInterface: NetworkInterface,
     )
 
+    /** Launch data of a YouTube or YouTube Music phone: its pairing code and lounge theme ("cl" or "m"). */
     data class DialLaunchRequest(
         val pairingCode: String?,
-        val videoId: String?,
-        val listId: String?,
-        val startSeconds: Double?,
-        val isMusic: Boolean,
+        val theme: String?,
     )
+
+    /** DIAL "run" id of the always-running YouTube app, as peer-dial reports it. */
+    private val appPid = UUID.randomUUID().toString()
 
     private val serverDispatcher = Dispatchers.IO.limitedParallelism(4)
     private var serverSocket: ServerSocket? = null
@@ -161,14 +163,13 @@ internal class CastDialServer(
                 }
                 val text = String(packet.data, packet.offset, packet.length, Charsets.UTF_8)
                 val st = extractSearchTarget(text) ?: continue
-                if (st == DIAL_SERVICE_TYPE || st == SSDP_ALL || st == DIAL_DEVICE_TYPE) {
+                if (st in serviceTypes(deviceUuid)) {
                     val port = serverSocket?.localPort ?: continue
                     val location = "http://${localIf.hostAddress}:$port/ssdp/device-desc.xml"
-                    val replySt = if (st == SSDP_ALL) DIAL_SERVICE_TYPE else st
                     val responseBytes = buildSsdpResponse(
-                        st = replySt,
+                        st = st,
                         location = location,
-                        usn = "uuid:$deviceUuid::$replySt",
+                        usn = "uuid:$deviceUuid::$st",
                     ).toByteArray(Charsets.UTF_8)
                     val reply = DatagramPacket(responseBytes, responseBytes.size, packet.address, packet.port)
                     runCatching { socket.send(reply) }
@@ -181,9 +182,8 @@ internal class CastDialServer(
         val port = serverSocket?.localPort ?: return
         val location = "http://$host:$port/ssdp/device-desc.xml"
         val group = runCatching { InetAddress.getByName(SSDP_ADDRESS) }.getOrNull() ?: return
-        for (nt in listOf(DIAL_SERVICE_TYPE, "uuid:$deviceUuid")) {
-            val usn = if (nt.startsWith("uuid:")) nt else "uuid:$deviceUuid::$nt"
-            val msg = buildSsdpNotify(nt = nt, usn = usn, location = location, nts = "ssdp:alive")
+        for (nt in serviceTypes(deviceUuid)) {
+            val msg = buildSsdpNotify(nt = nt, usn = "uuid:$deviceUuid::$nt", location = location, nts = "ssdp:alive")
             val bytes = msg.toByteArray(Charsets.UTF_8)
             runCatching { socket.send(DatagramPacket(bytes, bytes.size, group, SSDP_PORT)) }
         }
@@ -192,9 +192,8 @@ internal class CastDialServer(
     private fun sendByeBye() {
         val socket = ssdpSocket ?: return
         val group = runCatching { InetAddress.getByName(SSDP_ADDRESS) }.getOrNull() ?: return
-        for (nt in listOf(DIAL_SERVICE_TYPE, "uuid:$deviceUuid")) {
-            val usn = if (nt.startsWith("uuid:")) nt else "uuid:$deviceUuid::$nt"
-            val msg = buildSsdpNotify(nt = nt, usn = usn, location = "", nts = "ssdp:byebye")
+        for (nt in serviceTypes(deviceUuid)) {
+            val msg = buildSsdpNotify(nt = nt, usn = "uuid:$deviceUuid::$nt", location = "", nts = "ssdp:byebye")
             val bytes = msg.toByteArray(Charsets.UTF_8)
             runCatching { socket.send(DatagramPacket(bytes, bytes.size, group, SSDP_PORT)) }
         }
@@ -209,58 +208,44 @@ internal class CastDialServer(
                 val request = readHttpRequest(client, input) ?: return
                 val host = activeHost ?: "127.0.0.1"
                 val port = serverSocket?.localPort ?: 0
-                val baseAppUrl = "http://$host:$port/apps/"
+                val baseUrl = "http://$host:$port"
+                val path = request.path.replace(Regex("/{2,}"), "/").trimEnd('/').ifEmpty { "/" }
 
                 when {
-                    request.method == "GET" && request.path == "/ssdp/device-desc.xml" -> {
-                        val xml = deviceDescXml(deviceUuid, friendlyName)
+                    request.method == "GET" && path == "/ssdp/device-desc.xml" -> {
                         writeResponse(
                             output = output,
                             status = 200,
                             reason = "OK",
-                            contentType = "application/xml; charset=utf-8",
-                            body = xml,
-                            extraHeaders = mapOf("Application-URL" to baseAppUrl),
+                            contentType = "application/xml",
+                            body = deviceDescXml(deviceUuid, friendlyName, baseUrl),
+                            extraHeaders = mapOf("Application-URL" to "$baseUrl/apps"),
                         )
                     }
-                    request.method == "GET" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/" || request.path == "/apps/YouTube/run") -> {
-                        val xml = youtubeAppXml()
-                        writeResponse(
-                            output = output,
-                            status = 200,
-                            reason = "OK",
-                            contentType = "application/xml; charset=utf-8",
-                            body = xml,
-                        )
+                    request.method == "GET" && path == "/apps" -> writeResponse(output, 204, "No Content", "text/plain", "")
+                    request.method == "GET" && path == "/apps/YouTube" -> {
+                        writeResponse(output, 200, "OK", "application/xml", youtubeAppXml(appPid))
                     }
-                    request.method == "POST" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/") -> {
+                    request.method == "POST" && path == "/apps/YouTube" -> {
+                        // The app is always running, so peer-dial answers 200, with LOCATION when it launched.
                         val params = parseFormUrlEncoded(request.query) + parseFormUrlEncoded(request.body)
-                        Log.d(
-                            TAG,
-                            "DIAL launch keys=${params.keys.filter { it != "pairingCode" }} theme=${params["theme"]} clientName=${params["clientName"]}",
-                        )
                         val launch = DialLaunchRequest(
                             pairingCode = params["pairingCode"]?.takeIf { it.isNotBlank() },
-                            videoId = params["v"]?.takeIf { it.isNotBlank() },
-                            listId = params["list"]?.takeIf { it.isNotBlank() },
-                            startSeconds = params["t"]?.toDoubleOrNull(),
-                            isMusic = params["theme"].let { it.equals("m", ignoreCase = true) || it.equals("music", ignoreCase = true) } ||
-                                params["clientName"]?.contains("music", ignoreCase = true) == true,
+                            theme = params["theme"]?.takeIf { it.isNotBlank() },
                         )
-                        onDialLaunch(launch)
+                        Log.i(TAG, "DIAL launch theme=${launch.theme} pairing=${launch.pairingCode != null}")
+                        val launched = onDialLaunch(launch)
                         writeResponse(
                             output = output,
-                            status = 201,
-                            reason = "Created",
-                            contentType = "text/plain; charset=utf-8",
+                            status = 200,
+                            reason = "OK",
+                            contentType = "text/plain",
                             body = "",
-                            extraHeaders = mapOf("LOCATION" to "${baseAppUrl}YouTube/run"),
+                            extraHeaders = if (launched) mapOf("LOCATION" to "$baseUrl/apps/YouTube/$appPid") else emptyMap(),
                         )
                     }
-                    request.method == "DELETE" && request.path == "/apps/YouTube/run" -> {
-                        onDialStop()
-                        writeResponse(output, 200, "OK", "text/plain; charset=utf-8", "")
-                    }
+                    request.method == "DELETE" && path.startsWith("/apps/YouTube/") ->
+                        writeResponse(output, 405, "Method Not Allowed", "text/plain", "")
                     else -> writeResponse(output, 404, "Not Found", "text/plain; charset=utf-8", "Not found")
                 }
             }.onFailure { error ->
@@ -283,6 +268,10 @@ internal class CastDialServer(
         private const val DIAL_SERVICE_TYPE = "urn:dial-multiscreen-org:service:dial:1"
         private const val DIAL_DEVICE_TYPE = "urn:dial-multiscreen-org:device:dial:1"
         private const val SSDP_ALL = "ssdp:all"
+
+        /** Search targets peer-dial answers and announces. */
+        internal fun serviceTypes(uuid: String) =
+            listOf(DIAL_SERVICE_TYPE, DIAL_DEVICE_TYPE, "upnp:rootdevice", SSDP_ALL, "uuid:$uuid")
         private const val SOCKET_TIMEOUT_MS = 5_000
         private const val REQUEST_TIMEOUT_MS = 10_000L
         private const val MAX_HEADER_BYTES = 8 * 1024
@@ -308,25 +297,28 @@ internal class CastDialServer(
                 ?: candidates.firstOrNull()
         }
 
-        internal fun deviceDescXml(uuid: String, friendlyName: String): String {
+        internal fun deviceDescXml(uuid: String, friendlyName: String, baseUrl: String): String {
             val safeName = xmlEscape(friendlyName)
-            val safeUuid = xmlEscape(uuid)
-            return """<?xml version="1.0" encoding="UTF-8"?>
+            return """<?xml version="1.0"?>
 <root xmlns="urn:schemas-upnp-org:device-1-0">
-  <specVersion><major>1</major><minor>0</minor></specVersion>
+  <specVersion>
+    <major>1</major>
+    <minor>0</minor>
+  </specVersion>
+  <URLBase>${xmlEscape(baseUrl)}</URLBase>
   <device>
     <deviceType>urn:dial-multiscreen-org:device:dial:1</deviceType>
     <friendlyName>$safeName</friendlyName>
     <manufacturer>VireoLumaTV</manufacturer>
-    <modelName>VireoLumaTV</modelName>
-    <UDN>uuid:$safeUuid</UDN>
+    <modelName>Android TV</modelName>
+    <UDN>uuid:${xmlEscape(uuid)}</UDN>
     <serviceList>
       <service>
         <serviceType>urn:dial-multiscreen-org:service:dial:1</serviceType>
         <serviceId>urn:dial-multiscreen-org:serviceId:dial</serviceId>
-        <controlURL>/upnp/control/dial</controlURL>
-        <eventSubURL>/upnp/event/dial</eventSubURL>
-        <SCPDURL>/upnp/scpd/dial.xml</SCPDURL>
+        <controlURL>/ssdp/notfound</controlURL>
+        <eventSubURL>/ssdp/notfound</eventSubURL>
+        <SCPDURL>/ssdp/notfound</SCPDURL>
       </service>
     </serviceList>
   </device>
@@ -334,16 +326,16 @@ internal class CastDialServer(
         }
 
         /**
-         * No screenId in additionalData: with one, the phone joins the lounge directly with its own
-         * theme and skips the launch POST that tells which app (YouTube or YouTube Music) is casting.
+         * Running, no stop, and no screenId in additionalData, as peer-dial serves it for
+         * yt-cast-receiver: the phone then POSTs a launch with its pairing code and theme.
          */
-        internal fun youtubeAppXml(): String =
+        internal fun youtubeAppXml(pid: String): String =
             """<?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="urn:dial-multiscreen-org:schemas:dial" dialVer="2.1">
+<service xmlns="urn:dial-multiscreen-org:schemas:dial" dialVer="1.7">
   <name>YouTube</name>
-  <options allowStop="true"/>
+  <options allowStop="false"/>
   <state>running</state>
-  <link rel="run" href="run"/>
+  <link rel="run" href="${xmlEscape(pid)}"/>
 </service>"""
 
         internal fun extractSearchTarget(packetText: String): String? {
@@ -367,6 +359,8 @@ internal class CastDialServer(
                 "EXT:\r\n" +
                 "LOCATION: $location\r\n" +
                 "OPT: \"http://schemas.upnp.org/upnp/1/0/\"; ns=01\r\n" +
+                "CONFIGID.UPNP.ORG: 7337\r\n" +
+                "BOOTID.UPNP.ORG: 7337\r\n" +
                 "SERVER: Linux/Android UPnP/1.0 VireoLumaTV/1.0\r\n" +
                 "ST: $st\r\n" +
                 "USN: $usn\r\n\r\n"
