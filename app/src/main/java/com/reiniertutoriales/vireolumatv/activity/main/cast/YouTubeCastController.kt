@@ -29,7 +29,9 @@ internal class YouTubeCastController(
     private val scope: CoroutineScope,
 ) {
     private var dialServer: CastDialServer? = null
-    private var loungeClient: YouTubeLoungeClient? = null
+    private var lounges: List<YouTubeLoungeClient> = emptyList()
+    /** The lounge of the phone that cast last; replies go there. */
+    @Volatile private var loungeClient: YouTubeLoungeClient? = null
     private var syncJob: Job? = null
     private var activeCastTab: BrowserTab? = null
     private var lastVideoId: String? = null
@@ -37,11 +39,13 @@ internal class YouTubeCastController(
     private var lastCurrentTimeSeconds: Double = 0.0
     private var lastStateCode: Int = 2
 
-    private val sessionStore = object : YouTubeLoungeClient.SessionStore {
-        override val deviceUuid: String
-            get() = config.youtubeCastUuid.ifBlank {
-                UUID.randomUUID().toString().also { config.youtubeCastUuid = it }
-            }
+    private val deviceUuid: String
+        get() = config.youtubeCastUuid.ifBlank {
+            UUID.randomUUID().toString().also { config.youtubeCastUuid = it }
+        }
+
+    private val youtubeStore = object : YouTubeLoungeClient.SessionStore {
+        override val deviceUuid: String get() = this@YouTubeCastController.deviceUuid
         override var screenId: String
             get() = config.youtubeCastScreenId
             set(value) { config.youtubeCastScreenId = value }
@@ -53,23 +57,35 @@ internal class YouTubeCastController(
             set(value) { config.youtubeCastLoungeTokenExpiryMs = value }
     }
 
+    private val musicStore = object : YouTubeLoungeClient.SessionStore {
+        override val deviceUuid: String get() = this@YouTubeCastController.deviceUuid
+        override var screenId: String
+            get() = config.youtubeMusicCastScreenId
+            set(value) { config.youtubeMusicCastScreenId = value }
+        override var loungeToken: String
+            get() = config.youtubeMusicCastLoungeToken
+            set(value) { config.youtubeMusicCastLoungeToken = value }
+        override var loungeTokenExpiryMs: Long
+            get() = config.youtubeMusicCastLoungeTokenExpiryMs
+            set(value) { config.youtubeMusicCastLoungeTokenExpiryMs = value }
+    }
+
     fun start() {
         if (dialServer != null) return
-        val lounge = YouTubeLoungeClient(
-            scope = scope,
-            store = sessionStore,
-        ) { cmd -> handleCommand(cmd) }.also { it.start() }
+        // The lounge only admits phones of the screen's theme, so YouTube and YouTube Music each get one.
+        val youtube = newLounge(youtubeStore, YouTubeLoungeClient.THEME_YOUTUBE)
+        val music = newLounge(musicStore, YouTubeLoungeClient.THEME_MUSIC)
 
         val dial = CastDialServer(
             context = activity,
             scope = scope,
-            deviceUuid = sessionStore.deviceUuid,
-            screenIdProvider = { lounge.screenId },
+            deviceUuid = deviceUuid,
             onDialLaunch = { launch ->
-                runBlocking {
-                    withTimeoutOrNull(4_000L) {
-                        lounge.prepareForDialLaunch(launch.pairingCode, launch.isMusic)
-                    }
+                val lounge = if (launch.isMusic) music else youtube
+                loungeClient = lounge
+                // Registered before the 201 reply, so the phone finds the screen when it joins.
+                launch.pairingCode?.let { code ->
+                    runBlocking { withTimeoutOrNull(4_000L) { lounge.registerPairingCode(code) } }
                 }
                 launch.videoId?.let { videoId ->
                     val url = buildWatchUrl(videoId, launch.listId, launch.startSeconds, launch.isMusic)
@@ -83,11 +99,22 @@ internal class YouTubeCastController(
         )
         if (!dial.start()) {
             dial.close()
-            lounge.close()
+            youtube.close()
+            music.close()
             return
         }
-        loungeClient = lounge
+        lounges = listOf(youtube, music)
         dialServer = dial
+    }
+
+    private fun newLounge(store: YouTubeLoungeClient.SessionStore, theme: String): YouTubeLoungeClient {
+        lateinit var lounge: YouTubeLoungeClient
+        lounge = YouTubeLoungeClient(scope = scope, store = store, theme = theme) { cmd ->
+            loungeClient = lounge
+            handleCommand(cmd)
+        }
+        lounge.start()
+        return lounge
     }
 
     fun stop() {
@@ -95,7 +122,8 @@ internal class YouTubeCastController(
         activeCastTab = null
         dialServer?.close()
         dialServer = null
-        loungeClient?.close()
+        lounges.forEach { it.close() }
+        lounges = emptyList()
         loungeClient = null
     }
 
