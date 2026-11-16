@@ -9,6 +9,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -28,6 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger
 internal class YouTubeLoungeClient(
     private val scope: CoroutineScope,
     private val store: SessionStore,
+    /** The lounge only lets in phones whose app matches: "cl" YouTube, "m" YouTube Music. */
+    val theme: String = THEME_YOUTUBE,
     private val screenName: String = "VireoLumaTV",
     private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
     private val onCommand: (LoungeCommand) -> Unit,
@@ -77,12 +80,6 @@ internal class YouTubeLoungeClient(
     @Volatile private var lastAid: Int = 0
     @Volatile private var ofsCounter: Int = 0
     @Volatile private var activePollConnection: HttpURLConnection? = null
-    @Volatile private var bindCount = 0
-    @Volatile private var themeSwitchPending = false
-
-    /** The lounge only lets in phones whose app matches this theme: "cl" YouTube, "m" YouTube Music. */
-    @Volatile var theme: String = THEME_YOUTUBE
-        private set
 
     val screenId: String?
         get() = store.screenId.takeIf { it.isNotBlank() }
@@ -98,34 +95,20 @@ internal class YouTubeLoungeClient(
                     bindAndPoll(store.screenId, token)
                     true
                 }.onFailure { err ->
-                    if (!closed && !themeSwitchPending) Log.d(TAG, "Lounge session interrupted", err)
+                    if (!closed) Log.d(TAG, "Lounge session interrupted", err)
                 }.getOrDefault(false)
                 if (!isActive || closed) break
-                if (themeSwitchPending) {
-                    themeSwitchPending = false
-                    backoffMs = 1_500L
-                    continue
-                }
                 delay(if (ok) 1_000L else backoffMs)
                 if (!ok) backoffMs = (backoffMs * 2).coerceAtMost(30_000L)
             }
         }
     }
 
-    fun pairWithCode(pairingCode: String, music: Boolean) {
+    /** Links the phone that sent [pairingCode] through DIAL to this screen. */
+    suspend fun registerPairingCode(pairingCode: String) {
         if (closed || pairingCode.isBlank()) return
-        scope.launch(ioDispatcher) {
-            prepareForDialLaunch(pairingCode, music)
-        }
-    }
-
-    /** Switches theme and registers [pairingCode] (if provided) before DIAL returns 201 Created. */
-    suspend fun prepareForDialLaunch(pairingCode: String?, music: Boolean) {
-        if (closed) return
-        kotlinx.coroutines.withContext(ioDispatcher) {
+        withContext(ioDispatcher) {
             runCatching {
-                switchTheme(if (music) THEME_MUSIC else THEME_YOUTUBE)
-                if (pairingCode.isNullOrBlank()) return@runCatching
                 val token = ensureScreenSession() ?: return@runCatching
                 val body = formEncode(
                     "access_type" to "permanent",
@@ -138,7 +121,7 @@ internal class YouTubeLoungeClient(
                 )
                 postForm("$LOUNGE_API/pairing/register_pairing_code", body)
             }.onFailure { err ->
-                Log.w(TAG, "Failed to prepare DIAL launch", err)
+                Log.w(TAG, "Failed to register pairing code", err)
             }
         }
     }
@@ -166,26 +149,6 @@ internal class YouTubeLoungeClient(
             "req0_volume" to state.volume.coerceIn(0, 100).toString(),
             "req0_muted" to state.muted.toString(),
         )
-    }
-
-    /** Rebinds the screen with [wanted] before the phone joins, or the lounge rejects it (unmatchingTheme). */
-    private suspend fun switchTheme(wanted: String) {
-        if (theme == wanted && bindCount > 0) return
-        val before = bindCount
-        themeSwitchPending = true
-        theme = wanted
-        val conn = activePollConnection
-        runCatching { conn?.disconnect() }
-        if (conn == null) {
-            listenJob?.cancel()
-            listenJob = null
-            start()
-        }
-        var waitedMs = 0L
-        while (bindCount == before && waitedMs < THEME_SWITCH_TIMEOUT_MS && !closed) {
-            delay(50)
-            waitedMs += 50
-        }
     }
 
     private fun sendSessionEvent(vararg reqParams: Pair<String, String>) {
@@ -262,7 +225,6 @@ internal class YouTubeLoungeClient(
         lastAid = 0
         sid = null
         gsessionId = null
-        val boundTheme = theme
         val initQuery = formEncode(
             "CVER" to "1",
             "RID" to rid.toString(),
@@ -275,18 +237,14 @@ internal class YouTubeLoungeClient(
             "name" to screenName,
             "screen_id" to screenId,
             "t" to "1",
-            "theme" to boundTheme,
+            "theme" to theme,
         )
         val initResponse = postForm("$LOUNGE_API/bc/bind?$initQuery", formEncode("count" to "0")) ?: return
         processChunkText(initResponse)
         val currentSid = sid ?: return
         val currentGsid = gsessionId ?: return
-        if (theme == boundTheme) {
-            themeSwitchPending = false
-            bindCount++
-        }
 
-        while (currentCoroutineContext().isActive && !closed && theme == boundTheme) {
+        while (currentCoroutineContext().isActive && !closed) {
             val pollQuery = formEncode(
                 "AID" to lastAid.toString(),
                 "CI" to "0",
@@ -303,7 +261,7 @@ internal class YouTubeLoungeClient(
                 "mdx-version" to "3",
                 "name" to screenName,
                 "screen_id" to screenId,
-                "theme" to boundTheme,
+                "theme" to theme,
             )
             val conn = (URI.create("$LOUNGE_API/bc/bind?$pollQuery").toURL().openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
@@ -406,7 +364,6 @@ internal class YouTubeLoungeClient(
 
         internal const val THEME_YOUTUBE = "cl"
         internal const val THEME_MUSIC = "m"
-        private const val THEME_SWITCH_TIMEOUT_MS = 5_000L
 
         internal fun decodeLoungeCommand(name: String, data: JSONObject?, musicScreen: Boolean = false): LoungeCommand? = when (name) {
             "setPlaylist" -> {
