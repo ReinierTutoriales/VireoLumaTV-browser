@@ -112,6 +112,17 @@ class LoungeProtocolTest {
         )
     }
 
+    @Test
+    fun aCastRetriesSoundUntilThePagePlaysUnmuted() {
+        // Muted or paused after a cast: unmute and spend a try.
+        assertEquals(4 to true, YouTubeCastController.soundStep(5, muted = true, paused = false))
+        assertEquals(3 to true, YouTubeCastController.soundStep(4, muted = false, paused = true))
+        // Playing with sound: done.
+        assertEquals(0 to false, YouTubeCastController.soundStep(3, muted = false, paused = false))
+        // No tries left, or the phone paused or muted: leave the page alone.
+        assertEquals(0 to false, YouTubeCastController.soundStep(0, muted = true, paused = true))
+    }
+
     private fun decode(query: String): Map<String, String> = query.split('&').associate {
         val (k, v) = it.split('=', limit = 2)
         URLDecoder.decode(k, "UTF-8") to URLDecoder.decode(v, "UTF-8")

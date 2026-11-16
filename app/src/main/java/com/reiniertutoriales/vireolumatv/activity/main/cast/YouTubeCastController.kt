@@ -34,6 +34,8 @@ internal class YouTubeCastController(
     private var receiver: YouTubeCastReceiver? = null
     private var observeJob: Job? = null
     private var activeCastTab: BrowserTab? = null
+    /** Tries left to start the cast with sound; zero once it plays unmuted or the phone pauses or mutes. */
+    private var soundTries = 0
 
     private val deviceUuid: String
         get() = config.youtubeCastUuid.ifBlank {
@@ -114,10 +116,12 @@ internal class YouTubeCastController(
 
     override fun play(video: CastVideo, positionSeconds: Double) {
         val isMusic = video.theme == YouTubeCastReceiver.THEME_MUSIC
+        soundTries = SOUND_TRIES
         openInYouTubeTab(buildWatchUrl(video.id, video.playlistId, positionSeconds, isMusic), isMusic)
     }
 
     override fun pause() {
+        soundTries = 0
         targetTab()?.let { evaluatePlayerJs(it, "v.pause()") }
     }
 
@@ -126,6 +130,7 @@ internal class YouTubeCastController(
     }
 
     override fun stopPlayback() {
+        soundTries = 0
         targetTab()?.let { evaluatePlayerJs(it, "v.pause()") }
     }
 
@@ -134,6 +139,7 @@ internal class YouTubeCastController(
     }
 
     override fun setVolume(level: Int, muted: Boolean) {
+        if (muted) soundTries = 0
         val volume = level.coerceIn(0, 100) / 100.0
         targetTab()?.let { evaluatePlayerJs(it, "v.volume=$volume;v.muted=$muted") }
     }
@@ -158,6 +164,9 @@ internal class YouTubeCastController(
             activity.tabStore.currentTab.value
         }
         if (tab != null) {
+            // The phone asked for this playback, so this tab may start it with sound even when
+            // "Let pages play video and sound by themselves" is off; other tabs keep that setting.
+            (tab.engine.view as? WebView)?.settings?.mediaPlaybackRequiresUserGesture = false
             activeCastTab = tab
             startObserving(tab)
         }
@@ -182,6 +191,9 @@ internal class YouTubeCastController(
                 val webView = tab.engine.view as? WebView ?: continue
                 webView.evaluateJavascript(OBSERVE_SCRIPT) { json ->
                     val raw = decodeJson(json) ?: return@evaluateJavascript
+                    val (tries, unmute) = soundStep(soundTries, raw.optBoolean("m", false), raw.optBoolean("p", false))
+                    soundTries = tries
+                    if (unmute) webView.evaluateJavascript(UNMUTE_SCRIPT, null)
                     receiver?.onPlayerObserved(
                         positionSeconds = raw.optDouble("t", 0.0),
                         durationSeconds = raw.optDouble("d", 0.0).takeIf { !it.isNaN() } ?: 0.0,
@@ -205,11 +217,28 @@ internal class YouTubeCastController(
         private const val YOUTUBE_HOST = "www.youtube.com"
         private const val YOUTUBE_MUSIC_HOST = "music.youtube.com"
         private const val PAIRING_TIMEOUT_MS = 4_000L
+        private const val SOUND_TRIES = 5
         private const val OBSERVE_SCRIPT =
             "(()=>{const v=document.querySelector('video');if(!v)return null;" +
                 "const id=new URL(location.href).searchParams.get('v')||'';" +
                 "return JSON.stringify({t:v.currentTime||0,d:v.duration||0,p:v.paused," +
                 "vol:Math.round((v.volume||1)*100),m:!!v.muted,id:id})})()"
+
+        /**
+         * YouTube starts muted or paused when it last could not autoplay with sound: retry the
+         * unmute a few times after a cast, and stop as soon as it plays with sound.
+         */
+        internal fun soundStep(tries: Int, muted: Boolean, paused: Boolean): Pair<Int, Boolean> = when {
+            tries <= 0 -> 0 to false
+            muted || paused -> (tries - 1) to true
+            else -> 0 to false
+        }
+
+        /** The site's own player API, so its mute button agrees; the bare element otherwise. */
+        private const val UNMUTE_SCRIPT =
+            "(()=>{const p=document.getElementById('movie_player');" +
+                "if(p&&p.unMute){p.unMute();if(p.playVideo)p.playVideo();return}" +
+                "const v=document.querySelector('video');if(v){v.muted=false;v.play().catch(()=>{})}})()"
 
         private fun decodeJson(json: String?): JSONObject? {
             if (json == null || json == "null") return null
