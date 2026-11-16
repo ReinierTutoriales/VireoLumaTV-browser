@@ -68,7 +68,7 @@ internal class YouTubeLoungeClient(
         val muted: Boolean,
     )
 
-    private val ioDispatcher = Dispatchers.IO.limitedParallelism(2)
+    private val ioDispatcher = Dispatchers.IO.limitedParallelism(4)
     private val ridCounter = AtomicInteger(10_000)
     private var listenJob: Job? = null
     @Volatile private var closed = false
@@ -170,16 +170,18 @@ internal class YouTubeLoungeClient(
 
     /** Rebinds the screen with [wanted] before the phone joins, or the lounge rejects it (unmatchingTheme). */
     private suspend fun switchTheme(wanted: String) {
-        if (theme == wanted && bindCount > 0) return
         val before = bindCount
-        themeSwitchPending = true
-        theme = wanted
-        val conn = activePollConnection
-        runCatching { conn?.disconnect() }
-        if (conn == null) {
-            listenJob?.cancel()
-            listenJob = null
-            start()
+        if (theme != wanted) {
+            themeSwitchPending = true
+            theme = wanted
+            val conn = activePollConnection
+            runCatching { conn?.disconnect() }
+            if (listenJob?.isActive != true) {
+                listenJob = null
+                start()
+            }
+        } else if (before > 0) {
+            return
         }
         var waitedMs = 0L
         while (bindCount == before && waitedMs < THEME_SWITCH_TIMEOUT_MS && !closed) {
@@ -369,8 +371,13 @@ internal class YouTubeLoungeClient(
         }
         return try {
             OutputStreamWriter(conn.outputStream, StandardCharsets.UTF_8).use { it.write(body) }
-            if (conn.responseCode !in 200..299) null
-            else conn.inputStream.bufferedReader(StandardCharsets.UTF_8).use { it.readText() }
+            val code = conn.responseCode
+            if (code !in 200..299) {
+                Log.w(TAG, "Lounge POST ${url.substringBefore('?')} HTTP $code")
+                null
+            } else {
+                conn.inputStream.bufferedReader(StandardCharsets.UTF_8).use { it.readText() }
+            }
         } finally {
             conn.disconnect()
         }

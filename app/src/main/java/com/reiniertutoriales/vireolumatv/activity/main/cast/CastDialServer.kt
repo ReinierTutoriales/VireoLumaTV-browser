@@ -243,9 +243,9 @@ internal class CastDialServer(
                     }
                     request.method == "POST" && (request.path == "/apps/YouTube" || request.path == "/apps/YouTube/") -> {
                         val params = parseFormUrlEncoded(request.query) + parseFormUrlEncoded(request.body)
-                        Log.d(
+                        Log.i(
                             TAG,
-                            "DIAL launch keys=${params.keys.filter { it != "pairingCode" }} theme=${params["theme"]} clientName=${params["clientName"]}",
+                            "DIAL launch keys=${params.keys.filter { it != "pairingCode" }} theme=${params["theme"]} clientName=${params["clientName"]} hasPairing=${!params["pairingCode"].isNullOrBlank()} hasVideo=${!params["v"].isNullOrBlank()}",
                         )
                         val launch = DialLaunchRequest(
                             pairingCode = params["pairingCode"]?.takeIf { it.isNotBlank() },
@@ -450,23 +450,72 @@ internal class CastDialServer(
             val query = if (qIndex >= 0) target.substring(qIndex + 1) else ""
 
             var contentLength = 0
+            var chunked = false
             for (i in 1 until lines.size) {
                 val line = lines[i]
                 val colon = line.indexOf(':')
-                if (colon > 0 && line.substring(0, colon).trim().equals("Content-Length", ignoreCase = true)) {
-                    contentLength = line.substring(colon + 1).trim().toIntOrNull() ?: return null
+                if (colon <= 0) continue
+                val name = line.substring(0, colon).trim()
+                val value = line.substring(colon + 1).trim()
+                if (name.equals("Content-Length", ignoreCase = true)) {
+                    contentLength = value.toIntOrNull() ?: return null
+                } else if (name.equals("Transfer-Encoding", ignoreCase = true) && value.contains("chunked", ignoreCase = true)) {
+                    chunked = true
                 }
             }
-            if (contentLength !in 0..MAX_BODY_BYTES) return null
-            val bodyBytes = ByteArray(contentLength)
-            var readTotal = 0
-            while (readTotal < contentLength) {
-                if (!refreshTimeout()) return null
-                val n = input.read(bodyBytes, readTotal, contentLength - readTotal)
-                if (n < 0) return null
-                readTotal += n
+            val bodyString = if (chunked) {
+                readChunkedBody(input, ::refreshTimeout) ?: return null
+            } else {
+                if (contentLength !in 0..MAX_BODY_BYTES) return null
+                val bodyBytes = ByteArray(contentLength)
+                var readTotal = 0
+                while (readTotal < contentLength) {
+                    if (!refreshTimeout()) return null
+                    val n = input.read(bodyBytes, readTotal, contentLength - readTotal)
+                    if (n < 0) return null
+                    readTotal += n
+                }
+                String(bodyBytes, Charsets.UTF_8)
             }
-            return HttpRequest(method, path, query, String(bodyBytes, Charsets.UTF_8))
+            return HttpRequest(method, path, query, bodyString)
+        }
+
+        private fun readChunkedBody(input: InputStream, refreshTimeout: () -> Boolean): String? {
+            val out = ByteArrayOutputStream()
+            while (true) {
+                val sizeLine = readCrLfLine(input, refreshTimeout) ?: return null
+                val chunkSize = sizeLine.substringBefore(';').trim().toIntOrNull(16) ?: return null
+                if (chunkSize == 0) {
+                    // Consume trailing CRLF after 0-size chunk.
+                    readCrLfLine(input, refreshTimeout)
+                    break
+                }
+                if (chunkSize < 0 || out.size() + chunkSize > MAX_BODY_BYTES) return null
+                val chunk = ByteArray(chunkSize)
+                var readTotal = 0
+                while (readTotal < chunkSize) {
+                    if (!refreshTimeout()) return null
+                    val n = input.read(chunk, readTotal, chunkSize - readTotal)
+                    if (n < 0) return null
+                    readTotal += n
+                }
+                out.write(chunk)
+                // Consume CRLF after chunk payload.
+                if (readCrLfLine(input, refreshTimeout) == null) return null
+            }
+            return out.toString(Charsets.UTF_8.name())
+        }
+
+        private fun readCrLfLine(input: InputStream, refreshTimeout: () -> Boolean): String? {
+            val line = ByteArrayOutputStream()
+            while (line.size() < MAX_HEADER_BYTES) {
+                if (!refreshTimeout()) return null
+                val b = input.read()
+                if (b == -1) return null
+                if (b == '\n'.code) break
+                if (b != '\r'.code) line.write(b)
+            }
+            return line.toString(Charsets.ISO_8859_1.name())
         }
 
         private fun writeResponse(

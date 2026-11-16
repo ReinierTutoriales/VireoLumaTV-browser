@@ -124,12 +124,35 @@ class CastDialServerTest {
             assertTrue(request("GET", "$base/apps/YouTube").body.contains("<state>running</state>"))
             Thread.sleep(250)
             assertTrue(request("GET", "$base/apps/YouTube").body.contains("<state>stopped</state>"))
+
+            // Chunked POST bodies (used by some mobile HTTP stacks) are decoded too.
+            val chunked = requestChunked("127.0.0.1", port, "/apps/YouTube", "pairingCode=pair-104&theme=m")
+            assertEquals(201, chunked.code)
+            assertEquals("pair-104", launches.last().pairingCode)
+            assertTrue(launches.last().isMusic)
         } finally {
             server.close()
         }
     }
 
     private data class HttpResult(val code: Int, val body: String, val headers: Map<String, String>)
+
+    private fun requestChunked(host: String, port: Int, path: String, body: String): HttpResult {
+        val conn = URI.create("http://$host:$port$path").toURL().openConnection() as HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.connectTimeout = 2000
+        conn.readTimeout = 2000
+        conn.doOutput = true
+        conn.setChunkedStreamingMode(8)
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+        OutputStreamWriter(conn.outputStream, StandardCharsets.UTF_8).use { it.write(body) }
+        val code = conn.responseCode
+        val stream = if (code in 200..399) conn.inputStream else conn.errorStream
+        val text = stream?.bufferedReader(StandardCharsets.UTF_8)?.use { it.readText() }.orEmpty()
+        val headers = conn.headerFields.filterKeys { it != null }.mapValues { it.value.firstOrNull().orEmpty() }
+        conn.disconnect()
+        return HttpResult(code, text, headers)
+    }
 
     private fun request(method: String, targetUrl: String, formBody: String? = null): HttpResult {
         val conn = URI.create(targetUrl).toURL().openConnection() as HttpURLConnection
