@@ -112,6 +112,35 @@ class LoungeProtocolTest {
         )
     }
 
+    @Test
+    fun aCastRetriesSoundUntilThePagePlaysUnmuted() {
+        val step = YouTubeCastController::soundStep
+        // The previous track still playing with sound does not use up the tries.
+        assertEquals(5 to false, step(5, false, false, false))
+        // Muted or paused after a cast: unmute and spend a try.
+        assertEquals(4 to true, step(5, true, true, false))
+        assertEquals(3 to true, step(4, true, false, true))
+        // Playing with sound: done.
+        assertEquals(0 to false, step(3, true, false, false))
+        // No tries left, or the phone paused or muted: leave the page alone.
+        assertEquals(0 to false, step(0, true, true, true))
+    }
+
+    @Test
+    fun everyCastReusesOneTab() {
+        val pick = YouTubeCastController::pickCastTab
+        // The mobile site counts as YouTube: no new tab for each cast.
+        assertEquals(1, pick(listOf("www.google.com", "m.youtube.com"), -1, 0, false))
+        // The tab of the last cast wins, whatever it shows now.
+        assertEquals(0, pick(listOf("music.youtube.com", "m.youtube.com"), 0, 1, false))
+        // The current tab, when it is on YouTube.
+        assertEquals(1, pick(listOf("music.youtube.com", "m.youtube.com"), -1, 1, true))
+        // Otherwise the sender's own site, then any YouTube tab.
+        assertEquals(1, pick(listOf("m.youtube.com", "music.youtube.com"), -1, -1, true))
+        assertEquals(0, pick(listOf("m.youtube.com", "example.org"), -1, 1, true))
+        assertNull(pick(listOf("example.org"), -1, 0, false))
+    }
+
     private fun decode(query: String): Map<String, String> = query.split('&').associate {
         val (k, v) = it.split('=', limit = 2)
         URLDecoder.decode(k, "UTF-8") to URLDecoder.decode(v, "UTF-8")

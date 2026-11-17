@@ -1,3 +1,20 @@
+# VireoLumaTV 3.0.13
+
+Lo que envías desde el teléfono empieza a sonar sin tocar el mando.
+
+## Enviar desde el teléfono
+
+- Al enviar una canción o un vídeo, o al pasar de pista desde el teléfono, YouTube arrancaba en pausa o silenciado, y había que activar el sonido en cada tema. La pestaña que abre el envío ya puede reproducir con sonido por sí sola, y el TV quita el silencio si YouTube arranca silenciado.
+- Las demás pestañas siguen la opción «Permitir que las páginas reproduzcan vídeo y sonido solas».
+- Si silencias o pausas desde el teléfono, el TV lo respeta.
+- Cada envío abría una pestaña nueva, porque YouTube en Android se abre como `m.youtube.com` y el TV no reconocía esa pestaña. Ahora todos los envíos usan la misma pestaña: la del último envío, la actual si es de YouTube o YouTube Music, u otra de YouTube ya abierta. Solo se abre una nueva si no hay ninguna.
+
+## Validación e instalación
+
+Las comprobaciones automatizadas cubren pruebas, lint, APK de distribución, conservación de datos al actualizar y arranque en Android API 24, 28, 34 y 37. Falta la validación física del sonido con un iPhone real.
+
+Compatible con Android 7.0 o superior. El modo incógnito requiere Android 9 o superior. Instala el APK de tu arquitectura sobre la versión existente para conservar los datos.
+
 # VireoLumaTV 3.0.12
 
 El receptor de YouTube y YouTube Music está reescrito como port del protocolo de yt-cast-receiver, un receptor de código abierto que funciona con las dos apps.

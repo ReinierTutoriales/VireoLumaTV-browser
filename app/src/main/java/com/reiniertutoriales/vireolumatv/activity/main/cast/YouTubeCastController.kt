@@ -34,6 +34,10 @@ internal class YouTubeCastController(
     private var receiver: YouTubeCastReceiver? = null
     private var observeJob: Job? = null
     private var activeCastTab: BrowserTab? = null
+    /** Tries left to start the cast with sound; zero once it plays unmuted or the phone pauses or mutes. */
+    private var soundTries = 0
+    /** The cast video the sound tries wait for, so the previous track's player is not read. */
+    private var soundVideoId: String? = null
 
     private val deviceUuid: String
         get() = config.youtubeCastUuid.ifBlank {
@@ -114,10 +118,13 @@ internal class YouTubeCastController(
 
     override fun play(video: CastVideo, positionSeconds: Double) {
         val isMusic = video.theme == YouTubeCastReceiver.THEME_MUSIC
+        soundTries = SOUND_TRIES
+        soundVideoId = video.id
         openInYouTubeTab(buildWatchUrl(video.id, video.playlistId, positionSeconds, isMusic), isMusic)
     }
 
     override fun pause() {
+        soundTries = 0
         targetTab()?.let { evaluatePlayerJs(it, "v.pause()") }
     }
 
@@ -126,6 +133,7 @@ internal class YouTubeCastController(
     }
 
     override fun stopPlayback() {
+        soundTries = 0
         targetTab()?.let { evaluatePlayerJs(it, "v.pause()") }
     }
 
@@ -134,19 +142,21 @@ internal class YouTubeCastController(
     }
 
     override fun setVolume(level: Int, muted: Boolean) {
+        if (muted) soundTries = 0
         val volume = level.coerceIn(0, 100) / 100.0
         targetTab()?.let { evaluatePlayerJs(it, "v.volume=$volume;v.muted=$muted") }
     }
 
     private fun openInYouTubeTab(url: String, isMusic: Boolean) {
-        val existing = activity.tabStore.openTabs.firstOrNull { tab ->
-            !tab.closed && runCatching {
-                val host = tab.url.toUri().host ?: return@runCatching false
-                if (isMusic) host.equals(YOUTUBE_MUSIC_HOST, ignoreCase = true)
-                else host.equals(YOUTUBE_HOST, ignoreCase = true) || host.equals("youtube.com", ignoreCase = true)
-            }.getOrDefault(false)
-        }
+        val tabs = activity.tabStore.openTabs.filter { !it.closed }
+        val existing = pickCastTab(
+            hosts = tabs.map { tab -> runCatching { tab.url.toUri().host }.getOrNull() },
+            castIndex = tabs.indexOfFirst { it === activeCastTab },
+            currentIndex = tabs.indexOfFirst { it === activity.tabStore.currentTab.value },
+            isMusic = isMusic,
+        )?.let { tabs[it] }
         val tab = if (existing != null) {
+            allowCastSound(existing)
             if (activity.tabStore.currentTab.value !== existing) {
                 activity.changeTab(existing, loadInitialUrl = false)
             }
@@ -158,9 +168,19 @@ internal class YouTubeCastController(
             activity.tabStore.currentTab.value
         }
         if (tab != null) {
+            // A new tab starts loading as it opens; its player only starts later, after this.
+            allowCastSound(tab)
             activeCastTab = tab
             startObserving(tab)
         }
+    }
+
+    /**
+     * The phone asked for this playback, so the cast tab may start it with sound even when
+     * "Let pages play video and sound by themselves" is off; other tabs keep that setting.
+     */
+    private fun allowCastSound(tab: BrowserTab) {
+        (tab.engine.view as? WebView)?.settings?.mediaPlaybackRequiresUserGesture = false
     }
 
     private fun targetTab(): BrowserTab? =
@@ -182,6 +202,14 @@ internal class YouTubeCastController(
                 val webView = tab.engine.view as? WebView ?: continue
                 webView.evaluateJavascript(OBSERVE_SCRIPT) { json ->
                     val raw = decodeJson(json) ?: return@evaluateJavascript
+                    val (tries, unmute) = soundStep(
+                        tries = soundTries,
+                        onCastVideo = raw.optString("id") == soundVideoId,
+                        muted = raw.optBoolean("m", false),
+                        paused = raw.optBoolean("p", false),
+                    )
+                    soundTries = tries
+                    if (unmute) webView.evaluateJavascript(UNMUTE_SCRIPT, null)
                     receiver?.onPlayerObserved(
                         positionSeconds = raw.optDouble("t", 0.0),
                         durationSeconds = raw.optDouble("d", 0.0).takeIf { !it.isNaN() } ?: 0.0,
@@ -205,11 +233,46 @@ internal class YouTubeCastController(
         private const val YOUTUBE_HOST = "www.youtube.com"
         private const val YOUTUBE_MUSIC_HOST = "music.youtube.com"
         private const val PAIRING_TIMEOUT_MS = 4_000L
+        private const val SOUND_TRIES = 5
         private const val OBSERVE_SCRIPT =
             "(()=>{const v=document.querySelector('video');if(!v)return null;" +
                 "const id=new URL(location.href).searchParams.get('v')||'';" +
                 "return JSON.stringify({t:v.currentTime||0,d:v.duration||0,p:v.paused," +
                 "vol:Math.round((v.volume||1)*100),m:!!v.muted,id:id})})()"
+
+        /**
+         * YouTube starts muted or paused when it last could not autoplay with sound: retry the
+         * unmute a few times after a cast, and stop as soon as it plays with sound. Until the page
+         * shows the cast video, the player read is still the previous track's: wait.
+         */
+        internal fun soundStep(tries: Int, onCastVideo: Boolean, muted: Boolean, paused: Boolean): Pair<Int, Boolean> = when {
+            tries <= 0 -> 0 to false
+            !onCastVideo -> tries to false
+            muted || paused -> (tries - 1) to true
+            else -> 0 to false
+        }
+
+        private val YOUTUBE_HOSTS = setOf("youtube.com", YOUTUBE_HOST, "m.youtube.com", YOUTUBE_MUSIC_HOST)
+
+        /**
+         * Where a cast plays, so every cast reuses one tab: the tab of the last cast, then the
+         * current tab if it is on YouTube, then a tab on the sender's site, then any YouTube tab.
+         * Null opens a new tab. Android serves youtube.com as m.youtube.com, so that counts too.
+         */
+        internal fun pickCastTab(hosts: List<String?>, castIndex: Int, currentIndex: Int, isMusic: Boolean): Int? {
+            fun isYouTube(i: Int) = hosts.getOrNull(i)?.lowercase() in YOUTUBE_HOSTS
+            fun isSendersSite(i: Int) = (hosts.getOrNull(i)?.lowercase() == YOUTUBE_MUSIC_HOST) == isMusic
+            return castIndex.takeIf { it in hosts.indices }
+                ?: currentIndex.takeIf { it in hosts.indices && isYouTube(it) }
+                ?: hosts.indices.firstOrNull { isYouTube(it) && isSendersSite(it) }
+                ?: hosts.indices.firstOrNull { isYouTube(it) }
+        }
+
+        /** The site's own player API, so its mute button agrees; the bare element otherwise. */
+        private const val UNMUTE_SCRIPT =
+            "(()=>{const p=document.getElementById('movie_player');" +
+                "if(p&&p.unMute){p.unMute();if(p.playVideo)p.playVideo();return}" +
+                "const v=document.querySelector('video');if(v){v.muted=false;v.play().catch(()=>{})}})()"
 
         private fun decodeJson(json: String?): JSONObject? {
             if (json == null || json == "null") return null
