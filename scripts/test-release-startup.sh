@@ -25,6 +25,9 @@ if [ "$root_ready" != 1 ]; then
   exit 1
 fi
 adb shell getprop ro.build.version.sdk > "$report/android-api.txt"
+# The API 24 image's Messages app can crash in the background; its "has stopped" dialog then covers
+# the browser and the home page check fails although the browser is fine. The test never uses it.
+timeout 20s adb shell pm disable-user --user 0 com.google.android.apps.messaging >/dev/null 2>&1 || true
 adb shell dumpsys webviewupdate > "$report/webview-provider.txt"
 capture() {
   # Bounded: if the emulator drops, adb waits for a device forever and the job only ends at the timeout.
