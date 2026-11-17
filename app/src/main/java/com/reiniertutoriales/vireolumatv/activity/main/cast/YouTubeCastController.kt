@@ -36,6 +36,8 @@ internal class YouTubeCastController(
     private var activeCastTab: BrowserTab? = null
     /** Tries left to start the cast with sound; zero once it plays unmuted or the phone pauses or mutes. */
     private var soundTries = 0
+    /** The cast video the sound tries wait for, so the previous track's player is not read. */
+    private var soundVideoId: String? = null
 
     private val deviceUuid: String
         get() = config.youtubeCastUuid.ifBlank {
@@ -117,6 +119,7 @@ internal class YouTubeCastController(
     override fun play(video: CastVideo, positionSeconds: Double) {
         val isMusic = video.theme == YouTubeCastReceiver.THEME_MUSIC
         soundTries = SOUND_TRIES
+        soundVideoId = video.id
         openInYouTubeTab(buildWatchUrl(video.id, video.playlistId, positionSeconds, isMusic), isMusic)
     }
 
@@ -153,6 +156,7 @@ internal class YouTubeCastController(
             isMusic = isMusic,
         )?.let { tabs[it] }
         val tab = if (existing != null) {
+            allowCastSound(existing)
             if (activity.tabStore.currentTab.value !== existing) {
                 activity.changeTab(existing, loadInitialUrl = false)
             }
@@ -164,12 +168,19 @@ internal class YouTubeCastController(
             activity.tabStore.currentTab.value
         }
         if (tab != null) {
-            // The phone asked for this playback, so this tab may start it with sound even when
-            // "Let pages play video and sound by themselves" is off; other tabs keep that setting.
-            (tab.engine.view as? WebView)?.settings?.mediaPlaybackRequiresUserGesture = false
+            // A new tab starts loading as it opens; its player only starts later, after this.
+            allowCastSound(tab)
             activeCastTab = tab
             startObserving(tab)
         }
+    }
+
+    /**
+     * The phone asked for this playback, so the cast tab may start it with sound even when
+     * "Let pages play video and sound by themselves" is off; other tabs keep that setting.
+     */
+    private fun allowCastSound(tab: BrowserTab) {
+        (tab.engine.view as? WebView)?.settings?.mediaPlaybackRequiresUserGesture = false
     }
 
     private fun targetTab(): BrowserTab? =
@@ -191,7 +202,12 @@ internal class YouTubeCastController(
                 val webView = tab.engine.view as? WebView ?: continue
                 webView.evaluateJavascript(OBSERVE_SCRIPT) { json ->
                     val raw = decodeJson(json) ?: return@evaluateJavascript
-                    val (tries, unmute) = soundStep(soundTries, raw.optBoolean("m", false), raw.optBoolean("p", false))
+                    val (tries, unmute) = soundStep(
+                        tries = soundTries,
+                        onCastVideo = raw.optString("id") == soundVideoId,
+                        muted = raw.optBoolean("m", false),
+                        paused = raw.optBoolean("p", false),
+                    )
                     soundTries = tries
                     if (unmute) webView.evaluateJavascript(UNMUTE_SCRIPT, null)
                     receiver?.onPlayerObserved(
@@ -226,10 +242,12 @@ internal class YouTubeCastController(
 
         /**
          * YouTube starts muted or paused when it last could not autoplay with sound: retry the
-         * unmute a few times after a cast, and stop as soon as it plays with sound.
+         * unmute a few times after a cast, and stop as soon as it plays with sound. Until the page
+         * shows the cast video, the player read is still the previous track's: wait.
          */
-        internal fun soundStep(tries: Int, muted: Boolean, paused: Boolean): Pair<Int, Boolean> = when {
+        internal fun soundStep(tries: Int, onCastVideo: Boolean, muted: Boolean, paused: Boolean): Pair<Int, Boolean> = when {
             tries <= 0 -> 0 to false
+            !onCastVideo -> tries to false
             muted || paused -> (tries - 1) to true
             else -> 0 to false
         }

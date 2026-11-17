@@ -114,13 +114,16 @@ class LoungeProtocolTest {
 
     @Test
     fun aCastRetriesSoundUntilThePagePlaysUnmuted() {
+        val step = YouTubeCastController::soundStep
+        // The previous track still playing with sound does not use up the tries.
+        assertEquals(5 to false, step(5, false, false, false))
         // Muted or paused after a cast: unmute and spend a try.
-        assertEquals(4 to true, YouTubeCastController.soundStep(5, muted = true, paused = false))
-        assertEquals(3 to true, YouTubeCastController.soundStep(4, muted = false, paused = true))
+        assertEquals(4 to true, step(5, true, true, false))
+        assertEquals(3 to true, step(4, true, false, true))
         // Playing with sound: done.
-        assertEquals(0 to false, YouTubeCastController.soundStep(3, muted = false, paused = false))
+        assertEquals(0 to false, step(3, true, false, false))
         // No tries left, or the phone paused or muted: leave the page alone.
-        assertEquals(0 to false, YouTubeCastController.soundStep(0, muted = true, paused = true))
+        assertEquals(0 to false, step(0, true, true, true))
     }
 
     @Test
