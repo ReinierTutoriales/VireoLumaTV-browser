@@ -585,8 +585,14 @@ app/src/main/res/drawable/brand_logo.xml	REGENERADO
 app/src/main/res/drawable/brand_symbol.xml	REGENERADO
 app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml	REGENERADO
 app/src/main/res/mipmap-anydpi-v26/tv_banner.xml	REGENERADO
-app/src/main/res/mipmap-anydpi/ic_launcher.xml	REGENERADO
-app/src/main/res/mipmap-anydpi/tv_banner.xml	REGENERADO
+app/src/main/res/mipmap-anydpi/ic_launcher.xml	ELIMINADO
+app/src/main/res/mipmap-anydpi/tv_banner.xml	ELIMINADO
+app/src/main/res/mipmap-hdpi/ic_launcher.png	REGENERADO
+app/src/main/res/mipmap-mdpi/ic_launcher.png	REGENERADO
+app/src/main/res/mipmap-xhdpi/ic_launcher.png	REGENERADO
+app/src/main/res/mipmap-xhdpi/tv_banner.png	REGENERADO
+app/src/main/res/mipmap-xxhdpi/ic_launcher.png	REGENERADO
+app/src/main/res/mipmap-xxxhdpi/ic_launcher.png	REGENERADO
 app/src/main/res/values/brand.xml	REGENERADO
 assets/brand/README.md	PROPIO
 assets/brand/approved-source.png	PROPIO
