@@ -1,3 +1,18 @@
+# VireoLumaTV 3.0.14
+
+Refuerza el receptor de envíos desde el teléfono.
+
+## Seguridad
+
+- Una página web abierta en un navegador de tu red podía emparejarse con el TV y enviarle vídeos de YouTube. Ahora el TV solo acepta envíos de las apps del teléfono y de las páginas de YouTube, y rechaza los demás.
+- YouTube y YouTube Music siguen enviando como antes. El receptor DLNA ya estaba protegido y no cambia.
+
+## Validación e instalación
+
+Las comprobaciones automatizadas cubren pruebas, lint, APK de distribución, conservación de datos al actualizar y arranque en Android API 24, 28, 34 y 37. La prueba de arranque en Android 7 ya no falla cuando la app de Mensajes del emulador se cierra sola.
+
+Compatible con Android 7.0 o superior. El modo incógnito requiere Android 9 o superior. Instala el APK de tu arquitectura sobre la versión existente para conservar los datos.
+
 # VireoLumaTV 3.0.13
 
 Lo que envías desde el teléfono empieza a sonar sin tocar el mando.
