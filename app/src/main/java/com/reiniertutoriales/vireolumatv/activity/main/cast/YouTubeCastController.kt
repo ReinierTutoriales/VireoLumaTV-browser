@@ -145,13 +145,13 @@ internal class YouTubeCastController(
     }
 
     private fun openInYouTubeTab(url: String, isMusic: Boolean) {
-        val existing = activity.tabStore.openTabs.firstOrNull { tab ->
-            !tab.closed && runCatching {
-                val host = tab.url.toUri().host ?: return@runCatching false
-                if (isMusic) host.equals(YOUTUBE_MUSIC_HOST, ignoreCase = true)
-                else host.equals(YOUTUBE_HOST, ignoreCase = true) || host.equals("youtube.com", ignoreCase = true)
-            }.getOrDefault(false)
-        }
+        val tabs = activity.tabStore.openTabs.filter { !it.closed }
+        val existing = pickCastTab(
+            hosts = tabs.map { tab -> runCatching { tab.url.toUri().host }.getOrNull() },
+            castIndex = tabs.indexOfFirst { it === activeCastTab },
+            currentIndex = tabs.indexOfFirst { it === activity.tabStore.currentTab.value },
+            isMusic = isMusic,
+        )?.let { tabs[it] }
         val tab = if (existing != null) {
             if (activity.tabStore.currentTab.value !== existing) {
                 activity.changeTab(existing, loadInitialUrl = false)
@@ -232,6 +232,22 @@ internal class YouTubeCastController(
             tries <= 0 -> 0 to false
             muted || paused -> (tries - 1) to true
             else -> 0 to false
+        }
+
+        private val YOUTUBE_HOSTS = setOf("youtube.com", YOUTUBE_HOST, "m.youtube.com", YOUTUBE_MUSIC_HOST)
+
+        /**
+         * Where a cast plays, so every cast reuses one tab: the tab of the last cast, then the
+         * current tab if it is on YouTube, then a tab on the sender's site, then any YouTube tab.
+         * Null opens a new tab. Android serves youtube.com as m.youtube.com, so that counts too.
+         */
+        internal fun pickCastTab(hosts: List<String?>, castIndex: Int, currentIndex: Int, isMusic: Boolean): Int? {
+            fun isYouTube(i: Int) = hosts.getOrNull(i)?.lowercase() in YOUTUBE_HOSTS
+            fun isSendersSite(i: Int) = (hosts.getOrNull(i)?.lowercase() == YOUTUBE_MUSIC_HOST) == isMusic
+            return castIndex.takeIf { it in hosts.indices }
+                ?: currentIndex.takeIf { it in hosts.indices && isYouTube(it) }
+                ?: hosts.indices.firstOrNull { isYouTube(it) && isSendersSite(it) }
+                ?: hosts.indices.firstOrNull { isYouTube(it) }
         }
 
         /** The site's own player API, so its mute button agrees; the bare element otherwise. */

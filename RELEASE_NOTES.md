@@ -7,6 +7,7 @@ Lo que envías desde el teléfono empieza a sonar sin tocar el mando.
 - Al enviar una canción o un vídeo, o al pasar de pista desde el teléfono, YouTube arrancaba en pausa o silenciado, y había que activar el sonido en cada tema. La pestaña que abre el envío ya puede reproducir con sonido por sí sola, y el TV quita el silencio si YouTube arranca silenciado.
 - Las demás pestañas siguen la opción «Permitir que las páginas reproduzcan vídeo y sonido solas».
 - Si silencias o pausas desde el teléfono, el TV lo respeta.
+- Cada envío abría una pestaña nueva, porque YouTube en Android se abre como `m.youtube.com` y el TV no reconocía esa pestaña. Ahora todos los envíos usan la misma pestaña: la del último envío, la actual si es de YouTube o YouTube Music, u otra de YouTube ya abierta. Solo se abre una nueva si no hay ninguna.
 
 ## Validación e instalación
 

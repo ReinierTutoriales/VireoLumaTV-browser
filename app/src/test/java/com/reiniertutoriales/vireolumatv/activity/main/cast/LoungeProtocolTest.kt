@@ -123,6 +123,21 @@ class LoungeProtocolTest {
         assertEquals(0 to false, YouTubeCastController.soundStep(0, muted = true, paused = true))
     }
 
+    @Test
+    fun everyCastReusesOneTab() {
+        val pick = YouTubeCastController::pickCastTab
+        // The mobile site counts as YouTube: no new tab for each cast.
+        assertEquals(1, pick(listOf("www.google.com", "m.youtube.com"), -1, 0, false))
+        // The tab of the last cast wins, whatever it shows now.
+        assertEquals(0, pick(listOf("music.youtube.com", "m.youtube.com"), 0, 1, false))
+        // The current tab, when it is on YouTube.
+        assertEquals(1, pick(listOf("music.youtube.com", "m.youtube.com"), -1, 1, true))
+        // Otherwise the sender's own site, then any YouTube tab.
+        assertEquals(1, pick(listOf("m.youtube.com", "music.youtube.com"), -1, -1, true))
+        assertEquals(0, pick(listOf("m.youtube.com", "example.org"), -1, 1, true))
+        assertNull(pick(listOf("example.org"), -1, 0, false))
+    }
+
     private fun decode(query: String): Map<String, String> = query.split('&').associate {
         val (k, v) = it.split('=', limit = 2)
         URLDecoder.decode(k, "UTF-8") to URLDecoder.decode(v, "UTF-8")
