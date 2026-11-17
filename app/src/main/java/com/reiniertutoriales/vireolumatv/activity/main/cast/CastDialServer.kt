@@ -212,6 +212,11 @@ internal class CastDialServer(
                 val path = request.path.replace(Regex("/{2,}"), "/").trimEnd('/').ifEmpty { "/" }
 
                 when {
+                    // A text/plain POST from any web page reaches us without a CORS preflight.
+                    request.method != "GET" && !isAllowedOrigin(request.origin) -> {
+                        Log.w(TAG, "DIAL ${request.method} refused for origin ${request.origin}")
+                        writeResponse(output, 403, "Forbidden", "text/plain", "")
+                    }
                     request.method == "GET" && path == "/ssdp/device-desc.xml" -> {
                         writeResponse(
                             output = output,
@@ -259,6 +264,7 @@ internal class CastDialServer(
         val path: String,
         val query: String,
         val body: String,
+        val origin: String? = null,
     )
 
     internal companion object {
@@ -268,6 +274,20 @@ internal class CastDialServer(
         private const val DIAL_SERVICE_TYPE = "urn:dial-multiscreen-org:service:dial:1"
         private const val DIAL_DEVICE_TYPE = "urn:dial-multiscreen-org:device:dial:1"
         private const val SSDP_ALL = "ssdp:all"
+
+        /**
+         * Who may launch or stop the app: native apps send no Origin or a
+         * "package:" one; of web pages, only YouTube's own. Anything else is a page trying to cast
+         * from the browser of someone on the network.
+         */
+        internal fun isAllowedOrigin(origin: String?): Boolean {
+            if (origin.isNullOrBlank()) return true
+            if (origin.startsWith("package:")) return true
+            val uri = runCatching { java.net.URI(origin) }.getOrNull() ?: return false
+            val host = uri.host?.lowercase(Locale.ROOT) ?: return false
+            return uri.scheme.equals("https", ignoreCase = true) &&
+                (host == "youtube.com" || host.endsWith(".youtube.com"))
+        }
 
         /** Search targets peer-dial answers and announces. */
         internal fun serviceTypes(uuid: String) =
@@ -425,11 +445,16 @@ internal class CastDialServer(
             val query = if (qIndex >= 0) target.substring(qIndex + 1) else ""
 
             var contentLength = 0
+            var origin: String? = null
             for (i in 1 until lines.size) {
                 val line = lines[i]
                 val colon = line.indexOf(':')
-                if (colon > 0 && line.substring(0, colon).trim().equals("Content-Length", ignoreCase = true)) {
-                    contentLength = line.substring(colon + 1).trim().toIntOrNull() ?: return null
+                if (colon <= 0) continue
+                val name = line.substring(0, colon).trim()
+                when {
+                    name.equals("Content-Length", ignoreCase = true) ->
+                        contentLength = line.substring(colon + 1).trim().toIntOrNull() ?: return null
+                    name.equals("Origin", ignoreCase = true) -> origin = line.substring(colon + 1).trim()
                 }
             }
             if (contentLength !in 0..MAX_BODY_BYTES) return null
@@ -441,7 +466,7 @@ internal class CastDialServer(
                 if (n < 0) return null
                 readTotal += n
             }
-            return HttpRequest(method, path, query, String(bodyBytes, Charsets.UTF_8))
+            return HttpRequest(method, path, query, String(bodyBytes, Charsets.UTF_8), origin)
         }
 
         private fun writeResponse(

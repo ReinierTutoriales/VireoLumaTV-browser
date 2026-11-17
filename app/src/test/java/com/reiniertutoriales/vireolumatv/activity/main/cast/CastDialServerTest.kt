@@ -53,6 +53,18 @@ class CastDialServerTest {
     }
 
     @Test
+    fun onlyPhoneAppsAndYouTubeMayLaunch() {
+        assertTrue(CastDialServer.isAllowedOrigin(null))
+        assertTrue(CastDialServer.isAllowedOrigin("package:com.google.ios.youtubemusic"))
+        assertTrue(CastDialServer.isAllowedOrigin("https://www.youtube.com"))
+        assertTrue(CastDialServer.isAllowedOrigin("https://music.youtube.com"))
+        assertFalse(CastDialServer.isAllowedOrigin("https://evil.example"))
+        assertFalse(CastDialServer.isAllowedOrigin("https://youtube.com.evil.example"))
+        assertFalse(CastDialServer.isAllowedOrigin("http://www.youtube.com"))
+        assertFalse(CastDialServer.isAllowedOrigin("null"))
+    }
+
+    @Test
     fun ssdpAnswersTheSameSearchTargetsAsPeerDial() {
         val uuid = "11111111-2222-3333-4444-555555555555"
         assertEquals(
@@ -111,6 +123,9 @@ class CastDialServerTest {
             assertEquals(CastDialServer.DialLaunchRequest("pair-2", "cl"), launches[1])
 
             assertEquals(405, request("DELETE", "$base/apps/YouTube/run").code)
+            // A web page on the network cannot pair with the TV.
+            assertEquals(403, rawPostStatus(port!!, "/apps/YouTube", "pairingCode=pair-3&theme=m", "https://evil.example"))
+            assertEquals(2, launches.size)
             assertEquals(204, request("GET", "$base/apps").code)
         } finally {
             server.close()
@@ -118,6 +133,19 @@ class CastDialServerTest {
     }
 
     private data class HttpResult(val code: Int, val body: String, val headers: Map<String, String>)
+
+    /** HttpURLConnection will not send Origin, so a web page's POST is written by hand. */
+    private fun rawPostStatus(port: Int, path: String, body: String, origin: String): Int {
+        java.net.Socket("127.0.0.1", port).use { socket ->
+            socket.soTimeout = 2000
+            val bytes = body.toByteArray(StandardCharsets.UTF_8)
+            val head = "POST $path HTTP/1.1\r\nHost: 127.0.0.1:$port\r\nOrigin: $origin\r\n" +
+                "Content-Type: text/plain\r\nContent-Length: ${bytes.size}\r\nConnection: close\r\n\r\n"
+            socket.getOutputStream().apply { write(head.toByteArray(StandardCharsets.UTF_8)); write(bytes); flush() }
+            val status = socket.getInputStream().bufferedReader(StandardCharsets.UTF_8).readLine().orEmpty()
+            return status.split(' ').getOrNull(1)?.toIntOrNull() ?: -1
+        }
+    }
 
     private fun request(method: String, targetUrl: String, formBody: String? = null): HttpResult {
         val conn = URI.create(targetUrl).toURL().openConnection() as HttpURLConnection
