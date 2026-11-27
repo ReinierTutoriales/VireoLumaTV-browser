@@ -22,12 +22,15 @@ Previous device measurements remain evidence only for their measured builds and 
 
 ## Filter syntax coverage
 
-Counts refer to the bundled lists in `assets/adblock/baseline` (fetched 2026-10-30).
+Counts refer to the filter snapshot fetched on 2026-10-30. The bundled snapshot
+is tracked in `assets/adblock/baseline/manifest.json`.
 
-Applied by the bridge in addition to adblock-rust 0.13.5:
+Applied by the bridge with adblock-rust 0.13.6:
 
-- `$to=` and `$denyallow=` (adblock-rust drops or rejects them): `native/adblock-jni/src/scoped.rs`.
-  A `*` rule without a `domain=`/`from=` page is ignored, as uBO requires.
+- `$to=` and `$denyallow=` run together in `native/adblock-jni/src/scoped.rs` to preserve
+  hostname matching and `$important` precedence. The upstream `$to=` implementation
+  has different destination matching and its own precedence. A `*` rule without
+  a `domain=`/`from=` page is ignored, as uBO requires.
 - `$method=`: the request's HTTP method reaches the engine (`nativeVerdict`).
 - `$popup`/`$popunder`: rewritten to `$document` in a separate engine for new windows
   (`FilterListPreprocessor`).

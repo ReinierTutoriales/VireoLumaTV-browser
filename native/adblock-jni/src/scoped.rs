@@ -1,7 +1,7 @@
 //! Network rules whose `$to=` / `$denyallow=` option limits the request's own hostname.
 //!
-//! adblock-rust 0.13 parses `$to=` but drops those filters ("parsed but ignored") and rejects
-//! `$denyallow=`, so about 670 rules of the bundled uBlock lists never applied. They are kept here,
+//! The upstream engine supports `$to=` with different hostname matching and rejects `$denyallow=`.
+//! Both kinds of rules are kept here to preserve their precedence and uBlock Origin semantics,
 //! without the hostname option, in a small engine of their own; a match only counts when the
 //! request's hostname satisfies the option (uBO semantics: `to=a|~b` needs a and not b,
 //! `denyallow=a|b` is `to=~a|~b`). Main-list exceptions still apply unless the rule is `$important`.
@@ -193,18 +193,28 @@ fn is_cosmetic(line: &str) -> bool {
     ["##", "#@#", "#?#", "#$#", "#%#"].iter().any(|marker| line.contains(marker))
 }
 
-/// Appends the hostname-scoped rules of one list to a [Scoped] source.
-pub fn collect(list: &str, trusted: bool, source: &mut String) {
+/// Appends scoped rules to [Scoped]'s source and returns the rules for the main engine.
+pub fn partition(list: String, trusted: bool, source: &mut String) -> String {
     if !list.contains("to=") && !list.contains("denyallow=") {
-        return;
+        return list;
     }
-    for line in list.lines().map(str::trim) {
+    let mut main = String::with_capacity(list.len());
+    for original in list.split_inclusive('\n') {
+        let line = original.trim();
         if split(line).is_some() {
             source.push(if trusted { 'T' } else { 'U' });
             source.push_str(line);
             source.push('\n');
+        } else if !is_cosmetic(line) && line.rsplit_once('$').is_some_and(|(_, options)| {
+            options.split(',').any(|option| option.trim_start_matches('~').starts_with("to="))
+        }) {
+            // Keep unsupported scoped forms out of the main engine as before.
+            continue;
+        } else {
+            main.push_str(original);
         }
     }
+    main
 }
 
 impl Scoped {
@@ -390,7 +400,7 @@ mod tests {
         ] {
             for trusted in [false, true] {
                 let mut source = String::new();
-                collect(rules, trusted, &mut source);
+                partition(rules.to_owned(), trusted, &mut source);
                 let scoped = Scoped::build(source, |_| ParseOptions::default(), Vec::new()).unwrap();
                 let request = Request::new("https://cdn.example.com/badfilter/a.js", "https://badfilter.test/", "script", "GET").unwrap();
                 assert!(scoped.check(&request, "badfilter.test").is_some_and(|result| result.should_block()), "trusted={trusted}: {rules}");
@@ -402,7 +412,7 @@ mod tests {
     fn a_shared_key_gate_never_hides_a_bucket_match() {
         // Two buckets under `com`; the second disables its own `/ads/` with `$badfilter`.
         let mut source = String::new();
-        collect("/ads/$script,to=com|~good.com\n/track/$script,to=com|~good.com\n/ads/$script,to=com|~other.com\n/ads/$script,to=com|~other.com,badfilter\n", false, &mut source);
+        partition("/ads/$script,to=com|~good.com\n/track/$script,to=com|~good.com\n/ads/$script,to=com|~other.com\n/ads/$script,to=com|~other.com,badfilter\n".to_owned(), false, &mut source);
         let scoped = Scoped::build(source, |_| ParseOptions::default(), Vec::new()).unwrap();
         assert!(scoped.by_host.exact["com"].any.is_some());
         let blocks = |url: &str| {

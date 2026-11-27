@@ -1,10 +1,12 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.isFocused
@@ -17,7 +19,6 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
-import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
@@ -42,15 +43,13 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class MainSettingsFocusTest {
-    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
     private val blocker = AdBlocker(autoLoad = false)
     private val debugCalls = mutableListOf<Boolean>()
     private lateinit var restoreEngine: () -> Unit
     private lateinit var general: GeneralPage
 
     @Before fun remote() {
-        // A remote key leaves touch mode; only then are the rows focus stops.
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
         restoreEngine = Engines.replaceForTest(object : EngineBackend {
             override fun create(tab: BrowserTab) = error("unused")
             override suspend fun clearCache(context: android.content.Context) {}

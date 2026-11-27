@@ -4,7 +4,9 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
@@ -14,13 +16,11 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
-import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
 import com.reiniertutoriales.vireolumatv.model.Favorite
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,15 +31,11 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class FavoritesPanelTest {
-    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
     private val opened = mutableListOf<Favorite>()
     private val edited = mutableListOf<Favorite>()
     private val deleted = mutableListOf<Favorite>()
     private var editMode by mutableStateOf(false)
-
-    @Before fun remote() {
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
-    }
 
     private fun bookmark(id: Long, title: String?, url: String?) =
         Favorite().apply { this.id = id; this.title = title; this.url = url }

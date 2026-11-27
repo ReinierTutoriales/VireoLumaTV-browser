@@ -5,8 +5,10 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Looper
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsSelected
@@ -17,7 +19,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
-import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.VireoTvTheme
@@ -51,13 +52,12 @@ import java.io.File
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class SettingsTabsTest {
-    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
     private val blocker = AdBlocker(autoLoad = false)
     private lateinit var restoreEngine: () -> Unit
     private lateinit var about: AboutPage
 
     @Before fun remote() {
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
         // FileProvider keeps the roots it resolved in a static cache; each Robolectric test has its
         // own data directory, so a root cached by an earlier test would not contain this one's files.
         (androidx.core.content.FileProvider::class.java.getDeclaredField("sCache")

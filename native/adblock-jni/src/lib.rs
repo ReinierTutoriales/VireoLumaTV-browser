@@ -3,7 +3,7 @@
 //! The engine is created once per filter-list generation and shared by every WebView thread:
 //! with the "single-thread" feature disabled `adblock::Engine` is `Sync`, so callers need no lock
 //! of their own. adblock-rust still serializes each network check on its internal regex-manager
-//! mutex (adblock 0.13.5 `Blocker::borrow_regex_manager`): checks are thread-safe, not parallel.
+//! mutex (adblock-rust `Blocker::borrow_regex_manager`): checks are thread-safe, not parallel.
 //! Handles are raw pointers to boxed [Blocker]s owned by `com.reiniertutoriales.vireolumatv.adblock.RustAdblock`.
 
 mod scoped;
@@ -155,7 +155,7 @@ impl Builder {
 
     fn add(&mut self, list: String, trusted: bool) {
         let list = without_unknown_redirects(list, &self.known);
-        scoped::collect(&list, trusted, &mut self.scoped);
+        let list = scoped::partition(list, trusted, &mut self.scoped);
         self.set.add_filter_list(list, options(trusted));
     }
 
@@ -553,6 +553,18 @@ mod tests {
                 let page = if rules.contains("site.test") { "https://site.test/" } else { "https://any.test/" };
                 assert_eq!(verdict(engine, "https://ok.track.test/ads/x", page, "xhr", "GET"), VERDICT_BLOCK, "{rules}");
             }
+        }
+    }
+
+    #[test]
+    fn scoped_to_match_does_not_hide_an_important_denyallow_redirect() {
+        let blocker = engine_for("||ads.test^$script,to=ads.test\n\
+            *$script,3p,denyallow=cdn.test,domain=site.test,important,redirect=noopjs");
+        let restored = Blocker::deserialize(&blocker.serialize(), NOOPJS).unwrap();
+        for engine in [&blocker, &restored] {
+            let redirect = verdict(engine, "https://ads.test/a.js", "https://site.test/", "script", "GET");
+            assert!(redirect.starts_with("data:application/javascript;base64,"), "{redirect}");
+            assert_eq!(verdict(engine, "https://ads.test/a.js", "https://elsewhere.test/", "script", "GET"), VERDICT_BLOCK);
         }
     }
 

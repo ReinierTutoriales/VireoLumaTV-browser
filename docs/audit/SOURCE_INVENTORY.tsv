@@ -485,6 +485,7 @@ app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/WebViewUse
 app/src/test/java/com/reiniertutoriales/vireolumatv/webengine/webview/YouTubeAdblockControllerTest.kt	PROPIO
 app/src/test/java/com/reiniertutoriales/vireolumatv/widgets/NotificationViewTest.kt	PROPIO
 app/src/test/resources/adblock/0.13.3.dat	REGENERADO
+app/src/test/resources/adblock/0.13.5.dat	REGENERADO
 app/src/test/resources/adblock/README.md	PROPIO
 art/vireolumatv-icon-master.png	ELIMINADO
 baselineprofile/build.gradle.kts	PROPIO

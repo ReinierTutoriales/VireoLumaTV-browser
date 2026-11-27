@@ -23,14 +23,17 @@ fn infix_match_does_not_use_a_dot_inside_the_filter_as_the_end_boundary() {
 }
 
 #[test]
-fn old_v6_cache_is_rejected_and_current_rules_round_trip() {
-    let legacy = include_bytes!("../../../app/src/test/resources/adblock/0.13.3.dat");
-    assert_eq!(legacy[4], 6);
-    assert!(Engine::default().deserialize(legacy).is_err());
+fn older_caches_are_rejected_and_current_rules_round_trip() {
+    let v6 = include_bytes!("../../../app/src/test/resources/adblock/0.13.3.dat");
+    let v8 = include_bytes!("../../../app/src/test/resources/adblock/0.13.5.dat");
+    for (legacy, version) in [(v6.as_slice(), 6), (v8.as_slice(), 8)] {
+        assert_eq!(legacy[4], version);
+        assert!(Engine::default().deserialize(legacy).is_err());
+    }
     let mut filters = FilterSet::new(false);
     filters.add_filter_list("||old-cache.test^".to_owned(), ParseOptions::default());
     let serialized = Engine::new_with_filter_set(filters).serialize();
-    assert_eq!(serialized[4], 8);
+    assert_eq!(serialized[4], 9);
     let mut restored = Engine::default();
     restored.deserialize(&serialized).unwrap();
     let request = Request::new("https://old-cache.test/banner.js", "https://page.test/", "script", "GET").unwrap();

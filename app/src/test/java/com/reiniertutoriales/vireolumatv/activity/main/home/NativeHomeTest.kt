@@ -8,8 +8,10 @@ import android.view.View
 import android.webkit.ValueCallback
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
@@ -25,7 +27,6 @@ import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.lifecycleScope
-import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.Config
 import com.reiniertutoriales.vireolumatv.R
@@ -46,7 +47,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -61,11 +61,7 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(RobolectricTestRunner::class)
 @RoboConfig(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class NativeHomeTest {
-    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
-
-    @Before fun remote() {
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
-    }
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
 
     private fun focusedTag(): String =
         compose.onNode(isFocused()).fetchSemanticsNode().config[SemanticsProperties.TestTag]

@@ -227,7 +227,7 @@ val copyDuplicatedAssets = tasks.register<Sync>("copyDuplicatedAssets") {
     from(rootProject.file("licenses")) { include("Apache-2.0.txt", "MPL-2.0.txt", "GPL-3.0.txt"); into("licenses") }
 }
 
-android.sourceSets.getByName("main").assets.srcDir(files(duplicatedAssetsDir).builtBy(copyDuplicatedAssets))
+android.sourceSets.getByName("main").assets.directories.add(duplicatedAssetsDir.get().asFile.absolutePath)
 tasks.named("preBuild").configure { dependsOn(copyDuplicatedAssets) }
 
 androidComponents {

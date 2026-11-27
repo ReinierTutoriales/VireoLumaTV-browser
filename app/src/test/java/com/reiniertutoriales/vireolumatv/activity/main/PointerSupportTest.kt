@@ -1,6 +1,8 @@
 package com.reiniertutoriales.vireolumatv.activity.main
 
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -10,7 +12,6 @@ import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvBrowserAction
 import com.reiniertutoriales.vireolumatv.activity.main.compose.TvSymbol
@@ -32,11 +33,10 @@ import javax.xml.parsers.DocumentBuilderFactory
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class PointerSupportTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createComposeRule(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
 
     @OptIn(ExperimentalTestApi::class)
     @Test fun hostDistinguishesTabFocusFromCommandFocus() {
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
         lateinit var host: ComposeControlsHost
         compose.setContent {
             AndroidView(factory = { context ->
