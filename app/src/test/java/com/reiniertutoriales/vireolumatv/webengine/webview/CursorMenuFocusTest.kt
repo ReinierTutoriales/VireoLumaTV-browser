@@ -3,15 +3,16 @@ package com.reiniertutoriales.vireolumatv.webengine.webview
 import android.view.View
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
-import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.AppContext
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.activity.main.view.PointerMenu
@@ -35,14 +36,13 @@ import java.lang.reflect.Proxy
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class CursorMenuFocusTest {
-    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
     private lateinit var page: View
     private lateinit var cursor: PointerLayout
     private lateinit var menu: PointerMenu
     private var directMode = false
 
     @Before fun build() {
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
         compose.runOnUiThread {
             val activity = compose.activity
             val root = FrameLayout(activity)

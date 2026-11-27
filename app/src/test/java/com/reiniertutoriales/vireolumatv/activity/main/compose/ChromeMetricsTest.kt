@@ -1,6 +1,8 @@
 package com.reiniertutoriales.vireolumatv.activity.main.compose
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertWidthIsEqualTo
@@ -11,7 +13,6 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.input.key.Key
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
@@ -30,7 +31,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [34])
 class ChromeMetricsTest {
-    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
 
     @Test fun aTvUsesTvMaterialSizesInsideTheSafeArea() {
         val tv = ChromeMetrics.forWindow(960.dp, television = true)
@@ -100,7 +101,6 @@ class ChromeMetricsTest {
     @OptIn(ExperimentalTestApi::class)
     @Config(qualifiers = "w320dp-h640dp-mdpi")
     @Test fun dpadFocusBringsTheLastCompactCommandIntoView() {
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
         showBar()
         compose.onNodeWithTag("back_button").requestFocus()
         for (tag in listOf("back_button", "forward_button", "refresh_button", "home_button", "blocker_button")) {

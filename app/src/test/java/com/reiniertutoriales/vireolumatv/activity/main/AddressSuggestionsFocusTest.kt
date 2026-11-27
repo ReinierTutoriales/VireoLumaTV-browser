@@ -3,8 +3,10 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.view.View
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -13,7 +15,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
-import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import com.reiniertutoriales.vireolumatv.R
 import com.reiniertutoriales.vireolumatv.databinding.BrowserWindowBinding
@@ -25,7 +26,6 @@ import com.reiniertutoriales.vireolumatv.model.BrowserTab
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,14 +36,10 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28], qualifiers = "w960dp-h540dp-mdpi")
 class AddressSuggestionsFocusTest {
-    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
     private val first = AddressSuggestion("First", "https://first.test", false)
     private val second = AddressSuggestion("Second", "https://second.test", true)
     private val third = AddressSuggestion("Third", "https://third.test", false)
-
-    @Before fun remote() {
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
-    }
 
     private fun suggestions(): AddressSuggestionsView {
         lateinit var view: AddressSuggestionsView

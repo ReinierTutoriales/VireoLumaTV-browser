@@ -3,7 +3,9 @@ package com.reiniertutoriales.vireolumatv.activity.main
 import android.os.Looper
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -26,7 +28,6 @@ import com.reiniertutoriales.vireolumatv.activity.main.compose.TvControlColors
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,16 +40,11 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class AppMenuPanelTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createComposeRule(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun tag(entry: AppMenuEntry) = "menu_${entry.name.lowercase()}"
-
-    @Before fun remote() {
-        // A remote, not a touch screen: focus moves as on a TV.
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
-    }
 
     private fun showMenu(onPick: (AppMenuEntry) -> Unit = {}) {
         compose.setContent { VireoTvTheme { TvAppMenu(appMenuEntries(), onPick) } }

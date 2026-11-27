@@ -5,16 +5,16 @@ import android.os.SystemClock
 import android.os.Looper
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.test.ComposeUiTestConfig
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.test.platform.app.InstrumentationRegistry
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -25,11 +25,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = VireoLumaTVApp::class, sdk = [28])
 class TvDialogTest {
-    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
-
-    @Before fun remote() {
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false)
-    }
+    @get:Rule val compose = createAndroidComposeRule<ComponentActivity>(ComposeUiTestConfig(inputMode = InputMode.Keyboard))
 
     private fun idle() = Shadows.shadowOf(Looper.getMainLooper()).idle()
 
