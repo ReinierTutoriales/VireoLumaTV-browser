@@ -25,7 +25,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -72,8 +71,11 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     private val values = List(spec.fields.size) { TextFieldState() }
 
     /** Why the positive button was refused; shown under the fields until the text changes. */
-    var error by mutableStateOf<CharSequence?>(null)
-        private set
+    private var validationError by mutableStateOf<Pair<CharSequence, List<String>>?>(null)
+    val error: CharSequence?
+        get() = validationError?.let { (message, input) ->
+            message.takeIf { values.map { it.text.toString() } == input }
+        }
 
     /** Confirm keys whose press began in this dialog; see [dispatchKeyEvent]. */
     private val confirmKeysDown = HashSet<Int>()
@@ -103,7 +105,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     fun fieldValue(index: Int): String = values[index].text.toString()
 
     /** Sets field [index] as if typed: for tests and for prefilled forms. */
-    fun setFieldValue(index: Int, value: String) { values[index].setTextAndPlaceCursorAtEnd(value); error = null }
+    fun setFieldValue(index: Int, value: String) { values[index].setTextAndPlaceCursorAtEnd(value); validationError = null }
 
     /** The title and message shown. */
     val title: CharSequence? get() = spec.title
@@ -129,7 +131,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     fun press(which: Int) {
         if (!isShowing) return
         val button = spec.buttons[which] ?: return
-        if (which == DialogInterface.BUTTON_POSITIVE) spec.validate?.invoke(this)?.let { error = it; return }
+        if (which == DialogInterface.BUTTON_POSITIVE) spec.validate?.invoke(this)?.let { validationError = it to values.map { field -> field.text.toString() }; return }
         button.onClick?.onClick(this, which)
         dismiss()
     }
@@ -169,12 +171,6 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
                 }
             }
             spec.fields.forEachIndexed { index, field ->
-                LaunchedEffect(values[index]) {
-                    var previous = values[index].text.toString()
-                    snapshotFlow { values[index].text.toString() }.collect { current ->
-                        if (current != previous) { previous = current; error = null }
-                    }
-                }
                 TvTextField(
                     state = values[index],
                     hint = context.getString(field.hint),

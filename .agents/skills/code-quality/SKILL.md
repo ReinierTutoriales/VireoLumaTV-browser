@@ -65,3 +65,9 @@ Renaming, reformatting or moving code to change `git blame` is not a replacement
 - Consult official Android/AndroidX documentation and matching upstream source before replacing custom implementations. Preserve TV input, accessibility, lifecycle and API 24+ contracts. Remove superseded implementations in the same change once equivalence is tested.
 - Review CI lint reports, Compose compiler reports and metrics, Clippy diagnostics and R8 usage/seeds when available. R8 removal from an APK is not proof that a source declaration is unused in every variant or test.
 - Group related verified cleanup into the minimum number of passes; do not add speculative abstractions or dependencies just to satisfy a metric. Record exact symbols, evidence and validation. Compare benchmark results before claiming performance gains.
+
+Use the official Compose guidance before changing state or effects:
+- https://developer.android.com/develop/ui/compose/side-effects
+- https://developer.android.com/develop/ui/compose/text/migrate-state-based
+- https://developer.android.com/develop/ui/compose/touch-input/focus/request-focus
+Avoid asynchronous observers that can overwrite newer validation results. Test actual input and confirmation ordering, not only programmatic setters.
