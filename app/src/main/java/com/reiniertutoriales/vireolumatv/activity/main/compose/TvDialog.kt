@@ -23,7 +23,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,7 +69,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
         val validate: ((TvDialog) -> CharSequence?)?,
     )
 
-    private val values = mutableStateListOf<String>().apply { repeat(spec.fields.size) { add("") } }
+    private val values = List(spec.fields.size) { TextFieldState() }
 
     /** Why the positive button was refused; shown under the fields until the text changes. */
     var error by mutableStateOf<CharSequence?>(null)
@@ -98,10 +100,10 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     }
 
     /** The current text of field [index]. */
-    fun fieldValue(index: Int): String = values[index]
+    fun fieldValue(index: Int): String = values[index].text.toString()
 
     /** Sets field [index] as if typed: for tests and for prefilled forms. */
-    fun setFieldValue(index: Int, value: String) { values[index] = value; error = null }
+    fun setFieldValue(index: Int, value: String) { values[index].setTextAndPlaceCursorAtEnd(value); error = null }
 
     /** The title and message shown. */
     val title: CharSequence? get() = spec.title
@@ -167,9 +169,14 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
                 }
             }
             spec.fields.forEachIndexed { index, field ->
+                LaunchedEffect(values[index]) {
+                    var previous = values[index].text.toString()
+                    snapshotFlow { values[index].text.toString() }.collect { current ->
+                        if (current != previous) { previous = current; error = null }
+                    }
+                }
                 TvTextField(
-                    value = values[index],
-                    onValueChange = { setFieldValue(index, it) },
+                    state = values[index],
                     hint = context.getString(field.hint),
                     password = field.password,
                     uri = field.uri,
