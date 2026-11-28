@@ -86,10 +86,25 @@ jobs:
           node scripts/test-adblock-surrogates.cjs
           node scripts/test-page-filters.cjs
           cargo test --locked --manifest-path native/adblock-jni/Cargo.toml
-          ./gradlew testGenericDebugUnitTest --stacktrace
+          # Retry only transient repository throttling, never a failing test.
+          for attempt in 1 2 3; do
+            log=$(mktemp)
+            if ./gradlew testGenericDebugUnitTest --stacktrace > "$log" 2>&1; then
+              cat "$log"
+              rm -f "$log"
+              break
+            fi
+            cat "$log"
+            if [ "$attempt" -eq 3 ] || ! grep -Eq 'Received status code 429|HTTP 429' "$log" || grep -Eq 'tests? completed, [1-9][0-9]* failed|Compilation error' "$log"; then
+              rm -f "$log"
+              exit 1
+            fi
+            rm -f "$log"
+            sleep "$((attempt * 60))"
+          done
 
       - name: Upload UI previews
-        if: always()
+        if: success()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: browser-ui-previews
