@@ -71,3 +71,14 @@ Use the official Compose guidance before changing state or effects:
 - https://developer.android.com/develop/ui/compose/text/migrate-state-based
 - https://developer.android.com/develop/ui/compose/touch-input/focus/request-focus
 Avoid asynchronous observers that can overwrite newer validation results. Test actual input and confirmation ordering, not only programmatic setters.
+
+## Mandatory official Android engineering review
+
+Use the official Android skills catalog (https://developer.android.com/tools/agents/android-skills/browse) before planning changes. Select applicable guidance for Compose performance, TV migration, AGP, ANR, permissions and Intent security, R8, profiling and testing. Read the full applicable upstream skill and its referenced files, verify compatibility with the pinned library versions, and record the source and applicable scope. Do not introduce unrelated capabilities.
+
+Compose performance upstream: https://developer.android.com/agents/skills/jetpack-compose/jetpack-compose-performance/skill
+Audit every composable against all applicable categories: state/stability, layout, lazy containers, animation, effects/threading, graphics and custom modifiers. Read category-specific references before reporting or editing. Measure release builds with R8 and baseline profiles. Do not equate fewer recompositions with faster execution.
+
+Additional platform references: https://developer.android.com/tv ; https://developer.android.com/develop/ui/views/layout/webapps ; https://developer.android.com/topic/architecture ; https://developer.android.com/topic/performance ; https://developer.android.com/privacy-and-security ; https://developer.android.com/studio/write/lint ; https://developer.android.com/training/testing .
+
+Whole-repository audit protocol: pin HEAD; inventory production, tests, resources, build configuration, native/JNI and injected scripts; inspect consumers including reflection, generated code and resource references; record each finding with path, symbol, evidence, upstream guidance, fix and regression test. Track inspected and uninspected files separately. Complete the planned review before grouped edits. Do not claim completed audits from an inventory or partial scan. Do not restart running CI with speculative cleanup. Verify final diff and gate integration on actual results.
