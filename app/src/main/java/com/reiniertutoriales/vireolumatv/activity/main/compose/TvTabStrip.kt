@@ -81,10 +81,10 @@ fun TvTabStrip(
     val titleFocus = remember { HashMap<BrowserTab, FocusRequester>() }
     // A request made while the strip was hidden is stale when it comes back: start from the current one.
     var handledFocus by remember { mutableIntStateOf(focusRequest.first) }
-    LaunchedEffect(focusRequest, tabs) {
+    val target = tabs.getOrNull(focusRequest.second)?.tab
+    LaunchedEffect(focusRequest, target) {
         if (focusRequest.first == handledFocus) return@LaunchedEffect
-        val target = tabs.getOrNull(focusRequest.second)?.tab ?: return@LaunchedEffect
-        val requester = titleFocus[target] ?: return@LaunchedEffect
+        val requester = titleFocus[target ?: return@LaunchedEffect] ?: return@LaunchedEffect
         if (requester.requestFocus()) handledFocus = focusRequest.first
     }
     val currentOnFocus by rememberUpdatedState(onFocus)
