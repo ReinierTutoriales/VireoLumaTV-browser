@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.BasicSecureTextField
+import androidx.compose.foundation.text.input.TextObfuscationMode
+import androidx.compose.foundation.text.input.TextFieldDecorator
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,9 +37,6 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.input.OutputTransformation
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -134,8 +133,7 @@ fun TvTextButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
  */
 @Composable
 fun TvTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
+    state: TextFieldState,
     hint: String,
     modifier: Modifier = Modifier,
     password: Boolean = false,
@@ -146,30 +144,9 @@ fun TvTextField(
     val hovered by interaction.collectIsHoveredAsState()
     val metrics = LocalChromeMetrics.current
     val shape = RoundedCornerShape(10.dp)
-    val state = remember { TextFieldState(value) }
-    LaunchedEffect(value) {
-        if (state.text.toString() != value) state.setTextAndPlaceCursorAtEnd(value)
-    }
-    LaunchedEffect(state) {
-        var previous = state.text.toString()
-        snapshotFlow { state.text.toString() }.collect { text ->
-            if (text != previous) { previous = text; onValueChange(text) }
-        }
-    }
-    BasicTextField(
-        state = state,
-        lineLimits = TextFieldLineLimits.SingleLine,
-        interactionSource = interaction,
-        textStyle = TextStyle(color = Color.White, fontSize = metrics.body),
-        cursorBrush = SolidColor(Color.White),
-        outputTransformation = if (password) OutputTransformation { replace(0, length, "•".repeat(length)) } else null,
-        keyboardOptions = when {
-            password -> KeyboardOptions(keyboardType = KeyboardType.Password)
-            uri -> KeyboardOptions(keyboardType = KeyboardType.Uri)
-            else -> KeyboardOptions.Default
-        },
-        modifier = modifier.fillMaxWidth().semantics { contentDescription = hint },
-        decorator = { inner ->
+    val fieldModifier = modifier.fillMaxWidth().semantics { contentDescription = hint }
+    val style = TextStyle(color = Color.White, fontSize = metrics.body)
+    val decorator = TextFieldDecorator { inner ->
             Box(
                 Modifier.fillMaxWidth().defaultMinSize(minHeight = metrics.row)
                     .background(TvControlColors.surface(focused, hovered), shape)
@@ -180,8 +157,30 @@ fun TvTextField(
                 if (state.text.isEmpty()) Text(hint, color = Color.Gray, fontSize = metrics.body, maxLines = 1)
                 inner()
             }
-        },
-    )
+    }
+    if (password) {
+        BasicSecureTextField(
+            state = state,
+            modifier = fieldModifier,
+            textStyle = style,
+            interactionSource = interaction,
+            cursorBrush = SolidColor(Color.White),
+            textObfuscationMode = TextObfuscationMode.Hidden,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            decorator = decorator,
+        )
+    } else {
+        BasicTextField(
+            state = state,
+            modifier = fieldModifier,
+            lineLimits = TextFieldLineLimits.SingleLine,
+            interactionSource = interaction,
+            textStyle = style,
+            cursorBrush = SolidColor(Color.White),
+            keyboardOptions = if (uri) KeyboardOptions(keyboardType = KeyboardType.Uri) else KeyboardOptions.Default,
+            decorator = decorator,
+        )
+    }
 }
 
 /** A day heading in a dated list; read as a heading and never a focus stop. */
