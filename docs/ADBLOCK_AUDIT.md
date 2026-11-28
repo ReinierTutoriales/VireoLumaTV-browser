@@ -57,3 +57,39 @@ These are deterministic fixtures, not physical WebView validation.
 
 DOM behavior: https://dom.spec.whatwg.org/#concept-node-insert
 Text selections: https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#textFieldSelection
+
+## WebView and uBlock Origin review, 2026-11-28
+
+In uBlock Origin 1.77.4 the DOM surveyor queues a scan when work is pending,
+deduplicates nodes and queries new names in batches. VireoLumaTV already splits
+subtree walks into bounded slices and caches native request verdicts per rule
+generation. The local surveyor now reads each changed element once per observer
+delivery and schedules a timer only for queued roots or previously unseen names.
+Duplicate notifications cannot exhaust the 256-root queue.
+
+In the synthetic regression, 100 attribute records for one element require one
+class read instead of 100. The bridge still receives one lookup for the new class
+and ID. Initialization and a later delivery containing only known names each go
+from one queued timer to zero. The fixture also checks that a duplicate at 256
+queued roots avoids a document walk while a 257th distinct root still triggers
+the bounded fallback. These counts describe work in the fixture.
+
+uBlock Origin can stop surveying after five minutes and 256 consecutive misses.
+VireoLumaTV keeps its observer active so advertisements added later in long-lived
+pages can still be found. The extension captures requests through
+`webRequest`. Android WebView exposes interception callbacks with different
+coverage, including callback delivery only for the initial URL of a redirect.
+The extension's network path is therefore outside this port.
+
+The existing async WebView startup, single live tab, renderer recovery and
+memory-pressure cache eviction remain the baseline. Measure cold and warm
+navigation, renderer and host PSS, and DOM activity on the same WebView provider
+before attributing any end-to-end speed or memory change. Speculative loading
+would also need an origin policy and a joint app-plus-renderer memory budget.
+
+- [uBlock Origin 1.77.4 DOM surveyor](https://github.com/gorhill/uBlock/blob/1.77.4/src/js/contentscript.js)
+- [uBlock Origin 1.77.4 network interception](https://github.com/gorhill/uBlock/blob/1.77.4/src/js/traffic.js)
+- [Android WebView interception contract](https://developer.android.com/reference/android/webkit/WebViewClient#shouldInterceptRequest(android.webkit.WebView,%20android.webkit.WebResourceRequest))
+- [Android WebView startup](https://developer.android.com/develop/ui/views/layout/webapps/optimize-webview-startup)
+- [Android WebView memory](https://developer.android.com/develop/ui/views/layout/webapps/manage-webview-memory)
+- [Android WebView speculative loading](https://developer.android.com/develop/ui/views/layout/webapps/speculative-loading)

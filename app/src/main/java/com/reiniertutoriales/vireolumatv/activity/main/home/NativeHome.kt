@@ -33,7 +33,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -68,10 +71,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
@@ -143,7 +144,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
 
     private var editing by mutableStateOf(false)
     private var tiles by mutableStateOf<List<Tile>>(emptyList())
-    private var query by mutableStateOf(TextFieldValue(""))
+    private val query = TextFieldState()
     private var searchError by mutableStateOf<String?>(null)
 
     val isVisible get() = root != null
@@ -219,7 +220,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
         editing = false
         pendingFocus = false
         tiles = emptyList()
-        query = TextFieldValue("")
+        query.setTextAndPlaceCursorAtEnd("")
         searchError = null
     }
 
@@ -291,7 +292,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
 
     private fun submitSearch() {
         closeCapsuleIfVisible()
-        val url = HomeShortcuts.search(query.text)
+        val url = HomeShortcuts.search(query.text.toString())
         if (url == null) searchError = browser.getString(R.string.home_empty_search) else open(url)
     }
 
@@ -526,14 +527,19 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
             .border(if (focused || typing) 2.dp else 1.dp, TvControlColors.border(focused || typing, hovered), shape)
         if (typing) {
             var hadFocus by remember { mutableStateOf(false) }
+            LaunchedEffect(query) {
+                var previous = query.text.toString()
+                snapshotFlow { query.text.toString() }.collect { text ->
+                    if (text != previous) { previous = text; searchError = null }
+                }
+            }
             BasicTextField(
-                value = query,
-                onValueChange = { query = it; searchError = null },
-                singleLine = true,
+                state = query,
+                lineLimits = TextFieldLineLimits.SingleLine,
                 textStyle = TextStyle(color = Color.White, fontSize = 18.sp),
                 cursorBrush = SolidColor(Color.White),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { submitSearch() }),
+                onKeyboardAction = { submitSearch() },
                 interactionSource = interaction,
                 modifier = frame.focusRequester(searchFocus).then(keys)
                     .onFocusChanged { if (it.isFocused) hadFocus = true else if (hadFocus) typing = false }
@@ -550,13 +556,13 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
                     .semantics { contentDescription = hint }
                     .clickable(interactionSource = interaction, indication = null) {
                         closeCapsuleIfVisible()
-                        query = query.copy(selection = TextRange(query.text.length))
+                        query.edit { selection = androidx.compose.ui.text.TextRange(length) }
                         typing = true
                     }
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
-                Text(query.text.ifEmpty { hint }, color = if (query.text.isEmpty()) Color.Gray else Color.White,
+                Text(query.text.toString().ifEmpty { hint }, color = if (query.text.isEmpty()) Color.Gray else Color.White,
                     fontSize = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }

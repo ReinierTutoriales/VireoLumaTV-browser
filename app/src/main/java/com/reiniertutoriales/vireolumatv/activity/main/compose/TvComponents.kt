@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,8 +35,9 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.foundation.text.input.OutputTransformation
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -142,21 +146,30 @@ fun TvTextField(
     val hovered by interaction.collectIsHoveredAsState()
     val metrics = LocalChromeMetrics.current
     val shape = RoundedCornerShape(10.dp)
+    val state = remember { TextFieldState(value) }
+    LaunchedEffect(value) {
+        if (state.text.toString() != value) state.setTextAndPlaceCursorAtEnd(value)
+    }
+    LaunchedEffect(state) {
+        var previous = state.text.toString()
+        snapshotFlow { state.text.toString() }.collect { text ->
+            if (text != previous) { previous = text; onValueChange(text) }
+        }
+    }
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        singleLine = true,
+        state = state,
+        lineLimits = TextFieldLineLimits.SingleLine,
         interactionSource = interaction,
         textStyle = TextStyle(color = Color.White, fontSize = metrics.body),
         cursorBrush = SolidColor(Color.White),
-        visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
+        outputTransformation = if (password) OutputTransformation { replace(0, length, "•".repeat(length)) } else null,
         keyboardOptions = when {
             password -> KeyboardOptions(keyboardType = KeyboardType.Password)
             uri -> KeyboardOptions(keyboardType = KeyboardType.Uri)
             else -> KeyboardOptions.Default
         },
         modifier = modifier.fillMaxWidth().semantics { contentDescription = hint },
-        decorationBox = { inner ->
+        decorator = { inner ->
             Box(
                 Modifier.fillMaxWidth().defaultMinSize(minHeight = metrics.row)
                     .background(TvControlColors.surface(focused, hovered), shape)
@@ -164,7 +177,7 @@ fun TvTextField(
                     .padding(horizontal = 14.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
-                if (value.isEmpty()) Text(hint, color = Color.Gray, fontSize = metrics.body, maxLines = 1)
+                if (state.text.isEmpty()) Text(hint, color = Color.Gray, fontSize = metrics.body, maxLines = 1)
                 inner()
             }
         },

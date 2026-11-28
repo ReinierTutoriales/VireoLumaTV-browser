@@ -140,7 +140,7 @@ fun TvTabStrip(
                 Box(
                     modifier = Modifier.sizeIn(minWidth = metrics.control, minHeight = metrics.control)
                         .testTag("tab_close_$index")
-                        .semantics { role = Role.Button; contentDescription = closeTab }
+                        .semantics { role = Role.Button; contentDescription = "$closeTab: ${chip.label.ifBlank { newTab }}" }
                         .combinedClickable(
                             interactionSource = closeInteraction,
                             indication = null,

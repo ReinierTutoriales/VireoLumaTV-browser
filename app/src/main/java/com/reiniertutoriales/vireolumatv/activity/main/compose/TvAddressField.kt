@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalFocusManager
@@ -30,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -67,7 +70,7 @@ fun TvAddressField(
     warning: Boolean = false,
 ) {
     var editing by remember { mutableStateOf(false) }
-    var draft by remember { mutableStateOf(address) }
+    val draft = remember { TextFieldState(address) }
     val editorFocus = remember { FocusRequester() }
     var refocusAddress by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
@@ -79,14 +82,14 @@ fun TvAddressField(
     fun cancelEditing(restoreFocus: Boolean) {
         editing = false
         onEditingChanged(false)
-        draft = address
+        draft.setTextAndPlaceCursorAtEnd(address)
         keyboard?.hide()
         focusManager.clearFocus()
         refocusAddress = restoreFocus
         onCancel()
     }
     fun submitEditing() {
-        val target = draft.trim()
+        val target = draft.text.toString().trim()
         if (target.isNotEmpty()) {
             editing = false
             onEditingChanged(false)
@@ -104,14 +107,14 @@ fun TvAddressField(
     }
     LaunchedEffect(submitRequest) {
         if (submitRequest.first > 0 && editing) {
-            draft = submitRequest.second
+            draft.setTextAndPlaceCursorAtEnd(submitRequest.second)
             submitEditing()
         }
     }
 
     // A tab switch must update the displayed draft, but never overwrite active typing.
     LaunchedEffect(address, editing) {
-        if (!editing) draft = address
+        if (!editing) draft.setTextAndPlaceCursorAtEnd(address)
     }
 
     // If the host removes this field while the IME is active, release it explicitly.
@@ -124,14 +127,19 @@ fun TvAddressField(
             editorFocus.requestFocus()
             keyboard?.show()
         }
+        LaunchedEffect(draft) {
+            var previous = draft.text.toString()
+            snapshotFlow { draft.text.toString() }.collect { text ->
+                if (text != previous) { previous = text; onDraftChanged(text) }
+            }
+        }
         BasicTextField(
-            value = draft,
-            onValueChange = { draft = it; onDraftChanged(it) },
-            singleLine = true,
+            state = draft,
+            lineLimits = TextFieldLineLimits.SingleLine,
             textStyle = TextStyle(color = Color.White, fontSize = metrics.body),
             cursorBrush = androidx.compose.ui.graphics.SolidColor(Color.White),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go, keyboardType = KeyboardType.Uri),
-            keyboardActions = KeyboardActions(onGo = { submitEditing() }),
+            onKeyboardAction = { submitEditing() },
             modifier = modifier
                 .testTag("home_search")
                 .focusRequester(editorFocus)
@@ -151,7 +159,7 @@ fun TvAddressField(
                     }
                 }
                 .heightIn(min = metrics.control),
-            decorationBox = { field ->
+            decorator = { field ->
                 Box(Modifier.padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) { field() }
             },
         )
@@ -178,7 +186,7 @@ fun TvAddressField(
                     if (warning) stateDescription = certificateWarning
                 }
                 .clickable(interactionSource = interaction, indication = null) {
-                    draft = address
+                    draft.setTextAndPlaceCursorAtEnd(address)
                     editing = true
                     onEditingChanged(true)
                 }

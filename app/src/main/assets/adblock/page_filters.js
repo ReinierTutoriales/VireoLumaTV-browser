@@ -1955,7 +1955,7 @@
     // that really occur in the page are sent to the engine, in batches, each name once.
     if (!data.generichide && typeof bridge.hiddenSelectors === 'function') {
         var seenClasses = new Set(), seenIds = new Set(), budget = 4000;
-        var newClasses = [], newIds = [], queue = new Map(), scheduled = false, genericSheet = null, genericStyle = null;
+        var newClasses = [], newIds = [], queue = new Set(), scheduled = false, genericSheet = null, genericStyle = null;
         var genericWork = [], genericCursor = 0;
         var genericClock = typeof performance === 'object' && typeof performance.now === 'function' ?
             function () { return performance.now(); } : function () { return Date.now(); };
@@ -1988,21 +1988,23 @@
         var flushGeneric = function () {
             scheduled = false;
             // Finish the current bounded set before accepting more work; the pending
-            // mutation map remains capped while a large subtree is traversed.
-            var nodes = genericCursor < genericWork.length ? new Map() : queue;
-            if (nodes === queue) queue = new Map();
-            nodes.forEach(function (subtree, node) {
-                // An ancestor scan already includes this element and its descendants.
-                for (var parent = node.parentElement; parent; parent = parent.parentElement) {
-                    if (nodes.get(parent) === true) return;
-                }
-                // NodeIterator adjusts its reference when the page removes a node between
-                // batches; TreeWalker would stop at a detached current node.
-                var iterator = subtree && typeof document.createNodeIterator === 'function' ?
-                    document.createNodeIterator(node, 1) : null;
-                var fallback = !iterator && subtree && node.querySelectorAll ? node.querySelectorAll('[id],[class]') : [];
-                genericWork.push({node: iterator ? null : node, iterator: iterator, fallback: fallback, index: 0});
-            });
+            // mutation set remains capped while a large subtree is traversed.
+            if (genericCursor === genericWork.length && queue.size) {
+                var nodes = queue;
+                queue = new Set();
+                nodes.forEach(function (node) {
+                    // An ancestor scan already includes this element and its descendants.
+                    for (var parent = node.parentElement; parent; parent = parent.parentElement) {
+                        if (nodes.has(parent)) return;
+                    }
+                    // NodeIterator adjusts its reference when the page removes a node between
+                    // batches; TreeWalker would stop at a detached current node.
+                    var iterator = typeof document.createNodeIterator === 'function' ?
+                        document.createNodeIterator(node, 1) : null;
+                    var fallback = !iterator && node.querySelectorAll ? node.querySelectorAll('[id],[class]') : [];
+                    genericWork.push({node: iterator ? null : node, iterator: iterator, fallback: fallback, index: 0});
+                });
+            }
             var deadline = genericClock() + 4, visited = 0;
             while (genericCursor < genericWork.length && visited < 256 && genericClock() < deadline) {
                 var work = genericWork[genericCursor];
@@ -2028,20 +2030,18 @@
             newClasses = []; newIds = [];
             if (Array.isArray(result) && result.length) addGeneric(result);
         };
-        var enqueue = function (node, subtree) {
+        var enqueue = function (node) {
             if (!node || node.nodeType !== 1) return;
+            var root = document.documentElement;
+            if (queue.has(node) || queue.has(root)) return;
             // Collapse a mutation burst to a resumable document walk instead of retaining
             // an unbounded number of node references before the next batch.
-            if (queue.size >= 256 && document.documentElement) {
+            if (queue.size >= 256 && root) {
                 queue.clear();
-                queue.set(document.documentElement, true);
-            }
-            if (queue.get(document.documentElement) === true) {
-                if (!scheduled) { scheduled = true; setTimeout(flushGeneric, 250); }
+                queue.add(root);
                 return;
             }
-            queue.set(node, queue.get(node) === true || subtree);
-            if (!scheduled) { scheduled = true; setTimeout(flushGeneric, 250); }
+            queue.add(node);
         };
         try {
             if (typeof CSSStyleSheet === 'function' && 'adoptedStyleSheets' in document) {
@@ -2051,22 +2051,33 @@
         } catch (_) { genericSheet = null; }
         onReady(function () {
             if (!document.documentElement) return;
-            enqueue(document.documentElement, true);
+            enqueue(document.documentElement);
             flushGeneric();
             if (typeof MutationObserver !== 'function') return;
             var observer = new MutationObserver(function (mutations) {
                 if (seenClasses.size >= budget && seenIds.size >= budget) { observer.disconnect(); return; }
+                var attributeTargets;
                 for (var m = 0; m < mutations.length; m++) {
                     var mutation = mutations[m];
                     // One element's class or id: read it now. Queued, frequent class toggles would
                     // reach the 256-node cap and force repeated whole-document walks.
                     if (mutation.type === 'attributes') {
-                        if (mutation.target && mutation.target.nodeType === 1) collect(mutation.target);
-                        if (!scheduled) { scheduled = true; setTimeout(flushGeneric, 250); }
+                        var target = mutation.target;
+                        if (!target || target.nodeType !== 1) continue;
+                        if (mutations.length > 1) {
+                            if (!attributeTargets) attributeTargets = new Set();
+                            if (attributeTargets.has(target)) continue;
+                            attributeTargets.add(target);
+                        }
+                        collect(target);
                         continue;
                     }
                     var added = mutation.addedNodes;
-                    for (var a = 0; a < added.length; a++) enqueue(added[a], true);
+                    for (var a = 0; a < added.length; a++) enqueue(added[a]);
+                }
+                if (!scheduled && (queue.size || newClasses.length || newIds.length)) {
+                    scheduled = true;
+                    setTimeout(flushGeneric, 250);
                 }
             });
             observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'id'] });
