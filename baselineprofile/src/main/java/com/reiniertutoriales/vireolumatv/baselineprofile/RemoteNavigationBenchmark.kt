@@ -23,6 +23,24 @@ class RemoteNavigationBenchmark {
 
     @Test fun tabsAndSettingsBaselineProfile() = measure(CompilationMode.Partial(BaselineProfileMode.Require), tabsAndSettings)
 
+    @Test fun twelveTabsBaselineProfile() = measureTabStrip(12)
+
+    @Test fun thirtyTabsBaselineProfile() = measureTabStrip(30)
+
+    private fun measureTabStrip(count: Int) = rule.measureRepeated(
+        packageName = targetAppId,
+        metrics = listOf(FrameTimingMetric()),
+        compilationMode = CompilationMode.Partial(BaselineProfileMode.Require),
+        iterations = 5,
+        setupBlock = {
+            pressHome()
+            resetBrowserData()
+            startOnHome()
+            prepareTabStrip(count)
+        },
+        measureBlock = { traverseTabStrip(count) },
+    )
+
     private val capsuleAndMenu: MacrobenchmarkScope.() -> Unit = {
         traverseCapsule()
         openAndCloseMenu()
