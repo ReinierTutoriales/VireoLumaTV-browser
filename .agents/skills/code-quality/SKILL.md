@@ -82,3 +82,9 @@ Audit every composable against all applicable categories: state/stability, layou
 Additional platform references: https://developer.android.com/tv ; https://developer.android.com/develop/ui/views/layout/webapps ; https://developer.android.com/topic/architecture ; https://developer.android.com/topic/performance ; https://developer.android.com/privacy-and-security ; https://developer.android.com/studio/write/lint ; https://developer.android.com/training/testing .
 
 Whole-repository audit protocol: pin HEAD; inventory production, tests, resources, build configuration, native/JNI and injected scripts; inspect consumers including reflection, generated code and resource references; record each finding with path, symbol, evidence, upstream guidance, fix and regression test. Track inspected and uninspected files separately. Complete the planned review before grouped edits. Do not claim completed audits from an inventory or partial scan. Do not restart running CI with speculative cleanup. Verify final diff and gate integration on actual results.
+
+## CI and test lifecycle
+
+- Audit workflow triggers, test consumers, fixtures, dependencies and execution timings whenever replacing production code. Remove obsolete tests only after proving their contract is retired or covered equivalently; preserve regression and security coverage.
+- Keep mandatory functional CI on each integration SHA. Run Macrobenchmark and Baseline Profile deliberately for performance changes and release preparation, not on every ordinary PR update. Record the measured SHA and comparable configuration; do not claim performance gains without results.
+- Prefer one coordinated push after reviewing related changes. Avoid restarting expensive runs for documentation or speculative cleanup. Retain signed-release verification and compatibility checks.
