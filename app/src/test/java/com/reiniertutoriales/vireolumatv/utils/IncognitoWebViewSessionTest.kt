@@ -39,6 +39,19 @@ class IncognitoWebViewSessionTest {
         assertTrue(File(normalDirectory, "cookie").exists())
     }
 
+    @Test fun normalCleanupLeavesAnActivePrivateProfileAlone() {
+        val context = RuntimeEnvironment.getApplication()
+        val privateDirectory = File(context.filesDir.parentFile, "app_webview_incognito")
+        val privateProcess = IncognitoWebViewSession()
+        privateProcess.configure(context) { }
+        privateDirectory.mkdirs()
+        val active = File(privateDirectory, "active-cookie").apply { writeText("active") }
+
+        IncognitoWebViewSession().clearStale(context)
+
+        assertEquals("active", active.readText())
+    }
+
     @Test fun clearRemovesBothPrivateCacheNamesButPreservesNormalWebViewCache() {
         val context = RuntimeEnvironment.getApplication()
         val normal = File(context.cacheDir, "WebView").apply { mkdirs() }

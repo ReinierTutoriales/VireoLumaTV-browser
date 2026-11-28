@@ -103,7 +103,7 @@ class VisitLog : ScreenModel() {
             return
         }
         workScope.launch(Dispatchers.IO) {
-            try { IncognitoWebViewData.clear(app) } catch (error: IllegalStateException) { Log.w(TAG, "Private WebView data not cleared", error) }
+            try { IncognitoWebViewData.clearStale(app) } catch (error: Exception) { Log.w(TAG, "Private WebView data not cleared", error) }
         }
     }
 

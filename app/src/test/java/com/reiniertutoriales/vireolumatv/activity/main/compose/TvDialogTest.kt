@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import com.reiniertutoriales.vireolumatv.VireoLumaTVApp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -108,6 +109,28 @@ class TvDialogTest {
             dialog.press(DialogInterface.BUTTON_POSITIVE)
         }
         assertEquals("latest", read)
+    }
+
+    @Test fun editingDismissesTheErrorEvenIfTheRejectedTextIsRestored() {
+        compose.runOnUiThread {
+            TvDialog.Builder(compose.activity)
+                .setFields(TvDialog.Field(android.R.string.untitled))
+                .setPositiveButton("OK", null)
+                .setValidator { "Rejected" }
+                .show()
+        }
+        val field = compose.onNodeWithTag("dialog_field_0")
+        val confirm = compose.onNodeWithTag("dialog_button_${DialogInterface.BUTTON_POSITIVE}")
+        val error = compose.onNodeWithTag("dialog_error")
+        field.performTextReplacement("first")
+        confirm.performClick()
+        error.assertExists()
+        field.performTextReplacement("other")
+        error.assertDoesNotExist()
+        field.performTextReplacement("first")
+        error.assertDoesNotExist()
+        confirm.performClick()
+        error.assertExists()
     }
 
     private fun key(dialog: TvDialog, action: Int, repeat: Int, code: Int = KeyEvent.KEYCODE_DPAD_CENTER) {

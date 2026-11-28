@@ -643,7 +643,6 @@ open class MainActivity : ComponentActivity() {
     fun focusSuggestions(): Boolean = vb.vSuggestions.hasSuggestions &&
         if (vb.pageContainer.pointerEnabled) vb.vSuggestions.focusPointer() else vb.vSuggestions.focusFirst()
 
-    fun suggestionsHaveFocus(): Boolean = vb.vSuggestions.hasFocus()
 
     fun onAddressInputCancelled() = closeSuggestions()
 
@@ -1033,14 +1032,6 @@ open class MainActivity : ComponentActivity() {
     }
 
     // Remote input
-
-    fun toggleMenu() {
-        when {
-            isFullscreen -> tabStore.currentTab.value?.engine?.closeFullscreen()
-            overlayVisible -> closeCapsule()
-            else -> openCapsule()
-        }
-    }
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
