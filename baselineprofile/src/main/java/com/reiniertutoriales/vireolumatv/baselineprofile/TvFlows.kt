@@ -275,6 +275,9 @@ internal fun MacrobenchmarkScope.prepareTabStrip(count: Int) {
     focusFirstTab()
 }
 
+/** The previous traversal must leave the fixture ready for another sample. */
+internal fun MacrobenchmarkScope.requireTabStripStart() = requireFocus(FIRST_TAB)
+
 /** Measure traversal and assert every title and close control remains reachable. */
 internal fun MacrobenchmarkScope.traverseTabStrip(count: Int) {
     for (index in 0 until count) {

@@ -27,19 +27,29 @@ class RemoteNavigationBenchmark {
 
     @Test fun thirtyTabsBaselineProfile() = measureTabStrip(30)
 
-    private fun measureTabStrip(count: Int) = rule.measureRepeated(
-        packageName = targetAppId,
-        metrics = listOf(FrameTimingMetric()),
-        compilationMode = CompilationMode.Partial(BaselineProfileMode.Require),
-        iterations = 5,
-        setupBlock = {
-            pressHome()
-            resetBrowserData()
-            startOnHome()
-            prepareTabStrip(count)
-        },
-        measureBlock = { traverseTabStrip(count) },
-    )
+    private fun measureTabStrip(count: Int) {
+        var prepared = false
+        rule.measureRepeated(
+            packageName = targetAppId,
+            metrics = listOf(FrameTimingMetric()),
+            compilationMode = CompilationMode.Partial(BaselineProfileMode.Require),
+            iterations = 5,
+            setupBlock = {
+                if (!prepared) {
+                    pressHome()
+                    resetBrowserData()
+                    startOnHome()
+                    prepareTabStrip(count)
+                    prepared = true
+                } else {
+                    // Traversal does not change the tab set and ends at its first title.
+                    // Reuse the fixture, but verify the starting focus before every sample.
+                    requireTabStripStart()
+                }
+            },
+            measureBlock = { traverseTabStrip(count) },
+        )
+    }
 
     private val capsuleAndMenu: MacrobenchmarkScope.() -> Unit = {
         traverseCapsule()
