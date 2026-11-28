@@ -1,3 +1,13 @@
+# VireoLumaTV 3.0.15
+
+Actualiza el bloqueador de anuncios y renueva las siete listas de filtros incluidas para el primer arranque sin conexión.
+
+- El motor actualizado conserva la prioridad de las redirecciones y reconstruye la caché antigua a partir de los filtros guardados.
+- Se actualizaron las herramientas de compilación y las bibliotecas Android. Las pruebas de navegación con mando usan el modo teclado de Compose.
+- Las compilaciones de depuración usan un identificador propio para poder instalarse junto a la versión publicada.
+
+Compatible con Android 7.0 o superior. El modo incógnito requiere Android 9 o superior. Instala el APK de tu arquitectura sobre la versión existente para conservar los datos.
+
 # VireoLumaTV 3.0.14
 
 Refuerza el receptor de envíos desde el teléfono.
