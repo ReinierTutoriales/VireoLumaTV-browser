@@ -71,5 +71,6 @@ These rules apply to every agent and every change.
   or remove superseded guidance instead of growing a chronological error log.
 - Keep product contracts and evidence in `docs/REGRESSION_POLICY.md` and the
   existing audit, with a test or commit reference. Do not duplicate them here.
+- When a later audit finds a defect present at an earlier reviewed SHA, identify the missed review step (scope, source coverage, test design or verification) and correct it without duplicating generic guidance.
 - Before the next related task, read that lesson and check whether its conditions
   still apply. New owner instructions take precedence over historical lessons.

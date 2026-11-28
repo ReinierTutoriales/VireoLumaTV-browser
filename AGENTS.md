@@ -75,6 +75,7 @@ link needs Git with `core.symlinks=true` and symlink permission.
 After a verified regression or owner correction, apply the feedback loop in
 `agent-governance`: fix and test the cause, retain only a reusable lesson in the
 relevant existing skill, and consult it before the next related change.
+Before planning, select applicable official Android skills from https://developer.android.com/tools/agents/android-skills/browse and use the audit closure protocol in `code-quality`. Do not import unrelated collections.
 The contracts and acceptance criteria live in
 `docs/REGRESSION_POLICY.md`; do not duplicate them in skills.
 

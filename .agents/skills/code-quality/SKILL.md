@@ -81,6 +81,10 @@ Audit every composable against all applicable categories: state/stability, layou
 
 Additional platform references: https://developer.android.com/tv ; https://developer.android.com/develop/ui/views/layout/webapps ; https://developer.android.com/topic/architecture ; https://developer.android.com/topic/performance ; https://developer.android.com/privacy-and-security ; https://developer.android.com/studio/write/lint ; https://developer.android.com/training/testing .
 
+Audit convergence: compare findings against prior reviewed SHAs; distinguish new defects, previously missed defects, upstream-enabled improvements and hypotheses. For missed defects identify the missing review step and correct it. Record coverage and exclusions, close reviews when scoped criteria pass, and prefer no change over unsupported cleanup.
+
+Select applicable official testing strategy, ANR, Intent and permission security, R8, Compose performance, TV migration and AGP skills from the Android catalog. Read upstream references before applying; keep local rules separate and retire superseded advice.
+
 Whole-repository audit protocol: pin HEAD; inventory production, tests, resources, build configuration, native/JNI and injected scripts; inspect consumers including reflection, generated code and resource references; record each finding with path, symbol, evidence, upstream guidance, fix and regression test. Track inspected and uninspected files separately. Complete the planned review before grouped edits. Do not claim completed audits from an inventory or partial scan. Do not restart running CI with speculative cleanup. Verify final diff and gate integration on actual results.
 
 ## CI and test lifecycle
