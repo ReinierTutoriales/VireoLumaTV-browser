@@ -58,3 +58,33 @@ Renaming, reformatting or moving code to change `git blame` is not a replacement
 - For one-time TLS exceptions, compare actual certificate bytes; missing cryptographic identity must fail closed. Preserve normal certificate validation and Safe Browsing.
 - Resolve packaged asset paths against an explicitly bounded origin and directory; reject traversal, encoded path separators and ambiguous URLs. Verify file access, backup, intent extras and FileProvider grants independently.
 - Preserve signed release checksum verification and check update redirects, dependency provenance and workflow privileges. Treat any security finding as confirmed only when supported by code and tests; otherwise state the preconditions and remaining validation.
+
+## Native-first source cleanup
+
+- Inventory consumers across Kotlin, JavaScript, Rust/JNI, XML, manifests, generated code, reflection and R8 rules before deleting a symbol or dependency.
+- Consult official Android/AndroidX documentation and matching upstream source before replacing custom implementations. Preserve TV input, accessibility, lifecycle and API 24+ contracts. Remove superseded implementations in the same change once equivalence is tested.
+- Review CI lint reports, Compose compiler reports and metrics, Clippy diagnostics and R8 usage/seeds when available. R8 removal from an APK is not proof that a source declaration is unused in every variant or test.
+- Group related verified cleanup into the minimum number of passes; do not add speculative abstractions or dependencies just to satisfy a metric. Record exact symbols, evidence and validation. Compare benchmark results before claiming performance gains.
+
+Use the official Compose guidance before changing state or effects:
+- https://developer.android.com/develop/ui/compose/side-effects
+- https://developer.android.com/develop/ui/compose/text/migrate-state-based
+- https://developer.android.com/develop/ui/compose/touch-input/focus/request-focus
+Avoid asynchronous observers that can overwrite newer validation results. Test actual input and confirmation ordering, not only programmatic setters.
+
+## Mandatory official Android engineering review
+
+Use the official Android skills catalog (https://developer.android.com/tools/agents/android-skills/browse) before planning changes. Select applicable guidance for Compose performance, TV migration, AGP, ANR, permissions and Intent security, R8, profiling and testing. Read the full applicable upstream skill and its referenced files, verify compatibility with the pinned library versions, and record the source and applicable scope. Do not introduce unrelated capabilities.
+
+Compose performance upstream: https://developer.android.com/agents/skills/jetpack-compose/jetpack-compose-performance/skill
+Audit every composable against all applicable categories: state/stability, layout, lazy containers, animation, effects/threading, graphics and custom modifiers. Read category-specific references before reporting or editing. Measure release builds with R8 and baseline profiles. Do not equate fewer recompositions with faster execution.
+
+Additional platform references: https://developer.android.com/tv ; https://developer.android.com/develop/ui/views/layout/webapps ; https://developer.android.com/topic/architecture ; https://developer.android.com/topic/performance ; https://developer.android.com/privacy-and-security ; https://developer.android.com/studio/write/lint ; https://developer.android.com/training/testing .
+
+Whole-repository audit protocol: pin HEAD; inventory production, tests, resources, build configuration, native/JNI and injected scripts; inspect consumers including reflection, generated code and resource references; record each finding with path, symbol, evidence, upstream guidance, fix and regression test. Track inspected and uninspected files separately. Complete the planned review before grouped edits. Do not claim completed audits from an inventory or partial scan. Do not restart running CI with speculative cleanup. Verify final diff and gate integration on actual results.
+
+## CI and test lifecycle
+
+- Audit workflow triggers, test consumers, fixtures, dependencies and execution timings whenever replacing production code. Remove obsolete tests only after proving their contract is retired or covered equivalently; preserve regression and security coverage.
+- Keep mandatory functional CI on each integration SHA. Run Macrobenchmark and Baseline Profile deliberately for performance changes and release preparation, not on every ordinary PR update. Record the measured SHA and comparable configuration; do not claim performance gains without results.
+- Prefer one coordinated push after reviewing related changes. Avoid restarting expensive runs for documentation or speculative cleanup. Retain signed-release verification and compatibility checks.

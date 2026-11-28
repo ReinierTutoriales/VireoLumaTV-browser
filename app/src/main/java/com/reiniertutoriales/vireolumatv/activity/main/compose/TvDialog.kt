@@ -25,7 +25,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -72,8 +71,11 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     private val values = List(spec.fields.size) { TextFieldState() }
 
     /** Why the positive button was refused; shown under the fields until the text changes. */
-    var error by mutableStateOf<CharSequence?>(null)
-        private set
+    private var validationError by mutableStateOf<Pair<CharSequence, List<String>>?>(null)
+    val error: CharSequence?
+        get() = validationError?.let { (message, input) ->
+            message.takeIf { values.map { it.text.toString() } == input }
+        }
 
     /** Confirm keys whose press began in this dialog; see [dispatchKeyEvent]. */
     private val confirmKeysDown = HashSet<Int>()
@@ -103,7 +105,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     fun fieldValue(index: Int): String = values[index].text.toString()
 
     /** Sets field [index] as if typed: for tests and for prefilled forms. */
-    fun setFieldValue(index: Int, value: String) { values[index].setTextAndPlaceCursorAtEnd(value); error = null }
+    fun setFieldValue(index: Int, value: String) { values[index].setTextAndPlaceCursorAtEnd(value); validationError = null }
 
     /** The title and message shown. */
     val title: CharSequence? get() = spec.title
@@ -129,7 +131,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     fun press(which: Int) {
         if (!isShowing) return
         val button = spec.buttons[which] ?: return
-        if (which == DialogInterface.BUTTON_POSITIVE) spec.validate?.invoke(this)?.let { error = it; return }
+        if (which == DialogInterface.BUTTON_POSITIVE) spec.validate?.invoke(this)?.let { validationError = it to values.map { field -> field.text.toString() }; return }
         button.onClick?.onClick(this, which)
         dismiss()
     }
@@ -137,8 +139,8 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     @Composable
     private fun Panel() {
         val first = remember { FocusRequester() }
-        val firstButton = listOf(DialogInterface.BUTTON_NEUTRAL, DialogInterface.BUTTON_NEGATIVE, DialogInterface.BUTTON_POSITIVE)
-            .firstOrNull { it in spec.buttons }
+        val firstButton = ButtonOrder.firstOrNull { it in spec.buttons }
+        val firstItem = spec.checked.takeIf { it in spec.items.indices } ?: 0
         val shape = RoundedCornerShape(16.dp)
         Column(
             Modifier.semantics { testTagsAsResourceId = true }.widthIn(min = 360.dp, max = 640.dp)
@@ -163,18 +165,12 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
                             onClick = { choose(index) },
                             selected = index == spec.checked,
                             modifier = Modifier.padding(bottom = 4.dp).testTag("dialog_item_$index")
-                                .then(if (index == maxOf(spec.checked, 0)) Modifier.focusRequester(first) else Modifier),
+                                .then(if (index == firstItem) Modifier.focusRequester(first) else Modifier),
                         )
                     }
                 }
             }
             spec.fields.forEachIndexed { index, field ->
-                LaunchedEffect(values[index]) {
-                    var previous = values[index].text.toString()
-                    snapshotFlow { values[index].text.toString() }.collect { current ->
-                        if (current != previous) { previous = current; error = null }
-                    }
-                }
                 TvTextField(
                     state = values[index],
                     hint = context.getString(field.hint),
@@ -191,7 +187,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
             if (spec.buttons.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End)) {
-                    for (which in listOf(DialogInterface.BUTTON_NEUTRAL, DialogInterface.BUTTON_NEGATIVE, DialogInterface.BUTTON_POSITIVE)) {
+                    for (which in ButtonOrder) {
                         val button = spec.buttons[which] ?: continue
                         val takesFocus = spec.items.isEmpty() && spec.fields.isEmpty() && which == firstButton
                         TvTextButton(
@@ -204,7 +200,9 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
                 }
             }
         }
-        LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
+        if (spec.items.isNotEmpty() || spec.fields.isNotEmpty() || firstButton != null) {
+            LaunchedEffect(Unit) { first.requestFocus() }
+        }
     }
 
     /** Same calls as AlertDialog.Builder for the parts the app uses. */
@@ -268,6 +266,10 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
 
 /** Readable on the black panel (contrast above 4.5:1). */
 private val ErrorColor = Color(0xFFFF8A80)
+
+private val ButtonOrder = listOf(
+    DialogInterface.BUTTON_NEUTRAL, DialogInterface.BUTTON_NEGATIVE, DialogInterface.BUTTON_POSITIVE,
+)
 
 /** The keys Compose's clickable treats as a press: DPAD centre, Enter, numpad Enter and Space. */
 private val ConfirmKeys = setOf(

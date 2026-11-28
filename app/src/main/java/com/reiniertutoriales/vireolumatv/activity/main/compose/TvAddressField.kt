@@ -31,6 +31,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -70,7 +71,8 @@ fun TvAddressField(
     warning: Boolean = false,
 ) {
     var editing by remember { mutableStateOf(false) }
-    val draft = remember { TextFieldState(address) }
+    val draft = remember { TextFieldState() }
+    val currentOnDraftChanged by rememberUpdatedState(onDraftChanged)
     val editorFocus = remember { FocusRequester() }
     var refocusAddress by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
@@ -82,7 +84,6 @@ fun TvAddressField(
     fun cancelEditing(restoreFocus: Boolean) {
         editing = false
         onEditingChanged(false)
-        draft.setTextAndPlaceCursorAtEnd(address)
         keyboard?.hide()
         focusManager.clearFocus()
         refocusAddress = restoreFocus
@@ -103,18 +104,13 @@ fun TvAddressField(
         if (cancelRequest.first > 0 && editing) cancelEditing(cancelRequest.second)
     }
     LaunchedEffect(editorFocusRequest) {
-        if (editorFocusRequest > 0 && editing) runCatching { editorFocus.requestFocus() }
+        if (editorFocusRequest > 0 && editing) editorFocus.requestFocus()
     }
     LaunchedEffect(submitRequest) {
         if (submitRequest.first > 0 && editing) {
             draft.setTextAndPlaceCursorAtEnd(submitRequest.second)
             submitEditing()
         }
-    }
-
-    // A tab switch must update the displayed draft, but never overwrite active typing.
-    LaunchedEffect(address, editing) {
-        if (!editing) draft.setTextAndPlaceCursorAtEnd(address)
     }
 
     // If the host removes this field while the IME is active, release it explicitly.
@@ -128,9 +124,8 @@ fun TvAddressField(
             keyboard?.show()
         }
         LaunchedEffect(draft) {
-            var previous = draft.text.toString()
             snapshotFlow { draft.text.toString() }.collect { text ->
-                if (text != previous) { previous = text; onDraftChanged(text) }
+                currentOnDraftChanged(text)
             }
         }
         BasicTextField(
@@ -167,8 +162,7 @@ fun TvAddressField(
         val addressFocus = remember { FocusRequester() }
         LaunchedEffect(refocusAddress) {
             if (refocusAddress) {
-                refocusAddress = false
-                runCatching { addressFocus.requestFocus() }
+                if (addressFocus.requestFocus()) refocusAddress = false
             }
         }
         val interaction = remember { MutableInteractionSource() }

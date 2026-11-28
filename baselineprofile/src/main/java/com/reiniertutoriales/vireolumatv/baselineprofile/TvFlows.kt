@@ -233,7 +233,7 @@ private fun MacrobenchmarkScope.focusFirstTab() {
     focusAddress()
     press { device.pressDPadDown() }
     requireFocus(TAB_CONTROL)
-    focus(FIRST_TAB, { device.pressDPadLeft() })
+    focus(FIRST_TAB, { device.pressDPadLeft() }, limit = 64)
 }
 
 /** Add a tab, activate the first with OK, then close the background tab and verify selection. */
@@ -261,4 +261,34 @@ internal fun MacrobenchmarkScope.openSwitchAndCloseTab() {
     requireGone(SECOND_TAB)
     requireNode(By.res(originalTab).selected(true))
     requireNode(HOME_SEARCH)
+}
+
+/** Populate tabs outside the measured journey, using the same remote controls as production. */
+internal fun MacrobenchmarkScope.prepareTabStrip(count: Int) {
+    require(count > 0)
+    repeat(count - 1) {
+        focusFirstTab()
+        focus(By.res("new_tab_button"), { device.pressDPadRight() }, limit = count * 2 + 2)
+        press { device.pressDPadCenter() }
+        waitForHome()
+    }
+    focusFirstTab()
+}
+
+/** The previous traversal must leave the fixture ready for another sample. */
+internal fun MacrobenchmarkScope.requireTabStripStart() = requireFocus(FIRST_TAB)
+
+/** Measure traversal and assert every title and close control remains reachable. */
+internal fun MacrobenchmarkScope.traverseTabStrip(count: Int) {
+    for (index in 0 until count) {
+        step(By.res("tab_close_$index")) { device.pressDPadRight() }
+        if (index + 1 < count) {
+            step(By.res(Pattern.compile("tab_${index + 1}_[0-9]+"))) { device.pressDPadRight() }
+        }
+    }
+    step(By.res("new_tab_button")) { device.pressDPadRight() }
+    for (index in count - 1 downTo 0) {
+        step(By.res("tab_close_$index")) { device.pressDPadLeft() }
+        step(By.res(Pattern.compile("tab_${index}_[0-9]+"))) { device.pressDPadLeft() }
+    }
 }

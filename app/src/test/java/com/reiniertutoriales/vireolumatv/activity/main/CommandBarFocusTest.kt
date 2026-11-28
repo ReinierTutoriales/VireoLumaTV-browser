@@ -133,6 +133,15 @@ class CommandBarFocusTest {
         compose.onNode(tab(1)).assertTextContains("Tres")
     }
 
+    @Test fun pendingFocusMovesToTabWhenItAppears() {
+        val tabs = listOf(BrowserTab(title = "Uno"), BrowserTab(title = "Dos"))
+        val host = openCapsuleWithHistory(tabs)
+        compose.runOnIdle { host.focusTab(2) }
+        compose.onNodeWithTag("back_button").assertIsFocused()
+        compose.runOnIdle { host.setTabs(tabs + BrowserTab(title = "Tres"), 2) }
+        compose.onNode(tab(2)).assertIsFocused()
+    }
+
     @Test fun suggestionsTakeTheTabRowsPlaceAndItsReturnKeepsFocus() {
         val host = openCapsuleWithHistory(listOf(BrowserTab(title = "Uno"), BrowserTab(title = "Dos")))
         compose.runOnIdle { host.showTabStrip(false) }

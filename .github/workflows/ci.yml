@@ -65,11 +65,18 @@ jobs:
           openssl pkey -pubin -in /tmp/vireo-release-public.pem -noout
           rm -f /tmp/vireo-release-public.pem
 
-      - name: Unit tests
+      - name: Rust static analysis
+        run: |
+          rustup component add clippy
+          cargo clippy --locked --manifest-path native/adblock-jni/Cargo.toml --all-targets --message-format=json > rust-clippy.jsonl
+
+      - name: Validate source inventory and bundled assets
         run: |
           python scripts/check-source-inventory.py
           python scripts/generate-brand-assets.py --check
           python scripts/refresh-bundled-filters.py
+      - name: Test scripts and WebView policies
+        run: |
           node scripts/test-home-page-security.cjs
           python scripts/test-apk-provenance.py
           python scripts/test-memory-capture.py
@@ -80,11 +87,29 @@ jobs:
           node scripts/test-window-open-decoy.cjs
           node scripts/test-adblock-surrogates.cjs
           node scripts/test-page-filters.cjs
-          cargo test --locked --manifest-path native/adblock-jni/Cargo.toml
-          ./gradlew testGenericDebugUnitTest --stacktrace
+      - name: Rust unit tests
+        run: cargo test --locked --manifest-path native/adblock-jni/Cargo.toml
+
+      - name: Android unit tests
+        run: |
+          # Retry only transient repository throttling, never a failing test.
+          for attempt in 1 2 3; do
+            log=$(mktemp)
+            if ./gradlew testGenericDebugUnitTest --stacktrace > "$log" 2>&1; then
+              cat "$log"
+              rm -f "$log"
+              break
+            fi
+            cat "$log"
+            if [ "$attempt" -eq 3 ] || ! grep -Eq 'Received status code 429|HTTP 429' "$log" || grep -Eq 'tests? completed, [1-9][0-9]* failed|Compilation error' "$log"; then
+              rm -f "$log"
+              exit 1
+            fi
+            rm -f "$log"
+            sleep "$((attempt * 60))"
+          done
 
       - name: Upload UI previews
-        if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: browser-ui-previews
@@ -115,7 +140,7 @@ jobs:
       - name: Validate release build
         env:
           CI_SIGN_RELEASE_WITH_DEBUG_KEY: ${{ env.HAS_DEBUG_KEYSTORE }}
-        run: ./gradlew assembleGenericRelease assembleFossRelease assembleGoogleRelease lintGenericDebug lintGenericRelease lintFossRelease lintGoogleRelease --stacktrace
+        run: ./gradlew assembleGenericRelease assembleFossRelease assembleGoogleRelease lintGenericDebug lintGenericRelease lintFossRelease lintGoogleRelease -PcomposeQualityReports=true --stacktrace
 
       - name: Audit debug and minified APK contents
         run: |
@@ -134,25 +159,32 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      # Lint warnings do not fail the build; keep the report so they can be reviewed.
+      # Retain diagnostics for source cleanup; findings require review before deletion.
       - name: Upload lint report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: lint-report
           path: |
-            app/build/reports/lint-results-genericRelease.html
-            app/build/reports/lint-results-genericRelease.sarif
+            app/build/reports/lint-results-*.html
+            app/build/reports/lint-results-*.xml
+            app/build/reports/lint-results-*.sarif
+            app/build/reports/compose-quality/**
+            rust-clippy.jsonl
+            app/build/outputs/mapping/**/usage.txt
+            app/build/outputs/mapping/**/seeds.txt
           if-no-files-found: warn
           retention-days: 7
 
       - name: Upload test reports
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-reports
-          path: app/build/reports/tests/
-          if-no-files-found: ignore
+          path: |
+            app/build/reports/tests/
+            app/build/test-results/
+          if-no-files-found: warn
 
       - name: Upload debug APK
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

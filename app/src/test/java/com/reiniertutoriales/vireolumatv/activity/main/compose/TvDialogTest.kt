@@ -97,6 +97,19 @@ class TvDialogTest {
         assertEquals("ana" to "secret", read)
     }
 
+    @Test fun immediateConfirmationReadsLatestFieldState() {
+        var read: String? = null
+        compose.runOnUiThread {
+            val dialog = TvDialog.Builder(compose.activity)
+                .setFields(TvDialog.Field(android.R.string.untitled))
+                .setPositiveButton("OK") { d, _ -> read = (d as TvDialog).fieldValue(0) }.show()
+            dialog.setFieldValue(0, "first")
+            dialog.setFieldValue(0, "latest")
+            dialog.press(DialogInterface.BUTTON_POSITIVE)
+        }
+        assertEquals("latest", read)
+    }
+
     private fun key(dialog: TvDialog, action: Int, repeat: Int, code: Int = KeyEvent.KEYCODE_DPAD_CENTER) {
         val now = SystemClock.uptimeMillis()
         dialog.window!!.decorView.dispatchKeyEvent(KeyEvent(now, now, action, code, repeat))

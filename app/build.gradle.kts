@@ -62,6 +62,14 @@ abstract class BuildRustAdblock : DefaultTask() {
         ?: throw GradleException("NDK not found: install the version in gradle/libs.versions.toml (android-ndk) with sdkmanager or set ANDROID_NDK_HOME")
 }
 
+// Opt-in compiler diagnostics; no runtime dependency or production behavior change.
+composeCompiler {
+    if (providers.gradleProperty("composeQualityReports").orNull == "true") {
+        reportsDestination = layout.buildDirectory.dir("reports/compose-quality/reports")
+        metricsDestination = layout.buildDirectory.dir("reports/compose-quality/metrics")
+    }
+}
+
 android {
     namespace = "com.reiniertutoriales.vireolumatv"
     compileSdk {

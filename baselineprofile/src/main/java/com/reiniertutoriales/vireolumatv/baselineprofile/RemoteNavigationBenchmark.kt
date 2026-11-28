@@ -23,6 +23,34 @@ class RemoteNavigationBenchmark {
 
     @Test fun tabsAndSettingsBaselineProfile() = measure(CompilationMode.Partial(BaselineProfileMode.Require), tabsAndSettings)
 
+    @Test fun twelveTabsBaselineProfile() = measureTabStrip(12)
+
+    @Test fun thirtyTabsBaselineProfile() = measureTabStrip(30)
+
+    private fun measureTabStrip(count: Int) {
+        var prepared = false
+        rule.measureRepeated(
+            packageName = targetAppId,
+            metrics = listOf(FrameTimingMetric()),
+            compilationMode = CompilationMode.Partial(BaselineProfileMode.Require),
+            iterations = 5,
+            setupBlock = {
+                if (!prepared) {
+                    pressHome()
+                    resetBrowserData()
+                    startOnHome()
+                    prepareTabStrip(count)
+                    prepared = true
+                } else {
+                    // Traversal does not change the tab set and ends at its first title.
+                    // Reuse the fixture, but verify the starting focus before every sample.
+                    requireTabStripStart()
+                }
+            },
+            measureBlock = { traverseTabStrip(count) },
+        )
+    }
+
     private val capsuleAndMenu: MacrobenchmarkScope.() -> Unit = {
         traverseCapsule()
         openAndCloseMenu()
