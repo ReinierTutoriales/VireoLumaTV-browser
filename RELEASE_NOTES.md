@@ -1,3 +1,15 @@
+# VireoLumaTV 3.0.16
+
+Mejora la navegación con mando y corrige problemas en las descargas y el modo incógnito.
+
+- Si solicitas el foco para una pestaña que aún no aparece, el navegador conserva la solicitud y enfoca la pestaña cuando está disponible.
+- Los diálogos leen el texto actual al confirmar y ocultan las contraseñas con el campo seguro de Compose. Al editar, se descarta el mensaje de validación anterior.
+- En Android 11 o posterior, una descarga se marca como completada solo cuando Android publica el archivo.
+- La limpieza de datos de incógnito respeta el perfil privado activo.
+- El bloqueador evita lecturas y temporizadores redundantes al procesar cambios cosméticos de las páginas.
+
+Compatible con Android 7.0 o superior. El modo incógnito requiere Android 9 o superior. Instala el APK de tu arquitectura sobre la versión existente para conservar los datos.
+
 # VireoLumaTV 3.0.15
 
 Actualiza el bloqueador de anuncios y renueva las siete listas de filtros incluidas para el primer arranque sin conexión.
