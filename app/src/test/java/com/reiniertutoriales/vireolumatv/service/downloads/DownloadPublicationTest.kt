@@ -2,6 +2,7 @@ package com.reiniertutoriales.vireolumatv.service.downloads
 
 import android.content.ContentProvider
 import android.content.ContentValues
+import android.content.pm.ProviderInfo
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
@@ -27,7 +28,7 @@ class DownloadPublicationTest {
     private fun assertPublication(updatedRows: Int?, expectedFailure: Long?) {
         val file = File.createTempFile("download", ".txt", VireoLumaTVApp.instance.cacheDir)
         val events = mutableListOf<String>()
-        ShadowContentResolver.registerProviderInternal(MediaStore.AUTHORITY, object : ContentProvider() {
+        val provider = object : ContentProvider() {
             override fun onCreate() = true
             override fun getType(uri: Uri): String? = null
             override fun query(uri: Uri, projection: Array<out String>?, selection: String?,
@@ -46,14 +47,21 @@ class DownloadPublicationTest {
                 events += "delete"
                 return 1
             }
+        }
+        provider.attachInfo(VireoLumaTVApp.instance, ProviderInfo().apply {
+            authority = MediaStore.AUTHORITY
+            exported = true
         })
+        ShadowContentResolver.registerProviderInternal(MediaStore.AUTHORITY, provider)
         val job = Download().apply {
             incognito = true
             filename = "download.txt"
         }
+        var errorMessage: String? = null
         val callback = object : Transfer.Callback {
             override fun onProgress(task: Transfer) {}
             override fun onError(task: Transfer, responseCode: Int, responseMessage: String) {
+                errorMessage = responseMessage
                 events += "error"
             }
             override fun onDone(task: Transfer) {
@@ -62,8 +70,9 @@ class DownloadPublicationTest {
         }
         try {
             StreamTransfer(job, "hello".byteInputStream(), callback).run()
-            assertEquals(expectedFailure ?: 5L, job.size)
+            assertEquals(errorMessage, expectedFailure ?: 5L, job.size)
             assertEquals(
+                errorMessage,
                 if (expectedFailure == null) listOf("publish", "done") else listOf("publish", "delete", "error"),
                 events,
             )
