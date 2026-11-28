@@ -50,6 +50,8 @@ exact head is the integration gate; report local tests and CI separately.
 
 ## Native UI modernization mandate
 
+- For source cleanup and native API replacement, apply the native-first source cleanup section of the existing code-quality skill. Use CI diagnostics as evidence, not as automatic authorization to delete code.
+
 - Read `docs/NATIVE_UI_MODERNIZATION_POLICY.md` before any UI, icon, dependency, or Compose migration. It defines the approved target architecture; the current hybrid implementation is not the final design.
 - Use Compose as the target for all browser chrome and TV Material 3 components where appropriate. Keep WebView and the existing blocker as the web engine and filtering layer.
 - Material Symbols Rounded must have one centralized, typed icon API and one renderer in the final architecture. Do not introduce permanent drawable-ID bridges, font/XML dual renderers, or API-level fallbacks merely to retain old UI code. Evaluate platform support and document any genuine compatibility requirement.

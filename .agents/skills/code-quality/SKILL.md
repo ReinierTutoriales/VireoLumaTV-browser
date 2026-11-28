@@ -58,3 +58,10 @@ Renaming, reformatting or moving code to change `git blame` is not a replacement
 - For one-time TLS exceptions, compare actual certificate bytes; missing cryptographic identity must fail closed. Preserve normal certificate validation and Safe Browsing.
 - Resolve packaged asset paths against an explicitly bounded origin and directory; reject traversal, encoded path separators and ambiguous URLs. Verify file access, backup, intent extras and FileProvider grants independently.
 - Preserve signed release checksum verification and check update redirects, dependency provenance and workflow privileges. Treat any security finding as confirmed only when supported by code and tests; otherwise state the preconditions and remaining validation.
+
+## Native-first source cleanup
+
+- Inventory consumers across Kotlin, JavaScript, Rust/JNI, XML, manifests, generated code, reflection and R8 rules before deleting a symbol or dependency.
+- Consult official Android/AndroidX documentation and matching upstream source before replacing custom implementations. Preserve TV input, accessibility, lifecycle and API 24+ contracts. Remove superseded implementations in the same change once equivalence is tested.
+- Review CI lint reports, Compose compiler reports and metrics, Clippy diagnostics and R8 usage/seeds when available. R8 removal from an APK is not proof that a source declaration is unused in every variant or test.
+- Group related verified cleanup into the minimum number of passes; do not add speculative abstractions or dependencies just to satisfy a metric. Record exact symbols, evidence and validation. Compare benchmark results before claiming performance gains.
