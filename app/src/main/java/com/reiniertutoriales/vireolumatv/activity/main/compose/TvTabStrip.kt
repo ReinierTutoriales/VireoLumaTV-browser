@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.key
@@ -78,11 +79,11 @@ fun TvTabStrip(
     val titleFocus = remember { HashMap<BrowserTab, FocusRequester>() }
     // A request made while the strip was hidden is stale when it comes back: start from the current one.
     val handledFocus = remember { intArrayOf(focusRequest.first) }
-    LaunchedEffect(focusRequest) {
+    LaunchedEffect(focusRequest, tabs) {
         if (focusRequest.first == handledFocus[0]) return@LaunchedEffect
-        handledFocus[0] = focusRequest.first
         val target = tabs.getOrNull(focusRequest.second)?.tab ?: return@LaunchedEffect
-        titleFocus[target]?.let { runCatching { it.requestFocus() } }
+        val requester = titleFocus[target] ?: return@LaunchedEffect
+        if (requester.requestFocus()) handledFocus[0] = focusRequest.first
     }
     val newTab = stringResource(R.string.tabs_new)
     val closeTab = stringResource(R.string.menu_close_tab)
@@ -108,7 +109,8 @@ fun TvTabStrip(
             val closeInteraction = remember(tab) { MutableInteractionSource() }
             val closeFocused by closeInteraction.collectIsFocusedAsState()
             val closeHovered by closeInteraction.collectIsHoveredAsState()
-            LaunchedEffect(focused, index) { if (focused) onFocus(index) }
+            val currentOnFocus by rememberUpdatedState(onFocus)
+            LaunchedEffect(focused, index) { if (focused) currentOnFocus(index) }
             // The pill is not a focus target: the title and its X are sibling targets, so D-pad
             // Right moves title -> X -> next title. A nested X lies inside the title's bounds and
             // two-dimensional focus search would skip it.
