@@ -124,9 +124,8 @@ fun TvAddressField(
             keyboard?.show()
         }
         LaunchedEffect(draft) {
-            var previous = draft.text.toString()
             snapshotFlow { draft.text.toString() }.collect { text ->
-                if (text != previous) { previous = text; currentOnDraftChanged(text) }
+                currentOnDraftChanged(text)
             }
         }
         BasicTextField(
