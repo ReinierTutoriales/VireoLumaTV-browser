@@ -1,6 +1,6 @@
 # VireoLumaTV privacy policy
 
-Source review updated: October 28, 2026. Consult the source tag for your installed release.
+Source review updated November 28, 2026. Consult the source tag for your installed release.
 
 VireoLumaTV is an Android TV browser maintained by ReinierTutoriales and distributed through its independent GitHub repository. This policy describes the application's handling of data. Component licenses and source provenance are recorded separately in [NOTICE.md](NOTICE.md).
 
@@ -30,13 +30,13 @@ Other declared permissions support connectivity, download notifications, foregro
 
 ## Incognito limitations
 
-Incognito is intended to reduce ordinary browsing history. It does not hide activity from websites, search providers, network operators or the operating system.
+Incognito is available on Android 9 and later and is intended to reduce ordinary browsing history. It does not hide activity from websites, search providers, network operators or the operating system.
 
 The current source excludes private downloads from the Room download history and keeps their records in the private process. Downloaded files and saved bookmarks remain. Private tabs can still create stored tab state and previews; private WebView storage is cleared before a new private process configures its data directory on supported Android versions. This is not a guarantee of immediate removal after closing, a crash or forced termination, and it does not erase externally saved files or backups. Do not rely on private mode to prevent every local trace.
 
 ## Backup, retention and deletion
 
-Android backup is enabled in the manifest. Depending on the device, Android version and settings, eligible app data may be copied by system backup or device-transfer services. VireoLumaTV cannot promise that all app data stays exclusively on the device.
+The manifest disables Android cloud backup. On Android 12 and later, the app also declares data extraction rules for cloud backup and device-to-device transfer. Device transfers depend on the Android version and manufacturer. Files saved outside app storage may be copied through other services.
 
 Data can remain until removed through available browser controls or Android app-data settings. Clearing browser cache does not necessarily remove history, bookmarks, cookies, tab state or downloaded files. Clearing app data or uninstalling may remove app-private data, but externally saved downloads, backups and information held by websites/providers require separate deletion. System/provider policies control backup retention.
 

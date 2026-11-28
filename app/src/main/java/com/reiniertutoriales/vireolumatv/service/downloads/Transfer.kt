@@ -56,13 +56,23 @@ sealed class Transfer(var job: Download, private val callback: Callback) : Runna
     protected open fun release() {}
 
     final override fun run() {
-        val outcome = try {
+        val transferOutcome = try {
             DownloadRecords.open(job)
             if (job.cancelled) Outcome.Cancelled else transfer()
         } catch (error: Exception) {
             if (job.cancelled) Outcome.Cancelled else Outcome.Failed(0, error.toString())
         } finally {
             release()
+        }
+        val outcome = if (transferOutcome == Outcome.Complete) {
+            try {
+                publishOutput(job)
+                Outcome.Complete
+            } catch (error: Exception) {
+                Outcome.Failed(0, error.toString())
+            }
+        } else {
+            transferOutcome
         }
         when (outcome) {
             Outcome.Complete -> job.size = job.bytesReceived
@@ -72,7 +82,7 @@ sealed class Transfer(var job: Download, private val callback: Callback) : Runna
             }
             is Outcome.Failed -> job.size = Download.SIZE_FAILED
         }
-        finishOutput(job, keep = outcome == Outcome.Complete)
+        if (outcome != Outcome.Complete) discardOutput(job)
         if (outcome is Outcome.Failed) callback.onError(this, outcome.code, outcome.message)
         else callback.onDone(this)
     }
@@ -369,20 +379,28 @@ private fun openOutput(job: Download): FileOutputStream {
     return AutoCloseOutputStream(descriptor)
 }
 
-/** Publishes a complete output, or deletes an incomplete one; a task that never opened one has nothing to do. */
-private fun finishOutput(job: Download, keep: Boolean) {
+/** On Android 11+, the file is available only once MediaStore clears its pending flag. */
+private fun publishOutput(job: Download) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
+    val resolver = VireoLumaTVApp.instance.contentResolver
+    val values = ContentValues().apply { put(MediaStore.Downloads.IS_PENDING, 0) }
+    if (resolver.update(job.filepath.toUri(), values, null, null) != 1) {
+        throw IOException("Could not publish the download entry")
+    }
+}
+
+/** Removes a failed or cancelled output. A task that never opened one has nothing to delete. */
+private fun discardOutput(job: Download) {
     val path = job.filepath
     if (path.isEmpty()) return
     try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Before the output exists the path is empty on Android 11+, so this is always a MediaStore URI.
             val resolver = VireoLumaTVApp.instance.contentResolver
-            if (keep) resolver.update(path.toUri(), ContentValues().apply { put(MediaStore.Downloads.IS_PENDING, 0) }, null, null)
-            else if (resolver.delete(path.toUri(), null) < 1) Log.w(Transfer.TAG, "Incomplete download was already gone")
-        } else if (!keep) {
+            if (resolver.delete(path.toUri(), null) < 1) Log.w(Transfer.TAG, "Incomplete download was already gone")
+        } else {
             File(path).delete()
         }
     } catch (error: Exception) {
-        Log.w(Transfer.TAG, "Could not finish the download output", error)
+        Log.w(Transfer.TAG, "Could not remove the download output", error)
     }
 }
