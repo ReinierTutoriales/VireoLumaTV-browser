@@ -70,11 +70,13 @@ jobs:
           rustup component add clippy
           cargo clippy --locked --manifest-path native/adblock-jni/Cargo.toml --all-targets --message-format=json > rust-clippy.jsonl
 
-      - name: Unit tests
+      - name: Validate source inventory and bundled assets
         run: |
           python scripts/check-source-inventory.py
           python scripts/generate-brand-assets.py --check
           python scripts/refresh-bundled-filters.py
+      - name: Test scripts and WebView policies
+        run: |
           node scripts/test-home-page-security.cjs
           python scripts/test-apk-provenance.py
           python scripts/test-memory-capture.py
@@ -85,7 +87,11 @@ jobs:
           node scripts/test-window-open-decoy.cjs
           node scripts/test-adblock-surrogates.cjs
           node scripts/test-page-filters.cjs
-          cargo test --locked --manifest-path native/adblock-jni/Cargo.toml
+      - name: Rust unit tests
+        run: cargo test --locked --manifest-path native/adblock-jni/Cargo.toml
+
+      - name: Android unit tests
+        run: |
           # Retry only transient repository throttling, never a failing test.
           for attempt in 1 2 3; do
             log=$(mktemp)
@@ -104,7 +110,6 @@ jobs:
           done
 
       - name: Upload UI previews
-        if: success()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: browser-ui-previews
