@@ -138,6 +138,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     private fun Panel() {
         val first = remember { FocusRequester() }
         val firstButton = ButtonOrder.firstOrNull { it in spec.buttons }
+        val firstItem = spec.checked.takeIf { it in spec.items.indices } ?: 0
         val shape = RoundedCornerShape(16.dp)
         Column(
             Modifier.semantics { testTagsAsResourceId = true }.widthIn(min = 360.dp, max = 640.dp)
@@ -162,7 +163,7 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
                             onClick = { choose(index) },
                             selected = index == spec.checked,
                             modifier = Modifier.padding(bottom = 4.dp).testTag("dialog_item_$index")
-                                .then(if (index == spec.checked.takeIf { it in spec.items.indices }.let { it ?: 0 }) Modifier.focusRequester(first) else Modifier),
+                                .then(if (index == firstItem) Modifier.focusRequester(first) else Modifier),
                         )
                     }
                 }

@@ -24,6 +24,8 @@ import androidx.tv.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.getValue
@@ -78,12 +80,12 @@ fun TvTabStrip(
     val shape = RoundedCornerShape(10.dp)
     val titleFocus = remember { HashMap<BrowserTab, FocusRequester>() }
     // A request made while the strip was hidden is stale when it comes back: start from the current one.
-    val handledFocus = remember { intArrayOf(focusRequest.first) }
+    var handledFocus by remember { mutableIntStateOf(focusRequest.first) }
     LaunchedEffect(focusRequest, tabs) {
-        if (focusRequest.first == handledFocus[0]) return@LaunchedEffect
+        if (focusRequest.first == handledFocus) return@LaunchedEffect
         val target = tabs.getOrNull(focusRequest.second)?.tab ?: return@LaunchedEffect
         val requester = titleFocus[target] ?: return@LaunchedEffect
-        if (requester.requestFocus()) handledFocus[0] = focusRequest.first
+        if (requester.requestFocus()) handledFocus = focusRequest.first
     }
     val currentOnFocus by rememberUpdatedState(onFocus)
     val newTab = stringResource(R.string.tabs_new)
