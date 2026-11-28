@@ -17,6 +17,7 @@ function page(filters, host = 'stream.example', setup = '') {
     const context = vm.createContext({ assert, console, atob: (s) => Buffer.from(s, 'base64').toString('binary') });
     context.setTimeout = (fn) => { timers.push(fn); return timers.length; };
     context.setInterval = (fn, delay) => { context.lastInterval = { fn, delay }; return 1; };
+    context.pendingTimers = () => timers.length;
     context.flush = () => { while (timers.length) timers.shift()(); };
     vm.runInContext(`
         window = globalThis;
@@ -296,6 +297,34 @@ function page(filters, host = 'stream.example', setup = '') {
     batched.flush();
     vm.runInContext(`assert.equal(lookups.length, 2); assert.equal(lookups[1].classes, 'new-ad');`, batched);
 
+    // Repeated attribute records expose only the current DOM value. Read each target once
+    // per delivery and wake the browser only when there are names to look up.
+    const attributeBurst = page({}, 'stream.example', `
+        var reads = 0, lookups = [];
+        var root = {nodeType: 1, id: '', classList: []};
+        var target = {nodeType: 1, id: 'new-slot', classes: ['new-ad'],
+            get classList() { reads++; return this.classes; }};
+        document.documentElement = root;
+        document.readyState = 'complete';
+        VireoLumaTVApp.hiddenSelectors = function (url, classes, ids) {
+            lookups.push([classes, ids]); return '[]';
+        };
+        function reportAttributes() {
+            observers[0].fn(Array.from({length: 100}, () => ({type: 'attributes', target})));
+        }
+    `);
+    assert.equal(attributeBurst.pendingTimers(), 0, 'the initial synchronous scan has no leftover timer');
+    vm.runInContext(`reportAttributes(); assert.equal(reads, 1);`, attributeBurst);
+    assert.equal(attributeBurst.pendingTimers(), 1);
+    attributeBurst.flush();
+    vm.runInContext(`
+        assert.deepEqual(lookups, [['new-ad', 'new-slot']]);
+        reportAttributes();
+        assert.equal(reads, 2);
+        assert.equal(lookups.length, 1);
+    `, attributeBurst);
+    assert.equal(attributeBurst.pendingTimers(), 0, 'known names do not schedule an empty wakeup');
+
     // Class or id changes on many elements are read directly and never force a whole-document walk.
     let churn = page({hide: [], script: ''}, 'stream.example', `
         var walks = 0, names = [];
@@ -317,6 +346,21 @@ function page(filters, host = 'stream.example', setup = '') {
     `, churn);
     churn.flush();
     vm.runInContext(`assert.equal(walks, 1); assert.equal(new Set(names).size, 300);`, churn);
+
+    // The subtree budget counts distinct roots, not repeated notifications at the limit.
+    vm.runInContext(`
+        nodes.slice(0, 256).forEach(function (node) {
+            observers[0].fn([{type: 'childList', addedNodes: [node]}]);
+        });
+        observers[0].fn([{type: 'childList', addedNodes: [nodes[0]]}]);
+    `, churn);
+    churn.flush();
+    vm.runInContext(`assert.equal(walks, 1, 'duplicate roots at the limit do not trigger a full walk');`, churn);
+    vm.runInContext(`
+        observers[0].fn([{type: 'childList', addedNodes: nodes.slice(0, 257)}]);
+    `, churn);
+    churn.flush();
+    vm.runInContext(`assert.equal(walks, 2, '257 distinct roots still collapse to one bounded walk');`, churn);
 
     // A large real-DOM traversal yields and never materializes the entire subtree as a NodeList.
     let sliced = page({hide: [], script: ''}, 'stream.example', `
