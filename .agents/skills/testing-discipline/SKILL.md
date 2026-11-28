@@ -14,6 +14,10 @@ description: Use when changing product logic, adding features, or fixing regress
   still needed; tests using doubles do not validate the device path.
 - Use `docs/REGRESSION_POLICY.md` for the N01–N10 contracts and evidence matrix.
 
+## Test portfolio review
+
+Map tests to contracts, variants, failure modes and cost. Remove tests only with equivalent coverage or a retired contract. Consult the official Android testing strategy; choose the smallest reliable test layer. Measure setup separately and verify isolation and comparability before reusing fixtures. Do not weaken assertions or increase timeouts to hide defects.
+
 ## Convert failures into regression coverage
 
 - Turn a reproducible error into the smallest fixture that exercises the failing
