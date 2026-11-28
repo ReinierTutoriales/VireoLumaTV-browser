@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -114,9 +115,6 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
     /** The options shown, in order. */
     val items: List<CharSequence> get() = spec.items
 
-    /** The text of button [which] (DialogInterface.BUTTON_*), or null when the dialog has none. */
-    fun buttonText(which: Int): CharSequence? = spec.buttons[which]?.text
-
     /** Chooses option [index], as a click on its row does: runs the callback, then dismisses. */
     fun choose(index: Int) {
         if (!isShowing) return
@@ -138,6 +136,11 @@ class TvDialog private constructor(context: Context, private val spec: Spec) :
 
     @Composable
     private fun Panel() {
+        LaunchedEffect(Unit) {
+            snapshotFlow { validationError?.takeIf { error == null } }.collect { stale ->
+                if (stale != null && validationError === stale && error == null) validationError = null
+            }
+        }
         val first = remember { FocusRequester() }
         val firstButton = ButtonOrder.firstOrNull { it in spec.buttons }
         val firstItem = spec.checked.takeIf { it in spec.items.indices } ?: 0

@@ -3,17 +3,40 @@ package com.reiniertutoriales.vireolumatv.utils
 import android.content.Context
 import android.webkit.WebView
 import java.io.File
+import java.io.RandomAccessFile
+import java.nio.channels.OverlappingFileLockException
 
 internal class IncognitoWebViewSession {
-    private var configured = false
+    // Keep the lock until the private process exits, including while its WebView is closing.
+    private var profileFile: RandomAccessFile? = null
 
     @Synchronized
     fun configure(context: Context, setSuffix: (String) -> Unit) {
-        if (configured) return
-        clear(context)
-        setSuffix("incognito")
-        configured = true
+        if (profileFile != null) return
+        val file = openProfileLock(context)
+        try {
+            file.channel.lock()
+            clear(context)
+            setSuffix("incognito")
+            profileFile = file
+        } finally {
+            if (profileFile == null) file.close()
+        }
     }
+
+    fun clearStale(context: Context) {
+        openProfileLock(context).use { file ->
+            val lock = try {
+                file.channel.tryLock()
+            } catch (_: OverlappingFileLockException) {
+                null
+            } ?: return
+            lock.use { clear(context) }
+        }
+    }
+
+    private fun openProfileLock(context: Context): RandomAccessFile =
+        RandomAccessFile(File(context.filesDir, "incognito-webview.lock"), "rw")
 
     fun clear(context: Context) {
         val root = requireNotNull(context.filesDir.parentFile)
@@ -33,6 +56,7 @@ internal object IncognitoWebViewData {
     @androidx.annotation.RequiresApi(android.os.Build.VERSION_CODES.P)
     fun configure(context: Context) = session.configure(context, WebView::setDataDirectorySuffix)
     fun clear(context: Context) = session.clear(context)
+    fun clearStale(context: Context) = session.clearStale(context)
 }
 
 /**
