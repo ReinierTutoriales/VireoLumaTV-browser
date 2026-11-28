@@ -50,7 +50,7 @@ La mayoría de los navegadores en Android TV son adaptaciones de móvil difícil
 - **Inicio directo y personalizable:** accede al instante a tus sitios favoritos desde una cuadrícula limpia en la pantalla principal.
 - **Pestañas con vista previa:** cambia entre páginas viendo la miniatura real de cada pestaña, mientras el navegador mantiene el consumo de memoria bajo control.
 - **Gestor de descargas con reanudación:** descarga archivos en segundo plano con continuación automática si la conexión se corta.
-- **Modo privado real:** abre pestañas privadas en una sesión separada que borra sus datos, cookies y archivos temporales al cerrarlas.
+- **Modo privado (Android 9 o posterior):** navega en un perfil WebView separado. Los archivos descargados y los marcadores guardados permanecen. Tras un cierre forzado pueden quedar datos de la sesión.
 - **En tu idioma:** interfaz disponible en español, inglés, alemán, italiano, polaco, ruso, ucraniano, persa, hebreo, vietnamita y chino (simplificado y tradicional).
 
 ---
