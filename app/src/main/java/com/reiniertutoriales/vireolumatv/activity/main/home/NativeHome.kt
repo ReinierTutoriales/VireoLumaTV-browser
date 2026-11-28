@@ -556,7 +556,7 @@ internal class NativeHome(private val browser: MainActivity, private val host: F
                     .semantics { contentDescription = hint }
                     .clickable(interactionSource = interaction, indication = null) {
                         closeCapsuleIfVisible()
-                        query.edit { placeCursorAtEnd() }
+                        query.edit { selection = androidx.compose.ui.text.TextRange(length) }
                         typing = true
                     }
                     .padding(horizontal = 20.dp, vertical = 16.dp),
