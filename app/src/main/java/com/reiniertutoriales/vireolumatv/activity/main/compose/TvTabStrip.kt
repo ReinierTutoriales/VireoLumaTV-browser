@@ -85,6 +85,7 @@ fun TvTabStrip(
         val requester = titleFocus[target] ?: return@LaunchedEffect
         if (requester.requestFocus()) handledFocus[0] = focusRequest.first
     }
+    val currentOnFocus by rememberUpdatedState(onFocus)
     val newTab = stringResource(R.string.tabs_new)
     val closeTab = stringResource(R.string.menu_close_tab)
     Row(
@@ -109,7 +110,6 @@ fun TvTabStrip(
             val closeInteraction = remember(tab) { MutableInteractionSource() }
             val closeFocused by closeInteraction.collectIsFocusedAsState()
             val closeHovered by closeInteraction.collectIsHoveredAsState()
-            val currentOnFocus by rememberUpdatedState(onFocus)
             LaunchedEffect(focused, index) { if (focused) currentOnFocus(index) }
             // The pill is not a focus target: the title and its X are sibling targets, so D-pad
             // Right moves title -> X -> next title. A nested X lies inside the title's bounds and

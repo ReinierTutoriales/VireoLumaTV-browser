@@ -82,7 +82,6 @@ fun TvAddressField(
     fun cancelEditing(restoreFocus: Boolean) {
         editing = false
         onEditingChanged(false)
-        draft.setTextAndPlaceCursorAtEnd(address)
         keyboard?.hide()
         focusManager.clearFocus()
         refocusAddress = restoreFocus
@@ -110,11 +109,6 @@ fun TvAddressField(
             draft.setTextAndPlaceCursorAtEnd(submitRequest.second)
             submitEditing()
         }
-    }
-
-    // A tab switch must update the displayed draft, but never overwrite active typing.
-    LaunchedEffect(address, editing) {
-        if (!editing) draft.setTextAndPlaceCursorAtEnd(address)
     }
 
     // If the host removes this field while the IME is active, release it explicitly.
